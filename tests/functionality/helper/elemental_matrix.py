@@ -24,6 +24,4 @@ def create_elemental_matrix(height = 10, width = 5):
             i = colShift + iLocal * colStride
             data[iLocal + jLocal * ldim] = i - j
 
-    print "LI"
-
     return A

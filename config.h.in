@@ -1,0 +1,32 @@
+/* Name of package */
+#define PACKAGE ${PACKAGE}
+
+/* Define to the address where bug reports for this package should be sent. */
+#define PACKAGE_BUGREPORT ${PACKAGE_BUGREPORT}
+
+/* Define to the full name of this package. */
+#define PACKAGE_NAME ${PACKAGE_NAME}
+
+/* Define to the full name and version of this package. */
+#define PACKAGE_STRING ${PACKAGE_STRING}
+
+/* Define to the version of this package. */
+#define PACKAGE_VERSION ${PACKAGE_VERSION}
+
+/* repository git version */
+#define GIT_VERSION ${GIT_REVISION}
+
+/* repository svn version */
+#define SVN_VERSION ${SVN_REVISION}
+
+/* repository git version */
+#define BUILD_DATE ${BUILD_DATE}
+
+/* Version number of package */
+#define VERSION ${VERSION}
+
+/* Do we have want to build with Elemental */
+#cmakedefine SKYLARK_HAVE_ELEMENTAL 1
+
+/* Do we have want to build with fftw */
+#cmakedefine SKYLARK_HAVE_FFTW 1

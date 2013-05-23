@@ -1,0 +1,26 @@
+;; .emacs
+;; Author: Haim Avron
+;; Very basic emacs configuration file to help working with skylark 
+;; code style.
+
+; The following will highlight beyond column 80 in C and C++, so you will know you are
+; bad boy if you go over.
+(require 'whitespace)
+(setq whitespace-style '(face empty tabs lines-tail trailing))
+(add-hook 'c++-mode-hook (lambda() (interactive) (whitespace-mode)))
+(add-hook 'c-mode-hook (lambda() (interactive) (whitespace-mode)))
+
+; Indentation setup
+(defun skylark-indent-setup ()
+  (setq c-basic-offset 4)
+  (c-set-offset 'arglist-cont-nonempty '+)
+  (c-set-offset 'arglist-cont '+)
+  (c-set-offset 'inextern-lang 0)
+  (c-set-offset 'innamespace 0))
+
+(add-hook 'c-mode-hook 'skylark-indent-setup)
+(add-hook 'c++-mode-hook 'skylark-indent-setup)
+
+(setq-default indent-tabs-mode nil) ; always replace tabs with spaces
+;;(setq-default tab-width 4) ; set tab width to 4 for all buffers
+;;(setq-default c-basic-offset 4) ; and especially for c mode

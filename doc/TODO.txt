@@ -1,0 +1,78 @@
+(1) CMake configuration files to check for the following (Yves):
+   --- MPI
+   --- BLAS/LAPACK
+   --- Boost libraries (some are header only)
+      --- Random
+      --- MPI
+      --- Serialization
+      --- Python
+      --- MPL
+      --- Fusion
+      --- ForEach
+      --- Tokenizer
+      --- Casts (don't remember which library this is)
+   --- Elemental
+   --- Anything else to be added to the list?
+   (DONE)
+
+(2) Integrate Anju's code with Haim's code:
+   --- Directory flattening?
+   --- Remove all OO-features such as virtual functions and inheritance.
+   --- Make Elemental dependent on a #define.
+    --- The specialization for elemental should be direction independent.
+   --- Make dense_1D always available.
+    --- Remove references to traits classes and directly specialize 
+        for dense_1D.
+   --- Remove the #define for boost random generators. Use directly instead.
+   --- Add example of doing both the elemental and dense_1D thingy.
+   (DONE)
+
+(3) Look into making the python interface more python like! (Yves)
+   --- Should the python namespace mimic the C++ namespace? It can be done, 
+       but it needs additional stuff to be done.
+
+(4) Coding standards (Yves).
+   --- Remove author names from files.
+   --- Enforce doxygen/sphinx coding standard.
+   --- Should everyone just run astyle on the files so that there are no 
+       artificial diffs arising due to code reorganization?
+
+(5) Regarding Elemental: The library does not follow a good format in
+organizing it's files.  Of course, this is an opinion. I see that Haim had
+followed a similar format in organizing sketch folder. I am not a big fan 
+of creating so many directories without a good reason. Furthermore, Elemental
+(stupidly) uses enums for distribution making it difficult for us to use 
+type dispatch for specialization. IMHO, this is a half-assed attempt to use 
+templates.
+
+(6) Index type --- we have not specified anywhere that this has to be a 
+signed value. Furthermore, we cannot use this type everywhere because if we 
+take difference of two pointers, the difference_type is always 32- or 64-bits
+depending on the address space. This will screw us over if we don't address
+this issue. Also, don't typedef this to be "INT", something like "INT32" or 
+"INT64" is more precise, because "INT" has a different meaning for different 
+C++ compilers and for python.
+
+(7) Returning the sketching matrix:
+In Elemental, we return a matrix to Rank-0 (which needs to be parameterized).
+What happens when you want to return a DistMatrix? Do you have a template 
+parameter that tells you when to return a DistMatrix versus when you return a 
+regular matrix? This is a bit confusing. The other option is to simply say 
+that DistMatrix<STAR,STAR> is the return type. Although it is redundant,
+it is more correct than saying that rank 0 will always receive the output. We
+need to resolve this issue of when things will be distributed and when they 
+will not be distributed.
+ --- Right now, we have two matrices being input to JLT_t. This is important
+ to maintain the fact that the input and the output files may look different.
+
+(8) Should all things in sketch be under skylark::sketch namespace? Should
+namespace mimic directory structure; to me this makes sense.
+ --- Namespace is mimicing directory structure as of now.
+
+(9) In Elemental, they use capital letters for denoting enums, NOT types. For
+us, the directions (left, right, etc) are actual types, so we should use the 
+nomenclature reserved for types, not for ENUMS.
+
+(10) Create README and INSTALL files.
+
+(11) Doxygen-style comments for each and every source file.

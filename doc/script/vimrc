@@ -1,0 +1,32 @@
+" .vimrc
+" Author: Yves Ineichen
+" Very basic vim configuration file corresponding to skylark code style guide.
+" ---------------------------------------------------------------------------
+" basic options
+
+set autoindent smartindent    " auto/smart indent
+set expandtab                 " expand tabs to spaces
+set smarttab                  " tab and backspace are smart
+set tabstop=4                 " 4 spaces
+set shiftwidth=4              " 4 spaces
+set backspace=indent,eol,start
+set tw=78                     " default textwidth is a max of 78
+set list                      " enable custom list chars
+set listchars=tab:▸\ ,eol:¬   " explicitly show tabs and eol
+set colorcolumn=+1            " show line where text should wrap
+set encoding=utf-8
+set hidden
+set magic
+
+
+" ---------------------------------------------------------------------------
+" auto load extensions for different file types
+if has('autocmd')
+        filetype plugin indent on
+        syntax on
+
+        " strip all whitespaces at save
+        autocmd BufWritePre * :%s/\s\+$//e
+
+endif
+" ---------------------------------------------------------------------------

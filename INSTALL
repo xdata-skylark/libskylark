@@ -1,0 +1,111 @@
+Compilers that are needed:
+--------------------------
+(1) C++ (any recent version). We have tested with G++ v 4.6 and everything
+works fine. This should be the case for most other modern compilers and
+versions.
+
+(2) Python (version 2.x). We have tested with Python v 2.7. Python bindings are
+build when BUILD_PYTHON is set to "ON" (default:ON). If you don't need to build
+Python, please set this to OFF (-DBUILD_PYTHON=OFF).
+
+Tools:
+-----
+(1) In this project, we use CMake (minimum 2.8.2). CMake is supported on all 
+modern operating systems. Please search the web for installation directions.
+
+Libraries:
+----------
+(1) MPI: Any MPI-2 compliant implementation will work. Remmeber that wherever
+you install MPI, please set the right paths (LD_LIBRARY_PATH and PATH on
+linux), (DYLD_LIBRARY_PATH and PATH on OSX) so that CMake will find your 
+installation.
+
+(2) LAPACK/BLAS: Any valid version of LAPACK and BLAS will do. If you are on
+a linux system, you might be able to use "yum" or "apt-get" to install these
+libraries for you. ATLAS is a good free library (google for it).
+
+(3) Boost (minimum 1.49): We use only a few libraries from boost. Currently, 
+this list includes ---
+  --- mpi
+  --- mpi_python
+  --- serialization
+  --- python
+  --- random
+
+To build these libraries, please follow these instructions:
+(3.a) Download the latest version of Boost (should be 1.53). 
+(3.b) Untar/Unzip everything in a directory (let's say 'boost-src').
+(3.c) Go into 'boost-src' 
+   #cd boost-src
+(3.d) Boost strap the system by running bootstrap.sh script, which creates a 
+      configuration file called 'project-config.jam'. Note that <INSTALL-HERE>
+      should be replaced by the directory where you want to install boost!
+   #/bootstrap.sh --with-libraries=python,random,mpi --prefix=<INSTALL-HERE>
+(3.e) Add a line to 'project-config.jam' to ensure Boost.Mpi is built properly.
+   #echo "using mpi ;" >> project-config.jam
+(3.f) Install everything using the following command.
+   #./b2 install
+NOTE: As installation is proceeding, there are messages being spit out about 
+the libraries that are being installed. Please pay close attention to any 
+errors that might have occured.
+(3.g) Make sure that environment variables are set properly.
+    --- BOOST_ROOT: used by many programs to find the *base* directory of the 
+    Boost installation. Set BOOST_ROOT to <INSTALL-HERE>.
+    --- LD_LIBRARY_PATH (unix) or DYLD_LIBRARY_PATH (OSX) along with PATH
+    variable should be set to <INSTALL-HERE>/lib and <INSTALL-HERE>/bin.
+    --- Boost.Mpi python bindings are present in <INSTALL-HERE>/lib under the
+    name "mpi.so". To use Boost.Mpi, make sure your PYTHONPATH is appended
+    with <INSTALL-HERE>/lib.
+
+(4) Elemental (optional): Downloading and installing Elemental is simple. In 
+fact, the dependencies of Elemental are similar to those of skylark. Elemental
+depends on MPI, BLAS/LAPACK, and CMake. So, if you have followed all the steps
+above, you're all set to install Elemental!
+
+To build Elemental libraries, please follow these instructions:
+(4.a) Download Elemental from google.code. 
+(4.b) Untar/Unzip everything in a directory (let's say 'elemental-src').
+(4.c) Create another directory for object files (let's say 'elemental-obj').
+(4.d) Go into 'elemental-obj'
+    #cd elemental-obj
+(4.e) Configure your installation by invoking CMake.
+    #cmake <path-to-elemental-src> -DCMAKE_INSTALL_PREFIX=<INSTALL-HERE>
+Remember, you can provide either the absolute or the relative path to 
+'elemental-src' here.
+(4.f) Build and install elemental:
+    #make all install
+NOTE: Once again, all the commands are run from 'elemental-obj', not 
+'elemental-src'. If all went well, Elemental will have been installed in 
+<INSTALL-HERE>/* directories. As usual, set your environment variables
+correctly.
+
+Elemental is currently optional in skylark, but it is turned ON by default. If
+you don't want to use Elemental, you can turn it off by using the following 
+flag --- "-DUSE_ELEMENTAL=OFF" when you are configuring skylark.
+
+(5) At this point, you should have everything you need to install skylark. 
+Installing skylark is similar to installing Elemental. So, the first thing
+to do would separate 'skylark-obj' directory (assuming all your sources 
+are in 'skylark-src' directory).
+(5.a) Set the environment variables!
+  --- BOOST_ROOT (if boost is not installed in a standard location)
+  --- PYTHON_SITE_PACKAGES (to install skylark's python bindings)
+(5.b) Change to 'skylark-obj' directory.
+  #cd 'skylark-obj'
+(5.c) Figure out if you need python bindings. If so, please mention where you
+want to install python library using the PYTHON_SITE_PACKAGES envionment
+variable. If PYTHON_SITE_PACKAGES is '/home/pkambadu/Software/lib', skylark
+python bindings are installed in 'home/pkambadu/Software/lib/skylark'
+directory.  At this point, you will have to append PYTHONPATH with
+'/home/pkambadu/Software/lib'
+(5.d) Figure out if you want to use Elemental. If you don't, please turn off
+USE_ELEMENTAL by setting "-DUSE_ELEMENTAL=OFF" during the CMake configuration 
+process! USE_ELEMENTAL is turned on by default, so if you are building with 
+Elemental support, make sure elemental is installed. If Elemental is not 
+installed in a standard location, then make sure that the environment variable
+ELEMENTAL_ROOT is set to the topdir where Elemental was installed.
+(5.e) Configure
+  #cmake <path-to-skylark-src> <options>
+(5.f) Build everything and install the python bindings:
+  #make all install
+This will install python bindings in ${PYTHON_SITE_PACKAGES}.

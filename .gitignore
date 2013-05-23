@@ -1,0 +1,6 @@
+.cproject
+.project
+examples/elemental
+examples/elemental.dbg
+config.h
+build

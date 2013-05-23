@@ -1,0 +1,205 @@
+# CODING SYTLE
+
+The code style builds on the following two well known styles:
+
+* http://www.boost.org/development/requirements.html
+* https://code.google.com/p/google-styleguide/
+  * http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml
+
+For Googles cpplint package see:
+
+* http://google-styleguide.googlecode.com/svn/trunk/cpplint/
+
+
+**Code should be written with the objective to minimize the time it takes
+someone else to understand the code!**
+
+
+## Quick Guide
+
+### General
+
+* No tabs allowed
+* Indent levels by 4 spaces
+* The length of a line is limited to 80 characters.
+* Use include guards and namespaces.
+
+### Naming and ordering
+
+For illustration see header example below.
+
+* Everything (class/struct names, methods, variables, ...) are using lower
+  case characters and are separated by '_'.
+* Types are postfixed with '_t'.
+* Private member variables are prefixed with '_'.
+* Function names, variable names, and filenames should be descriptive; eschew
+  abbreviation.
+* Types and variables should be nouns, while functions should be "command"
+  verbs.
+* Accessors and mutators match the name of the variable:
+  `my_exciting_member_variable()`, `set_my_exciting_member_variable()`.
+* In a class/struct order its definitions: public, protected, private
+  (variables before methods)
+* Curly braces start on the same line as the class/method/.. separated by one
+  space.
+* The contents of namespaces are not indented.
+
+
+### Various
+
+* Base classes are OK under strictest conditions and absolute necessity, but
+  definitely not virtual functions.
+* Do not use a using-directive.
+
+    using namespace std; //NO!
+    namespace bla = bar::foo; //OK
+
+* Place a function's variables in the narrowest scope possible, and initialize
+  variables in the declaration.
+* Prefer small and focused functions.
+* Avoid doing complex initialization in constructors (in particular,
+  initialization that can fail or that requires virtual method calls).
+* Provide a copy constructor and assignment operator only when necessary.
+  Otherwise, disable them by
+
+    private:
+        ClassName(const ClassName&);
+        void operator=(const ClassName&);
+
+* Use C++ casts like static_cast. Do not use other cast formats like
+  `int y = (int)x;` or `int y = int(x);`
+
+* Use prefix form (++i) of the increment and decrement operators with
+  iterators and other template objects.
+* Use const whenever it makes sense (see faq
+  http://www.parashift.com/c++-faq/overview-const.html).
+* Prefer no spaces inside parentheses.
+* The else keyword belongs on a new line.
+* Do not needlessly surround the return expression with parentheses.
+* The hash mark that starts a preprocessor directive should always be at the
+  beginning of the line.
+* Only use the trenary operator (conditional operator `?`) for very simple
+  conditionals.
+* "Return early strategy": In methods with complex control flows pull early
+  returns to the beginning to improve readability, e.g.:
+
+    void applyVector(Matrix matrix, std::vector<double> &x) {
+        if(matrix.num_cols() == x.size()) return;
+        if(matrix.needsUpdate()) return;
+
+        // continue with rest of method
+
+    }
+
+
+
+### Comments
+
+* Use `//` for short comments and `/* */` for multi-line comments.
+* Use `///` and `/** **/` for documentation comments.
+* Use `//TODO:` comments (with desciption) for temporary code or short-term
+  solutions.
+* In general the actual name of the variable should be descriptive enough to
+  give a good idea of what the variable is used for. In certain cases, more
+  comments are required.
+* In your implementation you should have comments in tricky, non-obvious,
+  interesting, or important parts of your code.
+* Self documenting code: The code itself should be the primary documentation
+  of the code.
+* good code > bad code + good comments ;)
+
+
+### Boost
+
+The skylark framework uses some features of Boost. The following packages are
+on the "whitelist":
+
+* MPI
+* Python
+* Python-MPI
+* serialization
+* foreach
+* smart_ptr
+* fusion (*)
+* tuple
+
+
+## FILES AND DIRECTORIES
+
+* all directories and filenames are lowercase to prevent problems when working
+  with case sensitive and case insensitive filenames.
+* FIXME: directory structure
+
+
+### Header
+
+* Header filenames should have a .hpp (lowercase) extension.
+* Unless multiple inclusion is intended, wrap the header in #ifndef guards.
+* Use a naming convention that minimizes the chance of name clashes.
+* Use forward declare ordinary classes only in order to avoid unnecessary
+  includes.
+* Use standard order for readability and to avoid hidden dependencies:
+  C library, C++ library, other libraries' .h, skylark .hpp.
+
+Sample Header:
+
+    //
+    // < Copyright and license notice, as indicated in the license page >
+    //
+    //  See http://www.sklyark.org/ for latest version.
+    //
+
+    #ifndef SKYLARK_SKETCH_MATRIX_HPP
+    #define SKYLARK_SKETCH_MATRIX_HPP
+
+    namespace skylark {
+
+    /**
+     * Documentation
+     */
+    template <typename a,
+              typename b>
+    class sketch_matrix_t {
+    public:
+        void apply_marix(int input, double input_2, double &out);
+
+    private:
+        int _condition_number;
+    };
+
+    }
+
+    #endif  // include guard
+
+
+* The include guard uses the convention of all uppercase letters, with the
+  header name prefixed by the namespace name, and suffixed with HPP,
+  separated by underscores.
+* Wrap the header contents in a namespace to prevent global namespace
+  pollution.
+* The preferred ordering for class definitions is public members, protected
+  members, and finally private members.
+* Include the skylark/config.hpp configuration header if there is a need to
+  deal with compiler or platform configuration issues.
+* When defining a function, parameter order is: inputs, then outputs.
+
+
+### Source
+
+* Source filenames should have a .cpp (lowercase) extension
+
+
+
+## Helper scripts
+
+In the `script` directory we provide configuration files for Vim, Emacs and
+Eclipse.
+Additionaly there is an astyle file that can be used to format the code
+according to the above defined style guide. Please download astyle
+(http://astyle.sourceforge.net/ or install using a packet manager) and run
+
+    astyle --options=astyle/skylark.cfg file_pattern
+
+to fix your code **before pushing to the main repository** (we may use hooks
+to reject commits not conforming to our code style).
+

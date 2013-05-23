@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/rnla/!svn/ver/183/skylark/skylark/ml
+END
+kernels.py
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/rnla/!svn/ver/183/skylark/skylark/ml/kernels.py
+END
+nonlinear.py
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/rnla/!svn/ver/183/skylark/skylark/ml/nonlinear.py
+END
+distances.py
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/rnla/!svn/ver/183/skylark/skylark/ml/distances.py
+END
+__init__.py
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/rnla/!svn/ver/161/skylark/skylark/ml/__init__.py
+END
+utils.py
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/rnla/!svn/ver/183/skylark/skylark/ml/utils.py
+END

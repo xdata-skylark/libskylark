@@ -150,22 +150,15 @@ if (BUILD_PYTHON)
     set (PYTHON_SITE_PACKAGES
       $ENV{PYTHON_SITE_PACKAGES}
     )
+    set (PYTHON_SYSTEM_WIDE_INSTALL 0)
   else (DEFINED ENV{PYTHON_SITE_PACKAGES})
     execute_process (
       COMMAND python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"
       OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE
     )
+    set (PYTHON_SYSTEM_WIDE_INSTALL 1)
   endif (DEFINED ENV{PYTHON_SITE_PACKAGES})
   message (STATUS "Installing python modules in: ${PYTHON_SITE_PACKAGES}")
-
-  # and install __init__.py
-  #install (
-    #FILES ${CMAKE_CURRENT_SOURCE_DIR}/resources/__init__.py
-    #DESTINATION ${PYTHON_SITE_PACKAGES}/skylark
-  #)
-  #add_subdirectory(utility/python)
-  #add_subdirectory(sketch/boost_python)
-  #add_custom_target(skylark-python DEPENDS sketch utility)
 
   add_subdirectory(sketch/capi)
   add_subdirectory(python-skylark)

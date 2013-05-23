@@ -15,8 +15,15 @@ if (PYTHON)
 
     add_custom_target(python-skylark ALL DEPENDS ${OUTPUT}/python-skylark)
 
-    install(
-        CODE
-        "execute_process(COMMAND ${PYTHON} ${SETUP_PY} install --prefix=${PYTHON_SITE_PACKAGES})"
-    )
+    if(PYTHON_SYSTEM_WIDE_INSTALL)
+        install(
+            CODE
+            "execute_process(COMMAND ${PYTHON} ${SETUP_PY} install)"
+        )
+    else(PYTHON_SYSTEM_WIDE_INSTALL)
+        install(
+            CODE
+            "execute_process(COMMAND ${PYTHON} ${SETUP_PY} install --prefix=${PYTHON_SITE_PACKAGES})"
+        )
+    endif(PYTHON_SYSTEM_WIDE_INSTALL)
 endif (PYTHON)

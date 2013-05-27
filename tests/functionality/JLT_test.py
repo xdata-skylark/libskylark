@@ -16,8 +16,8 @@ class JLT_test(unittest.TestCase):
         self.A = create_elemental_matrix(10, 5)
 
         #FIXME: expected norm = ?
-        self.exp_col_norm = 28.49319221587624
-        self.exp_row_norm = 28.10891868832163
+        self.exp_col_norm = 26.97375583727611
+        self.exp_row_norm = 27.19933149569036
         #FIXME: how many applications/averages
         self.num_repeats  = 250
         #FIXME: accuracy
@@ -30,11 +30,12 @@ class JLT_test(unittest.TestCase):
     def test_apply_colwise(self):
 
         norm = 0.0
-        #for i in range(self.num_repeats):
-        for _ in itertools.repeat(None, self.num_repeats):
+        #for _ in itertools.repeat(None, self.num_repeats):
+        for i in range(self.num_repeats):
 
             #FIXME: how to choose seeds?
-            ctxt = cskylark.Context(random.randint(0, 1e9))
+            #ctxt = cskylark.Context(random.randint(0, 1e9))
+            ctxt = cskylark.Context(i)
             S    = cskylark.JLT(ctxt, "DistMatrix_VR_STAR", "Matrix", 10, 6)
             SA   = elem.Mat()
             SA.Resize(6, 5)

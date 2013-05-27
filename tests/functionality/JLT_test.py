@@ -7,7 +7,7 @@ from skylark import cskylark
 
 import elem
 
-class CWT_test(unittest.TestCase):
+class JLT_test(unittest.TestCase):
 
     def setUp(self):
         # Create a matrix to sketch
@@ -18,8 +18,8 @@ class CWT_test(unittest.TestCase):
         self.ctxt = cskylark.Context(123834)
 
         #FIXME:
-        self.exp_col_norm = 24.7991935353
-        self.exp_row_norm = 26.3628526529
+        self.exp_col_norm = 17.2897784754
+        self.exp_row_norm = 42.9459176386
 
     def tearDown(self):
         self.A.Free()
@@ -28,7 +28,7 @@ class CWT_test(unittest.TestCase):
 
     #FIXME: how many applications/averages
     def test_apply_colwise(self):
-        S  = cskylark.CWT(self.ctxt, "DistMatrix_VR_STAR", "Matrix", 10, 6)
+        S  = cskylark.JLT(self.ctxt, "DistMatrix_VR_STAR", "Matrix", 10, 6)
         SA = elem.Mat()
         SA.Resize(6, 5)
         S.Apply(self.A, SA, 1)
@@ -37,7 +37,7 @@ class CWT_test(unittest.TestCase):
 
     #FIXME: how many applications/averages
     def test_apply_rowwise(self):
-        S  = cskylark.CWT(self.ctxt, "DistMatrix_VR_STAR", "Matrix", 5, 3)
+        S  = cskylark.JLT(self.ctxt, "DistMatrix_VR_STAR", "Matrix", 5, 3)
         SA = elem.Mat()
         SA.Resize(10, 3)
         S.Apply(self.A, SA, 2)

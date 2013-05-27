@@ -26,6 +26,7 @@ class CWT_test(unittest.TestCase):
         self.ctxt.Free()
         elem.Finalize()
 
+    #FIXME: how many applications/averages
     def test_apply_colwise(self):
         S  = cskylark.CWT(self.ctxt, "DistMatrix_VR_STAR", "Matrix", 6, 5)
         SA = elem.Mat()
@@ -34,6 +35,7 @@ class CWT_test(unittest.TestCase):
 
         self.assertAlmostEqual(np.linalg.norm(SA.Data()), self.exp_col_norm, places=5)
 
+    #FIXME: how many applications/averages
     def test_apply_rowwise(self):
         S  = cskylark.CWT(self.ctxt, "DistMatrix_VR_STAR", "Matrix", 5, 3)
         SA = elem.Mat()

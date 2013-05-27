@@ -1,5 +1,7 @@
 import time
 import numpy
+
+from datetime import date
 from mpi4py import MPI
 
 def perftest(f):
@@ -21,9 +23,13 @@ def perftest(f):
         comm.Reduce([dt, MPI.DOUBLE], [dt_max, MPI.DOUBLE], op=MPI.MAX, root=0)
         comm.Reduce([dt, MPI.DOUBLE], [dt_sum, MPI.DOUBLE], op=MPI.SUM, root=0)
 
-        #TODO: dump to file
         if rank is 0:
             average = dt_sum[0] / size
-            print "TEST: %s took (%s / %s / %s)s" % (getattr(f, "__name__", "<unnamed>"), dt_min[0], average, dt_max[0])
+            print "%s took (%s / %s / %s)s" % (getattr(f, "__name__", "<unnamed>"), dt_min[0], average, dt_max[0])
+
+            filename = "%s_%s" % (getattr(f, "__name__", "<unnamed>"), date.today())
+            measurements = "%s %s %s %s\n" % (size, dt_min[0], average, dt_max[0])
+            with open(filename, "a") as out:
+                out.write(measurements)
 
     return _inner

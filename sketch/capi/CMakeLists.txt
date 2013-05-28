@@ -15,6 +15,7 @@ target_link_libraries(cskylark
                       ${FFTW_LIBRARY}
                       ${Elemental_LIBRARY}
                       ${Boost_LIBRARIES}
+                      ${CombBLAS_LIBRARIES}
 )
 set_target_properties(cskylark
                       PROPERTIES COMPILE_FLAGS

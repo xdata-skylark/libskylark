@@ -34,12 +34,12 @@ class SketchTransform(object):
   def __init__(self, ctxt, ttype, intype, outtype, n, s):
     self.obj = lib.sl_create_sketch_transform(ctxt.obj, ttype, intype, outtype, n, s)
     return
- 
+
   def Free(self):
     lib.sl_free_sketch_transform(self.obj)
     self.obj = 0
     return
- 
+
   def Apply(self, A, SA, dim):
     lib.sl_apply_sketch_transform(self.obj, A.obj, SA.obj, dim)
     return
@@ -47,7 +47,7 @@ class SketchTransform(object):
 class JLT(SketchTransform):
   def __init__(self, ctxt, intype, outtype, n, s):
     super(JLT, self).__init__(ctxt, "JLT", intype, outtype, n, s);
-    return 
+    return
 
 class CT(SketchTransform):
   def __init__(self, ctxt, intype, outtype, n, s, C):
@@ -57,31 +57,46 @@ class CT(SketchTransform):
 class FJLT(SketchTransform):
   def __init__(self, ctxt, intype, outtype, n, s):
     super(FJLT, self).__init__(ctxt, "FJLT", intype, outtype, n, s);
-    return 
+    return
 
 class CWT(SketchTransform):
   def __init__(self, ctxt, intype, outtype, n, s):
     super(CWT, self).__init__(ctxt, "CWT", intype, outtype, n, s);
-    return 
+    return
 
 class MMT(SketchTransform):
   def __init__(self, ctxt, intype, outtype, n, s):
     super(MMT, self).__init__(ctxt, "MMT", intype, outtype, n, s);
-    return 
+    return
 
 class WZT(SketchTransform):
   def __init__(self, ctxt, intype, outtype, n, s, p):
     self.obj = lib.sl_create_sketch_transform(ctxt.obj, "WZT", intype, outtype, n, s, ctypes.c_double(p))
-    return 
+    return
 
 class GaussianRFT(SketchTransform):
   def __init__(self, ctxt, intype, outtype, n, s):
     super(GaussianRFT, self).__init__(ctxt, "GaussianRFT", intype, outtype, n, s);
-    return 
+    return
 
 class LaplacianRFT(SketchTransform):
   def __init__(self, ctxt, intype, outtype, n, s):
     super(LaplacianRFT, self).__init__(ctxt, "LaplacianRFT", intype, outtype, n, s);
     return
+
+
+#TODO: distinguish elemental vs. combBLAS implementation (this is just a test)
+class CWT_CB(object):
+    def __init__(self, ctxt, intype, outtype, n, s):
+        self.obj = lib.Sl_CreateSketchTransform(ctxt.obj, "CWT_CB", intype, outtype, n, s)
+
+    def Free(self):
+        lib.Sl_FreeSketchTransform(self.obj)
+        self.obj = 0
+
+    def Apply(self, A, SA, dim):
+        Aobj  = ctypes.c_void_p(long(A.this))
+        SAobj = ctypes.c_void_p(long(SA.this))
+        lib.Sl_ApplySketchTransform(self.obj, Aobj, SAobj, dim)
 
 

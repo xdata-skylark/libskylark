@@ -23,4 +23,8 @@ struct hash_transform_t {
     #include "sparset_Elemental.hpp"
 #endif
 
+#ifdef WITH_COMBBLAS
+    #include "sparset_CombBLAS.hpp"
+#endif
+
 #endif // SPARSET_HPP

@@ -42,7 +42,7 @@ set (PACKAGE_STRING \"SKYLARK\")
 set (PACKAGE_VERSION \"0.1\")
 set (VERSION \"0.1\")
 
-configure_file(config.h.in ${CMAKE_SOURCE_DIR}/config.h)
+#configure_file(config.h.in ${CMAKE_SOURCE_DIR}/config.h)
 
 #--------------------------------------------------------------------------
 # Flags
@@ -125,9 +125,8 @@ set (SKYLARK_LIBS
 
 #-----------------------------------------------------------------------------
 # options
-# Should Elemental be an option for now?
 
-option (USE_ELEMENTAL "Whether Elemental Matrix support should be built" ON)
+option (USE_ELEMENTAL "Build with Elemental Matrix support" ON)
 if (USE_ELEMENTAL)
   set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules")
   find_package(Elemental REQUIRED)
@@ -142,6 +141,19 @@ if (USE_ELEMENTAL)
          FORCE)
   endif (Elemental_FOUND)
 endif (USE_ELEMENTAL)
+
+
+option (WITH_COMBBLAS "Build with CombBLAS Matrix support" OFF)
+if (WITH_COMBBLAS)
+  set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules")
+  find_package(CombBLAS REQUIRED)
+  if (CombBLAS_FOUND)
+    include_directories (${CombBLAS_INCLUDE_DIR})
+    link_directories (${CombBLAS_LIBRARY_DIR})
+    add_definitions(-DCOMBBLAS_BOOST)
+  endif (CombBLAS_FOUND)
+endif (WITH_COMBBLAS)
+
 
 option (BUILD_PYTHON "Whether we should build the python interface" ON)
 if (BUILD_PYTHON)

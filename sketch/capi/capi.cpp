@@ -1,6 +1,13 @@
 #include "skylark.hpp"
 #include "sketch/capi/sketchc.hpp"
 
+#ifdef WITH_COMBBLAS
+#include "CombBLAS.h"
+#include "SpParMat.h"
+#include "SpParVec.h"
+#include "DenseParVec.h"
+#endif
+
 # define STRCMP_TYPE(STR, TYPE) \
     if (std::strcmp(str, #STR) == 0) \
         return TYPE;
@@ -9,6 +16,7 @@ static sketchc::matrix_type_t str2matrix_type(char *str) {
     STRCMP_TYPE(Matrix, sketchc::MATRIX);
     STRCMP_TYPE(DistMatrix_VC_STAR, sketchc::DIST_MATRIX_VC_STAR);
     STRCMP_TYPE(DistMatrix_VR_STAR, sketchc::DIST_MATRIX_VR_STAR);
+    STRCMP_TYPE(DistSparseMatrix,   sketchc::DIST_SPARSE_MATRIX);
 
     return sketchc::MATRIX_TYPE_ERROR;
 }
@@ -18,6 +26,7 @@ static sketchc::transform_type_t str2transform_type(char *str) {
     STRCMP_TYPE(CT, sketchc::CT);
     STRCMP_TYPE(FJLT, sketchc::FJLT);
     STRCMP_TYPE(CWT, sketchc::CWT);
+    STRCMP_TYPE(CWT_CB, sketchc::CWT_CB);
     STRCMP_TYPE(MMT, sketchc::MMT);
     STRCMP_TYPE(WZT, sketchc::WZT);
     STRCMP_TYPE(GaussianRFT, sketchc::GaussianRFT);
@@ -32,6 +41,11 @@ typedef elem::Matrix<double> Matrix;
 typedef elem::DistMatrix<double, elem::VR, elem::STAR> DistMatrix_VR_STAR;
 typedef elem::DistMatrix<double, elem::VC, elem::STAR> DistMatrix_VC_STAR;
 #endif
+#ifdef WITH_COMBBLAS
+typedef SpDCCols< size_t, double > col_t;
+typedef SpParMat< size_t, double, col_t > DistSparseMatrix_t;
+#endif
+
 
 extern "C" {
 
@@ -183,6 +197,13 @@ SKYLARK_EXTERN_API sketchc::sketch_transform_t
     sketch::FJLT_t, DistMatrix_VC_STAR, Matrix);
 
 #endif
+#ifdef WITH_COMBBLAS
+
+  AUTO_NEW_DISPATCH(sketchc::CWT_CB,
+      sketchc::DIST_SPARSE_MATRIX, sketchc::DIST_SPARSE_MATRIX,
+      sketch::CWT_t, DistSparseMatrix_t, DistSparseMatrix_t);
+
+#endif
 #endif
 
   // TODO error handling
@@ -276,6 +297,13 @@ SKYLARK_EXTERN_API
   AUTO_DELETE_DISPATCH(sketchc::FJLT,
     sketchc::DIST_MATRIX_VC_STAR, sketchc::MATRIX,
     sketch::FJLT_t, DistMatrix_VC_STAR, Matrix);
+
+#endif
+#ifdef WITH_COMBBLAS
+
+  AUTO_DELETE_DISPATCH(sketchc::CWT_CB,
+      sketchc::DIST_SPARSE_MATRIX, sketchc::DIST_SPARSE_MATRIX,
+      sketch::CWT_t, DistSparseMatrix_t, DistSparseMatrix_t);
 
 #endif
 #endif
@@ -379,6 +407,13 @@ SKYLARK_EXTERN_API void
   AUTO_APPLY_DISPATCH(sketchc::FJLT,
       sketchc::DIST_MATRIX_VC_STAR, sketchc::MATRIX,
       sketch::FJLT_t, DistMatrix_VC_STAR, Matrix);
+
+#endif
+#ifdef WITH_COMBBLAS
+
+  AUTO_APPLY_DISPATCH(sketchc::CWT_CB,
+      sketchc::DIST_SPARSE_MATRIX, sketchc::DIST_SPARSE_MATRIX,
+      sketch::CWT_t, DistSparseMatrix_t, DistSparseMatrix_t);
 
 #endif
 #endif

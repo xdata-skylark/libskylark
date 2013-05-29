@@ -2,7 +2,11 @@ import unittest
 import numpy as np
 from mpi4py import MPI
 
+#TODO: move common helpers to a more suitable directory
+import os,sys
+sys.path.insert(1, os.path.join(sys.path[0], '../../functionality'))
 from helper.elemental_matrix import create_elemental_matrix
+
 from helper.perftest import perftest
 from skylark import cskylark
 

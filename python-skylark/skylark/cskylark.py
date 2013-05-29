@@ -30,6 +30,7 @@ class Context(object):
   def Rank(self):
     return lib.sl_context_rank(self.obj)
 
+
 class SketchTransform(object):
   def __init__(self, ctxt, ttype, intype, outtype, n, s):
     self.obj = lib.sl_create_sketch_transform(ctxt.obj, ttype, intype, outtype, n, s)
@@ -41,8 +42,20 @@ class SketchTransform(object):
     return
 
   def Apply(self, A, SA, dim):
-    lib.sl_apply_sketch_transform(self.obj, A.obj, SA.obj, dim)
+    #TODO: is there a more elegant way to distinguish matrix types?
+    if str(type(A)).find("elem") is not -1:
+        Aobj  = A.obj
+        SAobj = SA.obj
+    elif str(type(A)).find("pyCombBLAS") is not -1:
+        Aobj  = ctypes.c_void_p(long(A.this))
+        SAobj = ctypes.c_void_p(long(SA.this))
+    else:
+        print("unknown type of matrix!")
+        return -1
+
+    lib.sl_apply_sketch_transform(self.obj, Aobj, SAobj, dim)
     return
+
 
 class JLT(SketchTransform):
   def __init__(self, ctxt, intype, outtype, n, s):
@@ -83,20 +96,4 @@ class LaplacianRFT(SketchTransform):
   def __init__(self, ctxt, intype, outtype, n, s):
     super(LaplacianRFT, self).__init__(ctxt, "LaplacianRFT", intype, outtype, n, s);
     return
-
-
-#TODO: distinguish elemental vs. combBLAS implementation (this is just a test)
-class CWT_CB(object):
-    def __init__(self, ctxt, intype, outtype, n, s):
-        self.obj = lib.Sl_CreateSketchTransform(ctxt.obj, "CWT_CB", intype, outtype, n, s)
-
-    def Free(self):
-        lib.Sl_FreeSketchTransform(self.obj)
-        self.obj = 0
-
-    def Apply(self, A, SA, dim):
-        Aobj  = ctypes.c_void_p(long(A.this))
-        SAobj = ctypes.c_void_p(long(SA.this))
-        lib.Sl_ApplySketchTransform(self.obj, Aobj, SAobj, dim)
-
 

@@ -20,7 +20,6 @@ enum transform_type_t {
     CT,
     FJLT,
     CWT,
-    CWT_CB,
     MMT,
     WZT,
     GaussianRFT,

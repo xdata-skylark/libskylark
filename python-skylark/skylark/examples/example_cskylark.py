@@ -1,10 +1,11 @@
 import elem
 from skylark import cskylark
+from mpi4py import MPI
 
 elem.Initialize()
 
 # Create a matrix to sketch
-# TODO: non uniform function in elemental interface... 
+# TODO: non uniform function in elemental interface...
 grid = elem.Grid()
 A = elem.DistMat_VR_STAR( grid )
 A.Resize(10,5)

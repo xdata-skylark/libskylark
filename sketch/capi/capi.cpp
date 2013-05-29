@@ -26,7 +26,6 @@ static sketchc::transform_type_t str2transform_type(char *str) {
     STRCMP_TYPE(CT, sketchc::CT);
     STRCMP_TYPE(FJLT, sketchc::FJLT);
     STRCMP_TYPE(CWT, sketchc::CWT);
-    STRCMP_TYPE(CWT_CB, sketchc::CWT_CB);
     STRCMP_TYPE(MMT, sketchc::MMT);
     STRCMP_TYPE(WZT, sketchc::WZT);
     STRCMP_TYPE(GaussianRFT, sketchc::GaussianRFT);
@@ -199,7 +198,7 @@ SKYLARK_EXTERN_API sketchc::sketch_transform_t
 #endif
 #ifdef WITH_COMBBLAS
 
-  AUTO_NEW_DISPATCH(sketchc::CWT_CB,
+  AUTO_NEW_DISPATCH(sketchc::CWT,
       sketchc::DIST_SPARSE_MATRIX, sketchc::DIST_SPARSE_MATRIX,
       sketch::CWT_t, DistSparseMatrix_t, DistSparseMatrix_t);
 
@@ -301,7 +300,7 @@ SKYLARK_EXTERN_API
 #endif
 #ifdef WITH_COMBBLAS
 
-  AUTO_DELETE_DISPATCH(sketchc::CWT_CB,
+  AUTO_DELETE_DISPATCH(sketchc::CWT,
       sketchc::DIST_SPARSE_MATRIX, sketchc::DIST_SPARSE_MATRIX,
       sketch::CWT_t, DistSparseMatrix_t, DistSparseMatrix_t);
 
@@ -411,7 +410,7 @@ SKYLARK_EXTERN_API void
 #endif
 #ifdef WITH_COMBBLAS
 
-  AUTO_APPLY_DISPATCH(sketchc::CWT_CB,
+  AUTO_APPLY_DISPATCH(sketchc::CWT,
       sketchc::DIST_SPARSE_MATRIX, sketchc::DIST_SPARSE_MATRIX,
       sketch::CWT_t, DistSparseMatrix_t, DistSparseMatrix_t);
 

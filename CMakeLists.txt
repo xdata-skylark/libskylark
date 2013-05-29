@@ -151,6 +151,7 @@ if (WITH_COMBBLAS)
     include_directories (${CombBLAS_INCLUDE_DIR})
     link_directories (${CombBLAS_LIBRARY_DIR})
     add_definitions(-DCOMBBLAS_BOOST)
+    add_definitions(-D__STDC_LIMIT_MACROS)
   endif (CombBLAS_FOUND)
 endif (WITH_COMBBLAS)
 

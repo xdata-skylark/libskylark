@@ -88,9 +88,7 @@ set(BOOST_MIN_VERSION 1.49.0)
 find_package (Boost
               REQUIRED
               mpi
-              mpi_python
               serialization
-              python
               random)
 if (Boost_FOUND)
   include_directories (${Boost_INCLUDE_DIRS})

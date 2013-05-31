@@ -30,7 +30,8 @@ enum matrix_type_t {
     MATRIX_TYPE_ERROR,
     MATRIX,                     /**< Dense elemental matrix */
     DIST_MATRIX_VC_STAR,
-    DIST_MATRIX_VR_STAR
+    DIST_MATRIX_VR_STAR,
+    DIST_SPARSE_MATRIX
 };
 
 struct sketch_transform_t {

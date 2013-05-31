@@ -30,3 +30,6 @@
 
 /* Do we have want to build with fftw */
 #cmakedefine SKYLARK_HAVE_FFTW 1
+
+/* Do we have want to build with CombBLAS */
+#cmakedefine WITH_COMBBLAS

@@ -30,24 +30,37 @@ class Context(object):
   def Rank(self):
     return lib.sl_context_rank(self.obj)
 
+
 class SketchTransform(object):
   def __init__(self, ctxt, ttype, intype, outtype, n, s):
     self.obj = lib.sl_create_sketch_transform(ctxt.obj, ttype, intype, outtype, n, s)
     return
- 
+
   def Free(self):
     lib.sl_free_sketch_transform(self.obj)
     self.obj = 0
     return
- 
+
   def Apply(self, A, SA, dim):
-    lib.sl_apply_sketch_transform(self.obj, A.obj, SA.obj, dim)
+    #TODO: is there a more elegant way to distinguish matrix types?
+    if str(type(A)).find("elem") is not -1:
+        Aobj  = A.obj
+        SAobj = SA.obj
+    elif str(type(A)).find("pyCombBLAS") is not -1:
+        Aobj  = ctypes.c_void_p(long(A.this))
+        SAobj = ctypes.c_void_p(long(SA.this))
+    else:
+        print("unknown type of matrix!")
+        return -1
+
+    lib.sl_apply_sketch_transform(self.obj, Aobj, SAobj, dim)
     return
+
 
 class JLT(SketchTransform):
   def __init__(self, ctxt, intype, outtype, n, s):
     super(JLT, self).__init__(ctxt, "JLT", intype, outtype, n, s);
-    return 
+    return
 
 class CT(SketchTransform):
   def __init__(self, ctxt, intype, outtype, n, s, C):
@@ -57,31 +70,30 @@ class CT(SketchTransform):
 class FJLT(SketchTransform):
   def __init__(self, ctxt, intype, outtype, n, s):
     super(FJLT, self).__init__(ctxt, "FJLT", intype, outtype, n, s);
-    return 
+    return
 
 class CWT(SketchTransform):
   def __init__(self, ctxt, intype, outtype, n, s):
     super(CWT, self).__init__(ctxt, "CWT", intype, outtype, n, s);
-    return 
+    return
 
 class MMT(SketchTransform):
   def __init__(self, ctxt, intype, outtype, n, s):
     super(MMT, self).__init__(ctxt, "MMT", intype, outtype, n, s);
-    return 
+    return
 
 class WZT(SketchTransform):
   def __init__(self, ctxt, intype, outtype, n, s, p):
     self.obj = lib.sl_create_sketch_transform(ctxt.obj, "WZT", intype, outtype, n, s, ctypes.c_double(p))
-    return 
+    return
 
 class GaussianRFT(SketchTransform):
   def __init__(self, ctxt, intype, outtype, n, s):
     super(GaussianRFT, self).__init__(ctxt, "GaussianRFT", intype, outtype, n, s);
-    return 
+    return
 
 class LaplacianRFT(SketchTransform):
   def __init__(self, ctxt, intype, outtype, n, s):
     super(LaplacianRFT, self).__init__(ctxt, "LaplacianRFT", intype, outtype, n, s);
     return
-
 

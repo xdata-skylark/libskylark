@@ -4,3 +4,4 @@ examples/elemental
 examples/elemental.dbg
 config.h
 build
+*.pyc

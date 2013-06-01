@@ -13,7 +13,7 @@
 #include "parser.hpp"
 
 /*******************************************/
-namespace mpi  =  boost::mpi;
+namespace bmpi =  boost::mpi;
 namespace skys =  skylark::sketch;
 /*******************************************/
 
@@ -29,10 +29,10 @@ typedef elem::DistMatrix<double, elem::VR, elem::STAR> DistMatrixType;
 
 int main (int argc, char** argv) {
     /* Initialize MPI */
-    mpi::environment env (argc, argv);
+    bmpi::environment env (argc, argv);
 
     /* Create a global communicator */
-    mpi::communicator world;
+    bmpi::communicator world;
 
     /* MPI sends argc and argv everywhere --- parse everywhere */
     parse_parameters (argc,argv);
@@ -163,7 +163,7 @@ int main (int argc, char** argv) {
 
         }
     } else {
-        std::cout << "We only have JLT/FJLT/Sparse sketching. Please retry" << 
+        std::cout << "We only have JLT/FJLT/Sparse sketching. Please retry" <<
             std::endl;
     }
 

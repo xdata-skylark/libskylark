@@ -187,6 +187,7 @@ http://matplotlib.org/sampledoc/extensions.html
 
 and set SPHINXEXT environment variable to point to its location. 
 
+
 (9) Python Packages:
 
 We use the following Python packages, most of which can be installed

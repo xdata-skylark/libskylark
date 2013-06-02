@@ -42,7 +42,7 @@ import sys, os
 #          'numpydoc']
 
 
-sys.path.insert(0, os.path.abspath('../sphinxext'))
+sys.path.insert(0, os.path.abspath(os.environ["SPHINXEXT"])) 
 
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.pngmath', 'numpydoc',
               'sphinx.ext.intersphinx', 'sphinx.ext.coverage',

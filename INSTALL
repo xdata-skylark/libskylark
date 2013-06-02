@@ -155,6 +155,10 @@ This will install python bindings in ${PYTHON_SITE_PACKAGES}.
 (7.g) Optionally build Doxygen documentation:
 
   #make doc
+ 
+ or the sphinx documentation:
+   
+   #make sphinx-doc
 
 This will create a folder "Documentation" containing the Doxygen
 documentation of Skylark.

@@ -50,4 +50,7 @@
 /** Include all the sketching primitives */
 #include "sketch/sketch.hpp"
 
+/** Include all NLA primitives */
+#include "nla/SVD_Elemental.hpp"
+
 #endif // SKYLARK_HPP

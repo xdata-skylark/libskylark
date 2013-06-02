@@ -13,10 +13,7 @@ skylark
   
    installation
    sketching
-   io
-   ml
-   tasks	
-	 
+   
 Indices and tables
 ==================
 

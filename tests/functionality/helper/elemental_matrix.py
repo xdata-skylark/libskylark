@@ -22,6 +22,6 @@ def create_elemental_matrix(height = 10, width = 5):
         j = rowShift + jLocal * rowStride
         for iLocal in xrange(0, localHeight):
             i = colShift + iLocal * colStride
-            data[iLocal + jLocal * ldim] = i - j
+            data[iLocal + jLocal * ldim] = (i - j) / (localWidth * localHeight)
 
     return A

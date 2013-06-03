@@ -1,6 +1,7 @@
 import unittest
 import numpy as np
 from mpi4py import MPI
+import math
 
 from helper.elemental_matrix import create_elemental_matrix
 from skylark import cskylark
@@ -10,40 +11,62 @@ import elem
 class CWT_test(unittest.TestCase):
 
     def setUp(self):
-        # Create a matrix to sketch
         elem.Initialize()
-        self.A = create_elemental_matrix(10, 5)
 
-        # Initilize context
-        self.ctxt = cskylark.Context(123834)
-
-        #FIXME:
-        self.exp_col_norm = 24.7991935353
-        self.exp_row_norm = 26.3628526529
+        #FIXME: accuracy?
+        self.num_repeats = 5
+        self.accuracy    = 1e-4
 
     def tearDown(self):
-        self.A.Free()
-        self.ctxt.Free()
         elem.Finalize()
 
-    #FIXME: how many applications/averages
     def test_apply_colwise(self):
-        S  = cskylark.CWT(self.ctxt, "DistMatrix_VR_STAR", "Matrix", 10, 6)
-        SA = elem.Mat()
-        SA.Resize(6, 5)
-        S.Apply(self.A, SA, 1)
 
-        self.assertAlmostEqual(np.linalg.norm(SA.Data()), self.exp_col_norm, places=5)
+        norm = 0.0
+        A = create_elemental_matrix(10000, 100)
+        norm_exp = np.linalg.norm(A.Data())
 
-    #FIXME: how many applications/averages
+        for i in range(self.num_repeats):
+
+            #FIXME: how to choose seeds?
+            ctxt = cskylark.Context(i)
+            S  = cskylark.CWT(ctxt, "DistMatrix_VR_STAR", "Matrix", 10000, 1000)
+            SA = elem.Mat()
+            SA.Resize(1000, 100)
+            S.Apply(A, SA, 1)
+
+            norm += np.linalg.norm(SA.Data())
+
+        norm /= self.num_repeats
+
+        self.assertLess(math.fabs(norm - norm_exp) / norm, self.accuracy)
+
+        ctxt.Free()
+        A.Free()
+
     def test_apply_rowwise(self):
-        S  = cskylark.CWT(self.ctxt, "DistMatrix_VR_STAR", "Matrix", 5, 3)
-        SA = elem.Mat()
-        SA.Resize(10, 3)
-        S.Apply(self.A, SA, 2)
 
-        self.assertAlmostEqual(np.linalg.norm(SA.Data()), self.exp_row_norm, places=5)
+        norm = 0.0
+        A = create_elemental_matrix(100, 10000)
+        norm_exp = np.linalg.norm(A.Data())
 
+        for i in range(self.num_repeats):
+
+            #FIXME: how to choose seeds?
+            ctxt = cskylark.Context(i)
+            S  = cskylark.CWT(ctxt, "DistMatrix_VR_STAR", "Matrix", 10000, 1000)
+            SA = elem.Mat()
+            SA.Resize(100, 1000)
+            S.Apply(A, SA, 2)
+
+            norm += np.linalg.norm(SA.Data())
+
+        norm /= self.num_repeats
+
+        self.assertLess(math.fabs(norm - norm_exp) / norm, self.accuracy)
+
+        ctxt.Free()
+        A.Free()
 
 if __name__ == '__main__':
     unittest.main()

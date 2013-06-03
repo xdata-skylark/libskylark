@@ -24,9 +24,9 @@ installation.
 a Linux system, you might be able to use "yum" or "apt-get" to install these
 libraries for you. ATLAS is a good free library (google for it).
 
-(3) COMBINATORIAL BLAS: Skylark uses Combinatorial blas for sparse matrix support. 
+(3) COMBINATORIAL BLAS: Skylark uses Combinatorial blas for sparse matrix support.
 Please install it from  http://gauss.cs.ucsb.edu/~aydin/CombBLAS/html/
-Set COMBBLAS_ROOT as the base directory of the Combinatorial Blas installation. 
+Set COMBBLAS_ROOT as the base directory of the Combinatorial Blas installation.
 We look for libraries under COMBBLAS_ROOT/build.
 
 (4) FFTW 3: On a linux system can be install using apt-get or yum. Please Set FFTW_ROOT.
@@ -73,21 +73,21 @@ errors that might have occurred.
     --- Boost.Mpi python bindings are present in <INSTALL-HERE>/lib under the
     name "mpi.so". To use Boost.Mpi, make sure your PYTHONPATH is appended
     with <INSTALL-HERE>/lib.
- 
+
 (6) Elemental: Downloading and installing Elemental is simple. In
 fact, the dependencies of Elemental are similar to those of skylark. Elemental
 depends on MPI, BLAS/LAPACK, and CMake.  So, if you have followed all the steps above, you're all set to install Elemental!
 
-While installing Elemental 
+While installing Elemental
 please modify CMakeLists.txt to build Elemental experimental code, which includes
-ctypes based Python bindings by setting the option below to "ON": 
+ctypes based Python bindings by setting the option below to "ON":
 
 option(ELEM_EXPERIMENTAL "Build experimental code" ON)
- 
+
 Add Elemental's Python folder to PYTHONPATH:
 $ELEMENTAL_ROOT/../experimental/python
 
- 
+
 To build Elemental libraries, please follow these instructions:
 (6.a) Download Elemental from google.code.
 (6.b) Untar/Unzip everything in a directory (let's say 'elemental-src').
@@ -155,9 +155,9 @@ This will install python bindings in ${PYTHON_SITE_PACKAGES}.
 (7.g) Optionally build Doxygen documentation:
 
   #make doc
- 
+
  or the sphinx documentation:
-   
+
    #make sphinx-doc
 
 This will create a folder "Documentation" containing the Doxygen
@@ -186,17 +186,25 @@ to see all the available options.
 (8.a) Doxygen for C++ API documentation
 
 (8.b) Sphinx for End-User documentation.  Please also download
-a Sphinx extension folder from: 
+a Sphinx extension folder from:
 http://matplotlib.org/sampledoc/extensions.html
 
-and set SPHINXEXT environment variable to point to its location. 
+and set SPHINXEXT environment variable to point to its location, i.e.:
+
+  #cd /tmp
+  #svn co
+  #https://matplotlib.svn.sourceforge.net/svnroot/matplotlib/trunk/sampledoc_tut
+  #mkdir $HOME/.sphinx_ext
+  #cp sampledoc_tut/*.py $HOME/.sphinx_ext
+  #rm -rf /tmp/sampledoc_tut
+  #export SPHINXEXT=$HOME/.sphinx_ext
 
 
 (9) Python Packages:
 
 We use the following Python packages, most of which can be installed
-on an ubuntu system directly from the package manager or using 
-easy_install.  
+on an ubuntu system directly from the package manager or using
+easy_install.
 
 (9.a) numpy 1.6.1
 (9.b) scipy 0.9.0

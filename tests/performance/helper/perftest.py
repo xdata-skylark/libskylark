@@ -7,6 +7,19 @@ from mpi4py import MPI
 def perftest(f):
     def _inner(*args, **kwargs):
 
+        #TODO: is there a better way to get the class name?
+        test_class_name = "%s" % (args[0])
+        test_class_name = test_class_name.split('.')[1].split(')')[0]
+
+        function_name = getattr(f, "__name__", "<unnamed>")
+        if test_class_name.find("test") != -1:
+            function_name = function_name.split('test_')[1]
+
+        mode = "a"
+        if size == 1:
+            mode = "w"
+
+
         comm = MPI.COMM_WORLD
         rank = comm.Get_rank()
         size = comm.Get_size()
@@ -25,11 +38,11 @@ def perftest(f):
 
         if rank is 0:
             average = dt_sum[0] / size
-            print "%s took (%s / %s / %s)s" % (getattr(f, "__name__", "<unnamed>"), dt_min[0], average, dt_max[0])
+            print "%s took (%s / %s / %s)s" % (function_name, dt_min[0], average, dt_max[0])
 
-            filename = "%s_%s" % (getattr(f, "__name__", "<unnamed>"), date.today())
+            filename = "%s_%s_%s" % (test_class_name, function_name, date.today())
             measurements = "%s %s %s %s\n" % (size, dt_min[0], average, dt_max[0])
-            with open(filename, "a") as out:
+            with open(filename, mode) as out:
                 out.write(measurements)
 
     return _inner

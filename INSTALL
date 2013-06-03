@@ -192,8 +192,7 @@ http://matplotlib.org/sampledoc/extensions.html
 and set SPHINXEXT environment variable to point to its location, i.e.:
 
   #cd /tmp
-  #svn co
-  #https://matplotlib.svn.sourceforge.net/svnroot/matplotlib/trunk/sampledoc_tut
+  #svn co https://matplotlib.svn.sourceforge.net/svnroot/matplotlib/trunk/sampledoc_tut
   #mkdir $HOME/.sphinx_ext
   #cp sampledoc_tut/*.py $HOME/.sphinx_ext
   #rm -rf /tmp/sampledoc_tut

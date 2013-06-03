@@ -1,0 +1,16 @@
+Skylark
+-------
+
+This software stack provides sketching-based NLA kernels for more general
+data analysis and optimization applications; such tasks have significantly
+different input matrices and performance criteria than arise in the more
+traditional scientific computing applications. The crucial NLA kernels to be
+implemented include regression and low-rank approximations of matrices, akin
+to the Singular Value Decomposition (SVD).
+A Python interface allows to conveniently apply the kernels to be applied in
+Python applications.
+
+
+Please see INSTALL for required dependencies and compile/installation
+instructions. Note that this software stack is currently under development,
+some features are still experimental.

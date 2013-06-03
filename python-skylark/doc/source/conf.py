@@ -43,10 +43,9 @@ import sys, os
 
 
 sys.path.insert(0, os.path.abspath(os.environ["SPHINXEXT"])) 
-
+# 'sphinx.ext.intersphinx'
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.pngmath', 'numpydoc',
-              'sphinx.ext.intersphinx', 'sphinx.ext.coverage',
-              'sphinx.ext.doctest', 'sphinx.ext.autosummary']
+              'sphinx.ext.coverage','sphinx.ext.doctest', 'sphinx.ext.autosummary']
 
 
 

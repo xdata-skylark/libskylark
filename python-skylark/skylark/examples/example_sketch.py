@@ -1,6 +1,8 @@
+#!/usr/bin/python
 import skylark, skylark.sketch, skylark.cskylark
 import elem
-import pypar
+from mpi4py import MPI
+comm = MPI.COMM_WORLD
 
 m = 10
 n = 5

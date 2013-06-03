@@ -12,7 +12,9 @@ skylark
    :maxdepth: 3
   
    installation
-   
+   sketching
+   ml
+   io
    
 Indices and tables
 ==================

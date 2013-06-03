@@ -151,7 +151,7 @@ class sketchrls(object):
 		
 		m,n = A.shape
 		k = self.random_features
-		Z = self.mysketch.sketch(A, k, 'right')
+		Z = self.mysketch.sketch(A,2)
 		Z = Z*(sqrt(k)/self.bandwidth)
 		b = self.bias
 		ones_m = numpy.matrix(numpy.ones((m,1)))
@@ -183,7 +183,7 @@ class sketchrls(object):
 		m,n = X.shape
 		self.random_features = random_features
 		self.bandwidth = bandwidth
-		self.mysketch = skylark.sketch.JL(self.seed)
+		self.mysketch = skylark.sketch.JLT(n, random_features, self.seed)
 		self.bias = numpy.matrix(numpy.random.uniform(0, 2*pi, (random_features,1)))
 		Z = self.sketch(X)
 		

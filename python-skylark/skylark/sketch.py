@@ -14,22 +14,23 @@ class SkylarkError(Exception):
     pass
 
 class SketchingTransform(object):
-    def __init__(self, n, k, context=123):
+    def __init__(self, n, s, context=123):
         """
-        A sketching transform in general is a map from R^n to R^k which preserves some properties.
+        A sketching transform - in very general terms - is a dimensionality-reducing map 
+        from R^n to R^s which preserves key structural properties.
         
         Parameters
         -----------
         n : input dimension
-        k : sketching dimension
-        context : either an integer seed or a Skylark context object
+        s : sketching dimension
+        context : either an integer seed (default 123) or a Skylark Context object
         
         Returns
         --------
-        Sketch object
+        A sketch object with properties context and shape (s,n) attributes.
         """
         self.context = context
-        self.dimensions = (k , n)
+        self.shape = (s , n)
             
     def sketch(self, A, dimension = 1):
         """
@@ -55,6 +56,8 @@ class JLT(SketchingTransform):
      Examples
         --------
         Let us bring *skylark* and other relevant Python packages into our environment.
+        Here we demonstrate a non-distributed usage implemented using numpy arrays.  
+        Below, we give an example of distributed JLT transform operating on Elemental matrices.
         
         >>> import skylark, skylark.utilities, skylark.sketch
         >>> import scipy
@@ -67,17 +70,15 @@ class JLT(SketchingTransform):
         >>> d = 1000
         >>> A = numpy.random.uniform(-1.0,1.0, (n,d))
         
-        Create a sketch operator corresponding to Gaussian sketching.
+        Create a sketch operator corresponding to JLT sketching from d=1000 to s=100.
         
         >>> seed = 123 
-        >>> mysketch = skylark.sketch.JL(seed)
+        >>> s = 100 
+        >>> mysketch = skylark.sketch.JLT(d, s, seed)
         
-        Let us right-sketch A with Gaussian random matrix, to get 10% distortion with 95% probability. 
+        Let us sketch A row-wise:
         
-        >>> epsilon = 0.1
-        >>> delta = 0.05
-        >>> k = (epsilon, delta)
-        >>> B = mysketch.sketch(A, k, 'right')
+        >>> B = mysketch.sketch(A, 2)
         
         Let us compute norms of the row-vectors before and after sketching.
         
@@ -93,81 +94,44 @@ class JLT(SketchingTransform):
         
 """
     
-    def __init__(self, n, k, context): 
-        SketchingTransform.__init__(self, n, k, context)
+    def __init__(self, n, s, context=123): 
+        SketchingTransform.__init__(self, n, s, context)
         if isinstance(self.context, int):
             numpy.random.seed(self.context)
-            self.SketchingOperator = numpy.matrix(numpy.random.randn(k, n)/sqrt(k))
+            self.SketchingOperator = numpy.matrix(numpy.random.randn(s, n)/sqrt(s))
         if isinstance(self.context, cskylark.Context): 
-            self.SketchingOperator = cskylark.JLT(context, DISTMAT_STR , SKETCHMAT_STR, n, k)
+            self.SketchingOperator = cskylark.JLT(context, DISTMAT_STR , SKETCHMAT_STR, n, s)
         
     def sketch(self, A, dimension = 1):
         """
-        sketch(A, k, dimension=0)
+        sketch(A, dimension=1)
 
-        Sketch an m-by-n matrix A to k = k(epsilon, delta) dimensions, 
-        by row or column, using classic Gaussian random maps.
-
-        The sketching transform is based on a variations of the classic Johnson-Lindenstrauss Lemma [1]_. 
-        In particular, conceptually we use the construction of [2]_, which generalizes the results of 
-        [3]_ and [4]_. Note that the sparse sketch of [4]_ is implemented in SparseJL class.
-
+        Sketch an m-by-n matrix A to s dimensions using JLT transform.
 
         Parameters
         ----------
         A : m-x-n matrix
             numpy ndarray or matrix
-        k : tuple of floats, or int
-            Dimension of the low-dimensional sketched data - can either be an integer 
-            or a tuple (epsilon, delta) implicitly specifying :math:`k = 2*log(2/\delta)/\epsilon^2`
-        dimension : 'left' | 'right' 
-            left or right sketch
-        
+        dimension: 0 (columnwise), 1 (rowwise)
 
         Returns
         -----------
         
-        For left sketch, returns a k x n sketched matrix
-        for right sketch, returns a m x k sketched matrix
-
-        
-        Notes
-        -----
-        Theorem 3.1 in [2]_: For any integer n, :math:`\epsilon \in (0,0.5], \delta \in (0,1)`, 
-        set :math:`k=C \\epsilon^{-2} \\log(2\\delta^{-1})` where C is a constant. Define
-        a random map :math:`T: R^n \mapsto R^k : T(x) = \\frac{1}{\\sqrt{k}} R x` where  
-        R is a k-by-n random matrix whose elements are independent random variables with zero-mean
-        and unit variance, and have uniform subgaussian tails, then for all :math:`x\in R^n`,  
-        with probability atleast :math:`1-\\delta`, we have that 
-        
-        .. math:: (1-\epsilon) \|x\|_2 \leq \|Tx\|_2 \leq (1+\epsilon) \|x\|_2
-        
-        Gaussian or Bernoulli random variables satisfy subgaussianity.  Note that the above event also 
-        guarantees that pairwise distances between points in a pointset are also preserved. 
-
-         References
-        ----------
-        .. [1] W. B. Johnson and J. Lindenstrauss, Extensions of Lipschitz 
-               mappings into a Hilbert Space, Contemp Math 26 (1984), 189-206
-        .. [2] Jiri Matousek, On variants of the Johnson-Lindenstrauss Lemma, 
-               Random Structures and Algorithms, Vol 33, Issue 2.
-        .. [3] P. Indyk and R. Motwani, Approximate nearest neighbors: Towards removing the curse of dimensionality, 
-               Proc 30th ACM Symp Theory of Computing, 1998, pp 604-613.
-        .. [4] D. Achlioptas, Database-friendly random projections: 
-               Johnson-Lindenstrauss with binary coins, JCSS 66 (2003), 671-687.
-                              
+        For dimension=0, returns a s x n sketched matrix
+        for dimension=1, returns a m x s sketched matrix
+                               
         """
         SA = None
         
-        if isinstance(A, numpy.ndarray):
+        if not(isinstance(A, DISTMAT)):
             m,n = A.shape
             if dimension==1:
-                if self.dimensions[1] != m:
+                if self.shape[1] != m:
                         raise SkylarkError("Incompatible dimensions")
                 SA = self.SketchingOperator*A # we want to do this more efficiently than dgemm
                 
             if dimension==2:   
-                if self.dimensions[1] != n:
+                if self.shape[1] != n:
                         raise SkylarkError("Incompatible dimensions")
                 SA = A*self.SketchingOperator.T
         
@@ -175,13 +139,13 @@ class JLT(SketchingTransform):
             SA = elem.Mat()
             m = A.Height()
             n = A.Width() 
-            k = self.dimensions[0]
+            k = self.shape[0]
             if dimension==1:
-                if self.dimensions[1] != m:
+                if self.shape[1] != m:
                         raise SkylarkError("Incompatible dimensions")
                 SA.Resize(k, n)
             if dimension==2:
-                if self.dimensions[1] != n:
+                if self.shape[1] != n:
                         raise SkylarkError("Incompatible dimensions")
                 SA.Resize(m, k)
             print "Applying..."
@@ -240,7 +204,7 @@ class FJLT(object):
     
     def sketch(self, A, k, dimension="left"):
         """
-        Fast Johnson Lindenstrauss Transform (Ailon and Chazelle, 2009 [5]_)
+        Fast Johnson Lindenstrauss Transform
         
         Currently uses hashing based sketch for the "P" matrix in P*H*D. 
         Such a sketch also works as shown by Matousek. 
@@ -258,18 +222,7 @@ class FJLT(object):
         Returns
         -----------
         For left sketch, returns a k x n sketched matrix
-        for right sketch, returns a m x k sketched matrix
-        
-        References
-        ----------
-        .. [5] The Fast Johnson-Lindenstrauss Transform and Approximate Nearest Neighbors, 
-            N. Ailon, B. Chazelle, SIAM J. Comput. 39 (2009), 302-322.
-            
-        To do
-        ------------
-        1. Do we need to allow iterating a few times?
-        2. Need to implement sampling.
-             
+        for right sketch, returns a m x k sketched matrix     
         """
         numpy.random.seed(self.seed)
         m,n = A.shape

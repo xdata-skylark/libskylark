@@ -9,5 +9,5 @@ Parallel IO in Skylark
 Example
 --------
 
-.. literalinclude:: ../../skylark/examples/exampleIO.py
+.. literalinclude:: ../../skylark/examples/example_IO.py
 

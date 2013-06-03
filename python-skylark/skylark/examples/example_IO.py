@@ -1,3 +1,4 @@
+#/usr/bin/python
 """
 Created on April 8, 2013.
 @author: Vikas Sindhwani (vsindhw@us.ibm.com)
@@ -5,25 +6,27 @@ Created on April 8, 2013.
 import h5py
 import elem
 import numpy
-import pypar
-import skylark
+from mpi4py import MPI
+import skylark, skylark.io
+
+comm = MPI.COMM_WORLD
 
 # create a HDF5 file.
-filename = 'myfile.hdf5'
+filename = 'mydataset.hdf5'
    
-# create a 5 x 10 dat matrix and dump into. 
-if pypar.rank() == 0:
+# create a 5 x 10 dat matrix and dump into filename 
+if comm.Get_rank() == 0:
         m = 8
         n = 10
-        writer = skylark.ParallelIO.hdf5(filename, "w")
+        writer = skylark.io.hdf5(filename, "w")
         writer.write_dense(numpy.array(range(1,81)).reshape(m,n), dataset = 'MyDataset')
         writer.close()
         
 # Let all processes wait till the file is created.
-pypar.barrier()
+comm.barrier()
     
 # All processes create a reader object associated with the file  and query it to get the matrix dimensions
-reader = skylark.ParallelIO.hdf5(filename, "r")
+reader = skylark.io.hdf5(filename, "r")
 (m, n) = reader.dimensions("MyDataset")
     
 # Prepare Elemental matrix of size (m,n) for reading.
@@ -42,4 +45,3 @@ reader.close()
 A.Print("A - final rank=%d" % grid.Rank())
     
 elem.Finalize()
-pypar.finalize()

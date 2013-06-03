@@ -1,3 +1,4 @@
+#!/usr/bin/python
 from mpi4py import MPI
 from skylark import cskylark
 

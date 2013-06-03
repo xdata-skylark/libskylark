@@ -15,6 +15,9 @@ lib.sl_context_size.restype = c_int
 lib.sl_create_sketch_transform.restype = c_void_p
 
 class Context(object):
+  """
+  Create a Skylark Context Object
+  """
   def __init__(self, seed):
     self.obj = lib.sl_create_default_context(seed)
     return

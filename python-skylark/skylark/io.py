@@ -10,7 +10,6 @@ Created on April 8, 2013.
 import h5py
 import elem
 import numpy, scipy, scipy.sparse
-import pypar
 import argparse
 
 class hdf5(object):

@@ -15,14 +15,20 @@ def generate_plot(fname, output_dir):
     pylab.title("%s Performance" % (name))
     pylab.ylabel("time [s]")
     pylab.savefig("%s/%s.png" % (output_dir, fname))
+    return "%s.png" % (fname)
 
 
 import os
 import glob
 def generate_plots(input_dir, output_dir):
+    html = ""
     os.chdir(input_dir)
     for infile in glob.glob("*_test_*.perf"):
-        generate_plot(infile, output_dir)
+        png_file = generate_plot(infile, output_dir)
+        html += "<img src=\"%s\" width=\"450px\">\n" % (png_file)
+
+    with open(output_dir + "/latest.html", "w") as out:
+        out.write(html)
 
 
 import sys

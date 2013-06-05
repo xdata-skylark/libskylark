@@ -12,7 +12,7 @@ from skylark import cskylark
 
 import elem
 
-class CWT_test(unittest.TestCase):
+class JLT_test(unittest.TestCase):
 
     def setUp(self):
         # Create a matrix to sketch
@@ -30,7 +30,7 @@ class CWT_test(unittest.TestCase):
     @perftest
     def test_apply_colwise(self):
         A  = create_elemental_matrix(10000, 100)
-        S  = cskylark.CWT(self.ctxt, "DistMatrix_VR_STAR", "Matrix", 10000, 1000)
+        S  = cskylark.JLT(self.ctxt, "DistMatrix_VR_STAR", "Matrix", 10000, 1000)
         SA = elem.Mat()
         SA.Resize(1000, 100)
         S.Apply(A, SA, 1)
@@ -42,7 +42,7 @@ class CWT_test(unittest.TestCase):
     @perftest
     def test_apply_rowwise(self):
         A  = create_elemental_matrix(100, 10000)
-        S  = cskylark.CWT(self.ctxt, "DistMatrix_VR_STAR", "Matrix", 10000, 1000)
+        S  = cskylark.JLT(self.ctxt, "DistMatrix_VR_STAR", "Matrix", 10000, 1000)
         SA = elem.Mat()
         SA.Resize(100, 1000)
         S.Apply(A, SA, 2)

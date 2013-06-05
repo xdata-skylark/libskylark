@@ -16,8 +16,8 @@ def perftest(f):
             function_name = function_name.split('test_')[1]
 
         mode = "a"
-        if size == 1:
-            mode = "w"
+        #if size == 1:
+            #mode = "w"
 
 
         comm = MPI.COMM_WORLD
@@ -40,7 +40,7 @@ def perftest(f):
             average = dt_sum[0] / size
             print "%s took (%s / %s / %s)s" % (function_name, dt_min[0], average, dt_max[0])
 
-            filename = "%s_%s_%s" % (test_class_name, function_name, date.today())
+            filename = "%s_%s_%s.perf" % (test_class_name, function_name, date.today())
             measurements = "%s %s %s %s\n" % (size, dt_min[0], average, dt_max[0])
             with open(filename, mode) as out:
                 out.write(measurements)

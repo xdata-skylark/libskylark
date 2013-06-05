@@ -7,6 +7,7 @@ import pylab
 
 
 def generate_plot(fname, output_dir):
+    print("generating plot for %s" % (fname))
     name = fname[:fname.rfind('_')]
 
     pylab.plotfile(fname, cols=(0,1,2,3), delimiter=' ',

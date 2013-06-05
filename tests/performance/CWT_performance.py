@@ -4,8 +4,11 @@ from mpi4py import MPI
 
 #TODO: move common helpers to a more suitable directory
 import os,sys
-sys.path.insert(1, os.path.join(sys.path[0], '../../functionality'))
-from helper.elemental_matrix import create_elemental_matrix
+path = "%s" % (sys.path[0])
+path.rstrip('/')
+path = path[:path.rfind('/')]
+sys.path.append(path + '/functionality/helper')
+from elemental_matrix import create_elemental_matrix
 
 from helper.perftest import perftest
 from skylark import cskylark

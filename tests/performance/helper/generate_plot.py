@@ -4,11 +4,9 @@ import matplotlib
 # do not use any X backend
 matplotlib.use('Agg')
 import pylab
+
+
 import csv
-
-from datetime import date
-
-
 def generate_plot(fname, output_dir):
     print("generating plot for %s" % (fname))
     name = fname[:fname.rfind('_')]
@@ -23,7 +21,8 @@ def generate_plot(fname, output_dir):
 
     pylab.plotfile(fname, cols=(0,1,2,3), delimiter=' ',
             names=['$n_p$', 'min', 'avg', 'max'], subplots=False,
-            plotfuncs={1:'semilogy', 2:'semilogy', 3:'semilogy'})
+            plotfuncs={1:'semilogy', 2:'semilogy', 3:'semilogy'},
+            marker='s')
     pylab.title("%s Performance" % (name))
     pylab.ylabel("time [s]")
     pylab.xticks(procs)
@@ -33,13 +32,14 @@ def generate_plot(fname, output_dir):
 
 import os
 import glob
+from datetime import date
 def generate_plots(input_dir, output_dir):
     html = "<h1>Performance on %s</h1>\n" % (date.today())
     os.chdir(input_dir)
     for infile in glob.glob("*_test_*.perf"):
         png_file = generate_plot(infile, output_dir)
-        html += "<a href=\"%s\">\n" % (png_file)
-        html += "<img src=\"%s\" width=\"450px\">\n" % (png_file)
+        html += "<a href=\"%s\">" % (png_file)
+        html += "<img src=\"%s\" width=\"450px\">" % (png_file)
         html += "</a>\n"
 
     html += "<hr>\n"

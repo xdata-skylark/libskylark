@@ -5,6 +5,8 @@ import matplotlib
 matplotlib.use('Agg')
 import pylab
 
+from datetime import date
+
 
 def generate_plot(fname, output_dir):
     print("generating plot for %s" % (fname))
@@ -21,7 +23,7 @@ def generate_plot(fname, output_dir):
 import os
 import glob
 def generate_plots(input_dir, output_dir):
-    html = ""
+    html = "<h1>Performance on %s</h1>\n" % (date.today())
     os.chdir(input_dir)
     for infile in glob.glob("*_test_*.perf"):
         png_file = generate_plot(infile, output_dir)

@@ -23,6 +23,8 @@ class CWT_test(unittest.TestCase):
 
         # Initilize context
         self.ctxt = cskylark.Context(123834)
+        self.n    = 100000
+        self.sn   = 1000
 
 
     def tearDown(self):
@@ -32,10 +34,10 @@ class CWT_test(unittest.TestCase):
 
     @perftest
     def test_apply_colwise(self):
-        A  = create_elemental_matrix(10000, 100)
-        S  = cskylark.CWT(self.ctxt, "DistMatrix_VR_STAR", "Matrix", 10000, 1000)
+        A  = create_elemental_matrix(self.n, 100)
+        S  = cskylark.CWT(self.ctxt, "DistMatrix_VR_STAR", "Matrix", self.n, self.sn)
         SA = elem.Mat()
-        SA.Resize(1000, 100)
+        SA.Resize(self.sn, 100)
         S.Apply(A, SA, 1)
 
         #TODO: fail test if performance drops by a large factor
@@ -44,10 +46,10 @@ class CWT_test(unittest.TestCase):
 
     @perftest
     def test_apply_rowwise(self):
-        A  = create_elemental_matrix(100, 10000)
-        S  = cskylark.CWT(self.ctxt, "DistMatrix_VR_STAR", "Matrix", 10000, 1000)
+        A  = create_elemental_matrix(100, self.n)
+        S  = cskylark.CWT(self.ctxt, "DistMatrix_VR_STAR", "Matrix", self.n, self.sn)
         SA = elem.Mat()
-        SA.Resize(100, 1000)
+        SA.Resize(100, self.sn)
         S.Apply(A, SA, 2)
 
         #TODO: fail test if performance drops by a large factor

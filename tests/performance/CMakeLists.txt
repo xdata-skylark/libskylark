@@ -7,7 +7,7 @@ foreach (TEST ${PY_TEST_LIST})
     string (REGEX REPLACE "([a-zA-Z]+)_performance.py" "\\1" NAME ${TEST})
 
     #FIXME: fix number of procs range with CMAKE config
-    foreach(val RANGE 1 4 1)
+    foreach(val RANGE 1 16 1)
         add_test(NAME Perf${NAME}_np${val}
             COMMAND mpirun -np ${val} ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/${TEST}
         )

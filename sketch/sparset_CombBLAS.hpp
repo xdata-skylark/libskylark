@@ -78,17 +78,12 @@ private:
 
         // extract columns of matrix
         col_t &data = A.seq();
+        size_t matrix_size = sketch_of_A.getncol() * sketch_of_A.getnrow();
 
         for(typename col_t::SpColIter col = data.begcol();
             col != data.endcol(); col++) {
             for(typename col_t::SpColIter::NzIter nz = data.begnz(col);
                 nz != data.endnz(col); nz++) {
-
-                value_type scale_factor = _row_value[nz.rowid()];
-
-                //TODO: only local portion
-                size_t matrix_size =
-                    sketch_of_A.getncol() * sketch_of_A.getnrow();
 
                 FullyDistVec<size_t, double> cols(matrix_size, 0.0);
                 FullyDistVec<size_t, double> rows(matrix_size, 0.0);
@@ -96,9 +91,10 @@ private:
 
                 size_t row_begin = col.colid();
                 size_t pos = row_begin + _row_idx[nz.rowid()] * data.getncol();
+
                 cols.SetElement(pos, col.colid());
                 rows.SetElement(pos, _row_idx[nz.rowid()]);
-                vals.SetElement(pos, scale_factor * nz.value());
+                vals.SetElement(pos, _row_value[nz.rowid()] * nz.value());
 
                 output_matrix_t tmp(sketch_of_A.getnrow(),
                         sketch_of_A.getncol(), rows, cols, vals);
@@ -107,26 +103,46 @@ private:
             }
         }
 
-        // Pull everything to rank-0
-        // TODO: can we do that in-place?
-        //boost::mpi::reduce (_context.comm,
-                            //SA_part.LockedBuffer(),
-                            //SA_part.MemorySize(),
-                            //sketch_of_A.Buffer(),
-                            //std::plus<value_type>(),
-                            //0);
+        //TODO: pull everything to rank 0?
     }
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
-     * Implementation for the column-wise direction of sketching.
+     * Implementation for the row-wise direction of sketching.
      */
     void apply_impl (matrix_t &A,
                      output_matrix_t &sketch_of_A,
                      skylark::sketch::rowwise_tag) {
-        //TODO: implement
-    }
 
+        // extract columns of matrix
+        col_t &data = A.seq();
+        size_t matrix_size = sketch_of_A.getncol() * sketch_of_A.getnrow();
+
+        for(typename col_t::SpColIter col = data.begcol();
+            col != data.endcol(); col++) {
+            for(typename col_t::SpColIter::NzIter nz = data.begnz(col);
+                nz != data.endnz(col); nz++) {
+
+                FullyDistVec<size_t, double> cols(matrix_size, 0.0);
+                FullyDistVec<size_t, double> rows(matrix_size, 0.0);
+                FullyDistVec<size_t, double> vals(matrix_size, 0.0);
+
+                // new value at (nz.rowid(), col.colid())
+                size_t pos = nz.rowid() + _row_idx[col.colid()] * data.getncol();
+
+                rows.SetElement(pos, nz.rowid());
+                cols.SetElement(pos, _row_idx[col.colid()]);
+                vals.SetElement(pos, _row_value[col.colid()] * nz.value());
+
+                output_matrix_t tmp(sketch_of_A.getnrow(),
+                        sketch_of_A.getncol(), rows, cols, vals);
+
+                sketch_of_A += tmp;
+            }
+        }
+
+        //TODO: pull everything to rank 0?
+    }
 };
 
 } // namespace sketch

@@ -121,7 +121,6 @@ private:
         }
 
         // Pull everything to rank-0
-        // TODO: can we do that in-place?
         boost::mpi::reduce (_context.comm,
                             SA_part.LockedBuffer(),
                             SA_part.MemorySize(),
@@ -161,7 +160,6 @@ private:
         }
 
         // Pull everything to rank-0
-        // TODO: can we do that in-place?
         boost::mpi::reduce (_context.comm,
                             SA_part.LockedBuffer(),
                             SA_part.MemorySize(),

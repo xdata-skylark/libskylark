@@ -4,6 +4,11 @@
 namespace skylark {
 namespace algorithms {
 
+/* Tags for type of algorithms for exact regressor */
+struct qr_l2_tag {};
+struct ne_l2_tag {};
+struct svd_l2_tag {};
+
 /**
  * Regressor that solves the problem exactly (*as much as possible on a machine)
  *
@@ -14,7 +19,10 @@ namespace algorithms {
  * constructing the regressor. The top class is empty: real logic is in
  * specializations.
  */
-template <typename RegressionType, typename MatrixType, typename RhsType>
+template <typename RegressionType,
+          typename MatrixType,
+          typename RhsType,
+          typename AlgTag = qr_l2_tag>
 class exact_regressor_t {
 };
 

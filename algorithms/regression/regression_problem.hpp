@@ -5,11 +5,10 @@ namespace skylark {
 namespace algorithms {
 
 struct l2_tag {};
-
 struct l1_tag {};
-
 template<int dem, int num>
 struct lp_tag {};
+
 /**
  * Describes a regression problem on a matrix (right hand side supplied when
  * the solver is invoked).
@@ -25,12 +24,9 @@ struct regression_problem_t {
         // TODO verify size of input_matrix
     }
 
-    regression_problem_t(int m, int n, const elem::Grid &grid) :
-        m(m), n(n), input_matrix(m, n, grid) { }
-
     const int m;                          /// Number of constraints.
     const int n;                          /// Number of variables.
-    InputMatrixType input_matrix;
+    const InputMatrixType &input_matrix;
 
     // TODO regularizers, specialized parameters (based on RegressionType)
 };

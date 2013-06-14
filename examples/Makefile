@@ -43,7 +43,7 @@ CXXFLAGS:=$(CXXFLAGS) \
 # Need to add the relevant headers for dependency
 HEADERS = 
 
-all: dense-1D elemental svd
+all: regression elemental svd
 
 elemental: elemental.cpp $(HEADERS) 
 	${MPICXX} ${CXXFLAGS} ${OPTIFLAG} ${INCFLAGS} $< -o $@ ${INCLIBS}

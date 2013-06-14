@@ -53,4 +53,7 @@
 /** Include all NLA primitives */
 #include "nla/SVD_Elemental.hpp"
 
+/** Include all NLA/ML algorithms provided */
+#include "algorithms/algorithms.hpp"
+
 #endif // SKYLARK_HPP

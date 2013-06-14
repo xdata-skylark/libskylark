@@ -7,6 +7,19 @@ import pyCombBLAS
 
 import math
 
+
+def print_sparse_mat(mat):
+  print("Sketched A (CWT sparse, columnwise)")
+  reti = pyCombBLAS.pyDenseParVec(30, 0)
+  retj = pyCombBLAS.pyDenseParVec(30, 0)
+  retv = pyCombBLAS.pyDenseParVec(30, 0)
+  mat.Find(reti, retj, retv)
+  for i in range(0, len(reti)):
+    #TODO: why do we have 0.0 in output?
+    if retv[i] != 0.0:
+      print "(" + str(int(reti[i])) + ", " + str(int(retj[i])) + ") = " + str(retv[i])
+
+
 ctxt = cskylark.Context(123836)
 S    = cskylark.CWT(ctxt, "DistSparseMatrix", "DistSparseMatrix", 10, 6)
 comm = MPI.COMM_WORLD
@@ -32,14 +45,18 @@ S.Apply(ACB, SACB, 1)
 
 if (rank == 0):
   print("Sketched A (CWT sparse, columnwise)")
-  reti = pyCombBLAS.pyDenseParVec(30, 0)
-  retj = pyCombBLAS.pyDenseParVec(30, 0)
-  retv = pyCombBLAS.pyDenseParVec(30, 0)
-  SACB.Find(reti, retj, retv)
-  for i in range(0, len(reti)):
-    #TODO: why do we have 0.0 in output?
-    if retv[i] != 0.0:
-      print "(" + str(int(reti[i])) + ", " + str(int(retj[i])) + ") = " + str(retv[i])
+  print_sparse_mat(SACB)
+
+S.Free()
+
+S       = cskylark.CWT(ctxt, "DistSparseMatrix", "DistSparseMatrix", 6, 3)
+SACB    = pyCombBLAS.pySpParMat(10, 3, nullVec, nullVec, nullVec)
+S.Apply(ACB, SACB, 2)
+
+if (rank == 0):
+  print("Sketched A (CWT sparse, columnwise)")
+  print_sparse_mat(SACB)
+
 
 S.Free()
 ctxt.Free()

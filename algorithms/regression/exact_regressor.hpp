@@ -5,9 +5,16 @@ namespace skylark {
 namespace algorithms {
 
 /* Tags for type of algorithms for exact regressor */
-struct qr_l2_tag {};
-struct ne_l2_tag {};
-struct svd_l2_tag {};
+struct l2_solver_tag {};
+
+struct qr_l2_solver_tag : l2_solver_tag {};
+
+struct ne_l2_solver_tag : l2_solver_tag {};
+
+struct svd_l2_solver_tag : l2_solver_tag {};
+
+template <typename KrylovMethod>
+struct iterative_l2_solver_tag : l2_solver_tag {};
 
 /**
  * Regressor that solves the problem exactly (*as much as possible on a machine)
@@ -22,7 +29,7 @@ struct svd_l2_tag {};
 template <typename RegressionType,
           typename MatrixType,
           typename RhsType,
-          typename AlgTag = qr_l2_tag>
+          typename AlgTag = qr_l2_solver_tag>
 class exact_regressor_t {
 };
 

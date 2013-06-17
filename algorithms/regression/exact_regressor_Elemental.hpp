@@ -1,11 +1,10 @@
-#ifndef REGRESSOR_ELEMENTAL_HPP
-#define REGRESSOR_ELEMENTAL_HPP
+#ifndef EXACT_REGRESSOR_ELEMENTAL_HPP
+#define EXACT_REGRESSOR_ELEMENTAL_HPP
 
 #include <elemental.hpp>
 
 #include "config.h"
 #include "regression_problem.hpp"
-#include "sketch/sketch.hpp"
 
 
 namespace skylark {
@@ -18,7 +17,7 @@ template <typename ValueType>
 class exact_regressor_t<l2_tag,
                         elem::Matrix<ValueType>,
                         elem::Matrix<ValueType>, 
-                        qr_l2_tag> {
+                        qr_l2_solver_tag> {
 
     typedef elem::Matrix<ValueType> matrix_type;
     typedef elem::Matrix<ValueType> rhs_type;
@@ -32,8 +31,7 @@ private:
 
 public:
     exact_regressor_t(const regression_problem_t<l2_tag, matrix_type> &problem) :
-        _m(problem.m), _n(problem.n),
-        _QR(problem.input_matrix.Grid()), _R(problem.input_matrix.Grid()) {
+        _m(problem.m), _n(problem.n) {
         // TODO n < m
         _QR = problem.input_matrix;
         elem::QR(_QR);
@@ -73,7 +71,7 @@ template <typename ValueType,
 class exact_regressor_t<l2_tag,
                         elem::DistMatrix<ValueType, CD, RW>,
                         elem::DistMatrix<ValueType, CD, RW>,
-                        qr_l2_tag> {
+                        qr_l2_solver_tag> {
 
     typedef elem::DistMatrix<ValueType, CD, RW> matrix_type;
     typedef elem::DistMatrix<ValueType, CD, RW> rhs_type;

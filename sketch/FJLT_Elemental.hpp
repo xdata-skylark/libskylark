@@ -125,7 +125,7 @@ public:
      * Apply the sketching transform that is described in by the sketch_of_A.
      */
     template <typename Dimension>
-    void apply (matrix_type& A,
+    void apply (const matrix_type& A,
                 output_matrix_type& sketch_of_A,
                 Dimension dimension) const {
         switch (ColDist) {

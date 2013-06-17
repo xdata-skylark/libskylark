@@ -18,28 +18,29 @@ namespace algorithms {
  * This implementation assumes RhsType is the same as MatrixType since
  * we apply the same sketch to both the Matrix and Rhs.
  */
-template <typename MatrixType,
+template <typename ValueType,
+          typename MatrixType,
           template <typename, typename> class TransformType,
           typename ExactAlgTag>
 class sketched_regressor_t<l2_tag,
                            MatrixType,
                            MatrixType,
-                           elem::Matrix<double>,
+                           elem::Matrix<ValueType>,
                            TransformType,
                            ExactAlgTag,
                            sketch_and_solve_tag> {
 
-    typedef elem::Matrix<double> SketchType;
+    typedef elem::Matrix<ValueType> sketch_type;
 
     typedef regression_problem_t<l2_tag, MatrixType> problem_type;
-    typedef regression_problem_t<l2_tag, SketchType> sketched_problem_type;
+    typedef regression_problem_t<l2_tag, sketch_type> sketched_problem_type;
 
     typedef exact_regressor_t<l2_tag,
-                              SketchType,
-                              SketchType,
+                              sketch_type,
+                              sketch_type,
                               ExactAlgTag> underlying_regressor_type;
 
-    typedef TransformType<MatrixType, SketchType> sketch_transform_type;
+    typedef TransformType<MatrixType, sketch_type> sketch_transform_type;
 
 private:
     const int _my_rank;
@@ -55,7 +56,7 @@ public:
         _sketch_transform =
             new sketch_transform_type(problem.m, sketch_size, context);
         // TODO For DistMatrix this will allocate on DefaultGrid...
-        SketchType sketch(sketch_size, problem.n);
+        sketch_type sketch(sketch_size, problem.n);
         _sketch_transform->apply(problem.input_matrix, sketch,
             sketch::columnwise_tag());
         sketched_problem_type sketched_problem(sketch_size, problem.n, sketch);
@@ -67,19 +68,19 @@ public:
         delete _sketch_transform;
     }
 
-    void solve(const MatrixType &b, SketchType &x) {
+    void solve(const MatrixType &b, sketch_type &x) {
         // TODO For DistMatrix this will allocate on DefaultGrid...
         //      Want to make constructor independent.
-        SketchType Sb(_sketch_size, 1);
+        sketch_type Sb(_sketch_size, 1);
         _sketch_transform->apply(b, Sb, sketch::columnwise_tag());
         if (_my_rank == 0)
             _underlying_regressor->solve(Sb, x);
     }
 
-    void solve_mulitple(const MatrixType &B, SketchType &X) {
+    void solve_mulitple(const MatrixType &B, sketch_type &X) {
         // TODO For DistMatrix this will allocate on DefaultGrid... 
         //      Want to make constructor independent.
-        SketchType SB(_sketch_size, B.Width());
+        sketch_type SB(_sketch_size, B.Width());
         _sketch_transform->apply(SB, SB, sketch::columnwise_tag());
         if (_my_rank == 0)
             _underlying_regressor->solve_mulitple(SB, X);
@@ -88,5 +89,4 @@ public:
 
 } // namespace algorithms
 } // namespace skylark
-
 #endif // SKETCHED_REGRESSOR_ELEMENTAL_HPP

@@ -46,6 +46,7 @@ class SketchTransform(object):
 
   def Apply(self, A, SA, dim):
     #TODO: is there a more elegant way to distinguish matrix types?
+    #XXX: e.g. issubclass(type(mat), pyCombBLAS.pySpParMat)
     if str(type(A)).find("elem") is not -1:
         Aobj  = A.obj
         SAobj = SA.obj

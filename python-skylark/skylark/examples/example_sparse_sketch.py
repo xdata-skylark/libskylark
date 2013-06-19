@@ -25,8 +25,7 @@ for i in range(0, 60):
 ACB = kdt.Mat(rows, cols, vals, 6, 10)
 print ACB
 
-#nullVec = kdt.Vec(0, sparse=False)
-nullVec = kdt.Vec(36, 0, sparse=False)
+nullVec = kdt.Vec(0, sparse=False)
 SACB    = kdt.Mat(nullVec, nullVec, nullVec, 6, 6)
 
 S.Apply(ACB, SACB, 1)
@@ -38,13 +37,12 @@ if (rank == 0):
 S.Free()
 
 S       = cskylark.CWT(ctxt, "DistSparseMatrix", "DistSparseMatrix", 6, 3)
-nullVe  = kdt.Vec(30, 0, sparse=False)
-SACB2   = kdt.Mat(nullVe, nullVe, nullVe, 3, 10)
-S.Apply(ACB, SACB2, 2)
+SACB    = kdt.Mat(nullVec, nullVec, nullVec, 3, 10)
+S.Apply(ACB, SACB, 2)
 
 if (rank == 0):
   print("Sketched A (CWT sparse, rowwise)")
-  print SACB2
+  print SACB
 
 
 S.Free()

@@ -50,11 +50,11 @@ class SketchTransform(object):
     if str(type(A)).find("elem") is not -1:
         Aobj  = A.obj
         SAobj = SA.obj
-    elif str(type(A)).find("pyCombBLAS") is not -1:
-        Aobj  = ctypes.c_void_p(long(A.this))
-        SAobj = ctypes.c_void_p(long(SA.this))
+    elif str(type(A._m_)).find("pyCombBLAS") is not -1:
+        Aobj  = ctypes.c_void_p(long(A._m_.this))
+        SAobj = ctypes.c_void_p(long(SA._m_.this))
     else:
-        print("unknown type of matrix!")
+        print("unknown type (%s) of matrix in apply()!" % (str(type(A))))
         return -1
 
     lib.sl_apply_sketch_transform(self.obj, Aobj, SAobj, dim)

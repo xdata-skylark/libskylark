@@ -1,16 +1,22 @@
 #!/usr/bin/python
+
+# prevent mpi4py from calling MPI_Finalize()
+import mpi4py.rc
+mpi4py.rc.finalize   = False
+
 from mpi4py import MPI
 from skylark import cskylark
 
 import kdt
 import math
 
-ctxt = cskylark.Context(123836)
-S    = cskylark.CWT(ctxt, "DistSparseMatrix", "DistSparseMatrix", 10, 6)
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 
-# creating an example matrix (pySpParMat can only be created from dense vectors)
+ctxt = cskylark.Context(123836)
+
+# creating an example matrix
+# It seems that pySpParMat can only be created from dense vectors
 rows = kdt.Vec(60, sparse=False)
 cols = kdt.Vec(60, sparse=False)
 vals = kdt.Vec(60, sparse=False)
@@ -21,13 +27,12 @@ for i in range(0, 60):
 for i in range(0, 60):
   vals[i] = i
 
-#XXX: insert values directly into matrix?
 ACB = kdt.Mat(rows, cols, vals, 6, 10)
 print ACB
 
 nullVec = kdt.Vec(0, sparse=False)
 SACB    = kdt.Mat(nullVec, nullVec, nullVec, 6, 6)
-
+S       = cskylark.CWT(ctxt, "DistSparseMatrix", "DistSparseMatrix", 10, 6)
 S.Apply(ACB, SACB, 1)
 
 if (rank == 0):
@@ -36,14 +41,13 @@ if (rank == 0):
 
 S.Free()
 
-S       = cskylark.CWT(ctxt, "DistSparseMatrix", "DistSparseMatrix", 6, 3)
-SACB    = kdt.Mat(nullVec, nullVec, nullVec, 3, 10)
+SACB = kdt.Mat(nullVec, nullVec, nullVec, 3, 10)
+S    = cskylark.CWT(ctxt, "DistSparseMatrix", "DistSparseMatrix", 6, 3)
 S.Apply(ACB, SACB, 2)
 
 if (rank == 0):
   print("Sketched A (CWT sparse, rowwise)")
   print SACB
-
 
 S.Free()
 ctxt.Free()

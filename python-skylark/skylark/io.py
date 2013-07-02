@@ -174,39 +174,75 @@ def sparselibsvm2scipy(filename):
         rows         = I[-1] + 1
         nfeatures    = max(J) + 1
         X = scipy.sparse.csr_matrix( (V, (I, J)), shape=(rows, nfeatures))
+        Y = numpy.asarray(Y)
         return (X, Y)
 
-import pyCombBLAS
-def sparselibsvm2combBLAS(filename):
-        """
-        sparselibsvm2combBLAS(filename)
+def streamlibsvm2scipy(filename, nfeatures, blocksize=1000):
+        Y = []
+        I = []
+        J = []
+        V = []
+        rowid = 0
+        for line in open(filename):
+            tokens = line.strip().split()
+            for tok in tokens:
+                if tok.find(':') > 0:
+                    ind, val = tok.split(':')
+                    V.append(float(val))
+                    J.append(int(ind)-1)
+                    I.append(rowid)
 
-        Reads data from a libsvm file into combBLAS pySpParMat data structure.
-
-        Parameters
-        -------------
-        filename
-
-        Returns
-        ----------
-        tuple (X,Y) where X is combBLAS pySpParMat and Y is a list of labels.
-        """
-
-        (V, I, J, Y) = parselibsvm(filename)
-        nrows        = I[-1] + 1
-        nfeatures    = max(J) + 1
-        size         = nrows * nfeatures
-        rows = pyCombBLAS.pyDenseParVec(size, 0)
-        cols = pyCombBLAS.pyDenseParVec(size, 0)
-        vals = pyCombBLAS.pyDenseParVec(size, 0.0)
-        for idx, row_idx in enumerate(I):
-            offset       = row_idx * nfeatures + J[idx]
-            rows[offset] = row_idx
-            cols[offset] = J[idx]
-            vals[offset] = V[idx]
-
-        X = pyCombBLAS.pySpParMat(nrows, nfeatures, rows, cols, vals)
-        return (X, Y)
+                else:
+                    Y.append(float(tok))
+            rowid = rowid  + 1
+            rows         = I[-1] + 1
+            #nfeatures    = max(J) + 1
+            if rowid % blocksize == 0:
+                X = scipy.sparse.csr_matrix( (V, (I, J)), shape=(rows, nfeatures))
+                Y = numpy.asarray(Y)
+                yield (X,Y)
+                rowid = 0
+                Y = []
+                I = []
+                J = []
+                V = []
+        if rowid > 0:
+            X = scipy.sparse.csr_matrix( (V, (I, J)), shape=(rows, nfeatures))
+            Y = numpy.asarray(Y)
+            yield (X,Y)
+            
+            
+#import pyCombBLAS
+# def sparselibsvm2combBLAS(filename):
+#         """
+#         sparselibsvm2combBLAS(filename)
+# 
+#         Reads data from a libsvm file into combBLAS pySpParMat data structure.
+# 
+#         Parameters
+#         -------------
+#         filename
+# 
+#         Returns
+#         ----------
+#         tuple (X,Y) where X is combBLAS pySpParMat and Y is a list of labels.
+#         """
+# 
+#         (V, I, J, Y) = parselibsvm(filename)
+#         nrows        = I[-1] + 1
+#         nfeatures    = max(J) + 1
+#         size         = nrows * nfeatures
+#         rows = pyCombBLAS.pyDenseParVec(size, 0)
+#         cols = pyCombBLAS.pyDenseParVec(size, 0)
+#         vals = pyCombBLAS.pyDenseParVec(size, 0.0)
+#         for idx, row_idx in enumerate(I):
+#             offset       = row_idx * nfeatures + J[idx]
+#             rows[offset] = row_idx
+#             cols[offset] = J[idx]
+#             vals[offset] = V[idx]
+# 
+#         X = pyCombBLAS.pySpParMat(nrows, nfeatures, rows, cols, vals)
+#         return (X, Y)
 
 def libsvm2hdf5(filename, outfilename):
     """

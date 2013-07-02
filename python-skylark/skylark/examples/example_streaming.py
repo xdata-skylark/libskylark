@@ -8,6 +8,7 @@ sketchsize = int(sys.argv[2])
 ncolumns = int(sys.argv[3])
 regparam = float(sys.argv[4])
 test_filename = sys.argv[5]
+out_file = sys.argv[6]
 
 def train(X,Y, regparam):
         (m,n) = X.shape
@@ -44,4 +45,4 @@ for (Xt, Yt) in skylark.io.streamlibsvm2scipy(test_filename, ncolumns):
     print "Test Accuracy: %d / %d = %f" % (correct, total, correct*100.0/total)
     
 
-
+numpy.savetxt(out_file, model)

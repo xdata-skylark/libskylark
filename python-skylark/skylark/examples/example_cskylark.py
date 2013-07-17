@@ -38,15 +38,16 @@ S = cskylark.JLT(ctxt, "DistMatrix_VR_STAR", "Matrix", 10, 6)
 SA = elem.Mat()
 SA.Resize(6, 5)
 S.Apply(A, SA, 1)
-
-SA.Print("Sketched A (JLT)")
+if (MPI.COMM_WORLD.Get_rank() == 0):
+  SA.Print("Sketched A (JLT)")
 
 # Repeat with FJLT
 T = cskylark.FJLT(ctxt, "DistMatrix_VR_STAR", "Matrix", 10, 6)
 TA = elem.Mat()
 TA.Resize(6, 5)
 T.Apply(A, TA, 1)
-TA.Print("Sketched A (FJLT)")
+if (MPI.COMM_WORLD.Get_rank() == 0):
+  TA.Print("Sketched A (FJLT)")
 
 # Clean up
 S.Free()

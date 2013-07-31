@@ -1,12 +1,6 @@
 Sketching Transforms
 =====================
 
-Examples of Distributed Sketching
------------------------------------
-.. literalinclude:: ../../skylark/examples/example_cskylark.py   
-   
-   
-.. currentmodule:: skylark.sketch
 
 Johnson-Lindenstrauss Transform (JLT)
 -------------------------------------------------------

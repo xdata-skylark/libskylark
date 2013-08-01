@@ -57,7 +57,7 @@ public:
      * Apply the sketching transform that is described in by the sketch_of_A.
      */
     template <typename Dimension>
-    void apply (matrix_type& A, output_matrix_type& sketch_of_A,
+    void apply (const matrix_type& A, output_matrix_type& sketch_of_A,
                 Dimension dimension) {
 
         switch(ColDist) {
@@ -94,7 +94,7 @@ private:
      * Apply the sketching transform that is described in by the sketch_of_A.
      * Implementation for the column-wise direction of sketching.
      */
-    void apply_impl_vdist (matrix_type& A,
+    void apply_impl_vdist (const matrix_type& A,
                            output_matrix_type& sketch_of_A,
                            skylark::sketch::columnwise_tag) {
 
@@ -133,7 +133,7 @@ private:
      * Apply the sketching transform that is described in by the sketch_of_A.
      * Implementation for the row-wise direction of sketching.
      */
-    void apply_impl_vdist (matrix_type& A,
+    void apply_impl_vdist (const matrix_type& A,
                            output_matrix_type& sketch_of_A,
                            skylark::sketch::rowwise_tag) {
 

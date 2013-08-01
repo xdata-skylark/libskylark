@@ -27,7 +27,7 @@ class SketchingTransform(object):
         
         Returns
         --------
-        A sketch object with properties context and shape (s,n) attributes.
+        A sketch object with properties:  context and shape (s,n) attributes.
         """
         self.context = context
         self.shape = (s , n)
@@ -448,4 +448,3 @@ if __name__== "__main__":
         plt.hist(distortions, 50)
         plt.show()
     
-

@@ -11,6 +11,7 @@ import h5py
 import elem
 import numpy, scipy, scipy.sparse
 import argparse
+import sys
 
 class hdf5(object):
     """
@@ -177,12 +178,17 @@ def sparselibsvm2scipy(filename):
         Y = numpy.asarray(Y)
         return (X, Y)
 
-def streamlibsvm2scipy(filename, nfeatures, blocksize=1000):
+def streamlibsvm2scipy(filename, nfeatures, blocksize=100000):
+        """
+            Parses libsvm formatted file. y1,y2,y3 f1:v1 f7:v7...returns dense matrix or vector Y and sparse matrix X
+        """
         Y = []
         I = []
         J = []
         V = []
         rowid = 0
+        allrows = 0
+        print >>sys.stderr, "Reading ", filename
         for line in open(filename):
             tokens = line.strip().split()
             for tok in tokens:
@@ -191,11 +197,14 @@ def streamlibsvm2scipy(filename, nfeatures, blocksize=1000):
                     V.append(float(val))
                     J.append(int(ind)-1)
                     I.append(rowid)
-
                 else:
-                    Y.append(float(tok))
+                    Y.append([float(t) for t in tok.split(',')])
+            
             rowid = rowid  + 1
             rows         = I[-1] + 1
+            allrows = allrows + 1
+            if allrows % 10000 == 0:
+                print >>sys.stderr, allrows
             #nfeatures    = max(J) + 1
             if rowid % blocksize == 0:
                 X = scipy.sparse.csr_matrix( (V, (I, J)), shape=(rows, nfeatures))
@@ -209,9 +218,10 @@ def streamlibsvm2scipy(filename, nfeatures, blocksize=1000):
         if rowid > 0:
             X = scipy.sparse.csr_matrix( (V, (I, J)), shape=(rows, nfeatures))
             Y = numpy.asarray(Y)
+	    print >>sys.stderr, "Read completed" 
             yield (X,Y)
             
-            
+	            
 #import pyCombBLAS
 # def sparselibsvm2combBLAS(filename):
 #         """

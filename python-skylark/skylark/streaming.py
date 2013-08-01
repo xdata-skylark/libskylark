@@ -8,10 +8,13 @@ class CWT(object):
         self.sketchsize = s
         numpy.random.seed(self.context)
         
-    def sketch(self, Aiterator, otherdimension, dimension = 1):
+    def sketch(self, Aiterator, otherdimension, nclasses = 0):
         s = self.sketchsize
         SX = scipy.sparse.csr_matrix((s, otherdimension))
-        SY = numpy.zeros(s)
+        if nclasses > 2:
+            SY = numpy.zeros(s, nclasses)
+        else:
+            SY = numpy.zeros(s)
         nz_values=[-1,+1]
         nz_prob_dist=[0.5,0.5]
         
@@ -29,6 +32,10 @@ class CWT(object):
             SX = SX + B
             
             S = scipy.sparse.csr_matrix( (D, (H, scipy.arange(n))), shape = (s,n))
-            SY = SY + S.dot(Y)
+            if nclasses > 2:
+                SY = SY + S.dot(skylark.ml.utils.dummycode(Y, nclasses))
+            else:
+                SY = SY + S.dot(Y)
+                
         return (SX, SY)
     

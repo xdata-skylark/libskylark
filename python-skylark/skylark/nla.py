@@ -5,14 +5,17 @@ from numpy.linalg import norm, lstsq
 
 import scipy as sp
 from scipy.sparse.linalg import aslinearoperator
+import time
+import sys
 
 colnorm = lambda X: np.sum(np.abs(X)**2, axis=0)**(1./2)
 
-def lsqr( A, B, tol=1e-14, iter_lim=None ):
+def lsqr( A, B, X=None, tol=1e-14, iter_lim=1000):
     """
     A simple version of LSQR for solving || AX - B ||^2_fro
     """
-
+    start_time = time.time()
+    
     A    = aslinearoperator(A)
     m, n = A.shape
     m, k = B.shape
@@ -23,10 +26,11 @@ def lsqr( A, B, tol=1e-14, iter_lim=None ):
         tol = eps
     elif tol >= 1:
         tol = 1-eps
-
-    U    = B.squeeze().copy()
+    
+    U    = np.copy(B)
+    
     beta = colnorm(U)
-    ibeta = beta.copy()
+    ibeta = np.copy(beta)
     ibeta[np.nonzero(beta)] = 1./beta[np.nonzero(beta)] 
     U = np.dot(U, np.diag(ibeta))
     
@@ -34,8 +38,10 @@ def lsqr( A, B, tol=1e-14, iter_lim=None ):
     #    u   /= beta
  
     V     = A.rmatvec(U)
+    #V = np.dot(A.T, U) + 
+    
     alpha = colnorm(V)
-    ialpha = alpha.copy()
+    ialpha = np.copy(alpha)
     ialpha[np.nonzero(alpha)] = 1./alpha[np.nonzero(alpha)] 
     V = np.dot(V, np.diag(ialpha))
     
@@ -44,7 +50,8 @@ def lsqr( A, B, tol=1e-14, iter_lim=None ):
 
     W     = V.copy()
 
-    X     = np.zeros((n, k))
+    if X is None:
+        X     = np.zeros((n, k))
 
     phibar = beta
     rhobar = alpha
@@ -64,7 +71,7 @@ def lsqr( A, B, tol=1e-14, iter_lim=None ):
     cs2    = -1*np.ones(k)
     sn2    = np.zeros(k)
 
-    max_n_stag = 3
+    max_n_stag = 200
     stag       = 0
 
     flag = -1
@@ -72,17 +79,22 @@ def lsqr( A, B, tol=1e-14, iter_lim=None ):
         iter_lim = np.max( [20, 2*np.min([m,n])] )
 
     for itn in xrange(int(iter_lim)):
-
-        U    = A.matvec(V) - np.dot(U, np.diag(alpha))
+        
+        AV = A.matmat(V)
+        U    = AV - np.dot(U, np.diag(alpha))
         beta = colnorm(U)
-        U   = np.dot(U, np.diag(1./beta));
+        ibeta = np.copy(beta)
+        ibeta[np.nonzero(beta)] = 1./beta[np.nonzero(beta)] 
+        U   = np.dot(U, np.diag(ibeta));
         
         # estimate of norm(A)
         nrm_a = np.sqrt(nrm_a**2 + alpha**2 + beta**2)
 
         V     = A.rmatvec(U) - np.dot(V, np.diag(beta))
         alpha = colnorm(V)
-        V = np.dot(V, np.diag(1/alpha))
+        ialpha = np.copy(alpha)
+        ialpha[np.nonzero(alpha)] = 1./alpha[np.nonzero(alpha)] 
+        V = np.dot(V, np.diag(ialpha))
 
         rho    =  np.sqrt(rhobar**2+beta**2)
         cs     =  rhobar/rho
@@ -100,14 +112,20 @@ def lsqr( A, B, tol=1e-14, iter_lim=None ):
 
         # estimate of norm(A'*r)
         nrm_ar  = phibar*alpha*np.abs(cs)
+        
+        elapsed_time = time.time() - start_time
+        print >>sys.stdout, "Iteration = %d, Residual Norm = %f, Time Elapsed = %f"  % (itn, np.sum(nrm_ar), elapsed_time)
+        sys.stdout.flush() 
 
         # check convergence
-        if all(nrm_ar < tol*nrm_ar_0):
+        if np.sum(nrm_ar) < tol*np.sum(nrm_ar_0):
             flag = 0
+            print "Converged (1)"
             break
 
-        if all(nrm_ar < eps*nrm_a*nrm_r):
+        if np.sum(nrm_ar) < eps*np.sum(nrm_a*nrm_r):
             flag = 0
+            print "Converged (2)"
             break
 
         # estimate of cond(A)
@@ -144,6 +162,8 @@ def lsqr( A, B, tol=1e-14, iter_lim=None ):
         sq_x   +=  z**2
 
     return X, flag, itn
+
+
 
 def lsqr_single_rhs( A, b, tol=1e-14, iter_lim=None ):
     """
@@ -291,8 +311,9 @@ def _test():
     
     tol      = 1e-14
     iter_lim = 400 # np.ceil( (log(tol)-log(2.0))/log((c-1.0)/(c+1.0)) )
-
-    X, flag, itn = lsqr(A, B, tol, iter_lim)
+    regparam = 1.0;
+    
+    X, flag, itn = lsqr(A, B, regparam, tol, iter_lim)
     
     relerr       = norm(X-X_opt)/norm(X_opt)
     print relerr, flag

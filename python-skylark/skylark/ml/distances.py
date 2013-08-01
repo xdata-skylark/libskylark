@@ -9,7 +9,7 @@ def euclidean(X,Y):
     """
     euclidean(X,Y)
     
-    Create a euclidean distance matrix (actually returns distance squared)
+        Create a euclidean distance matrix (actually returns distance squared)
     
     Parameters
     ----------
@@ -33,7 +33,7 @@ def euclidean(X,Y):
     norms_t = Y.multiply(Y)*numpy.ones((n,1))
     ones_t = numpy.ones((t, 1))
     
-    
-    D = numpy.dot(ones_t, norms.T) + numpy.dot(norms_t, ones.T) - 2*numpy.dot(Y, X.T)
+    #D = numpy.dot(ones_t, norms.T) + numpy.dot(norms_t, ones.T) - 2*numpy.dot(Y, X.T)
+    D = numpy.dot(ones_t, norms.T) + numpy.dot(norms_t, ones.T) - 2*Y*X.T
     
     return D

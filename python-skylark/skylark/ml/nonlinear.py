@@ -14,7 +14,7 @@ class rls(object):
 	
 	Read a digit classification dataset
 	
-	>>> X,Y = skylark.read.sparselibsvm('')
+	>>> X,Y = skylark.io.sparselibsvm2scipy(''../datasets/usps.t')
 	
 	Set Regularization Parameter and Gaussian Kernel Bandwidth
 	
@@ -65,7 +65,7 @@ class rls(object):
 		K = kernels.gaussian(X,None,sigma=bandwidth)
 		I = numpy.identity(m)
 		if multiclass:
-			Y = utils.dummycoding(Y).todense()
+			Y = utils.dummycoding(Y)
 			Y = 2*Y - 1
 		A = K + regularization*I
 		alpha = scipy.linalg.solve(A, Y, sym_pos=True)
@@ -189,7 +189,7 @@ class sketchrls(object):
 		
 		I = numpy.identity(random_features)
 		if multiclass:
-			Y= utils.dummycoding(Y).todense()
+			Y= utils.dummycoding(Y)
 			Y = 2*Y - 1
 			
 		A = Z.T*Z + regularization*I
@@ -249,7 +249,7 @@ class nystromrls(object):
 		U = (evecs*numpy.diagflat(1.0/numpy.sqrt(evals)))
 		Z = Z*U
 		if multiclass:
-			Y= utils.dummycoding(Y).todense()
+			Y= utils.dummycoding(Y)
 			Y = 2*Y - 1
 			
 		A = Z.T*Z + regularization*I
@@ -277,7 +277,7 @@ class nystromrls(object):
 
 
 if __name__=="__main__":
-	X,Y = skylark.io.sparselibsvm(sys.argv[1])
+	X,Y = skylark.io.sparselibsvm2scipy(sys.argv[1])
 	regularization= float(sys.argv[2])
 	bandwidth = float(sys.argv[3])
 	randomfeatures = int(sys.argv[4])

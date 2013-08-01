@@ -36,7 +36,7 @@ private:
      * Apply the sketching transform that is described in by the sketch_of_A.
      * Implementation for [VR/VC, *] and columnwise.
      */
-    void apply_impl_vdist (matrix_type& A,
+    void apply_impl_vdist (const matrix_type& A,
                      output_matrix_type& sketch_of_A,
                      skylark::sketch::columnwise_tag) const {
 
@@ -96,7 +96,7 @@ private:
       * Apply the sketching transform that is described in by the sketch_of_A.
       * Implementation for [VR/VC, *] and rowwise.
       */
-    void apply_impl_vdist(matrix_type& A,
+    void apply_impl_vdist(const matrix_type& A,
         output_matrix_type& sketch_of_A,
         skylark::sketch::rowwise_tag) const {
 
@@ -158,7 +158,7 @@ public:
      * Apply the sketching transform that is described in by the sketch_of_A.
      */
     template <typename Dimension>
-    void apply (matrix_type& A,
+    void apply (const matrix_type& A,
                 output_matrix_type& sketch_of_A,
                 Dimension dimension) const {
 
@@ -197,7 +197,7 @@ private:
      * Apply the sketching transform that is described in by the sketch_of_A.
      * Implementation for [VR/VC, *] and columnwise.
      */
-    void apply_impl_vdist (matrix_type& A,
+    void apply_impl_vdist (const matrix_type& A,
                      output_matrix_type& sketch_of_A,
                      skylark::sketch::columnwise_tag) const {
 
@@ -209,7 +209,7 @@ private:
       * Apply the sketching transform that is described in by the sketch_of_A.
       * Implementation for [VR/VC, *] and rowwise.
       */
-    void apply_impl_vdist(matrix_type& A,
+    void apply_impl_vdist(const matrix_type& A,
         output_matrix_type& sketch_of_A,
         skylark::sketch::rowwise_tag) const {
 
@@ -262,7 +262,7 @@ public:
      * Apply the sketching transform that is described in by the sketch_of_A.
      */
     template <typename Dimension>
-    void apply (matrix_type& A,
+    void apply (const matrix_type& A,
                 output_matrix_type& sketch_of_A,
                 Dimension dimension) const {
 

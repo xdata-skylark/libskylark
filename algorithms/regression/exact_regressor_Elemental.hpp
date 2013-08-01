@@ -11,7 +11,13 @@ namespace skylark {
 namespace algorithms {
 
 /**
- * Exact l2 regressor using Elemental's Matrix (not distributed).
+ * Exact regressor (solves the problem exactly) for a dense local matrix.
+ *
+ * A regressor accepts a right-hand side and output a solution
+ * the the regression problem.
+ *
+ * The regression problem is fixed, so it is a parameter of the function
+ * constructing the regressoion.
  */
 template <typename ValueType>
 class exact_regressor_t<l2_tag,
@@ -30,6 +36,11 @@ private:
 
 
 public:
+    /**
+     * Prepares the regressor to quickly solve given a right-hand side.
+     *
+     * @param problem Problem to solve given right-hand side.
+     */
     exact_regressor_t(const regression_problem_t<l2_tag, matrix_type> &problem) :
         _m(problem.m), _n(problem.n) {
         // TODO n < m
@@ -38,6 +49,12 @@ public:
         elem::LockedView(_R, _QR, 0, 0, _n, _n);
     }
 
+    /**
+     * Solves the regression problem given a single vector right-hand side.
+     *
+     * @param b Right-hand side.
+     * @param x Output (overwritten).
+     */
     void solve(const rhs_type &b, rhs_type &x) {
         // TODO error checking
         x = b;
@@ -51,6 +68,12 @@ public:
         elem::Trsv(elem::UPPER, elem::NORMAL, elem::NON_UNIT, _R, x);
     }
 
+    /**
+     * Solves the regression problem given a multiple right-hand sides.
+     *
+     * @param B Right-hand sides.
+     * @param X Output (overwritten).
+     */
     void solve_mulitple(const rhs_type &B, rhs_type &X) {
         // TODO error checking
         X = B;
@@ -63,7 +86,13 @@ public:
 };
 
 /**
- * Exact l2 regressor using Elemental's distributed matrices.
+ * Exact regressor (solves the problem exactly) for a dense distributed matrix.
+ *
+ * A regressor accepts a right-hand side and output a solution
+ * the the regression problem.
+ *
+ * The regression problem is fixed, so it is a parameter of the function
+ * constructing the regressoion.
  */
 template <typename ValueType,
           elem::Distribution CD,
@@ -84,6 +113,11 @@ private:
 
 
 public:
+    /**
+     * Prepares the regressor to quickly solve given a right-hand side.
+     *
+     * @param problem Problem to solve given right-hand side.
+     */
     exact_regressor_t(const regression_problem_t<l2_tag, matrix_type> &problem) :
         _m(problem.m), _n(problem.n),
         _QR(problem.input_matrix.Grid()), _R(problem.input_matrix.Grid()) {
@@ -93,6 +127,12 @@ public:
         elem::LockedView(_R, _QR, 0, 0, _n, _n);
     }
 
+    /**
+     * Solves the regression problem given a single vector right-hand side.
+     *
+     * @param b Right-hand side.
+     * @param x Output (overwritten).
+     */
     void solve(const rhs_type &b, rhs_type &x) {
         // TODO error checking
         x = b;
@@ -106,6 +146,12 @@ public:
         elem::Trsv(elem::UPPER, elem::NORMAL, elem::NON_UNIT, _R, x);
     }
 
+    /**
+     * Solves the regression problem given a multiple right-hand sides.
+     *
+     * @param B Right-hand sides.
+     * @param X Output (overwritten).
+     */
     void solve_mulitple(const rhs_type &B, rhs_type &X) {
         // TODO error checking
         X = B;

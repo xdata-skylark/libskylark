@@ -4,20 +4,28 @@
 namespace skylark {
 namespace algorithms {
 
-/* Tags for type of algorithms for exact regressor */
+/// Base class for tags specifying strategies for solving L2 regression problems.
 struct l2_solver_tag {};
 
+/// Tag for using QR to solve L2 regression problems.
 struct qr_l2_solver_tag : l2_solver_tag {};
 
+/// Tag for using normal equations to solve L2 regression problems.
 struct ne_l2_solver_tag : l2_solver_tag {};
 
+/// Tag for using SVD to solve L2 regression problems.
 struct svd_l2_solver_tag : l2_solver_tag {};
 
+/**
+ * Tag for using an iterative method to solve L2 regression.
+ *
+ * @tparam KrylovMethod The underlying Krylov method used.
+ */
 template <typename KrylovMethod>
 struct iterative_l2_solver_tag : l2_solver_tag {};
 
 /**
- * Regressor that solves the problem exactly (*as much as possible on a machine)
+ * Regressor that solves the problem exactly (as much as possible on a machine).
  *
  * A regressor accepts a right-hand side and output a solution
  * the the regression problem.
@@ -25,6 +33,11 @@ struct iterative_l2_solver_tag : l2_solver_tag {};
  * The regression problem is fixed, so it is a parameter of the function
  * constructing the regressor. The top class is empty: real logic is in
  * specializations.
+ *
+ * @tparam RegressionType Tag specificying regression type, e.g. l2_tag.
+ * @tparam MatrixType Input matrix type.
+ * @tparam RhsType Right-hand side matrix type.
+ * @tparam AlgTag Tag specifyin the algorithm used.
  */
 template <typename RegressionType,
           typename MatrixType,

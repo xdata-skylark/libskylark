@@ -57,7 +57,7 @@ class JLT(SketchingTransform):
         --------
         Let us bring *skylark* and other relevant Python packages into our environment.
         Here we demonstrate a non-distributed usage implemented using numpy arrays.  
-        Below, we give an example of distributed JLT transform operating on Elemental matrices.
+        In C-api section on accessing lower layers we give an example of distributed JLT transform operating on Elemental matrices.
         
         >>> import skylark, skylark.utilities, skylark.sketch
         >>> import scipy

@@ -14,7 +14,7 @@ class rls(object):
 	
 	Read a digit classification dataset
 	
-	>>> X,Y = skylark.io.sparselibsvm2scipy(''../datasets/usps.t')
+	>>> X,Y = skylark.io.sparselibsvm2scipy('../datasets/usps.t')
 	
 	Set Regularization Parameter and Gaussian Kernel Bandwidth
 	
@@ -23,8 +23,8 @@ class rls(object):
 	
 	Build a model on 1000 training examples
 	
-	>>> model = rls()
-	>>> model.train(X[1:1000,:],Y[1:1000],regularization,bandwidth)	
+	>>> model = skylark.ml.nonlinear.rls()
+	>>> model.train(X[1:1000,:],Y[1:1000],regularization, bandwidth)	
 	
 	Make Predictions on 1000 test examples
 	
@@ -110,7 +110,7 @@ class sketchrls(object):
 	
 	Read a digit classification dataset
 	
-	>>> X,Y = skylark.read.sparselibsvm('')
+	>>> X,Y = skylark.read.sparselibsvm('../datasets/usps.t')
 	
 	Set Regularization Parameter and Gaussian Kernel Bandwidth
 	
@@ -123,7 +123,7 @@ class sketchrls(object):
 	
 	Build a model on 1000 training examples
 	
-	>>> model = sketchrls()
+	>>> model = skylark.ml.nonlinear.sketchrls()
 	>>> model.train(X[1:1000,:],Y[1:1000],regularization, bandwidth, random_features)	
 	
 	Make Predictions on 1000 test examples

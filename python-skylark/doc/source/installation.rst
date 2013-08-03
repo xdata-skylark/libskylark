@@ -3,6 +3,8 @@
 Installation Instructions
 ==========================
 
-.. literalinclude:: ../../../INSTALL
+..
+	.. literalinclude:: ../../../INSTALL
 
+Please see our install guide in pdf.
 

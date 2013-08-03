@@ -1,7 +1,4 @@
 """
-Created on April 8, 2013.
-@author: Vikas Sindhwani (vsindhw@us.ibm.com)
-
     Example command line Usage for converting datasets into HDF5 format.
 
     >>> python skylark/io.py --libsvm2hdf5 datasets/usps.t datasets/usps.hdf5
@@ -180,7 +177,11 @@ def sparselibsvm2scipy(filename):
 
 def streamlibsvm2scipy(filename, nfeatures, blocksize=100000):
         """
-            Parses libsvm formatted file. y1,y2,y3 f1:v1 f7:v7...returns dense matrix or vector Y and sparse matrix X
+            Streams over a libsvm formatted file and emits dense matrix or vector Y and sparse matrix X,
+            in blocksize chunks. This is useful if you want to sketch on the fly and never load the 
+            matrix in memory. Since the number of columns in a streaming sparse matrix cannot be known before
+            a full pass, we require the number of columns (nfeatures) to be provided as input. This limitation
+            will be removed later. 
         """
         Y = []
         I = []

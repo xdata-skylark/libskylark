@@ -134,7 +134,7 @@ TREEVIEW_WIDTH         = 250
 #---------------------------------------------------------------------------
 # configuration options related to the LaTeX output
 #---------------------------------------------------------------------------
-GENERATE_LATEX         = NO
+GENERATE_LATEX         = YES
 LATEX_OUTPUT           = latex
 LATEX_CMD_NAME         = latex
 MAKEINDEX_CMD_NAME     = makeindex
@@ -143,7 +143,7 @@ PAPER_TYPE             = a4wide
 EXTRA_PACKAGES         = amsfonts, amssymb
 LATEX_HEADER           =
 PDF_HYPERLINKS         = YES
-USE_PDFLATEX           = NO
+USE_PDFLATEX           = YES
 LATEX_BATCHMODE        = NO
 LATEX_HIDE_INDICES     = NO
 #---------------------------------------------------------------------------

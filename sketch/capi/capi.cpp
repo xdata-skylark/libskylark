@@ -419,4 +419,14 @@ SKYLARK_EXTERN_API void
 
 }
 
+SKYLARK_EXTERN_API void *sl_wrap_raw_matrix(double *data, int m, int n)  {
+    Matrix *A = new Matrix();
+    A->Attach(m, n, data, m);
+    return A;
+}
+
+SKYLARK_EXTERN_API void sl_free_raw_matrix_wrap(void *A_) {
+    delete static_cast<Matrix *>(A_);
+}
+
 } // extern "C"

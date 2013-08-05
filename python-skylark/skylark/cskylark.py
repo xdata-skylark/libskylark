@@ -14,23 +14,53 @@ _lib.sl_create_default_context.restype = c_void_p
 _lib.sl_context_rank.restype = c_int
 _lib.sl_context_size.restype = c_int
 _lib.sl_create_sketch_transform.restype = c_void_p
+_lib.sl_wrap_raw_matrix.restype = c_void_p
+#
+# Create mapping between type string that can be supplied by user
+# to one the C-API recognaizes
+#
+_map_to_ctype = { }
+_map_to_ctype["DistMatrix_VR_STAR"] = "DistMatrix_VR_STAR"
+_map_to_ctype["DistMatrix_VC_STAR"] = "DistMatrix_VC_STAR"
+_map_to_ctype["DistMatrix_STAR_VR"] = "DistMatrix_STAR_VR"
+_map_to_ctype["DistMatrix_STAR_VC"] = "DistMatrix_STAR_VC"
+_map_to_ctype["DistSparseMatrix"] = "DistSparseMatrix"
+_map_to_ctype["LocalMatrix"] = "Matrix"
+
 
 # 
 # Create mapping between object type to function converting it 
 # to pointers to passed to the C-API
 #
-def _elem_to_ptr(A):
-  return ctypes.c_void_p(long(A.this));
+def _elem_to_ptr(ctxt, A):
+  return ctypes.c_void_p(long(A.this))
 
-def _kdt_to_ptr(A):
-    return ctypes.c_void_p(long(A._m_.this));
+def _kdt_to_ptr(ctxt, A):
+  return ctypes.c_void_p(long(A._m_.this))
+
+def _np_to_ptr(ctxt, A):
+  if not A.flags.f_contiguous:
+    if ctxt.rank() == 0:
+      print "ERROR: only FORTRAN style (column-major) NumPy arrays are supported" # TODO
+    return -1
+  else:
+    return _lib.sl_wrap_raw_matrix( \
+      A.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), \
+        A.shape[0], A.shape[1])
+
+def _np_ptr_cleaner(p):
+  _lib.sl_free_raw_matrix_wrap(p);
 
 _map_to_ptr = { }
-_map_to_ptr["DistMatrix_d_VR_STAR"] = _elem_to_ptr
-_map_to_ptr["DistMatrix_d_VC_STAR"] = _elem_to_ptr
-_map_to_ptr["DistMatrix_d_STAR_VR"] = _elem_to_ptr
-_map_to_ptr["DistMatrix_d_STAR_VC"] = _elem_to_ptr
-_map_to_ptr["instance"] = _kdt_to_ptr
+_map_to_ptr["DistMatrix_VR_STAR"] = _elem_to_ptr
+_map_to_ptr["DistMatrix_VC_STAR"] = _elem_to_ptr
+_map_to_ptr["DistMatrix_STAR_VR"] = _elem_to_ptr
+_map_to_ptr["DistMatrix_STAR_VC"] = _elem_to_ptr
+_map_to_ptr["DistSparseMatrix"] = _kdt_to_ptr
+_map_to_ptr["LocalMatrix"] = _np_to_ptr
+
+_map_to_ptr_cleaner = { }
+_map_to_ptr_cleaner["LocalMatrix"]  = _np_ptr_cleaner
 
 #
 # Context
@@ -63,7 +93,22 @@ class SketchTransform(object):
   which holds the common interface. Derived classes can have different constructors.
   """
   def __init__(self, ctxt, ttype, intype, outtype, n, s):
-    self._obj = _lib.sl_create_sketch_transform(ctxt._obj, ttype, intype, outtype, n, s)
+    if not _map_to_ctype.has_key(intype):
+      if ctxt.rank() == 0:
+        print "ERROR: unknown input type (%s)" % intype      # TODO
+      return -1
+
+    if not _map_to_ctype.has_key(outtype):
+      if ctxt.rank() == 0:
+        print "ERROR: unknown output type (%s)" % outtype    # TODO
+      return -1
+
+    self._ctxt = ctxt;
+    self._intype = intype
+    self._outtype = outtype
+    self._obj = _lib.sl_create_sketch_transform(ctxt._obj, ttype, \
+                                                _map_to_ctype[intype], \
+                                                _map_to_ctype[outtype], n, s)
 
   def free(self):
     """ Discard the transform """
@@ -80,30 +125,18 @@ class SketchTransform(object):
     :param dim: Dimension to apply along. 1 - columnwise, 2 - rowwise.
 
     """
-    if not _map_to_ptr.has_key(type(A).__name__):
-      print "unknown type (%s) of A in apply()!" % type(A).__name__
+    Aobj = _map_to_ptr[self._intype](self._ctxt, A)
+    SAobj = _map_to_ptr[self._outtype](self._ctxt, SA)
+    if (Aobj == -1 or SAobj == -1):
       return -1
-
-    if not _map_to_ptr.has_key(type(SA).__name__):
-      print "unknown type (%s) of SA in apply()!" % type(SA).__name__
-      return -1
-
-    Aobj = _map_to_ptr[type(A).__name__](A);
-    SAobj = _map_to_ptr[type(SA).__name__](SA);
 
     _lib.sl_apply_sketch_transform(self._obj, Aobj, SAobj, dim)
 
-    #TODO: is there a more elegant way to distinguish matrix types?
-    #XXX: e.g. issubclass(type(mat), pyCombBLAS.pySpParMat)
-    #if str(type(A)).find("elem") is not -1:
-    #    Aobj  = ctypes.c_void_p(long(A.this))
-    #    SAobj = ctypes.c_void_p(long(SA.this))
-    #elif str(type(A._m_)).find("pyCombBLAS") is not -1:
-    #    Aobj  = ctypes.c_void_p(long(A._m_.this))
-    #    SAobj = ctypes.c_void_p(long(SA._m_.this))
-    #else:
-    #    print("unknown type (%s) of matrix in apply()!" % (str(type(A))))
-    #    return -1
+    if _map_to_ptr_cleaner.has_key(self._intype):
+      _map_to_ptr_cleaner[self._intype](Aobj)
+
+    if _map_to_ptr_cleaner.has_key(self._outtype):
+      _map_to_ptr_cleaner[self._outtype](SAobj)
 
 #
 # Various sketch transforms
@@ -134,7 +167,8 @@ class CWT(SketchTransform):
   """
   Clarkson-Woodruff Transform (also known as CountSketch)
 
-  *K. Clarkson* and *D. Woodruff*, **Low Rank Approximation and Regression in Input Sparsity Time**, STOC 2013 
+  *K. Clarkson* and *D. Woodruff*, **Low Rank Approximation and Regression
+  in Input Sparsity Time**, STOC 2013 
   """
   def __init__(self, ctxt, intype, outtype, n, s):
     super(CWT, self).__init__(ctxt, "CWT", intype, outtype, n, s);
@@ -143,7 +177,8 @@ class MMT(SketchTransform):
   """
   Meng-Mahoney Transform
 
-  *X. Meng* and *M. W. Mahoney*, **Low-distortion Subspace Embeddings in Input-sparsity Time and Applications to Robust Linear Regression**, STOC 2013
+  *X. Meng* and *M. W. Mahoney*, **Low-distortion Subspace Embeddings in
+  Input-sparsity Time and Applications to Robust Linear Regression**, STOC 2013
   """
   def __init__(self, ctxt, intype, outtype, n, s):
     super(MMT, self).__init__(ctxt, "MMT", intype, outtype, n, s);
@@ -152,7 +187,8 @@ class WZT(SketchTransform):
   """
   Woodruff-Zhang Transform
 
-  *D. Woodruff* and *Q. Zhang*, **Subspace Embeddings and L_p Regression Using Exponential Random**, COLT 2013
+  *D. Woodruff* and *Q. Zhang*, **Subspace Embeddings and L_p Regression
+  Using Exponential Random**, COLT 2013
   """
   def __init__(self, ctxt, intype, outtype, n, s, p):
     self._obj = _lib.sl_create_sketch_transform(ctxt._obj, "WZT", intype, outtype, n, s, ctypes.c_double(p))
@@ -168,7 +204,8 @@ class LaplacianRFT(SketchTransform):
   """
   Random Features Transform for the Laplacian Kernel
 
-  *A. Rahimi* and *B. Recht*, **Random Features for Large-scale Kernel Machines*, NIPS 2009
+  *A. Rahimi* and *B. Recht*, **Random Features for Large-scale 
+  Kernel Machines*, NIPS 2009
   """
   def __init__(self, ctxt, intype, outtype, n, s):
     super(LaplacianRFT, self).__init__(ctxt, "LaplacianRFT", intype, outtype, n, s);

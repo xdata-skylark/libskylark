@@ -33,7 +33,6 @@ print ACB
 nullVec = kdt.Vec(0, sparse=False)
 SACB    = kdt.Mat(nullVec, nullVec, nullVec, 6, 6)
 S       = cskylark.CWT(ctxt, "DistSparseMatrix", "DistSparseMatrix", 10, 6)
-print type(ACB).__name__
 S.apply(ACB, SACB, 1)
 
 if (rank == 0):

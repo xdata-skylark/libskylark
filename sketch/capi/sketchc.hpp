@@ -84,14 +84,11 @@ SKYLARK_EXTERN_API void sl_free_context(sketch::context_t *ctxt);
  *  @return MPI rank
  */
 SKYLARK_EXTERN_API int sl_context_rank(sketch::context_t *ctxt);
-
 /** Get total number of processor.
  *  @param ctxt Skylark context
  *  @return number of processors in the context
  */
 SKYLARK_EXTERN_API int sl_context_size(sketch::context_t *ctxt);
-
-
 
 // Transforms
 /** Creating a sketch transformation.
@@ -121,6 +118,13 @@ SKYLARK_EXTERN_API void sl_free_sketch_transform(
  */
 SKYLARK_EXTERN_API void sl_apply_sketch_transform(
         sketchc::sketch_transform_t *S, void *A, void *SA, int dim);
+
+// Helper functions to allow wrapping of object
+
+SKYLARK_EXTERN_API void *sl_wrap_raw_matrix(double *A, int m, int n);
+
+SKYLARK_EXTERN_API void sl_free_raw_matrix_wrap(void *A_);
+
 
 } // extern "C"
 

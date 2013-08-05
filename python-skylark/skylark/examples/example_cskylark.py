@@ -6,27 +6,22 @@ import elem
 from skylark import cskylark
 from mpi4py import MPI
 
-elem.Initialize()
-
 # Create a matrix to sketch
-# TODO: non uniform function in elemental interface...
-grid = elem.Grid()
-A = elem.DistMat_VR_STAR( grid )
-A.Resize(10,5)
-localHeight = A.LocalHeight()
-localWidth = A.LocalWidth()
-colShift = A.ColShift()
-rowShift = A.RowShift()
-colStride = A.ColStride()
-rowStride = A.RowStride()
-data = A.Data()
-ldim = A.LDim()
+A = elem.DistMatrix_d_VR_STAR(10, 5)
+localHeight = A.LocalHeight
+localWidth = A.LocalWidth
+colShift = A.ColShift
+rowShift = A.RowShift
+colStride = A.ColStride
+rowStride = A.RowStride
+data = A.Matrix
+ldim = A.LDim
 for jLocal in xrange(0,localWidth):
   j = rowShift + jLocal*rowStride
   for iLocal in xrange(0,localHeight):
     i = colShift + iLocal*colStride
-    data[iLocal+jLocal*ldim] = i-j
-A.Print("Original A")
+    data[iLocal, jLocal] = i-j
+elem.Display(A, "Original A");
 
 # Initilize context
 ctxt = cskylark.Context(123834)
@@ -35,8 +30,7 @@ ctxt = cskylark.Context(123834)
 S = cskylark.JLT(ctxt, "DistMatrix_VR_STAR", "Matrix", 10, 6)
 
 # Apply it
-SA = elem.Mat()
-SA.Resize(6, 5)
+SA = elem.Matrix_d(6, 5)
 S.Apply(A, SA, 1)
 if (MPI.COMM_WORLD.Get_rank() == 0):
   SA.Print("Sketched A (JLT)")

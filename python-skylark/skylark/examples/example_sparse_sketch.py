@@ -33,21 +33,22 @@ print ACB
 nullVec = kdt.Vec(0, sparse=False)
 SACB    = kdt.Mat(nullVec, nullVec, nullVec, 6, 6)
 S       = cskylark.CWT(ctxt, "DistSparseMatrix", "DistSparseMatrix", 10, 6)
-S.Apply(ACB, SACB, 1)
+print type(ACB).__name__
+S.apply(ACB, SACB, 1)
 
 if (rank == 0):
   print("Sketched A (CWT sparse, columnwise)")
   print SACB
 
-S.Free()
+S.free()
 
 SACB = kdt.Mat(nullVec, nullVec, nullVec, 3, 10)
 S    = cskylark.CWT(ctxt, "DistSparseMatrix", "DistSparseMatrix", 6, 3)
-S.Apply(ACB, SACB, 2)
+S.apply(ACB, SACB, 2)
 
 if (rank == 0):
   print("Sketched A (CWT sparse, rowwise)")
   print SACB
 
-S.Free()
-ctxt.Free()
+S.free()
+ctxt.free()

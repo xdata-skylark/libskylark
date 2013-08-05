@@ -32,6 +32,7 @@ private:
     const int _m;
     const int _n;
     matrix_type _QR;
+    matrix_type _t;
     matrix_type _R;
 
 
@@ -45,7 +46,7 @@ public:
         _m(problem.m), _n(problem.n) {
         // TODO n < m
         _QR = problem.input_matrix;
-        elem::QR(_QR);
+        elem::QR(_QR, _t);
         elem::LockedView(_R, _QR, 0, 0, _n, _n);
     }
 
@@ -58,9 +59,8 @@ public:
     void solve(const rhs_type &b, rhs_type &x) {
         // TODO error checking
         x = b;
-        // TODO not sure the following like will work if b is a row vector
-        elem::ApplyPackedReflectors(elem::LEFT, elem::LOWER,
-            elem::VERTICAL, elem::FORWARD, 0, _QR, x);
+        // TODO not sure the following will work if b is a row vector
+        elem::qr::ApplyQ(elem::LEFT, elem::ADJOINT, _QR, _t, x);
         if (b.Width() == 1)
             x.ResizeTo(_n, 1);
         else
@@ -77,8 +77,7 @@ public:
     void solve_mulitple(const rhs_type &B, rhs_type &X) {
         // TODO error checking
         X = B;
-        elem::ApplyPackedReflectors(elem::LEFT, elem::LOWER,
-            elem::VERTICAL, elem::FORWARD, 0, _QR, X);
+        elem::qr::ApplyQ(elem::LEFT, elem::ADJOINT, _QR, _t, X); 
         X.ResizeTo(_n, B.Width());
         elem::Trsm(elem::LEFT, elem::UPPER, elem::NORMAL, elem::NON_UNIT,
             1.0, _R, X, true);
@@ -110,7 +109,7 @@ private:
     const int _n;
     matrix_type _QR;
     matrix_type _R;
-
+    elem::DistMatrix<ValueType, elem::MD, elem::STAR> _t;
 
 public:
     /**
@@ -120,10 +119,11 @@ public:
      */
     exact_regressor_t(const regression_problem_t<l2_tag, matrix_type> &problem) :
         _m(problem.m), _n(problem.n),
-        _QR(problem.input_matrix.Grid()), _R(problem.input_matrix.Grid()) {
+        _QR(problem.input_matrix.Grid()), _R(problem.input_matrix.Grid()),
+        _t(problem.input_matrix.Grid()) {
         // TODO n < m
         _QR = problem.input_matrix;
-        elem::QR(_QR);
+        elem::QR(_QR, _t);
         elem::LockedView(_R, _QR, 0, 0, _n, _n);
     }
 
@@ -136,9 +136,8 @@ public:
     void solve(const rhs_type &b, rhs_type &x) {
         // TODO error checking
         x = b;
-        // TODO not sure the following like will work if b is a row vector
-        elem::ApplyPackedReflectors(elem::LEFT, elem::LOWER,
-            elem::VERTICAL, elem::FORWARD, 0, _QR, x);
+        // TODO not sure the following will also work if b is a row vector
+        elem::qr::ApplyQ(elem::LEFT, elem::ADJOINT, _QR, _t, x);
         if (b.Width() == 1)
             x.ResizeTo(_n, 1);
         else
@@ -155,8 +154,7 @@ public:
     void solve_mulitple(const rhs_type &B, rhs_type &X) {
         // TODO error checking
         X = B;
-        elem::ApplyPackedReflectors(elem::LEFT, elem::LOWER,
-            elem::VERTICAL, elem::FORWARD, 0, _QR, X);
+        elem::qr::ApplyQ(elem::LEFT, elem::ADJOINT, _QR, _t, X);
         X.ResizeTo(_n, B.Width());
         elem::Trsm(elem::LEFT, elem::UPPER, elem::NORMAL, elem::NON_UNIT,
             1.0, _R, X, true);

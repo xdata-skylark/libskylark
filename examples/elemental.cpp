@@ -54,8 +54,8 @@ int main (int argc, char** argv) {
         /** TODO: Read the entries! */
         std::cout << "We don't support reading --- yet --" << std::endl;
     } else {
-        elem::Uniform (int_params[M_INDEX], int_params[N_INDEX], A);
-        elem::Uniform (int_params[M_INDEX], int_params[N_RHS_INDEX], B);
+        elem::Uniform (A, int_params[M_INDEX], int_params[N_INDEX]);
+        elem::Uniform (B, int_params[M_INDEX], int_params[N_RHS_INDEX]);
     }
 
     /**
@@ -78,7 +78,7 @@ int main (int argc, char** argv) {
             /* 4. Print and see the result (if small enough) */
             if (int_params[S_INDEX] * int_params[N_INDEX] < 100 &&
                 world.rank() == 0)
-                sketch_A.Print ();
+                elem::Display(sketch_A);
 
             /** TODO: Do that same to B, and solve the system! */
 
@@ -100,7 +100,7 @@ int main (int argc, char** argv) {
             /* 4. Print and see the result */
             if (int_params[S_INDEX] * int_params[M_INDEX] < 100 &&
                 world.rank() == 0)
-                sketch_A.Print ();
+                elem::Display(sketch_A);
 
             /** TODO: Do that same to B, and solve the system! */
 
@@ -122,7 +122,7 @@ int main (int argc, char** argv) {
             /* 4. Print and see the result */
             if (int_params[S_INDEX] * int_params[M_INDEX] < 100 &&
                 world.rank() == 0)
-                sketch_A.Print ();
+                elem::Display(sketch_A);
 
             /** TODO: Do that same to B, and solve the system! */
 

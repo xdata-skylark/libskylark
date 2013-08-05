@@ -27,7 +27,7 @@ class SketchingTransform(object):
         
         Returns
         --------
-        A sketch object with properties context and shape (s,n) attributes.
+        A sketch object with properties:  context and shape (s,n) attributes.
         """
         self.context = context
         self.shape = (s , n)
@@ -57,7 +57,7 @@ class JLT(SketchingTransform):
         --------
         Let us bring *skylark* and other relevant Python packages into our environment.
         Here we demonstrate a non-distributed usage implemented using numpy arrays.  
-        Below, we give an example of distributed JLT transform operating on Elemental matrices.
+        In C-api section on accessing lower layers we give an example of distributed JLT transform operating on Elemental matrices.
         
         >>> import skylark, skylark.utilities, skylark.sketch
         >>> import scipy
@@ -448,4 +448,3 @@ if __name__== "__main__":
         plt.hist(distortions, 50)
         plt.show()
     
-

@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # Usage: 
-# mpiexec -np 2 python ../mypython_packages/lib/python2.7/site-packages/skylark/examples/example_cskylark.py
+# mpiexec -np 2 python skylark/examples/example_cskylark.py
 
 import elem
 from skylark import cskylark

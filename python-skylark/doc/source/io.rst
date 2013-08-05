@@ -1,4 +1,4 @@
-Parallel IO in Skylark
+IO in Skylark
 ========================
 
 .. automodule:: skylark.io

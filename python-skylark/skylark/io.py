@@ -1,7 +1,4 @@
 """
-Created on April 8, 2013.
-@author: Vikas Sindhwani (vsindhw@us.ibm.com)
-
     Example command line Usage for converting datasets into HDF5 format.
 
     >>> python skylark/io.py --libsvm2hdf5 datasets/usps.t datasets/usps.hdf5
@@ -11,6 +8,7 @@ import h5py
 import elem
 import numpy, scipy, scipy.sparse
 import argparse
+import sys
 
 class hdf5(object):
     """
@@ -177,12 +175,21 @@ def sparselibsvm2scipy(filename):
         Y = numpy.asarray(Y)
         return (X, Y)
 
-def streamlibsvm2scipy(filename, nfeatures, blocksize=1000):
+def streamlibsvm2scipy(filename, nfeatures, blocksize=100000):
+        """
+            Streams over a libsvm formatted file and emits dense matrix or vector Y and sparse matrix X,
+            in blocksize chunks. This is useful if you want to sketch on the fly and never load the 
+            matrix in memory. Since the number of columns in a streaming sparse matrix cannot be known before
+            a full pass, we require the number of columns (nfeatures) to be provided as input. This limitation
+            will be removed later. 
+        """
         Y = []
         I = []
         J = []
         V = []
         rowid = 0
+        allrows = 0
+        print >>sys.stderr, "Reading ", filename
         for line in open(filename):
             tokens = line.strip().split()
             for tok in tokens:
@@ -191,11 +198,14 @@ def streamlibsvm2scipy(filename, nfeatures, blocksize=1000):
                     V.append(float(val))
                     J.append(int(ind)-1)
                     I.append(rowid)
-
                 else:
-                    Y.append(float(tok))
+                    Y.append([float(t) for t in tok.split(',')])
+            
             rowid = rowid  + 1
             rows         = I[-1] + 1
+            allrows = allrows + 1
+            if allrows % 10000 == 0:
+                print >>sys.stderr, allrows
             #nfeatures    = max(J) + 1
             if rowid % blocksize == 0:
                 X = scipy.sparse.csr_matrix( (V, (I, J)), shape=(rows, nfeatures))
@@ -209,9 +219,10 @@ def streamlibsvm2scipy(filename, nfeatures, blocksize=1000):
         if rowid > 0:
             X = scipy.sparse.csr_matrix( (V, (I, J)), shape=(rows, nfeatures))
             Y = numpy.asarray(Y)
+	    print >>sys.stderr, "Read completed" 
             yield (X,Y)
             
-            
+	            
 #import pyCombBLAS
 # def sparselibsvm2combBLAS(filename):
 #         """

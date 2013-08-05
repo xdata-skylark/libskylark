@@ -5,7 +5,7 @@ from skylark.ml.nonlinear import *
 import pkg_resources, sys
 
 filename = pkg_resources.resource_filename("skylark", sys.argv[1])    
-X,Y = skylark.io.sparselibsvm(filename)
+X,Y = skylark.io.sparselibsvm2scipy(filename)
 regularization= float(sys.argv[2])
 bandwidth = float(sys.argv[3])
 randomfeatures = int(sys.argv[4])

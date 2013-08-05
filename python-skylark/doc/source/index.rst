@@ -11,11 +11,12 @@ skylark
 .. toctree::
    :maxdepth: 3
   
-   installation
+   introduction
    sketching
    ml
    io
    capi
+  
    
 Indices and tables
 ==================

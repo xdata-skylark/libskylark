@@ -160,14 +160,28 @@ class CT(SketchTransform):
   """
   def __init__(self, intype, outtype, n, s, C):
     global _ctxt_obj
-    self._obj = _lib.sl_create_sketch_transform("CT", intype, outtype, n, s, ctypes.c_double(C))
+
+    if not _map_to_ctype.has_key(intype):
+      if _rank == 0:
+        print "ERROR: unknown input type (%s)" % intype      # TODO
+      return -1
+
+    if not _map_to_ctype.has_key(outtype):
+      if _rank == 0:
+        print "ERROR: unknown output type (%s)" % outtype    # TODO
+      return -1
+
+    self._intype = intype
+    self._outtype = outtype
+    self._obj = _lib.sl_create_sketch_transform(_ctxt_obj, "CT", \
+                                                _map_to_ctype[intype], \
+                                                _map_to_ctype[outtype], n, s, ctypes.c_double(C))
 
 class FJLT(SketchTransform):
   """
   Fast Johnson-Lindenstrauss Transform
   """
   def __init__(self, intype, outtype, n, s):
-    global _ctxt_obj
     super(FJLT, self).__init__("FJLT", intype, outtype, n, s);
 
 class CWT(SketchTransform):
@@ -199,7 +213,22 @@ class WZT(SketchTransform):
   """
   def __init__(self, intype, outtype, n, s, p):
     global _ctxt_obj
-    self._obj = _lib.sl_create_sketch_transform(_ctxt_obj, "WZT", intype, outtype, n, s, ctypes.c_double(p))
+
+    if not _map_to_ctype.has_key(intype):
+      if _rank == 0:
+        print "ERROR: unknown input type (%s)" % intype      # TODO
+      return -1
+
+    if not _map_to_ctype.has_key(outtype):
+      if _rank == 0:
+        print "ERROR: unknown output type (%s)" % outtype    # TODO
+      return -1
+
+    self._intype = intype
+    self._outtype = outtype
+    self._obj = _lib.sl_create_sketch_transform(_ctxt_obj, "WZT", \
+                                                _map_to_ctype[intype], \
+                                                _map_to_ctype[outtype], n, s, ctypes.c_double(p))
 
 class GaussianRFT(SketchTransform):
   """

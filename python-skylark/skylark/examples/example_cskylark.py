@@ -55,14 +55,14 @@ for sname in sketches:
   
   t0 = time.time()
 
-  # Create transform
-  S = stype("DistMatrix_VR_STAR", "LocalMatrix", m, t)
-  
+  # Create transform. Default output type is "LocalMatrix".
+  S = stype(m, t, intype="DistMatrix_VR_STAR")
+
   # Sketch both A and b using the same sketch
   SA = np.zeros((t, n), order='F')
-  S.apply(A, SA, 1)
+  S.apply(A, SA)   # Default is dim=0, ="columnwise", ="left"
   Sb = np.zeros((t, 1), order='F')
-  S.apply(b, Sb, 1)
+  S.apply(b, Sb)   # Default is dim=0, ="columnwise", ="left"
   
   # SA and Sb reside on rank zero, so solving the equation is 
   # done there.

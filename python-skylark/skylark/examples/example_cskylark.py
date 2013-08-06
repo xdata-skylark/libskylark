@@ -12,11 +12,13 @@ A = elem.DistMatrix_d_VR_STAR()
 elem.Uniform(A, 10, 5);
 elem.Display(A, "Original A");
 
-# Initilize context
-ctxt = cskylark.Context(123834)
+# Skylark is automatically initilalized when you import Skylark,
+# It will use system time to generate the seed. However, we can 
+# reinitialize for so fixe the seed.
+cskylark.initialize(123834);
 
 # Create JLT transform
-S = cskylark.JLT(ctxt, "DistMatrix_VR_STAR", "LocalMatrix", 10, 6)
+S = cskylark.JLT("DistMatrix_VR_STAR", "LocalMatrix", 10, 6)
 
 # Apply it
 SA = np.zeros((6, 5), order='F')
@@ -26,15 +28,19 @@ if (MPI.COMM_WORLD.Get_rank() == 0):
   print SA;
 
 # Repeat with FJLT
-T = cskylark.FJLT(ctxt, "DistMatrix_VR_STAR", "LocalMatrix", 10, 6)
+T = cskylark.FJLT("DistMatrix_VR_STAR", "LocalMatrix", 10, 6)
 TA = np.zeros((6, 5), order='F')
 T.apply(A, TA, 1)
 if (MPI.COMM_WORLD.Get_rank() == 0):
   print "Sketched A (FJLT)"
   print TA;
 
-# Clean up
+# Clean up the sketches
 S.free()
 T.free()
-ctxt.free()
+
+# Really no need to close skylark -- it will do it automatically.
+# However, if you really want to you can do it.
+cskylark.finalize()
+
 

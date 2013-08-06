@@ -4,6 +4,8 @@ import numpy
 import elem 
 import sys
 import os
+import time
+import atexit
 
 #
 # Load C-API library and set return types
@@ -15,6 +17,7 @@ _lib.sl_context_rank.restype = c_int
 _lib.sl_context_size.restype = c_int
 _lib.sl_create_sketch_transform.restype = c_void_p
 _lib.sl_wrap_raw_matrix.restype = c_void_p
+
 #
 # Create mapping between type string that can be supplied by user
 # to one the C-API recognaizes
@@ -32,15 +35,15 @@ _map_to_ctype["LocalMatrix"] = "Matrix"
 # Create mapping between object type to function converting it 
 # to pointers to passed to the C-API
 #
-def _elem_to_ptr(ctxt, A):
+def _elem_to_ptr(A):
   return ctypes.c_void_p(long(A.this))
 
-def _kdt_to_ptr(ctxt, A):
+def _kdt_to_ptr(A):
   return ctypes.c_void_p(long(A._m_.this))
 
-def _np_to_ptr(ctxt, A):
+def _np_to_ptr(A):
   if not A.flags.f_contiguous:
-    if ctxt.rank() == 0:
+    if _rank == 0:
       print "ERROR: only FORTRAN style (column-major) NumPy arrays are supported" # TODO
     return -1
   else:
@@ -62,26 +65,29 @@ _map_to_ptr["LocalMatrix"] = _np_to_ptr
 _map_to_ptr_cleaner = { }
 _map_to_ptr_cleaner["LocalMatrix"]  = _np_ptr_cleaner
 
-#
-# Context
-#
-class Context(object):
-  """
-  Create a Skylark Context Object
-  """
-  def __init__(self, seed):
-    self._obj = _lib.sl_create_default_context(seed)
-  # TODO: Figure out how to wrap MPI_Comm
 
-  def free(self):
-    _lib.sl_free_context(self._obj)
-    del self._obj
+# Function for initialization and reinitilialization
+def initialize(seed):
+  global _ctxt_obj, _rank, _size
+  if _ctxt_obj != 0:
+    _lib.sl_free_context(_ctxt_obj)
+  _ctxt_obj = _lib.sl_create_default_context(seed)
+  _rank = _lib.sl_context_rank(_ctxt_obj)
+  _size = _lib.sl_context_size(_ctxt_obj)
 
-  def size(self):
-    return _lib.sl_context_size(self._obj)
+# Actually initialize the C-API.
+_ctxt_obj = 0
+initialize(int(time.time()))
 
-  def rank(self):
-    return _lib.sl_context_rank(self._obj)
+# Allow finalization
+def finalize():
+  global _ctxt_obj, _rank, _size
+  if _ctxt_obj != 0:
+    _lib.sl_free_context(_ctxt_obj)
+  _ctxt_obj = 0
+
+# Make sure finalize is called before exiting (just in case).
+atexit.register(finalize)
 
 #
 # Generic Sketch Transform
@@ -92,21 +98,22 @@ class SketchTransform(object):
   The various sketch transforms derive from this class and 
   which holds the common interface. Derived classes can have different constructors.
   """
-  def __init__(self, ctxt, ttype, intype, outtype, n, s):
+  def __init__(self, ttype, intype, outtype, n, s):
+    global _ctxt_obj
+
     if not _map_to_ctype.has_key(intype):
-      if ctxt.rank() == 0:
+      if _rank == 0:
         print "ERROR: unknown input type (%s)" % intype      # TODO
       return -1
 
     if not _map_to_ctype.has_key(outtype):
-      if ctxt.rank() == 0:
+      if _rank == 0:
         print "ERROR: unknown output type (%s)" % outtype    # TODO
       return -1
 
-    self._ctxt = ctxt;
     self._intype = intype
     self._outtype = outtype
-    self._obj = _lib.sl_create_sketch_transform(ctxt._obj, ttype, \
+    self._obj = _lib.sl_create_sketch_transform(_ctxt_obj, ttype, \
                                                 _map_to_ctype[intype], \
                                                 _map_to_ctype[outtype], n, s)
 
@@ -125,8 +132,8 @@ class SketchTransform(object):
     :param dim: Dimension to apply along. 1 - columnwise, 2 - rowwise.
 
     """
-    Aobj = _map_to_ptr[self._intype](self._ctxt, A)
-    SAobj = _map_to_ptr[self._outtype](self._ctxt, SA)
+    Aobj = _map_to_ptr[self._intype](A)
+    SAobj = _map_to_ptr[self._outtype](SA)
     if (Aobj == -1 or SAobj == -1):
       return -1
 
@@ -146,22 +153,24 @@ class JLT(SketchTransform):
   """
   Johnson-Lindenstrauss Transform
   """
-  def __init__(self, ctxt, intype, outtype, n, s):
-    super(JLT, self).__init__(ctxt, "JLT", intype, outtype, n, s);
+  def __init__(self, intype, outtype, n, s):
+    super(JLT, self).__init__("JLT", intype, outtype, n, s);
 
 class CT(SketchTransform):
   """
   Cauchy Transform
   """
-  def __init__(self, ctxt, intype, outtype, n, s, C):
-    self._obj = _lib.sl_create_sketch_transform(ctxt._obj, "CT", intype, outtype, n, s, ctypes.c_double(C))
+  def __init__(self, intype, outtype, n, s, C):
+    global _ctxt_obj
+    self._obj = _lib.sl_create_sketch_transform("CT", intype, outtype, n, s, ctypes.c_double(C))
 
 class FJLT(SketchTransform):
   """
   Fast Johnson-Lindenstrauss Transform
   """
-  def __init__(self, ctxt, intype, outtype, n, s):
-    super(FJLT, self).__init__(ctxt, "FJLT", intype, outtype, n, s);
+  def __init__(self, intype, outtype, n, s):
+    global _ctxt_obj
+    super(FJLT, self).__init__("FJLT", intype, outtype, n, s);
 
 class CWT(SketchTransform):
   """
@@ -170,8 +179,8 @@ class CWT(SketchTransform):
   *K. Clarkson* and *D. Woodruff*, **Low Rank Approximation and Regression
   in Input Sparsity Time**, STOC 2013 
   """
-  def __init__(self, ctxt, intype, outtype, n, s):
-    super(CWT, self).__init__(ctxt, "CWT", intype, outtype, n, s);
+  def __init__(self, intype, outtype, n, s):
+    super(CWT, self).__init__("CWT", intype, outtype, n, s);
 
 class MMT(SketchTransform):
   """
@@ -180,8 +189,8 @@ class MMT(SketchTransform):
   *X. Meng* and *M. W. Mahoney*, **Low-distortion Subspace Embeddings in
   Input-sparsity Time and Applications to Robust Linear Regression**, STOC 2013
   """
-  def __init__(self, ctxt, intype, outtype, n, s):
-    super(MMT, self).__init__(ctxt, "MMT", intype, outtype, n, s);
+  def __init__(self, intype, outtype, n, s):
+    super(MMT, self).__init__("MMT", intype, outtype, n, s);
 
 class WZT(SketchTransform):
   """
@@ -190,15 +199,16 @@ class WZT(SketchTransform):
   *D. Woodruff* and *Q. Zhang*, **Subspace Embeddings and L_p Regression
   Using Exponential Random**, COLT 2013
   """
-  def __init__(self, ctxt, intype, outtype, n, s, p):
-    self._obj = _lib.sl_create_sketch_transform(ctxt._obj, "WZT", intype, outtype, n, s, ctypes.c_double(p))
+  def __init__(self, intype, outtype, n, s, p):
+    global _ctxt_obj
+    self._obj = _lib.sl_create_sketch_transform(_ctxt_obj, "WZT", intype, outtype, n, s, ctypes.c_double(p))
 
 class GaussianRFT(SketchTransform):
   """
   Random Features Transform for the RBF Kernel
   """
-  def __init__(self, ctxt, intype, outtype, n, s):
-    super(GaussianRFT, self).__init__(ctxt, "GaussianRFT", intype, outtype, n, s);
+  def __init__(self, intype, outtype, n, s):
+    super(GaussianRFT, self).__init__("GaussianRFT", intype, outtype, n, s);
 
 class LaplacianRFT(SketchTransform):
   """
@@ -207,6 +217,6 @@ class LaplacianRFT(SketchTransform):
   *A. Rahimi* and *B. Recht*, **Random Features for Large-scale 
   Kernel Machines*, NIPS 2009
   """
-  def __init__(self, ctxt, intype, outtype, n, s):
-    super(LaplacianRFT, self).__init__(ctxt, "LaplacianRFT", intype, outtype, n, s);
+  def __init__(self, intype, outtype, n, s):
+    super(LaplacianRFT, self).__init__("LaplacianRFT", intype, outtype, n, s);
 

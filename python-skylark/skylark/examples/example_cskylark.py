@@ -35,9 +35,11 @@ if (MPI.COMM_WORLD.Get_rank() == 0):
   print "Sketched A (FJLT)"
   print TA;
 
-# Clean up the sketches
-S.free()
-T.free()
+# As with all Python object they will be automatically garbage
+# collected, and the associated memory will be freed.
+# You can also explicitly free them.
+del S     # S = 0 will also free memory.
+del T     # T = 0 will also free memory.
 
 # Really no need to close skylark -- it will do it automatically.
 # However, if you really want to you can do it.

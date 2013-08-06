@@ -117,10 +117,8 @@ class SketchTransform(object):
                                                 _map_to_ctype[intype], \
                                                 _map_to_ctype[outtype], n, s)
 
-  def free(self):
-    """ Discard the transform """
+  def __del__(self):
     _lib.sl_free_sketch_transform(self._obj)
-    del self._obj
 
   def apply(self, A, SA, dim):
     """

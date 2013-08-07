@@ -75,39 +75,29 @@ errors that might have occurred.
     with <INSTALL-HERE>/lib.
 
 (6) Elemental: Downloading and installing Elemental is simple. In
-fact, the dependencies of Elemental are similar to those of skylark. Elemental
-depends on MPI, BLAS/LAPACK, and CMake.  So, if you have followed all the steps above, you're all set to install Elemental!
+fact, the dependencies of Elemental are similar to those of skylark. 
+Elemental depends on MPI, BLAS/LAPACK, and CMake.  So, if you have 
+followed all the steps above, you're all set to install Elemental!
 
-While installing Elemental
-please modify CMakeLists.txt to build Elemental experimental code, which includes
-ctypes based Python bindings by setting the option below to "ON":
+Currently, Skylark supports Elemental-0.81. Previous version do not
+have the neccessary Python binding. Elemental's interface
+is not yet stable so future version of Elemental might not compile 
+with Skylark.
 
-option(ELEM_EXPERIMENTAL "Build experimental code" ON)
+Elemental is currently optional in skylark, but it is turned ON by 
+default. If you don't want to use Elemental, you can turn it off by 
+using the following flag --- "-DUSE_ELEMENTAL=OFF" when you are 
+configuring skylark.
 
-Add Elemental's Python folder to PYTHONPATH:
-$ELEMENTAL_ROOT/../experimental/python
+Elemental is available from http://libelemental.org/.
 
-
-To build Elemental libraries, please follow these instructions:
-(6.a) Download Elemental from google.code.
-(6.b) Untar/Unzip everything in a directory (let's say 'elemental-src').
-(6.c) Create another directory for object files (let's say 'elemental-obj').
-(6.d) Go into 'elemental-obj'
-    #cd elemental-obj
-(6.e) Configure your installation by invoking CMake.
-    #cmake <path-to-elemental-src> -DCMAKE_INSTALL_PREFIX=<INSTALL-HERE>
-Remember, you can provide either the absolute or the relative path to
-'elemental-src' here.
-(6.f) Build and install elemental:
-    #make all install
-NOTE: Once again, all the commands are run from 'elemental-obj', not
-'elemental-src'. If all went well, Elemental will have been installed in
-<INSTALL-HERE>/* directories. As usual, set your environment variables
-correctly.
-
-Elemental is currently optional in skylark, but it is turned ON by default. If
-you don't want to use Elemental, you can turn it off by using the following
-flag --- "-DUSE_ELEMENTAL=OFF" when you are configuring skylark.
+To install Elemental you generally need to follow Elemental's 
+installation instructions, with two small variants:
+(6.a) Be sure to turn on the SWIG binding by using -D USE_SWIG=ON
+when invoking CMake. E.g.
+     #cmake -D USE_SWIG=ON ..
+(6.b) Add the build path ($ELEMENTAL_ROOT/<BUILD DIRECTORY>) to 
+PYTHONPATH (or install in the site-packages).
 
 
 Building Skylark:

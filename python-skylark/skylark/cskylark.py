@@ -70,6 +70,11 @@ _map_to_ptr_cleaner["LocalMatrix"]  = _np_ptr_cleaner
 
 # Function for initialization and reinitilialization
 def initialize(seed=-1):
+  """
+  Reinitalize the library with a seed. If seed is -1 then system time is
+  used to create the seed.
+  """
+  # TODO reload dll (?)
   global _ctxt_obj, _rank, _size
   if seed == -1:
     seed = int(time.time())
@@ -85,6 +90,12 @@ initialize(int(time.time()))
 
 # Allow finalization
 def finalize():
+  """
+  Finalize (de-allocate) the library. However, note that that will not cause 
+  allocated objects (e.g. sketch transforms) to be freed. They are freed by 
+  the garbage collector when detected as garbage (no references).
+  """
+  # TODO free dll (?)
   global _ctxt_obj, _rank, _size
   if _ctxt_obj != 0:
     _lib.sl_free_context(_ctxt_obj)

@@ -1,80 +1,73 @@
 import unittest
-import itertools
-import random
 import numpy as np
+from mpi4py import MPI
 import math
 
-from mpi4py import MPI
 from skylark import cskylark
-from helper.elemental_matrix import create_elemental_matrix
 
 import elem
+
+_M = 10000
+_N = 100
+_T = 1000
 
 class FJLT_test(unittest.TestCase):
 
     def setUp(self):
-        elem.Initialize()
+        # We do not initialize Skylark so it will take the seed
+        # from system time (new seed each time).
+        # To be clean, and have every test self contained, we reinitalize
+        # Skylark with a new time based seed
+        cskylark.initialize()
 
-        #FIXME: accuracy?
         self.num_repeats = 5
-        self.accuracy    = 1e-1
+        self.accuracy    = 1e-2
 
     def tearDown(self):
-        elem.Finalize()
+        # No real need to do this...
+        cskylark.finalize()
 
     def test_apply_colwise(self):
-
         norm = 0.0
-        A = create_elemental_matrix(10000, 100)
-        norm_exp = np.linalg.norm(A.Data())
+        A = elem.DistMatrix_d_VR_STAR()
+        elem.Uniform(A, _M, _N)
 
-        #for _ in itertools.repeat(None, self.num_repeats):
+        # To compute norm we have to go through (MC, MR) norm...
+        A1 = elem.DistMatrix_d()
+        elem.Copy(A, A1)
+        norm_exp = elem.FrobeniusNorm(A1)
+
         for i in range(self.num_repeats):
-
-            #FIXME: how to choose seeds?
-            #ctxt = cskylark.Context(random.randint(0, 1e9))
-            ctxt = cskylark.Context(i)
-            S    = cskylark.FJLT(ctxt, "DistMatrix_VR_STAR", "Matrix", 10000, 1000)
-            SA   = elem.Mat()
-            SA.Resize(1000, 100)
-            S.Apply(A, SA, 1)
-
-            norm += np.linalg.norm(SA.Data())
+            S  = cskylark.FJLT(_M, _T, intype="DistMatrix_VR_STAR")
+            SA = np.zeros((_T, _N), order='F')
+            S.apply(A, SA, "columnwise")
+            SA = MPI.COMM_WORLD.bcast(SA, root=0)
+            norm += np.linalg.norm(SA)
 
         norm /= self.num_repeats
 
         self.assertLess(math.fabs(norm - norm_exp) / norm, self.accuracy)
-
-        ctxt.Free()
-        A.Free()
 
     def test_apply_rowwise(self):
-
-        #FIXME: rowwise not working yet
-        return
-
         norm = 0.0
-        A = create_elemental_matrix(100, 10000)
-        norm_exp = np.linalg.norm(A.Data())
+        A = elem.DistMatrix_d_VR_STAR()
+        elem.Uniform(A, _N, _M)
+
+        # To compute norm we have to go through (MC, MR) norm...
+        A1 = elem.DistMatrix_d()
+        elem.Copy(A, A1)
+        norm_exp = elem.FrobeniusNorm(A1)
 
         for i in range(self.num_repeats):
-
-            #FIXME: how to choose seeds?
-            ctxt = cskylark.Context(i)
-            S    = cskylark.FJLT(ctxt, "DistMatrix_VR_STAR", "Matrix", 10000, 1000)
-            SA   = elem.Mat()
-            SA.Resize(100, 1000)
-            S.Apply(A, SA, 2)
-
-            norm += np.linalg.norm(SA.Data())
+            S  = cskylark.FJLT(_M, _T, intype="DistMatrix_VR_STAR")
+            SA = np.zeros((_N, _T), order='F')
+            S.apply(A, SA, "rowwise")
+            SA = MPI.COMM_WORLD.bcast(SA, root=0)
+            norm += np.linalg.norm(SA)
 
         norm /= self.num_repeats
 
         self.assertLess(math.fabs(norm - norm_exp) / norm, self.accuracy)
-
-        ctxt.Free()
-        A.Free()
-
 
 if __name__ == '__main__':
     unittest.main()

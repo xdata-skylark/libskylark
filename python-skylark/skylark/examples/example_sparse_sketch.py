@@ -42,7 +42,8 @@ if (rank == 0):
   print("Sketched A (CWT sparse, columnwise)")
   print SACB
 
-S.free()
+# No need to free S -- it will be automatically garbage collected
+# and the memory for the sketch reclaimed.
 
 SACB = kdt.Mat(nullVec, nullVec, nullVec, 3, 10)
 S    = cskylark.CWT(6, 3, intype="DistSparseMatrix", outtype="DistSparseMatrix")
@@ -51,11 +52,6 @@ S.apply(ACB, SACB, 1)
 if (rank == 0):
   print("Sketched A (CWT sparse, rowwise)")
   print SACB
-
-# As with all Python object they will be automatically garbage
-# collected, and the associated memory will be freed.
-# You can also explicitly free them.
-del S     # S = 0 will also free memory.
 
 # Really no need to close skylark -- it will do it automatically.
 # However, if you really want to you can do it.

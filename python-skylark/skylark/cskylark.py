@@ -69,8 +69,10 @@ _map_to_ptr_cleaner["LocalMatrix"]  = _np_ptr_cleaner
 
 
 # Function for initialization and reinitilialization
-def initialize(seed):
+def initialize(seed=-1):
   global _ctxt_obj, _rank, _size
+  if seed == -1:
+    seed = int(time.time())
   if _ctxt_obj != 0:
     _lib.sl_free_context(_ctxt_obj)
   _ctxt_obj = _lib.sl_create_default_context(seed)

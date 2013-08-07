@@ -257,8 +257,24 @@ class GaussianRFT(SketchTransform):
   """
   Random Features Transform for the RBF Kernel
   """
-  def __init__(self, n, s, intype=_DEF_INTYPE, outtype=_DEF_OUTTYPE):
-    super(GaussianRFT, self).__init__("GaussianRFT", n, s, intype, outtype);
+  def __init__(self, n, s, sigma, intype=_DEF_INTYPE, outtype=_DEF_OUTTYPE):
+    global _ctxt_obj
+
+    if not _map_to_ctype.has_key(intype):
+      if _rank == 0:
+        print "ERROR: unknown input type (%s)" % intype      # TODO
+      return -1
+
+    if not _map_to_ctype.has_key(outtype):
+      if _rank == 0:
+        print "ERROR: unknown output type (%s)" % outtype    # TODO
+      return -1
+
+    self._intype = intype
+    self._outtype = outtype
+    self._obj = _lib.sl_create_sketch_transform(_ctxt_obj, "GaussianRFT", \
+                                                _map_to_ctype[intype], \
+                                                _map_to_ctype[outtype], n, s, ctypes.c_double(sigma))
 
 class LaplacianRFT(SketchTransform):
   """
@@ -267,6 +283,22 @@ class LaplacianRFT(SketchTransform):
   *A. Rahimi* and *B. Recht*, **Random Features for Large-scale 
   Kernel Machines*, NIPS 2009
   """
-  def __init__(self, n, s, intype=_DEF_INTYPE, outtype=_DEF_OUTTYPE):
-    super(LaplacianRFT, self).__init__("LaplacianRFT", n, s, intype, outtype);
+  def __init__(self, n, s, sigma, intype=_DEF_INTYPE, outtype=_DEF_OUTTYPE):
+    global _ctxt_obj
+
+    if not _map_to_ctype.has_key(intype):
+      if _rank == 0:
+        print "ERROR: unknown input type (%s)" % intype      # TODO
+      return -1
+
+    if not _map_to_ctype.has_key(outtype):
+      if _rank == 0:
+        print "ERROR: unknown output type (%s)" % outtype    # TODO
+      return -1
+
+    self._intype = intype
+    self._outtype = outtype
+    self._obj = _lib.sl_create_sketch_transform(_ctxt_obj, "LaplacianRFT", \
+                                                _map_to_ctype[intype], \
+                                                _map_to_ctype[outtype], n, s, ctypes.c_double(sigma))
 

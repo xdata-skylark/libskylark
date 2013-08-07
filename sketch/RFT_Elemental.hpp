@@ -50,7 +50,8 @@ private:
         for(int j = 0; j < Al.Width(); j++)
             for(int i = 0; i < _S; i++) {
                 value_type val = Al.Get(i, j);
-                value_type trans = _scale * std::cos(val + _shifts[i]);
+                value_type trans =
+                    _scale * std::cos((val / _sigma) + _shifts[i]);
                 Al.Set(i, j, trans);
             }
     }
@@ -69,7 +70,8 @@ private:
         for(int j = 0; j < _S; j++)
             for(int i = 0; i < Al.Height(); i++) {
                 value_type val = Al.Get(i, j);
-                value_type trans = _scale * std::cos(val + _shifts[j]);
+                value_type trans =
+                    _scale * std::cos((val / _sigma) + _shifts[j]);
                 Al.Set(i, j, trans);
             }
     }
@@ -78,6 +80,8 @@ private:
     const int _N;
     /// Output dimension
     const int _S;
+    /// Bandwidth (sigma)
+    const double _sigma;
     /// Context for this sketch
     skylark::sketch::context_t& _context;
     /// Underlying dense_transform
@@ -92,8 +96,8 @@ public:
     /**
      * Constructor
      */
-    RFT_t (int N, int S, skylark::sketch::context_t& context)
-        : _N(N), _S(S), _context(context),
+    RFT_t (int N, int S, double sigma, skylark::sketch::context_t& context)
+        : _N(N), _S(S), _sigma(sigma), _context(context),
           _dense(N, S, context), _shifts(S),
           _scale(std::sqrt(2.0 / _S)) {
         boost::random::mt19937 prng(context.newseed());

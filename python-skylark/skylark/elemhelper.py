@@ -4,7 +4,10 @@ import numpy
 def local2distributed(A, type=elem.DistMatrix_d):
     """
     Takes an NumPy local matrix and returns an Elemental distribute matrix.
-    The type of the Elemental is given by type, whose default is DistMatrix_d
+    The type of the Elemental is given by type, whose default is DistMatrix_d.
+    Important:
+    - The NumPy matrix should be present on all ranks.
+    - Elemental default matrix generation is used.
     """
     Adist = type(A.shape[0], A.shape[1])
     localHeight = Adist.LocalHeight

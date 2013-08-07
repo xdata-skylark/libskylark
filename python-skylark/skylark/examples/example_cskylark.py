@@ -43,7 +43,7 @@ if (MPI.COMM_WORLD.Get_rank() == 0):
 
 # Skylark is automatically initilalized when you import Skylark,
 # It will use system time to generate the seed. However, we can 
-# reinitialize for so fixe the seed.
+# reinitialize for so to fix the seed.
 cskylark.initialize(123834);
 
 #

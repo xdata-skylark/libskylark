@@ -68,31 +68,15 @@ private:
                     output_matrix_type& sketch_of_A,
                     skylark::sketch::rowwise_tag) const {
 
-        // TODO have checked the following code yet.
-
-        // Tranpose to view the input as the underlying transform expects it.
-        intermediate_type inter_A(A.Grid());
-        elem::Transpose(A, inter_A);
-
-        // Apply the underlying transform
-        underlying_transform.apply(inter_A, inter_A,
-                                   skylark::sketch::columnwise_tag());
-
-        // Transpose back and keep wanted columns
-        matrix_type inter_A_t(A.Grid());
-        elem::Transpose(inter_A, inter_A_t);
-
-        // Create the sampled and scaled matrix -- still in distributed mode
-        matrix_type dist_sketch_A(A.Height(), S, inter_A.Grid());
-        double scale = sqrt((double)N / (double)S);
-        for (int j = 0; j < S; j++) {
-            int col  = samples[j];
-            for (int i = 0; i < A.LocalHeight(); i++) {
-                dist_sketch_A.Matrix().Set(i, j,
-                    scale * inter_A_t.Matrix().Get(i, col));
-            }
-        }
-    }
+        // TODO This is a quick&dirty hack - uses the columnwise implementation.
+        matrix_type A_t(A.Grid());
+        elem::Transpose(A, A_t);
+        output_matrix_type sketch_of_A_t(sketch_of_A.Width(),
+            sketch_of_A.Height());
+        apply_impl_vdist(A_t, sketch_of_A_t,
+            skylark::sketch::columnwise_tag());
+        elem::Transpose(sketch_of_A_t, sketch_of_A);
+     }
 
     // List of variables associated with this sketch
     /// Input dimension

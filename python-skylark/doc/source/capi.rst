@@ -24,11 +24,19 @@ through `KDT <http://kdt.sourceforge.net/wiki/index.php/Main_Page>`_.
 The lower layers use MPI so it is advisable an MPI interface to Python be 
 installed. One option is to use `mpi4py <http://mpi4py.scipy.org/>`_.
 
-The Context
------------
+Initialization and Finalization
+-------------------------------
 
-.. autoclass:: Context
-	       :members:
+Skylark is automatically initialized with a random seed when you import 
+cskylark. However, you can reinitialize it to a specific seed by calling 
+initialize. While not required, you can finalize the library using
+finalize. However, note that that will not cause allocated objects 
+(e.g. sketch transforms) to be freed. They are freed by the garbage collector
+when detected as garbage (no references).
+
+.. autofunction:: initialize
+
+.. autofunction:: finalize 
 
 SketchTransform
 ---------------

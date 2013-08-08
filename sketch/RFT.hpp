@@ -34,8 +34,9 @@ struct GaussianRFT_t :
     typedef RFT_t<InputMatrixType, OutputMatrixType,
                   bstrand::normal_distribution > Base;
 
-    GaussianRFT_t(int N, int S, skylark::sketch::context_t& context)
-        : Base(N, S, context) { };
+    GaussianRFT_t(int N, int S, double sigma,
+        skylark::sketch::context_t& context)
+        : Base(N, S, sigma, context) { };
 };
 
 /**
@@ -50,8 +51,9 @@ struct LaplacianRFT_t :
     typedef RFT_t<InputMatrixType, OutputMatrixType,
                   bstrand::cauchy_distribution > Base;
 
-    LaplacianRFT_t(int N, int S, skylark::sketch::context_t& context)
-        : Base(N, S, context) { };
+    LaplacianRFT_t(int N, int S, double sigma,
+        skylark::sketch::context_t& context)
+        : Base(N, S, sigma, context) { };
 };
 
 } // namespace sketch

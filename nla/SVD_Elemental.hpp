@@ -58,7 +58,7 @@ void SVD(DistMatrixType& A, DistMatrixType& U, MatrixType& s,  MatrixType& V, in
     // call Explicit QR on Y. Y is overwritten with Q where Y = QR.
     // NOTE: Type conversions below.
     elem::DistMatrix<double> Q(Y);
-    elem::ExplicitQR( Q );
+    elem::QR( Q );
     DistMatrixType Q2(Q);
     Q2 = Q;
 

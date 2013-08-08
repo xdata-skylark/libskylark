@@ -67,8 +67,8 @@ int main (int argc, char** argv) {
         /** TODO: Read the entries! */
         std::cout << "We don't support reading --- yet --" << std::endl;
     } else {
-        elem::Uniform (m, k, A1);
-        elem::Uniform (m, k, A2);
+        elem::Uniform (A1, m, k);
+        elem::Uniform (A2, m, k);
         elem::Matrix<double> A3(k,k);
       //  A1.Print("A1");
       //  A2.Print("A2");
@@ -78,7 +78,7 @@ int main (int argc, char** argv) {
   //      		A3.Print("Checking Matrix multiplication [VR,*]-times-[VR,*] A1'A2 = A3");
         }
 
-        elem::Uniform (k,k, A3);
+        elem::Uniform (A3, k, k);
 
 //        A3.Print("Generated new A3:");
         skylark::nla::Gemm(A1,A3,A2);
@@ -88,14 +88,14 @@ int main (int argc, char** argv) {
         //A3.ResizeTo(m, n);
         //V.ResizeTo(m, k);
 
-        elem::Uniform(m, k, A11);
-        elem::Uniform(k, n, A22);
+        elem::Uniform(A11, m, k);
+        elem::Uniform(A22, k, n);
         A33.ResizeTo(m,n);
         Gemm(elem::NORMAL, elem::NORMAL, 1.0, A11, A22, 0.0, A33);
         A.ResizeTo(m,n);
         A = A33;
         elem::SVD(A33, s33, V33);
-        s33.Print("True singular values");
+        elem::Display(s33, "True singular values");
 
         //A.ResizeTo(m, n);
         //A = A3;
@@ -108,62 +108,17 @@ int main (int argc, char** argv) {
     if (0==strcmp("JLT", chr_params[TRANSFORM_INDEX]) ) {
 
         if (SKETCH_LEFT == int_params[SKETCH_DIRECTION_INDEX]) {
-        //	A.Print("Matrix A");
-        	//U.ResizeTo(m,k);
+            //	A.Print("Matrix A");
+            //U.ResizeTo(m,k);
             skylark::nla::SVD(A, U, s, V, int_params[S_INDEX], 1, context);
-        //	U.Print("U: Left Singular Vectors");
-        	s.Print("s: Singular Values");
-        //	V.Print("V: Right Singular Vectors");
+            //	U.Print("U: Left Singular Vectors");
+            elem::Display(s, "Approximate singular values");
+            //	V.Print("V: Right Singular Vectors");
         } else {
             //std::cout << "We only have left sketching. Please retry" << std::endl;
-
-
-
-        }
-    } else if (0==strcmp("FJLT", chr_params[TRANSFORM_INDEX]) ) {
-        if (SKETCH_LEFT == int_params[SKETCH_DIRECTION_INDEX]) {
-            /* 1. Create the sketching matrix */
-            skys::FJLT_t<DistMatrixType, MatrixType> FJLT (int_params[M_INDEX],
-                int_params[S_INDEX], context);
-
-            /* 2. Create space for the sketched matrix */
-            MatrixType sketch_A(int_params[S_INDEX], int_params[N_INDEX]);
-
-            /* 3. Apply the transform */
-            FJLT.apply (A, sketch_A, skys::columnwise_tag());
-
-            /* 4. Print and see the result */
-            if (int_params[S_INDEX] * int_params[M_INDEX] < 100 &&
-                world.rank() == 0)
-                sketch_A.Print ();
-
-            /** TODO: Do that same to B, and solve the system! */
-
-        }
-    } else if (0==strcmp("Sparse", chr_params[TRANSFORM_INDEX]) ) {
-        if (SKETCH_LEFT == int_params[SKETCH_DIRECTION_INDEX]) {
-
-            /* 1. Create the sketching matrix */
-            skys::CWT_t<DistMatrixType, MatrixType>
-                Sparse (int_params[M_INDEX], int_params[S_INDEX], context);
-
-            /* 2. Create space for the sketched matrix */
-            MatrixType sketch_A(int_params[S_INDEX], int_params[N_INDEX]);
-
-            /* 3. Apply the transform */
-            Sparse.apply (A, sketch_A, skys::columnwise_tag());
-
-            /* 4. Print and see the result */
-            if (int_params[S_INDEX] * int_params[M_INDEX] < 100 &&
-                world.rank() == 0)
-                sketch_A.Print ();
-
-            /** TODO: Do that same to B, and solve the system! */
-
-
         }
     } else {
-        std::cout << "We only have JLT/FJLT/Sparse sketching. Please retry" <<
+        std::cout << "We only have JLT sketching. Please retry" <<
             std::endl;
     }
 

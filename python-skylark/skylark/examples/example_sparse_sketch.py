@@ -13,7 +13,10 @@ import math
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 
-ctxt = cskylark.Context(123836)
+# Skylark is automatically initilalized when you import Skylark,
+# It will use system time to generate the seed. However, we can 
+# reinitialize for so to fix the seed.
+cskylark.initialize(123834);
 
 # creating an example matrix
 # It seems that pySpParMat can only be created from dense vectors
@@ -32,22 +35,24 @@ print ACB
 
 nullVec = kdt.Vec(0, sparse=False)
 SACB    = kdt.Mat(nullVec, nullVec, nullVec, 6, 6)
-S       = cskylark.CWT(ctxt, "DistSparseMatrix", "DistSparseMatrix", 10, 6)
-S.Apply(ACB, SACB, 1)
+S       = cskylark.CWT(10, 6, intype="DistSparseMatrix", outtype="DistSparseMatrix")
+S.apply(ACB, SACB, 0)
 
 if (rank == 0):
   print("Sketched A (CWT sparse, columnwise)")
   print SACB
 
-S.Free()
+# No need to free S -- it will be automatically garbage collected
+# and the memory for the sketch reclaimed.
 
 SACB = kdt.Mat(nullVec, nullVec, nullVec, 3, 10)
-S    = cskylark.CWT(ctxt, "DistSparseMatrix", "DistSparseMatrix", 6, 3)
-S.Apply(ACB, SACB, 2)
+S    = cskylark.CWT(6, 3, intype="DistSparseMatrix", outtype="DistSparseMatrix")
+S.apply(ACB, SACB, 1)
 
 if (rank == 0):
   print("Sketched A (CWT sparse, rowwise)")
   print SACB
 
-S.Free()
-ctxt.Free()
+# Really no need to close skylark -- it will do it automatically.
+# However, if you really want to you can do it.
+cskylark.finalize()

@@ -21,7 +21,7 @@ class FJLT_test(unittest.TestCase):
         cskylark.initialize()
 
         self.num_repeats = 5
-        self.accuracy    = 1e-2
+        self.accuracy    = 1e-1
 
     def tearDown(self):
         # No real need to do this...

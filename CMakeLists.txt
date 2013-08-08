@@ -144,17 +144,24 @@ if (USE_FFTW)
 endif (USE_FFTW)
 
 
-option (WITH_COMBBLAS "Build with CombBLAS Matrix support" OFF)
-if (WITH_COMBBLAS)
+option (USE_COMBBLAS "Build with CombBLAS Matrix support" OFF)
+if (USE_COMBBLAS)
   set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules")
   find_package(CombBLAS REQUIRED)
   if (CombBLAS_FOUND)
     include_directories (${CombBLAS_INCLUDE_DIR})
     link_directories (${CombBLAS_LIBRARY_DIR})
+    #FIXME: Boost only necessary if compiler is not c++11 compatible
     add_definitions(-DCOMBBLAS_BOOST)
     add_definitions(-D__STDC_LIMIT_MACROS)
+    set (SKYLARK_HAVE_COMBBLAS
+         1
+         CACHE
+         STRING
+         "Enables use of CombBLAS Libraries"
+         FORCE)
   endif (CombBLAS_FOUND)
-endif (WITH_COMBBLAS)
+endif (USE_COMBBLAS)
 
 
 option (BUILD_PYTHON "Whether we should build the python interface" ON)

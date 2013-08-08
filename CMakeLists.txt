@@ -99,20 +99,6 @@ endif (Boost_FOUND)
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
 
-# 4. FFTW
-set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules")
-find_package(FFTW)
-if (FFTW_FOUND)
-  include_directories(${FFTW_INCLUDE_DIR})
-  link_directories (${FFTW_LIBRARY_DIR})
-  set (SKYLARK_HAVE_FFTW
-       1
-       CACHE
-       STRING
-       "Enables use of fftw Libraries"
-       FORCE)
-endif (FFTW_FOUND)
-
 # Set up a dummy variable that lists the common libraries to include.
 # Note that Elemental is added to this list only later.
 set (SKYLARK_LIBS
@@ -139,6 +125,23 @@ if (USE_ELEMENTAL)
          FORCE)
   endif (Elemental_FOUND)
 endif (USE_ELEMENTAL)
+
+
+option (USE_FFTW "Build with FFTW support" ON)
+if (USE_FFTW)
+  set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules")
+  find_package(FFTW)
+  if (FFTW_FOUND)
+    include_directories(${FFTW_INCLUDE_DIR})
+    link_directories (${FFTW_LIBRARY_DIR})
+    set (SKYLARK_HAVE_FFTW
+         1
+         CACHE
+         STRING
+         "Enables use of fftw Libraries"
+         FORCE)
+  endif (FFTW_FOUND)
+endif (USE_FFTW)
 
 
 option (WITH_COMBBLAS "Build with CombBLAS Matrix support" OFF)

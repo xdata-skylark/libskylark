@@ -74,9 +74,11 @@ errors that might have occurred.
     name "mpi.so". To use Boost.Mpi, make sure your PYTHONPATH is appended
     with <INSTALL-HERE>/lib.
 
-(6) Elemental: Downloading and installing Elemental is simple. In
+(6) SWIG: On a linux system can be install using apt-get or yum.
+
+(7) Elemental: Downloading and installing Elemental is simple. In
 fact, the dependencies of Elemental are similar to those of skylark. 
-Elemental depends on MPI, BLAS/LAPACK, and CMake.  So, if you have 
+Elemental depends on MPI, BLAS/LAPACK, SWIG, and CMake.  So, if you have 
 followed all the steps above, you're all set to install Elemental!
 
 Currently, Skylark supports Elemental-0.81. Previous version do not
@@ -93,29 +95,29 @@ Elemental is available from http://libelemental.org/.
 
 To install Elemental you generally need to follow Elemental's 
 installation instructions, with two small variants:
-(6.a) Be sure to turn on the SWIG binding by using -D USE_SWIG=ON
+(7.a) Be sure to turn on the SWIG binding by using -D USE_SWIG=ON
 when invoking CMake. E.g.
      #cmake -D USE_SWIG=ON ..
-(6.b) Add the build path ($ELEMENTAL_ROOT/<BUILD DIRECTORY>) to 
+(7.b) Add the build path ($ELEMENTAL_ROOT/<BUILD DIRECTORY>) to 
 PYTHONPATH (or install in the site-packages).
 
 
 Building Skylark:
 ------------------
-(7) At this point, you should have everything you need to install skylark.
+(8) At this point, you should have everything you need to install skylark.
 Installing skylark is similar to installing Elemental. So, the first thing
 to do would separate 'skylark-obj' directory (assuming all your sources
 are in 'skylark-src' directory).
 
-(7.a) Set the environment variables!
+(8.a) Set the environment variables!
   --- BOOST_ROOT (if boost is not installed in a standard location)
   --- PYTHON_SITE_PACKAGES (to install skylark's python bindings)
 
-(7.b) Change to 'skylark-obj' directory.
+(8.b) Change to 'skylark-obj' directory.
 
   #cd 'skylark-obj'
 
-(7.c) Figure out if you need python bindings. If so, please mention where you
+(8.c) Figure out if you need python bindings. If so, please mention where you
 want to install python library using the PYTHON_SITE_PACKAGES envionment
 variable. If PYTHON_SITE_PACKAGES is '/home/user/Software/python', skylark
 python bindings are installed in
@@ -126,23 +128,23 @@ directory.  At this point, you will have to append PYTHONPATH with
 
     '/home/user/Software/python/lib/python2.7/site-packages'
 
-(7.d) Figure out if you want to use Elemental. If you don't, please turn off
+(8.d) Figure out if you want to use Elemental. If you don't, please turn off
 USE_ELEMENTAL by setting "-DUSE_ELEMENTAL=OFF" during the CMake configuration
 process! USE_ELEMENTAL is turned on by default, so if you are building with
 Elemental support, make sure elemental is installed. If Elemental is not
 installed in a standard location, then make sure that the environment variable
 ELEMENTAL_ROOT is set to the topdir where Elemental was installed.
 
-(7.e) Configure
+(8.e) Configure
 
   #cmake <path-to-skylark-src> <options>
 
-(7.f) Build everything and install the python bindings:
+(8.f) Build everything and install the python bindings:
   #make all install
 
 This will install python bindings in ${PYTHON_SITE_PACKAGES}.
 
-(7.g) Optionally build Doxygen documentation:
+(8.g) Optionally build Doxygen documentation:
 
   #make doc
 
@@ -153,14 +155,14 @@ This will install python bindings in ${PYTHON_SITE_PACKAGES}.
 This will create a folder "Documentation" containing the Doxygen
 documentation of Skylark.
 
-(7.h) Optionally run unit tests:
+(8.h) Optionally run unit tests:
 
   #make test
 
 This will run all unit tests (internal library tests and sketching tests in
 Python) found in the tests directory.
 
-(7.i) Optionally run example application:
+(8.i) Optionally run example application:
 
   #examples/elemental
 
@@ -171,11 +173,11 @@ the Skylark library. Run
 
 to see all the available options.
 
-(8) Documentation
+(9) Documentation
 
-(8.a) Doxygen for C++ API documentation
+(9.a) Doxygen for C++ API documentation
 
-(8.b) Sphinx for End-User documentation.  Please also download
+(9.b) Sphinx for End-User documentation.  Please also download
 a Sphinx extension folder from:
 http://matplotlib.org/sampledoc/extensions.html
 
@@ -189,15 +191,15 @@ and set SPHINXEXT environment variable to point to its location, i.e.:
   #export SPHINXEXT=$HOME/.sphinx_ext
 
 
-(9) Python Packages:
+(10) Python Packages:
 
 We use the following Python packages, most of which can be installed
 on an ubuntu system directly from the package manager or using
 easy_install.
 
-(9.a) numpy 1.6.1
-(9.b) scipy 0.9.0
-(9.c) h5py 2.1.2
-(9.d) matplotlib 1.1.1rc
-(9.e) mpi4py 1.3
+(10.a) numpy 1.7
+(10.b) scipy 0.9.0
+(10.c) h5py 2.1.2
+(10.d) matplotlib 1.1.1rc
+(10.e) mpi4py 1.3
 

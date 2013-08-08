@@ -260,3 +260,18 @@ if (SPHINX_FOUND)
     )
 endif (SPHINX_FOUND)
 #----------------------------------------------------------------------------
+
+#----------------------------------------------------------------------------
+# configure file
+configure_file (
+  ${CMAKE_CURRENT_SOURCE_DIR}/CMake/${PROJECT_NAME}Config.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config_install.cmake
+)
+
+install (
+  FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config_install.cmake
+  DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/${PROJECT_NAME}"
+  RENAME ${PROJECT_NAME}Config.cmake
+)
+#----------------------------------------------------------------------------
+

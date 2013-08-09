@@ -3,7 +3,7 @@ if (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
   target_link_libraries(elemental
                         ${Elemental_LIBRARY}
                         ${FFTW_LIBRARY}
-                        ${Plcg_LIBRARY}
+                        ${Pmrrr_LIBRARY}
                         ${SKYLARK_LIBS}
                         ${Boost_LIBRARIES})
   set_target_properties(elemental
@@ -20,7 +20,7 @@ if (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
   target_link_libraries(regression
                         ${Elemental_LIBRARY}
                         ${FFTW_LIBRARY}
-                        ${Plcg_LIBRARY}
+                        ${Pmrrr_LIBRARY}
                         ${SKYLARK_LIBS}
                         ${Boost_LIBRARIES})
   set_target_properties(regression
@@ -32,12 +32,12 @@ if (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
                         -Wno-deprecated \\
                         -Wno-unused-variable \\
                         -Wno-sign-compare")
-                        
+
   add_executable(svd svd.cpp)
   target_link_libraries(svd
                         ${Elemental_LIBRARY}
                         ${FFTW_LIBRARY}
-                        ${Plcg_LIBRARY}
+                        ${Pmrrr_LIBRARY}
                         ${SKYLARK_LIBS}
                         ${Boost_LIBRARIES})
   set_target_properties(svd
@@ -48,6 +48,6 @@ if (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
                         -Wno-format \\
                         -Wno-deprecated \\
                         -Wno-unused-variable \\
-                        -Wno-sign-compare")                     
-                       
+                        -Wno-sign-compare")
+
 endif (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)

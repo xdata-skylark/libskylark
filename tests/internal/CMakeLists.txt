@@ -3,7 +3,7 @@ if (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
   target_link_libraries(sparse_test
                         ${Elemental_LIBRARY}
                         ${FFTW_LIBRARY}
-                        ${Plcg_LIBRARY}
+                        ${Pmrrr_LIBRARY}
                         ${SKYLARK_LIBS}
                         ${Boost_LIBRARIES})
   set_target_properties(sparse_test

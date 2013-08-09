@@ -184,11 +184,11 @@ if (BUILD_PYTHON)
   add_subdirectory(sketch/capi)
   add_subdirectory(python-skylark)
 endif (BUILD_PYTHON)
-#----------------------------------------------------------------------------
 
-#----------------------------------------------------------------------------
-# Add the examples and figure out how that works out.
-add_subdirectory(examples)
+option (BUILD_EXAMPLES "Whether we should build the examples" ON)
+if (BUILD_EXAMPLES)
+  add_subdirectory(examples)
+endif (BUILD_EXAMPLES)
 #----------------------------------------------------------------------------
 
 #----------------------------------------------------------------------------

@@ -1,24 +1,25 @@
 """
-Created on April 8, 2013.
-@author: Vikas Sindhwani (vsindhw@us.ibm.com)
+Created on April 8, 2013. 
+@author: Vikas Sindhwani (vsindhw@us.ibm.com), Haim Avron (haimav@us.ibm.com)
 
-    Example command line Usage for converting datasets into HDF5 format.
+Example command line Usage for converting datasets into HDF5 format.
 
-    >>> python skylark/io.py --libsvm2hdf5 datasets/usps.t datasets/usps.hdf5
+>>> python skylark/io.py --libsvm2hdf5 datasets/usps.t datasets/usps.hdf5
 
 """
 import h5py
-import elem
 import numpy, scipy, scipy.sparse
 import argparse
 
 class hdf5(object):
     """
-    Class for reading a Dense matrix from a dataset in an HDF5 file in parallel into an Elemental VC,* matrix,
-    or for writing a Numpy array into a dataset in an HDF5 file. Note that HDF5 reads in row-major (C-style) orientation
-    while Elementals local buffers are column-major. For this reason, we assume that the HDF5 file has a transposed version of the dataset.
-    Therefore, Elementals view of the data is the transposed version of what you will see with tools like h5dump.
-
+    Class for reading a dense matrix from a dataset in an HDF5 file in parallel
+    into an Elemental VC,* matrix, or for writing a Numpy array into a dataset 
+    in an HDF5 file. Note that HDF5 reads in row-major (C-style) orientation
+    while Elementals local buffers are column-major. For this reason, we assume 
+    that the HDF5 file has a transposed version of the dataset. Therefore, 
+    Elementals view of the data is the transposed version of what you will see 
+    with tools like h5dump.
     """
     def __init__(self, filename, mode='r'):
         """
@@ -101,18 +102,15 @@ class hdf5(object):
         ----------
         Nothing.
         """
-        # Get a dataset object associated with the dataset name
         dataset = self.file[dataset]
-
-        # Get the Elemental local matrix buffer
-        buffer = A.Data()
-
-        if A.LocalHeight()>0:
+        A.ResizeTo(dataset.shape[0], dataset.shape[1])
+        buffer = A.Matrix
+        if A.LocalHeight > 0:
             space_id = dataset.id.get_space()
-            space_id.select_hyperslab((0, A.ColShift()), (A.LocalWidth(), A.LocalHeight()), stride=(1, A.ColStride()))
-            m = A.LocalHeight()
-            n = A.LocalWidth()
-            space_id2 = h5py.h5s.create_simple((m*n,1))
+            space_id.select_hyperslab((0, A.ColShift), \
+                                          (A.LocalWidth, A.LocalHeight), \
+                                          stride=(1, A.ColStride))
+            space_id2 = h5py.h5s.create_simple((A.LocalHeight * A.LocalWidth,1))
             dataset.id.read(space_id2, space_id, buffer)
 
         return
@@ -121,27 +119,29 @@ class hdf5(object):
         self.file.close()
 
 
-def parselibsvm(filename):
-        """
-        parselibsvm(filename)
+def parselibsvm(f):
+    """
+    parselibsvm(f)
 
-        Parses data from a libsvm file into a I, J, V, Y tuple.
+    Parses data from a libsvm file into a I, J, V, Y tuple.
 
-        Parameters
-        -------------
-        filename
+    Parameters
+    -------------
+    f - either a file object (can iterate on lines) or a filename to use.
 
-        Returns
-        ----------
-        tuple (V, I, J, Y) where V are the values, I and J the indecies and Y
-        is a list of labels.
-        """
-        Y = []
-        I = []
-        J = []
-        V = []
-        rowid = 0
-        for line in open(filename):
+    Returns
+    ----------
+    tuple (V, I, J, Y) where V are the values, I and J the indecies and Y
+    is a list of labels.
+    """
+    fl = open(f) if isinstance(f, basestring) else f
+    Y = []
+    I = []
+    J = []
+    V = []
+    rowid = 0
+    try:
+        for line in fl:
             tokens = line.strip().split()
             for tok in tokens:
                 if tok.find(':') > 0:
@@ -153,37 +153,51 @@ def parselibsvm(filename):
                 else:
                     Y.append(float(tok))
             rowid = rowid  + 1
-        return(V, I, J, Y)
+    finally:
+        if f == fl: close(fl)
 
-def sparselibsvm2scipy(filename):
-        """
-        sparselibsvm2scipy(filename)
+    return(V, I, J, Y)
 
-        Reads data from a libsvm file into scipy.sparse.csr_matrix data structure.
+def sparselibsvm2scipy(f):
+    """
+    sparselibsvm2scipy(f)
 
-        Parameters
-        -------------
-        filename
+    Reads data from a libsvm file into scipy.sparse.csr_matrix data structure.
 
-        Returns
-        ----------
-        tuple (X,Y) where X is sparse.csr_matrix and Y is a list of labels.
-        """
+    Parameters
+    -------------
+    f - either a file object (can iterate on lines) or a filename to use.
 
-        (V, I, J, Y) = parselibsvm(filename)
-        rows         = I[-1] + 1
-        nfeatures    = max(J) + 1
-        X = scipy.sparse.csr_matrix( (V, (I, J)), shape=(rows, nfeatures))
-        Y = numpy.asarray(Y)
-        return (X, Y)
+    Returns
+    ----------
+    tuple (X,Y) where X is sparse.csr_matrix and Y is a list of labels.
+    """
+    (V, I, J, Y) = parselibsvm(f)
+    rows         = I[-1] + 1
+    nfeatures    = max(J) + 1
+    X = scipy.sparse.csr_matrix( (V, (I, J)), shape=(rows, nfeatures))
+    Y = numpy.asarray(Y)
+    return (X, Y)
 
 def streamlibsvm2scipy(filename, nfeatures, blocksize=1000):
-        Y = []
-        I = []
-        J = []
-        V = []
-        rowid = 0
-        for line in open(filename):
+    """
+    streamlibsvm2scipy(filename, nfeatures, blocksize=1000)
+
+    Streams through a libsvm file, yielding scipy.sparse.csr_matrix with
+    at most blocksize rows.
+
+    Parameters
+    ----------
+    f - either a file object (can iterate on lines) or a filename to use.
+    """
+    fl = open(f) if isinstance(f, basestring) else f
+    Y = []
+    I = []
+    J = []
+    V = []
+    rowid = 0
+    try:
+        for line in fl:
             tokens = line.strip().split()
             for tok in tokens:
                 if tok.find(':') > 0:
@@ -191,12 +205,12 @@ def streamlibsvm2scipy(filename, nfeatures, blocksize=1000):
                     V.append(float(val))
                     J.append(int(ind)-1)
                     I.append(rowid)
-
+                    
                 else:
                     Y.append(float(tok))
             rowid = rowid  + 1
-            rows         = I[-1] + 1
-            #nfeatures    = max(J) + 1
+            rows = I[-1] + 1
+            # nfeatures    = max(J) + 1
             if rowid % blocksize == 0:
                 X = scipy.sparse.csr_matrix( (V, (I, J)), shape=(rows, nfeatures))
                 Y = numpy.asarray(Y)
@@ -206,12 +220,14 @@ def streamlibsvm2scipy(filename, nfeatures, blocksize=1000):
                 I = []
                 J = []
                 V = []
+
         if rowid > 0:
             X = scipy.sparse.csr_matrix( (V, (I, J)), shape=(rows, nfeatures))
             Y = numpy.asarray(Y)
             yield (X,Y)
-            
-            
+    finally:
+        if f == fl: close(fl)
+                
 #import pyCombBLAS
 # def sparselibsvm2combBLAS(filename):
 #         """

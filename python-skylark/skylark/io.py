@@ -8,7 +8,6 @@ Example command line Usage for converting datasets into HDF5 format.
 
 """
 import h5py
-import elem
 import numpy, scipy, scipy.sparse
 import argparse
 
@@ -103,18 +102,15 @@ class hdf5(object):
         ----------
         Nothing.
         """
-        # Get a dataset object associated with the dataset name
         dataset = self.file[dataset]
-
-        # Get the Elemental local matrix buffer
-        buffer = A.Data()
-
-        if A.LocalHeight()>0:
+        A.ResizeTo(dataset.shape[0], dataset.shape[1])
+        buffer = A.Matrix
+        if A.LocalHeight > 0:
             space_id = dataset.id.get_space()
-            space_id.select_hyperslab((0, A.ColShift()), (A.LocalWidth(), A.LocalHeight()), stride=(1, A.ColStride()))
-            m = A.LocalHeight()
-            n = A.LocalWidth()
-            space_id2 = h5py.h5s.create_simple((m*n,1))
+            space_id.select_hyperslab((0, A.ColShift), \
+                                          (A.LocalWidth, A.LocalHeight), \
+                                          stride=(1, A.ColStride))
+            space_id2 = h5py.h5s.create_simple((A.LocalHeight * A.LocalWidth,1))
             dataset.id.read(space_id2, space_id, buffer)
 
         return
@@ -162,9 +158,9 @@ def parselibsvm(f):
 
     return(V, I, J, Y)
 
-def sparselibsvm2scipy(filename):
+def sparselibsvm2scipy(f):
     """
-    sparselibsvm2scipy(filename)
+    sparselibsvm2scipy(f)
 
     Reads data from a libsvm file into scipy.sparse.csr_matrix data structure.
 

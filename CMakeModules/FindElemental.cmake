@@ -22,23 +22,23 @@ FIND_LIBRARY(Elemental_LIBRARY elemental
    $ENV{ELEMENTAL_ROOT}/lib
 )
 
-FIND_LIBRARY(Plcg_LIBRARY plcg
+FIND_LIBRARY(Pmrrr_LIBRARY pmrrr
    /usr/local/lib
    /usr/lib
    $ENV{HOME}/Software/lib
    $ENV{ELEMENTAL_ROOT}/lib
 )
 
-IF(Elemental_INCLUDE_DIR AND Elemental_LIBRARY AND Plcg_LIBRARY)
+IF(Elemental_INCLUDE_DIR AND Elemental_LIBRARY AND Pmrrr_LIBRARY)
   SET( Elemental_FOUND "YES")
-ENDIF(Elemental_INCLUDE_DIR AND Elemental_LIBRARY AND Plcg_LIBRARY)
+ENDIF(Elemental_INCLUDE_DIR AND Elemental_LIBRARY AND Pmrrr_LIBRARY)
 
 IF (Elemental_FOUND)
   IF (NOT Elemental_FIND_QUIETLY)
-    MESSAGE(STATUS 
+    MESSAGE(STATUS
             "Found Elemental:${Elemental_LIBRARY};${Elemental_LIBRARY_C}")
-    MESSAGE(STATUS 
-            "Found PLCG:${Plcg_LIBRARY};${Plcg_LIBRARY}")
+    MESSAGE(STATUS
+            "Found pmrrr:${Pmrrr_LIBRARY}")
   ENDIF (NOT Elemental_FIND_QUIETLY)
 ELSE (Elemental_FOUND)
   IF (Elemental_FIND_REQUIRED)

@@ -152,7 +152,7 @@ def parselibsvm(f):
                     Y.append(float(tok))
             rowid = rowid  + 1
     finally:
-        if f == fl: close(fl)
+        if f != fl: fl.close()
 
     return(V, I, J, Y)
 

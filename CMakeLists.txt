@@ -264,8 +264,13 @@ endif (SPHINX_FOUND)
 
 #----------------------------------------------------------------------------
 # configure file
-#FIXME: compile definitions
 get_directory_property( DirDefs COMPILE_DEFINITIONS )
+foreach( d ${DirDefs} )
+    set (CMAKE_DEFS
+        ${CMAKE_DEFS}
+        "-D${d}")
+endforeach()
+
 configure_file (
   ${CMAKE_CURRENT_SOURCE_DIR}/CMake/${PROJECT_NAME}Config.cmake.in
   ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config_install.cmake

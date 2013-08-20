@@ -2,7 +2,9 @@
 #define SKETCHC_HPP
 
 #include "mpi.h"
-#include "skylark.hpp"
+#include "../../utility/distributions.hpp"
+
+#include "../sketch.hpp"
 
 // Some tools require special API declaration. Customizing the
 // SKYLARK_EXTERN_API allows this. The default is simply nothing.

@@ -1,4 +1,3 @@
-#include "skylark.hpp"
 #include "sketch/capi/sketchc.hpp"
 
 #ifdef SKYLARK_HAVE_COMBBLAS

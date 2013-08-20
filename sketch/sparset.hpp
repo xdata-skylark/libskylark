@@ -1,9 +1,7 @@
 #ifndef SPARSET_HPP
 #define SPARSET_HPP
 
-#include "config.h"
-
-#include "utility/distributions.hpp"
+#include "../config.h"
 
 namespace skylark {
 namespace sketch {

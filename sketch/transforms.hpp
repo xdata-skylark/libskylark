@@ -1,8 +1,6 @@
 #ifndef TRANSFORMS_HPP
 #define TRANSFORMS_HPP
 
-#include "config.h"
-
 namespace skylark {
 namespace sketch {
 

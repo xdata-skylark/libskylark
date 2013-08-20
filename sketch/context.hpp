@@ -4,8 +4,6 @@
 #include <boost/random.hpp>
 #include <boost/mpi.hpp>
 
-#include "config.h"
-
 namespace skylark {
 namespace sketch {
 

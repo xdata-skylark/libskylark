@@ -3,8 +3,6 @@
 
 #include <elemental.hpp>
 
-#include "config.h"
-
 #include "context.hpp"
 #include "transforms.hpp"
 

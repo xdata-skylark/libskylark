@@ -1,8 +1,6 @@
 #ifndef SPARSET_COMBBLAS_HPP
 #define SPARSET_COMBBLAS_HPP
 
-#include "config.h"
-
 #include "context.hpp"
 #include "transforms.hpp"
 

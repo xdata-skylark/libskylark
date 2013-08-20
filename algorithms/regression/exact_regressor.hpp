@@ -1,6 +1,8 @@
 #ifndef EXACT_REGRESSOR_HPP
 #define EXACT_REGRESSOR_HPP
 
+#include "../../config.h"
+
 namespace skylark {
 namespace algorithms {
 

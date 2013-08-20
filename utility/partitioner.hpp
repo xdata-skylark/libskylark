@@ -3,8 +3,6 @@
 
 #include <utility>
 
-#include "config.h"
-
 namespace skylark {
 namespace utility {
 

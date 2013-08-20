@@ -1,9 +1,6 @@
 #ifndef WZT_HPP
 #define WZT_HPP
 
-#include "config.h"
-
-#include "utility/distributions.hpp"
 #include "sparset.hpp"
 
 namespace skylark {
@@ -34,7 +31,7 @@ struct WZT_t : public hash_transform_t<
         // as a parameter. We also cannot just use the distribution as
         // template. The only solution I found is to let the base class generate
         // the numbers and then modify them to the correct distribution.
-        for(int i = 0; i < N; i++) 
+        for(int i = 0; i < N; i++)
              Base::_row_value[i] = pow(1.0 / Base::_row_value[i], 1.0 / p);
      }
 };

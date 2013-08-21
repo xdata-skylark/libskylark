@@ -61,6 +61,8 @@ set (CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g")
 set (CMAKE_CXX_FLAGS_RELEASE "-O3")
 set (CMAKE_CXX_FLAGS_DEBUG  "-O0 -g")
 
+set (CMAKE_CXX_FLAGS "-W -Wall -Wno-write-strings -Wno-strict-aliasing -Wno-format -Wno-deprecated -Wno-unused-variable -Wno-unused-parameter -Wno-sign-compare ${CMAKE_CXX_FLAGS}")
+
 message (STATUS "Building on ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} on
                  $ENV{HOSTNAME}")
 
@@ -264,10 +266,11 @@ endif (SPHINX_FOUND)
 
 #----------------------------------------------------------------------------
 # configure file
+#FIXME: is there a cleaner way to achieve this?
 get_directory_property( DirDefs COMPILE_DEFINITIONS )
 foreach( d ${DirDefs} )
-    set (CMAKE_DEFS
-        ${CMAKE_DEFS}
+    set (SKYLARK_DEFS
+        ${SKYLARK_DEFS}
         "-D${d}")
 endforeach()
 

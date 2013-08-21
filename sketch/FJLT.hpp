@@ -1,7 +1,7 @@
 #ifndef FJLT_HPP
 #define FJLT_HPP
 
-#include "config.h"
+#include "../config.h"
 
 namespace skylark {
 namespace sketch {

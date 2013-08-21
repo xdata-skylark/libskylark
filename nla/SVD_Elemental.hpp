@@ -2,7 +2,8 @@
 #define SVD_ELEMENTAL_HPP
 
 #include <elemental.hpp>
-#include <skylark.hpp>
+
+#include "../skylark.hpp"
 
 namespace skylark {
 namespace nla {

@@ -61,6 +61,8 @@ set (CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g")
 set (CMAKE_CXX_FLAGS_RELEASE "-O3")
 set (CMAKE_CXX_FLAGS_DEBUG  "-O0 -g")
 
+set (CMAKE_CXX_FLAGS "-W -Wall -Wno-write-strings -Wno-strict-aliasing -Wno-format -Wno-deprecated -Wno-unused-variable -Wno-unused-parameter -Wno-sign-compare ${CMAKE_CXX_FLAGS}")
+
 message (STATUS "Building on ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} on
                  $ENV{HOSTNAME}")
 
@@ -99,20 +101,6 @@ endif (Boost_FOUND)
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
 
-# 4. FFTW
-set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules")
-find_package(FFTW)
-if (FFTW_FOUND)
-  include_directories(${FFTW_INCLUDE_DIR})
-  link_directories (${FFTW_LIBRARY_DIR})
-  set (SKYLARK_HAVE_FFTW
-       1
-       CACHE
-       STRING
-       "Enables use of fftw Libraries"
-       FORCE)
-endif (FFTW_FOUND)
-
 # Set up a dummy variable that lists the common libraries to include.
 # Note that Elemental is added to this list only later.
 set (SKYLARK_LIBS
@@ -141,17 +129,41 @@ if (USE_ELEMENTAL)
 endif (USE_ELEMENTAL)
 
 
-option (WITH_COMBBLAS "Build with CombBLAS Matrix support" OFF)
-if (WITH_COMBBLAS)
+option (USE_FFTW "Build with FFTW support" ON)
+if (USE_FFTW)
+  set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules")
+  find_package(FFTW)
+  if (FFTW_FOUND)
+    include_directories(${FFTW_INCLUDE_DIR})
+    link_directories (${FFTW_LIBRARY_DIR})
+    set (SKYLARK_HAVE_FFTW
+         1
+         CACHE
+         STRING
+         "Enables use of fftw Libraries"
+         FORCE)
+  endif (FFTW_FOUND)
+endif (USE_FFTW)
+
+
+option (USE_COMBBLAS "Build with CombBLAS Matrix support" OFF)
+if (USE_COMBBLAS)
   set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules")
   find_package(CombBLAS REQUIRED)
   if (CombBLAS_FOUND)
     include_directories (${CombBLAS_INCLUDE_DIR})
     link_directories (${CombBLAS_LIBRARY_DIR})
+    #FIXME: Boost only necessary if compiler is not c++11 compatible
     add_definitions(-DCOMBBLAS_BOOST)
     add_definitions(-D__STDC_LIMIT_MACROS)
+    set (SKYLARK_HAVE_COMBBLAS
+         1
+         CACHE
+         STRING
+         "Enables use of CombBLAS Libraries"
+         FORCE)
   endif (CombBLAS_FOUND)
-endif (WITH_COMBBLAS)
+endif (USE_COMBBLAS)
 
 
 option (BUILD_PYTHON "Whether we should build the python interface" ON)
@@ -174,17 +186,18 @@ if (BUILD_PYTHON)
   add_subdirectory(sketch/capi)
   add_subdirectory(python-skylark)
 endif (BUILD_PYTHON)
-#----------------------------------------------------------------------------
 
-#----------------------------------------------------------------------------
-# Add the examples and figure out how that works out.
-add_subdirectory(examples)
+option (BUILD_EXAMPLES "Whether we should build the examples" ON)
+if (BUILD_EXAMPLES)
+  add_subdirectory(examples)
+endif (BUILD_EXAMPLES)
 #----------------------------------------------------------------------------
 
 #----------------------------------------------------------------------------
 # Write out the configure file
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/config.h.in
                 ${CMAKE_CURRENT_SOURCE_DIR}/config.h)
+install (FILES ${CMAKE_CURRENT_SOURCE_DIR}/config.h DESTINATION include/skylark/)
 #----------------------------------------------------------------------------
 
 #----------------------------------------------------------------------------
@@ -250,3 +263,26 @@ if (SPHINX_FOUND)
     )
 endif (SPHINX_FOUND)
 #----------------------------------------------------------------------------
+
+#----------------------------------------------------------------------------
+# configure file
+#FIXME: is there a cleaner way to achieve this?
+get_directory_property( DirDefs COMPILE_DEFINITIONS )
+foreach( d ${DirDefs} )
+    set (SKYLARK_DEFS
+        ${SKYLARK_DEFS}
+        "-D${d}")
+endforeach()
+
+configure_file (
+  ${CMAKE_CURRENT_SOURCE_DIR}/CMake/${PROJECT_NAME}Config.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config_install.cmake
+)
+
+install (
+  FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config_install.cmake
+  DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/cmake/${PROJECT_NAME}"
+  RENAME ${PROJECT_NAME}Config.cmake
+)
+#----------------------------------------------------------------------------
+

@@ -8,30 +8,30 @@
 # CombBLAS_LIBRARY     - qualified libraries to link against.
 # CombBLAS_FOUND       - do not attempt to use if "no" or undefined.
 
-FIND_PATH(CombBLAS_INCLUDE_DIR CombBLAS.h SpParMat.h SpParVec.h DenseParVec.h
+FIND_PATH(CombBLAS_INCLUDE_DIR CombBLAS/CombBLAS.h CombBLAS/SpParMat.h CombBLAS/SpParVec.h CombBLAS/DenseParVec.h
   /usr/local/include
   /usr/include
   $ENV{HOME}/Software/include
-  $ENV{COMBBLAS_ROOT}/
+  $ENV{COMBBLAS_ROOT}/include
 )
 
 find_library(MPITypelib_LIBRARY MPITypelib
   /usr/local/lib
   /usr/lib
   $ENV{HOME}/Software/lib
-  $ENV{COMBBLAS_ROOT}/build
+  $ENV{COMBBLAS_ROOT}/lib
 )
 find_library(CommGridlib_LIBRARY CommGridlib
   /usr/local/lib
   /usr/lib
   $ENV{HOME}/Software/lib
-  $ENV{COMBBLAS_ROOT}/build
+  $ENV{COMBBLAS_ROOT}/lib
 )
 find_library(MemoryPoollib_LIBRARY MemoryPoollib
   /usr/local/lib
   /usr/lib
   $ENV{HOME}/Software/lib
-  $ENV{COMBBLAS_ROOT}/build
+  $ENV{COMBBLAS_ROOT}/lib
 )
 
 IF(MPITypelib_LIBRARY AND CommGridlib_LIBRARY AND MemoryPoollib_LIBRARY)

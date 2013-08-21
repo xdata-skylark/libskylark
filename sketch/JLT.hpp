@@ -1,8 +1,6 @@
 #ifndef JLT_HPP
 #define JLT_HPP
 
-#include "config.h"
-
 #include "denset.hpp"
 
 namespace skylark {

@@ -3,13 +3,8 @@
 
 #include <elemental.hpp>
 
-#include "config.h"
-
-#include "utility/comm.hpp"
-
 #include "context.hpp"
 #include "transforms.hpp"
-#include "utility/comm.hpp"
 
 namespace skylark {
 namespace sketch {

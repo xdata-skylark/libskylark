@@ -1,7 +1,7 @@
 #ifndef RFUT_HPP
 #define RFUT_HPP
 
-#include "config.h"
+#include "../config.h"
 
 namespace skylark {
 namespace sketch {

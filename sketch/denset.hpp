@@ -1,7 +1,7 @@
 #ifndef DENSET_HPP
 #define DENSET_HPP
 
-#include "config.h"
+#include "../config.h"
 
 namespace skylark {
 namespace sketch {

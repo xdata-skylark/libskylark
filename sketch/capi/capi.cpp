@@ -1,11 +1,10 @@
-#include "skylark.hpp"
 #include "sketch/capi/sketchc.hpp"
 
-#ifdef WITH_COMBBLAS
-#include "CombBLAS.h"
-#include "SpParMat.h"
-#include "SpParVec.h"
-#include "DenseParVec.h"
+#ifdef SKYLARK_HAVE_COMBBLAS
+#include "CombBLAS/CombBLAS.h"
+#include "CombBLAS/SpParMat.h"
+#include "CombBLAS/SpParVec.h"
+#include "CombBLAS/DenseParVec.h"
 #endif
 
 # define STRCMP_TYPE(STR, TYPE) \
@@ -40,7 +39,7 @@ typedef elem::Matrix<double> Matrix;
 typedef elem::DistMatrix<double, elem::VR, elem::STAR> DistMatrix_VR_STAR;
 typedef elem::DistMatrix<double, elem::VC, elem::STAR> DistMatrix_VC_STAR;
 #endif
-#ifdef WITH_COMBBLAS
+#ifdef SKYLARK_HAVE_COMBBLAS
 typedef SpDCCols< size_t, double > col_t;
 typedef SpParMat< size_t, double, col_t > DistSparseMatrix_t;
 #endif
@@ -183,7 +182,7 @@ SKYLARK_EXTERN_API sketchc::sketch_transform_t
     sketch::FJLT_t, DistMatrix_VC_STAR, Matrix);
 
 #endif
-#ifdef WITH_COMBBLAS
+#ifdef SKYLARK_HAVE_COMBBLAS
 
   AUTO_NEW_DISPATCH(sketchc::CWT,
       sketchc::DIST_SPARSE_MATRIX, sketchc::DIST_SPARSE_MATRIX,
@@ -293,7 +292,7 @@ SKYLARK_EXTERN_API
     sketch::FJLT_t, DistMatrix_VC_STAR, Matrix);
 
 #endif
-#ifdef WITH_COMBBLAS
+#ifdef SKYLARK_HAVE_COMBBLAS
 
   AUTO_DELETE_DISPATCH(sketchc::CWT,
       sketchc::DIST_SPARSE_MATRIX, sketchc::DIST_SPARSE_MATRIX,
@@ -411,7 +410,7 @@ SKYLARK_EXTERN_API void
       sketch::FJLT_t, DistMatrix_VC_STAR, Matrix);
 
 #endif
-#ifdef WITH_COMBBLAS
+#ifdef SKYLARK_HAVE_COMBBLAS
 
   AUTO_APPLY_DISPATCH(sketchc::CWT,
       sketchc::DIST_SPARSE_MATRIX, sketchc::DIST_SPARSE_MATRIX,

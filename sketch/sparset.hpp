@@ -1,9 +1,7 @@
 #ifndef SPARSET_HPP
 #define SPARSET_HPP
 
-#include "config.h"
-
-#include "utility/distributions.hpp"
+#include "../config.h"
 
 namespace skylark {
 namespace sketch {
@@ -23,7 +21,7 @@ struct hash_transform_t {
     #include "sparset_Elemental.hpp"
 #endif
 
-#ifdef WITH_COMBBLAS
+#ifdef SKYLARK_HAVE_COMBBLAS
     #include "sparset_CombBLAS.hpp"
 #endif
 

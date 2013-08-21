@@ -1,9 +1,6 @@
 #ifndef MMT_HPP
 #define MMT_HPP
 
-#include "config.h"
-
-#include "utility/distributions.hpp"
 #include "sparset.hpp"
 
 namespace skylark {

@@ -6,8 +6,6 @@
 #include <vector>
 #include <algorithm>
 
-#include "config.h"
-
 namespace skylark {
 namespace utility {
 

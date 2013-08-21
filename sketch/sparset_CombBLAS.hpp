@@ -1,13 +1,11 @@
 #ifndef SPARSET_COMBBLAS_HPP
 #define SPARSET_COMBBLAS_HPP
 
-#include "config.h"
-
 #include "context.hpp"
 #include "transforms.hpp"
 
-#include "CombBLAS.h"
-#include "SpParMat.h"
+#include "CombBLAS/CombBLAS.h"
+#include "CombBLAS/SpParMat.h"
 
 
 namespace skylark {

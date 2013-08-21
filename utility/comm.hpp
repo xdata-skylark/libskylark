@@ -3,8 +3,6 @@
 
 #include <elemental.hpp>
 
-#include "config.h"
-
 namespace skylark {
 namespace utility {
 

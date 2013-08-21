@@ -51,7 +51,7 @@
 #include "sketch/sketch.hpp"
 
 /** Include all NLA primitives */
-#include "nla/SVD_Elemental.hpp"
+#include "nla/nla.hpp"
 
 /** Include all NLA/ML algorithms provided */
 #include "algorithms/algorithms.hpp"

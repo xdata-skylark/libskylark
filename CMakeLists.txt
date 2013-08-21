@@ -91,6 +91,12 @@ find_package (Boost
               serialization
               random)
 if (Boost_FOUND)
+  set (SKYLARK_HAVE_BOOST
+       1
+       CACHE
+       STRING
+       "Enables use of Elemental Libraries"
+       FORCE)
   include_directories (${Boost_INCLUDE_DIRS})
   link_directories (${Boost_LIBRARY_DIRS})
 endif (Boost_FOUND)

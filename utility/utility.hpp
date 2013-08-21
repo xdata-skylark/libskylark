@@ -17,4 +17,11 @@
 #include "comm.hpp"
 #include "distributions.hpp"
 
+/** 
+ * This file contains all the functions that we wrote to support external 
+ * software such as Elemental and CombBLAS. These should technically be in
+ * the respective softwares.
+ */ 
+#include "external/external.hpp"
+
 #endif // UTILITY_HPP

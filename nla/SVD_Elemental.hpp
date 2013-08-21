@@ -7,13 +7,71 @@
 namespace skylark {
 namespace nla {
 
+#if 0
+
+/** General template */
+/**
+ * These are the parameters that are needed for sketching SVD.
+ * (1) The sketching type to use.
+ * (2) The number of singular vectors of the sketched matrix to use.
+ *
+ * Use:
+ * [U_k, S_k, V_k] ~= sketched_SVD (A, k) 
+ */ 
+template <typename InputMatrixType,
+          typename OutputMatrixType,  
+          /** if we are using for frobenius norm, don't power iterate */
+          >
+struct sketched_SVD_t {};
+
+/** Specialization */
+template <typename ValueType,
+          elem::Distribution CD,
+          elem::Distribution RD,
+          /** if we are using for frobenius norm, don't power iterate */
+          >
+struct sketched_SVD_t <elem::DistMatrix<ValueType, CD, RD>,
+                       elem::DistMatrix<ValueType, CD, RD> > {
+  typedef elem::DistMatrix<ValueType, CD, RD> mpi_matrix_t;
+  
+  /**
+   * \brief Give a brief description here.
+   * \param[in] k
+   * \param[in] s 
+   * \param[in] p  lkjslajslsad
+   * \param[in] A
+   * \param[out] U
+   * \param[out] S
+   * \param[out] V
+   */
+  static void apply (int k,
+                     int s,
+                     int p,
+                     const mpi_matrix_t& A, 
+                     mpi_matrix_t& U,
+                     mpi_matrix_t& S,
+                     mpi_matrix_t& V) {
+    /** First check that K < min(M,N), where A is (M,N) */
+
+    /** Next check that S <= M and S>= K, where A is (M,N) */
+
+    /** Check that 'p' is reasonable */
+
+    /** Execute the algorithm */
+
+  }
+};
+
+
 // TODO this should be templated ASAP. They confuse codes that want to define these later.
 typedef elem::Matrix<double> MatrixType;
 typedef elem::DistMatrix<double, elem::VR, elem::STAR> DistMatrixType;
 
-// Takes an m x nA matrix A, m x nB matrix B and computes C = A'*B which is small nA x nB.
-// A and B are row-partitioned together. So computation of C boils down to C = sum_i A_i^T*B_i i.e. an mpi reduce operation.
-// Note: we need to pass the context so we can call mpi::reduce with the associated communicator.
+// Takes an m x nA matrix A, m x nB matrix B and computes C = A'*B which is
+// small nA x nB.  A and B are row-partitioned together. So computation of C
+// boils down to C = sum_i A_i^T*B_i i.e. an mpi reduce operation.  Note: we
+// need to pass the context so we can call mpi::reduce with the associated
+// communicator.
 void Gemm(DistMatrixType& A, DistMatrixType& B, MatrixType& C, skylark::sketch::context_t& context) {
 
     int mA = A.Height();
@@ -30,8 +88,6 @@ void Gemm(DistMatrixType& A, DistMatrixType& B, MatrixType& C, skylark::sketch::
         std::plus<double>(),
         0);
 }
-
-
 
 // Takes a m x n distributed matrix A and a n x l local matrix B and computes the distributed matrix A*B by local matrix multiplication.
 void Gemm(DistMatrixType& A, MatrixType& B, DistMatrixType& C) {
@@ -73,6 +129,7 @@ void SVD(DistMatrixType& A, DistMatrixType& U, MatrixType& s,  MatrixType& V, in
     // Write U = Q B
     Gemm(Q2, B, U);
 }
+#endif
 
 } //nla namespace
 } //skylark namespace

@@ -48,7 +48,8 @@ static inline void parse_parameters (int argc, char** argv) {
   help_map["A-file"] = "path to matrix A";
   help_map["b-file"] = "path to matrix b";
   help_map["sA-file"] = "path to matrix sA";
-  help_map["type"] = "transform to use (JLT|FJLT|Sparse, default: JLT)";
+  help_map["s-type"] = "transform to use (JLT|FJLT|Sparse|CWT, default: JLT)";
+  help_map["m-type"] = "matrix type (elem|cblas, default: elem)";
 
   string_int_map_t int_options_map;
   int_options_map["r"]                 = USE_RANDOM_INDEX;
@@ -65,7 +66,8 @@ static inline void parse_parameters (int argc, char** argv) {
   chr_options_map["A-file"]       = A_FILE_PATH_INDEX;
   chr_options_map["b-file"]       = B_FILE_PATH_INDEX;
   chr_options_map["sA-file"]      = SA_FILE_PATH_INDEX;
-  chr_options_map["type"]         = TRANSFORM_INDEX;
+  chr_options_map["s-type"]       = TRANSFORM_INDEX;
+  chr_options_map["m-type"]       = MATRIX_TYPE_INDEX;
 
   /* default initialize parameters */
   int_params[USE_RANDOM_INDEX]      = 1;
@@ -82,6 +84,7 @@ static inline void parse_parameters (int argc, char** argv) {
   chr_params[B_FILE_PATH_INDEX]     = "";
   chr_params[SA_FILE_PATH_INDEX]    = "";
   chr_params[TRANSFORM_INDEX]       = "JLT";
+  chr_params[MATRIX_TYPE_INDEX]     = "elem";
 
   /* parse the command line */
   if (!(argc&0x1)) print_help(help_map);
@@ -115,6 +118,7 @@ static inline void parse_parameters (int argc, char** argv) {
     print_help (help_map, "RHS");
   } else if (0!=strcmp("JLT",    chr_params[TRANSFORM_INDEX]) &&
              0!=strcmp("FJLT",   chr_params[TRANSFORM_INDEX]) &&
+             0!=strcmp("CWT",   chr_params[TRANSFORM_INDEX]) &&
              0!=strcmp("Sparse", chr_params[TRANSFORM_INDEX]) ) {
     print_help (help_map, "type");
   }

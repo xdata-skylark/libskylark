@@ -35,7 +35,6 @@ private:
     matrix_type _t;
     matrix_type _R;
 
-
 public:
     /**
      * Prepares the regressor to quickly solve given a right-hand side.
@@ -51,30 +50,12 @@ public:
     }
 
     /**
-     * Solves the regression problem given a single vector right-hand side.
-     *
-     * @param b Right-hand side.
-     * @param x Output (overwritten).
-     */
-    void solve(const rhs_type &b, rhs_type &x) {
-        // TODO error checking
-        x = b;
-        // TODO not sure the following will work if b is a row vector
-        elem::qr::ApplyQ(elem::LEFT, elem::ADJOINT, _QR, _t, x);
-        if (b.Width() == 1)
-            x.ResizeTo(_n, 1);
-        else
-            x.ResizeTo(1, _n);
-        elem::Trsv(elem::UPPER, elem::NORMAL, elem::NON_UNIT, _R, x);
-    }
-
-    /**
      * Solves the regression problem given a multiple right-hand sides.
      *
      * @param B Right-hand sides.
      * @param X Output (overwritten).
      */
-    void solve_mulitple(const rhs_type &B, rhs_type &X) {
+    void solve(const rhs_type &B, rhs_type &X) {
         // TODO error checking
         X = B;
         elem::qr::ApplyQ(elem::LEFT, elem::ADJOINT, _QR, _t, X); 
@@ -128,30 +109,12 @@ public:
     }
 
     /**
-     * Solves the regression problem given a single vector right-hand side.
-     *
-     * @param b Right-hand side.
-     * @param x Output (overwritten).
-     */
-    void solve(const rhs_type &b, rhs_type &x) {
-        // TODO error checking
-        x = b;
-        // TODO not sure the following will also work if b is a row vector
-        elem::qr::ApplyQ(elem::LEFT, elem::ADJOINT, _QR, _t, x);
-        if (b.Width() == 1)
-            x.ResizeTo(_n, 1);
-        else
-            x.ResizeTo(1, _n);
-        elem::Trsv(elem::UPPER, elem::NORMAL, elem::NON_UNIT, _R, x);
-    }
-
-    /**
      * Solves the regression problem given a multiple right-hand sides.
      *
      * @param B Right-hand sides.
      * @param X Output (overwritten).
      */
-    void solve_mulitple(const rhs_type &B, rhs_type &X) {
+    void solve (const rhs_type &B, rhs_type &X) {
         // TODO error checking
         X = B;
         elem::qr::ApplyQ(elem::LEFT, elem::ADJOINT, _QR, _t, X);
@@ -161,7 +124,6 @@ public:
     }
 };
 
-} // namespace algorithms
-} // namespace skylark
+} } /** namespace skylark::algorithms */
 
 #endif // EXACT_REGRESSOR_ELEMENTAL_HPP

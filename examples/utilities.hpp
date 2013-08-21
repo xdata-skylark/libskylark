@@ -31,7 +31,8 @@ static const int A_FILE_PATH_INDEX       = 0;
 static const int B_FILE_PATH_INDEX       = 1;
 static const int SA_FILE_PATH_INDEX      = 2;
 static const int TRANSFORM_INDEX         = 3;
-static const int NUM_CHR_PARAMETERS      = 4;
+static const int MATRIX_TYPE_INDEX       = 4;
+static const int NUM_CHR_PARAMETERS      = 5;
 extern char* chr_params[NUM_CHR_PARAMETERS];
 
 namespace std {

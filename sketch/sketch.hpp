@@ -9,7 +9,6 @@
  * to please people who like this, we are creating one top-level file in each
  * directory.
  */
-
 #include "transforms.hpp"
 #include "FUT.hpp"
 #include "RFUT.hpp"
@@ -18,9 +17,11 @@
 #include "JLT.hpp"
 #include "FJLT.hpp"
 #include "RFT.hpp"
-#include "sparset.hpp"
 #include "CWT.hpp"
 #include "MMT.hpp"
 #include "WZT.hpp"
+
+/** skylark::sketch::context_t also happens to be a powerful utility for RNG*/
+#include "context.hpp"
 
 #endif // SKETCH_HPP

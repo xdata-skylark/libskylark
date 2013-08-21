@@ -4,7 +4,7 @@
 #include "config.h"
 
 #include "utility/distributions.hpp"
-#include "sparset.hpp"
+#include "hash_transform.hpp"
 
 namespace skylark {
 namespace sketch {

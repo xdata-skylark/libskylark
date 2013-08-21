@@ -24,6 +24,12 @@ struct svd_l2_solver_tag : l2_solver_tag {};
 template <typename KrylovMethod>
 struct iterative_l2_solver_tag : l2_solver_tag {};
 
+/// Tag for all krylov methods to inherit from
+struct krylov_tag {};
+
+/// Tag for using LSQR
+struct lsqr_tag: public krylov_tag {};
+
 /**
  * Regressor that solves the problem exactly (as much as possible on a machine).
  *
@@ -50,8 +56,10 @@ class exact_regressor_t {
 } // namespace sketch
 } // namespace skylark
 
-#if SKYLARK_HAVE_ELEMENTAL
+#ifdef SKYLARK_HAVE_ELEMENTAL
 #include "exact_regressor_Elemental.hpp"
 #endif
+
+#include "exact_regressor_Krylov.hpp"
 
 #endif // EXACT_REGRESSOR_HPP

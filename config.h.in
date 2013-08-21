@@ -25,6 +25,9 @@
 /* Version number of package */
 #define VERSION ${VERSION}
 
+/* Do we have boost */
+#cmakedefine SKYLARK_HAVE_BOOST 1
+
 /* Do we have want to build with Elemental */
 #cmakedefine SKYLARK_HAVE_ELEMENTAL 1
 

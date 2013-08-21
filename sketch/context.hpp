@@ -4,10 +4,7 @@
 #include <boost/random.hpp>
 #include <boost/mpi.hpp>
 
-#include "config.h"
-
-namespace skylark {
-namespace sketch {
+namespace skylark { namespace sketch {
 
 /**
  * A structure that holds basic information about the MPI world and what the
@@ -44,12 +41,9 @@ struct context_t {
      * Return a new seed, that can be used to generate an independent stream.
      * Or at least we hope the stream is independent (need to read on PRNG).
      */
-    int newseed() {
-        return prng();
-    }
+    int newseed() { return prng(); }
 };
 
-} // namespace sketch
-} // namespace skylark
+} } /** skylark::sketch */
 
 #endif // CONTEXT_HPP

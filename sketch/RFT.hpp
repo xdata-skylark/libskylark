@@ -1,7 +1,7 @@
 #ifndef RFT_HPP
 #define RFT_HPP
 
-#include "config.h"
+#include "../config.h"
 
 namespace skylark {
 namespace sketch {

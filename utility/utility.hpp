@@ -1,8 +1,6 @@
 #ifndef UTILITY_HPP
 #define UTILITY_HPP
 
-#include "config.h"
-
 /**
  * In general, please only include files that you actually want. However, the
  * popular trend is to create behemoth include files that include all else. So,

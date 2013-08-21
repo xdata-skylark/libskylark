@@ -33,6 +33,9 @@ if (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
                         -Wno-unused-variable \\
                         -Wno-sign-compare")
 
+if (FALSE)
+# Commenting this out for now as we don't have a functioning 
+# SVD implementation that uses sketching
   add_executable(svd svd.cpp)
   target_link_libraries(svd
                         ${Elemental_LIBRARY}
@@ -49,10 +52,11 @@ if (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
                         -Wno-deprecated \\
                         -Wno-unused-variable \\
                         -Wno-sign-compare")
+endif(FALSE)
 
 endif (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
 
-if (WITH_COMBBLAS AND SKYLARK_HAVE_ELEMENTAL)
+if (SKYLARK_HAVE_COMBBLAS AND SKYLARK_HAVE_ELEMENTAL)
   add_executable(lsqr lsqr.cpp)
   target_link_libraries(lsqr
                         ${Elemental_LIBRARY}
@@ -70,4 +74,4 @@ if (WITH_COMBBLAS AND SKYLARK_HAVE_ELEMENTAL)
                         -Wno-deprecated \\
                         -Wno-unused-variable \\
                         -Wno-sign-compare")
-endif (WITH_COMBBLAS AND SKYLARK_HAVE_ELEMENTAL)
+endif (SKYLARK_HAVE_COMBBLAS AND SKYLARK_HAVE_ELEMENTAL)

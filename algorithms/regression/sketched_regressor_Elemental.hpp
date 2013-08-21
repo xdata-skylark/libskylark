@@ -3,16 +3,15 @@
 
 #include <elemental.hpp>
 
-#include "config.h"
 #include "regression_problem.hpp"
-#include "sketch/sketch.hpp"
+#include "../../sketch/sketch.hpp"
 
 
 namespace skylark {
 namespace algorithms {
 
 /**
- * Sketched l2 regressor using sketch-and-solve when sketch fits into a 
+ * Sketched l2 regressor using sketch-and-solve when sketch fits into a
  * single node.
  *
  * This implementation assumes RhsType is the same as MatrixType since
@@ -84,8 +83,8 @@ public:
 };
 
 /**
- * Sketched l2 regressor using sketch-and-solve when both input and 
- * output are distributed. 
+ * Sketched l2 regressor using sketch-and-solve when both input and
+ * output are distributed.
  *
  * This implementation assumes RhsType is the same as MatrixType since
  * we apply the same sketch to both the Matrix and Rhs. We further

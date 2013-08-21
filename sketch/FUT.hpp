@@ -1,13 +1,13 @@
 #ifndef FUT_HPP
 #define FUT_HPP
 
+#include "../config.h"
+
 //TODO: currently also needs elemental
 #if SKYLARK_HAVE_FFTW
 
 #include <elemental.hpp>
 #include <fftw3.h>
-
-#include "config.h"
 
 #include "context.hpp"
 #include "transforms.hpp"

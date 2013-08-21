@@ -1,6 +1,8 @@
 #ifndef SKETCHED_REGRESSOR_HPP
 #define SKETCHED_REGRESSOR_HPP
 
+#include "../../config.h"
+
 namespace skylark {
 namespace algorithms {
 

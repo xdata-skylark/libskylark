@@ -1,8 +1,6 @@
 #ifndef CT_HPP
 #define CT_HPP
 
-#include "config.h"
-
 #include "denset.hpp"
 
 namespace skylark {

@@ -59,10 +59,8 @@ for sname in sketches:
   S = stype(m, t, intype="DistMatrix_VR_STAR")
 
   # Sketch both A and b using the same sketch
-  SA = np.zeros((t, n), order='F')
-  S.apply(A, SA)   # Default is dim=0, ="columnwise", ="left"
-  Sb = np.zeros((t, 1), order='F')
-  S.apply(b, Sb)   # Default is dim=0, ="columnwise", ="left"
+  SA = S * A
+  Sb = S * b
   
   # SA and Sb reside on rank zero, so solving the equation is 
   # done there.

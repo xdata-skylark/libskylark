@@ -1,8 +1,6 @@
 #ifndef MATRIX_HPP
 #define MATRIX_HPP
 
-#include "config.h"
-
 namespace skylark {
 namespace utility {
 

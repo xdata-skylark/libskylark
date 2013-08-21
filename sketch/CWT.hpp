@@ -1,9 +1,7 @@
 #ifndef CWT_HPP
 #define CWT_HPP
 
-#include "config.h"
-
-#include "utility/distributions.hpp"
+#include "../utility/distributions.hpp"
 #include "hash_transform.hpp"
 
 namespace skylark { namespace sketch { 
@@ -14,8 +12,7 @@ template < typename InputMatrixType,
            typename OutputMatrixType = InputMatrixType >
 struct CWT_t : public hash_transform_t<
     InputMatrixType, OutputMatrixType,
-    uniform_t, utility::rademacher_distribution_t >
-{
+    uniform_t, utility::rademacher_distribution_t > {
     CWT_t(int N, int S, context_t& context)
         : hash_transform_t<InputMatrixType, OutputMatrixType,
           uniform_t, utility::rademacher_distribution_t>(N, S, context)
@@ -29,7 +26,6 @@ struct CWT_t : public hash_transform_t<
     {}
 
 };
-
 
 } } // namespace sketch
 

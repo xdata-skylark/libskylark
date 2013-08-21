@@ -9,8 +9,6 @@
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include "config.h"
-
 namespace skylark {
 namespace utility {
 

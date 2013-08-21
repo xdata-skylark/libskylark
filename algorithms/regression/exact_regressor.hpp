@@ -1,6 +1,8 @@
 #ifndef EXACT_REGRESSOR_HPP
 #define EXACT_REGRESSOR_HPP
 
+#include "../../config.h"
+
 namespace skylark {
 namespace algorithms {
 
@@ -56,7 +58,7 @@ class exact_regressor_t {
 } // namespace sketch
 } // namespace skylark
 
-#ifdef SKYLARK_HAVE_ELEMENTAL
+#if SKYLARK_HAVE_ELEMENTAL
 #include "exact_regressor_Elemental.hpp"
 #endif
 

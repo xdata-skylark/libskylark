@@ -1,12 +1,8 @@
-#include <iostream>
-#include <functional>
-#include <cstring>
 #include <vector>
-#include <utility>
-#include <ext/hash_map>
 
 #include <elemental.hpp>
-#include <skylark.hpp>
+
+#include "../../sketch/CWT.hpp"
 
 //#define BOOST_TEST_MODULE SparseSketches
 //#include <boost/test/unit_test.hpp>

@@ -110,7 +110,7 @@ int main (int argc, char** argv) {
         if (SKETCH_LEFT == int_params[SKETCH_DIRECTION_INDEX]) {
             //	A.Print("Matrix A");
             //U.ResizeTo(m,k);
-            skylark::nla::SVD(A, U, s, V, int_params[S_INDEX], 1, context);
+            // skylark::nla::SVD(A, U, s, V, int_params[S_INDEX], 1, context);
             //	U.Print("U: Left Singular Vectors");
             elem::Display(s, "Approximate singular values");
             //	V.Print("V: Right Singular Vectors");

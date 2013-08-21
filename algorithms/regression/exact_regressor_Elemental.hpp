@@ -3,7 +3,6 @@
 
 #include <elemental.hpp>
 
-#include "config.h"
 #include "regression_problem.hpp"
 
 
@@ -22,7 +21,7 @@ namespace algorithms {
 template <typename ValueType>
 class exact_regressor_t<l2_tag,
                         elem::Matrix<ValueType>,
-                        elem::Matrix<ValueType>, 
+                        elem::Matrix<ValueType>,
                         qr_l2_solver_tag> {
 
     typedef elem::Matrix<ValueType> matrix_type;
@@ -58,7 +57,7 @@ public:
     void solve(const rhs_type &B, rhs_type &X) {
         // TODO error checking
         X = B;
-        elem::qr::ApplyQ(elem::LEFT, elem::ADJOINT, _QR, _t, X); 
+        elem::qr::ApplyQ(elem::LEFT, elem::ADJOINT, _QR, _t, X);
         X.ResizeTo(_n, B.Width());
         elem::Trsm(elem::LEFT, elem::UPPER, elem::NORMAL, elem::NON_UNIT,
             1.0, _R, X, true);

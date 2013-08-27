@@ -8,7 +8,6 @@ import scipy.fftpack
 import scipy.stats
 from math import log, ceil
 from scipy import sqrt
-import matplotlib.pyplot as plt
 
 class SkylarkError(Exception):
     pass
@@ -416,35 +415,37 @@ class Sampling(object):
      
 
 if __name__== "__main__":
-        # generate a matrix 
-        n = 100
-        d = 1000
-        
-        A = numpy.random.uniform(-1.0,1.0, (n,d))
+    import matplotlib.pyplot as plt
     
-        #Let us sketch this matrix with 10% distortion with 95% confidence.
-        seed = 123 
+    # generate a matrix 
+    n = 100
+    d = 1000
+    
+    A = numpy.random.uniform(-1.0,1.0, (n,d))
+
+    #Let us sketch this matrix with 10% distortion with 95% confidence.
+    seed = 123 
         
-        epsilon = 0.1
-        delta = 0.05
-        #k = (epsilon, delta)
-        k=200
+    epsilon = 0.1
+    delta = 0.05
+    #k = (epsilon, delta)
+    k=200
         
-        sketcher = FJLT(seed)
-        B = sketcher.sketch(A, k, dimension = "right")
-        #B = sketcher.sign(A, k, 1)
+    sketcher = FJLT(seed)
+    B = sketcher.sketch(A, k, dimension = "right")
+    #B = sketcher.sign(A, k, 1)
         
-        print "size of sketched matrix ", B.shape
+    print "size of sketched matrix ", B.shape
         
         
-        #Let us check if norms are preserved. 
-        norms_A = numpy.dot((A*A), numpy.ones((A.shape[1],1)))
-        norms_B = numpy.dot((B*B), numpy.ones((B.shape[1],1)))
-        
+    #Let us check if norms are preserved. 
+    norms_A = numpy.dot((A*A), numpy.ones((A.shape[1],1)))
+    norms_B = numpy.dot((B*B), numpy.ones((B.shape[1],1)))
+    
         #D = scipy.sparse.diags(scipy.ones(n), 0) 
         #distances_A = euclidean(A,A) + D
         #distances_B = euclidean(B,B) + D
-        distortions = scipy.ravel(norms_A/norms_B)    
-        plt.hist(distortions, 50)
-        plt.show()
+    distortions = scipy.ravel(norms_A/norms_B)    
+    plt.hist(distortions, 50)
+    plt.show()
     

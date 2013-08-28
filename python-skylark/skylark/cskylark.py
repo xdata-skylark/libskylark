@@ -1,6 +1,6 @@
 import errors
 import ctypes
-from ctypes import byref, cdll, c_double, c_void_p, c_int, pointer, POINTER
+from ctypes import byref, cdll, c_double, c_void_p, c_int, c_char_p, pointer, POINTER
 import numpy
 import sys
 import os
@@ -30,6 +30,9 @@ _lib.sl_context_rank.restype = c_int
 _lib.sl_context_size.restype = c_int
 _lib.sl_create_sketch_transform.restype = c_void_p
 _lib.sl_wrap_raw_matrix.restype = c_void_p
+_lib.sl_supported_sketch_transforms.restype = c_char_p
+
+SUPPORTED_SKETCH_TRANSFORMS = map(eval, _lib.sl_supported_sketch_transforms().split())
 
 #
 # Matrix type adapters: specifies how to interact with the underlying (in C/C++)
@@ -162,6 +165,13 @@ class _SketchTransform(object):
   which holds the common interface. Derived classes can have different constructors.
   """
   def __init__(self, ttype, n, s, intype, outtype):
+    reqcomb = (ttype, \
+               _map_to_adapter[intype].ctype(), \
+               _map_to_adapter[outtype].ctype())
+
+    if reqcomb not in SUPPORTED_SKETCH_TRANSFORMS:
+      raise errors.UnsupportedError("Unsupported sketch transofrm " + str(reqcomb))
+
     self._baseinit(n, s, intype, outtype)
     self._obj = _lib.sl_create_sketch_transform(_ctxt_obj, ttype, \
                                                 _map_to_adapter[intype].ctype(), \

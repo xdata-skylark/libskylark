@@ -47,6 +47,45 @@ typedef SpParMat< size_t, double, col_t > DistSparseMatrix_t;
 
 extern "C" {
 
+/** Return string defining what is supported */
+SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
+#define QUOTE(x) #x
+#define SKDEF(t,i,o) "(\"" QUOTE(t) "\",\"" QUOTE(i) "\",\"" QUOTE(o) "\") "
+
+    return
+#if SKYLARK_HAVE_ELEMENTAL
+        SKDEF(JLT, DistMatrix_VR_STAR, Matrix)
+        SKDEF(JLT, DistMatrix_VC_STAR, Matrix)
+        SKDEF(JLT, DistMatrix_VR_STAR, DistMatrix_VR_STAR)
+        SKDEF(JLT, DistMatrix_VC_STAR, DistMatrix_VC_STAR)
+        SKDEF(CT, DistMatrix_VR_STAR, Matrix)
+        SKDEF(CT, DistMatrix_VC_STAR, Matrix)
+        SKDEF(CT, DistMatrix_VR_STAR, DistMatrix_VR_STAR)
+        SKDEF(CT, DistMatrix_VC_STAR, DistMatrix_VC_STAR)
+        SKDEF(CWT, DistMatrix_VR_STAR, Matrix)
+        SKDEF(CWT, DistMatrix_VC_STAR, Matrix)
+        SKDEF(MMT, DistMatrix_VR_STAR, Matrix)
+        SKDEF(MMT, DistMatrix_VC_STAR, Matrix)
+        SKDEF(WZT, DistMatrix_VR_STAR, Matrix)
+        SKDEF(WZT, DistMatrix_VC_STAR, Matrix)
+        SKDEF(GaussianRFT, DistMatrix_VR_STAR, DistMatrix_VR_STAR)
+        SKDEF(GaussianRFT, DistMatrix_VC_STAR, DistMatrix_VC_STAR)
+        SKDEF(LaplacianRFT, DistMatrix_VR_STAR, DistMatrix_VR_STAR)
+        SKDEF(LaplacianRFT, DistMatrix_VC_STAR, DistMatrix_VC_STAR)
+
+#if SKYLARK_HAVE_FFTW
+        SKDEF(FJLT, DistMatrix_VR_STAR, Matrix)
+        SKDEF(FJLT, DistMatrix_VC_STAR, Matrix)
+#endif
+
+#endif
+
+#ifdef SKYLARK_HAVE_COMBBLAS
+        SKDEF(CWT, DistSparseMatrix, DistSparseMatrix)
+#endif
+        ;
+}
+
 /** Support for skylark::sketch::context_t. */
 SKYLARK_EXTERN_API sketch::context_t *sl_create_default_context(int seed) {
   return new sketch::context_t(seed, boost::mpi::communicator());

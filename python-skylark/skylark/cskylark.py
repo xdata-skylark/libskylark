@@ -90,7 +90,7 @@ if _KDT_INSTALLED:
     
     def ctor(self, m, n):
       nullVec = kdt.Vec(0, sparse=False)
-      return kdt.Math(nullVec, nullVec, nullVec, n, m)
+      return kdt.Mat(nullVec, nullVec, nullVec, n, m)
     
     def ptr(self, A):
       return ctypes.c_void_p(long(A._m_.this))
@@ -212,7 +212,7 @@ class _SketchTransform(object):
       dim = 1
 
     # Allocate in case SA is not given
-    if SA == None:
+    if SA is None:
       ctor = _map_to_adapter[self._outtype].ctor
       getdim = _map_to_adapter[self._intype].getdim
       if dim == 0:

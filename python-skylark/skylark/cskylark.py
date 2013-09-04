@@ -36,7 +36,7 @@ SUPPORTED_SKETCH_TRANSFORMS = map(eval, _lib.sl_supported_sketch_transforms().sp
 
 #
 # Matrix type adapters: specifies how to interact with the underlying (in C/C++)
-# data structure. 
+# data structure.
 #
 class _NumpyAdapter:
   def ctype(self):
@@ -64,13 +64,13 @@ if _ELEM_INSTALLED:
     def __init__(self, typestr):
       self._typestr = "DistMatrix_" + typestr
       self._class = eval("elem.DistMatrix_d_" + typestr)
-      
+
     def ctype(self):
       return self._typestr
-    
+
     def ctor(self, m, n):
       return self._class(m, n)
-      
+
     def ptr(self, A):
       return ctypes.c_void_p(long(A.this))
 
@@ -87,17 +87,17 @@ if _KDT_INSTALLED:
   class _KDTAdapter:
     def ctype(self):
       return "DistSparseMatrix"
-    
+
     def ctor(self, m, n):
       nullVec = kdt.Vec(0, sparse=False)
       return kdt.Mat(nullVec, nullVec, nullVec, n, m)
-    
+
     def ptr(self, A):
       return ctypes.c_void_p(long(A._m_.this))
-    
+
     def ptr_cleaner(self, p):
       None
-      
+
     def getdim(self, A, dim):
       if dim == 0:
         return A.nrow()
@@ -141,8 +141,8 @@ initialize(int(time.time()))
 # Allow finalization
 def finalize():
   """
-  Finalize (de-allocate) the library. However, note that that will not cause 
-  allocated objects (e.g. sketch transforms) to be freed. They are freed by 
+  Finalize (de-allocate) the library. However, note that that will not cause
+  allocated objects (e.g. sketch transforms) to be freed. They are freed by
   the garbage collector when detected as garbage (no references).
   """
   # TODO free dll (?)
@@ -161,7 +161,7 @@ atexit.register(finalize)
 class _SketchTransform(object):
   """
   Base class sketch transforms.
-  The various sketch transforms derive from this class and 
+  The various sketch transforms derive from this class and
   which holds the common interface. Derived classes can have different constructors.
   """
   def __init__(self, ttype, n, s, intype, outtype):
@@ -281,7 +281,7 @@ class CWT(_SketchTransform):
   Clarkson-Woodruff Transform (also known as CountSketch)
 
   *K. Clarkson* and *D. Woodruff*, **Low Rank Approximation and Regression
-  in Input Sparsity Time**, STOC 2013 
+  in Input Sparsity Time**, STOC 2013
   """
   def __init__(self, n, s, intype=_DEF_INTYPE, outtype=_DEF_OUTTYPE):
     super(CWT, self).__init__("CWT", n, s, intype, outtype);
@@ -323,8 +323,8 @@ class LaplacianRFT(_SketchTransform):
   """
   Random Features Transform for the Laplacian Kernel
 
-  *A. Rahimi* and *B. Recht*, **Random Features for Large-scale 
-  Kernel Machines*, NIPS 2009
+  *A. Rahimi* and *B. Recht*, **Random Features for Large-scale
+  Kernel Machines**, NIPS 2009
   """
   def __init__(self, n, s, sigma, intype=_DEF_INTYPE, outtype=_DEF_OUTTYPE):
     super(LaplacianRFT, self)._baseinit(n, s, intype, outtype)

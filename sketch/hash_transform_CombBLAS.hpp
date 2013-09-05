@@ -2,6 +2,7 @@
 #define SKYLARK_HASH_TRANSFORM_COMBBLAS_HPP
 
 #include <CombBLAS.h>
+#include "../utility/external/FullyDistMultiVec.hpp"
 
 #include "context.hpp"
 #include "transforms.hpp"

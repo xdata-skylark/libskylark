@@ -1,5 +1,6 @@
+import errors
 import ctypes
-from ctypes import byref, cdll, c_double, c_void_p, c_int, pointer, POINTER
+from ctypes import byref, cdll, c_double, c_void_p, c_int, c_char_p, pointer, POINTER
 import numpy
 import sys
 import os
@@ -29,104 +30,93 @@ _lib.sl_context_rank.restype = c_int
 _lib.sl_context_size.restype = c_int
 _lib.sl_create_sketch_transform.restype = c_void_p
 _lib.sl_wrap_raw_matrix.restype = c_void_p
+_lib.sl_supported_sketch_transforms.restype = c_char_p
+
+SUPPORTED_SKETCH_TRANSFORMS = map(eval, _lib.sl_supported_sketch_transforms().split())
 
 #
-# Create mapping between type string that can be supplied by user
-# to one the C-API recognaizes
+# Matrix type adapters: specifies how to interact with the underlying (in C/C++)
+# data structure.
 #
-_map_to_ctype = { }
+class _NumpyAdapter:
+  def ctype(self):
+    return "Matrix"
+
+  def ctor(self, m, n):
+    return numpy.empty((m,n), order='F')
+
+  def ptr(self, A):
+    if not A.flags.f_contiguous:
+      raise errors.UnsupportedError("Only FORTRAN style (column-major) NumPy arrays are supported")
+    else:
+      return _lib.sl_wrap_raw_matrix( \
+        A.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), \
+          A.shape[0], A.shape[1] if A.ndim > 1 else 1)
+
+  def ptr_cleaner(self, p):
+    _lib.sl_free_raw_matrix_wrap(p);
+
+  def getdim(self, A, dim):
+    return A.shape[dim]
+
 if _ELEM_INSTALLED:
-  _map_to_ctype["DistMatrix_VR_STAR"] = "DistMatrix_VR_STAR"
-  _map_to_ctype["DistMatrix_VC_STAR"] = "DistMatrix_VC_STAR"
-  _map_to_ctype["DistMatrix_STAR_VR"] = "DistMatrix_STAR_VR"
-  _map_to_ctype["DistMatrix_STAR_VC"] = "DistMatrix_STAR_VC"
+  class _ElemAdapter:
+    def __init__(self, typestr):
+      self._typestr = "DistMatrix_" + typestr
+      self._class = eval("elem.DistMatrix_d_" + typestr)
+
+    def ctype(self):
+      return self._typestr
+
+    def ctor(self, m, n):
+      return self._class(m, n)
+
+    def ptr(self, A):
+      return ctypes.c_void_p(long(A.this))
+
+    def ptr_cleaner(self, p):
+      None
+
+    def getdim(self, A, dim):
+      if dim == 0:
+        return A.Height
+      if dim == 1:
+        return A.Width
 
 if _KDT_INSTALLED:
-  _map_to_ctype["DistSparseMatrix"] = "DistSparseMatrix"
+  class _KDTAdapter:
+    def ctype(self):
+      return "DistSparseMatrix"
 
-_map_to_ctype["LocalMatrix"] = "Matrix"
+    def ctor(self, m, n):
+      nullVec = kdt.Vec(0, sparse=False)
+      return kdt.Mat(nullVec, nullVec, nullVec, n, m)
 
-# 
-# Create mapping between object type to function converting it 
-# to pointers to passed to the C-API
+    def ptr(self, A):
+      return ctypes.c_void_p(long(A._m_.this))
+
+    def ptr_cleaner(self, p):
+      None
+
+    def getdim(self, A, dim):
+      if dim == 0:
+        return A.nrow()
+      if dim == 1:
+        return A.ncol()
+
 #
-def _elem_to_ptr(A):
-  return ctypes.c_void_p(long(A.this))
+# Create mapping between type string and matrix type adapter
+_map_to_adapter = { }
+_map_to_adapter["LocalMatrix"] = _NumpyAdapter()
 
-def _kdt_to_ptr(A):
-  return ctypes.c_void_p(long(A._m_.this))
-
-def _np_to_ptr(A):
-  if not A.flags.f_contiguous:
-    if _rank == 0:
-      print "ERROR: only FORTRAN style (column-major) NumPy arrays are supported" # TODO
-    return -1
-  else:
-    return _lib.sl_wrap_raw_matrix( \
-      A.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), \
-        A.shape[0], A.shape[1] if A.ndim > 1 else 1)
-
-def _np_ptr_cleaner(p):
-  _lib.sl_free_raw_matrix_wrap(p);
-
-# TODO: classify the following
-
-_map_to_ptr = { }
 if _ELEM_INSTALLED:
-  _map_to_ptr["DistMatrix_VR_STAR"] = _elem_to_ptr
-  _map_to_ptr["DistMatrix_VC_STAR"] = _elem_to_ptr
-  _map_to_ptr["DistMatrix_STAR_VR"] = _elem_to_ptr
-  _map_to_ptr["DistMatrix_STAR_VC"] = _elem_to_ptr
+  _map_to_adapter["DistMatrix_VR_STAR"] = _ElemAdapter("VR_STAR")
+  _map_to_adapter["DistMatrix_VC_STAR"] = _ElemAdapter("VC_STAR")
+  _map_to_adapter["DistMatrix_STAR_VR"] = _ElemAdapter("STAR_VR")
+  _map_to_adapter["DistMatrix_STAR_VC"] = _ElemAdapter("STAR_VC")
 
 if _KDT_INSTALLED:
-  _map_to_ptr["DistSparseMatrix"] = _kdt_to_ptr
-
-_map_to_ptr["LocalMatrix"] = _np_to_ptr
-
-_map_to_ptr_cleaner = { }
-_map_to_ptr_cleaner["LocalMatrix"]  = _np_ptr_cleaner
-
-def _elem_ctor(etype):
-  return lambda m,n : etype(m, n)
-
-def _kdt_ctor(m, n) :
-  nullVec = kdt.Vec(0, sparse=False)
-  return kdt.Math(nullVec, nullVec, nullVec, n, m)
-
-_map_to_ctor = { }
-if _ELEM_INSTALLED:
-  _map_to_ctor["DistMatrix_VR_STAR"] = _elem_ctor(elem.DistMatrix_d_VR_STAR)
-  _map_to_ctor["DistMatrix_VC_STAR"] = _elem_ctor(elem.DistMatrix_d_VC_STAR)
-  _map_to_ctor["DistMatrix_STAR_VR"] = _elem_ctor(elem.DistMatrix_d_STAR_VR)
-  _map_to_ctor["DistMatrix_STAR_VC"] = _elem_ctor(elem.DistMatrix_d_STAR_VC)
-if _KDT_INSTALLED:
-  _map_to_ctor["DistSparseMatrix"] = _kdt_ctor
-_map_to_ctor["LocalMatrix"] = lambda m, n: numpy.empty((m,n), order='F')
-
-def _elem_getdim(A, dim):
-  if dim == 0:
-    return A.Height
-  if dim == 1:
-    return A.Width
-
-def _kdt_getdim(A, dim):
-  if dim == 0:
-    return A.nrow()
-  if dim == 1:
-    return A.ncol()
-
-def _np_getdim(A, dim):
-  return A.shape[dim]
-
-_map_to_getdim = { }
-if _ELEM_INSTALLED:
-  _map_to_getdim["DistMatrix_VR_STAR"] = _elem_getdim
-  _map_to_getdim["DistMatrix_VC_STAR"] = _elem_getdim
-  _map_to_getdim["DistMatrix_STAR_VR"] = _elem_getdim
-  _map_to_getdim["DistMatrix_STAR_VC"] = _elem_getdim
-if _KDT_INSTALLED:
-  _map_to_getdim["DistSparseMatrix"] = _kdt_getdim
-_map_to_getdim["LocalMatrix"] = lambda A,dim : A.shape[dim]
+  _map_to_adapter["DistSparseMatrix"] = _KDTAdapter()
 
 # Function for initialization and reinitilialization
 def initialize(seed=-1):
@@ -151,8 +141,8 @@ initialize(int(time.time()))
 # Allow finalization
 def finalize():
   """
-  Finalize (de-allocate) the library. However, note that that will not cause 
-  allocated objects (e.g. sketch transforms) to be freed. They are freed by 
+  Finalize (de-allocate) the library. However, note that that will not cause
+  allocated objects (e.g. sketch transforms) to be freed. They are freed by
   the garbage collector when detected as garbage (no references).
   """
   # TODO free dll (?)
@@ -165,30 +155,34 @@ def finalize():
 atexit.register(finalize)
 
 #
+#
 # Generic Sketch Transform
 #
-class SketchTransform(object):
+class _SketchTransform(object):
   """
   Base class sketch transforms.
-  The various sketch transforms derive from this class and 
+  The various sketch transforms derive from this class and
   which holds the common interface. Derived classes can have different constructors.
   """
   def __init__(self, ttype, n, s, intype, outtype):
+    reqcomb = (ttype, \
+               _map_to_adapter[intype].ctype(), \
+               _map_to_adapter[outtype].ctype())
+
+    if reqcomb not in SUPPORTED_SKETCH_TRANSFORMS:
+      raise errors.UnsupportedError("Unsupported sketch transofrm " + str(reqcomb))
+
     self._baseinit(n, s, intype, outtype)
     self._obj = _lib.sl_create_sketch_transform(_ctxt_obj, ttype, \
-                                                _map_to_ctype[intype], \
-                                                _map_to_ctype[outtype], n, s)
+                                                _map_to_adapter[intype].ctype(), \
+                                                _map_to_adapter[outtype].ctype(), n, s)
 
   def _baseinit(self, n, s, intype, outtype):
-    if not _map_to_ctype.has_key(intype):
-      if _rank == 0:
-        print "ERROR: unknown input type (%s)" % intype      # TODO
-      return -1
+    if not _map_to_adapter.has_key(intype):
+      raise errors.UnsupportedError("Unsupported input type (%s)" % intype)
 
-    if not _map_to_ctype.has_key(outtype):
-      if _rank == 0:
-        print "ERROR: unknown output type (%s)" % outtype    # TODO
-      return -1
+    if not _map_to_adapter.has_key(outtype):
+      raise errors.UnsupportedError("Unsupported input type (%s)" % intype)
 
     self._intype = intype
     self._outtype = outtype
@@ -212,31 +206,39 @@ class SketchTransform(object):
 
     :return SA
     """
-    if dim == "columnwise" or dim == "left":
+    if dim == 0 or dim == "columnwise" or dim == "left":
       dim = 0
     if dim == "rowwise" or dim == "right":
       dim = 1
 
-    if SA == None:
-      ctor = _map_to_ctor[self._outtype];
-      getdim = _map_to_getdim[self._intype];
+    # Allocate in case SA is not given
+    if SA is None:
+      ctor = _map_to_adapter[self._outtype].ctor
+      getdim = _map_to_adapter[self._intype].getdim
       if dim == 0:
         SA = ctor(self._s, getdim(A, 1))
       if dim == 1:
         SA = ctor(getdim(A, 0), self._s)
 
-    Aobj = _map_to_ptr[self._intype](A)
-    SAobj = _map_to_ptr[self._outtype](SA)
+    # Verify dimensions
+    ingetdim = _map_to_adapter[self._intype].getdim
+    outgetdim = _map_to_adapter[self._outtype].getdim
+    if ingetdim(A, dim) != self._n:
+      raise errors.DimensionMistmatchError("Sketched dimension is incorrect (input)")
+    if outgetdim(SA, dim) != self._s:
+      raise errors.DimensionMistmatchError("Sketched dimension is incorrect (output)")
+    if ingetdim(A, 1 - dim) != outgetdim(SA, 1 - dim):
+      raise errors.DimensionMistmatchError("Sketched dimension is incorrect (output)")
+
+    Aobj = _map_to_adapter[self._intype].ptr(A)
+    SAobj = _map_to_adapter[self._outtype].ptr(SA)
     if (Aobj == -1 or SAobj == -1):
       return -1
 
     _lib.sl_apply_sketch_transform(self._obj, Aobj, SAobj, dim+1)
 
-    if _map_to_ptr_cleaner.has_key(self._intype):
-      _map_to_ptr_cleaner[self._intype](Aobj)
-
-    if _map_to_ptr_cleaner.has_key(self._outtype):
-      _map_to_ptr_cleaner[self._outtype](SAobj)
+    _map_to_adapter[self._intype].ptr_cleaner(Aobj)
+    _map_to_adapter[self._outtype].ptr_cleaner(SAobj)
 
     return SA
 
@@ -250,41 +252,41 @@ class SketchTransform(object):
 # Various sketch transforms
 #
 
-class JLT(SketchTransform):
+class JLT(_SketchTransform):
   """
   Johnson-Lindenstrauss Transform
   """
   def __init__(self, n, s, intype=_DEF_INTYPE, outtype=_DEF_OUTTYPE):
     super(JLT, self).__init__("JLT", n, s, intype, outtype);
 
-class CT(SketchTransform):
+class CT(_SketchTransform):
   """
   Cauchy Transform
   """
   def __init__(self, n, s, C, intype=_DEF_INTYPE, outtype=_DEF_OUTTYPE):
     super(CT, self)._baseinit(n, s, intype, outtype)
     self._obj = _lib.sl_create_sketch_transform(_ctxt_obj, "CT", \
-                                                _map_to_ctype[intype], \
-                                                _map_to_ctype[outtype], n, s, ctypes.c_double(C))
+                                                _map_to_adapter[intype].ctype(), \
+                                                _map_to_adapter[outtype].ctype(), n, s, ctypes.c_double(C))
 
-class FJLT(SketchTransform):
+class FJLT(_SketchTransform):
   """
   Fast Johnson-Lindenstrauss Transform
   """
   def __init__(self, n, s, intype=_DEF_INTYPE, outtype=_DEF_OUTTYPE):
     super(FJLT, self).__init__("FJLT", n, s, intype, outtype);
 
-class CWT(SketchTransform):
+class CWT(_SketchTransform):
   """
   Clarkson-Woodruff Transform (also known as CountSketch)
 
   *K. Clarkson* and *D. Woodruff*, **Low Rank Approximation and Regression
-  in Input Sparsity Time**, STOC 2013 
+  in Input Sparsity Time**, STOC 2013
   """
   def __init__(self, n, s, intype=_DEF_INTYPE, outtype=_DEF_OUTTYPE):
     super(CWT, self).__init__("CWT", n, s, intype, outtype);
 
-class MMT(SketchTransform):
+class MMT(_SketchTransform):
   """
   Meng-Mahoney Transform
 
@@ -294,7 +296,7 @@ class MMT(SketchTransform):
   def __init__(self, n, s, intype=_DEF_INTYPE, outtype=_DEF_OUTTYPE):
     super(MMT, self).__init__("MMT", n, s, intype, outtype);
 
-class WZT(SketchTransform):
+class WZT(_SketchTransform):
   """
   Woodruff-Zhang Transform
 
@@ -304,29 +306,29 @@ class WZT(SketchTransform):
   def __init__(self, n, s, p, intype=_DEF_INTYPE, outtype=_DEF_OUTTYPE):
     super(WZT, self)._baseinit(n, s, intype, outtype)
     self._obj = _lib.sl_create_sketch_transform(_ctxt_obj, "WZT", \
-                                                _map_to_ctype[intype], \
-                                                _map_to_ctype[outtype], n, s, ctypes.c_double(p))
+                                                _map_to_adapter[intype].ctype(), \
+                                                _map_to_adapter[outtype].ctype(), n, s, ctypes.c_double(p))
 
-class GaussianRFT(SketchTransform):
+class GaussianRFT(_SketchTransform):
   """
   Random Features Transform for the RBF Kernel
   """
   def __init__(self, n, s, sigma, intype=_DEF_INTYPE, outtype=_DEF_OUTTYPE):
     super(GaussianRFT, self)._baseinit(n, s, intype, outtype)
     self._obj = _lib.sl_create_sketch_transform(_ctxt_obj, "GaussianRFT", \
-                                                _map_to_ctype[intype], \
-                                                _map_to_ctype[outtype], n, s, ctypes.c_double(sigma))
+                                                _map_to_adapter[intype].ctype(), \
+                                                _map_to_adapter[outtype].ctype(), n, s, ctypes.c_double(sigma))
 
-class LaplacianRFT(SketchTransform):
+class LaplacianRFT(_SketchTransform):
   """
   Random Features Transform for the Laplacian Kernel
 
-  *A. Rahimi* and *B. Recht*, **Random Features for Large-scale 
-  Kernel Machines*, NIPS 2009
+  *A. Rahimi* and *B. Recht*, **Random Features for Large-scale
+  Kernel Machines**, NIPS 2009
   """
   def __init__(self, n, s, sigma, intype=_DEF_INTYPE, outtype=_DEF_OUTTYPE):
     super(LaplacianRFT, self)._baseinit(n, s, intype, outtype)
     self._obj = _lib.sl_create_sketch_transform(_ctxt_obj, "LaplacianRFT", \
-                                                _map_to_ctype[intype], \
-                                                _map_to_ctype[outtype], n, s, ctypes.c_double(sigma))
+                                                _map_to_adapter[intype].ctype(), \
+                                                _map_to_adapter[outtype].ctype(), n, s, ctypes.c_double(sigma))
 

@@ -94,7 +94,7 @@ if rank == 0:
     print "Decompressing the data..."
     rawdata = bz2.decompress(cmprs_data)
     print "Parsing the data..."
-    data = skylark.io.sparselibsvm2scipy(rawdata.splitlines())
+    data = skylark.io.sparselibsvm2scipy(rawdata.splitlines(), shape_X[1])
     urlfile.close()
 
 # Now broadcast the sizes

@@ -61,6 +61,11 @@ namespace sketchc = skylark::sketch::c;
 
 extern "C" {
 
+/** Returns a string describing the sketch transforms that are supported.
+ */
+SKYLARK_EXTERN_API char *sl_supported_sketch_transforms();
+
+
 // Support for skylark::sketch::context_t.
 
 /** Creating a default Skylark context required for applying sketches.

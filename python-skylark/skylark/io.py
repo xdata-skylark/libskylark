@@ -156,7 +156,7 @@ def parselibsvm(f):
 
     return(V, I, J, Y)
 
-def sparselibsvm2scipy(f):
+def sparselibsvm2scipy(f, nfeatures=0):
     """
     sparselibsvm2scipy(f)
 
@@ -165,6 +165,8 @@ def sparselibsvm2scipy(f):
     Parameters
     -------------
     f - either a file object (can iterate on lines) or a filename to use.
+    nfeatures - minimum amount of features. Useful if the file has zero features.
+                0 will cause the number of features to be detected automatically.
 
     Returns
     ----------
@@ -172,7 +174,8 @@ def sparselibsvm2scipy(f):
     """
     (V, I, J, Y) = parselibsvm(f)
     rows         = I[-1] + 1
-    nfeatures    = max(J) + 1
+    nfeatures    = max(max(J) + 1, nfeatures)
+
     X = scipy.sparse.csr_matrix( (V, (I, J)), shape=(rows, nfeatures))
     Y = numpy.asarray(Y)
     return (X, Y)

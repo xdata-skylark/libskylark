@@ -8,11 +8,11 @@
 # CombBLAS_LIBRARY     - qualified libraries to link against.
 # CombBLAS_FOUND       - do not attempt to use if "no" or undefined.
 
-FIND_PATH(CombBLAS_INCLUDE_DIR CombBLAS/CombBLAS.h CombBLAS/SpParMat.h CombBLAS/SpParVec.h CombBLAS/DenseParVec.h
+FIND_PATH(CombBLAS_INCLUDE_DIR CombBLAS.h SpParMat.h SpParVec.h DenseParVec.h
   /usr/local/include
   /usr/include
   $ENV{HOME}/Software/include
-  $ENV{COMBBLAS_ROOT}/include
+  $ENV{COMBBLAS_ROOT}
 )
 
 find_library(MPITypelib_LIBRARY MPITypelib

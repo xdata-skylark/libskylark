@@ -27,12 +27,12 @@ struct WZT_t : public hash_transform_t<
     WZT_t(int N, int S, double p, context_t& context)
         : Base(N, S, context) {
 
-        // Since the distribution depends on the target p we have to pass p
-        // as a parameter. We also cannot just use the distribution as
-        // template. The only solution I found is to let the base class generate
-        // the numbers and then modify them to the correct distribution.
+        // Since the distribution depends on the target p we have to pass p as
+        // a parameter. We also cannot just use the distribution as template.
+        // The only solution I found is to let the base class generate the
+        // numbers and then modify them to the correct distribution.
         for(int i = 0; i < N; i++)
-             Base::_row_value[i] = pow(1.0 / Base::_row_value[i], 1.0 / p);
+             Base::row_value[i] = pow(1.0 / Base::row_value[i], 1.0 / p);
      }
 };
 

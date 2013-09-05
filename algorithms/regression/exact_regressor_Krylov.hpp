@@ -1,8 +1,6 @@
 #ifndef EXACT_REGRESSOR_KRYLOV_HPP
 #define EXACT_REGRESSOR_KRYLOV_HPP
 
-#include <CombBLAS.h>
-#include "exact_regressor.hpp"
 #include "../../nla/lsqr.hpp"
 
 namespace skylark { namespace algorithms {

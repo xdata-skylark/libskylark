@@ -161,8 +161,8 @@ struct hash_transform_t <
         FullyDistVec<size_t, double> vals(matrix_size, 0.0);
 
         size_t row_begin = col.colid();
-        size_t pos = row_begin + 
-                     base_data_t::row_idx[nz.rowid()]*data.getncol();
+        size_t pos = row_begin +
+                     base_data_t::row_idx[nz.rowid()] * sketch_of_A.getncol();
 
         cols.SetElement(pos, col.colid());
         rows.SetElement(pos, base_data_t::row_idx[nz.rowid()]);
@@ -200,8 +200,8 @@ struct hash_transform_t <
         FullyDistVec<size_t, double> vals(matrix_size, 0.0);
 
         // new value at (nz.rowid(), col.colid())
-        size_t pos = nz.rowid() + 
-                     base_data_t::row_idx[col.colid()]*data.getncol();
+        size_t pos = nz.rowid() +
+                     base_data_t::row_idx[col.colid()] * sketch_of_A.getncol();
 
         rows.SetElement(pos, nz.rowid());
         cols.SetElement(pos, base_data_t::row_idx[col.colid()]);

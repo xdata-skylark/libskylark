@@ -1,10 +1,10 @@
 #include "sketch/capi/sketchc.hpp"
 
 #ifdef SKYLARK_HAVE_COMBBLAS
-#include "CombBLAS/CombBLAS.h"
-#include "CombBLAS/SpParMat.h"
-#include "CombBLAS/SpParVec.h"
-#include "CombBLAS/DenseParVec.h"
+#include "CombBLAS.h"
+#include "SpParMat.h"
+#include "SpParVec.h"
+#include "DenseParVec.h"
 #endif
 
 # define STRCMP_TYPE(STR, TYPE) \

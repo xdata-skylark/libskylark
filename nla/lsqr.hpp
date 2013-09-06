@@ -9,13 +9,13 @@
 
 namespace skylark { namespace nla {
 
-template <typename MatrixType, 
+template <typename MatrixType,
           typename MultiVectorType>
 struct lsqr_t {
   /** Typedefs for some variables */
   typedef MatrixType matrix_t;
-  typedef MultiVectorType multi_vector_t; 
-  typedef skylark::nla::iter_solver_op_t<MatrixType, MultiVectorType> 
+  typedef MultiVectorType multi_vector_t;
+  typedef skylark::nla::iter_solver_op_t<MatrixType, MultiVectorType>
                                                                  iter_ops_t;
   typedef skylark::utility::print_t<multi_vector_t> print_vec_t;
   typedef skylark::utility::print_t<matrix_t> print_mat_t;
@@ -24,7 +24,7 @@ struct lsqr_t {
 
   /**
    * A routine to print all the errors:
-   */ 
+   */
   static void print_error (int code) {
     switch (code) {
       case  0: printf ("Execution successful before first iteration\n"); break;
@@ -64,14 +64,14 @@ struct lsqr_t {
     const value_t eps = 32*std::numeric_limits<value_t>::epsilon();
     if (params.tolerance<eps) params.tolerance=eps;
     else if (params.tolerance>=1.0) params.tolerance=(1-eps);
-    else /* nothing */;
+    else {} /* nothing */
 
     /** Initialize everything */
     matrix_t AT(iter_ops.transpose(A));
     multi_vector_t U(B);
     std::vector<value_t> beta (k), i_beta(k);
     iter_ops.norm (U, beta);
-    for (index_t i=0; i<k; ++i) i_beta[i] = 1.0/beta[i]; 
+    for (index_t i=0; i<k; ++i) i_beta[i] = 1.0/beta[i];
     iter_ops.scale (i_beta, U);
     print_vec_t::apply(U,"U Init", params.am_i_printing, params.debug_level);
 
@@ -79,7 +79,7 @@ struct lsqr_t {
     iter_ops.mat_vec (AT, U, V);
     std::vector<value_t> alpha (k), i_alpha(k, 1.0);
     iter_ops.norm (V, alpha);
-    for (index_t i=0; i<k; ++i) i_alpha[i] = 1.0/alpha[i]; 
+    for (index_t i=0; i<k; ++i) i_alpha[i] = 1.0/alpha[i];
     iter_ops.scale (i_alpha, V);
     print_vec_t::apply(U,"V Init", params.am_i_printing, params.debug_level);
 
@@ -87,20 +87,20 @@ struct lsqr_t {
     std::vector<value_t> ZEROS(k,0.0);
     multi_vector_t W(V);
     iter_ops.scale(ZEROS, X);
-    std::vector<value_t> phibar(beta), rhobar(alpha), nrm_a(k,0.0), 
-                         cnd_a(k,0.0), sq_d(k,0.0), nrm_r(beta), 
+    std::vector<value_t> phibar(beta), rhobar(alpha), nrm_a(k,0.0),
+                         cnd_a(k,0.0), sq_d(k,0.0), nrm_r(beta),
                          nrm_ar_0(k,0.0);
     for (index_t i=0; i<k; ++i) nrm_ar_0[i] = alpha[i]*beta[i];
 
     /** Return from here */
-    for (index_t i=0; i<k; ++i) if (nrm_ar_0[i]==0) { 
-      params.return_code=0; 
-      return; 
+    for (index_t i=0; i<k; ++i) if (nrm_ar_0[i]==0) {
+      params.return_code=0;
+      return;
     }
 
-    std::vector<value_t> nrm_x(k,0.0), sq_x(k,0.0), z(k,0.0), 
+    std::vector<value_t> nrm_x(k,0.0), sq_x(k,0.0), z(k,0.0),
                          cs2(k,-1.0), sn2(k,0);
-                                                
+
     value_t max_n_stag = 3;
     std::vector<index_t> stag(k,0);
 
@@ -122,7 +122,7 @@ struct lsqr_t {
       iter_ops.scale (i_beta, U);
 
       /** 2. Estimate norm of A */
-      for (index_t i=0; i<k; ++i) nrm_a[i] = 
+      for (index_t i=0; i<k; ++i) nrm_a[i] =
         sqrt((nrm_a[i]*nrm_a[i]) + (alpha[i]*alpha[i]) + (beta[i]*beta[i]));
 
       /** 3. Update v */
@@ -132,7 +132,7 @@ struct lsqr_t {
       iter_ops.mat_vec (AT, U, AU);
       iter_ops.ax_plus_by (minus_beta, V, ONES, AU);
       iter_ops.norm (V, alpha);
-      for (index_t i=0; i<k; ++i) i_alpha[i] = 1.0/alpha[i]; 
+      for (index_t i=0; i<k; ++i) i_alpha[i] = 1.0/alpha[i];
       iter_ops.scale (i_alpha, V);
 
       /** 4. Define some variables */
@@ -167,16 +167,16 @@ struct lsqr_t {
         nrm_ar[i] = phibar[i]*alpha[i]*std::abs(cs[i]);
 
         /** 8. check convergence */
-        if (nrm_ar[i]<(params.tolerance*nrm_ar_0[i])) { 
-          params.return_code = -2; 
-          return; 
+        if (nrm_ar[i]<(params.tolerance*nrm_ar_0[i])) {
+          params.return_code = -2;
+          return;
         }
-        if (nrm_ar[i]<(eps*nrm_a[i]*nrm_r[i])) { 
-          params.return_code = -3; 
-          return; 
+        if (nrm_ar[i]<(eps*nrm_a[i]*nrm_r[i])) {
+          params.return_code = -3;
+          return;
         }
       }
-      
+
       /** 9. estimate of cond(A) */
       std::vector<value_t> nrm_w(k), sq_w(k);
       iter_ops.norm(W, nrm_w);
@@ -188,7 +188,7 @@ struct lsqr_t {
         /** 10. check condition number */
         if (cnd_a[i]>(1.0/eps)) { params.return_code = -4; return; }
       }
-      
+
       /** 11. check stagnation */
       for (index_t i=0; i<k; ++i) {
         if (abs(phi[i]/rho[i])*nrm_w[i] < (eps*nrm_x[i])) stag[i] += 1;

@@ -112,6 +112,7 @@ struct hash_transform_t <
   typedef IndexType index_t;
   typedef ValueType value_t;
   typedef SpDCCols< IndexType, value_t > col_t;
+  typedef FullyDistVec< IndexType, ValueType > mpi_vector_t;
   typedef SpParMat< IndexType, value_t, col_t > matrix_t;
   typedef SpParMat< IndexType, value_t, col_t > output_matrix_t;
   typedef hash_transform_data_t<IndexType,
@@ -150,13 +151,13 @@ struct hash_transform_t <
     // extract columns of matrix
     col_t &data = A.seq();
 
-    size_t matrix_size = sketch_of_A.getncol() * sketch_of_A.getnrow();
-    FullyDistVec<size_t, double> cols(matrix_size);
-    FullyDistVec<size_t, double> rows(matrix_size);
-    FullyDistVec<size_t, double> vals(matrix_size);
+    const size_t matrix_size = sketch_of_A.getncol() * sketch_of_A.getnrow();
+    mpi_vector_t cols(matrix_size);
+    mpi_vector_t rows(matrix_size);
+    mpi_vector_t vals(matrix_size);
 
-    for(size_t i = 0; i < matrix_size; ++i) {
-        rows.SetElement(i, static_cast<size_t>(i / sketch_of_A.getncol()));
+    for(index_t i = 0; i < matrix_size; ++i) {
+        rows.SetElement(i, static_cast<index_t>(i / sketch_of_A.getncol()));
         cols.SetElement(i, i % sketch_of_A.getncol());
     }
 
@@ -166,11 +167,11 @@ struct hash_transform_t <
       for(typename col_t::SpColIter::NzIter nz = data.begnz(col);
         nz != data.endnz(col); nz++) {
 
-        size_t row_begin = col.colid();
-        size_t pos = row_begin +
-                     base_data_t::row_idx[nz.rowid()] * sketch_of_A.getncol();
+        index_t row_begin = col.colid();
+        index_t pos = row_begin +
+                      base_data_t::row_idx[nz.rowid()] * sketch_of_A.getncol();
 
-        double cur_val = vals.GetElement(pos);
+        value_t cur_val = vals.GetElement(pos);
         vals.SetElement(pos, cur_val +
                         base_data_t::row_value[nz.rowid()] * nz.value());
       }
@@ -195,13 +196,13 @@ struct hash_transform_t <
     // extract columns of matrix
     col_t &data = A.seq();
 
-    size_t matrix_size = sketch_of_A.getncol() * sketch_of_A.getnrow();
-    FullyDistVec<size_t, double> cols(matrix_size);
-    FullyDistVec<size_t, double> rows(matrix_size);
-    FullyDistVec<size_t, double> vals(matrix_size);
+    const size_t matrix_size = sketch_of_A.getncol() * sketch_of_A.getnrow();
+    mpi_vector_t cols(matrix_size);
+    mpi_vector_t rows(matrix_size);
+    mpi_vector_t vals(matrix_size);
 
-    for(size_t i = 0; i < matrix_size; ++i) {
-        rows.SetElement(i, static_cast<size_t>(i / sketch_of_A.getncol()));
+    for(index_t i = 0; i < matrix_size; ++i) {
+        rows.SetElement(i, static_cast<index_t>(i / sketch_of_A.getncol()));
         cols.SetElement(i, i % sketch_of_A.getncol());
     }
 
@@ -210,10 +211,10 @@ struct hash_transform_t <
       for(typename col_t::SpColIter::NzIter nz = data.begnz(col);
         nz != data.endnz(col); nz++) {
 
-        size_t pos = nz.rowid() * sketch_of_A.getncol() +
-                     base_data_t::row_idx[col.colid()];
+        index_t pos = nz.rowid() * sketch_of_A.getncol() +
+                      base_data_t::row_idx[col.colid()];
 
-        double cur_val = vals.GetElement(pos);
+        value_t cur_val = vals.GetElement(pos);
         vals.SetElement(pos, cur_val +
                         base_data_t::row_value[col.colid()] * nz.value());
 

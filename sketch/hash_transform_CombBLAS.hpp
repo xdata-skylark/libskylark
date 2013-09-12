@@ -148,34 +148,54 @@ struct hash_transform_t <
   void apply_impl (matrix_t &A,
                    output_matrix_t &sketch_of_A,
                    skylark::sketch::columnwise_tag) {
+
+    const size_t rank = A.getcommgrid()->GetRank();
+
     // extract columns of matrix
     col_t &data = A.seq();
 
-    const size_t matrix_size = sketch_of_A.getncol() * sketch_of_A.getnrow();
+    //FIXME: next step only store local generated non-zeros
+    const size_t ncols = sketch_of_A.getncol();
+    const size_t nrows = sketch_of_A.getnrow();
+    const size_t matrix_size = ncols * nrows;
     mpi_vector_t cols(matrix_size);
     mpi_vector_t rows(matrix_size);
     mpi_vector_t vals(matrix_size);
+    std::vector<double> my_vals(matrix_size, 0.0);
 
     for(index_t i = 0; i < matrix_size; ++i) {
-        rows.SetElement(i, static_cast<index_t>(i / sketch_of_A.getncol()));
-        cols.SetElement(i, i % sketch_of_A.getncol());
+        rows.SetElement(i, static_cast<index_t>(i / ncols));
+        cols.SetElement(i, i % ncols);
     }
 
+    const size_t my_row_offset = static_cast<int>(0.5 + (static_cast<double>(A.getnrow()) /
+                                 A.getcommgrid()->GetGridRows())) *
+                                 A.getcommgrid()->GetRankInProcCol(rank);
+
+    const size_t my_col_offset = static_cast<int>(0.5 + (static_cast<double>(A.getncol()) /
+                                 A.getcommgrid()->GetGridCols())) *
+                                 A.getcommgrid()->GetRankInProcRow(rank);
 
     for(typename col_t::SpColIter col = data.begcol();
       col != data.endcol(); col++) {
       for(typename col_t::SpColIter::NzIter nz = data.begnz(col);
         nz != data.endnz(col); nz++) {
 
-        index_t row_begin = col.colid();
-        index_t pos = row_begin +
-                      base_data_t::row_idx[nz.rowid()] * sketch_of_A.getncol();
+        const size_t rowid = nz.rowid();
+        const size_t colid = col.colid();
+        index_t pos = (colid + my_col_offset) + 1.0 * ncols *
+                      base_data_t::row_idx[rowid + my_row_offset];
 
-        value_t cur_val = vals.GetElement(pos);
-        vals.SetElement(pos, cur_val +
-                        base_data_t::row_value[nz.rowid()] * nz.value());
+        my_vals[pos] += nz.value() *
+                        base_data_t::row_value[rowid + my_row_offset];
       }
     }
+
+    MPI_Allreduce(MPI_IN_PLACE, &(my_vals[0]), static_cast<int>(matrix_size),
+                  MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+
+    for(size_t i = 0; i < matrix_size; i++)
+        vals.SetElement(i, my_vals[i]);
 
     output_matrix_t tmp(sketch_of_A.getnrow(),
                         sketch_of_A.getncol(),
@@ -193,33 +213,55 @@ struct hash_transform_t <
   void apply_impl (matrix_t &A,
                    output_matrix_t &sketch_of_A,
                    skylark::sketch::rowwise_tag) {
+
+    const size_t rank = A.getcommgrid()->GetRank();
+
     // extract columns of matrix
     col_t &data = A.seq();
 
-    const size_t matrix_size = sketch_of_A.getncol() * sketch_of_A.getnrow();
+    //FIXME: next step only store local generated non-zeros
+    const size_t ncols = sketch_of_A.getncol();
+    const size_t nrows = sketch_of_A.getnrow();
+    const size_t matrix_size = ncols * nrows;
     mpi_vector_t cols(matrix_size);
     mpi_vector_t rows(matrix_size);
     mpi_vector_t vals(matrix_size);
+    std::vector<double> my_vals(matrix_size, 0.0);
 
     for(index_t i = 0; i < matrix_size; ++i) {
-        rows.SetElement(i, static_cast<index_t>(i / sketch_of_A.getncol()));
-        cols.SetElement(i, i % sketch_of_A.getncol());
+        rows.SetElement(i, static_cast<index_t>(i / ncols));
+        cols.SetElement(i, i % ncols);
     }
+
+    const size_t my_row_offset = static_cast<int>(0.5 + (static_cast<double>(A.getnrow()) /
+                                 A.getcommgrid()->GetGridRows())) *
+                                 A.getcommgrid()->GetRankInProcCol(rank);
+
+    const size_t my_col_offset = static_cast<int>(0.5 + (static_cast<double>(A.getncol()) /
+                                 A.getcommgrid()->GetGridCols())) *
+                                 A.getcommgrid()->GetRankInProcRow(rank);
 
     for(typename col_t::SpColIter col = data.begcol();
       col != data.endcol(); col++) {
       for(typename col_t::SpColIter::NzIter nz = data.begnz(col);
         nz != data.endnz(col); nz++) {
 
-        index_t pos = nz.rowid() * sketch_of_A.getncol() +
-                      base_data_t::row_idx[col.colid()];
+        const size_t rowid = nz.rowid();
+        const size_t colid = col.colid();
+        index_t pos = (rowid + my_row_offset) * ncols +
+                      base_data_t::row_idx[colid + my_col_offset];
 
-        value_t cur_val = vals.GetElement(pos);
-        vals.SetElement(pos, cur_val +
-                        base_data_t::row_value[col.colid()] * nz.value());
+        my_vals[pos] += nz.value() *
+                        base_data_t::row_value[colid + my_col_offset];
 
       }
     }
+
+    MPI_Allreduce(MPI_IN_PLACE, &(my_vals[0]), static_cast<int>(matrix_size),
+                  MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+
+    for(size_t i = 0; i < matrix_size; i++)
+        vals.SetElement(i, my_vals[i]);
 
     output_matrix_t tmp(sketch_of_A.getnrow(),
                         sketch_of_A.getncol(),

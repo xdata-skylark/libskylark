@@ -39,7 +39,7 @@ if rank == 0 : print "Distributing the matrix..."
 X_cc = elem.DistMatrix_d_CIRC_CIRC(shape_X[0], shape_X[1])
 Y_cc = elem.DistMatrix_d_CIRC_CIRC(shape_X[0], 1)
 if rank == 0:
-    data[0].todense(out=X_cc.Matrix)
+    X_cc.Matrix[:] = data[0].todense()
     data[1].resize((shape_X[0], 1))
     np.copyto(Y_cc.Matrix, data[1])
 X = elem.DistMatrix_d_VC_STAR()
@@ -106,7 +106,7 @@ if rank == 0: print "Distributing the test matrix..."
 Xt_cc = elem.DistMatrix_d_CIRC_CIRC(shape_Xt[0], shape_Xt[1])
 Yt_cc = elem.DistMatrix_d_CIRC_CIRC(shape_Xt[0], 1)
 if rank == 0:
-    data[0].todense(out=Xt_cc.Matrix)
+    Xt_cc.Matrix[:] = data[0].todense()
     data[1].resize((shape_Xt[0], 1))
     np.copyto(Yt_cc.Matrix, data[1])
 Xt = elem.DistMatrix_d_VC_STAR()

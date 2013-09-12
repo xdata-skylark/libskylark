@@ -48,7 +48,7 @@ static inline void parse_parameters (int argc, char** argv) {
   help_map["A-file"] = "path to matrix A";
   help_map["b-file"] = "path to matrix b";
   help_map["sA-file"] = "path to matrix sA";
-  help_map["s-type"] = "transform to use (JLT|FJLT|Sparse|CWT, default: JLT)";
+  help_map["s-type"] = "transform to use (JLT|FJLT|CWT, default: JLT)";
   help_map["m-type"] = "matrix type (elem|cblas, default: elem)";
 
   string_int_map_t int_options_map;
@@ -116,10 +116,9 @@ static inline void parse_parameters (int argc, char** argv) {
     print_help (help_map, "N");
   } else if (0>int_params[N_RHS_INDEX]) {
     print_help (help_map, "RHS");
-  } else if (0!=strcmp("JLT",    chr_params[TRANSFORM_INDEX]) &&
-             0!=strcmp("FJLT",   chr_params[TRANSFORM_INDEX]) &&
-             0!=strcmp("CWT",   chr_params[TRANSFORM_INDEX]) &&
-             0!=strcmp("Sparse", chr_params[TRANSFORM_INDEX]) ) {
+  } else if (0!=strcmp("JLT", chr_params[TRANSFORM_INDEX]) &&
+             0!=strcmp("FJLT", chr_params[TRANSFORM_INDEX]) &&
+             0!=strcmp("CWT", chr_params[TRANSFORM_INDEX])) {
     print_help (help_map, "type");
   }
 }

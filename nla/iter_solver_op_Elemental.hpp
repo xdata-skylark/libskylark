@@ -123,12 +123,21 @@ struct iter_solver_op_t <elem::DistMatrix<ValueType, CD, RD>,
       norms[j] = local_column_sum;
     }
 
+#if 1
+    /** This is usgly still */
     MPI_Allreduce (MPI_IN_PLACE, 
                    &(norms[0]), 
                    norms.size(), 
-                   MPIType<value_t>(),
+                   boost::mpi::get_mpi_datatype<value_t>(),
                    MPI_SUM,
                    MPI_Comm (X.Grid().Comm()));
+#else
+    /* Fix this instead */
+    norms = boost::mpi::all_reduce (MPI_Comm(X.Grid().Comm()), 
+                                    norms, 
+                                    std::plus<value_type>());
+
+#endif
      
     for (index_t i=0; i<norms.size(); ++i) norms[i] = sqrt(norms[i]);
   }

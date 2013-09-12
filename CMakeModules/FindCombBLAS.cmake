@@ -19,19 +19,19 @@ find_library(MPITypelib_LIBRARY MPITypelib
   /usr/local/lib
   /usr/lib
   $ENV{HOME}/Software/lib
-  $ENV{COMBBLAS_ROOT}/lib
+  $ENV{COMBBLAS_ROOT}
 )
 find_library(CommGridlib_LIBRARY CommGridlib
   /usr/local/lib
   /usr/lib
   $ENV{HOME}/Software/lib
-  $ENV{COMBBLAS_ROOT}/lib
+  $ENV{COMBBLAS_ROOT}
 )
 find_library(MemoryPoollib_LIBRARY MemoryPoollib
   /usr/local/lib
   /usr/lib
   $ENV{HOME}/Software/lib
-  $ENV{COMBBLAS_ROOT}/lib
+  $ENV{COMBBLAS_ROOT}
 )
 
 IF(MPITypelib_LIBRARY AND CommGridlib_LIBRARY AND MemoryPoollib_LIBRARY)

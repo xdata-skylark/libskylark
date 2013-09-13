@@ -106,7 +106,7 @@ int main (int argc, char** argv) {
 
 
         }
-    } else if (0==strcmp("Sparse", chr_params[TRANSFORM_INDEX]) ) {
+    } else if (0==strcmp("CWT", chr_params[TRANSFORM_INDEX]) ) {
         if (SKETCH_LEFT == int_params[SKETCH_DIRECTION_INDEX]) {
 
             /* 1. Create the sketching matrix */

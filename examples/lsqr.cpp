@@ -115,13 +115,13 @@ int main (int argc, char** argv) {
         FJLT (int_params[M_INDEX], int_params[S_INDEX], context);
         FJLT.apply (A_cheat, sketch_A, skys::columnwise_tag());
         FJLT.apply (B_cheat, sketch_B, skys::columnwise_tag());
-    } else if (0==strcmp("Sparse", chr_params[TRANSFORM_INDEX]) ) {
+    } else if (0==strcmp("CWT", chr_params[TRANSFORM_INDEX]) ) {
       skys::CWT_t<CheatDistMatrixType, DenseMatrixType>
         Sparse (int_params[M_INDEX], int_params[S_INDEX], context);
       Sparse.apply (A_cheat, sketch_A, skys::columnwise_tag());
       Sparse.apply (B_cheat, sketch_B, skys::columnwise_tag());
     } else {
-      std::cout << "We only have JLT/FJLT/Sparse sketching" << std::endl;
+      std::cout << "We only have JLT/FJLT/CWT sketching" << std::endl;
     }
     A_cheat.Empty();
     B_cheat.Empty();

@@ -161,28 +161,30 @@ struct hash_transform_t <
     mpi_vector_t cols(matrix_size);
     mpi_vector_t rows(matrix_size);
     mpi_vector_t vals(matrix_size);
-    std::vector<double> my_vals(matrix_size, 0.0);
+    std::vector<value_t> my_vals(matrix_size, 0.0);
 
     for(index_t i = 0; i < matrix_size; ++i) {
         rows.SetElement(i, static_cast<index_t>(i / ncols));
         cols.SetElement(i, i % ncols);
     }
 
-    const size_t my_row_offset = static_cast<int>(0.5 + (static_cast<double>(A.getnrow()) /
-                                 A.getcommgrid()->GetGridRows())) *
-                                 A.getcommgrid()->GetRankInProcCol(rank);
+    const size_t my_row_offset =
+        static_cast<int>(0.5 + (static_cast<double>(A.getnrow()) /
+        A.getcommgrid()->GetGridRows())) *
+        A.getcommgrid()->GetRankInProcCol(rank);
 
-    const size_t my_col_offset = static_cast<int>(0.5 + (static_cast<double>(A.getncol()) /
-                                 A.getcommgrid()->GetGridCols())) *
-                                 A.getcommgrid()->GetRankInProcRow(rank);
+    const size_t my_col_offset =
+        static_cast<int>(0.5 + (static_cast<double>(A.getncol()) /
+        A.getcommgrid()->GetGridCols())) *
+        A.getcommgrid()->GetRankInProcRow(rank);
 
     for(typename col_t::SpColIter col = data.begcol();
       col != data.endcol(); col++) {
       for(typename col_t::SpColIter::NzIter nz = data.begnz(col);
         nz != data.endnz(col); nz++) {
 
-        const size_t rowid = nz.rowid();
-        const size_t colid = col.colid();
+        const index_t rowid = nz.rowid();
+        const index_t colid = col.colid();
         index_t pos = (colid + my_col_offset) + 1.0 * ncols *
                       base_data_t::row_idx[rowid + my_row_offset];
 
@@ -192,7 +194,8 @@ struct hash_transform_t <
     }
 
     MPI_Allreduce(MPI_IN_PLACE, &(my_vals[0]), static_cast<int>(matrix_size),
-                  MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+                  boost::mpi::get_mpi_datatype<value_t>(), MPI_SUM,
+                  A.getcommgrid()->GetWorld());
 
     for(size_t i = 0; i < matrix_size; i++)
         vals.SetElement(i, my_vals[i]);
@@ -226,28 +229,30 @@ struct hash_transform_t <
     mpi_vector_t cols(matrix_size);
     mpi_vector_t rows(matrix_size);
     mpi_vector_t vals(matrix_size);
-    std::vector<double> my_vals(matrix_size, 0.0);
+    std::vector<value_t> my_vals(matrix_size, 0.0);
 
     for(index_t i = 0; i < matrix_size; ++i) {
         rows.SetElement(i, static_cast<index_t>(i / ncols));
         cols.SetElement(i, i % ncols);
     }
 
-    const size_t my_row_offset = static_cast<int>(0.5 + (static_cast<double>(A.getnrow()) /
-                                 A.getcommgrid()->GetGridRows())) *
-                                 A.getcommgrid()->GetRankInProcCol(rank);
+    const size_t my_row_offset =
+        static_cast<int>(0.5 + (static_cast<double>(A.getnrow()) /
+        A.getcommgrid()->GetGridRows())) *
+        A.getcommgrid()->GetRankInProcCol(rank);
 
-    const size_t my_col_offset = static_cast<int>(0.5 + (static_cast<double>(A.getncol()) /
-                                 A.getcommgrid()->GetGridCols())) *
-                                 A.getcommgrid()->GetRankInProcRow(rank);
+    const size_t my_col_offset =
+        static_cast<int>(0.5 + (static_cast<double>(A.getncol()) /
+        A.getcommgrid()->GetGridCols())) *
+        A.getcommgrid()->GetRankInProcRow(rank);
 
     for(typename col_t::SpColIter col = data.begcol();
       col != data.endcol(); col++) {
       for(typename col_t::SpColIter::NzIter nz = data.begnz(col);
         nz != data.endnz(col); nz++) {
 
-        const size_t rowid = nz.rowid();
-        const size_t colid = col.colid();
+        const index_t rowid = nz.rowid();
+        const index_t colid = col.colid();
         index_t pos = (rowid + my_row_offset) * ncols +
                       base_data_t::row_idx[colid + my_col_offset];
 
@@ -258,7 +263,8 @@ struct hash_transform_t <
     }
 
     MPI_Allreduce(MPI_IN_PLACE, &(my_vals[0]), static_cast<int>(matrix_size),
-                  MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+                  boost::mpi::get_mpi_datatype<value_t>(), MPI_SUM,
+                  A.getcommgrid()->GetWorld());
 
     for(size_t i = 0; i < matrix_size; i++)
         vals.SetElement(i, my_vals[i]);

@@ -1,6 +1,9 @@
 #ifndef SKYLARK_HASH_TRANSFORM_COMBBLAS_HPP
 #define SKYLARK_HASH_TRANSFORM_COMBBLAS_HPP
 
+#include <map>
+#include "boost/serialization/map.hpp"
+
 #include <CombBLAS.h>
 #include "../utility/external/FullyDistMultiVec.hpp"
 
@@ -154,19 +157,11 @@ struct hash_transform_t <
     // extract columns of matrix
     col_t &data = A.seq();
 
-    //FIXME: next step only store local generated non-zeros
     const size_t ncols = sketch_of_A.getncol();
     const size_t nrows = sketch_of_A.getnrow();
-    const size_t matrix_size = ncols * nrows;
-    mpi_vector_t cols(matrix_size);
-    mpi_vector_t rows(matrix_size);
-    mpi_vector_t vals(matrix_size);
-    std::vector<value_t> my_vals(matrix_size, 0.0);
 
-    for(index_t i = 0; i < matrix_size; ++i) {
-        rows.SetElement(i, static_cast<index_t>(i / ncols));
-        cols.SetElement(i, i % ncols);
-    }
+    // build local mapping (global_idx, value) first
+    std::map<size_t, value_t> my_vals_map;
 
     const size_t my_row_offset =
         static_cast<int>(0.5 + (static_cast<double>(A.getnrow()) /
@@ -188,17 +183,50 @@ struct hash_transform_t <
         index_t pos = (colid + my_col_offset) + 1.0 * ncols *
                       base_data_t::row_idx[rowid + my_row_offset];
 
-        my_vals[pos] += nz.value() *
+        value_t value = nz.value() *
                         base_data_t::row_value[rowid + my_row_offset];
+
+        if(my_vals_map.count(pos) > 0)
+            my_vals_map[pos] += value;
+        else
+            my_vals_map.insert(std::pair<size_t, value_t>(pos, value));
       }
     }
 
-    MPI_Allreduce(MPI_IN_PLACE, &(my_vals[0]), static_cast<int>(matrix_size),
-                  boost::mpi::get_mpi_datatype<value_t>(), MPI_SUM,
-                  A.getcommgrid()->GetWorld());
+    // aggregate values
+    boost::mpi::communicator world(A.getcommgrid()->GetWorld(),
+                                   boost::mpi::comm_duplicate);
+    std::vector< std::map<size_t, value_t> > vector_of_maps;
+    //FIXME: implement a better scheme to exchange values (one sided?)
+    boost::mpi::all_gather< std::map<size_t, value_t> >(
+            world, my_vals_map, vector_of_maps);
 
-    for(size_t i = 0; i < matrix_size; i++)
-        vals.SetElement(i, my_vals[i]);
+    std::map<size_t, value_t> vals_map;
+    typename std::map<size_t, value_t>::iterator itr;
+    for(size_t i = 0; i < vector_of_maps.size(); ++i) {
+
+        for(itr = vector_of_maps[i].begin(); itr != vector_of_maps[i].end();
+            itr++) {
+
+            if(vals_map.count(itr->first) > 0)
+                vals_map[itr->first] += itr->second;
+            else
+                vals_map.insert(std::pair<size_t, value_t>(
+                    itr->first, itr->second));
+        }
+    }
+
+    const size_t matrix_size = vals_map.size();
+    mpi_vector_t cols(matrix_size);
+    mpi_vector_t rows(matrix_size);
+    mpi_vector_t vals(matrix_size);
+    size_t idx = 0;
+
+    for(itr = vals_map.begin(); itr != vals_map.end(); itr++, idx++) {
+        cols.SetElement(idx, itr->first % ncols);
+        rows.SetElement(idx, itr->first / ncols);
+        vals.SetElement(idx, itr->second);
+    }
 
     output_matrix_t tmp(sketch_of_A.getnrow(),
                         sketch_of_A.getncol(),

@@ -161,6 +161,7 @@ struct hash_transform_t <
     const size_t nrows = sketch_of_A.getnrow();
 
     // build local mapping (global_idx, value) first
+    typedef std::map<size_t, value_t> sp_mat_value_t;
     std::map<size_t, value_t> my_vals_map;
 
     const size_t my_row_offset =
@@ -197,7 +198,17 @@ struct hash_transform_t <
     boost::mpi::communicator world(A.getcommgrid()->GetWorld(),
                                    boost::mpi::comm_duplicate);
     std::vector< std::map<size_t, value_t> > vector_of_maps;
+
     //FIXME: implement a better scheme to exchange values (one sided?)
+    //       expose map in a MPI_window
+    //         -> MAYBE NOT SO GOOD, NEED TO ALLOCATE FIXED SIZE
+    //       iterate all windows of all processors
+    //       accumulate, create matrix
+
+    //XXX: best way is to selectively send to exchange pair of
+    //          (size, [double])
+    //     with processor that needs the values. It should be possible to
+    //     pre-compute the ranges of positions that are kept on a processor.
     boost::mpi::all_gather< std::map<size_t, value_t> >(
             world, my_vals_map, vector_of_maps);
 

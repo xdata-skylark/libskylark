@@ -1,5 +1,5 @@
-#include "sketch/capi/sketchc.hpp"
-#include "utility/exception.hpp"
+#include "sketchc.hpp"
+#include "../../utility/exception.hpp"
 
 #ifdef SKYLARK_HAVE_COMBBLAS
 #include "CombBLAS.h"

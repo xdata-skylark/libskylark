@@ -6,6 +6,8 @@
 #include "context.hpp"
 #include "transforms.hpp"
 #include "../utility/comm.hpp"
+#include "../utility/exception.hpp"
+
 
 namespace skylark {
 namespace sketch {
@@ -33,8 +35,8 @@ private:
      * Implementation for [VR/VC, *] and columnwise.
      */
     void apply_impl_vdist (const matrix_type& A,
-                     output_matrix_type& sketch_of_A,
-                     skylark::sketch::columnwise_tag) const {
+                           output_matrix_type& sketch_of_A,
+                           skylark::sketch::columnwise_tag) const {
 
         // Create space to hold partial SA --- for 1D, we need SA space
         elem::Matrix<value_type> SA_part (sketch_of_A.Height(),
@@ -93,8 +95,8 @@ private:
       * Implementation for [VR/VC, *] and rowwise.
       */
     void apply_impl_vdist(const matrix_type& A,
-        output_matrix_type& sketch_of_A,
-        skylark::sketch::rowwise_tag) const {
+                          output_matrix_type& sketch_of_A,
+                          skylark::sketch::rowwise_tag) const {
 
         // Create a distributed matrix to hold the output.
         //  We later gather to a dense matrix.
@@ -161,12 +163,23 @@ public:
         switch(ColDist) {
         case elem::VR:
         case elem::VC:
-            apply_impl_vdist (A, sketch_of_A, dimension);
+            try {
+                apply_impl_vdist (A, sketch_of_A, dimension);
+            } catch (std::logic_error e) {
+                SKYLARK_THROW_EXCEPTION (
+                    utility::elemental_exception()
+                    << utility::error_msg(e.what()) );
+            } catch(boost::mpi::exception e) {
+                SKYLARK_THROW_EXCEPTION (
+                    utility::mpi_exception()
+                    << utility::error_msg(e.what()) );
+            }
+
             break;
 
         default:
-            std::cerr << "Unsupported for now..." << std::endl;
-            break;
+            SKYLARK_THROW_EXCEPTION (
+                utility::unsupported_matrix_distribution() );
         }
     }
 };
@@ -194,8 +207,8 @@ private:
      * Implementation for [VR/VC, *] and columnwise.
      */
     void apply_impl_vdist (const matrix_type& A,
-                     output_matrix_type& sketch_of_A,
-                     skylark::sketch::columnwise_tag) const {
+                           output_matrix_type& sketch_of_A,
+                           skylark::sketch::columnwise_tag) const {
 
         // TODO no point in implementing this now as the implementation
         //      will depend on how the random numbers are generated.
@@ -206,8 +219,8 @@ private:
       * Implementation for [VR/VC, *] and rowwise.
       */
     void apply_impl_vdist(const matrix_type& A,
-        output_matrix_type& sketch_of_A,
-        skylark::sketch::rowwise_tag) const {
+                          output_matrix_type& sketch_of_A,
+                          skylark::sketch::rowwise_tag) const {
 
 
         // Create S. Since it is rowwise, we assume it can be held in memory.
@@ -265,12 +278,23 @@ public:
         switch(ColDist) {
         case elem::VR:
         case elem::VC:
-            apply_impl_vdist (A, sketch_of_A, dimension);
+            try {
+                apply_impl_vdist (A, sketch_of_A, dimension);
+            } catch (std::logic_error e) {
+                SKYLARK_THROW_EXCEPTION (
+                    utility::elemental_exception()
+                    << utility::error_msg(e.what()) );
+            } catch(boost::mpi::exception e) {
+                SKYLARK_THROW_EXCEPTION (
+                    utility::mpi_exception()
+                    << utility::error_msg(e.what()) );
+            }
+
             break;
 
         default:
-            std::cerr << "Unsupported for now..." << std::endl;
-            break;
+            SKYLARK_THROW_EXCEPTION (
+                utility::unsupported_matrix_distribution() );
         }
     }
 };

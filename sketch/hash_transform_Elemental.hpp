@@ -7,6 +7,8 @@
 #include "hash_transform_data.hpp"
 #include "transforms.hpp"
 
+#include "../utility/exception.hpp"
+
 namespace skylark { namespace sketch {
 
 template <typename ValueType,
@@ -18,9 +20,9 @@ struct hash_transform_t <
   elem::Matrix<ValueType>,
   IdxDistributionType,
   ValueDistributionType > :
-  public hash_transform_data_t<int, 
-                               ValueType, 
-                               IdxDistributionType, 
+  public hash_transform_data_t<int,
+                               ValueType,
+                               IdxDistributionType,
                                ValueDistributionType> {
   // Typedef matrix type so that we can use it regularly
   typedef ValueType value_type;
@@ -28,9 +30,9 @@ struct hash_transform_t <
   typedef elem::Matrix<value_type> output_matrix_type;
   typedef IdxDistributionType idx_distribution_type;
   typedef ValueDistributionType<value_type> value_distribution_type;
-  typedef hash_transform_data_t<int, 
-                                ValueType, 
-                                IdxDistributionType, 
+  typedef hash_transform_data_t<int,
+                                ValueType,
+                                IdxDistributionType,
                                 ValueDistributionType> base_data_t;
 
   /**
@@ -39,13 +41,13 @@ struct hash_transform_t <
    */
   hash_transform_t (int N, int S, skylark::sketch::context_t& context) :
       base_data_t (N, S, context) {}
- 
+
   template <typename InputMatrixType,
         typename OutputMatrixType>
-  hash_transform_t (hash_transform_t<InputMatrixType, 
+  hash_transform_t (hash_transform_t<InputMatrixType,
                      OutputMatrixType,
                      IdxDistributionType,
-                     ValueDistributionType>& other) : 
+                     ValueDistributionType>& other) :
         base_data_t(other.get_data()) {}
 
   /**
@@ -58,12 +60,23 @@ struct hash_transform_t <
     switch(ColDist) {
     case elem::VR:
     case elem::VC:
-      apply_impl_vdist (A, sketch_of_A, dimension);
+      try {
+        apply_impl_vdist (A, sketch_of_A, dimension);
+      } catch (std::logic_error e) {
+        SKYLARK_THROW_EXCEPTION (
+          utility::elemental_exception()
+            << utility::error_msg(e.what()) );
+      } catch(boost::mpi::exception e) {
+        SKYLARK_THROW_EXCEPTION (
+          utility::mpi_exception()
+          << utility::error_msg(e.what()) );
+      }
+
       break;
 
     default:
-      std::cerr << "Unsupported for now..." << std::endl;
-      break;
+      SKYLARK_THROW_EXCEPTION (
+        utility::unsupported_matrix_distribution() );
     }
   }
 
@@ -131,7 +144,7 @@ private:
 
         size_t col_idx   = A.RowShift() + A.RowStride() * i;
         size_t new_col_idx = base_data_t::row_idx[col_idx];
-        value_type value   = 
+        value_type value   =
             base_data_t::row_value[col_idx] * A.GetLocal(j, i);
 
         SA_part.Update(row_idx, new_col_idx, value);

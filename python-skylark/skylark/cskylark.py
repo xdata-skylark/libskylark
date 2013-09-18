@@ -24,13 +24,15 @@ _DEF_OUTTYPE = "LocalMatrix"
 # Load C-API library and set return types
 #
 _lib = cdll.LoadLibrary('libcskylark.so')
-_lib.sl_create_context.restype = c_void_p
-_lib.sl_create_default_context.restype = c_void_p
-_lib.sl_context_rank.restype = c_int
-_lib.sl_context_size.restype = c_int
-_lib.sl_create_sketch_transform.restype = c_void_p
-_lib.sl_wrap_raw_matrix.restype = c_void_p
-_lib.sl_supported_sketch_transforms.restype = c_char_p
+_lib.sl_create_context.restype          = c_int
+_lib.sl_create_default_context.restype  = c_int
+_lib.sl_free_context.restype            = c_int
+_lib.sl_context_rank.restype            = c_int
+_lib.sl_context_size.restype            = c_int
+_lib.sl_create_sketch_transform.restype = c_int
+_lib.sl_wrap_raw_matrix.restype         = c_int
+_lib.sl_free_raw_matrix_wrap.restype    = c_int
+_lib.sl_strerror.restype                = c_char_p
 
 SUPPORTED_SKETCH_TRANSFORMS = map(eval, _lib.sl_supported_sketch_transforms().split())
 
@@ -49,9 +51,11 @@ class _NumpyAdapter:
     if not A.flags.f_contiguous:
       raise errors.UnsupportedError("Only FORTRAN style (column-major) NumPy arrays are supported")
     else:
-      return _lib.sl_wrap_raw_matrix( \
+      data = c_void_p()
+      _lib.sl_wrap_raw_matrix( \
         A.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), \
-          A.shape[0], A.shape[1] if A.ndim > 1 else 1)
+        A.shape[0], A.shape[1] if A.ndim > 1 else 1 , byref(data))
+      return data.value
 
   def ptr_cleaner(self, p):
     _lib.sl_free_raw_matrix_wrap(p);
@@ -125,14 +129,26 @@ def initialize(seed=-1):
   used to create the seed.
   """
   # TODO reload dll (?)
-  global _ctxt_obj, _rank, _size
+  global _ctxt_obj
   if seed == -1:
     seed = int(time.time())
   if _ctxt_obj != 0:
     _lib.sl_free_context(_ctxt_obj)
-  _ctxt_obj = _lib.sl_create_default_context(seed)
-  _rank = _lib.sl_context_rank(_ctxt_obj)
-  _size = _lib.sl_context_size(_ctxt_obj)
+
+  ctxt_obj = c_void_p()
+  _lib.sl_create_default_context(seed, byref(ctxt_obj))
+  _ctxt_obj = ctxt_obj.value
+
+  global _rank
+  rank = c_int()
+  _lib.sl_context_rank(_ctxt_obj, byref(rank))
+  _rank = rank.value
+
+  global _size
+  size = c_int()
+  _lib.sl_context_size(_ctxt_obj, byref(size))
+  _size = size.value
+
 
 # Actually initialize the C-API.
 _ctxt_obj = 0
@@ -172,10 +188,16 @@ class _SketchTransform(object):
     if reqcomb not in SUPPORTED_SKETCH_TRANSFORMS:
       raise errors.UnsupportedError("Unsupported sketch transofrm " + str(reqcomb))
 
+    sketch_transform = c_void_p()
     self._baseinit(n, s, intype, outtype)
-    self._obj = _lib.sl_create_sketch_transform(_ctxt_obj, ttype, \
-                                                _map_to_adapter[intype].ctype(), \
-                                                _map_to_adapter[outtype].ctype(), n, s)
+
+    _lib.sl_create_sketch_transform(_ctxt_obj, ttype, \
+                                    _map_to_ctype[intype].ctype(), \
+                                    _map_to_ctype[outtype].ctype(), n, s, \
+                                    byref(sketch_transform))
+
+    self._obj = sketch_transform.value
+
 
   def _baseinit(self, n, s, intype, outtype):
     if not _map_to_adapter.has_key(intype):
@@ -265,9 +287,13 @@ class CT(_SketchTransform):
   """
   def __init__(self, n, s, C, intype=_DEF_INTYPE, outtype=_DEF_OUTTYPE):
     super(CT, self)._baseinit(n, s, intype, outtype)
-    self._obj = _lib.sl_create_sketch_transform(_ctxt_obj, "CT", \
-                                                _map_to_adapter[intype].ctype(), \
-                                                _map_to_adapter[outtype].ctype(), n, s, ctypes.c_double(C))
+
+    sketch_transform = c_void_p()
+    _lib.sl_create_sketch_transform(_ctxt_obj, "CT", \
+                                    _map_to_ctype[intype].ctype(), \
+                                    _map_to_ctype[outtype].ctype(), n, s, \
+                                    byref(sketch_transform), ctypes.c_double(C))
+    self._obj = sketch_transform.value
 
 class FJLT(_SketchTransform):
   """
@@ -305,9 +331,13 @@ class WZT(_SketchTransform):
   """
   def __init__(self, n, s, p, intype=_DEF_INTYPE, outtype=_DEF_OUTTYPE):
     super(WZT, self)._baseinit(n, s, intype, outtype)
-    self._obj = _lib.sl_create_sketch_transform(_ctxt_obj, "WZT", \
-                                                _map_to_adapter[intype].ctype(), \
-                                                _map_to_adapter[outtype].ctype(), n, s, ctypes.c_double(p))
+
+    sketch_transform = c_void_p()
+    _lib.sl_create_sketch_transform(_ctxt_obj, "WZT", \
+                                    _map_to_ctype[intype].ctype(), \
+                                    _map_to_ctype[outtype].ctype(), n, s, \
+                                    byref(sketch_transform), ctypes.c_double(p))
+    self._obj = sketch_transform.value
 
 class GaussianRFT(_SketchTransform):
   """
@@ -315,20 +345,28 @@ class GaussianRFT(_SketchTransform):
   """
   def __init__(self, n, s, sigma, intype=_DEF_INTYPE, outtype=_DEF_OUTTYPE):
     super(GaussianRFT, self)._baseinit(n, s, intype, outtype)
-    self._obj = _lib.sl_create_sketch_transform(_ctxt_obj, "GaussianRFT", \
-                                                _map_to_adapter[intype].ctype(), \
-                                                _map_to_adapter[outtype].ctype(), n, s, ctypes.c_double(sigma))
+
+    sketch_transform = c_void_p()
+    _lib.sl_create_sketch_transform(_ctxt_obj, "GaussianRFT", \
+                                    _map_to_ctype[intype].ctype(), \
+                                    _map_to_ctype[outtype].ctype(), n, s, \
+                                    byref(sketch_transform), ctypes.c_double(sigma))
+    self._obj = sketch_transform.value
 
 class LaplacianRFT(_SketchTransform):
   """
   Random Features Transform for the Laplacian Kernel
 
   *A. Rahimi* and *B. Recht*, **Random Features for Large-scale
-  Kernel Machines**, NIPS 2009
+  Kernel Machines*, NIPS 2009
   """
   def __init__(self, n, s, sigma, intype=_DEF_INTYPE, outtype=_DEF_OUTTYPE):
     super(LaplacianRFT, self)._baseinit(n, s, intype, outtype)
-    self._obj = _lib.sl_create_sketch_transform(_ctxt_obj, "LaplacianRFT", \
-                                                _map_to_adapter[intype].ctype(), \
-                                                _map_to_adapter[outtype].ctype(), n, s, ctypes.c_double(sigma))
+
+    sketch_transform = c_void_p()
+    _lib.sl_create_sketch_transform(_ctxt_obj, "LaplacianRFT", \
+                                    _map_to_ctype[intype].ctype(), \
+                                    _map_to_ctype[outtype].ctype(), n, s, \
+                                    byref(sketch_transform), ctypes.c_double(sigma))
+    self._obj = sketch_transform.value
 

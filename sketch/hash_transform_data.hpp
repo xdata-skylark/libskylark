@@ -4,13 +4,15 @@
 #include <vector>
 #include "context.hpp"
 
+#include "../utility/exception.hpp"
+
 namespace skylark { namespace sketch {
 
 /**
- * This is the base class for all the hashing transforms. Essentially, it 
+ * This is the base class for all the hashing transforms. Essentially, it
  * holds on to a context, and to some random numbers that it has generated
  * both for the scaling factor and for the row/col indices.
- */ 
+ */
 template <typename IndexType,
           typename ValueType,
           typename IdxDistributionType,
@@ -22,30 +24,36 @@ struct hash_transform_data_t {
   typedef ValueDistributionType<ValueType> value_distribution_t;
 
   /**
-   * Regular constructor 
-   */ 
-  hash_transform_data_t (int N, 
-                         int S, 
+   * Regular constructor
+   */
+  hash_transform_data_t (int N,
+                         int S,
                          skylark::sketch::context_t& context)
   : N(N), S(S), context(context) {
 
-    row_idx.resize(N);
-    row_value.resize(N);
-    
+    try {
+      row_idx.resize(N);
+      row_value.resize(N);
+    } catch (std::bad_alloc ba) {
+      SKYLARK_THROW_EXCEPTION (
+        utility::allocation_exception()
+        << utility::error_msg(ba.what()) );
+    }
+
     boost::random::mt19937 prng(context.newseed());
     idx_distribution_t row_idx_prng(0, S-1);
     value_distribution_t row_value_prng;
-    
+
     for (int i = 0; i < N; ++i) {
       row_idx[i] = row_idx_prng (prng);
       row_value[i] = row_value_prng (prng);
     }
   }
 
-  hash_transform_data_t& get_data() { 
-    return static_cast<hash_transform_data_t&>(*this); 
+  hash_transform_data_t& get_data() {
+    return static_cast<hash_transform_data_t&>(*this);
   }
-  
+
   protected:
 
   const int N; /**< Input dimension  */

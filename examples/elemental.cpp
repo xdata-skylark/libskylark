@@ -25,7 +25,7 @@ char* chr_params[NUM_CHR_PARAMETERS];
 typedef std::vector<int> IntContainer;
 typedef std::vector<double> DblContainer;
 typedef elem::Matrix<double> MatrixType;
-typedef elem::DistMatrix<double, elem::VR, elem::STAR> DistMatrixType;
+typedef elem::DistMatrix<double, elem::MC, elem::STAR> DistMatrixType;
 
 int main (int argc, char** argv) {
     /* Initialize MPI */
@@ -73,7 +73,16 @@ int main (int argc, char** argv) {
             MatrixType sketch_A(int_params[S_INDEX], int_params[N_INDEX]);
 
             /* 3. Apply the transform */
-            JLT.apply (A, sketch_A, skys::columnwise_tag());
+            try {
+                JLT.apply (A, sketch_A, skys::columnwise_tag());
+            } catch (skylark::utility::skylark_exception ex) {
+                SKYLARK_PRINT_EXCEPTION_DETAILS(ex);
+                SKYLARK_PRINT_EXCEPTION_TRACE(ex);
+                errno = *(boost::get_error_info<skylark::utility::error_code>(ex));
+                std::cout << "Caught exception, exiting with error " << errno << std::endl;
+                std::cout << skylark_strerror(errno) << std::endl;
+                return errno;
+            }
 
             /* 4. Print and see the result (if small enough) */
             if (int_params[S_INDEX] * int_params[N_INDEX] < 100 &&
@@ -117,7 +126,10 @@ int main (int argc, char** argv) {
             MatrixType sketch_A(int_params[S_INDEX], int_params[N_INDEX]);
 
             /* 3. Apply the transform */
-            Sparse.apply (A, sketch_A, skys::columnwise_tag());
+            SKYLARK_BEGIN_TRY()
+                Sparse.apply (A, sketch_A, skys::columnwise_tag());
+            SKYLARK_END_TRY()
+            SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
 
             /* 4. Print and see the result */
             if (int_params[S_INDEX] * int_params[M_INDEX] < 100 &&
@@ -129,7 +141,7 @@ int main (int argc, char** argv) {
 
         }
     } else {
-        std::cout << "We only have JLT/FJLT/Sparse sketching. Please retry" << 
+        std::cout << "We only have JLT/FJLT/Sparse sketching. Please retry" <<
             std::endl;
     }
 

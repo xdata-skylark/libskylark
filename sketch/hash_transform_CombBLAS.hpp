@@ -3,6 +3,7 @@
 
 #include <CombBLAS.h>
 #include "../utility/external/FullyDistMultiVec.hpp"
+#include "../utility/exception.hpp"
 
 #include "context.hpp"
 #include "transforms.hpp"
@@ -46,7 +47,21 @@ struct hash_transform_t <FullyDistMultiVec<IndexType, ValueType>,
   void apply (mpi_multi_vector_t &A,
               mpi_multi_vector_t &sketch_of_A,
               Dimension dimension) {
-    apply_impl (A, sketch_of_A, dimension);
+    try {
+      apply_impl (A, sketch_of_A, dimension);
+    } catch(boost::mpi::exception e) {
+      SKYLARK_THROW_EXCEPTION (
+        utility::mpi_exception()
+        << utility::error_msg(e.what()) );
+    } catch (std::string e) {
+      SKYLARK_THROW_EXCEPTION (
+        utility::combblas_exception()
+        << utility::error_msg(e) );
+    } catch (std::logic_error e) {
+      SKYLARK_THROW_EXCEPTION (
+        utility::combblas_exception()
+        << utility::error_msg(e.what()) );
+    }
   }
 
   void apply_impl_single (mpi_vector_t& a,
@@ -135,7 +150,21 @@ struct hash_transform_t <
   void apply (matrix_t &A,
               output_matrix_t &sketch_of_A,
               Dimension dimension) {
-    apply_impl (A, sketch_of_A, dimension);
+    try {
+      apply_impl (A, sketch_of_A, dimension);
+    } catch(boost::mpi::exception e) {
+      SKYLARK_THROW_EXCEPTION (
+        utility::mpi_exception()
+        << utility::error_msg(e.what()) );
+    } catch (std::string e) {
+      SKYLARK_THROW_EXCEPTION (
+        utility::combblas_exception()
+        << utility::error_msg(e) );
+    } catch (std::logic_error e) {
+      SKYLARK_THROW_EXCEPTION (
+        utility::combblas_exception()
+        << utility::error_msg(e.what()) );
+    }
   }
 
   /**

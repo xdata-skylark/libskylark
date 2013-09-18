@@ -25,7 +25,7 @@ char* chr_params[NUM_CHR_PARAMETERS];
 typedef std::vector<int> IntContainer;
 typedef std::vector<double> DblContainer;
 typedef elem::Matrix<double> MatrixType;
-typedef elem::DistMatrix<double, elem::MC, elem::STAR> DistMatrixType;
+typedef elem::DistMatrix<double, elem::VC, elem::STAR> DistMatrixType;
 
 int main (int argc, char** argv) {
     /* Initialize MPI */

@@ -32,7 +32,9 @@ _lib.sl_context_size.restype            = c_int
 _lib.sl_create_sketch_transform.restype = c_int
 _lib.sl_wrap_raw_matrix.restype         = c_int
 _lib.sl_free_raw_matrix_wrap.restype    = c_int
-_lib.sl_strerror.restype                = c_char_p
+
+_lib.sl_strerror.restype                    = c_char_p
+_lib.sl_supported_sketch_transforms.restype = c_char_p
 
 SUPPORTED_SKETCH_TRANSFORMS = map(eval, _lib.sl_supported_sketch_transforms().split())
 
@@ -192,8 +194,8 @@ class _SketchTransform(object):
     self._baseinit(n, s, intype, outtype)
 
     _lib.sl_create_sketch_transform(_ctxt_obj, ttype, \
-                                    _map_to_ctype[intype].ctype(), \
-                                    _map_to_ctype[outtype].ctype(), n, s, \
+                                    _map_to_adapter[intype].ctype(), \
+                                    _map_to_adapter[outtype].ctype(), n, s, \
                                     byref(sketch_transform))
 
     self._obj = sketch_transform.value
@@ -290,8 +292,8 @@ class CT(_SketchTransform):
 
     sketch_transform = c_void_p()
     _lib.sl_create_sketch_transform(_ctxt_obj, "CT", \
-                                    _map_to_ctype[intype].ctype(), \
-                                    _map_to_ctype[outtype].ctype(), n, s, \
+                                    _map_to_adapter[intype].ctype(), \
+                                    _map_to_adapter[outtype].ctype(), n, s, \
                                     byref(sketch_transform), ctypes.c_double(C))
     self._obj = sketch_transform.value
 
@@ -334,8 +336,8 @@ class WZT(_SketchTransform):
 
     sketch_transform = c_void_p()
     _lib.sl_create_sketch_transform(_ctxt_obj, "WZT", \
-                                    _map_to_ctype[intype].ctype(), \
-                                    _map_to_ctype[outtype].ctype(), n, s, \
+                                    _map_to_adapter[intype].ctype(), \
+                                    _map_to_adapter[outtype].ctype(), n, s, \
                                     byref(sketch_transform), ctypes.c_double(p))
     self._obj = sketch_transform.value
 
@@ -348,8 +350,8 @@ class GaussianRFT(_SketchTransform):
 
     sketch_transform = c_void_p()
     _lib.sl_create_sketch_transform(_ctxt_obj, "GaussianRFT", \
-                                    _map_to_ctype[intype].ctype(), \
-                                    _map_to_ctype[outtype].ctype(), n, s, \
+                                    _map_to_adapter[intype].ctype(), \
+                                    _map_to_adapter[outtype].ctype(), n, s, \
                                     byref(sketch_transform), ctypes.c_double(sigma))
     self._obj = sketch_transform.value
 
@@ -365,8 +367,8 @@ class LaplacianRFT(_SketchTransform):
 
     sketch_transform = c_void_p()
     _lib.sl_create_sketch_transform(_ctxt_obj, "LaplacianRFT", \
-                                    _map_to_ctype[intype].ctype(), \
-                                    _map_to_ctype[outtype].ctype(), n, s, \
+                                    _map_to_adapter[intype].ctype(), \
+                                    _map_to_adapter[outtype].ctype(), n, s, \
                                     byref(sketch_transform), ctypes.c_double(sigma))
     self._obj = sketch_transform.value
 

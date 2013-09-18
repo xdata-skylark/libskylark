@@ -5,6 +5,7 @@
 
 #include "context.hpp"
 #include "transforms.hpp"
+#include "../utility/randgen.hpp"
 
 namespace skylark {
 namespace sketch {
@@ -41,20 +42,20 @@ private:
         inter_A = A;
 
         // Apply the underlying transform
-        underlying_transform.apply(inter_A, inter_A,
+        _underlying_transform.apply(inter_A, inter_A,
                                    skylark::sketch::columnwise_tag());
 
         // Create the sampled and scaled matrix -- still in distributed mode
-        intermediate_type dist_sketch_A(S, inter_A.Width(), inter_A.Grid());
-        double scale = sqrt((double)N / (double)S);
+        intermediate_type dist_sketch_A(_S, inter_A.Width(), inter_A.Grid());
+        double scale = sqrt((double)_N / (double)_S);
         for (int j = 0; j < inter_A.LocalWidth(); j++)
-            for (int i = 0; i < S; i++) {
-                int row = samples[i];
+            for (int i = 0; i < _S; i++) {
+                int row = _samples[i];
                 dist_sketch_A.Matrix().Set(i, j,
                     scale * inter_A.Matrix().Get(row, j));
             }
 
-        skylark::utility::collect_dist_matrix(context.comm, context.rank == 0,
+        skylark::utility::collect_dist_matrix(_context.comm, _context.rank == 0,
             dist_sketch_A, sketch_A);
     }
 
@@ -78,29 +79,33 @@ private:
 
     // List of variables associated with this sketch
     /// Input dimension
-    const int N;
+    const int _N;
     /// Output dimension
-    const int S;
+    const int _S;
     const RFUT_t<intermediate_type,
                  transform_type,
                  utility::rademacher_distribution_t<ValueType> >
     /// Underlying mixing (fast-unitary) transform
-    underlying_transform;
-    std::vector<int> samples;
+    _underlying_transform;
+    std::vector<int> _samples;
     /// context for this sketch
-    skylark::sketch::context_t& context;
+    skylark::sketch::context_t& _context;
 
 public:
 
     FJLT_t(int N, int S, skylark::sketch::context_t& context)
-        : N(N), S(S), underlying_transform(N, context), samples(S),
-          context(context) {
+        : _N(N), _S(S), _underlying_transform(N, context), _samples(S),
+          _context(context) {
 
         // The following is sampling with replacement
-        boost::random::mt19937 prng(context.newseed());
+        skylark::utility::rng_array_t* rng_array_ptr =
+            context.allocate_rng_array(S);
         boost::random::uniform_int_distribution<int> distribution(0, N - 1);
-        for (int i = 0; i < S; i++)
-            samples[i] = distribution(prng);
+        for (int i = 0; i < S; i++) {
+            skylark::utility::URNG_t urng = (*rng_array_ptr)[i];
+            _samples[i] = distribution(urng);
+        }
+        delete rng_array_ptr;
     }
 
     /**

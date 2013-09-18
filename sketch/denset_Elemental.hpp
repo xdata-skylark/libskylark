@@ -7,6 +7,7 @@
 #include "transforms.hpp"
 #include "../utility/comm.hpp"
 #include "../utility/exception.hpp"
+#include "../utility/randgen.hpp"
 
 
 namespace skylark {
@@ -53,17 +54,20 @@ private:
         int slice_width = A.Width();
 
         DistributionType<value_type> distribution;
-        elem::Matrix<value_type> S_local(S, slice_width);
+        elem::Matrix<value_type> S_local(_S, slice_width);
 
         for (int js = 0; js < A.LocalHeight(); js += slice_width) {
             int je = std::min(js + slice_width, A.LocalHeight());
             // adapt size of local portion (can be less than slice_width)
-            S_local.ResizeTo(S, je-js);
+            S_local.ResizeTo(_S, je-js);
             for(int j = js; j < je; j++) {
-                boost::random::mt19937 prng(
-                   column_seeds[A.RowShift() + A.RowStride()*j]);
-                for (int i = 0; i < S; i++)
-                    S_local.Set(i, j-js, scale * distribution(prng));
+                int col = A.RowShift() + A.RowStride() * j;
+                for (int i = 0; i < _S; i++) {
+                    skylark::utility::URNG_t urng =
+                        (*_rng_array_ptr)[col * _S + i];
+                    value_type sample = distribution(urng);
+                    S_local.Set(i, j-js, scale * sample);
+                }
             }
 
             elem::Matrix<value_type> A_slice;
@@ -82,7 +86,7 @@ private:
 
 
         // Pull everything to rank-0
-        boost::mpi::reduce (context.comm,
+        boost::mpi::reduce (_context.comm,
                             SA_part.LockedBuffer(),
                             SA_part.MemorySize(),
                             sketch_of_A.Buffer(),
@@ -100,15 +104,17 @@ private:
 
         // Create a distributed matrix to hold the output.
         //  We later gather to a dense matrix.
-        matrix_type SA_dist(A.Height(), S, A.Grid());
+        matrix_type SA_dist(A.Height(), _S, A.Grid());
 
         // Create S. Since it is rowwise, we assume it can be held in memory.
-        elem::Matrix<value_type> S_local(S, N);
+        elem::Matrix<value_type> S_local(_S, _N);
         DistributionType<value_type> distribution;
-        for (int j = 0; j < N; j++) {
-            boost::random::mt19937 prng(column_seeds[j]);
-            for (int i = 0; i < S; i++)
-                S_local.Set(i, j, scale * distribution(prng));
+        for (int j = 0; j < _N; j++) {
+            for (int i = 0; i < _S; i++) {
+                skylark::utility::URNG_t urng = (*_rng_array_ptr)[j * _S + i];
+                value_type sample = distribution(urng);
+                S_local.Set(i, j, scale * sample);
+            }
         }
 
         // Apply S to the local part of A to get the local part of SA.
@@ -122,19 +128,19 @@ private:
 
         // Collect at rank 0.
         // TODO Grid rank 0 or context rank 0?
-        skylark::utility::collect_dist_matrix(context.comm, context.rank == 0,
+        skylark::utility::collect_dist_matrix(_context.comm, _context.rank == 0,
             SA_dist, sketch_of_A);
     }
 
     // List of variables associated with this sketch
     /// Input dimension
-    const int N;
+    const int _N;
     /// Output dimension
-    const int S;
-    /// context for this sketch
-    skylark::sketch::context_t& context;
-    std::vector<int> column_seeds;
-
+    const int _S;
+    /// Context for this sketch
+    skylark::sketch::context_t& _context;
+    /// Pointer to random number generators
+    skylark::utility::rng_array_t* _rng_array_ptr;
 protected:
     double scale;
 
@@ -144,12 +150,17 @@ public:
      * Create an object with a particular seed value.
      */
     dense_transform_t (int N, int S, skylark::sketch::context_t& context)
-        : N(N), S(S), context(context), column_seeds(N) {
-        for (int i = 0; i < N; ++i)
-            column_seeds[i] = context.newseed();
-
+        : _N(N), _S(S), _context(context),
+          _rng_array_ptr(context.allocate_rng_array(N * S)) {
         // No scaling in "raw" form
         scale = 1.0;
+    }
+
+    /**
+     * Destructor
+     */
+    ~dense_transform_t() {
+        delete _rng_array_ptr;
     }
 
     /**
@@ -224,12 +235,14 @@ private:
 
 
         // Create S. Since it is rowwise, we assume it can be held in memory.
-        elem::Matrix<value_type> S_local(S, N);
+        elem::Matrix<value_type> S_local(_S, _N);
         DistributionType<value_type> distribution;
-        for (int j = 0; j < N; j++) {
-            boost::random::mt19937 prng(column_seeds[j]);
-            for (int i = 0; i < S; i++)
-                S_local.Set(i, j, scale * distribution(prng));
+        for (int j = 0; j < _N; j++) {
+            for (int i = 0; i < _S; i++) {
+                skylark::utility::URNG_t urng = (*_rng_array_ptr)[j * _S + i];
+                value_type sample = distribution(urng);
+                S_local.Set(i, j, scale * sample);
+            }
         }
 
         // Apply S to the local part of A to get the local part of sketch_of_A.
@@ -244,12 +257,13 @@ private:
 
     // List of variables associated with this sketch
     /// Input dimension
-    const int N;
+    const int _N;
     /// Output dimension
-    const int S;
+    const int _S;
     /// context for this sketch
-    skylark::sketch::context_t& context;
-    std::vector<int> column_seeds;
+    skylark::sketch::context_t& _context;
+    /// Pointer to random number generators
+    skylark::utility::rng_array_t* _rng_array_ptr;
 
 protected:
     double scale;
@@ -259,12 +273,17 @@ public:
      * Constructor
      */
     dense_transform_t (int N, int S, skylark::sketch::context_t& context)
-        : N(N), S(S), context(context), column_seeds(N) {
-        for (int i = 0; i < N; ++i)
-            column_seeds[i] = context.newseed();
-
+        : _N(N), _S(S), _context(context),
+          _rng_array_ptr(context.allocate_rng_array(N * S)) {
         // No scaling in "raw" form
         scale = 1.0;
+    }
+
+    /**
+     * Destructor
+     */
+    ~dense_transform_t() {
+        delete _rng_array_ptr;
     }
 
     /**

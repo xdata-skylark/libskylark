@@ -1,7 +1,7 @@
 #ifndef CONTEXT_HPP
 #define CONTEXT_HPP
 
-#include <boost/random.hpp>
+#include "../utility/randgen.hpp"
 #include <boost/mpi.hpp>
 
 namespace skylark { namespace sketch {
@@ -17,15 +17,17 @@ struct context_t {
     int rank;
     /// Number of processes in the group
     int size;
-    /** PRNG that generates seeds to define the transforms.
-      * Should be seeded the same across ranks, and always have
-      * the calls coordinated */
-    boost::random::mt19937 prng;
+private:
+    /// Internal counter identifying the start of next stream of random numbers
+    int _counter;
+    /// The seed used for initializing the context
+    int _seed;
 
+public:
     /**
-     * Initilize context with a seed and the communicator.
+     * Initialize context with a seed and the communicator.
      * @param[in] seed Random seed to be used for all computations.
-     * @param[in] orig Communicator that is duplicated and used with SKYLARK i
+     * @param[in] orig Communicator that is duplicated and used with SKYLARK.
      *
      * @caveat This is a global operation since all MPI ranks need to
      * participate in the duplication of the communicator.
@@ -35,13 +37,38 @@ struct context_t {
         comm(orig, boost::mpi::comm_duplicate),
         rank(comm.rank()),
         size(comm.size()),
-        prng(seed) {}
+        _counter(0),
+        _seed(seed) {}
 
     /**
-     * Return a new seed, that can be used to generate an independent stream.
-     * Or at least we hope the stream is independent (need to read on PRNG).
+     * Returns pointer to a meta random number generator.
+     * This can later be used as a random access array of generators.
+     * @param[in] size The size of the array of generators provided.
+     *
+     * @caveat This should be used as a global operation to keep the
+     * the internal state of the context synchronized.
      */
-    int newseed() { return prng(); }
+    skylark::utility::rng_array_t* allocate_rng_array(int size) {
+        skylark::utility::rng_array_t* rng_array_ptr =
+            new skylark::utility::rng_array_t(_counter, size, _seed);
+        _counter = _counter + size;
+        return rng_array_ptr;
+    }
+
+    /**
+     * Returns an integer random number.
+     *
+     * It uses the meta random generator to make sure the context is informed.
+     *
+     * @caveat This should be used as a global operation to keep the
+     * the internal state of the context synchronized.
+     */
+     int random_int() {
+        skylark::utility::rng_array_t* rng_array_ptr = allocate_rng_array(1);
+        int sample = static_cast<int>(((*rng_array_ptr)[0])());
+        delete rng_array_ptr;
+        return sample;
+    }
 };
 
 } } /** skylark::sketch */

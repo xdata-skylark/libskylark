@@ -14,6 +14,7 @@
 #include "reader.hpp"
 #include "comm.hpp"
 #include "distributions.hpp"
+#include "randgen.hpp"
 
 /** 
  * This file contains all the functions that we wrote to support external 

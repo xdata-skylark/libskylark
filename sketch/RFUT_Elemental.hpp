@@ -5,6 +5,7 @@
 
 #include "context.hpp"
 #include "transforms.hpp"
+#include "../utility/randgen.hpp"
 
 namespace skylark {
 namespace sketch {
@@ -30,11 +31,11 @@ private:
 
     // List of variables associated with this sketch
     /// The transform matrix is N-by-N
-    const int N;
+    const int _N;
     /// The random diagonal part
-    std::vector<ValueType> D;
+    std::vector<ValueType> _D;
     /// context for this sketch
-    skylark::sketch::context_t& context;
+    skylark::sketch::context_t& _context;
 
     /**
      * Apply the transform to compute mixed_A.
@@ -52,8 +53,8 @@ private:
         local_type& local_TA = mixed_A.Matrix();
         value_type scale = T.scale(local_A);
         for (int j = 0; j < local_A.Width(); j++)
-            for (int i = 0; i < N; i++)
-                local_TA.Set(i, j, scale * D[i] * local_A.Get(i, j));
+            for (int i = 0; i < _N; i++)
+                local_TA.Set(i, j, scale * _D[i] * local_A.Get(i, j));
 
         // Apply underlying transform
         T.apply(local_TA, skylark::sketch::columnwise_tag());
@@ -61,11 +62,15 @@ private:
 
 public:
     RFUT_t(int N, skylark::sketch::context_t& context) :
-        N(N), D(N), context(context) {
-        boost::random::mt19937 prng(context.newseed());
+        _N(N), _D(N), _context(context) {
+        skylark::utility::rng_array_t* rng_array_ptr =
+            context.allocate_rng_array(N);
         Distribution distribution;
-        for (int i = 0; i < N; i++)
-            D[i] = distribution(prng) ? +1 : -1;
+        for (int i = 0; i < N; i++) {
+            skylark::utility::URNG_t urng = (*rng_array_ptr)[i];
+            _D[i] = distribution(urng) ? +1 : -1;
+        }
+        delete rng_array_ptr;
     }
 
     /**
@@ -112,9 +117,9 @@ struct RFUT_t<
 private:
 
     /** List of variables associated with this sketch */
-    const int N; /**< The transform matrix is N-by-N */
-    const std::vector<ValueType> D; /**< The random diagonal part */
-    skylark::sketch::context_t& context; /**< context for this sketch */
+    const int _N; /**< The transform matrix is N-by-N */
+    const std::vector<ValueType> _D; /**< The random diagonal part */
+    skylark::sketch::context_t& _context; /**< context for this sketch */
 
     /**
      * Apply the transform to compute mixed_A.
@@ -131,9 +136,9 @@ private:
         const local_type& local_A = A.LockedMatrix();
         local_type& local_TA = mixed_A.Matrix();
         value_type scale = T.scale(local_A);
-        for (int j = 0; j < N; j++)
+        for (int j = 0; j < _N; j++)
             for (int i = 0; i < local_A.Height(); i++)
-                local_TA.Set(i, j, scale * D[j] * local_A.Get(i, j));
+                local_TA.Set(i, j, scale * _D[j] * local_A.Get(i, j));
 
         // Apply underlying transform
         T.apply(local_TA, skylark::sketch::rowwise_tag());
@@ -159,8 +164,8 @@ private:
         local_type& local_A = inter_A.Matrix();
         value_type scale = T.scale(local_A);
         for (int j = 0; j < local_A.Width(); j++)
-            for (int i = 0; i < N; i++)
-                local_A.Set(i, j, scale * D[i] * local_A.Get(i, j));
+            for (int i = 0; i < _N; i++)
+                local_A.Set(i, j, scale * _D[i] * local_A.Get(i, j));
 
         // Apply underlying transform
         T.apply(local_A, skylark::sketch::columnwise_tag());
@@ -193,8 +198,8 @@ private:
         // Scale
         value_type scale = T.scale(local_A);
         for (int j = 0; j < local_A.Width(); j++)
-            for (int i = 0; i < N; i++)
-                local_A.Set(i, j, scale * D[i] * local_A.Get(i, j));
+            for (int i = 0; i < _N; i++)
+                local_A.Set(i, j, scale * _D[i] * local_A.Get(i, j));
 
         // Rearrange back
         mixed_A = inter_A;
@@ -202,11 +207,15 @@ private:
 
 public:
     RFUT_t(int N, skylark::sketch::context_t& context) :
-        N(N), D(N), context(context) {
-        boost::random::mt19937 prng(context.newseed());
+        _N(N), _D(N), _context(context) {
+        skylark::utility::rng_array_t* rng_array_ptr =
+            context.allocate_rng_array(N);
         Distribution distribution;
-        for (int i = 0; i < N; i++)
-            D[i] = distribution(prng) ? +1 : -1;
+        for (int i = 0; i < N; i++) {
+            skylark::utility::URNG_t urng = (*rng_array_ptr)[i];
+            _D[i] = distribution(urng) ? +1 : -1;
+        }
+        delete rng_array_ptr;
     }
 
     /**

@@ -79,9 +79,11 @@ struct uniform_matrix_t <FullyDistVec<IndexType, ValueType> > {
 
   static mpi_vector_t apply (index_t& M, 
                              skylark::sketch::context_t& context) {
+    /// TODO
+    /// newseed() -> random_int() replacement? 
     /* Create the random number generator */
-    prng_t my_prng(context.newseed()+context.rank);
-
+    prng_t my_prng(context.random_int()+context.rank);
+      
     /* Create a dummy vector */
     mpi_vector_t x(M, 0);
 
@@ -138,7 +140,9 @@ struct uniform_matrix_t <SpParMat<IndexType,
 
     /* Add edges carefully */
     index_t total_num_edges_added = 0;
-    uniform_dist_t<bool> my_prng(context.newseed());
+    /// TODO
+    /// newseed() -> random_int() replacement?
+    uniform_dist_t<bool> my_prng(context.random_int());
     for (index_t j=0; j<N; ++j) {
       for (index_t i=0; i<M; ++i) {
         if (my_prng.apply()) {

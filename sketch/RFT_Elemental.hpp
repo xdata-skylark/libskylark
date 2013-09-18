@@ -5,6 +5,7 @@
 
 #include "context.hpp"
 #include "transforms.hpp"
+#include "../utility/randgen.hpp"
 
 namespace skylark {
 namespace sketch {
@@ -95,13 +96,17 @@ public:
         : _N(N), _S(S), _sigma(sigma), _context(context),
           _dense(N, S, context), _shifts(S),
           _scale(std::sqrt(2.0 / _S)) {
-        boost::random::mt19937 prng(context.newseed());
-        const double pi = boost::math::constants::pi<double>();
-        boost::random::uniform_real_distribution<> distribution(0, 2 * pi);
-        for (int i = 0; i < _S; i++)
-            _shifts[i] = distribution(prng);
-    }
 
+        const double pi = boost::math::constants::pi<double>();
+        skylark::utility::rng_array_t* rng_array_ptr = 
+            context.allocate_rng_array(S);
+        boost::random::uniform_real_distribution<> distribution(0, 2 * pi);
+        for (int i = 0; i < S; i++) {
+            skylark::utility::URNG_t urng = (*rng_array_ptr)[i];
+            _shifts[i] = distribution(urng);
+        }
+        delete rng_array_ptr;
+    }
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
      */

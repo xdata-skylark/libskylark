@@ -39,6 +39,12 @@ _lib.sl_supported_sketch_transforms.restype = c_char_p
 SUPPORTED_SKETCH_TRANSFORMS = map(eval, _lib.sl_supported_sketch_transforms().split())
 
 #
+# Simple helper to convert error codes in human readbale strings
+#
+def _strerror(errorno):
+  return _lib.sl_strerror(errorno)
+
+#
 # Matrix type adapters: specifies how to interact with the underlying (in C/C++)
 # data structure.
 #

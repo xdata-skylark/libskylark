@@ -143,14 +143,11 @@ struct hash_transform_t <
 
   /**
    * Apply the sketching transform that is described in by the sketch_of_A.
-   * Implementation for the column-wise direction of sketching.
-   *
-   * FIXME: This is really inefficient. So, we need something better.
-   * The code duplication can also be eliminated here.
    */
+  template <typename Dimension>
   void apply_impl (matrix_t &A,
                    output_matrix_t &sketch_of_A,
-                   skylark::sketch::columnwise_tag) {
+                   Dimension dist) {
 
     const size_t rank = A.getcommgrid()->GetRank();
 
@@ -182,9 +179,10 @@ struct hash_transform_t <
 
         const index_t rowid = nz.rowid()  + my_row_offset;
         const index_t colid = col.colid() + my_col_offset;
-        index_t pos = colid + 1.0 * ncols * base_data_t::row_idx[rowid];
+        //index_t pos = colid + ncols * base_data_t::row_idx[rowid];
+        index_t pos = getPos(rowid, colid, ncols, dist);
 
-        value_t value = nz.value() * base_data_t::row_value[rowid];
+        value_t value = nz.value() * getRowValue(rowid, colid, dist);
 
         if(my_vals_map.count(pos) > 0)
             my_vals_map[pos] += value;
@@ -259,106 +257,26 @@ struct hash_transform_t <
   }
 
 
-
-  /**
-   * Apply the sketching transform that is described in by the sketch_of_A.
-   * Implementation for the row-wise direction of sketching.
-   */
-  void apply_impl (matrix_t &A,
-                   output_matrix_t &sketch_of_A,
-                   skylark::sketch::rowwise_tag) {
-
-    const size_t rank = A.getcommgrid()->GetRank();
-
-    // extract columns of matrix
-    col_t &data = A.seq();
-
-    const size_t ncols = sketch_of_A.getncol();
-    const size_t nrows = sketch_of_A.getnrow();
-
-    // build local mapping (global_idx, value) first
-    //FIXME: come up with more efficient data structure
-    typedef std::map<size_t, value_t> sp_mat_value_t;
-    std::map<size_t, value_t> my_vals_map;
-
-    const size_t my_row_offset =
-        static_cast<int>(0.5 + (static_cast<double>(A.getnrow()) /
-        A.getcommgrid()->GetGridRows())) *
-        A.getcommgrid()->GetRankInProcCol(rank);
-
-    const size_t my_col_offset =
-        static_cast<int>(0.5 + (static_cast<double>(A.getncol()) /
-        A.getcommgrid()->GetGridCols())) *
-        A.getcommgrid()->GetRankInProcRow(rank);
-
-    for(typename col_t::SpColIter col = data.begcol();
-      col != data.endcol(); col++) {
-      for(typename col_t::SpColIter::NzIter nz = data.begnz(col);
-        nz != data.endnz(col); nz++) {
-
-        const index_t rowid = nz.rowid()  + my_row_offset;
-        const index_t colid = col.colid() + my_col_offset;
-        index_t pos = rowid * ncols + base_data_t::row_idx[colid];
-
-        value_t value = nz.value() * base_data_t::row_value[colid];
-
-        if(my_vals_map.count(pos) > 0)
-            my_vals_map[pos] += value;
-        else
-            my_vals_map.insert(std::pair<size_t, value_t>(pos, value));
-
-      }
-    }
-
-    // aggregate values
-    boost::mpi::communicator world(A.getcommgrid()->GetWorld(),
-                                   boost::mpi::comm_duplicate);
-    std::vector< std::map<size_t, value_t> > vector_of_maps;
-
-    //FIXME: best to selectively send to exchange pair of (size, [double])
-    //       with processor that needs the values. It should be possible to
-    //       pre-compute the ranges of positions that are kept on a processor.
-    boost::mpi::all_gather< std::map<size_t, value_t> >(
-        world, my_vals_map, vector_of_maps );
-
-    // re-sort/insert in value map
-    std::map<size_t, value_t> vals_map;
-    typename std::map<size_t, value_t>::iterator itr;
-    for(size_t i = 0; i < vector_of_maps.size(); ++i) {
-
-        for(itr = vector_of_maps[i].begin(); itr != vector_of_maps[i].end();
-            itr++) {
-
-            if(vals_map.count(itr->first) > 0)
-                vals_map[itr->first] += itr->second;
-            else
-                vals_map.insert(std::pair<size_t, value_t>(
-                    itr->first, itr->second));
-        }
-    }
-
-    // .. and finally create a new sparse matrix
-    const size_t matrix_size = vals_map.size();
-    mpi_vector_t cols(matrix_size);
-    mpi_vector_t rows(matrix_size);
-    mpi_vector_t vals(matrix_size);
-    size_t idx = 0;
-
-    for(itr = vals_map.begin(); itr != vals_map.end(); itr++, idx++) {
-        cols.SetElement(idx, itr->first % ncols);
-        rows.SetElement(idx, itr->first / ncols);
-        vals.SetElement(idx, itr->second);
-    }
-
-    //FIXME: can we set sketch_of_A directly? (See SparseCommon, Owner)
-    output_matrix_t tmp(sketch_of_A.getnrow(),
-                        sketch_of_A.getncol(),
-                        rows,
-                        cols,
-                        vals);
-
-    sketch_of_A = tmp;
+  inline index_t getPos(index_t rowid, index_t colid, size_t ncols,
+                 columnwise_tag) {
+        return colid + ncols * base_data_t::row_idx[rowid];
   }
+
+  inline index_t getPos(index_t rowid, index_t colid, size_t ncols,
+                 rowwise_tag) {
+        return rowid * ncols + base_data_t::row_idx[colid];
+  }
+
+  inline value_t getRowValue(index_t rowid, index_t colid,
+                      columnwise_tag) {
+        return base_data_t::row_value[rowid];
+  }
+
+  inline value_t getRowValue(index_t rowid, index_t colid,
+                      rowwise_tag) {
+        return base_data_t::row_value[colid];
+  }
+
 };
 
 } } /** namespace skylark::sketch */

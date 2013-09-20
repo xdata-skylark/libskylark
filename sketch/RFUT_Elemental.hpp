@@ -63,14 +63,17 @@ private:
 public:
     RFUT_t(int N, skylark::sketch::context_t& context) :
         _N(N), _D(N), _context(context) {
-        skylark::utility::rng_array_t* rng_array_ptr =
-            context.allocate_rng_array(N);
+
         Distribution distribution;
+
+        skylark::utility::random_samples_array_t<value_type, Distribution>
+            random_samples =
+            context.allocate_random_samples_array<value_type, Distribution>
+            (N, distribution);
+
         for (int i = 0; i < N; i++) {
-            skylark::utility::URNG_t urng = (*rng_array_ptr)[i];
-            _D[i] = distribution(urng) ? +1 : -1;
+            _D[i] = random_samples[i] ? +1 : -1;
         }
-        delete rng_array_ptr;
     }
 
     /**
@@ -208,14 +211,17 @@ private:
 public:
     RFUT_t(int N, skylark::sketch::context_t& context) :
         _N(N), _D(N), _context(context) {
-        skylark::utility::rng_array_t* rng_array_ptr =
-            context.allocate_rng_array(N);
+
         Distribution distribution;
+
+        skylark::utility::random_samples_array_t<value_type, Distribution>
+            random_samples =
+            context.allocate_random_samples_array<value_type, Distribution>
+            (N, distribution);
+ 
         for (int i = 0; i < N; i++) {
-            skylark::utility::URNG_t urng = (*rng_array_ptr)[i];
-            _D[i] = distribution(urng) ? +1 : -1;
+            _D[i] = random_samples[i] ? +1 : -1;
         }
-        delete rng_array_ptr;
     }
 
     /**

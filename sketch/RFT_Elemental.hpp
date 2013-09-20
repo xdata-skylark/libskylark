@@ -98,15 +98,18 @@ public:
           _scale(std::sqrt(2.0 / _S)) {
 
         const double pi = boost::math::constants::pi<double>();
-        skylark::utility::rng_array_t* rng_array_ptr = 
-            context.allocate_rng_array(S);
-        boost::random::uniform_real_distribution<> distribution(0, 2 * pi);
+        typedef boost::random::uniform_real_distribution<> distribution_type;
+        distribution_type distribution(0, 2 * pi);
+
+        skylark::utility::random_samples_array_t<value_type, distribution_type>
+            random_samples =
+            context.allocate_random_samples_array<value_type, distribution_type>
+            (S, distribution);
         for (int i = 0; i < S; i++) {
-            skylark::utility::URNG_t urng = (*rng_array_ptr)[i];
-            _shifts[i] = distribution(urng);
+            _shifts[i] = random_samples[i];
         }
-        delete rng_array_ptr;
     }
+
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
      */

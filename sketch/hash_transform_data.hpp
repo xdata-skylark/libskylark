@@ -41,23 +41,22 @@ struct hash_transform_data_t {
         << utility::error_msg(ba.what()) );
     }
 
-    
-    skylark::utility::rng_array_t* idx_rng_ptr = 
-        context.allocate_rng_array(N);
-    skylark::utility::rng_array_t* value_rng_ptr = 
-        context.allocate_rng_array(N);
     idx_distribution_t row_idx_distribution(0, S-1);
     value_distribution_t row_value_distribution;
-   
+
+    skylark::utility::random_samples_array_t<int, idx_distribution_t>
+        random_indices =
+        context.allocate_random_samples_array<int, idx_distribution_t>
+        (N, row_idx_distribution);
+    skylark::utility::random_samples_array_t<value_t, value_distribution_t>
+        random_values =
+        context.allocate_random_samples_array<value_t, value_distribution_t>
+        (N, row_value_distribution);
 
     for (int i = 0; i < N; ++i) {
-        skylark::utility::URNG_t idx_urng = (*idx_rng_ptr)[i];
-        skylark::utility::URNG_t value_urng = (*value_rng_ptr)[i];
-        row_idx[i] = row_idx_distribution(idx_urng);
-        row_value[i] = row_value_distribution(value_urng);
+        row_idx[i] = random_indices[i];
+        row_value[i] = random_values[i];
     }
-    delete idx_rng_ptr;
-    delete value_rng_ptr;
   }
 
   hash_transform_data_t& get_data() {

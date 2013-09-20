@@ -29,7 +29,8 @@ public:
     typedef ValueType value_type;
     typedef elem::DistMatrix<value_type, ColDist, elem::STAR> matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
-
+    // Typedef distribution
+    typedef DistributionType<value_type> distribution_type;
 private:
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
@@ -53,7 +54,7 @@ private:
 
         int slice_width = A.Width();
 
-        DistributionType<value_type> distribution;
+
         elem::Matrix<value_type> S_local(_S, slice_width);
 
         for (int js = 0; js < A.LocalHeight(); js += slice_width) {
@@ -63,9 +64,7 @@ private:
             for(int j = js; j < je; j++) {
                 int col = A.RowShift() + A.RowStride() * j;
                 for (int i = 0; i < _S; i++) {
-                    skylark::utility::URNG_t urng =
-                        (*_rng_array_ptr)[col * _S + i];
-                    value_type sample = distribution(urng);
+                    value_type sample = _random_samples[col * _S + i];
                     S_local.Set(i, j-js, scale * sample);
                 }
             }
@@ -108,11 +107,9 @@ private:
 
         // Create S. Since it is rowwise, we assume it can be held in memory.
         elem::Matrix<value_type> S_local(_S, _N);
-        DistributionType<value_type> distribution;
         for (int j = 0; j < _N; j++) {
             for (int i = 0; i < _S; i++) {
-                skylark::utility::URNG_t urng = (*_rng_array_ptr)[j * _S + i];
-                value_type sample = distribution(urng);
+                value_type sample = _random_samples[j * _S + i];
                 S_local.Set(i, j, scale * sample);
             }
         }
@@ -139,8 +136,10 @@ private:
     const int _S;
     /// Context for this sketch
     skylark::sketch::context_t& _context;
-    /// Pointer to random number generators
-    skylark::utility::rng_array_t* _rng_array_ptr;
+    /// Random samples
+    skylark::utility::random_samples_array_t<value_type, distribution_type>
+     _random_samples;
+
 protected:
     double scale;
 
@@ -150,18 +149,15 @@ public:
      * Create an object with a particular seed value.
      */
     dense_transform_t (int N, int S, skylark::sketch::context_t& context)
-        : _N(N), _S(S), _context(context),
-          _rng_array_ptr(context.allocate_rng_array(N * S)) {
+        : _N(N), _S(S), _context(context) {
+        distribution_type distribution;
+        _random_samples =
+            context.allocate_random_samples_array<value_type, distribution_type>
+            (N * S, distribution);
         // No scaling in "raw" form
         scale = 1.0;
     }
 
-    /**
-     * Destructor
-     */
-    ~dense_transform_t() {
-        delete _rng_array_ptr;
-    }
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
@@ -211,6 +207,8 @@ public:
     typedef ValueType value_type;
     typedef elem::DistMatrix<value_type, ColDist, elem::STAR> matrix_type;
     typedef elem::DistMatrix<value_type, ColDist, elem::STAR> output_matrix_type;
+    // Typedef distribution
+    typedef DistributionType<value_type> distribution_type;
 
 private:
     /**
@@ -236,11 +234,9 @@ private:
 
         // Create S. Since it is rowwise, we assume it can be held in memory.
         elem::Matrix<value_type> S_local(_S, _N);
-        DistributionType<value_type> distribution;
         for (int j = 0; j < _N; j++) {
             for (int i = 0; i < _S; i++) {
-                skylark::utility::URNG_t urng = (*_rng_array_ptr)[j * _S + i];
-                value_type sample = distribution(urng);
+                value_type sample = _random_samples[j * _S + i];
                 S_local.Set(i, j, scale * sample);
             }
         }
@@ -262,8 +258,9 @@ private:
     const int _S;
     /// context for this sketch
     skylark::sketch::context_t& _context;
-    /// Pointer to random number generators
-    skylark::utility::rng_array_t* _rng_array_ptr;
+    /// Random samples
+    skylark::utility::random_samples_array_t<value_type, distribution_type>
+     _random_samples;
 
 protected:
     double scale;
@@ -273,18 +270,15 @@ public:
      * Constructor
      */
     dense_transform_t (int N, int S, skylark::sketch::context_t& context)
-        : _N(N), _S(S), _context(context),
-          _rng_array_ptr(context.allocate_rng_array(N * S)) {
+        : _N(N), _S(S), _context(context) {
+        distribution_type distribution;
+        _random_samples =
+            context.allocate_random_samples_array<value_type, distribution_type>
+            (N * S, distribution);
         // No scaling in "raw" form
         scale = 1.0;
     }
 
-    /**
-     * Destructor
-     */
-    ~dense_transform_t() {
-        delete _rng_array_ptr;
-    }
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.

@@ -40,34 +40,58 @@ public:
         _counter(0),
         _seed(seed) {}
 
+
     /**
-     * Returns pointer to a meta random number generator.
-     * This can later be used as a random access array of generators.
-     * @param[in] size The size of the array of generators provided.
+     * Returns a container of samples drawn from a distribution
+     * to be accessed as an array.
+     * @param[in] size The size of the container.
+     * @param[in] distribution The distribution to draw samples from.
+     * @return Random samples' container.
      *
      * @caveat This should be used as a global operation to keep the
      * the internal state of the context synchronized.
      */
-    skylark::utility::rng_array_t* allocate_rng_array(int size) {
-        skylark::utility::rng_array_t* rng_array_ptr =
-            new skylark::utility::rng_array_t(_counter, size, _seed);
+    template <typename ValueType,
+              typename Distribution>
+    skylark::utility::random_samples_array_t<ValueType, Distribution>
+    allocate_random_samples_array(int size,
+        Distribution& distribution) {
+        skylark::utility::rng_array_t rng_array(_counter, size, _seed);
         _counter = _counter + size;
-        return rng_array_ptr;
+        return skylark::utility::random_samples_array_t<ValueType, Distribution>
+            (rng_array, distribution);
     }
+
+
+    /**
+     * Returns a container of random numbers to be accessed as an array.
+     * @param[in] size The size of the container.
+     * @return Random numbers' container.
+     *
+     * @caveat This should be used as a global operation to keep the
+     * the internal state of the context synchronized.
+     */
+    skylark::utility::random_array_t allocate_random_array(int size) {
+        skylark::utility::rng_array_t rng_array(_counter, size, _seed);
+        _counter = _counter + size;
+        return skylark::utility::random_array_t(rng_array);
+    }
+
 
     /**
      * Returns an integer random number.
+     * @return Random integer number.
      *
-     * It uses the meta random generator to make sure the context is informed.
+     * @todo Temporarily used as a replacement for newseed().
      *
      * @caveat This should be used as a global operation to keep the
      * the internal state of the context synchronized.
      */
      int random_int() {
-        skylark::utility::rng_array_t* rng_array_ptr = allocate_rng_array(1);
-        int sample = static_cast<int>(((*rng_array_ptr)[0])());
-        delete rng_array_ptr;
-        return sample;
+         skylark::utility::random_array_t random_array =
+             allocate_random_array(1);
+         int sample = random_array[0];
+         return sample;
     }
 };
 

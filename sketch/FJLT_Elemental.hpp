@@ -91,22 +91,24 @@ private:
     /// context for this sketch
     skylark::sketch::context_t& _context;
 
+
 public:
 
     FJLT_t(int N, int S, skylark::sketch::context_t& context)
         : _N(N), _S(S), _underlying_transform(N, context), _samples(S),
           _context(context) {
+        typedef boost::random::uniform_int_distribution<int> distribution_type;
+        distribution_type distribution(0, N - 1);
 
-        // The following is sampling with replacement
-        skylark::utility::rng_array_t* rng_array_ptr =
-            context.allocate_rng_array(S);
-        boost::random::uniform_int_distribution<int> distribution(0, N - 1);
+        skylark::utility::random_samples_array_t<value_type, distribution_type>
+            random_samples =
+            context.allocate_random_samples_array<value_type, distribution_type>
+            (S, distribution);
         for (int i = 0; i < S; i++) {
-            skylark::utility::URNG_t urng = (*rng_array_ptr)[i];
-            _samples[i] = distribution(urng);
+            _samples[i] = random_samples[i];
         }
-        delete rng_array_ptr;
     }
+
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.

@@ -137,7 +137,7 @@ private:
     /// Context for this sketch
     skylark::sketch::context_t& _context;
     /// Random samples
-    skylark::utility::random_samples_array_t<value_type, distribution_type>
+    mutable skylark::utility::random_samples_array_t<value_type, distribution_type>
      _random_samples;
 
 protected:
@@ -259,7 +259,7 @@ private:
     /// context for this sketch
     skylark::sketch::context_t& _context;
     /// Random samples
-    skylark::utility::random_samples_array_t<value_type, distribution_type>
+    mutable skylark::utility::random_samples_array_t<value_type, distribution_type>
      _random_samples;
 
 protected:

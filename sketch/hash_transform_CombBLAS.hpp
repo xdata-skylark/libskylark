@@ -173,22 +173,21 @@ struct hash_transform_t <
         A.getcommgrid()->GetRankInProcRow(rank);
 
     for(typename col_t::SpColIter col = data.begcol();
-      col != data.endcol(); col++) {
-      for(typename col_t::SpColIter::NzIter nz = data.begnz(col);
-        nz != data.endnz(col); nz++) {
+        col != data.endcol(); col++) {
+        for(typename col_t::SpColIter::NzIter nz = data.begnz(col);
+            nz != data.endnz(col); nz++) {
 
-        const index_t rowid = nz.rowid()  + my_row_offset;
-        const index_t colid = col.colid() + my_col_offset;
-        //index_t pos = colid + ncols * base_data_t::row_idx[rowid];
-        index_t pos = getPos(rowid, colid, ncols, dist);
+            const index_t rowid = nz.rowid()  + my_row_offset;
+            const index_t colid = col.colid() + my_col_offset;
 
-        value_t value = nz.value() * getRowValue(rowid, colid, dist);
+            index_t pos   = getPos(rowid, colid, ncols, dist);
+            value_t value = nz.value() * getRowValue(rowid, colid, dist);
 
-        if(my_vals_map.count(pos) > 0)
-            my_vals_map[pos] += value;
-        else
-            my_vals_map.insert(std::pair<size_t, value_t>(pos, value));
-      }
+            if(my_vals_map.count(pos) != 0)
+                my_vals_map[pos] += value;
+            else
+                my_vals_map.insert(std::pair<size_t, value_t>(pos, value));
+        }
     }
 
     // aggregate values
@@ -210,7 +209,7 @@ struct hash_transform_t <
         for(itr = vector_of_maps[i].begin(); itr != vector_of_maps[i].end();
             itr++) {
 
-            if(vals_map.count(itr->first) > 0)
+            if(vals_map.count(itr->first) != 0)
                 vals_map[itr->first] += itr->second;
             else
                 vals_map.insert(std::pair<size_t, value_t>(

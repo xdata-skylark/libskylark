@@ -6,11 +6,11 @@
 
 #if SKYLARK_HAVE_BOOST
 #include <boost/random.hpp>
-#endif 
+#endif
 
 #if SKYLARK_HAVE_COMBBLAS
 #include <CombBLAS.h>
-#endif 
+#endif
 
 #if SKYLARK_HAVE_ELEMENTAL
 #include <elemental.hpp>
@@ -20,47 +20,86 @@ namespace skylark { namespace utility {
 
 #if SKYLARK_HAVE_BOOST
 
-template <typename ValueType> struct uniform_dist_t {};
+// A lazily computed array of uniformly distributed samples
+template <typename ValueType> struct uniform_samples_array_t {};
 
-template <> struct uniform_dist_t <double> {
-  boost::random::mt19937 prng;
-  boost::uniform_real<double> distribution;
+// Specialized for uniform_real_distribution<double>
+template <> struct uniform_samples_array_t <double> {
+    typedef boost::random::uniform_real_distribution<double> distribution_t;
 
-  uniform_dist_t (int seed) { prng.seed (seed); }
+private:
+    skylark::sketch::context_t& _context;
+    distribution_t _distribution;
+    skylark::utility::random_samples_array_t<double, distribution_t>
+    _samples;
 
-  uniform_dist_t (int seed, double low, double high) : 
-      distribution(low, high) { prng.seed(seed); }
+public:
+    uniform_samples_array_t(int size, skylark::sketch::context_t& context)
+        : _context(context), _distribution(distribution_t()),
+          _samples(context.allocate_random_samples_array
+              <double,distribution_t> (size, _distribution)) {}
 
-  double apply() { return distribution(prng); }
+    uniform_samples_array_t(int size, double low, double high,
+        skylark::sketch::context_t& context)
+        : _context(context), _distribution(distribution_t(low, high)),
+          _samples(context.allocate_random_samples_array
+              <double,distribution_t> (size, _distribution)) {}
+
+    double operator[](int index) {
+        return _samples[index];
+    }
 };
 
-template <> struct uniform_dist_t <int> {
-  boost::random::mt19937 prng;
-  boost::uniform_int<int> distribution;
+// Specialized for uniform_int_distribution<int>
+template <> struct uniform_samples_array_t <int> {
+    typedef boost::random::uniform_int_distribution<int> distribution_t;
 
-  uniform_dist_t (int seed) { prng.seed (seed); }
+private:
+    skylark::sketch::context_t& _context;
+    distribution_t _distribution;
+    skylark::utility::random_samples_array_t<int, distribution_t>
+    _samples;
 
-  uniform_dist_t (int seed, int low, int high) : 
-      distribution(low, high) { prng.seed(seed); }
+public:
+    uniform_samples_array_t(int size, double low, double high,
+        skylark::sketch::context_t& context)
+        : _context(context), _distribution(distribution_t(low, high)),
+          _samples(context.allocate_random_samples_array
+              <int,distribution_t> (size, _distribution)) {}
 
-  int apply() { return distribution(prng); }
+    double operator[](int index) {
+        return _samples[index];
+    }
 };
 
-template <> struct uniform_dist_t <bool> {
-  boost::random::mt19937 prng;
-  boost::uniform_int<int> distribution;
+// Specialized for uniform generation of booleans
+template <> struct uniform_samples_array_t <bool> {
+    typedef boost::random::uniform_int_distribution<int> distribution_t;
 
-  uniform_dist_t (int seed) : distribution(0,1) { prng.seed (seed); }
+private:
+    skylark::sketch::context_t& _context;
+    distribution_t _distribution;
+    skylark::utility::random_samples_array_t<int, distribution_t>
+    _samples;
 
-  bool apply() { return (1==distribution(prng)); }
+public:
+    uniform_samples_array_t(int size, skylark::sketch::context_t& context)
+        : _context(context), _distribution(distribution_t(0, 1)),
+          _samples(context.allocate_random_samples_array
+              <int,distribution_t> (size, _distribution)) {}
+
+    double operator[](int index) {
+        return (1 == _samples[index]);
+    }
 };
 
 #endif // SKYLARK_HAVE_BOOST
 
+
 /**
  * A structure to populate the matrix with uniformly dist random entries.
  * If the same seed is used, the same entries are (technically) generated.
- */ 
+ */
 template <typename MatrixOrVectorType>
 struct uniform_matrix_t {};
 
@@ -75,20 +114,17 @@ struct uniform_matrix_t <FullyDistVec<IndexType, ValueType> > {
   typedef ValueType value_t;
   typedef IndexType index_t;
   typedef FullyDistVec<IndexType,ValueType> mpi_vector_t;
-  typedef uniform_dist_t<ValueType> prng_t;
 
-  static mpi_vector_t apply (index_t& M, 
+  static mpi_vector_t apply (index_t& M,
                              skylark::sketch::context_t& context) {
-    /// TODO
-    /// newseed() -> random_int() replacement? 
-    /* Create the random number generator */
-    prng_t my_prng(context.random_int()+context.rank);
-      
+
     /* Create a dummy vector */
     mpi_vector_t x(M, 0);
 
+    uniform_samples_array_t<ValueType> samples(x.TotalLength(), context);
+
     /* Iterate and fill up the local entries */
-    for (index_t i=0; i<x.TotalLength(); ++i) x.SetElement(i,my_prng.apply());
+    for (index_t i=0; i<x.TotalLength(); ++i) x.SetElement(i, samples[i]);
 
     return x;
   }
@@ -128,24 +164,23 @@ struct uniform_matrix_t <SpParMat<IndexType,
   typedef FullyDistVec<IndexType,ValueType> mpi_value_vector_t;
   typedef FullyDistVec<IndexType,IndexType> mpi_index_vector_t;
 
-  static mpi_matrix_t apply(index_t M, 
-                            index_t N, 
+  static mpi_matrix_t apply(index_t M,
+                            index_t N,
                             index_t NNZ,
                             skylark::sketch::context_t& context) {
     /* Create three FullyDistVec for colid, rowid, and values */
-    mpi_value_vector_t values = 
+    mpi_value_vector_t values =
       uniform_matrix_t<mpi_value_vector_t>::apply(NNZ, context);
     mpi_index_vector_t col_id(NNZ, 0);
     mpi_index_vector_t row_id(NNZ, 0);
 
     /* Add edges carefully */
     index_t total_num_edges_added = 0;
-    /// TODO
-    /// newseed() -> random_int() replacement?
-    uniform_dist_t<bool> my_prng(context.random_int());
+
+    uniform_samples_array_t<bool> samples(M * N, context);
     for (index_t j=0; j<N; ++j) {
       for (index_t i=0; i<M; ++i) {
-        if (my_prng.apply()) {
+        if (samples[j * M + i]) {
           col_id.SetElement(total_num_edges_added, j);
           row_id.SetElement(total_num_edges_added, i);
           ++total_num_edges_added;

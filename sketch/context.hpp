@@ -48,6 +48,25 @@ public:
      * @param[in] distribution The distribution to draw samples from.
      * @return Random samples' container.
      *
+     * @details This is the main facility for creating a "stream" of
+     * samples of given size and distribution. size is needed for
+     * reserving up-front a portion of the linear space of the 2^64 samples
+     * that can be provided by a context with a fixed seed.
+     *
+     * @internal We currently use Random123 library, most specifically
+     * Threefry4x64 counter-based generator, as wrapped by the uniform
+     * random generator, MicroURNG. For each sample we instantiate
+     * a MicroURNG instance. Each such instance needs 2 arrays of 4 uint64
+     * numbers each, namely a counter and a key: we successively increment only
+     * the first uint64 component in counter (counter[0]) and fix key to be
+     * the seed. This instance is then passed to the distribution. This
+     * in turn calls operator () on the instance and increments counter[3]
+     * accordingly (for multiple calls), thus ensuring the independence
+     * of successive samples. operator () can either trigger a run of
+     * the Threefry4x64 algorithm for creating a fresh result array
+     * (also consisting of 4 uint64's) and use one or more of its components or
+     * use those components from a previous run that are not processed yet. 
+     *
      * @caveat This should be used as a global operation to keep the
      * the internal state of the context synchronized.
      */
@@ -56,10 +75,10 @@ public:
     skylark::utility::random_samples_array_t<ValueType, Distribution>
     allocate_random_samples_array(int size,
         Distribution& distribution) {
-        skylark::utility::rng_array_t rng_array(_counter, size, _seed);
+        skylark::utility::random_samples_array_t<ValueType, Distribution>
+            random_samples_array(_counter, size, _seed, distribution);
         _counter = _counter + size;
-        return skylark::utility::random_samples_array_t<ValueType, Distribution>
-            (rng_array, distribution);
+        return random_samples_array;
     }
 
 
@@ -72,17 +91,15 @@ public:
      * the internal state of the context synchronized.
      */
     skylark::utility::random_array_t allocate_random_array(int size) {
-        skylark::utility::rng_array_t rng_array(_counter, size, _seed);
+        skylark::utility::random_array_t random_array(_counter, size, _seed);
         _counter = _counter + size;
-        return skylark::utility::random_array_t(rng_array);
+        return random_array;
     }
 
 
     /**
      * Returns an integer random number.
      * @return Random integer number.
-     *
-     * @todo Temporarily used as a replacement for newseed().
      *
      * @caveat This should be used as a global operation to keep the
      * the internal state of the context synchronized.

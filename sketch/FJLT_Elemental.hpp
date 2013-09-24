@@ -97,12 +97,12 @@ public:
     FJLT_t(int N, int S, skylark::sketch::context_t& context)
         : _N(N), _S(S), _underlying_transform(N, context), _samples(S),
           _context(context) {
-        typedef boost::random::uniform_int_distribution<int> distribution_type;
-        distribution_type distribution(0, N - 1);
+        typedef boost::random::uniform_int_distribution<int> distribution_t;
+        distribution_t distribution(0, N - 1);
 
-        skylark::utility::random_samples_array_t<value_type, distribution_type>
+        skylark::utility::random_samples_array_t<value_type, distribution_t>
             random_samples =
-            context.allocate_random_samples_array<value_type, distribution_type>
+            context.allocate_random_samples_array<value_type, distribution_t>
             (S, distribution);
         for (int i = 0; i < S; i++) {
             _samples[i] = random_samples[i];

@@ -30,7 +30,7 @@ public:
     typedef elem::DistMatrix<value_type, ColDist, elem::STAR> matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
     // Typedef distribution
-    typedef DistributionType<value_type> distribution_type;
+    typedef DistributionType<value_type> distribution_t;
 private:
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
@@ -136,8 +136,10 @@ private:
     const int _S;
     /// Context for this sketch
     skylark::sketch::context_t& _context;
+    /// Distribution
+    distribution_t _distribution;
     /// Random samples
-    mutable skylark::utility::random_samples_array_t<value_type, distribution_type>
+    skylark::utility::random_samples_array_t<value_type, distribution_t>
      _random_samples;
 
 protected:
@@ -149,11 +151,11 @@ public:
      * Create an object with a particular seed value.
      */
     dense_transform_t (int N, int S, skylark::sketch::context_t& context)
-        : _N(N), _S(S), _context(context) {
-        distribution_type distribution;
-        _random_samples =
-            context.allocate_random_samples_array<value_type, distribution_type>
-            (N * S, distribution);
+        : _N(N), _S(S), _context(context),
+          _distribution(distribution_t()),
+          _random_samples(context.allocate_random_samples_array
+              <ValueType, distribution_t>
+              (N * S, _distribution)) {
         // No scaling in "raw" form
         scale = 1.0;
     }
@@ -208,7 +210,7 @@ public:
     typedef elem::DistMatrix<value_type, ColDist, elem::STAR> matrix_type;
     typedef elem::DistMatrix<value_type, ColDist, elem::STAR> output_matrix_type;
     // Typedef distribution
-    typedef DistributionType<value_type> distribution_type;
+    typedef DistributionType<value_type> distribution_t;
 
 private:
     /**
@@ -258,8 +260,10 @@ private:
     const int _S;
     /// context for this sketch
     skylark::sketch::context_t& _context;
+    /// Distribution
+    distribution_t _distribution;
     /// Random samples
-    mutable skylark::utility::random_samples_array_t<value_type, distribution_type>
+    skylark::utility::random_samples_array_t<value_type, distribution_t>
      _random_samples;
 
 protected:
@@ -270,11 +274,11 @@ public:
      * Constructor
      */
     dense_transform_t (int N, int S, skylark::sketch::context_t& context)
-        : _N(N), _S(S), _context(context) {
-        distribution_type distribution;
-        _random_samples =
-            context.allocate_random_samples_array<value_type, distribution_type>
-            (N * S, distribution);
+        : _N(N), _S(S), _context(context),
+          _distribution(distribution_t()),
+          _random_samples(context.allocate_random_samples_array
+              <ValueType, distribution_t>
+              (N * S, _distribution)) {
         // No scaling in "raw" form
         scale = 1.0;
     }

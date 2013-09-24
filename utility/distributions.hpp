@@ -22,6 +22,8 @@ struct rademacher_distribution_t {
         return static_cast<ValueType>(dist(prng)) - 1.0;
     }
 
+    void reset() {}
+
 };
 
 } // namespace utility

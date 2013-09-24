@@ -98,12 +98,12 @@ public:
           _scale(std::sqrt(2.0 / _S)) {
 
         const double pi = boost::math::constants::pi<double>();
-        typedef boost::random::uniform_real_distribution<> distribution_type;
-        distribution_type distribution(0, 2 * pi);
+        typedef boost::random::uniform_real_distribution<> distribution_t;
+        distribution_t distribution(0, 2 * pi);
 
-        skylark::utility::random_samples_array_t<value_type, distribution_type>
+        skylark::utility::random_samples_array_t<value_type, distribution_t>
             random_samples =
-            context.allocate_random_samples_array<value_type, distribution_type>
+            context.allocate_random_samples_array<value_type, distribution_t>
             (S, distribution);
         for (int i = 0; i < S; i++) {
             _shifts[i] = random_samples[i];

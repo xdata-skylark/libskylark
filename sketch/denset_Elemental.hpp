@@ -139,6 +139,7 @@ private:
     /// Distribution
     distribution_t _distribution;
     /// Random samples
+    // REVIEW: try adding a const here.
     skylark::utility::random_samples_array_t<value_type, distribution_t>
      _random_samples;
 
@@ -152,6 +153,8 @@ public:
      */
     dense_transform_t (int N, int S, skylark::sketch::context_t& context)
         : _N(N), _S(S), _context(context),
+          // REVIEW: I think tha just _distribution() will work here.
+          //         Same for similar places.
           _distribution(distribution_t()),
           _random_samples(context.allocate_random_samples_array
               <ValueType, distribution_t>

@@ -18,6 +18,8 @@
 
 namespace skylark { namespace utility {
 
+// REVIEW: This file need a major rework. Will come to talk you about it.
+
 #if SKYLARK_HAVE_BOOST
 
 // A lazily computed array of uniformly distributed samples

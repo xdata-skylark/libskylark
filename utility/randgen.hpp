@@ -7,6 +7,10 @@
 namespace skylark { namespace utility {
 
 /**
+ * REVIEW: I suggest you put this inside each of the classes below.
+ *         They are very specific to the random number generation, so shouldn't
+ *         be global.
+ *
  * Convenience nicknames for Random123 types
  */
 typedef r123::Threefry4x64 RNG_t;
@@ -14,6 +18,10 @@ typedef RNG_t::ctr_type ctr_t;
 typedef RNG_t::key_type key_t;
 typedef r123::MicroURNG<RNG_t> URNG_t;
 
+
+
+// REVIEW: static function are not really static since its header only.
+//         I suggest you put a copy of this in each class (duplicate code).
 
 /*
  * Helper routine for handling array initializer in pre C++11 compilers
@@ -56,6 +64,9 @@ public:
           _key(_seed_to_key(seed)),
           _distribution(distribution) {
         _distribution.reset();
+
+        // REVIEW: make sure that base+size does not exceed the maximum
+        //         allowed.
     }
 
     /**
@@ -67,6 +78,7 @@ public:
      * const-correctness.
      */
     ValueType operator[](size_t index) const {
+        // REVIEW: Rebase on Yves exception handling and add it.
         ctr_t ctr;
         for(int i = 1; i < 4; i++)
             ctr.v[i] = static_cast<ctr_t::value_type>(0);
@@ -91,6 +103,8 @@ struct random_array_t {
 
 public:
 
+    // REVIEW: No need to provide a default constructor - it does not
+    // make sense to have a zero sized array.
     random_array_t()
         : _base(0), _size(0), _key(_seed_to_key(0)) {}
 
@@ -107,6 +121,7 @@ public:
         : _base(base), _size(size), _key(_seed_to_key(seed)) {}
 
     int operator[](size_t index) const {
+        // REVIEW: Rebase on Yves exception handling and add it.
         ctr_t ctr;
         for(int i = 1; i < 4; i++)
             ctr.v[i] = static_cast<ctr_t::value_type>(0);

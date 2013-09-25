@@ -105,6 +105,9 @@ public:
             random_samples =
             context.allocate_random_samples_array<value_type, distribution_t>
             (S, distribution);
+        // REVIEW: might be useful to have a copy_to function in the 
+        //         random sample array. Preferably that get a start iterator
+        //         and an end iterator.
         for (int i = 0; i < S; i++) {
             _shifts[i] = random_samples[i];
         }

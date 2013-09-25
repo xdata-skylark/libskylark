@@ -1,6 +1,9 @@
 #ifndef SKYLARK_HASH_TRANSFORM_COMBBLAS_HPP
 #define SKYLARK_HASH_TRANSFORM_COMBBLAS_HPP
 
+#include <map>
+#include "boost/serialization/map.hpp"
+
 #include <CombBLAS.h>
 #include "../utility/external/FullyDistMultiVec.hpp"
 #include "../utility/exception.hpp"
@@ -169,33 +172,24 @@ struct hash_transform_t <
 
   /**
    * Apply the sketching transform that is described in by the sketch_of_A.
-   * Implementation for the column-wise direction of sketching.
-   *
-   * FIXME: This is really inefficient. So, we need something better.
-   * The code duplication can also be eliminated here.
    */
+  template <typename Dimension>
   void apply_impl (matrix_t &A,
                    output_matrix_t &sketch_of_A,
-                   skylark::sketch::columnwise_tag) {
+                   Dimension dist) {
 
     const size_t rank = A.getcommgrid()->GetRank();
 
     // extract columns of matrix
     col_t &data = A.seq();
 
-    //FIXME: next step only store local generated non-zeros
     const size_t ncols = sketch_of_A.getncol();
     const size_t nrows = sketch_of_A.getnrow();
-    const size_t matrix_size = ncols * nrows;
-    mpi_vector_t cols(matrix_size);
-    mpi_vector_t rows(matrix_size);
-    mpi_vector_t vals(matrix_size);
-    std::vector<value_t> my_vals(matrix_size, 0.0);
 
-    for(index_t i = 0; i < matrix_size; ++i) {
-        rows.SetElement(i, static_cast<index_t>(i / ncols));
-        cols.SetElement(i, i % ncols);
-    }
+    // build local mapping (global_idx, value) first
+    //FIXME: come up with more efficient data structure
+    typedef std::map<size_t, value_t> sp_mat_value_t;
+    std::map<size_t, value_t> my_vals_map;
 
     const size_t my_row_offset =
         static_cast<int>(0.5 + (static_cast<double>(A.getnrow()) /
@@ -208,104 +202,109 @@ struct hash_transform_t <
         A.getcommgrid()->GetRankInProcRow(rank);
 
     for(typename col_t::SpColIter col = data.begcol();
-      col != data.endcol(); col++) {
-      for(typename col_t::SpColIter::NzIter nz = data.begnz(col);
-        nz != data.endnz(col); nz++) {
+        col != data.endcol(); col++) {
+        for(typename col_t::SpColIter::NzIter nz = data.begnz(col);
+            nz != data.endnz(col); nz++) {
 
-        const index_t rowid = nz.rowid();
-        const index_t colid = col.colid();
-        index_t pos = (colid + my_col_offset) + 1.0 * ncols *
-                      base_data_t::row_idx[rowid + my_row_offset];
+            const index_t rowid = nz.rowid()  + my_row_offset;
+            const index_t colid = col.colid() + my_col_offset;
 
-        my_vals[pos] += nz.value() *
-                        base_data_t::row_value[rowid + my_row_offset];
-      }
+            index_t pos   = getPos(rowid, colid, ncols, dist);
+            value_t value = nz.value() * getRowValue(rowid, colid, dist);
+
+            if(my_vals_map.count(pos) != 0)
+                my_vals_map[pos] += value;
+            else
+                my_vals_map.insert(std::pair<size_t, value_t>(pos, value));
+        }
     }
 
-    MPI_Allreduce(MPI_IN_PLACE, &(my_vals[0]), static_cast<int>(matrix_size),
-                  boost::mpi::get_mpi_datatype<value_t>(), MPI_SUM,
-                  A.getcommgrid()->GetWorld());
+    // aggregate values
+    boost::mpi::communicator world(A.getcommgrid()->GetWorld(),
+                                   boost::mpi::comm_duplicate);
+    std::vector< std::map<size_t, value_t> > vector_of_maps;
 
-    for(size_t i = 0; i < matrix_size; i++)
-        vals.SetElement(i, my_vals[i]);
+    //FIXME: best to selectively send to exchange pair of (size, [double])
+    //       with processor that needs the values. It should be possible to
+    //       pre-compute the ranges of positions that are kept on a processor.
+    boost::mpi::all_gather< std::map<size_t, value_t> >(
+        world, my_vals_map, vector_of_maps );
 
-    output_matrix_t tmp(sketch_of_A.getnrow(),
-                        sketch_of_A.getncol(),
-                        rows,
-                        cols,
-                        vals);
+    // re-sort/insert in value map
+    std::map<size_t, value_t> vals_map;
+    typename std::map<size_t, value_t>::iterator itr;
+    for(size_t i = 0; i < vector_of_maps.size(); ++i) {
 
-    sketch_of_A = tmp;
-  }
+        for(itr = vector_of_maps[i].begin(); itr != vector_of_maps[i].end();
+            itr++) {
 
-  /**
-   * Apply the sketching transform that is described in by the sketch_of_A.
-   * Implementation for the row-wise direction of sketching.
-   */
-  void apply_impl (matrix_t &A,
-                   output_matrix_t &sketch_of_A,
-                   skylark::sketch::rowwise_tag) {
+            if(vals_map.count(itr->first) != 0)
+                vals_map[itr->first] += itr->second;
+            else
+                vals_map.insert(std::pair<size_t, value_t>(
+                    itr->first, itr->second));
+        }
+    }
 
-    const size_t rank = A.getcommgrid()->GetRank();
-
-    // extract columns of matrix
-    col_t &data = A.seq();
-
-    //FIXME: next step only store local generated non-zeros
-    const size_t ncols = sketch_of_A.getncol();
-    const size_t nrows = sketch_of_A.getnrow();
-    const size_t matrix_size = ncols * nrows;
+    // .. and finally create a new sparse matrix
+    const size_t matrix_size = vals_map.size();
     mpi_vector_t cols(matrix_size);
     mpi_vector_t rows(matrix_size);
     mpi_vector_t vals(matrix_size);
-    std::vector<value_t> my_vals(matrix_size, 0.0);
+    size_t idx = 0;
 
-    for(index_t i = 0; i < matrix_size; ++i) {
-        rows.SetElement(i, static_cast<index_t>(i / ncols));
-        cols.SetElement(i, i % ncols);
+    for(itr = vals_map.begin(); itr != vals_map.end(); itr++, idx++) {
+        cols.SetElement(idx, itr->first % ncols);
+        rows.SetElement(idx, itr->first / ncols);
+        vals.SetElement(idx, itr->second);
     }
 
-    const size_t my_row_offset =
-        static_cast<int>(0.5 + (static_cast<double>(A.getnrow()) /
-        A.getcommgrid()->GetGridRows())) *
-        A.getcommgrid()->GetRankInProcCol(rank);
+    //FIXME: can we set sketch_of_A directly? (See SparseCommon, Owner)
+    output_matrix_t tmp(sketch_of_A.getnrow(), sketch_of_A.getncol(),
+                        rows, cols, vals);
 
-    const size_t my_col_offset =
-        static_cast<int>(0.5 + (static_cast<double>(A.getncol()) /
-        A.getcommgrid()->GetGridCols())) *
-        A.getcommgrid()->GetRankInProcRow(rank);
-
-    for(typename col_t::SpColIter col = data.begcol();
-      col != data.endcol(); col++) {
-      for(typename col_t::SpColIter::NzIter nz = data.begnz(col);
-        nz != data.endnz(col); nz++) {
-
-        const index_t rowid = nz.rowid();
-        const index_t colid = col.colid();
-        index_t pos = (rowid + my_row_offset) * ncols +
-                      base_data_t::row_idx[colid + my_col_offset];
-
-        my_vals[pos] += nz.value() *
-                        base_data_t::row_value[colid + my_col_offset];
-
-      }
-    }
-
-    MPI_Allreduce(MPI_IN_PLACE, &(my_vals[0]), static_cast<int>(matrix_size),
-                  boost::mpi::get_mpi_datatype<value_t>(), MPI_SUM,
-                  A.getcommgrid()->GetWorld());
-
-    for(size_t i = 0; i < matrix_size; i++)
-        vals.SetElement(i, my_vals[i]);
-
-    output_matrix_t tmp(sketch_of_A.getnrow(),
-                        sketch_of_A.getncol(),
-                        rows,
-                        cols,
-                        vals);
-
+    //delete sketch_of_A.spSeq;
     sketch_of_A = tmp;
+
+    //FIXME: add a method for SpParMat to allow setting rows/cols/vals
+    //       directly..
+    // and fill into sketch matrix
+    //vector< vector < tuple<index_t, index_t, value_t> > > data_val (
+            //rows.commGrid->GetSize() );
+
+    //index_t locsize = rows.LocArrSize();
+    //for(index_t i = 0; i < locsize; ++i) {
+        //index_t lrow, lcol;
+        //int owner = sketch_of_A.Owner(sketch_of_A.getnrow(),
+                                      //sketch_of_A.getncol(),
+                                      //rows[i], cols[i], lrow, lcol);
+        //data_val[owner].push_back(make_tuple(lrow, lcol, vals[i]));
+    //}
+    //sketch_of_A.SparseCommon(data_val, locsize, sketch_of_A.getnrow(),
+                             //sketch_of_A.getncol());
   }
+
+
+  inline index_t getPos(index_t rowid, index_t colid, size_t ncols,
+                 columnwise_tag) {
+        return colid + ncols * base_data_t::row_idx[rowid];
+  }
+
+  inline index_t getPos(index_t rowid, index_t colid, size_t ncols,
+                 rowwise_tag) {
+        return rowid * ncols + base_data_t::row_idx[colid];
+  }
+
+  inline value_t getRowValue(index_t rowid, index_t colid,
+                      columnwise_tag) {
+        return base_data_t::row_value[rowid];
+  }
+
+  inline value_t getRowValue(index_t rowid, index_t colid,
+                      rowwise_tag) {
+        return base_data_t::row_value[colid];
+  }
+
 };
 
 } } /** namespace skylark::sketch */

@@ -20,83 +20,6 @@ namespace skylark { namespace utility {
 
 // REVIEW: This file need a major rework. Will come to talk you about it.
 
-#if SKYLARK_HAVE_BOOST
-
-// A lazily computed array of uniformly distributed samples
-template <typename ValueType> struct uniform_samples_array_t {};
-
-// Specialized for uniform_real_distribution<double>
-template <> struct uniform_samples_array_t <double> {
-    typedef boost::random::uniform_real_distribution<double> distribution_t;
-
-private:
-    skylark::sketch::context_t& _context;
-    distribution_t _distribution;
-    skylark::utility::random_samples_array_t<double, distribution_t>
-    _samples;
-
-public:
-    uniform_samples_array_t(int size, skylark::sketch::context_t& context)
-        : _context(context), _distribution(distribution_t()),
-          _samples(context.allocate_random_samples_array
-              <double,distribution_t> (size, _distribution)) {}
-
-    uniform_samples_array_t(int size, double low, double high,
-        skylark::sketch::context_t& context)
-        : _context(context), _distribution(distribution_t(low, high)),
-          _samples(context.allocate_random_samples_array
-              <double,distribution_t> (size, _distribution)) {}
-
-    double operator[](int index) {
-        return _samples[index];
-    }
-};
-
-// Specialized for uniform_int_distribution<int>
-template <> struct uniform_samples_array_t <int> {
-    typedef boost::random::uniform_int_distribution<int> distribution_t;
-
-private:
-    skylark::sketch::context_t& _context;
-    distribution_t _distribution;
-    skylark::utility::random_samples_array_t<int, distribution_t>
-    _samples;
-
-public:
-    uniform_samples_array_t(int size, double low, double high,
-        skylark::sketch::context_t& context)
-        : _context(context), _distribution(distribution_t(low, high)),
-          _samples(context.allocate_random_samples_array
-              <int,distribution_t> (size, _distribution)) {}
-
-    double operator[](int index) {
-        return _samples[index];
-    }
-};
-
-// Specialized for uniform generation of booleans
-template <> struct uniform_samples_array_t <bool> {
-    typedef boost::random::uniform_int_distribution<int> distribution_t;
-
-private:
-    skylark::sketch::context_t& _context;
-    distribution_t _distribution;
-    skylark::utility::random_samples_array_t<int, distribution_t>
-    _samples;
-
-public:
-    uniform_samples_array_t(int size, skylark::sketch::context_t& context)
-        : _context(context), _distribution(distribution_t(0, 1)),
-          _samples(context.allocate_random_samples_array
-              <int,distribution_t> (size, _distribution)) {}
-
-    double operator[](int index) {
-        return (1 == _samples[index]);
-    }
-};
-
-#endif // SKYLARK_HAVE_BOOST
-
 
 /**
  * A structure to populate the matrix with uniformly dist random entries.
@@ -113,17 +36,21 @@ struct uniform_matrix_t {};
 template <typename IndexType,
           typename ValueType>
 struct uniform_matrix_t <FullyDistVec<IndexType, ValueType> > {
-  typedef ValueType value_t;
-  typedef IndexType index_t;
-  typedef FullyDistVec<IndexType,ValueType> mpi_vector_t;
+    typedef ValueType value_t;
+    typedef IndexType index_t;
+    typedef FullyDistVec<IndexType,ValueType> mpi_vector_t;
+    typedef uniform_distribution_t<ValueType> distribution_t;
 
-  static mpi_vector_t apply (index_t& M,
-                             skylark::sketch::context_t& context) {
+    static mpi_vector_t apply (index_t& M,
+      skylark::sketch::context_t& context) {
 
     /* Create a dummy vector */
     mpi_vector_t x(M, 0);
 
-    uniform_samples_array_t<ValueType> samples(x.TotalLength(), context);
+    distribution_t distribution;
+    random_samples_array_t<value_t, distribution_t> samples =
+        context.allocate_random_samples_array<value_t, distribution_t>
+        (x.TotalLength(), distribution);
 
     /* Iterate and fill up the local entries */
     for (index_t i=0; i<x.TotalLength(); ++i) x.SetElement(i, samples[i]);
@@ -159,12 +86,13 @@ template <typename IndexType,
 struct uniform_matrix_t <SpParMat<IndexType, 
                                   ValueType, 
                                   SpDCCols<IndexType, ValueType> > > {
-  typedef IndexType index_t;
-  typedef ValueType value_t;
-  typedef SpDCCols<index_t,value_t> seq_matrix_t;
-  typedef SpParMat<index_t,value_t, seq_matrix_t> mpi_matrix_t;
-  typedef FullyDistVec<IndexType,ValueType> mpi_value_vector_t;
-  typedef FullyDistVec<IndexType,IndexType> mpi_index_vector_t;
+    typedef IndexType index_t;
+    typedef ValueType value_t;
+    typedef SpDCCols<index_t,value_t> seq_matrix_t;
+    typedef SpParMat<index_t,value_t, seq_matrix_t> mpi_matrix_t;
+    typedef FullyDistVec<IndexType,ValueType> mpi_value_vector_t;
+    typedef FullyDistVec<IndexType,IndexType> mpi_index_vector_t;
+    typedef uniform_distribution_t<bool> distribution_t;
 
   static mpi_matrix_t apply(index_t M,
                             index_t N,
@@ -179,7 +107,10 @@ struct uniform_matrix_t <SpParMat<IndexType,
     /* Add edges carefully */
     index_t total_num_edges_added = 0;
 
-    uniform_samples_array_t<bool> samples(M * N, context);
+    distribution_t distribution;
+    random_samples_array_t<value_t, distribution_t> samples =
+        context.allocate_random_samples_array<value_t, distribution_t>
+        (M * N, distribution);
     for (index_t j=0; j<N; ++j) {
       for (index_t i=0; i<M; ++i) {
         if (samples[j * M + i]) {

@@ -56,7 +56,6 @@ private:
 
 
         elem::Matrix<value_type> S_local(_S, slice_width);
-
         for (int js = 0; js < A.LocalHeight(); js += slice_width) {
             int je = std::min(js + slice_width, A.LocalHeight());
             // adapt size of local portion (can be less than slice_width)
@@ -64,7 +63,14 @@ private:
             for(int j = js; j < je; j++) {
                 int col = A.RowShift() + A.RowStride() * j;
                 for (int i = 0; i < _S; i++) {
-                    value_type sample = _random_samples[col * _S + i];
+                    value_type sample;
+                    try {
+                        sample = _random_samples[col * _S + i];
+                    } catch (std::logic_error e) {
+                        SKYLARK_THROW_EXCEPTION (
+                            utility::skylark_exception()
+                            << utility::error_msg(e.what()) );
+                    }
                     S_local.Set(i, j-js, scale * sample);
                 }
             }
@@ -109,7 +115,14 @@ private:
         elem::Matrix<value_type> S_local(_S, _N);
         for (int j = 0; j < _N; j++) {
             for (int i = 0; i < _S; i++) {
-                value_type sample = _random_samples[j * _S + i];
+                value_type sample;
+                try {
+                    sample = _random_samples[j * _S + i];
+                } catch (std::logic_error e) {
+                    SKYLARK_THROW_EXCEPTION (
+                        utility::skylark_exception()
+                        << utility::error_msg(e.what()) );
+                }
                 S_local.Set(i, j, scale * sample);
             }
         }
@@ -139,8 +152,7 @@ private:
     /// Distribution
     distribution_t _distribution;
     /// Random samples
-    // REVIEW: try adding a const here.
-    skylark::utility::random_samples_array_t<value_type, distribution_t>
+    const skylark::utility::random_samples_array_t<value_type, distribution_t>
      _random_samples;
 
 protected:
@@ -153,9 +165,7 @@ public:
      */
     dense_transform_t (int N, int S, skylark::sketch::context_t& context)
         : _N(N), _S(S), _context(context),
-          // REVIEW: I think tha just _distribution() will work here.
-          //         Same for similar places.
-          _distribution(distribution_t()),
+          _distribution(),
           _random_samples(context.allocate_random_samples_array
               <ValueType, distribution_t>
               (N * S, _distribution)) {
@@ -241,7 +251,14 @@ private:
         elem::Matrix<value_type> S_local(_S, _N);
         for (int j = 0; j < _N; j++) {
             for (int i = 0; i < _S; i++) {
-                value_type sample = _random_samples[j * _S + i];
+                value_type sample;
+                try {
+                    sample = _random_samples[j * _S + i];
+                } catch (std::logic_error e) {
+                        SKYLARK_THROW_EXCEPTION (
+                            utility::skylark_exception()
+                            << utility::error_msg(e.what()) );
+                }
                 S_local.Set(i, j, scale * sample);
             }
         }
@@ -278,7 +295,7 @@ public:
      */
     dense_transform_t (int N, int S, skylark::sketch::context_t& context)
         : _N(N), _S(S), _context(context),
-          _distribution(distribution_t()),
+          _distribution(),
           _random_samples(context.allocate_random_samples_array
               <ValueType, distribution_t>
               (N * S, _distribution)) {

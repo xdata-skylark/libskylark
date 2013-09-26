@@ -105,7 +105,13 @@ public:
             context.allocate_random_samples_array<value_type, distribution_t>
             (S, distribution);
         for (int i = 0; i < S; i++) {
-            _samples[i] = random_samples[i];
+            try {
+                _samples[i] = random_samples[i];
+            } catch (std::logic_error e) {
+                SKYLARK_THROW_EXCEPTION (
+                    utility::skylark_exception()
+                    << utility::error_msg(e.what()) );
+            }
         }
     }
 

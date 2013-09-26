@@ -72,7 +72,13 @@ public:
             (N, distribution);
 
         for (int i = 0; i < N; i++) {
-            _D[i] = random_samples[i] ? +1 : -1;
+            try {
+                _D[i] = random_samples[i] ? +1 : -1;
+            } catch (std::logic_error e) {
+                SKYLARK_THROW_EXCEPTION (
+                    utility::skylark_exception()
+                    << utility::error_msg(e.what()) );
+            }
         }
     }
 

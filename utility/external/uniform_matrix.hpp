@@ -4,8 +4,10 @@
 #include "../../config.h"
 #include "../../sketch/context.hpp"
 
+
 #if SKYLARK_HAVE_BOOST
 #include <boost/random.hpp>
+#include "../exception.hpp"
 #endif
 
 #if SKYLARK_HAVE_COMBBLAS
@@ -41,45 +43,55 @@ struct uniform_matrix_t <FullyDistVec<IndexType, ValueType> > {
     typedef FullyDistVec<IndexType,ValueType> mpi_vector_t;
     typedef uniform_distribution_t<ValueType> distribution_t;
 
-    static mpi_vector_t apply (index_t& M,
-      skylark::sketch::context_t& context) {
+    static mpi_vector_t create (index_t& M,
+        skylark::sketch::context_t& context) {
 
-    /* Create a dummy vector */
-    mpi_vector_t x(M, 0);
+        /* Create a dummy vector */
+        mpi_vector_t x(M, 0);
 
-    distribution_t distribution;
-    random_samples_array_t<value_t, distribution_t> samples =
-        context.allocate_random_samples_array<value_t, distribution_t>
-        (x.TotalLength(), distribution);
+        distribution_t distribution;
+        random_samples_array_t<value_t, distribution_t> samples =
+            context.allocate_random_samples_array<value_t, distribution_t>
+            (x.TotalLength(), distribution);
 
-    /* Iterate and fill up the local entries */
-    for (index_t i=0; i<x.TotalLength(); ++i) x.SetElement(i, samples[i]);
-
-    return x;
-  }
+        /* Iterate and fill up the local entries */
+        for (index_t i=0; i<x.TotalLength(); ++i) {
+            value_t sample;
+            try {
+                sample = samples[i];
+            } catch (std::logic_error e) {
+                SKYLARK_THROW_EXCEPTION (
+                    utility::skylark_exception()
+                    << utility::error_msg(e.what()) );
+            }
+            x.SetElement(i, sample);
+        }
+        return x;
+    }
 };
+
 
 template <typename IndexType,
           typename ValueType>
 struct uniform_matrix_t <FullyDistMultiVec<IndexType, ValueType> > {
-  typedef ValueType value_t;
-  typedef IndexType index_t;
-  typedef FullyDistVec<IndexType,ValueType> mpi_vector_t;
-  typedef FullyDistMultiVec<IndexType,ValueType> mpi_multi_vector_t;
+    typedef ValueType value_t;
+    typedef IndexType index_t;
+    typedef FullyDistVec<IndexType,ValueType> mpi_vector_t;
+    typedef FullyDistMultiVec<IndexType,ValueType> mpi_multi_vector_t;
 
-  static mpi_multi_vector_t apply (index_t M,
-                                   index_t N,
-                                   skylark::sketch::context_t& context) {
-    /* Create an empty multi-vector */
-    mpi_multi_vector_t X(M/*dimension*/, N/*number of vectors*/);
+    static mpi_multi_vector_t create (index_t M,
+        index_t N,
+        skylark::sketch::context_t& context) {
+        /* Create an empty multi-vector */
+        mpi_multi_vector_t X(M/*dimension*/, N/*number of vectors*/);
 
-    /* Just pass each individual vector to the uniform_matrix_t above */
-    for (index_t i=0; i<X.size; ++i)
-      X[i] = uniform_matrix_t<mpi_vector_t>::apply(M, context);
-
-    return X;
-  }
+        /* Just pass each individual vector to the uniform_matrix_t above */
+        for (index_t i=0; i<X.size; ++i)
+            X[i] = uniform_matrix_t<mpi_vector_t>::create(M, context);
+        return X;
+    }
 };
+
 
 template <typename IndexType,
           typename ValueType>
@@ -94,37 +106,43 @@ struct uniform_matrix_t <SpParMat<IndexType,
     typedef FullyDistVec<IndexType,IndexType> mpi_index_vector_t;
     typedef uniform_distribution_t<bool> distribution_t;
 
-  static mpi_matrix_t apply(index_t M,
-                            index_t N,
-                            index_t NNZ,
-                            skylark::sketch::context_t& context) {
-    /* Create three FullyDistVec for colid, rowid, and values */
-    mpi_value_vector_t values =
-      uniform_matrix_t<mpi_value_vector_t>::apply(NNZ, context);
-    mpi_index_vector_t col_id(NNZ, 0);
-    mpi_index_vector_t row_id(NNZ, 0);
+    static mpi_matrix_t create(index_t M,
+        index_t N,
+        index_t NNZ,
+        skylark::sketch::context_t& context) {
+        /* Create three FullyDistVec for colid, rowid, and values */
+        mpi_value_vector_t values =
+            uniform_matrix_t<mpi_value_vector_t>::create(NNZ, context);
+        mpi_index_vector_t col_id(NNZ, 0);
+        mpi_index_vector_t row_id(NNZ, 0);
 
-    /* Add edges carefully */
-    index_t total_num_edges_added = 0;
-
-    distribution_t distribution;
-    random_samples_array_t<value_t, distribution_t> samples =
-        context.allocate_random_samples_array<value_t, distribution_t>
-        (M * N, distribution);
-    for (index_t j=0; j<N; ++j) {
-      for (index_t i=0; i<M; ++i) {
-        if (samples[j * M + i]) {
-          col_id.SetElement(total_num_edges_added, j);
-          row_id.SetElement(total_num_edges_added, i);
-          ++total_num_edges_added;
-          if (NNZ==total_num_edges_added) break;
+        /* Add edges carefully */
+        index_t total_num_edges_added = 0;
+        distribution_t distribution;
+        random_samples_array_t<value_t, distribution_t> samples =
+            context.allocate_random_samples_array<value_t, distribution_t>
+            (M * N, distribution);
+        for (index_t j=0; j<N; ++j) {
+            for (index_t i=0; i<M; ++i) {
+                bool sample;
+                try {
+                    sample = samples[j * M + i];
+                } catch (std::logic_error e) {
+                    SKYLARK_THROW_EXCEPTION (
+                        utility::skylark_exception()
+                        << utility::error_msg(e.what()) );
+                }
+                if (sample) {
+                    col_id.SetElement(total_num_edges_added, j);
+                    row_id.SetElement(total_num_edges_added, i);
+                    ++total_num_edges_added;
+                    if (NNZ==total_num_edges_added) break;
+                }
+            }
+            if (NNZ==total_num_edges_added) break;
         }
-      }
-      if (NNZ==total_num_edges_added) break;
+        return mpi_matrix_t (M, N, row_id, col_id, values);
     }
-
-    return mpi_matrix_t (M, N, row_id, col_id, values);
-  }
 };
 
 #endif // SKYLARK_HAVE_COMBBLAS and SKYLARK_HAVE_BOOST
@@ -133,35 +151,72 @@ struct uniform_matrix_t <SpParMat<IndexType,
 
 template <typename ValueType>
 struct uniform_matrix_t <elem::Matrix<ValueType> > {
-  typedef int index_t;
-  typedef ValueType value_t;
-  typedef elem::Matrix<ValueType> matrix_t;
+    typedef int index_t;
+    typedef ValueType value_t;
+    typedef elem::Matrix<ValueType> matrix_t;
+    typedef uniform_distribution_t<value_t> distribution_t;
 
-  static matrix_t apply (index_t M,
-                         index_t N,
-                         skylark::sketch::context_t& context) {
-    matrix_t A(M, N);
-    elem::MakeUniform(A);
-    return A;
-  }
+    static matrix_t create (index_t M,
+        index_t N,
+        skylark::sketch::context_t& context) {
+
+        matrix_t A(M, N);
+        distribution_t distribution;
+        random_samples_array_t<value_t, distribution_t> samples =
+            context.allocate_random_samples_array<value_t, distribution_t>
+            (M * N, distribution);
+        for (index_t j = 0; j < N; j++) {
+            for (index_t i = 0; i < M; i++) {
+                value_t sample;
+                try {
+                    sample = samples[j * M + i];
+                } catch (std::logic_error e) {
+                    SKYLARK_THROW_EXCEPTION (
+                        utility::skylark_exception()
+                        << utility::error_msg(e.what()) );
+                }
+                A.Set(i, j, sample);
+            }
+        }
+        return A;
+    }
 };
+
 
 template <typename ValueType,
           elem::Distribution CD,
           elem::Distribution RD>
 struct uniform_matrix_t <elem::DistMatrix<ValueType, CD, RD> > {
-  typedef int index_t;
-  typedef ValueType value_t;
-  typedef elem::DistMatrix<ValueType, CD, RD> mpi_matrix_t;
+    typedef int index_t;
+    typedef ValueType value_t;
+    typedef elem::DistMatrix<ValueType, CD, RD> mpi_matrix_t;
+    typedef uniform_distribution_t<value_t> distribution_t;
 
-  static mpi_matrix_t apply (index_t M,
-                             index_t N,
-                             elem::Grid& grid,
-                             skylark::sketch::context_t& context) {
-    mpi_matrix_t A(M, N, grid);
-    elem::MakeUniform (A);
-    return A;
-  }
+    static mpi_matrix_t create (index_t M,
+        index_t N,
+        elem::Grid& grid,
+        skylark::sketch::context_t& context) {
+
+        mpi_matrix_t A(M, N, grid);
+        distribution_t distribution;
+        random_samples_array_t<value_t, distribution_t> samples =
+            context.allocate_random_samples_array<value_t, distribution_t>
+            (M * N, distribution);
+        for (index_t j = 0; j < N; j++) {
+            for (index_t i = 0; i < M; i++) {
+                value_t sample;
+                try {
+                    sample = samples[j * M + i];
+                } catch (std::logic_error e) {
+                    SKYLARK_THROW_EXCEPTION (
+                        utility::skylark_exception()
+                        << utility::error_msg(e.what()) );
+                }
+                A.Set(i, j, sample);
+            }
+        }
+        return A;
+    }
 };
 
 #endif /** SKYLARK_HAVE_ELEMENTAL and SKYLARK_HAVE_BOOST */

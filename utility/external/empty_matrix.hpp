@@ -32,7 +32,7 @@ struct empty_matrix_t <FullyDistVec<IndexType, ValueType> > {
   typedef IndexType index_t;
   typedef FullyDistVec<IndexType,ValueType> mpi_vector_t;
 
-  static mpi_vector_t apply (index_t& M) {
+  static mpi_vector_t create (index_t& M) {
     return mpi_vector_t(M, 0);
   }
 };
@@ -45,7 +45,7 @@ struct empty_matrix_t <FullyDistMultiVec<IndexType, ValueType> > {
   typedef FullyDistVec<IndexType,ValueType> mpi_vector_t;
   typedef FullyDistMultiVec<IndexType,ValueType> mpi_multi_vector_t;
 
-  static mpi_multi_vector_t apply (index_t M,
+  static mpi_multi_vector_t create (index_t M,
                                    index_t N) {
     /* Create an empty multi-vector */
     return mpi_multi_vector_t(M /* dimension */, 
@@ -66,7 +66,7 @@ struct empty_matrix_t <SpParMat<IndexType,
   typedef FullyDistVec<IndexType,ValueType> mpi_value_vector_t;
   typedef FullyDistVec<IndexType,IndexType> mpi_index_vector_t;
 
-  static mpi_matrix_t apply(index_t M, 
+  static mpi_matrix_t create(index_t M, 
                             index_t N) {
     return mpi_matrix_t (M, 
                          N, 
@@ -86,7 +86,7 @@ struct empty_matrix_t <elem::Matrix<ValueType> > {
   typedef ValueType value_t;
   typedef elem::Matrix<ValueType> matrix_t;
 
-  static matrix_t apply (index_t M,
+  static matrix_t create (index_t M,
                          index_t N) {
     return matrix_t (M, N);
   }
@@ -100,7 +100,7 @@ struct empty_matrix_t <elem::DistMatrix<ValueType, CD, RD> > {
   typedef ValueType value_t;
   typedef elem::DistMatrix<ValueType, CD, RD> mpi_matrix_t;
 
-  static mpi_matrix_t apply (index_t M,
+  static mpi_matrix_t create (index_t M,
                              index_t N,
                              elem::Grid& grid) {
     return mpi_matrix_t (M, N, grid);

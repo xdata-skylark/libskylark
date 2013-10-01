@@ -20,7 +20,7 @@ struct context_t {
     int size;
 private:
     /// Internal counter identifying the start of next stream of random numbers
-    int _counter;
+    size_t _counter;
     /// The seed used for initializing the context
     int _seed;
 
@@ -74,13 +74,13 @@ public:
     template <typename ValueType,
               typename Distribution>
     skylark::utility::random_samples_array_t<ValueType, Distribution>
-    allocate_random_samples_array(int size, Distribution& distribution) {
+    allocate_random_samples_array(size_t size, Distribution& distribution) {
         try {
           skylark::utility::random_samples_array_t<ValueType, Distribution>
               random_samples_array(_counter, size, _seed, distribution);
           _counter = _counter + size;
           return random_samples_array;
-        } catch (std::logic_error e) {
+        } catch (std::runtime_error e) {
             SKYLARK_THROW_EXCEPTION (
                 utility::skylark_exception()
                 << utility::error_msg(e.what()) );
@@ -96,13 +96,13 @@ public:
      * @caveat This should be used as a global operation to keep the
      * the internal state of the context synchronized.
      */
-    skylark::utility::random_array_t allocate_random_array(int size) {
+    skylark::utility::random_array_t allocate_random_array(size_t size) {
         try {
             skylark::utility::random_array_t
                 random_array(_counter, size, _seed);
             _counter = _counter + size;
             return random_array;
-        } catch (std::logic_error e) {
+        } catch (std::runtime_error e) {
             SKYLARK_THROW_EXCEPTION (
                 utility::skylark_exception()
                 << utility::error_msg(e.what()) );

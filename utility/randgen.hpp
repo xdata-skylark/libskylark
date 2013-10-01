@@ -59,7 +59,7 @@ public:
             msg << "Usupported operation:\n";
             msg << "The random number generator stream cannot supply the ";
             msg << "requested number of samples without being exhausted\n";
-            throw std::logic_error( msg.str() );
+            throw std::runtime_error( msg.str() );
         }
         _distribution.reset();
     }
@@ -139,13 +139,13 @@ public:
             msg << "Usupported operation:\n";
             msg << "The random number generator stream cannot supply the ";
             msg << "requested number of samples without being exhausted\n";
-            throw std::logic_error( msg.str() );
+            throw std::runtime_error( msg.str() );
         }
     }
 
     int operator[](size_t index) const {
         // Could be more specific exception std::out_of_range
-        if( (index < _base) || (index >= _size) ) {
+        if( index >= _size ) {
             std::ostringstream msg;
             msg << "Index is out of bounds:\n";
             msg << "index = " << index << " not in expected ";

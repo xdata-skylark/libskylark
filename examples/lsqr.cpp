@@ -88,9 +88,9 @@ int main (int argc, char** argv) {
     MPI_Comm mpi_world(world);
     elem::Grid grid (mpi_world);
   
-    DenseDistMatrixType A=uni_dense_dist_mat_t::create
+    DenseDistMatrixType A=uni_dense_dist_mat_t::generate
             (int_params[M_INDEX], int_params[N_INDEX], grid, context);
-    DenseDistMatrixType B=uni_dense_dist_mat_t::create
+    DenseDistMatrixType B=uni_dense_dist_mat_t::generate
             (int_params[M_INDEX], int_params[N_RHS_INDEX], grid, context);
     DenseDistMatrixType X(int_params[N_INDEX], int_params[N_RHS_INDEX], grid);
 
@@ -194,18 +194,18 @@ int main (int argc, char** argv) {
 
     /* Create matrices A and B */
     const int NNZ = int_params[M_INDEX]*int_params[N_INDEX]*0.5;
-    SparseDistMatrixType A=uni_sparse_dist_mat_t::create
+    SparseDistMatrixType A=uni_sparse_dist_mat_t::generate
             (int_params[M_INDEX], int_params[N_INDEX], NNZ, context);
-    SparseMultiVectorType B=uni_sparse_dist_multi_vec_t::create
+    SparseMultiVectorType B=uni_sparse_dist_multi_vec_t::generate
             (int_params[M_INDEX], int_params[N_RHS_INDEX], context);
     SparseMultiVectorType X (int_params[N_INDEX], int_params[N_RHS_INDEX]);
 
     /** Depending on which sketch is requested, do the sketching */
-    SparseDistMatrixType sketch_A=empty_sparse_dist_mat_t::create
+    SparseDistMatrixType sketch_A=empty_sparse_dist_mat_t::generate
             (int_params[S_INDEX], int_params[N_INDEX]);
-    SparseMultiVectorType sketch_B=empty_sparse_dist_multi_vec_t::create
+    SparseMultiVectorType sketch_B=empty_sparse_dist_multi_vec_t::generate
             (int_params[S_INDEX], int_params[N_RHS_INDEX]);
-    SparseMultiVectorType sketch_X=empty_sparse_dist_multi_vec_t::create
+    SparseMultiVectorType sketch_X=empty_sparse_dist_multi_vec_t::generate
             (int_params[N_INDEX], int_params[N_RHS_INDEX]);
     if (0==strcmp("CWT", chr_params[TRANSFORM_INDEX]) ) {
       skys::CWT_t<SparseDistMatrixType, SparseDistMatrixType> 

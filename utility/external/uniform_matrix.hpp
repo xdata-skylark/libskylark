@@ -6,7 +6,6 @@
 
 
 #if SKYLARK_HAVE_BOOST
-#include <boost/random.hpp>
 #include "../exception.hpp"
 #endif
 
@@ -20,8 +19,6 @@
 
 namespace skylark { namespace utility {
 
-// REVIEW: This file need a major rework. Will come to talk you about it.
-
 
 /**
  * A structure to populate the matrix with uniformly dist random entries.
@@ -34,7 +31,7 @@ struct uniform_matrix_t {};
 
 /**
  * Specialization for a fully distributed dense vector.
- */ 
+ */
 template <typename IndexType,
           typename ValueType>
 struct uniform_matrix_t <FullyDistVec<IndexType, ValueType> > {
@@ -43,7 +40,7 @@ struct uniform_matrix_t <FullyDistVec<IndexType, ValueType> > {
     typedef FullyDistVec<IndexType,ValueType> mpi_vector_t;
     typedef uniform_distribution_t<ValueType> distribution_t;
 
-    static mpi_vector_t create (index_t& M,
+    static mpi_vector_t generate (index_t& M,
         skylark::sketch::context_t& context) {
 
         /* Create a dummy vector */
@@ -79,7 +76,7 @@ struct uniform_matrix_t <FullyDistMultiVec<IndexType, ValueType> > {
     typedef FullyDistVec<IndexType,ValueType> mpi_vector_t;
     typedef FullyDistMultiVec<IndexType,ValueType> mpi_multi_vector_t;
 
-    static mpi_multi_vector_t create (index_t M,
+    static mpi_multi_vector_t generate (index_t M,
         index_t N,
         skylark::sketch::context_t& context) {
         /* Create an empty multi-vector */
@@ -87,7 +84,7 @@ struct uniform_matrix_t <FullyDistMultiVec<IndexType, ValueType> > {
 
         /* Just pass each individual vector to the uniform_matrix_t above */
         for (index_t i=0; i<X.size; ++i)
-            X[i] = uniform_matrix_t<mpi_vector_t>::create(M, context);
+            X[i] = uniform_matrix_t<mpi_vector_t>::generate(M, context);
         return X;
     }
 };
@@ -106,13 +103,13 @@ struct uniform_matrix_t <SpParMat<IndexType,
     typedef FullyDistVec<IndexType,IndexType> mpi_index_vector_t;
     typedef uniform_distribution_t<bool> distribution_t;
 
-    static mpi_matrix_t create(index_t M,
+    static mpi_matrix_t generate(index_t M,
         index_t N,
         index_t NNZ,
         skylark::sketch::context_t& context) {
         /* Create three FullyDistVec for colid, rowid, and values */
         mpi_value_vector_t values =
-            uniform_matrix_t<mpi_value_vector_t>::create(NNZ, context);
+            uniform_matrix_t<mpi_value_vector_t>::generate(NNZ, context);
         mpi_index_vector_t col_id(NNZ, 0);
         mpi_index_vector_t row_id(NNZ, 0);
 
@@ -156,7 +153,7 @@ struct uniform_matrix_t <elem::Matrix<ValueType> > {
     typedef elem::Matrix<ValueType> matrix_t;
     typedef uniform_distribution_t<value_t> distribution_t;
 
-    static matrix_t create (index_t M,
+    static matrix_t generate (index_t M,
         index_t N,
         skylark::sketch::context_t& context) {
 
@@ -192,7 +189,7 @@ struct uniform_matrix_t <elem::DistMatrix<ValueType, CD, RD> > {
     typedef elem::DistMatrix<ValueType, CD, RD> mpi_matrix_t;
     typedef uniform_distribution_t<value_t> distribution_t;
 
-    static mpi_matrix_t create (index_t M,
+    static mpi_matrix_t generate (index_t M,
         index_t N,
         elem::Grid& grid,
         skylark::sketch::context_t& context) {

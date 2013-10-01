@@ -1,8 +1,6 @@
 #ifndef RANDGEN_HPP
 #define RANDGEN_HPP
 
-//#include <limits>
-//#include <exception>
 #include <sstream>
 
 #include <Random123/threefry.h>

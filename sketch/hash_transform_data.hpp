@@ -54,14 +54,8 @@ struct hash_transform_data_t {
         (N, row_value_distribution);
 
     for (int i = 0; i < N; ++i) {
-        try {
             row_idx[i] = random_indices[i];
             row_value[i] = random_values[i];
-        } catch (std::logic_error e) {
-            SKYLARK_THROW_EXCEPTION (
-                utility::skylark_exception()
-                << utility::error_msg(e.what()) );
-        }
     }
   }
 

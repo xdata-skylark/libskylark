@@ -14,6 +14,7 @@ const char* const errmsg[] = {
     , "Skylark failed in a call to CombBLAS"
     , "Skylark failed in sketching a matrix"
     , "Skylark failed when allocating memory in a sketch"
+    , "Skylark failed in a call into the Random123 layer"
 };
 
 /// resolves an error_code to a human readable failure message
@@ -128,6 +129,17 @@ public:
     }
 };
 
+/// exceptions in the Random123 layer
+struct random123_exception : virtual skylark_exception {
+public:
+    using skylark_exception::operator<<;
+
+    random123_exception() {
+        *this << error_code(107);
+    }
+};
+
+
 /// exceptions for allocating memory in sketch layer
 struct allocation_exception : virtual sketch_exception  {
 public:
@@ -147,6 +159,7 @@ public:
         *this << error_code(103);
     }
 };
+
 
 } // namespace utility
 } // namespace skylark

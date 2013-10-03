@@ -59,7 +59,9 @@ public:
             msg << "Usupported operation:\n";
             msg << "The random number generator stream cannot supply the ";
             msg << "requested number of samples without being exhausted\n";
-            throw std::runtime_error( msg.str() );
+            SKYLARK_THROW_EXCEPTION (
+                utility::random123_exception()
+                << utility::error_msg(msg.str()) );
         }
         _distribution.reset();
     }
@@ -79,7 +81,9 @@ public:
             msg << "Index is out of bounds:\n";
             msg << "index = " << index << " not in expected ";
             msg << "[0, " << _size << ") range\n";
-            throw std::logic_error( msg.str() );
+            SKYLARK_THROW_EXCEPTION (
+                utility::random123_exception()
+                << utility::error_msg(msg.str()) );
         }
         ctr_t ctr;
         for(int i = 1; i < 4; i++)
@@ -139,7 +143,9 @@ public:
             msg << "Usupported operation:\n";
             msg << "The random number generator stream cannot supply the ";
             msg << "requested number of samples without being exhausted\n";
-            throw std::runtime_error( msg.str() );
+            SKYLARK_THROW_EXCEPTION (
+                utility::random123_exception()
+                << utility::error_msg(msg.str()) );
         }
     }
 
@@ -150,7 +156,9 @@ public:
             msg << "Index is out of bounds:\n";
             msg << "index = " << index << " not in expected ";
             msg << "[0, " << _size << ") range\n";
-            throw std::logic_error( msg.str() );
+            SKYLARK_THROW_EXCEPTION (
+                utility::random123_exception()
+                << utility::error_msg(msg.str()) );
         }
         ctr_t ctr;
         for(int i = 1; i < 4; i++)

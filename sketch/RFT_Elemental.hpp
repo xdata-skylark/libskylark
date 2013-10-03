@@ -109,13 +109,7 @@ public:
         //         random sample array. Preferably that get a start iterator
         //         and an end iterator.
         for (int i = 0; i < S; i++) {
-            try {
-                _shifts[i] = random_samples[i];
-            } catch (std::logic_error e) {
-                SKYLARK_THROW_EXCEPTION (
-                    utility::skylark_exception()
-                    << utility::error_msg(e.what()) );
-            }
+            _shifts[i] = random_samples[i];
         }
     }
 

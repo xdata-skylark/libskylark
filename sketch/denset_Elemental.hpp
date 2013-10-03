@@ -63,14 +63,7 @@ private:
             for(int j = js; j < je; j++) {
                 int col = A.RowShift() + A.RowStride() * j;
                 for (int i = 0; i < _S; i++) {
-                    value_type sample;
-                    try {
-                        sample = _random_samples[col * _S + i];
-                    } catch (std::logic_error e) {
-                        SKYLARK_THROW_EXCEPTION (
-                            utility::skylark_exception()
-                            << utility::error_msg(e.what()) );
-                    }
+                    value_type sample = _random_samples[col * _S + i];
                     S_local.Set(i, j-js, scale * sample);
                 }
             }
@@ -115,14 +108,7 @@ private:
         elem::Matrix<value_type> S_local(_S, _N);
         for (int j = 0; j < _N; j++) {
             for (int i = 0; i < _S; i++) {
-                value_type sample;
-                try {
-                    sample = _random_samples[j * _S + i];
-                } catch (std::logic_error e) {
-                    SKYLARK_THROW_EXCEPTION (
-                        utility::skylark_exception()
-                        << utility::error_msg(e.what()) );
-                }
+                value_type sample =_random_samples[j * _S + i];
                 S_local.Set(i, j, scale * sample);
             }
         }
@@ -251,14 +237,7 @@ private:
         elem::Matrix<value_type> S_local(_S, _N);
         for (int j = 0; j < _N; j++) {
             for (int i = 0; i < _S; i++) {
-                value_type sample;
-                try {
-                    sample = _random_samples[j * _S + i];
-                } catch (std::logic_error e) {
-                        SKYLARK_THROW_EXCEPTION (
-                            utility::skylark_exception()
-                            << utility::error_msg(e.what()) );
-                }
+                value_type sample = _random_samples[j * _S + i];
                 S_local.Set(i, j, scale * sample);
             }
         }

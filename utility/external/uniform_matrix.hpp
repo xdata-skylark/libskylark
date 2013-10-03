@@ -54,14 +54,8 @@ struct uniform_matrix_t <FullyDistVec<IndexType, ValueType> > {
         /* Iterate and fill up the local entries */
         for (index_t i=0; i<x.TotalLength(); ++i) {
             value_t sample;
-            try {
                 sample = samples[i];
-            } catch (std::logic_error e) {
-                SKYLARK_THROW_EXCEPTION (
-                    utility::skylark_exception()
-                    << utility::error_msg(e.what()) );
-            }
-            x.SetElement(i, sample);
+                x.SetElement(i, sample);
         }
         return x;
     }
@@ -122,13 +116,7 @@ struct uniform_matrix_t <SpParMat<IndexType,
         for (index_t j=0; j<N; ++j) {
             for (index_t i=0; i<M; ++i) {
                 bool sample;
-                try {
-                    sample = samples[j * M + i];
-                } catch (std::logic_error e) {
-                    SKYLARK_THROW_EXCEPTION (
-                        utility::skylark_exception()
-                        << utility::error_msg(e.what()) );
-                }
+                sample = samples[j * M + i];
                 if (sample) {
                     col_id.SetElement(total_num_edges_added, j);
                     row_id.SetElement(total_num_edges_added, i);
@@ -165,13 +153,7 @@ struct uniform_matrix_t <elem::Matrix<ValueType> > {
         for (index_t j = 0; j < N; j++) {
             for (index_t i = 0; i < M; i++) {
                 value_t sample;
-                try {
-                    sample = samples[j * M + i];
-                } catch (std::logic_error e) {
-                    SKYLARK_THROW_EXCEPTION (
-                        utility::skylark_exception()
-                        << utility::error_msg(e.what()) );
-                }
+                sample = samples[j * M + i];
                 A.Set(i, j, sample);
             }
         }
@@ -201,14 +183,7 @@ struct uniform_matrix_t <elem::DistMatrix<ValueType, CD, RD> > {
             (M * N, distribution);
         for (index_t j = 0; j < N; j++) {
             for (index_t i = 0; i < M; i++) {
-                value_t sample;
-                try {
-                    sample = samples[j * M + i];
-                } catch (std::logic_error e) {
-                    SKYLARK_THROW_EXCEPTION (
-                        utility::skylark_exception()
-                        << utility::error_msg(e.what()) );
-                }
+                value_t sample = samples[j * M + i];
                 A.Set(i, j, sample);
             }
         }

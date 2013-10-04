@@ -1,7 +1,7 @@
 #ifndef JLT_HPP
 #define JLT_HPP
 
-#include "denset.hpp"
+#include "dense_transform.hpp"
 
 namespace skylark {
 namespace sketch {

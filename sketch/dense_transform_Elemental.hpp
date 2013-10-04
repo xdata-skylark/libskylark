@@ -1,36 +1,39 @@
-#ifndef DENSET_ELEMENTAL_HPP
-#define DENSET_ELEMENTAL_HPP
+#ifndef DENSE_TRANSFORM_ELEMENTAL_HPP
+#define DENSE_TRANSFORM_ELEMENTAL_HPP
 
 #include <elemental.hpp>
 
 #include "context.hpp"
+#include "dense_transform_data.hpp"
 #include "transforms.hpp"
 #include "../utility/comm.hpp"
 #include "../utility/exception.hpp"
 #include "../utility/randgen.hpp"
 
 
-namespace skylark {
-namespace sketch {
+namespace skylark { namespace sketch {
 
 /**
  * Specialization distributed input, local output, for [*, SOMETHING]
  */
 template <typename ValueType,
           elem::Distribution ColDist,
-          template <typename> class DistributionType>
+          template <typename> class ValueDistributionType>
 struct dense_transform_t <
     elem::DistMatrix<ValueType, ColDist, elem::STAR>,
     elem::Matrix<ValueType>,
-    DistributionType> {
-
-public:
+    ValueDistributionType > :
+        public dense_transform_data_t<ValueType,
+                                      ValueDistributionType> {
     // Typedef matrix type so that we can use it regularly
     typedef ValueType value_type;
     typedef elem::DistMatrix<value_type, ColDist, elem::STAR> matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
     // Typedef distribution
-    typedef DistributionType<value_type> distribution_t;
+    typedef ValueDistributionType<value_type> value_distribution_type;
+    typedef dense_transform_data_t<ValueType,
+                                  ValueDistributionType> base_data_t;
+
 private:
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
@@ -55,16 +58,17 @@ private:
         int slice_width = A.Width();
 
 
-        elem::Matrix<value_type> S_local(_S, slice_width);
+        elem::Matrix<value_type> S_local(base_data_t::S, slice_width);
         for (int js = 0; js < A.LocalHeight(); js += slice_width) {
             int je = std::min(js + slice_width, A.LocalHeight());
             // adapt size of local portion (can be less than slice_width)
-            S_local.ResizeTo(_S, je-js);
+            S_local.ResizeTo(base_data_t::S, je-js);
             for(int j = js; j < je; j++) {
                 int col = A.RowShift() + A.RowStride() * j;
-                for (int i = 0; i < _S; i++) {
-                    value_type sample = _random_samples[col * _S + i];
-                    S_local.Set(i, j-js, scale * sample);
+                for (int i = 0; i < base_data_t::S; i++) {
+                    value_type sample =
+                        base_data_t::random_samples[col * base_data_t::S + i];
+                    S_local.Set(i, j-js, base_data_t::scale * sample);
                 }
             }
 
@@ -84,7 +88,7 @@ private:
 
 
         // Pull everything to rank-0
-        boost::mpi::reduce (_context.comm,
+        boost::mpi::reduce (base_data_t::context.comm,
                             SA_part.LockedBuffer(),
                             SA_part.MemorySize(),
                             sketch_of_A.Buffer(),
@@ -102,14 +106,15 @@ private:
 
         // Create a distributed matrix to hold the output.
         //  We later gather to a dense matrix.
-        matrix_type SA_dist(A.Height(), _S, A.Grid());
+        matrix_type SA_dist(A.Height(), base_data_t::S, A.Grid());
 
         // Create S. Since it is rowwise, we assume it can be held in memory.
-        elem::Matrix<value_type> S_local(_S, _N);
-        for (int j = 0; j < _N; j++) {
-            for (int i = 0; i < _S; i++) {
-                value_type sample =_random_samples[j * _S + i];
-                S_local.Set(i, j, scale * sample);
+        elem::Matrix<value_type> S_local(base_data_t::S, base_data_t::N);
+        for (int j = 0; j < base_data_t::N; j++) {
+            for (int i = 0; i < base_data_t::S; i++) {
+                value_type sample =
+                    base_data_t::random_samples[j * base_data_t::S + i];
+                S_local.Set(i, j, base_data_t::scale * sample);
             }
         }
 
@@ -124,25 +129,10 @@ private:
 
         // Collect at rank 0.
         // TODO Grid rank 0 or context rank 0?
-        skylark::utility::collect_dist_matrix(_context.comm, _context.rank == 0,
+        skylark::utility::collect_dist_matrix(base_data_t::context.comm,
+            base_data_t::context.rank == 0,
             SA_dist, sketch_of_A);
     }
-
-    // List of variables associated with this sketch
-    /// Input dimension
-    const int _N;
-    /// Output dimension
-    const int _S;
-    /// Context for this sketch
-    skylark::sketch::context_t& _context;
-    /// Distribution
-    distribution_t _distribution;
-    /// Random samples
-    const skylark::utility::random_samples_array_t<value_type, distribution_t>
-     _random_samples;
-
-protected:
-    double scale;
 
 public:
     /**
@@ -150,15 +140,14 @@ public:
      * Create an object with a particular seed value.
      */
     dense_transform_t (int N, int S, skylark::sketch::context_t& context)
-        : _N(N), _S(S), _context(context),
-          _distribution(),
-          _random_samples(context.allocate_random_samples_array
-              <ValueType, distribution_t>
-              (N * S, _distribution)) {
-        // No scaling in "raw" form
-        scale = 1.0;
-    }
+        : base_data_t (N, S, context) {}
 
+    template <typename InputMatrixType,
+              typename OutputMatrixType>
+    dense_transform_t (dense_transform_t<InputMatrixType,
+                                         OutputMatrixType,
+                                         ValueDistributionType>& other) :
+        base_data_t(other.get_data()) {}
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
@@ -197,19 +186,21 @@ public:
  */
 template <typename ValueType,
           elem::Distribution ColDist,
-          template <typename> class DistributionType>
+          template <typename> class ValueDistributionType>
 struct dense_transform_t <
     elem::DistMatrix<ValueType, ColDist, elem::STAR>,
     elem::DistMatrix<ValueType, ColDist, elem::STAR>,
-    DistributionType> {
-
-public:
+    ValueDistributionType> :
+        public dense_transform_data_t<ValueType,
+                                      ValueDistributionType> {
     // Typedef matrix type so that we can use it regularly
     typedef ValueType value_type;
     typedef elem::DistMatrix<value_type, ColDist, elem::STAR> matrix_type;
     typedef elem::DistMatrix<value_type, ColDist, elem::STAR> output_matrix_type;
     // Typedef distribution
-    typedef DistributionType<value_type> distribution_t;
+    typedef ValueDistributionType<value_type> value_distribution_type;
+    typedef dense_transform_data_t<ValueType,
+                                  ValueDistributionType> base_data_t;
 
 private:
     /**
@@ -234,11 +225,12 @@ private:
 
 
         // Create S. Since it is rowwise, we assume it can be held in memory.
-        elem::Matrix<value_type> S_local(_S, _N);
-        for (int j = 0; j < _N; j++) {
-            for (int i = 0; i < _S; i++) {
-                value_type sample = _random_samples[j * _S + i];
-                S_local.Set(i, j, scale * sample);
+        elem::Matrix<value_type> S_local(base_data_t::S, base_data_t::N);
+        for (int j = 0; j < base_data_t::N; j++) {
+            for (int i = 0; i < base_data_t::S; i++) {
+                value_type sample =
+                    base_data_t::random_samples[j * base_data_t::S + i];
+                S_local.Set(i, j, base_data_t::scale * sample);
             }
         }
 
@@ -252,36 +244,20 @@ private:
             sketch_of_A.Matrix());
     }
 
-    // List of variables associated with this sketch
-    /// Input dimension
-    const int _N;
-    /// Output dimension
-    const int _S;
-    /// context for this sketch
-    skylark::sketch::context_t& _context;
-    /// Distribution
-    distribution_t _distribution;
-    /// Random samples
-    skylark::utility::random_samples_array_t<value_type, distribution_t>
-     _random_samples;
-
-protected:
-    double scale;
-
 public:
     /**
      * Constructor
+     * Create an object with a particular seed value.
      */
     dense_transform_t (int N, int S, skylark::sketch::context_t& context)
-        : _N(N), _S(S), _context(context),
-          _distribution(),
-          _random_samples(context.allocate_random_samples_array
-              <ValueType, distribution_t>
-              (N * S, _distribution)) {
-        // No scaling in "raw" form
-        scale = 1.0;
-    }
+        : base_data_t (N, S, context) {}
 
+    template <typename InputMatrixType,
+              typename OutputMatrixType>
+    dense_transform_t (dense_transform_t<InputMatrixType,
+                                         OutputMatrixType,
+                                         ValueDistributionType>& other) :
+        base_data_t(other.get_data()) {}
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
@@ -318,4 +294,4 @@ public:
 } // namespace sketch
 } // namespace skylark
 
-#endif // DENSET_ELEMENTAL_HPP
+#endif // DENSE_TRANSFORM_ELEMENTAL_HPP

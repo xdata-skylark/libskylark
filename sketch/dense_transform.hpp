@@ -1,5 +1,5 @@
-#ifndef DENSET_HPP
-#define DENSET_HPP
+#ifndef DENSE_TRANSFORM_HPP
+#define DENSE_TRANSFORM_HPP
 
 #include "../config.h"
 
@@ -25,7 +25,7 @@ class dense_transform_t {
 
 
 #if SKYLARK_HAVE_ELEMENTAL
-#include "denset_Elemental.hpp"
+#include "dense_transform_Elemental.hpp"
 #endif
 
-#endif // DENSET_HPP
+#endif // DENSE_TRANSFORM_HPP

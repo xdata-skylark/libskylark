@@ -1,7 +1,7 @@
 #ifndef CT_HPP
 #define CT_HPP
 
-#include "denset.hpp"
+#include "dense_transform.hpp"
 
 namespace skylark {
 namespace sketch {

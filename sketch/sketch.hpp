@@ -10,7 +10,7 @@
 #include "transforms.hpp"
 #include "FUT.hpp"
 #include "RFUT.hpp"
-#include "denset.hpp"
+#include "dense_transform.hpp"
 #include "CT.hpp"
 #include "JLT.hpp"
 #include "FJLT.hpp"

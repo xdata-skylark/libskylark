@@ -23,7 +23,7 @@ struct RFUT_data_t {
      * Regular constructor
      */
     RFUT_data_t (int N, skylark::sketch::context_t& context)
-        : N(N), context(context) {
+        : N(N), context(context), D(N) {
         value_distribution_type distribution;
         skylark::utility::random_samples_array_t
             <value_type, value_distribution_type>

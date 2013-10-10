@@ -68,6 +68,10 @@ public:
                    ValueDistributionType>& other) :
         base_data_t(other.get_data()) {}
 
+    RFUT_t(RFUT_data_t<ValueType,
+        ValueDistributionType>& other_data) :
+        base_data_t(other_data.get_data()) {}
+
     /**
      * Apply the transform that is described in by the mixed_A.
      * mixed_A can be the same as A.

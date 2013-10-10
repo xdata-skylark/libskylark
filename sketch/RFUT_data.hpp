@@ -40,6 +40,7 @@ struct RFUT_data_t {
         return static_cast<RFUT_data_t&>(*this);
     }
 
+
 protected:
 
     const int N; /**< Input dimension  */

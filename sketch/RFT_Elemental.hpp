@@ -4,6 +4,7 @@
 #include <elemental.hpp>
 
 #include "context.hpp"
+#include "RFT_data.hpp"
 #include "transforms.hpp"
 #include "../utility/randgen.hpp"
 
@@ -16,23 +17,28 @@ namespace sketch {
  */
 template <typename ValueType,
           elem::Distribution ColDist,
-          template <typename> class DistributionType>
+          template <typename> class UnderlyingValueDistributionType>
 struct RFT_t <
     elem::DistMatrix<ValueType, ColDist, elem::STAR>,
     elem::DistMatrix<ValueType, ColDist, elem::STAR>,
-    DistributionType> {
-
+    UnderlyingValueDistributionType> :
+        public RFT_data_t<ValueType,
+                          UnderlyingValueDistributionType> {
 public:
     // Typedef matrix type so that we can use it regularly
     typedef ValueType value_type;
+    typedef boost::random::uniform_real_distribution<>
+    value_distribution_type;
     typedef elem::DistMatrix<value_type, ColDist, elem::STAR> matrix_type;
-    typedef elem::DistMatrix<value_type, ColDist, elem::STAR> output_matrix_type;
+    typedef elem::DistMatrix<value_type, ColDist, elem::STAR>
+    output_matrix_type;
+    typedef RFT_data_t<ValueType,
+                       UnderlyingValueDistributionType> base_data_t;
+    // private:
+    typedef skylark::sketch::dense_transform_t
+    <matrix_type, output_matrix_type, UnderlyingValueDistributionType>
+    underlying_type;
 
-private:
-
-    typedef skylark::sketch::dense_transform_t<matrix_type,
-                                               output_matrix_type,
-                                               DistributionType> dense_type;
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
@@ -40,14 +46,16 @@ private:
      */
     void apply_impl_vdist (const matrix_type& A,
                      output_matrix_type& sketch_of_A,
-                     skylark::sketch::columnwise_tag tag) const {
-        _dense.apply(A, sketch_of_A, tag);
+                     skylark::sketch::columnwise_tag tag) {
+        underlying_type underlying(base_data_t::underlying_data);
+        underlying.apply(A, sketch_of_A, tag);
         elem::Matrix<value_type> &Al = sketch_of_A.Matrix();
         for(int j = 0; j < Al.Width(); j++)
-            for(int i = 0; i < _S; i++) {
+            for(int i = 0; i < base_data_t::S; i++) {
                 value_type val = Al.Get(i, j);
                 value_type trans =
-                    _scale * std::cos((val / _sigma) + _shifts[i]);
+                    base_data_t::scale * std::cos((val / base_data_t::sigma) +
+                        base_data_t::shifts[i]);
                 Al.Set(i, j, trans);
             }
     }
@@ -58,60 +66,35 @@ private:
       */
     void apply_impl_vdist(const matrix_type& A,
         output_matrix_type& sketch_of_A,
-        skylark::sketch::rowwise_tag tag) const {
-        // TODO verify sizes etc.
+        skylark::sketch::rowwise_tag tag) {
 
-        _dense.apply(A, sketch_of_A, tag);
+        // TODO verify sizes etc.
+        underlying_type underlying(base_data_t::underlying_data);
+        underlying.apply(A, sketch_of_A, tag);
         elem::Matrix<value_type> &Al = sketch_of_A.Matrix();
-        for(int j = 0; j < _S; j++)
+        for(int j = 0; j < base_data_t::S; j++)
             for(int i = 0; i < Al.Height(); i++) {
                 value_type val = Al.Get(i, j);
                 value_type trans =
-                    _scale * std::cos((val / _sigma) + _shifts[j]);
+                    base_data_t::scale * std::cos((val / base_data_t::sigma) +
+                        base_data_t::shifts[j]);
                 Al.Set(i, j, trans);
             }
     }
-
-    /// Input dimension
-    const int _N;
-    /// Output dimension
-    const int _S;
-    /// Bandwidth (sigma)
-    const double _sigma;
-    /// Context for this sketch
-    skylark::sketch::context_t& _context;
-    /// Underlying dense_transform
-    dense_type _dense;
-    /// Shifts
-    std::vector<double> _shifts;
-    /// Scale
-    const double _scale;
-
 
 public:
     /**
      * Constructor
      */
     RFT_t (int N, int S, double sigma, skylark::sketch::context_t& context)
-        : _N(N), _S(S), _sigma(sigma), _context(context),
-          _dense(N, S, context), _shifts(S),
-          _scale(std::sqrt(2.0 / _S)) {
+        : base_data_t (N, S, sigma, context) {}
 
-        const double pi = boost::math::constants::pi<double>();
-        typedef boost::random::uniform_real_distribution<> distribution_t;
-        distribution_t distribution(0, 2 * pi);
-
-        skylark::utility::random_samples_array_t<value_type, distribution_t>
-            random_samples =
-            context.allocate_random_samples_array<value_type, distribution_t>
-            (S, distribution);
-        // REVIEW: might be useful to have a copy_to function in the 
-        //         random sample array. Preferably that get a start iterator
-        //         and an end iterator.
-        for (int i = 0; i < S; i++) {
-            _shifts[i] = random_samples[i];
-        }
-    }
+    template <typename InputMatrixType,
+              typename OutputMatrixType>
+    RFT_t(RFT_t<InputMatrixType,
+                OutputMatrixType,
+                UnderlyingValueDistributionType>& other)
+        : base_data_t(other.get_data()) {}
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
@@ -119,7 +102,7 @@ public:
     template <typename Dimension>
     void apply (const matrix_type& A,
                 output_matrix_type& sketch_of_A,
-                Dimension dimension) const {
+                Dimension dimension) {
 
         switch(ColDist) {
         case elem::VR:

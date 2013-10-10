@@ -4,29 +4,36 @@
 #include <elemental.hpp>
 
 #include "context.hpp"
+#include "FJLT_data.hpp"
 #include "transforms.hpp"
 #include "../utility/randgen.hpp"
 
-namespace skylark {
-namespace sketch {
-
+namespace skylark { namespace sketch {
 /**
  * Specialization for [*, SOMETHING]
  */
 template <typename ValueType, elem::Distribution ColDist>
 struct FJLT_t <
-        elem::DistMatrix<ValueType, ColDist, elem::STAR>, /*InputMatrix*/
-        elem::Matrix<ValueType> > { /* OutputMatrix */
+    elem::DistMatrix<ValueType, ColDist, elem::STAR>, /*InputMatrix*/
+    elem::Matrix<ValueType> > :
+        public FJLT_data_t<ValueType>
+{ /* OutputMatrix */
 
 public:
     // Typedef matrix type so that we can use it regularly
     typedef ValueType value_type;
     typedef elem::DistMatrix<value_type, ColDist, elem::STAR> matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
-
     typedef elem::DistMatrix<ValueType, elem::STAR, ColDist>
-        intermediate_type;
+    intermediate_type;
     typedef fft_futs<double>::DCT transform_type;
+    typedef FJLT_data_t<value_type> base_data_t;
+    typedef utility::rademacher_distribution_t<value_type>
+    underlying_value_distribution_type;
+    typedef RFUT_t<intermediate_type,
+                   transform_type,
+                   underlying_value_distribution_type>
+    underlying_type;
 
 private:
     /**
@@ -35,27 +42,30 @@ private:
      */
     void apply_impl_vdist(const matrix_type& A,
                     output_matrix_type& sketch_A,
-                    skylark::sketch::columnwise_tag) const {
+                    skylark::sketch::columnwise_tag) {
 
         // Rearrange the matrix to fit the underlying transform
         intermediate_type inter_A(A.Grid());
         inter_A = A;
 
         // Apply the underlying transform
-        _underlying_transform.apply(inter_A, inter_A,
-                                   skylark::sketch::columnwise_tag());
+        underlying_type underlying(base_data_t::underlying_data);
+        underlying.apply(inter_A, inter_A,
+            skylark::sketch::columnwise_tag());
 
         // Create the sampled and scaled matrix -- still in distributed mode
-        intermediate_type dist_sketch_A(_S, inter_A.Width(), inter_A.Grid());
-        double scale = sqrt((double)_N / (double)_S);
+        intermediate_type dist_sketch_A(base_data_t::S,
+            inter_A.Width(), inter_A.Grid());
+        double scale = sqrt((double)base_data_t::N / (double)base_data_t::S);
         for (int j = 0; j < inter_A.LocalWidth(); j++)
-            for (int i = 0; i < _S; i++) {
-                int row = _samples[i];
+            for (int i = 0; i < base_data_t::S; i++) {
+                int row = base_data_t::samples[i];
                 dist_sketch_A.Matrix().Set(i, j,
                     scale * inter_A.Matrix().Get(row, j));
             }
 
-        skylark::utility::collect_dist_matrix(_context.comm, _context.rank == 0,
+        skylark::utility::collect_dist_matrix(base_data_t::context.comm,
+            base_data_t::context.rank == 0,
             dist_sketch_A, sketch_A);
     }
 
@@ -65,7 +75,7 @@ private:
      */
     void apply_impl_vdist(const matrix_type& A,
                     output_matrix_type& sketch_of_A,
-                    skylark::sketch::rowwise_tag) const {
+                    skylark::sketch::rowwise_tag) {
 
         // TODO This is a quick&dirty hack - uses the columnwise implementation.
         matrix_type A_t(A.Grid());
@@ -77,37 +87,17 @@ private:
         elem::Transpose(sketch_of_A_t, sketch_of_A);
      }
 
-    // List of variables associated with this sketch
-    /// Input dimension
-    const int _N;
-    /// Output dimension
-    const int _S;
-    const RFUT_t<intermediate_type,
-                 transform_type,
-                 utility::rademacher_distribution_t<ValueType> >
-    /// Underlying mixing (fast-unitary) transform
-    _underlying_transform;
-    std::vector<int> _samples;
-    /// context for this sketch
-    skylark::sketch::context_t& _context;
-
 
 public:
 
     FJLT_t(int N, int S, skylark::sketch::context_t& context)
-        : _N(N), _S(S), _underlying_transform(N, context), _samples(S),
-          _context(context) {
-        typedef boost::random::uniform_int_distribution<int> distribution_t;
-        distribution_t distribution(0, N - 1);
+        : base_data_t (N, S, context) {}
 
-        skylark::utility::random_samples_array_t<value_type, distribution_t>
-            random_samples =
-            context.allocate_random_samples_array<value_type, distribution_t>
-            (S, distribution);
-        for (int i = 0; i < S; i++) {
-            _samples[i] = random_samples[i];
-        }
-    }
+    template <typename InputMatrixType,
+              typename OutputMatrixType>
+    FJLT_t(FJLT_t<InputMatrixType,
+                  OutputMatrixType>& other)
+        : base_data_t(other.get_data()) {}
 
 
     /**
@@ -116,7 +106,7 @@ public:
     template <typename Dimension>
     void apply (const matrix_type& A,
                 output_matrix_type& sketch_of_A,
-                Dimension dimension) const {
+                Dimension dimension)  {
         switch (ColDist) {
         case elem::VR:
         case elem::VC:

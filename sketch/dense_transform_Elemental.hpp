@@ -149,6 +149,10 @@ public:
                                          ValueDistributionType>& other) :
         base_data_t(other.get_data()) {}
 
+    dense_transform_t(dense_transform_data_t<ValueType,
+        ValueDistributionType>& other_data) :
+        base_data_t(other_data.get_data()) {}
+
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
      */

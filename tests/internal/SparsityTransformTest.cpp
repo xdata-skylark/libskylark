@@ -45,15 +45,15 @@ int test_main(int argc, char *argv[]) {
     elem::DistMatrix<double, elem::VR, elem::STAR> pi_sketch(grid);
     elem::Uniform(pi_sketch, 6, 10);
     elem::Zero(pi_sketch);
-    pi_sketch.Set(4, 0,  1.0);
-    pi_sketch.Set(5, 1,  1.0);
-    pi_sketch.Set(5, 2, -1.0);
-    pi_sketch.Set(0, 3,  1.0);
-    pi_sketch.Set(4, 4, -1.0);
-    pi_sketch.Set(2, 5, -1.0);
-    pi_sketch.Set(5, 6,  1.0);
-    pi_sketch.Set(2, 7, -1.0);
-    pi_sketch.Set(0, 8,  1.0);
+    pi_sketch.Set(5, 0,  1.0);
+    pi_sketch.Set(3, 1, -1.0);
+    pi_sketch.Set(3, 2, -1.0);
+    pi_sketch.Set(1, 3,  1.0);
+    pi_sketch.Set(1, 4, -1.0);
+    pi_sketch.Set(5, 5, -1.0);
+    pi_sketch.Set(3, 6, -1.0);
+    pi_sketch.Set(0, 7, -1.0);
+    pi_sketch.Set(4, 8,  1.0);
     pi_sketch.Set(2, 9, -1.0);
 
     /* 1. Create the sketching matrix */
@@ -87,10 +87,10 @@ int test_main(int argc, char *argv[]) {
     elem::DistMatrix<double, elem::VR, elem::STAR> pi_sketch_r(grid);
     elem::Uniform(pi_sketch_r, 5, 3);
     elem::Zero(pi_sketch_r);
-    pi_sketch_r.Set(0, 1, -1.0);
-    pi_sketch_r.Set(1, 1, -1.0);
-    pi_sketch_r.Set(2, 2,  1.0);
-    pi_sketch_r.Set(3, 1,  1.0);
+    pi_sketch_r.Set(0, 2, -1.0);
+    pi_sketch_r.Set(1, 0, -1.0);
+    pi_sketch_r.Set(2, 1,  1.0);
+    pi_sketch_r.Set(3, 2, -1.0);
     pi_sketch_r.Set(4, 0,  1.0);
 
     //[> 1. Create the sketching matrix <]

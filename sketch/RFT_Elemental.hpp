@@ -5,6 +5,7 @@
 
 #include "context.hpp"
 #include "RFT_data.hpp"
+#include "dense_transform_data.hpp"
 #include "transforms.hpp"
 #include "../utility/randgen.hpp"
 

@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "context.hpp"
+#include "dense_transform_data.hpp"
 #include "../utility/randgen.hpp"
 
 #include "../utility/exception.hpp"

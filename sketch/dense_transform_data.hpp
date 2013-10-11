@@ -33,8 +33,8 @@ struct dense_transform_data_t {
         scale = 1.0;
     }
 
-    dense_transform_data_t& get_data() {
-        return static_cast<dense_transform_data_t&>(*this);
+    const dense_transform_data_t& get_data() const {
+        return static_cast<const dense_transform_data_t&>(*this);
   }
   protected:
 

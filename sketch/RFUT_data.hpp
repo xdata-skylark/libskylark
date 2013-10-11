@@ -36,8 +36,8 @@ struct RFUT_data_t {
         }
     }
 
-    RFUT_data_t& get_data() {
-        return static_cast<RFUT_data_t&>(*this);
+    const RFUT_data_t& get_data() const {
+        return static_cast<const RFUT_data_t&>(*this);
     }
 
 

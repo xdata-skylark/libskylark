@@ -149,7 +149,7 @@ public:
                                          ValueDistributionType>& other) :
         base_data_t(other.get_data()) {}
 
-    dense_transform_t(dense_transform_data_t<ValueType,
+    dense_transform_t(const dense_transform_data_t<ValueType,
         ValueDistributionType>& other_data) :
         base_data_t(other_data.get_data()) {}
 
@@ -263,7 +263,7 @@ public:
                                          ValueDistributionType>& other) :
         base_data_t(other.get_data()) {}
 
-    dense_transform_t(dense_transform_data_t<ValueType,
+    dense_transform_t(const dense_transform_data_t<ValueType,
         ValueDistributionType>& other_data) :
         base_data_t(other_data.get_data()) {}
     

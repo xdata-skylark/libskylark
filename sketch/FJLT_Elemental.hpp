@@ -42,7 +42,7 @@ private:
      */
     void apply_impl_vdist(const matrix_type& A,
                     output_matrix_type& sketch_A,
-                    skylark::sketch::columnwise_tag) {
+                    skylark::sketch::columnwise_tag) const {
 
         // Rearrange the matrix to fit the underlying transform
         intermediate_type inter_A(A.Grid());
@@ -75,7 +75,7 @@ private:
      */
     void apply_impl_vdist(const matrix_type& A,
                     output_matrix_type& sketch_of_A,
-                    skylark::sketch::rowwise_tag) {
+                    skylark::sketch::rowwise_tag) const {
 
         // TODO This is a quick&dirty hack - uses the columnwise implementation.
         matrix_type A_t(A.Grid());
@@ -106,7 +106,7 @@ public:
     template <typename Dimension>
     void apply (const matrix_type& A,
                 output_matrix_type& sketch_of_A,
-                Dimension dimension)  {
+                Dimension dimension) const {
         switch (ColDist) {
         case elem::VR:
         case elem::VC:

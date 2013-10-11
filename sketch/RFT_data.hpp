@@ -41,23 +41,24 @@ struct RFT_data_t {
             context.allocate_random_samples_array
             <value_type, value_distribution_type>
             (S, distribution);
+        // TODO: remove shifts and use "generate_random_sample_array"
         for (int i = 0; i < S; i++) {
             shifts[i] = random_samples[i];
         }
     }
 
-    RFT_data_t& get_data() {
-        return static_cast<RFT_data_t&>(*this);
+    const RFT_data_t& get_data() const {
+        return static_cast<const RFT_data_t&>(*this);
     }
 
 protected:
     const int N; /**< Input dimension  */
     const int S; /**< Output dimension  */
-    double sigma; /**< Bandwidth (sigma)  */
+    const double sigma; /**< Bandwidth (sigma)  */
     skylark::sketch::context_t& context; /**< Context for this sketch */
-    underlying_data_type  underlying_data;
+    const underlying_data_type underlying_data;
     std::vector<double> shifts;
-    double scale;
+    const double scale;
 };
 
 } } /** namespace skylark::sketch */

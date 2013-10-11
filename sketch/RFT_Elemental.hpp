@@ -47,7 +47,7 @@ public:
      */
     void apply_impl_vdist (const matrix_type& A,
                      output_matrix_type& sketch_of_A,
-                     skylark::sketch::columnwise_tag tag) {
+                     skylark::sketch::columnwise_tag tag) const {
         underlying_type underlying(base_data_t::underlying_data);
         underlying.apply(A, sketch_of_A, tag);
         elem::Matrix<value_type> &Al = sketch_of_A.Matrix();
@@ -67,7 +67,7 @@ public:
       */
     void apply_impl_vdist(const matrix_type& A,
         output_matrix_type& sketch_of_A,
-        skylark::sketch::rowwise_tag tag) {
+        skylark::sketch::rowwise_tag tag) const {
 
         // TODO verify sizes etc.
         underlying_type underlying(base_data_t::underlying_data);
@@ -103,7 +103,7 @@ public:
     template <typename Dimension>
     void apply (const matrix_type& A,
                 output_matrix_type& sketch_of_A,
-                Dimension dimension) {
+                Dimension dimension) const {
 
         switch(ColDist) {
         case elem::VR:

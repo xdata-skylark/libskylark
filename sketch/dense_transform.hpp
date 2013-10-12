@@ -8,7 +8,7 @@ namespace sketch {
 
 template < typename InputMatrixType,
            typename OutputMatrixType,
-           template <typename> class DistributionType>
+           template <typename> class ValueDistribution>
 class dense_transform_t {
     // Concrete transforms, like JLT, can derive this class and set the scale.
     // This enables also adding parameters to constuctor, adding methods,

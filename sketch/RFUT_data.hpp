@@ -16,6 +16,7 @@ namespace skylark { namespace sketch {
 template <typename ValueType,
           typename ValueDistributionType>
 struct RFUT_data_t {
+    // For "consistent notation" reasons only
     typedef ValueType value_type;
     typedef ValueDistributionType value_distribution_type;
 
@@ -23,17 +24,11 @@ struct RFUT_data_t {
      * Regular constructor
      */
     RFUT_data_t (int N, skylark::sketch::context_t& context)
-        : N(N), context(context), D(N) {
+        : N(N), context(context) {
         value_distribution_type distribution;
-        skylark::utility::random_samples_array_t
-            <value_type, value_distribution_type>
-            random_samples =
-            context.allocate_random_samples_array
+        D = context.generate_random_samples_array
             <value_type, value_distribution_type>
             (N, distribution);
-        for (int i = 0; i < N; i++) {
-            D[i] = random_samples[i] ? +1 : -1;
-        }
     }
 
     const RFUT_data_t& get_data() const {

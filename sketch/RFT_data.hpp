@@ -31,20 +31,12 @@ struct RFT_data_t {
     RFT_data_t (int N, int S, double sigma, skylark::sketch::context_t& context)
         : N(N), S(S), sigma(sigma), context(context),
           underlying_data(N, S, context),
-          shifts(S),
           scale(std::sqrt(2.0 / S)) {
         const double pi = boost::math::constants::pi<double>();
         value_distribution_type distribution(0, 2 * pi);
-        skylark::utility::random_samples_array_t
-            <value_type, value_distribution_type>
-            random_samples =
-            context.allocate_random_samples_array
-            <value_type, value_distribution_type>
+        shifts = context.generate_random_samples_array
+            <double, value_distribution_type>
             (S, distribution);
-        // TODO: remove shifts and use "generate_random_sample_array"
-        for (int i = 0; i < S; i++) {
-            shifts[i] = random_samples[i];
-        }
     }
 
     const RFT_data_t& get_data() const {
@@ -57,8 +49,8 @@ protected:
     const double sigma; /**< Bandwidth (sigma)  */
     skylark::sketch::context_t& context; /**< Context for this sketch */
     const underlying_data_type underlying_data;
-    std::vector<double> shifts;
     const double scale;
+    std::vector<double> shifts;
 };
 
 } } /** namespace skylark::sketch */

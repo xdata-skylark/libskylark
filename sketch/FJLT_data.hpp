@@ -31,19 +31,13 @@ struct FJLT_data_t {
           samples(S),
           underlying_data(N, context) {
         value_distribution_type distribution(0, N-1);
-        skylark::utility::random_samples_array_t
-            <value_type, value_distribution_type>
-            random_samples =
-            context.allocate_random_samples_array
+        samples = context.generate_random_samples_array
             <value_type, value_distribution_type>
             (S, distribution);
-        for (int i = 0; i < S; i++) {
-            samples[i] = random_samples[i];
-        }
     }
 
-    FJLT_data_t& get_data() {
-        return static_cast<FJLT_data_t&>(*this);
+    const FJLT_data_t& get_data() const {
+        return static_cast<const FJLT_data_t&>(*this);
     }
 
 
@@ -52,7 +46,7 @@ protected:
     const int S; /**< Output dimension  */
     skylark::sketch::context_t& context; /**< Context for this sketch */
     std::vector<value_type> samples;
-    underlying_data_type underlying_data;
+    const underlying_data_type underlying_data;
   };
 
 } } /** namespace skylark::sketch */

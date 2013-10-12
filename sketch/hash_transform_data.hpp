@@ -19,10 +19,10 @@ template <typename IndexType,
           typename IdxDistributionType,
           template <typename> class ValueDistributionType>
 struct hash_transform_data_t {
-  typedef IndexType index_t;
-  typedef ValueType value_t;
-  typedef IdxDistributionType idx_distribution_t;
-  typedef ValueDistributionType<ValueType> value_distribution_t;
+  typedef IndexType index_type;
+  typedef ValueType value_type;
+  typedef IdxDistributionType idx_distribution_type;
+  typedef ValueDistributionType<ValueType> value_distribution_type;
 
   /**
    * Regular constructor
@@ -32,35 +32,19 @@ struct hash_transform_data_t {
                          skylark::sketch::context_t& context)
   : N(N), S(S), context(context) {
 
-    try {
-      row_idx.resize(N);
-      row_value.resize(N);
-    } catch (std::bad_alloc ba) {
-      SKYLARK_THROW_EXCEPTION (
-        utility::allocation_exception()
-        << utility::error_msg(ba.what()) );
-    }
+    idx_distribution_type row_idx_distribution(0, S-1);
+    value_distribution_type row_value_distribution;
 
-    idx_distribution_t row_idx_distribution(0, S-1);
-    value_distribution_t row_value_distribution;
-
-    skylark::utility::random_samples_array_t<int, idx_distribution_t>
-        random_indices =
-        context.allocate_random_samples_array<int, idx_distribution_t>
+    row_idx = context.generate_random_samples_array
+        <int, idx_distribution_type>
         (N, row_idx_distribution);
-    skylark::utility::random_samples_array_t<value_t, value_distribution_t>
-        random_values =
-        context.allocate_random_samples_array<value_t, value_distribution_t>
+    row_value = context.generate_random_samples_array
+        <value_type, value_distribution_type>
         (N, row_value_distribution);
-
-    for (int i = 0; i < N; ++i) {
-            row_idx[i] = random_indices[i];
-            row_value[i] = random_values[i];
-    }
   }
 
-  hash_transform_data_t& get_data() {
-    return static_cast<hash_transform_data_t&>(*this);
+  const hash_transform_data_t& get_data() const {
+    return static_cast<const hash_transform_data_t&>(*this);
   }
 
   protected:
@@ -69,7 +53,7 @@ struct hash_transform_data_t {
   const int S; /**< Output dimension  */
   skylark::sketch::context_t& context; /**< Context for this sketch */
   std::vector<int> row_idx; /**< precomputed row indices */
-  std::vector<value_t> row_value; /**< precomputed scaling factors */
+  std::vector<value_type> row_value; /**< precomputed scaling factors */
 };
 
 } } /** namespace skylark::sketch */

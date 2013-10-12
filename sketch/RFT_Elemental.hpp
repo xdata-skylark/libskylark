@@ -18,13 +18,13 @@ namespace sketch {
  */
 template <typename ValueType,
           elem::Distribution ColDist,
-          template <typename> class UnderlyingValueDistributionType>
+          template <typename> class UnderlyingValueDistribution>
 struct RFT_t <
     elem::DistMatrix<ValueType, ColDist, elem::STAR>,
     elem::DistMatrix<ValueType, ColDist, elem::STAR>,
-    UnderlyingValueDistributionType> :
+    UnderlyingValueDistribution> :
         public RFT_data_t<ValueType,
-                          UnderlyingValueDistributionType> {
+                          UnderlyingValueDistribution> {
 public:
     // Typedef matrix type so that we can use it regularly
     typedef ValueType value_type;
@@ -34,10 +34,10 @@ public:
     typedef elem::DistMatrix<value_type, ColDist, elem::STAR>
     output_matrix_type;
     typedef RFT_data_t<ValueType,
-                       UnderlyingValueDistributionType> base_data_t;
+                       UnderlyingValueDistribution> base_data_t;
     // private:
     typedef skylark::sketch::dense_transform_t
-    <matrix_type, output_matrix_type, UnderlyingValueDistributionType>
+    <matrix_type, output_matrix_type, UnderlyingValueDistribution>
     underlying_type;
 
 
@@ -90,11 +90,9 @@ public:
     RFT_t (int N, int S, double sigma, skylark::sketch::context_t& context)
         : base_data_t (N, S, sigma, context) {}
 
-    template <typename InputMatrixType,
-              typename OutputMatrixType>
-    RFT_t(RFT_t<InputMatrixType,
-                OutputMatrixType,
-                UnderlyingValueDistributionType>& other)
+    RFT_t(RFT_t<matrix_type,
+                output_matrix_type,
+                UnderlyingValueDistribution>& other)
         : base_data_t(other.get_data()) {}
 
     /**

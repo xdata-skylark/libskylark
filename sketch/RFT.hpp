@@ -16,7 +16,7 @@ namespace bstrand = boost::random;
  */
 template < typename InputMatrixType,
            typename OutputMatrixType,
-           template <typename> class UnderlyingValueDistributionType>
+           template <typename> class UnderlyingValueDistribution>
 class RFT_t {
     // To be specilized and derived.
 

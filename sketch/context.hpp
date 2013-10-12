@@ -82,6 +82,29 @@ public:
     }
 
 
+    template <typename ValueType,
+              typename Distribution>
+    std::vector<ValueType> generate_random_samples_array(size_t size,
+        Distribution& distribution) {
+          skylark::utility::random_samples_array_t<ValueType, Distribution>
+              allocated_random_samples_array(_counter,
+                  size, _seed, distribution);
+          _counter = _counter + size;
+          std::vector<ValueType> random_samples_array;
+          try {
+              random_samples_array.resize(size);
+          } catch (std::bad_alloc ba) {
+              SKYLARK_THROW_EXCEPTION (
+                  utility::allocation_exception()
+                      << utility::error_msg(ba.what()) );
+          }
+          for(size_t i = 0; i < size; i++) {
+              random_samples_array[i] = allocated_random_samples_array[i];
+          }
+          return random_samples_array;
+    }
+
+
     /**
      * Returns a container of random numbers to be accessed as an array.
      * @param[in] size The size of the container.

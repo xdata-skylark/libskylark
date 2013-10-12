@@ -17,15 +17,15 @@ namespace skylark { namespace sketch {
 template <typename IndexType,
           typename ValueType,
           typename IdxDistributionType,
-          template <typename> class ValueDistributionType>
+          template <typename> class ValueDistribution>
 struct hash_transform_t <FullyDistMultiVec<IndexType, ValueType>,
                          FullyDistMultiVec<IndexType, ValueType>,
                          IdxDistributionType,
-                         ValueDistributionType > :
+                         ValueDistribution > :
   public hash_transform_data_t<IndexType,
                                ValueType,
                                IdxDistributionType,
-                               ValueDistributionType> {
+                               ValueDistribution> {
   typedef IndexType index_t;
   typedef ValueType value_t;
   typedef FullyDistVec<IndexType, ValueType> mpi_vector_t;
@@ -33,7 +33,7 @@ struct hash_transform_t <FullyDistMultiVec<IndexType, ValueType>,
   typedef hash_transform_data_t<IndexType,
                                 ValueType,
                                 IdxDistributionType,
-                                ValueDistributionType> base_data_t;
+                                ValueDistribution> base_data_t;
 
   hash_transform_t (int N, int S, skylark::sketch::context_t& context) :
         base_data_t (N, S, context) {}
@@ -43,7 +43,7 @@ struct hash_transform_t <FullyDistMultiVec<IndexType, ValueType>,
   hash_transform_t (hash_transform_t<InputMatrixType,
                                      OutputMatrixType,
                                      IdxDistributionType,
-                                     ValueDistributionType>& other) :
+                                     ValueDistribution>& other) :
               base_data_t(other.get_data()) {}
 
   template <typename Dimension>
@@ -117,16 +117,16 @@ struct hash_transform_t <FullyDistMultiVec<IndexType, ValueType>,
 template <typename IndexType,
       typename ValueType,
       typename IdxDistributionType,
-      template <typename> class ValueDistributionType>
+      template <typename> class ValueDistribution>
 struct hash_transform_t <
       SpParMat<IndexType, ValueType, SpDCCols<IndexType, ValueType> >,
       SpParMat<IndexType, ValueType, SpDCCols<IndexType, ValueType> >,
       IdxDistributionType,
-      ValueDistributionType > :
+      ValueDistribution > :
   public hash_transform_data_t<IndexType,
                                ValueType,
                                IdxDistributionType,
-                               ValueDistributionType> {
+                               ValueDistribution> {
   typedef IndexType index_t;
   typedef ValueType value_t;
   typedef SpDCCols< IndexType, value_t > col_t;
@@ -136,7 +136,7 @@ struct hash_transform_t <
   typedef hash_transform_data_t<IndexType,
                                 ValueType,
                                 IdxDistributionType,
-                                ValueDistributionType> base_data_t;
+                                ValueDistribution> base_data_t;
 
   hash_transform_t (int N, int S, skylark::sketch::context_t& context) :
                   base_data_t(N, S, context) {}
@@ -146,7 +146,7 @@ struct hash_transform_t <
   hash_transform_t (hash_transform_t<InputMatrixType,
                                      OutputMatrixType,
                                      IdxDistributionType,
-                                     ValueDistributionType>& other) :
+                                     ValueDistribution>& other) :
               base_data_t(other.get_data()) {}
 
   template <typename Dimension>

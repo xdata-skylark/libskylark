@@ -15,10 +15,10 @@ namespace skylark { namespace sketch {
  * to be lazily computed.
  */
 template <typename ValueType,
-          template <typename> class ValueDistributionType>
+          template <typename> class ValueDistribution>
 struct dense_transform_data_t {
     typedef ValueType value_type;
-    typedef ValueDistributionType<ValueType> value_distribution_type;
+    typedef ValueDistribution<ValueType> value_distribution_type;
 
     /**
      * Regular constructor

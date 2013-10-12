@@ -93,11 +93,9 @@ public:
     FJLT_t(int N, int S, skylark::sketch::context_t& context)
         : base_data_t (N, S, context) {}
 
-    template <typename InputMatrixType,
-              typename OutputMatrixType>
-    FJLT_t(FJLT_t<InputMatrixType,
-                  OutputMatrixType>& other)
-        : base_data_t(other.get_data()) {}
+    FJLT_t(FJLT_t<matrix_type,
+                  output_matrix_type>& other)
+    : base_data_t(other.get_data()) {}
 
 
     /**

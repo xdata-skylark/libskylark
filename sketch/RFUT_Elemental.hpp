@@ -62,14 +62,14 @@ public:
     RFUT_t(int N, skylark::sketch::context_t& context)
         : base_data_t (N, context) {}
 
-    template <typename MatrixType>
-    RFUT_t (RFUT_t<MatrixType,
+    //    template <typename MatrixType>
+    RFUT_t (RFUT_t<matrix_type, //MatrixType,
                    FUT,
-                   ValueDistributionType>& other) :
+                   value_distribution_type>& other) :
         base_data_t(other.get_data()) {}
 
-    RFUT_t(const RFUT_data_t<ValueType,
-        ValueDistributionType>& other_data) :
+    RFUT_t(const RFUT_data_t<value_type,
+        value_distribution_type>& other_data) :
         base_data_t(other_data.get_data()) {}
 
     /**
@@ -212,15 +212,15 @@ public:
     RFUT_t(int N, skylark::sketch::context_t& context)
         : base_data_t (N, context) {}
 
-    template <typename MatrixType>
-    RFUT_t (RFUT_t<MatrixType,
+    // template <typename MatrixType>
+    RFUT_t (RFUT_t<matrix_type, //MatrixType,
                    FUT,
-                   ValueDistributionType>& other) :
+                   value_distribution_type>& other) :
         base_data_t(other.get_data()) {}
 
-    RFUT_t(RFUT_data_t<ValueType,
-        ValueDistributionType>& other_data) :
-        base_data_t(other_data.get_data()) {}
+    RFUT_t(const RFUT_data_t<value_type,
+           value_distribution_type>& other_data) :
+           base_data_t(other_data.get_data()) {}
 
     /**
      * Apply the transform that is described in by the mixed_A.

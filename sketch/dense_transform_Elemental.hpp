@@ -18,21 +18,21 @@ namespace skylark { namespace sketch {
  */
 template <typename ValueType,
           elem::Distribution ColDist,
-          template <typename> class ValueDistributionType>
+          template <typename> class ValueDistribution>
 struct dense_transform_t <
     elem::DistMatrix<ValueType, ColDist, elem::STAR>,
     elem::Matrix<ValueType>,
-    ValueDistributionType > :
+    ValueDistribution > :
         public dense_transform_data_t<ValueType,
-                                      ValueDistributionType> {
+                                      ValueDistribution> {
     // Typedef matrix type so that we can use it regularly
     typedef ValueType value_type;
     typedef elem::DistMatrix<value_type, ColDist, elem::STAR> matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
     // Typedef distribution
-    typedef ValueDistributionType<value_type> value_distribution_type;
+    typedef ValueDistribution<value_type> value_distribution_type;
     typedef dense_transform_data_t<ValueType,
-                                  ValueDistributionType> base_data_t;
+                                  ValueDistribution> base_data_t;
 
 private:
     /**
@@ -142,15 +142,13 @@ public:
     dense_transform_t (int N, int S, skylark::sketch::context_t& context)
         : base_data_t (N, S, context) {}
 
-    template <typename InputMatrixType,
-              typename OutputMatrixType>
-    dense_transform_t (dense_transform_t<InputMatrixType,
-                                         OutputMatrixType,
-                                         ValueDistributionType>& other) :
+    dense_transform_t (dense_transform_t<matrix_type,
+                                         output_matrix_type,
+                                         ValueDistribution>& other) :
         base_data_t(other.get_data()) {}
 
-    dense_transform_t(const dense_transform_data_t<ValueType,
-        ValueDistributionType>& other_data) :
+    dense_transform_t(const dense_transform_data_t<value_type,
+        ValueDistribution>& other_data) :
         base_data_t(other_data.get_data()) {}
 
     /**
@@ -190,21 +188,22 @@ public:
  */
 template <typename ValueType,
           elem::Distribution ColDist,
-          template <typename> class ValueDistributionType>
+          template <typename> class ValueDistribution>
 struct dense_transform_t <
     elem::DistMatrix<ValueType, ColDist, elem::STAR>,
     elem::DistMatrix<ValueType, ColDist, elem::STAR>,
-    ValueDistributionType> :
+    ValueDistribution> :
         public dense_transform_data_t<ValueType,
-                                      ValueDistributionType> {
+                                      ValueDistribution> {
     // Typedef matrix type so that we can use it regularly
     typedef ValueType value_type;
     typedef elem::DistMatrix<value_type, ColDist, elem::STAR> matrix_type;
-    typedef elem::DistMatrix<value_type, ColDist, elem::STAR> output_matrix_type;
+    typedef elem::DistMatrix<value_type, ColDist, elem::STAR>
+    output_matrix_type;
     // Typedef distribution
-    typedef ValueDistributionType<value_type> value_distribution_type;
+    typedef ValueDistribution<value_type> value_distribution_type;
     typedef dense_transform_data_t<ValueType,
-                                  ValueDistributionType> base_data_t;
+                                  ValueDistribution> base_data_t;
 
 private:
     /**
@@ -256,17 +255,15 @@ public:
     dense_transform_t (int N, int S, skylark::sketch::context_t& context)
         : base_data_t (N, S, context) {}
 
-    template <typename InputMatrixType,
-              typename OutputMatrixType>
-    dense_transform_t (dense_transform_t<InputMatrixType,
-                                         OutputMatrixType,
-                                         ValueDistributionType>& other) :
+    dense_transform_t (dense_transform_t<matrix_type,
+                                         output_matrix_type,
+                                         ValueDistribution>& other) :
         base_data_t(other.get_data()) {}
 
-    dense_transform_t(const dense_transform_data_t<ValueType,
-        ValueDistributionType>& other_data) :
+    dense_transform_t(const dense_transform_data_t<value_type,
+        ValueDistribution>& other_data) :
         base_data_t(other_data.get_data()) {}
-    
+
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
      */

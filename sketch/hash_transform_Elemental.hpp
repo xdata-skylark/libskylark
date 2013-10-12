@@ -14,40 +14,38 @@ namespace skylark { namespace sketch {
 template <typename ValueType,
           elem::Distribution ColDist,
           typename IdxDistributionType,
-          template <typename> class ValueDistributionType>
+          template <typename> class ValueDistribution>
 struct hash_transform_t <
   elem::DistMatrix<ValueType, ColDist, elem::STAR>,
   elem::Matrix<ValueType>,
   IdxDistributionType,
-  ValueDistributionType > :
+  ValueDistribution > :
   public hash_transform_data_t<int,
                                ValueType,
                                IdxDistributionType,
-                               ValueDistributionType> {
+                               ValueDistribution> {
   // Typedef matrix type so that we can use it regularly
   typedef ValueType value_type;
   typedef elem::DistMatrix<value_type, ColDist, elem::STAR> matrix_type;
   typedef elem::Matrix<value_type> output_matrix_type;
   typedef IdxDistributionType idx_distribution_type;
-  typedef ValueDistributionType<value_type> value_distribution_type;
+  typedef ValueDistribution<value_type> value_distribution_type;
   typedef hash_transform_data_t<int,
                                 ValueType,
                                 IdxDistributionType,
-                                ValueDistributionType> base_data_t;
+                                ValueDistribution> base_data_t;
 
   /**
    * Constructor
    * Create an object with a particular seed value.
    */
-  hash_transform_t (int N, int S, skylark::sketch::context_t& context) :
+   hash_transform_t (int N, int S, skylark::sketch::context_t& context) :
       base_data_t (N, S, context) {}
 
-  template <typename InputMatrixType,
-        typename OutputMatrixType>
-  hash_transform_t (hash_transform_t<InputMatrixType,
-                     OutputMatrixType,
-                     IdxDistributionType,
-                     ValueDistributionType>& other) :
+   hash_transform_t (hash_transform_t<matrix_type,
+                                       output_matrix_type,
+                                       idx_distribution_type,
+                                       ValueDistribution>& other) :
         base_data_t(other.get_data()) {}
 
   /**

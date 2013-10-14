@@ -1,5 +1,5 @@
-#ifndef WZT_HPP
-#define WZT_HPP
+#ifndef SKYLARK_WZT_HPP
+#define SKYLARK_WZT_HPP
 
 #include <boost/random.hpp>
 #include "hash_transform.hpp"
@@ -38,4 +38,4 @@ struct WZT_t : public hash_transform_t<
 
 } } /** namespace skylark::sketch */
 
-#endif // WZT_HPP
+#endif // SKYLARK_WZT_HPP

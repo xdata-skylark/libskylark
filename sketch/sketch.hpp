@@ -1,5 +1,5 @@
-#ifndef SKETCH_HPP
-#define SKETCH_HPP
+#ifndef SKYLARK_SKETCH_HPP
+#define SKYLARK_SKETCH_HPP
 
 /**
  * In general, please only include files that you actually want. However, the
@@ -22,4 +22,4 @@
 /** skylark::sketch::context_t also happens to be a powerful utility for RNG*/
 #include "context.hpp"
 
-#endif // SKETCH_HPP
+#endif // SKYLARK_SKETCH_HPP

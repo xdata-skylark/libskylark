@@ -1,5 +1,5 @@
-#ifndef FUT_HPP
-#define FUT_HPP
+#ifndef SKYLARK_FUT_HPP
+#define SKYLARK_FUT_HPP
 
 #include "../config.h"
 
@@ -12,8 +12,7 @@
 #include "context.hpp"
 #include "transforms.hpp"
 
-namespace skylark {
-namespace sketch {
+namespace skylark { namespace sketch {
 
 template < typename ValueType,
            typename PlanType, typename KindType,
@@ -113,9 +112,8 @@ struct fft_futs<float> {
 };
 
 
-} // namespace sketch
-} // namespace skylark
+} } /** namespace skylark::sketch */
 
 #endif // SKYLARK_HAVE_FFTW
 
-#endif // FUT_HPP
+#endif // SKYLARK_FUT_HPP

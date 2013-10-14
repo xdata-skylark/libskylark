@@ -1,20 +1,19 @@
-#ifndef DENSE_TRANSFORM_ELEMENTAL_HPP
-#define DENSE_TRANSFORM_ELEMENTAL_HPP
+#ifndef SKYLARK_DENSE_TRANSFORM_ELEMENTAL_HPP
+#define SKYLARK_DENSE_TRANSFORM_ELEMENTAL_HPP
 
 #include <elemental.hpp>
 
 #include "context.hpp"
-#include "dense_transform_data.hpp"
 #include "transforms.hpp"
+#include "dense_transform_data.hpp"
 #include "../utility/comm.hpp"
 #include "../utility/exception.hpp"
-#include "../utility/randgen.hpp"
 
 
 namespace skylark { namespace sketch {
 
 /**
- * Specialization distributed input, local output, for [*, SOMETHING]
+ * Specialization distributed input, local output, for [SOMETHING, *]
  */
 template <typename ValueType,
           elem::Distribution ColDist,
@@ -25,14 +24,65 @@ struct dense_transform_t <
     ValueDistribution > :
         public dense_transform_data_t<ValueType,
                                       ValueDistribution> {
-    // Typedef matrix type so that we can use it regularly
+    // Typedef matrix and distribution types so that we can use them regularly
     typedef ValueType value_type;
     typedef elem::DistMatrix<value_type, ColDist, elem::STAR> matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
-    // Typedef distribution
     typedef ValueDistribution<value_type> value_distribution_type;
     typedef dense_transform_data_t<ValueType,
                                   ValueDistribution> base_data_t;
+
+    /**
+     * Regular constructor
+     */
+    dense_transform_t (int N, int S, skylark::sketch::context_t& context)
+        : base_data_t (N, S, context) {}
+
+    /**
+     * Copy constructor
+     */
+    dense_transform_t (dense_transform_t<matrix_type,
+                                         output_matrix_type,
+                                         ValueDistribution>& other)
+        : base_data_t(other.get_data()) {}
+
+    /**
+     * Constructor from data
+     */
+    dense_transform_t(const dense_transform_data_t<value_type,
+                                            ValueDistribution>& other_data)
+        : base_data_t(other_data.get_data()) {}
+
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     */
+    template <typename Dimension>
+    void apply (const matrix_type& A,
+                output_matrix_type& sketch_of_A,
+                Dimension dimension) const {
+
+        switch(ColDist) {
+        case elem::VR:
+        case elem::VC:
+            try {
+                apply_impl_vdist (A, sketch_of_A, dimension);
+            } catch (std::logic_error e) {
+                SKYLARK_THROW_EXCEPTION (
+                    utility::elemental_exception()
+                        << utility::error_msg(e.what()) );
+            } catch(boost::mpi::exception e) {
+                SKYLARK_THROW_EXCEPTION (
+                    utility::mpi_exception()
+                        << utility::error_msg(e.what()) );
+            }
+
+            break;
+
+        default:
+            SKYLARK_THROW_EXCEPTION (
+                utility::unsupported_matrix_distribution() );
+        }
+    }
 
 private:
     /**
@@ -134,22 +184,50 @@ private:
             SA_dist, sketch_of_A);
     }
 
-public:
+};
+
+
+/**
+ * Specialization distributed input and output in [SOMETHING, *]
+ */
+template <typename ValueType,
+          elem::Distribution ColDist,
+          template <typename> class ValueDistribution>
+struct dense_transform_t <
+    elem::DistMatrix<ValueType, ColDist, elem::STAR>,
+    elem::DistMatrix<ValueType, ColDist, elem::STAR>,
+    ValueDistribution> :
+        public dense_transform_data_t<ValueType,
+                                      ValueDistribution> {
+    // Typedef matrix and distribution types so that we can use them regularly
+    typedef ValueType value_type;
+    typedef elem::DistMatrix<value_type, ColDist, elem::STAR> matrix_type;
+    typedef elem::DistMatrix<value_type, ColDist, elem::STAR>
+    output_matrix_type;
+    typedef ValueDistribution<value_type> value_distribution_type;
+    typedef dense_transform_data_t<ValueType,
+                                   ValueDistribution> base_data_t;
+
     /**
-     * Constructor
-     * Create an object with a particular seed value.
+     * Regular Constructor
      */
     dense_transform_t (int N, int S, skylark::sketch::context_t& context)
         : base_data_t (N, S, context) {}
 
+    /**
+     * Copy constructor
+     */
     dense_transform_t (dense_transform_t<matrix_type,
                                          output_matrix_type,
-                                         ValueDistribution>& other) :
-        base_data_t(other.get_data()) {}
+                                         ValueDistribution>& other)
+        : base_data_t(other.get_data()) {}
 
+    /**
+     * Constructor from data
+     */
     dense_transform_t(const dense_transform_data_t<value_type,
-        ValueDistribution>& other_data) :
-        base_data_t(other_data.get_data()) {}
+                                            ValueDistribution>& other_data)
+        : base_data_t(other_data.get_data()) {}
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
@@ -167,11 +245,11 @@ public:
             } catch (std::logic_error e) {
                 SKYLARK_THROW_EXCEPTION (
                     utility::elemental_exception()
-                    << utility::error_msg(e.what()) );
+                        << utility::error_msg(e.what()) );
             } catch(boost::mpi::exception e) {
                 SKYLARK_THROW_EXCEPTION (
                     utility::mpi_exception()
-                    << utility::error_msg(e.what()) );
+                        << utility::error_msg(e.what()) );
             }
 
             break;
@@ -181,29 +259,6 @@ public:
                 utility::unsupported_matrix_distribution() );
         }
     }
-};
-
-/**
- * Specialization distributed input and output in [*, SOMETHING]
- */
-template <typename ValueType,
-          elem::Distribution ColDist,
-          template <typename> class ValueDistribution>
-struct dense_transform_t <
-    elem::DistMatrix<ValueType, ColDist, elem::STAR>,
-    elem::DistMatrix<ValueType, ColDist, elem::STAR>,
-    ValueDistribution> :
-        public dense_transform_data_t<ValueType,
-                                      ValueDistribution> {
-    // Typedef matrix type so that we can use it regularly
-    typedef ValueType value_type;
-    typedef elem::DistMatrix<value_type, ColDist, elem::STAR> matrix_type;
-    typedef elem::DistMatrix<value_type, ColDist, elem::STAR>
-    output_matrix_type;
-    // Typedef distribution
-    typedef ValueDistribution<value_type> value_distribution_type;
-    typedef dense_transform_data_t<ValueType,
-                                  ValueDistribution> base_data_t;
 
 private:
     /**
@@ -247,56 +302,8 @@ private:
             sketch_of_A.Matrix());
     }
 
-public:
-    /**
-     * Constructor
-     * Create an object with a particular seed value.
-     */
-    dense_transform_t (int N, int S, skylark::sketch::context_t& context)
-        : base_data_t (N, S, context) {}
-
-    dense_transform_t (dense_transform_t<matrix_type,
-                                         output_matrix_type,
-                                         ValueDistribution>& other) :
-        base_data_t(other.get_data()) {}
-
-    dense_transform_t(const dense_transform_data_t<value_type,
-        ValueDistribution>& other_data) :
-        base_data_t(other_data.get_data()) {}
-
-    /**
-     * Apply the sketching transform that is described in by the sketch_of_A.
-     */
-    template <typename Dimension>
-    void apply (const matrix_type& A,
-                output_matrix_type& sketch_of_A,
-                Dimension dimension) const {
-
-        switch(ColDist) {
-        case elem::VR:
-        case elem::VC:
-            try {
-                apply_impl_vdist (A, sketch_of_A, dimension);
-            } catch (std::logic_error e) {
-                SKYLARK_THROW_EXCEPTION (
-                    utility::elemental_exception()
-                    << utility::error_msg(e.what()) );
-            } catch(boost::mpi::exception e) {
-                SKYLARK_THROW_EXCEPTION (
-                    utility::mpi_exception()
-                    << utility::error_msg(e.what()) );
-            }
-
-            break;
-
-        default:
-            SKYLARK_THROW_EXCEPTION (
-                utility::unsupported_matrix_distribution() );
-        }
-    }
 };
 
-} // namespace sketch
-} // namespace skylark
+} } /** namespace skylark::sketch */
 
-#endif // DENSE_TRANSFORM_ELEMENTAL_HPP
+#endif // SKYLARK_DENSE_TRANSFORM_ELEMENTAL_HPP

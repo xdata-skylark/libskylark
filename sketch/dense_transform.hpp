@@ -1,10 +1,9 @@
-#ifndef DENSE_TRANSFORM_HPP
-#define DENSE_TRANSFORM_HPP
+#ifndef SKYLARK_DENSE_TRANSFORM_HPP
+#define SKYLARK_DENSE_TRANSFORM_HPP
 
 #include "../config.h"
 
-namespace skylark {
-namespace sketch {
+namespace skylark { namespace sketch {
 
 template < typename InputMatrixType,
            typename OutputMatrixType,
@@ -20,12 +19,10 @@ class dense_transform_t {
 };
 
 
-} // namespace sketch
-} // namespace skylark
-
+} } /** namespace skylark::sketch */
 
 #if SKYLARK_HAVE_ELEMENTAL
 #include "dense_transform_Elemental.hpp"
 #endif
 
-#endif // DENSE_TRANSFORM_HPP
+#endif // SKYLARK_DENSE_TRANSFORM_HPP

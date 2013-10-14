@@ -1,12 +1,12 @@
-#ifndef FJLT_ELEMENTAL_HPP
-#define FJLT_ELEMENTAL_HPP
+#ifndef SKYLARK_FJLT_ELEMENTAL_HPP
+#define SKYLARK_FJLT_ELEMENTAL_HPP
 
 #include <elemental.hpp>
 
 #include "context.hpp"
-#include "FJLT_data.hpp"
 #include "transforms.hpp"
-#include "../utility/randgen.hpp"
+#include "FJLT_data.hpp"
+#include "../utility/exception.hpp"
 
 namespace skylark { namespace sketch {
 /**
@@ -14,26 +14,70 @@ namespace skylark { namespace sketch {
  */
 template <typename ValueType, elem::Distribution ColDist>
 struct FJLT_t <
-    elem::DistMatrix<ValueType, ColDist, elem::STAR>, /*InputMatrix*/
+    elem::DistMatrix<ValueType, ColDist, elem::STAR>,
     elem::Matrix<ValueType> > :
-        public FJLT_data_t<ValueType>
-{ /* OutputMatrix */
-
-public:
-    // Typedef matrix type so that we can use it regularly
+        public FJLT_data_t<ValueType> {
+    // Typedef value, matrix, transform, distribution and transform data types
+    // so that we can use them regularly and consistently.
     typedef ValueType value_type;
     typedef elem::DistMatrix<value_type, ColDist, elem::STAR> matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
-    typedef elem::DistMatrix<ValueType, elem::STAR, ColDist>
-    intermediate_type;
+    typedef elem::DistMatrix<ValueType,
+                             elem::STAR, ColDist> intermediate_type;
     typedef fft_futs<double>::DCT transform_type;
     typedef FJLT_data_t<value_type> base_data_t;
     typedef utility::rademacher_distribution_t<value_type>
     underlying_value_distribution_type;
+private:
     typedef RFUT_t<intermediate_type,
                    transform_type,
-                   underlying_value_distribution_type>
-    underlying_type;
+                   underlying_value_distribution_type> underlying_type;
+
+public:
+    /**
+     * Regular constructor
+     */
+    FJLT_t(int N, int S, skylark::sketch::context_t& context)
+        : base_data_t (N, S, context) {}
+
+    /**
+     * Copy constructor
+     */
+    FJLT_t(FJLT_t<matrix_type,
+                  output_matrix_type>& other)
+    : base_data_t(other.get_data()) {}
+
+
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     */
+    template <typename Dimension>
+    void apply (const matrix_type& A,
+                output_matrix_type& sketch_of_A,
+                Dimension dimension) const {
+        switch (ColDist) {
+        case elem::VR:
+        case elem::VC:
+            try {
+                apply_impl_vdist (A, sketch_of_A, dimension);
+            } catch (std::logic_error e) {
+                SKYLARK_THROW_EXCEPTION (
+                    utility::elemental_exception()
+                        << utility::error_msg(e.what()) );
+            } catch(boost::mpi::exception e) {
+                SKYLARK_THROW_EXCEPTION (
+                    utility::mpi_exception()
+                        << utility::error_msg(e.what()) );
+            }
+
+            break;
+
+        default:
+            SKYLARK_THROW_EXCEPTION (
+                utility::unsupported_matrix_distribution() );
+
+        }
+    }
 
 private:
     /**
@@ -86,39 +130,8 @@ private:
             skylark::sketch::columnwise_tag());
         elem::Transpose(sketch_of_A_t, sketch_of_A);
      }
-
-
-public:
-
-    FJLT_t(int N, int S, skylark::sketch::context_t& context)
-        : base_data_t (N, S, context) {}
-
-    FJLT_t(FJLT_t<matrix_type,
-                  output_matrix_type>& other)
-    : base_data_t(other.get_data()) {}
-
-
-    /**
-     * Apply the sketching transform that is described in by the sketch_of_A.
-     */
-    template <typename Dimension>
-    void apply (const matrix_type& A,
-                output_matrix_type& sketch_of_A,
-                Dimension dimension) const {
-        switch (ColDist) {
-        case elem::VR:
-        case elem::VC:
-            apply_impl_vdist (A, sketch_of_A, dimension);
-            break;
-
-        default:
-            std::cerr << "Unsupported for now..." << std::endl;
-            break;
-        }
-    }
 };
 
-} // namespace sketch
-} // namespace skylark
+} } /** namespace skylark::sketch */
 
 #endif // FJLT_ELEMENTAL_HPP

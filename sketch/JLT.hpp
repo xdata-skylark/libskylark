@@ -1,10 +1,9 @@
-#ifndef JLT_HPP
-#define JLT_HPP
+#ifndef SKYLARK_JLT_HPP
+#define SKYLARK_JLT_HPP
 
 #include "dense_transform.hpp"
 
-namespace skylark {
-namespace sketch {
+namespace skylark { namespace sketch {
 
 namespace bstrand = boost::random;
 
@@ -31,7 +30,6 @@ struct JLT_t :
     }
 };
 
-} // namespace sketch
-} // namespace skylark
+} } /** namespace skylark::sketch */
 
-#endif // JLT_HPP
+#endif // SKYLARK_JLT_HPP

@@ -1,17 +1,16 @@
-#ifndef RFT_ELEMENTAL_HPP
-#define RFT_ELEMENTAL_HPP
+#ifndef SKYLARK_RFT_ELEMENTAL_HPP
+#define SKYLARK_RFT_ELEMENTAL_HPP
 
 #include <elemental.hpp>
 
 #include "context.hpp"
-#include "RFT_data.hpp"
-#include "dense_transform_data.hpp"
 #include "transforms.hpp"
-#include "../utility/randgen.hpp"
+#include "RFT_data.hpp"
+#include "../utility/exception.hpp"
+
 
 namespace skylark {
 namespace sketch {
-
 
 /**
  * Specialization distributed input and output in [*, SOMETHING]
@@ -25,22 +24,69 @@ struct RFT_t <
     UnderlyingValueDistribution> :
         public RFT_data_t<ValueType,
                           UnderlyingValueDistribution> {
-public:
-    // Typedef matrix type so that we can use it regularly
+    // Typedef value, matrix, transform, distribution and transform data types
+    // so that we can use them regularly and consistently.
     typedef ValueType value_type;
-    typedef boost::random::uniform_real_distribution<>
-    value_distribution_type;
+    typedef boost::random::uniform_real_distribution<> value_distribution_type;
     typedef elem::DistMatrix<value_type, ColDist, elem::STAR> matrix_type;
-    typedef elem::DistMatrix<value_type, ColDist, elem::STAR>
-    output_matrix_type;
+    typedef elem::DistMatrix<value_type,
+                             ColDist, elem::STAR> output_matrix_type;
     typedef RFT_data_t<ValueType,
                        UnderlyingValueDistribution> base_data_t;
-    // private:
-    typedef skylark::sketch::dense_transform_t
-    <matrix_type, output_matrix_type, UnderlyingValueDistribution>
+private:
+    typedef skylark::sketch::dense_transform_t <matrix_type,
+                                                output_matrix_type,
+                                                UnderlyingValueDistribution>
     underlying_type;
 
 
+public:
+    /**
+     * Regular constructor
+     */
+    RFT_t (int N, int S, double sigma, skylark::sketch::context_t& context)
+        : base_data_t (N, S, sigma, context) {}
+
+    /**
+     * Copy constructor
+     */
+    RFT_t(RFT_t<matrix_type,
+                output_matrix_type,
+                UnderlyingValueDistribution>& other)
+        : base_data_t(other.get_data()) {}
+
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     */
+    template <typename Dimension>
+    void apply (const matrix_type& A,
+                output_matrix_type& sketch_of_A,
+                Dimension dimension) const {
+
+        switch(ColDist) {
+        case elem::VR:
+        case elem::VC:
+            try {
+            apply_impl_vdist (A, sketch_of_A, dimension);
+            } catch (std::logic_error e) {
+                SKYLARK_THROW_EXCEPTION (
+                    utility::elemental_exception()
+                        << utility::error_msg(e.what()) );
+            } catch(boost::mpi::exception e) {
+                SKYLARK_THROW_EXCEPTION (
+                    utility::mpi_exception()
+                        << utility::error_msg(e.what()) );
+            }
+
+            break;
+
+        default:
+            SKYLARK_THROW_EXCEPTION (
+                utility::unsupported_matrix_distribution() );
+        }
+    }
+
+private:
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
      * Implementation for [VR/VC, *] and columnwise.
@@ -83,40 +129,8 @@ public:
             }
     }
 
-public:
-    /**
-     * Constructor
-     */
-    RFT_t (int N, int S, double sigma, skylark::sketch::context_t& context)
-        : base_data_t (N, S, sigma, context) {}
-
-    RFT_t(RFT_t<matrix_type,
-                output_matrix_type,
-                UnderlyingValueDistribution>& other)
-        : base_data_t(other.get_data()) {}
-
-    /**
-     * Apply the sketching transform that is described in by the sketch_of_A.
-     */
-    template <typename Dimension>
-    void apply (const matrix_type& A,
-                output_matrix_type& sketch_of_A,
-                Dimension dimension) const {
-
-        switch(ColDist) {
-        case elem::VR:
-        case elem::VC:
-            apply_impl_vdist (A, sketch_of_A, dimension);
-            break;
-
-        default:
-            std::cerr << "Unsupported for now..." << std::endl;
-            break;
-        }
-    }
 };
 
-} // namespace sketch
-} // namespace skylark
+} } /** namespace skylark::sketch */
 
-#endif // RFT_ELEMENTAL_HPP
+#endif // SKYLARK_RFT_ELEMENTAL_HPP

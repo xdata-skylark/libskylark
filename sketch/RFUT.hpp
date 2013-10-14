@@ -1,10 +1,9 @@
-#ifndef RFUT_HPP
-#define RFUT_HPP
+#ifndef SKYLARK_RFUT_HPP
+#define SKYLARK_RFUT_HPP
 
 #include "../config.h"
 
-namespace skylark {
-namespace sketch {
+namespace skylark { namespace sketch {
 
 /**
  * Random Fast Unitary Transform.
@@ -17,8 +16,7 @@ struct RFUT_t {
 
 };
 
-} // namespace sketch
-} // namespace skylark
+} } /** namespace skylark::sketch */
 
 #if SKYLARK_HAVE_ELEMENTAL
 # include "RFUT_Elemental.hpp"

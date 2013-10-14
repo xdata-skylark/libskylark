@@ -1,28 +1,29 @@
-#ifndef RFT_DATA_HPP
-#define RFT_DATA_HPP
+#ifndef SKYLARK_RFT_DATA_HPP
+#define SKYLARK_RFT_DATA_HPP
 
 #include <vector>
+
 #include "context.hpp"
 #include "dense_transform_data.hpp"
 #include "../utility/randgen.hpp"
 
-#include "../utility/exception.hpp"
 
 namespace skylark { namespace sketch {
 
 /**
- * This is the base class for all dense transforms. Essentially, it
- * holds the input and sketched matrix sizes and the array of samples
- * to be lazily computed.
+ * This is the base data class for RFT. Essentially, it
+ * holds the input and sketched matrix sizes, the vector of shifts
+ * and the data of the underlying transform.
  */
 template <typename ValueType,
-          template <typename> class UnderlyingValueDistributionType>
+          template <typename> class UnderlyingValueDistribution>
 struct RFT_data_t {
+    // Typedef value, distribution and data types so that we can use them
+    // regularly and consistently
     typedef ValueType value_type;
-    typedef boost::random::uniform_real_distribution<>
-    value_distribution_type;
-    typedef skylark::sketch::dense_transform_data_t
-    <value_type, UnderlyingValueDistributionType>
+    typedef boost::random::uniform_real_distribution<> value_distribution_type;
+    typedef skylark::sketch::dense_transform_data_t<value_type,
+                                                    UnderlyingValueDistribution>
     underlying_data_type;
 
     /**
@@ -34,14 +35,16 @@ struct RFT_data_t {
           scale(std::sqrt(2.0 / S)) {
         const double pi = boost::math::constants::pi<double>();
         value_distribution_type distribution(0, 2 * pi);
-        shifts = context.generate_random_samples_array
-            <double, value_distribution_type>
+        shifts = context.generate_random_samples_array<double,
+                                                       value_distribution_type>
             (S, distribution);
     }
+
 
     const RFT_data_t& get_data() const {
         return static_cast<const RFT_data_t&>(*this);
     }
+
 
 protected:
     const int N; /**< Input dimension  */
@@ -49,10 +52,11 @@ protected:
     const double sigma; /**< Bandwidth (sigma)  */
     skylark::sketch::context_t& context; /**< Context for this sketch */
     const underlying_data_type underlying_data;
-    const double scale;
-    std::vector<double> shifts;
+    /**< Data of the underlying dense transformation */
+    const double scale; /** Scaling for trigonometric factor */
+    std::vector<double> shifts; /** Shifts for scaled trigonometric factor */
 };
 
 } } /** namespace skylark::sketch */
 
-#endif /** RFT_DATA_HPP */
+#endif /** SKYLARK_RFT_DATA_HPP */

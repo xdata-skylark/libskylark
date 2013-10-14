@@ -1,10 +1,9 @@
-#ifndef RFT_HPP
-#define RFT_HPP
+#ifndef SKYLARK_RFT_HPP
+#define SKYLARK_RFT_HPP
 
 #include "../config.h"
 
-namespace skylark {
-namespace sketch {
+namespace skylark { namespace sketch {
 
 namespace bstrand = boost::random;
 
@@ -56,12 +55,11 @@ struct LaplacianRFT_t :
         : Base(N, S, sigma, context) { };
 };
 
-} // namespace sketch
-} // namespace skylark
+} } /** namespace skylark::sketch */
 
 
 #if SKYLARK_HAVE_ELEMENTAL
 #include "RFT_Elemental.hpp"
 #endif
 
-#endif // RFT_HPP
+#endif // SKYLARK_RFT_HPP

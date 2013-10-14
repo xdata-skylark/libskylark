@@ -1,10 +1,9 @@
-#ifndef CT_HPP
-#define CT_HPP
+#ifndef SKYLARK_CT_HPP
+#define SKYLARK_CT_HPP
 
 #include "dense_transform.hpp"
 
-namespace skylark {
-namespace sketch {
+namespace skylark { namespace sketch {
 
 namespace bstrand = boost::random;
 
@@ -31,7 +30,6 @@ struct CT_t :
     }
 };
 
-} // namespace sketch
-} // namespace skylark
+} } /** namespace skylark::sketch */
 
-#endif // CT_HPP
+#endif // SKYLARK_CT_HPP

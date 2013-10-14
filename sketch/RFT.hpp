@@ -1,10 +1,9 @@
-#ifndef RFT_HPP
-#define RFT_HPP
+#ifndef SKYLARK_RFT_HPP
+#define SKYLARK_RFT_HPP
 
 #include "../config.h"
 
-namespace skylark {
-namespace sketch {
+namespace skylark { namespace sketch {
 
 namespace bstrand = boost::random;
 
@@ -16,7 +15,7 @@ namespace bstrand = boost::random;
  */
 template < typename InputMatrixType,
            typename OutputMatrixType,
-           template <typename> class Distribution>
+           template <typename> class UnderlyingValueDistribution>
 class RFT_t {
     // To be specilized and derived.
 
@@ -56,12 +55,11 @@ struct LaplacianRFT_t :
         : Base(N, S, sigma, context) { };
 };
 
-} // namespace sketch
-} // namespace skylark
+} } /** namespace skylark::sketch */
 
 
 #if SKYLARK_HAVE_ELEMENTAL
 #include "RFT_Elemental.hpp"
 #endif
 
-#endif // RFT_HPP
+#endif // SKYLARK_RFT_HPP

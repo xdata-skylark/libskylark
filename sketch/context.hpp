@@ -1,5 +1,5 @@
-#ifndef CONTEXT_HPP
-#define CONTEXT_HPP
+#ifndef SKYLARK_CONTEXT_HPP
+#define SKYLARK_CONTEXT_HPP
 
 #include "../utility/exception.hpp"
 #include "../utility/randgen.hpp"
@@ -18,13 +18,7 @@ struct context_t {
     int rank;
     /// Number of processes in the group
     int size;
-private:
-    /// Internal counter identifying the start of next stream of random numbers
-    size_t _counter;
-    /// The seed used for initializing the context
-    int _seed;
 
-public:
     /**
      * Initialize context with a seed and the communicator.
      * @param[in] seed Random seed to be used for all computations.
@@ -75,10 +69,40 @@ public:
               typename Distribution>
     skylark::utility::random_samples_array_t<ValueType, Distribution>
     allocate_random_samples_array(size_t size, Distribution& distribution) {
-          skylark::utility::random_samples_array_t<ValueType, Distribution>
-              random_samples_array(_counter, size, _seed, distribution);
-          _counter = _counter + size;
-          return random_samples_array;
+        skylark::utility::random_samples_array_t<ValueType,
+                                                 Distribution>
+            random_samples_array(_counter, size, _seed, distribution);
+        _counter = _counter + size;
+        return random_samples_array;
+    }
+
+
+    /**
+     * Returns a vector of samples drawn from a distribution.
+     * @param[in] size The size of the vector.
+     * @param[in] distribution The distribution to draw samples from.
+     * @return Random samples' vector.
+     */
+    template <typename ValueType,
+              typename Distribution>
+    std::vector<ValueType> generate_random_samples_array(size_t size,
+        Distribution& distribution) {
+        skylark::utility::random_samples_array_t<ValueType,
+                                                 Distribution>
+            allocated_random_samples_array(_counter, size,_seed, distribution);
+        _counter = _counter + size;
+        std::vector<ValueType> random_samples_array;
+        try {
+            random_samples_array.resize(size);
+        } catch (std::bad_alloc ba) {
+            SKYLARK_THROW_EXCEPTION (
+                utility::allocation_exception()
+                    << utility::error_msg(ba.what()) );
+        }
+        for(size_t i = 0; i < size; i++) {
+            random_samples_array[i] = allocated_random_samples_array[i];
+        }
+        return random_samples_array;
     }
 
 
@@ -91,10 +115,9 @@ public:
      * the internal state of the context synchronized.
      */
     skylark::utility::random_array_t allocate_random_array(size_t size) {
-            skylark::utility::random_array_t
-                random_array(_counter, size, _seed);
-            _counter = _counter + size;
-            return random_array;
+        skylark::utility::random_array_t random_array(_counter, size, _seed);
+        _counter = _counter + size;
+        return random_array;
     }
 
 
@@ -111,8 +134,15 @@ public:
          int sample = random_array[0];
          return sample;
     }
+
+
+private:
+    /// Internal counter identifying the start of next stream of random numbers
+    size_t _counter;
+    /// The seed used for initializing the context
+    int _seed;
 };
 
-} } /** skylark::sketch */
+} } /** namespace skylark::sketch */
 
-#endif // CONTEXT_HPP
+#endif // SKYLARK_CONTEXT_HPP

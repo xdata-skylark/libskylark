@@ -9,7 +9,7 @@ namespace skylark { namespace sketch {
 template < typename InputMatrixType,
            typename OutputMatrixType,
            typename IdxDistributionType,
-           template <typename> class ValueDistributionType
+           template <typename> class ValueDistribution
         >
 struct hash_transform_t { };
 

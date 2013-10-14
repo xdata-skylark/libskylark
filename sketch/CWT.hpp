@@ -1,10 +1,11 @@
-#ifndef CWT_HPP
-#define CWT_HPP
+#ifndef SKYLARK_CWT_HPP
+#define SKYLARK_CWT_HPP
 
 #include "../utility/distributions.hpp"
 #include "hash_transform.hpp"
 
-namespace skylark { namespace sketch { 
+namespace skylark { namespace sketch {
+
 typedef boost::random::uniform_int_distribution<int> uniform_t;
 
 // CW'12 and MM'13 L2 transformation (= OSNAP with s = 1)
@@ -27,6 +28,6 @@ struct CWT_t : public hash_transform_t<
 
 };
 
-} } // namespace sketch
+} } /** namespace skylark::sketch */
 
-#endif // CWT_HPP
+#endif // SKYLARK_CWT_HPP

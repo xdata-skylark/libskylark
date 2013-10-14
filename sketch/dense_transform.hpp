@@ -1,14 +1,13 @@
-#ifndef DENSET_HPP
-#define DENSET_HPP
+#ifndef SKYLARK_DENSE_TRANSFORM_HPP
+#define SKYLARK_DENSE_TRANSFORM_HPP
 
 #include "../config.h"
 
-namespace skylark {
-namespace sketch {
+namespace skylark { namespace sketch {
 
 template < typename InputMatrixType,
            typename OutputMatrixType,
-           template <typename> class DistributionType>
+           template <typename> class ValueDistribution>
 class dense_transform_t {
     // Concrete transforms, like JLT, can derive this class and set the scale.
     // This enables also adding parameters to constuctor, adding methods,
@@ -20,12 +19,10 @@ class dense_transform_t {
 };
 
 
-} // namespace sketch
-} // namespace skylark
-
+} } /** namespace skylark::sketch */
 
 #if SKYLARK_HAVE_ELEMENTAL
-#include "denset_Elemental.hpp"
+#include "dense_transform_Elemental.hpp"
 #endif
 
-#endif // DENSET_HPP
+#endif // SKYLARK_DENSE_TRANSFORM_HPP

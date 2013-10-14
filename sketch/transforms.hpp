@@ -1,5 +1,5 @@
-#ifndef TRANSFORMS_HPP
-#define TRANSFORMS_HPP
+#ifndef SKYLARK_TRANSFORMS_HPP
+#define SKYLARK_TRANSFORMS_HPP
 
 namespace skylark {
 namespace sketch {
@@ -19,7 +19,6 @@ struct rowwise_tag : dimension_tag {};
  */
 
 
-} // namespace sketch
-} // namespace skylark
+} } /** namespace skylark::sketch */
 
 #endif // TRANSFORMS_HPP

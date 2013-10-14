@@ -1,5 +1,5 @@
-#ifndef MMT_HPP
-#define MMT_HPP
+#ifndef SKYLARK_MMT_HPP
+#define SKYLARK_MMT_HPP
 
 #include <boost/random.hpp>
 #include "hash_transform.hpp"
@@ -20,4 +20,4 @@ struct MMT_t : public hash_transform_t<
 
 } } /** namespace skylark::sketch */
 
-#endif // MMT_HPP
+#endif // SKYLARK_MMT_HPP

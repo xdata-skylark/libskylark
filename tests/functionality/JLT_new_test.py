@@ -2,7 +2,6 @@ import unittest
 import numpy as np
 from mpi4py import MPI
 import math
-import operator
 
 from skylark import cskylark
 
@@ -33,15 +32,15 @@ class JLT_new_test(unittest.TestCase):
     def test_apply_colwise(self):
         A = elem.DistMatrix_d_VR_STAR()
 
-        #FIXME: Christos, use your matrix problem factory
+        #FIXME: Christos, use your matrix problem factory here
         elem.Uniform(A, _M, _N)
 
         #FIXME: local
         sv = np.linalg.svd(A.Matrix, full_matrices=1, compute_uv=0)
 
-        succ = []
+        success = np.zeros(len(sv))
+        average = np.zeros(len(sv))
         for i in range(self.num_repeats):
-            succ.append(True)
             S  = cskylark.JLT(_M, _R, intype="DistMatrix_VR_STAR")
             SA = np.zeros((_R, _N), order='F')
             S.apply(A, SA, "columnwise")
@@ -50,13 +49,19 @@ class JLT_new_test(unittest.TestCase):
             # check bounds of singular values
             sav = np.linalg.svd(SA, full_matrices=1, compute_uv=0)
             for idx in range(len(sv)):
-                if not (sv[idx] * (1 - self.accuracy) <= sav[idx] and
-                        sav[idx] <= sv[idx] * (1 + self.accuracy)):
-                    succ[i] = False
-
+                average[idx] += sv[idx]
+                success[idx] = success[idx] or (sv[idx] * (1 - self.accuracy)
+                    <= sav[idx] <= sv[idx] * (1 + self.accuracy))
 
         # check if at leaste one was successful
-        self.assertTrue(reduce(operator.or_, succ, False))
+        self.assertTrue(np.all(success))
+
+        # check if average is in bounds
+        average = average / self.num_repeats
+        for idx in range(len(average)):
+            self.assertTrue(sv[idx] * (1 - self.accuracy) <= average[idx]
+                    <= sv[idx] * (1 + self.accuracy))
+
 
 
 if __name__ == '__main__':

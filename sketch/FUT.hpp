@@ -60,13 +60,51 @@ class fftw_r2r_fut_t {
 
     void apply_impl(elem::Matrix<ValueType>& A,
                     skylark::sketch::rowwise_tag) const {
-        // TODO
+
+        // The efficiency of the following depends if FFTW wisdom has been
+        // built in advance. It is also purely sequential (may want to do
+        // something different in the final version).
+        // SO: this is a PRELIMINARY version.
+
+        // Using transpositions instead of moving
+        // to the advanced interface of FFTW
+        elem::Matrix<ValueType> matrix(A.Grid());
+        elem::Transpose(A, matrix);
+        double* matrix_buffer = matrix.Buffer();
+        PlanType plan = PlanFun(matrix.Height(), matrix_buffer, matrix_buffer,
+            Kind, FFTW_UNALIGNED | FFTW_ESTIMATE);
+
+        // TODO: detect failure to form plan.
+        for (int j = 0; j < matrix.Width(); j++)
+            ExecuteFun(plan, matrix_buffer + j * matrix.LDim(),
+                matrix_buffer + j * matrix.LDim());
+        DestroyFun(plan);
+        elem::Transpose(matrix, A);
     }
 
     void apply_inverse_impl(elem::Matrix<ValueType>& A,
                             skylark::sketch::rowwise_tag) const {
-        // TODO
+        // The efficiency of the following depends if FFTW wisdom has been
+        // built in advance. It is also purely sequential (may want to do
+        // something different in the final version).
+        // SO: this is a PRELIMINARY version.
+
+        // Using transpositions instead of moving
+        // to the advanced interface of FFTW
+        elem::Matrix<ValueType> matrix(A.Grid());
+        elem::Transpose(A, matrix);
+        double* matrix_buffer = matrix.Buffer();
+        PlanType plan = PlanFun(matrix.Height(), matrix_buffer, matrix_buffer,
+            KindInverse, FFTW_UNALIGNED | FFTW_ESTIMATE);
+
+        // TODO: detect failure to form plan.
+        for (int j = 0; j < matrix.Width(); j++)
+            ExecuteFun(plan, matrix_buffer + j * matrix.LDim(),
+                matrix_buffer + j * matrix.LDim());
+        DestroyFun(plan);
+        elem::Transpose(matrix, A);
     }
+
 public:
 
     template <typename Dimension>

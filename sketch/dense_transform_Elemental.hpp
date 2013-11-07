@@ -13,6 +13,119 @@
 namespace skylark { namespace sketch {
 
 /**
+ * Specialization local input, local output
+ */
+template <typename ValueType,
+          template <typename> class ValueDistribution>
+struct dense_transform_t <
+    elem::Matrix<ValueType>,
+    elem::Matrix<ValueType>,
+    ValueDistribution> :
+        public dense_transform_data_t<ValueType,
+                                      ValueDistribution> {
+    // Typedef matrix and distribution types so that we can use them regularly
+    typedef ValueType value_type;
+    typedef elem::Matrix<value_type> matrix_type;
+    typedef elem::Matrix<value_type> output_matrix_type;
+    typedef ValueDistribution<value_type> value_distribution_type;
+    typedef dense_transform_data_t<ValueType,
+                                  ValueDistribution> base_data_t;
+
+    /**
+     * Regular constructor
+     */
+    dense_transform_t (int N, int S, skylark::sketch::context_t& context)
+        : base_data_t (N, S, context) {}
+
+    /**
+     * Copy constructor
+     */
+    dense_transform_t (dense_transform_t<matrix_type,
+                                         output_matrix_type,
+                                         ValueDistribution>& other)
+        : base_data_t(other.get_data()) {}
+
+    /**
+     * Constructor from data
+     */
+    dense_transform_t(const dense_transform_data_t<value_type,
+                                            ValueDistribution>& other_data)
+        : base_data_t(other_data.get_data()) {}
+
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     */
+    template <typename Dimension>
+    void apply (const matrix_type& A,
+                output_matrix_type& sketch_of_A,
+                Dimension dimension) const {
+        try {
+            apply_impl_local(A, sketch_of_A, dimension);
+        } catch (std::logic_error e) {
+            SKYLARK_THROW_EXCEPTION (
+                utility::elemental_exception()
+                    << utility::error_msg(e.what()) );
+        }
+    }
+
+private:
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     * Implementation for local and columnwise.
+     */
+    void apply_impl_local(const matrix_type& A,
+                          output_matrix_type& sketch_of_A,
+                          skylark::sketch::columnwise_tag) const {
+
+        elem::Matrix<value_type> S(base_data_t::S, base_data_t::N);
+        for(int j = 0; j < base_data_t::N; j++) {
+            for (int i = 0; i < base_data_t::S; i++) {
+                value_type sample =
+                    base_data_t::random_samples[j * base_data_t::S + i];
+                S.Set(i, j, base_data_t::scale * sample);
+            }
+        }
+        // Do the multiplication
+        elem::Gemm (elem::NORMAL,
+                    elem::NORMAL,
+                    1.0,
+                    S,
+                    A,
+                    0.0,
+                    sketch_of_A);
+    }
+
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     * Implementation for local and rowwise.
+     */
+    void apply_impl_local(const matrix_type& A,
+                          output_matrix_type& sketch_of_A,
+                          skylark::sketch::rowwise_tag) const {
+
+        elem::Matrix<value_type> S(base_data_t::S, base_data_t::N);
+        for(int j = 0; j < base_data_t::N; j++) {
+            for (int i = 0; i < base_data_t::S; i++) {
+                value_type sample =
+                    base_data_t::random_samples[j * base_data_t::S + i];
+                S.Set(i, j, base_data_t::scale * sample);
+            }
+        }
+        // Do the multiplication
+        elem::Gemm (elem::NORMAL,
+                    elem::TRANSPOSE,
+                    1.0,
+                    S,
+                    A,
+                    0.0,
+                    sketch_of_A);
+    }
+
+};
+
+
+
+/**
  * Specialization distributed input, local output, for [SOMETHING, *]
  */
 template <typename ValueType,
@@ -269,8 +382,63 @@ private:
                            output_matrix_type& sketch_of_A,
                            skylark::sketch::columnwise_tag) const {
 
-        // TODO no point in implementing this now as the implementation
-        //      will depend on how the random numbers are generated.
+        // Redistribute matrix A: [VC/VR, STAR] -> [STAR, VC/VR]
+        elem::DistMatrix<value_type, elem::STAR, ColDist> A_STAR_ColDist(A);
+
+        elem::DistMatrix<value_type,
+                         elem::STAR, ColDist>
+            sketch_of_A_STAR_ColDist(sketch_of_A.Height(), sketch_of_A.Width());
+        elem::Zero(sketch_of_A_STAR_ColDist);
+
+        // Matrix S carries the random samples in the sketching operation S*A.
+        // We realize S in parts and compute in a number of local rounds.
+        // This ensures handling of cases with a huge S.
+
+        // Max memory assigned to S_part at each round (100 MB by default)
+        // TODO: Can we optimize this const for the GEMM that follows?
+        const int S_PART_MAX_MEMORY = 100000000;
+
+        int S_height = base_data_t::S;
+        int S_width = base_data_t::N;
+        int S_row_num_bytes = S_width * sizeof(value_type);
+
+        // TODO: Guard against the case of S_PART_MAX_MEMORY  < S_row_num_bytes
+        int S_part_num_rows = S_PART_MAX_MEMORY / S_row_num_bytes;
+        int S_num_rows_consumed = 0;
+
+        while (S_num_rows_consumed < S_height) {
+            // Setup S_part S which consists of successive rows in S
+            int S_part_height = std::min(S_part_num_rows,
+                S_height - S_num_rows_consumed);
+            elem::Matrix<value_type> S_part(S_part_height,
+                S_width);
+            elem::Zero(S_part);
+            // Fill S_part with appropriate random samples
+            for (int i_loc = 0; i_loc < S_part_height; ++i_loc) {
+                int i = S_num_rows_consumed + i_loc;
+                for(int j = 0; j < S_width; ++j) {
+                    value_type sample =
+                        base_data_t::random_samples[j * base_data_t::S + i];
+                    S_part.Set(i_loc, j, base_data_t::scale * sample);
+                }
+            }
+            // Setup a view in sketch_of_A to land the result of S_part*A
+            elem::Matrix<value_type> sketch_slice;
+            elem::View(sketch_slice, sketch_of_A_STAR_ColDist.Matrix(),
+                S_num_rows_consumed, 0,
+                S_part_height, A_STAR_ColDist.LocalWidth());
+            // Do the multiplication: S_part*A
+            elem::Gemm (elem::NORMAL,
+                elem::NORMAL,
+                1.0,
+                S_part,
+                A_STAR_ColDist.Matrix(),
+                0.0,
+                sketch_slice);
+            S_num_rows_consumed += S_part_height;
+        }
+        // Redistribute the sketch: [STAR, VC/VR] -> [VC/VR, STAR]
+        sketch_of_A = sketch_of_A_STAR_ColDist;
     }
 
     /**
@@ -303,6 +471,667 @@ private:
     }
 
 };
+
+
+/**
+ * Specialization distributed input, local output, for [*, SOMETHING]
+ */
+template <typename ValueType,
+          elem::Distribution RowDist,
+          template <typename> class ValueDistribution>
+struct dense_transform_t <
+    elem::DistMatrix<ValueType, elem::STAR, RowDist>,
+    elem::Matrix<ValueType>,
+    ValueDistribution > :
+        public dense_transform_data_t<ValueType,
+                                      ValueDistribution> {
+    // Typedef matrix and distribution types so that we can use them regularly
+    typedef ValueType value_type;
+    typedef elem::DistMatrix<value_type, elem::STAR, RowDist> matrix_type;
+    typedef elem::Matrix<value_type> output_matrix_type;
+    typedef ValueDistribution<value_type> value_distribution_type;
+    typedef dense_transform_data_t<ValueType,
+                                  ValueDistribution> base_data_t;
+
+    /**
+     * Regular constructor
+     */
+    dense_transform_t (int N, int S, skylark::sketch::context_t& context)
+        : base_data_t (N, S, context) {}
+
+    /**
+     * Copy constructor
+     */
+    dense_transform_t (dense_transform_t<matrix_type,
+                                         output_matrix_type,
+                                         ValueDistribution>& other)
+        : base_data_t(other.get_data()) {}
+
+    /**
+     * Constructor from data
+     */
+    dense_transform_t(const dense_transform_data_t<value_type,
+                                            ValueDistribution>& other_data)
+        : base_data_t(other_data.get_data()) {}
+
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     */
+    template <typename Dimension>
+    void apply (const matrix_type& A,
+                output_matrix_type& sketch_of_A,
+                Dimension dimension) const {
+
+        switch(RowDist) {
+        case elem::VR:
+        case elem::VC:
+            try {
+                apply_impl_vdist (A, sketch_of_A, dimension);
+            } catch (std::logic_error e) {
+                SKYLARK_THROW_EXCEPTION (
+                    utility::elemental_exception()
+                        << utility::error_msg(e.what()) );
+            } catch(boost::mpi::exception e) {
+                SKYLARK_THROW_EXCEPTION (
+                    utility::mpi_exception()
+                        << utility::error_msg(e.what()) );
+            }
+
+            break;
+
+        default:
+            SKYLARK_THROW_EXCEPTION (
+                utility::unsupported_matrix_distribution() );
+        }
+    }
+
+private:
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     * Implementation for [*, VR/VC] and columnwise.
+     */
+    void apply_impl_vdist (const matrix_type& A,
+                           output_matrix_type& sketch_of_A,
+                           skylark::sketch::columnwise_tag) const {
+
+        elem::DistMatrix<value_type,
+                         elem::STAR, RowDist>
+            sketch_of_A_STAR_RowDist(sketch_of_A.Height(), sketch_of_A.Width());
+        elem::Zero(sketch_of_A_STAR_RowDist);
+
+        elem::DistMatrix<value_type,
+                         elem::CIRC,
+                         elem::CIRC> sketch_of_A_CIRC_CIRC(base_data_t::S,
+                             base_data_t::N);
+
+        // Matrix S carries the random samples in the sketching operation S*A.
+        // We realize S in parts and compute in a number of local rounds.
+        // This ensures handling of cases with a huge S.
+
+        // Max memory assigned to S_part at each round (100 MB by default)
+        // TODO: Can we optimize this const for the GEMM that follows?
+        const int S_PART_MAX_MEMORY = 100000000;
+
+        int S_height = base_data_t::S;
+        int S_width = base_data_t::N;
+        int S_row_num_bytes = S_width * sizeof(value_type);
+
+        // TODO: Guard against the case of S_PART_MAX_MEMORY  < S_row_num_bytes
+        int S_part_num_rows = S_PART_MAX_MEMORY / S_row_num_bytes;
+        int S_num_rows_consumed = 0;
+
+        while (S_num_rows_consumed < S_height) {
+            // Setup S_part S which consists of successive rows in S
+            int S_part_height = std::min(S_part_num_rows,
+                S_height - S_num_rows_consumed);
+            elem::Matrix<value_type> S_part(S_part_height,
+                S_width);
+            elem::Zero(S_part);
+            // Fill S_part with appropriate random samples
+            for (int i_loc = 0; i_loc < S_part_height; ++i_loc) {
+                int i = S_num_rows_consumed + i_loc;
+                for(int j = 0; j < S_width; ++j) {
+                    value_type sample =
+                        base_data_t::random_samples[j * base_data_t::S + i];
+                    S_part.Set(i_loc, j, base_data_t::scale * sample);
+                }
+            }
+            // Setup a view in sketch_of_A to land the result of S_part*A
+            elem::Matrix<value_type> sketch_slice;
+            elem::View(sketch_slice, sketch_of_A_STAR_RowDist.Matrix(),
+                S_num_rows_consumed, 0,
+                S_part_height, sketch_of_A_STAR_RowDist.LocalWidth());
+            // Do the multiplication: S_part*A
+            elem::Gemm (elem::NORMAL,
+                elem::NORMAL,
+                1.0,
+                S_part,
+                A.Matrix(),
+                0.0,
+                sketch_slice);
+            S_num_rows_consumed += S_part_height;
+        }
+        sketch_of_A_CIRC_CIRC = sketch_of_A_STAR_RowDist;
+
+        boost::mpi::communicator world;
+        MPI_Comm mpi_world(world);
+        elem::Grid grid(mpi_world);
+        int rank = world.rank();
+        if (rank == 0) {
+            sketch_of_A = sketch_of_A_CIRC_CIRC.Matrix();
+        }
+
+    }
+
+    /**
+      * Apply the sketching transform that is described in by the sketch_of_A.
+      * Implementation for [*, VR/VC] and rowwise.
+      */
+    void apply_impl_vdist(const matrix_type& A,
+                          output_matrix_type& sketch_of_A,
+                          skylark::sketch::rowwise_tag) const {
+
+        // Redistribute matrix A: [STAR, VC/VR] -> [VC/VR, STAR]
+        elem::DistMatrix<value_type, RowDist, elem::STAR> A_RowDist_STAR(A);
+
+        elem::DistMatrix<value_type,
+                         RowDist,
+                         elem::STAR>
+            sketch_of_A_RowDist_STAR(sketch_of_A.Height(), sketch_of_A.Width());
+        elem::Zero(sketch_of_A_RowDist_STAR);
+
+        elem::DistMatrix<value_type,
+                         elem::CIRC,
+                         elem::CIRC> sketch_of_A_CIRC_CIRC(base_data_t::S,
+                             base_data_t::N);
+
+        elem::Matrix<value_type> S_local(base_data_t::S, base_data_t::N);
+        for (int j = 0; j < base_data_t::N; j++) {
+            for (int i = 0; i < base_data_t::S; i++) {
+                value_type sample =
+                    base_data_t::random_samples[j * base_data_t::S + i];
+                S_local.Set(i, j, base_data_t::scale * sample);
+            }
+        }
+
+        // Apply S to the local part of A to get the local part of sketch_of_A.
+        elem::Gemm(elem::NORMAL,
+            elem::TRANSPOSE,
+            1.0,
+            A_RowDist_STAR.LockedMatrix(),
+            S_local,
+            0.0,
+            sketch_of_A_RowDist_STAR.Matrix());
+
+        sketch_of_A_CIRC_CIRC = sketch_of_A_RowDist_STAR;
+
+        boost::mpi::communicator world;
+        MPI_Comm mpi_world(world);
+        elem::Grid grid(mpi_world);
+        int rank = world.rank();
+        if (rank == 0) {
+            sketch_of_A = sketch_of_A_CIRC_CIRC.Matrix();
+        }
+
+    }
+
+};
+
+
+
+/**
+ * Specialization distributed input and output in [*, SOMETHING]
+ */
+template <typename ValueType,
+          elem::Distribution RowDist,
+          template <typename> class ValueDistribution>
+struct dense_transform_t <
+    elem::DistMatrix<ValueType, elem::STAR, RowDist>,
+    elem::DistMatrix<ValueType, elem::STAR, RowDist>,
+    ValueDistribution> :
+        public dense_transform_data_t<ValueType,
+                                      ValueDistribution> {
+    // Typedef matrix and distribution types so that we can use them regularly
+    typedef ValueType value_type;
+    typedef elem::DistMatrix<value_type, elem::STAR, RowDist> matrix_type;
+    typedef elem::DistMatrix<value_type, elem::STAR, RowDist>
+    output_matrix_type;
+    typedef ValueDistribution<value_type> value_distribution_type;
+    typedef dense_transform_data_t<ValueType,
+                                   ValueDistribution> base_data_t;
+
+    /**
+     * Regular Constructor
+     */
+    dense_transform_t (int N, int S, skylark::sketch::context_t& context)
+        : base_data_t (N, S, context) {}
+
+    /**
+     * Copy constructor
+     */
+    dense_transform_t (dense_transform_t<matrix_type,
+                                         output_matrix_type,
+                                         ValueDistribution>& other)
+        : base_data_t(other.get_data()) {}
+
+    /**
+     * Constructor from data
+     */
+    dense_transform_t(const dense_transform_data_t<value_type,
+                                            ValueDistribution>& other_data)
+        : base_data_t(other_data.get_data()) {}
+
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     */
+    template <typename Dimension>
+    void apply (const matrix_type& A,
+                output_matrix_type& sketch_of_A,
+                Dimension dimension) const {
+
+        switch(RowDist) {
+        case elem::VR:
+        case elem::VC:
+            try {
+                apply_impl_vdist (A, sketch_of_A, dimension);
+            } catch (std::logic_error e) {
+                SKYLARK_THROW_EXCEPTION (
+                    utility::elemental_exception()
+                        << utility::error_msg(e.what()) );
+            } catch(boost::mpi::exception e) {
+                SKYLARK_THROW_EXCEPTION (
+                    utility::mpi_exception()
+                        << utility::error_msg(e.what()) );
+            }
+
+            break;
+
+        default:
+            SKYLARK_THROW_EXCEPTION (
+                utility::unsupported_matrix_distribution() );
+        }
+    }
+
+private:
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     * Implementation for [*, VR/VC] and columnwise.
+     */
+    void apply_impl_vdist (const matrix_type& A,
+                           output_matrix_type& sketch_of_A,
+                           skylark::sketch::columnwise_tag) const {
+
+        elem::Zero(sketch_of_A);
+
+        // Matrix S carries the random samples in the sketching operation S*A.
+        // We realize S in parts and compute in a number of local rounds.
+        // This ensures handling of cases with a huge S.
+
+        // Max memory assigned to S_part at each round (100 MB by default)
+        // TODO: Can we optimize this const for the GEMM that follows?
+        const int S_PART_MAX_MEMORY = 100000000;
+
+        int S_height = base_data_t::S;
+        int S_width = base_data_t::N;
+        int S_row_num_bytes = S_width * sizeof(value_type);
+
+        // TODO: Guard against the case of S_PART_MAX_MEMORY  < S_row_num_bytes
+        int S_part_num_rows = S_PART_MAX_MEMORY / S_row_num_bytes;
+        int S_num_rows_consumed = 0;
+
+        while (S_num_rows_consumed < S_height) {
+            // Setup S_part S which consists of successive rows in S
+            int S_part_height = std::min(S_part_num_rows,
+                S_height - S_num_rows_consumed);
+            elem::Matrix<value_type> S_part(S_part_height,
+                S_width);
+            elem::Zero(S_part);
+            // Fill S_part with appropriate random samples
+            for (int i_loc = 0; i_loc < S_part_height; ++i_loc) {
+                int i = S_num_rows_consumed + i_loc;
+                for(int j = 0; j < S_width; ++j) {
+                    value_type sample =
+                        base_data_t::random_samples[j * base_data_t::S + i];
+                    S_part.Set(i_loc, j, base_data_t::scale * sample);
+                }
+            }
+            // Setup a view in sketch_of_A to land the result of S_part*A
+            elem::Matrix<value_type> sketch_slice;
+            elem::View(sketch_slice, sketch_of_A.Matrix(),
+                S_num_rows_consumed, 0,
+                S_part_height, sketch_of_A.LocalWidth());
+            // Do the multiplication: S_part*A
+            elem::Gemm (elem::NORMAL,
+                elem::NORMAL,
+                1.0,
+                S_part,
+                A.Matrix(),
+                0.0,
+                sketch_slice);
+            S_num_rows_consumed += S_part_height;
+        }
+    }
+
+    /**
+      * Apply the sketching transform that is described in by the sketch_of_A.
+      * Implementation for [*, VR/VC] and rowwise.
+      */
+    void apply_impl_vdist(const matrix_type& A,
+                          output_matrix_type& sketch_of_A,
+                          skylark::sketch::rowwise_tag) const {
+
+        // Redistribute matrix A: [STAR, VC/VR] -> [VC/VR, STAR]
+        elem::DistMatrix<value_type, RowDist, elem::STAR> A_RowDist_STAR(A);
+
+        elem::DistMatrix<value_type,
+                         RowDist,
+                         elem::STAR>
+            sketch_of_A_RowDist_STAR(sketch_of_A.Height(), sketch_of_A.Width());
+        elem::Zero(sketch_of_A_RowDist_STAR);
+
+        elem::Matrix<value_type> S_local(base_data_t::S, base_data_t::N);
+        for (int j = 0; j < base_data_t::N; j++) {
+            for (int i = 0; i < base_data_t::S; i++) {
+                value_type sample =
+                    base_data_t::random_samples[j * base_data_t::S + i];
+                S_local.Set(i, j, base_data_t::scale * sample);
+            }
+        }
+
+        // Apply S to the local part of A to get the local part of sketch_of_A.
+        elem::Gemm(elem::NORMAL,
+            elem::TRANSPOSE,
+            1.0,
+            A_RowDist_STAR.LockedMatrix(),
+            S_local,
+            0.0,
+            sketch_of_A.Matrix());
+
+    // Redistribute the sketch: [VC/VR, STAR] -> [STAR, VC/VR]
+    sketch_of_A = sketch_of_A_RowDist_STAR;
+    }
+};
+
+
+/**
+ * Specialization distributed input [MC, MR], local output
+ */
+template <typename ValueType,
+          template <typename> class ValueDistribution>
+struct dense_transform_t <
+    elem::DistMatrix<ValueType>,
+    elem::Matrix<ValueType>,
+    ValueDistribution> :
+        public dense_transform_data_t<ValueType,
+                                      ValueDistribution> {
+
+    // Typedef matrix and distribution types so that we can use them regularly
+    typedef ValueType value_type;
+    typedef elem::DistMatrix<value_type> matrix_type;
+    typedef elem::Matrix<value_type> output_matrix_type;
+    typedef ValueDistribution<value_type> value_distribution_type;
+    typedef dense_transform_data_t<ValueType,
+                                   ValueDistribution> base_data_t;
+
+    /**
+     * Regular constructor
+     */
+    dense_transform_t (int N, int S, skylark::sketch::context_t& context)
+        : base_data_t (N, S, context) {}
+
+    /**
+     * Copy constructor
+     */
+    dense_transform_t (dense_transform_t<matrix_type,
+                                         output_matrix_type,
+                                         ValueDistribution>& other)
+        : base_data_t(other.get_data()) {}
+
+    /**
+     * Constructor from data
+     */
+    dense_transform_t(const dense_transform_data_t<value_type,
+                                            ValueDistribution>& other_data)
+        : base_data_t(other_data.get_data()) {}
+
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     */
+    template <typename Dimension>
+    void apply (const matrix_type& A,
+                output_matrix_type& sketch_of_A,
+                Dimension dimension) const {
+        try {
+            apply_impl_dist(A, sketch_of_A, dimension);
+        } catch (std::logic_error e) {
+            SKYLARK_THROW_EXCEPTION (
+                utility::elemental_exception()
+                    << utility::error_msg(e.what()) );
+        } catch(boost::mpi::exception e) {
+                SKYLARK_THROW_EXCEPTION (
+                    utility::mpi_exception()
+                        << utility::error_msg(e.what()) );
+        }
+    }
+
+private:
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     * Implementation for distributed input [MC, MR], local output
+     * and columnwise.
+     */
+    void apply_impl_dist (const matrix_type& A,
+                          output_matrix_type& sketch_of_A,
+                          skylark::sketch::columnwise_tag) const {
+        elem::DistMatrix<value_type> S(base_data_t::S, base_data_t::N);
+        elem::DistMatrix<value_type,
+                         elem::MC,
+                         elem::MR> sketch_of_A_MC_MR(base_data_t::S,
+                             base_data_t::N);
+        elem::DistMatrix<value_type,
+                         elem::CIRC,
+                         elem::CIRC> sketch_of_A_CIRC_CIRC(base_data_t::S,
+                             base_data_t::N);
+
+        for(int j_loc = 0; j_loc < S.LocalWidth(); ++j_loc) {
+            int j = S.RowShift() + S.RowStride() * j_loc;
+            for (int i_loc = 0; i_loc < S.LocalHeight(); ++i_loc) {
+                int i = S.ColShift() + S.ColStride() * i_loc;
+                value_type sample =
+                    base_data_t::random_samples[j * base_data_t::S + i];
+                S.SetLocal(i_loc, j_loc, base_data_t::scale * sample);
+            }
+        }
+
+        elem::Gemm (elem::NORMAL,
+                    elem::NORMAL,
+                    1.0,
+                    S,
+                    A,
+                    0.0,
+                    sketch_of_A_MC_MR);
+        sketch_of_A_CIRC_CIRC = sketch_of_A_MC_MR;
+
+        boost::mpi::communicator world;
+        MPI_Comm mpi_world(world);
+        elem::Grid grid(mpi_world);
+        int rank = world.rank();
+        if (rank == 0) {
+            sketch_of_A = sketch_of_A_CIRC_CIRC.Matrix();
+        }
+    }
+
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     * Implementation for distributed input [MC, MR], local output
+     * and rowwise.
+     */
+    void apply_impl_dist(const matrix_type& A,
+                         output_matrix_type& sketch_of_A,
+                         skylark::sketch::rowwise_tag) const {
+        elem::DistMatrix<value_type> S(base_data_t::S, base_data_t::N);
+        elem::DistMatrix<value_type,
+                         elem::MC,
+                         elem::MR> sketch_of_A_MC_MR(base_data_t::S,
+                             base_data_t::N);
+        elem::DistMatrix<value_type,
+                         elem::CIRC,
+                         elem::CIRC> sketch_of_A_CIRC_CIRC(base_data_t::S,
+                             base_data_t::N);
+
+        for(int j_loc = 0; j_loc < S.LocalWidth(); ++j_loc) {
+            int j = S.RowShift() + S.RowStride() * j_loc;
+            for (int i_loc = 0; i_loc < S.LocalHeight(); ++i_loc) {
+                int i = S.ColShift() + S.ColStride() * i_loc;
+                value_type sample =
+                    base_data_t::random_samples[j * base_data_t::S + i];
+                S.SetLocal(i_loc, j_loc, base_data_t::scale * sample);
+            }
+        }
+
+        elem::Gemm (elem::NORMAL,
+                    elem::TRANSPOSE,
+                    1.0,
+                    A,
+                    S,
+                    0.0,
+                    sketch_of_A_MC_MR);
+        sketch_of_A_CIRC_CIRC = sketch_of_A_MC_MR;
+
+        boost::mpi::communicator world;
+        MPI_Comm mpi_world(world);
+        elem::Grid grid(mpi_world);
+        int rank = world.rank();
+        if (rank == 0) {
+            sketch_of_A = sketch_of_A_CIRC_CIRC.Matrix();
+        }
+
+    }
+};
+
+
+
+/**
+ * Specialization distributed input [MC, MR], distributed output [MC, MR]
+ */
+template <typename ValueType,
+          template <typename> class ValueDistribution>
+struct dense_transform_t <
+    elem::DistMatrix<ValueType>,
+    elem::DistMatrix<ValueType>,
+    ValueDistribution> :
+        public dense_transform_data_t<ValueType,
+                                      ValueDistribution> {
+
+    // Typedef matrix and distribution types so that we can use them regularly
+    typedef ValueType value_type;
+    typedef elem::DistMatrix<value_type> matrix_type;
+    typedef elem::DistMatrix<value_type> output_matrix_type;
+    typedef ValueDistribution<value_type> value_distribution_type;
+    typedef dense_transform_data_t<ValueType,
+                                   ValueDistribution> base_data_t;
+
+    /**
+     * Regular constructor
+     */
+    dense_transform_t (int N, int S, skylark::sketch::context_t& context)
+        : base_data_t (N, S, context) {}
+
+    /**
+     * Copy constructor
+     */
+    dense_transform_t (dense_transform_t<matrix_type,
+                                         output_matrix_type,
+                                         ValueDistribution>& other)
+        : base_data_t(other.get_data()) {}
+
+    /**
+     * Constructor from data
+     */
+    dense_transform_t(const dense_transform_data_t<value_type,
+                                            ValueDistribution>& other_data)
+        : base_data_t(other_data.get_data()) {}
+
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     */
+    template <typename Dimension>
+    void apply (const matrix_type& A,
+                output_matrix_type& sketch_of_A,
+                Dimension dimension) const {
+        try {
+            apply_impl_dist(A, sketch_of_A, dimension);
+        } catch (std::logic_error e) {
+            SKYLARK_THROW_EXCEPTION (
+                utility::elemental_exception()
+                    << utility::error_msg(e.what()) );
+        } catch(boost::mpi::exception e) {
+                SKYLARK_THROW_EXCEPTION (
+                    utility::mpi_exception()
+                        << utility::error_msg(e.what()) );
+        }
+    }
+
+private:
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     * Implementation for distributed input/output [MC, MR] and columnwise.
+     */
+    void apply_impl_dist (const matrix_type& A,
+                          output_matrix_type& sketch_of_A,
+                          skylark::sketch::columnwise_tag) const {
+
+        elem::DistMatrix<value_type> S(base_data_t::S, base_data_t::N);
+
+        for(int j_loc = 0; j_loc < S.LocalWidth(); ++j_loc) {
+            int j = S.RowShift() + S.RowStride() * j_loc;
+            for (int i_loc = 0; i_loc < S.LocalHeight(); ++i_loc) {
+                int i = S.ColShift() + S.ColStride() * i_loc;
+                value_type sample =
+                    base_data_t::random_samples[j * base_data_t::S + i];
+                S.SetLocal(i_loc, j_loc, base_data_t::scale * sample);
+            }
+        }
+        elem::Gemm (elem::NORMAL,
+                    elem::NORMAL,
+                    1.0,
+                    S,
+                    A,
+                    0.0,
+                    sketch_of_A);
+
+    }
+
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     * Implementation for distributed input/output [MC, MR] and rowwise.
+     */
+    void apply_impl_dist(const matrix_type& A,
+                         output_matrix_type& sketch_of_A,
+                         skylark::sketch::rowwise_tag) const {
+
+        elem::DistMatrix<value_type> S(base_data_t::S, base_data_t::N);
+
+        for(int j_loc = 0; j_loc < S.LocalWidth(); ++j_loc) {
+            int j = S.RowShift() + S.RowStride() * j_loc;
+            for (int i_loc = 0; i_loc < S.LocalHeight(); ++i_loc) {
+                int i = S.ColShift() + S.ColStride() * i_loc;
+                value_type sample =
+                    base_data_t::random_samples[j * base_data_t::S + i];
+                S.SetLocal(i_loc, j_loc, base_data_t::scale * sample);
+            }
+        }
+        elem::Gemm (elem::NORMAL,
+                    elem::TRANSPOSE,
+                    1.0,
+                    A,
+                    S,
+                    0.0,
+                    sketch_of_A);
+
+    }
+};
+
 
 } } /** namespace skylark::sketch */
 

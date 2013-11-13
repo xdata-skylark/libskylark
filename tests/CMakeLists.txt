@@ -2,8 +2,8 @@ include(CTest)
 set(CTEST_MEMORYCHECK_COMMAND "/usr/bin/valgrind")
 set(MEMORYCHECK_COMMAND_OPTIONS "--xml=yes --xml-file=memtest.xml")
 
-add_subdirectory(internal)
-add_subdirectory(functionality)
+add_subdirectory(unit)
+add_subdirectory(regression)
 add_subdirectory(performance)
 
 add_custom_target(test

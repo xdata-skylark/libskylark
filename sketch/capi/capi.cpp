@@ -274,9 +274,9 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(sketch::context_t *ctxt,
             sketchc::DIST_SPARSE_MATRIX, sketchc::DIST_SPARSE_MATRIX,
             sketch::CWT_t, DistSparseMatrix_t, DistSparseMatrix_t);
 
-    //AUTO_NEW_DISPATCH(sketchc::MMT,
-            //sketchc::DIST_SPARSE_MATRIX, sketchc::DIST_SPARSE_MATRIX,
-            //sketch::MMT_t, DistSparseMatrix_t, DistSparseMatrix_t);
+    AUTO_NEW_DISPATCH(sketchc::MMT,
+            sketchc::DIST_SPARSE_MATRIX, sketchc::DIST_SPARSE_MATRIX,
+            sketch::MMT_t, DistSparseMatrix_t, DistSparseMatrix_t);
 
 #endif
 #endif
@@ -389,9 +389,9 @@ SKYLARK_EXTERN_API
         sketchc::DIST_SPARSE_MATRIX, sketchc::DIST_SPARSE_MATRIX,
         sketch::CWT_t, DistSparseMatrix_t, DistSparseMatrix_t);
 
-    //AUTO_DELETE_DISPATCH(sketchc::MMT,
-        //sketchc::DIST_SPARSE_MATRIX, sketchc::DIST_SPARSE_MATRIX,
-        //sketch::MMT_t, DistSparseMatrix_t, DistSparseMatrix_t);
+    AUTO_DELETE_DISPATCH(sketchc::MMT,
+        sketchc::DIST_SPARSE_MATRIX, sketchc::DIST_SPARSE_MATRIX,
+        sketch::MMT_t, DistSparseMatrix_t, DistSparseMatrix_t);
 
 #endif
 #endif
@@ -515,9 +515,9 @@ SKYLARK_EXTERN_API int
         sketchc::DIST_SPARSE_MATRIX, sketchc::DIST_SPARSE_MATRIX,
         sketch::CWT_t, DistSparseMatrix_t, DistSparseMatrix_t);
 
-    //AUTO_APPLY_DISPATCH(sketchc::MMT,
-        //sketchc::DIST_SPARSE_MATRIX, sketchc::DIST_SPARSE_MATRIX,
-        //sketch::MMT_t, DistSparseMatrix_t, DistSparseMatrix_t);
+    AUTO_APPLY_DISPATCH(sketchc::MMT,
+        sketchc::DIST_SPARSE_MATRIX, sketchc::DIST_SPARSE_MATRIX,
+        sketch::MMT_t, DistSparseMatrix_t, DistSparseMatrix_t);
 
 #endif
 #endif

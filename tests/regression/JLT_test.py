@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
+
 from mpi4py import MPI
-import math
 
 from skylark import cskylark
 
@@ -30,17 +30,10 @@ class JLT_test(unittest.TestCase):
 
     def tearDown(self):
         # No real need to do this...
-        cskylark.finalize()
+        #cskylark.finalize()
+        pass
 
-    def test_apply_colwise(self):
-        A = elem.DistMatrix_d_VR_STAR()
-
-        #FIXME: Christos, use your matrix problem factory here
-        elem.Uniform(A, _M, _N)
-
-        measures    = [svd_bound] #.. add more measures to be computed in a test
-        results     = svd_test_helper(A, _M, _N, _R, cskylark.JLT, measures)
-
+    def check_result(self, results):
         suc = np.zeros(len(results[0].success))
         avg = np.zeros(len(results[0].average))
         for result in results:
@@ -51,8 +44,30 @@ class JLT_test(unittest.TestCase):
         self.assertTrue(np.all(suc))
 
         # check if average is in bounds
-        avg = avg / num_repeats
-        self.assertTrue(np.all(avg <= accuracy))
+        avg = avg / self.num_repeats
+        self.assertTrue(np.all(avg <= self.accuracy))
+
+    def test_apply_colwise(self):
+        A = elem.DistMatrix_d_VR_STAR()
+
+        #FIXME: Christos, use your matrix problem factory here
+        elem.Uniform(A, _M, _N)
+
+        measures = [svd_bound] #.. add more measures to be computed in a test
+        results  = test_helper(A, _M, _N, _R, cskylark.JLT, measures, MPI)
+
+        self.check_result(results)
+
+    def test_apply_rowwise(self):
+        A = elem.DistMatrix_d_VR_STAR()
+
+        #FIXME: Christos, use your matrix problem factory here
+        elem.Uniform(A, _M, _N)
+
+        #measures = [svd_bound] #.. add more measures to be computed in a test
+        #results  = test_helper(A, _M, _N, _R, cskylark.JLT, measures, MPI, direction="rowwise")
+
+        #self.check_result(results)
 
 
 if __name__ == '__main__':

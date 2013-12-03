@@ -5,11 +5,14 @@ import math
 
 from skylark import cskylark
 
+from helper.test import svd_bound
+from helper.test import test_helper
+
 import elem
 
 _M = 10000
 _N = 100
-_T = 1000
+_R = 1000
 
 class JLT_test(unittest.TestCase):
 
@@ -20,54 +23,37 @@ class JLT_test(unittest.TestCase):
         # Skylark with a new time based seed
         cskylark.initialize()
 
+        #params
         self.num_repeats = 5
-        self.accuracy    = 1e-1
+        self.accuracy    = 0.5
+        _R = _N / self.accuracy**2
 
     def tearDown(self):
         # No real need to do this...
         cskylark.finalize()
 
     def test_apply_colwise(self):
-        norm = 0.0
         A = elem.DistMatrix_d_VR_STAR()
+
+        #FIXME: Christos, use your matrix problem factory here
         elem.Uniform(A, _M, _N)
 
-        # To compute norm we have to go through (MC, MR) norm...
-        A1 = elem.DistMatrix_d()
-        elem.Copy(A, A1)
-        norm_exp = elem.FrobeniusNorm(A1)
+        measures    = [svd_bound] #.. add more measures to be computed in a test
+        results     = svd_test_helper(A, _M, _N, _R, cskylark.JLT, measures)
 
-        for i in range(self.num_repeats):
-            S  = cskylark.JLT(_M, _T, intype="DistMatrix_VR_STAR")
-            SA = np.zeros((_T, _N), order='F')
-            S.apply(A, SA, "columnwise")
-            SA = MPI.COMM_WORLD.bcast(SA, root=0)
-            norm += np.linalg.norm(SA)
+        suc = np.zeros(len(results[0].success))
+        avg = np.zeros(len(results[0].average))
+        for result in results:
+            avg = avg + result.average
+            suc = np.logical_or(suc, result.success)
 
-        norm /= self.num_repeats
+        # check if at leaste one was successful
+        self.assertTrue(np.all(suc))
 
-        self.assertLess(math.fabs(norm - norm_exp) / norm, self.accuracy)
+        # check if average is in bounds
+        avg = avg / num_repeats
+        self.assertTrue(np.all(avg <= accuracy))
 
-    def test_apply_rowwise(self):
-        norm = 0.0
-        A = elem.DistMatrix_d_VR_STAR()
-        elem.Uniform(A, _N, _M)
-
-        # To compute norm we have to go through (MC, MR) norm...
-        A1 = elem.DistMatrix_d()
-        elem.Copy(A, A1)
-        norm_exp = elem.FrobeniusNorm(A1)
-
-        for i in range(self.num_repeats):
-            S  = cskylark.JLT(_M, _T, intype="DistMatrix_VR_STAR")
-            SA = np.zeros((_N, _T), order='F')
-            S.apply(A, SA, "rowwise")
-            SA = MPI.COMM_WORLD.bcast(SA, root=0)
-            norm += np.linalg.norm(SA)
-
-        norm /= self.num_repeats
-
-        self.assertLess(math.fabs(norm - norm_exp) / norm, self.accuracy)
 
 if __name__ == '__main__':
     unittest.main()

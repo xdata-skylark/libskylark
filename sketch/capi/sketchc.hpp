@@ -2,6 +2,7 @@
 #define SKETCHC_HPP
 
 #include "mpi.h"
+#include "../../config.h"
 #include "../../utility/distributions.hpp"
 
 #include "../sketch.hpp"
@@ -70,6 +71,13 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms();
  *  @return a string containing the error message
  */
 SKYLARK_EXTERN_API const char* sl_strerror(const int errorcode);
+
+/** Provide mechanism to check for add-ons.
+ *  @return a boolean if the add-on library is enabled
+ */
+SKYLARK_EXTERN_API bool sl_has_elemental();
+SKYLARK_EXTERN_API bool sl_has_combblas();
+
 
 // Support for skylark::sketch::context_t.
 

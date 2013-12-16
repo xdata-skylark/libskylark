@@ -1,23 +1,13 @@
 import errors
 import ctypes
-from ctypes import byref, cdll, c_double, c_void_p, c_int, c_char_p, pointer, POINTER
+from ctypes import byref, cdll, c_double, c_void_p, c_int, c_char_p, pointer, POINTER, c_bool
 import numpy
 import sys
 import os
 import time
 import atexit
 
-# TODO: Get these from outside
-_ELEM_INSTALLED = True
-_KDT_INSTALLED = True
-
-if _ELEM_INSTALLED:
-  import elem
-
-if _KDT_INSTALLED:
-  import kdt
-
-_DEF_INTYPE = "LocalMatrix"
+_DEF_INTYPE  = "LocalMatrix"
 _DEF_OUTTYPE = "LocalMatrix"
 
 #
@@ -36,7 +26,13 @@ _lib.sl_free_raw_matrix_wrap.restype    = c_int
 _lib.sl_strerror.restype                    = c_char_p
 _lib.sl_supported_sketch_transforms.restype = c_char_p
 
+_lib.sl_has_elemental.restype = c_bool
+_lib.sl_has_combblas.restype  = c_bool
+
 SUPPORTED_SKETCH_TRANSFORMS = map(eval, _lib.sl_supported_sketch_transforms().split())
+
+_ELEM_INSTALLED = _lib.sl_has_elemental()
+_KDT_INSTALLED  = _lib.sl_has_combblas()
 
 #
 # Simple helper to convert error codes in human readbale strings
@@ -74,6 +70,7 @@ class _NumpyAdapter:
 if _ELEM_INSTALLED:
   class _ElemAdapter:
     def __init__(self, typestr):
+      import elem
       self._typestr = "DistMatrix_" + typestr
       self._class = eval("elem.DistMatrix_d_" + typestr)
 
@@ -101,6 +98,7 @@ if _KDT_INSTALLED:
       return "DistSparseMatrix"
 
     def ctor(self, m, n):
+      import kdt
       nullVec = kdt.Vec(0, sparse=False)
       return kdt.Mat(nullVec, nullVec, nullVec, n, m)
 

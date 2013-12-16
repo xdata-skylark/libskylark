@@ -91,6 +91,22 @@ SKYLARK_EXTERN_API const char* sl_strerror(const int error_code) {
     return skylark_strerror(error_code);
 }
 
+SKYLARK_EXTERN_API bool sl_has_elemental() {
+#if SKYLARK_HAVE_ELEMENTAL
+    return true;
+#else
+    return false;
+#endif
+}
+
+SKYLARK_EXTERN_API bool sl_has_combblas() {
+#if SKYLARK_HAVE_COMBBLAS
+    return true;
+#else
+    return false;
+#endif
+}
+
 /** Support for skylark::sketch::context_t. */
 SKYLARK_EXTERN_API int sl_create_default_context(int seed,
         sketch::context_t **ctxt) {

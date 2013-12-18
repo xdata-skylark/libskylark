@@ -1,15 +1,24 @@
 import time
 import numpy
 
+# prevent mpi4py from calling MPI_Finalize()
+import mpi4py.rc
+mpi4py.rc.finalize   = False
+
 from datetime import date
 from mpi4py import MPI
 
-def perftest(f):
+
+def dump_timings(f):
+    """
+    Simple decorator measuring min/avg/max time of the inner function.
+    """
     def _inner(*args, **kwargs):
 
         #TODO: is there a better way to get the class name?
         test_class_name = "%s" % (args[0])
         test_class_name = test_class_name.split('.')[1].split(')')[0]
+        test_class_name = test_class_name.split(' ')[0]
 
         function_name = getattr(f, "__name__", "<unnamed>")
         if test_class_name.find("test") != -1:
@@ -19,7 +28,7 @@ def perftest(f):
         #if size == 1:
             #mode = "w"
 
-
+        #XXX: children have their own COMM_WORLD (master excluded)
         comm = MPI.COMM_WORLD
         rank = comm.Get_rank()
         size = comm.Get_size()
@@ -46,3 +55,38 @@ def perftest(f):
                 out.write(measurements)
 
     return _inner
+
+
+import inspect
+class TestCase:
+
+    def __init__(self):
+        pass
+
+    def tearDown(self):
+        pass
+
+    def setUp(self):
+        pass
+
+    def main(self):
+        """
+        Run all methods starting with 'test_' of this class using the
+        communicator of the spawned MPI threads.
+        The _test method should make use of the dump_timings decorator.
+        """
+
+        self.parent_comm = MPI.Comm.Get_parent()
+
+        self.setUp()
+
+        members = inspect.getmembers(self, predicate=inspect.ismethod)
+        for potential_test in members:
+            if potential_test[0].find('test_') == 0:
+                potential_test[1]()
+
+        self.parent_comm.Barrier()
+        self.parent_comm.Disconnect()
+
+        self.tearDown()
+

@@ -86,7 +86,9 @@ def update_overview(web_dir):
 import os
 import glob
 from datetime import date
-def generate_plots(input_dir, web_dir):
+def generate_plots(data_dir, web_dir):
+    os.chdir(data_dir)
+
     html = "<html><head><link href='http://fonts.googleapis.com/css?family=Voces' rel='stylesheet' type='text/css'></head>"
     html += "<body><div style=\"width:960px; display: block; margin-left: auto; margin-right: auto;\">\n"
     html += "<h1 style=\"font-family: 'Voces';\">Overview</h1>\n"
@@ -95,7 +97,6 @@ def generate_plots(input_dir, web_dir):
 
     #FIXME: collect results from other machines...
     html += "<h1 style=\"font-family: 'Voces';\">Performance on %s</h1>\n" % (date.today())
-    os.chdir(input_dir)
     # generate todays plots
     for infile in glob.glob("*_test_*_%s.perf" % date.today()):
         png_file = generate_plot_from_file(infile, web_dir)

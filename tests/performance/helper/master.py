@@ -30,8 +30,9 @@ else:
     os.chdir(sys.argv[1])
     for infile in glob.glob("*_perf_test.py"):
         for np in nps:
+            print "spawning " + str(np + 1)
             comm = MPI.COMM_SELF.Spawn(sys.executable, args=[infile],
-                                       maxprocs=np + 1, root=0)
+                                       maxprocs=np + 1)
 
             comm.Barrier()
             comm.Disconnect()

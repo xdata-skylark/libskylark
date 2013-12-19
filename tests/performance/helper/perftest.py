@@ -1,10 +1,6 @@
 import time
 import numpy
 
-# prevent mpi4py from calling MPI_Finalize()
-import mpi4py.rc
-mpi4py.rc.finalize   = False
-
 from datetime import date
 from mpi4py import MPI
 

@@ -35,9 +35,47 @@ def generate_plot_from_file(fname, web_dir):
     pylab.savefig("%s/plots/%s.png" % (web_dir, fname))
     return "%s.png" % (fname)
 
+
+import random
+def compute_efficiency(fname):
+    with open(fname, 'r') as f:
+        reader = csv.reader(f, delimiter=' ')
+        import operator
+        sorted_data = sorted(reader, key=operator.itemgetter(0))
+        r1 = sorted_data[0]
+        rk = sorted_data[-1]
+        return (float(r1[2]) / float(rk[2])) / (int(rk[0])/float(r1[0]))
+
+
 def update_overview(web_dir):
-    pylab.ylabel("time [s]")
-    #pylab.xticks(date)
+    """
+    plot parallel efficiency of last month
+    """
+
+    import datetime
+    today = datetime.date.today()
+    dates = [ str(today - datetime.timedelta(days=x)) for x in range(30, -1, -1) ]
+
+    perf = {}
+    for date in dates:
+        for infile in glob.glob("*_test_*_%s.perf" % date):
+            try:
+                perf[infile.split('_2013')[0]].append((date, compute_efficiency(infile)))
+            except KeyError:
+                perf[infile.split('_2013')[0]] = [(date, compute_efficiency(infile))]
+
+    pylab.rcParams['figure.figsize'] = 20, 10
+    actual_dates = []
+    for name in perf:
+        actual_dates, vals = zip(*perf[name])
+        pylab.plot(vals, hold=True, label="%s" % name)
+
+    pylab.xlabel("date")
+    pylab.xticks(range(len(actual_dates)), actual_dates, rotation='vertical')
+    pylab.yticks([0.0, 0.1, 0.3, 0.5, 0.7, 0.9, 1.0])
+    pylab.ylabel("parallel efficiency [%]")
+    pylab.grid(True)
+    pylab.legend()
     pylab.savefig("%s/overview.png" % (web_dir))
     pass
 
@@ -46,14 +84,16 @@ import os
 import glob
 from datetime import date
 def generate_plots(input_dir, web_dir):
-    html = "<h1>Overview</h1>\n"
+    html = "<html><head><link href='http://fonts.googleapis.com/css?family=Voces' rel='stylesheet' type='text/css'></head>"
+    html += "<body><div style=\"width:960px; display: block; margin-left: auto; margin-right: auto;\">\n"
+    html += "<h1 style=\"font-family: 'Voces';\">Overview</h1>\n"
     update_overview(web_dir)
-    html += "<img src=\"overview.png\" width=\"450px\">"
+    html += "<img src=\"overview.png\" width=\"960px\">"
 
     #FIXME: collect results from other machines...
-    html += "<h1>Performance on %s</h1>\n" % (date.today())
+    html += "<h1 style=\"font-family: 'Voces';\">Performance on %s</h1>\n" % (date.today())
     os.chdir(input_dir)
-    for infile in glob.glob("*_test_*.perf"):
+    for infile in glob.glob("*_test_*_%s.perf" % date.today()):
         png_file = generate_plot_from_file(infile, web_dir)
         html += "<a href=\"plots/%s\">" % (png_file)
         html += "<img src=\"plots/%s\" width=\"450px\">" % (png_file)
@@ -61,7 +101,19 @@ def generate_plots(input_dir, web_dir):
 
     html += "<hr>\n"
 
-    html += "<h1>Archive</h1>\n"
+    html += "<h1 style=\"font-family: 'Voces';\">Archive</h1>\n"
+
+    archived = []
+    for infile in glob.glob("*_test_*.perf"):
+        archived.append(infile.split('_')[-1].split(".")[0])
+
+    archived = sorted(set(archived), reverse=True)
+    html += "<ul style=\"font-family: 'Voces';\">\n"
+    for ar in archived:
+        html += "<li>%s</li>\n" % ar
+
+    html += "</ul>\n"
+    html += "</div></body></html>\n"
 
     with open(web_dir + "/latest.html", "w") as out:
         out.write(html)

@@ -5,7 +5,7 @@ from helper.perftest import dump_timings
 from helper.perftest import TestCase
 from skylark import cskylark
 
-class CWT_test(TestCase):
+class JLT_test(TestCase):
 
     def setUp(self):
         cskylark.initialize()
@@ -21,7 +21,7 @@ class CWT_test(TestCase):
         A = elem.DistMatrix_d_VR_STAR()
         elem.Uniform(A, self.n, 100)
 
-        S  = cskylark.CWT(self.n, self.sn, intype="DistMatrix_VR_STAR")
+        S  = cskylark.JLT(self.n, self.sn, intype="DistMatrix_VR_STAR")
         SA = np.zeros((self.sn, 100), order='F')
         S.apply(A, SA, "columnwise")
 
@@ -30,11 +30,11 @@ class CWT_test(TestCase):
         A = elem.DistMatrix_d_VR_STAR()
         elem.Uniform(A, 100, self.n)
 
-        S  = cskylark.CWT(self.n, self.sn, intype="DistMatrix_VR_STAR")
+        S  = cskylark.JLT(self.n, self.sn, intype="DistMatrix_VR_STAR")
         SA = np.zeros((100, self.sn), order='F')
         S.apply(A, SA, "rowwise")
 
 
 if __name__ == '__main__':
-    perftest = CWT_test()
+    perftest = JLT_test()
     perftest.main()

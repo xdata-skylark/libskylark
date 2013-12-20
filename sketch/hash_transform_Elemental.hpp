@@ -12,7 +12,7 @@ namespace skylark { namespace sketch {
 
 template <typename ValueType,
           elem::Distribution ColDist,
-          typename IdxDistributionType,
+          template <typename> class IdxDistributionType,
           template <typename> class ValueDistribution>
 struct hash_transform_t <
     elem::DistMatrix<ValueType, ColDist, elem::STAR>,

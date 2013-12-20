@@ -7,10 +7,6 @@
 
 namespace skylark { namespace sketch {
 
-typedef boost::random::uniform_int_distribution<int> uniform_t;
-
-
-
 /**
  * Clarkson-Woodruff Transform
  *
@@ -23,8 +19,9 @@ typedef boost::random::uniform_int_distribution<int> uniform_t;
  * to OSNAP with s=1.
  */
 
-#define _SL_RADEMACHER_T utility::rademacher_distribution_t
-#define _SL_HTBASE hash_transform_t<InputMatrixType, OutputMatrixType, uniform_t, _SL_RADEMACHER_T>
+#define _SL_HTBASE hash_transform_t<InputMatrixType, OutputMatrixType, \
+                                    boost::random::uniform_int_distribution, \
+                                    utility::rademacher_distribution_t>
 
 template < typename InputMatrixType,
            typename OutputMatrixType = InputMatrixType >
@@ -73,7 +70,6 @@ private:
 };
 
 #undef _SL_HTBASE
-#undef _SL_RADEMACHER_T
 
 } } /** namespace skylark::sketch */
 

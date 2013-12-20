@@ -17,7 +17,7 @@ namespace skylark { namespace sketch {
 /* Specialization: FullyDistMultiVec for input, output */
 template <typename IndexType,
           typename ValueType,
-          typename IdxDistributionType,
+          template <typename> class IdxDistributionType,
           template <typename> class ValueDistribution>
 struct hash_transform_t <FullyDistMultiVec<IndexType, ValueType>,
                          FullyDistMultiVec<IndexType, ValueType>,

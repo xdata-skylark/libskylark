@@ -27,7 +27,7 @@ struct hash_transform_t <
     typedef ValueType value_type;
     typedef elem::DistMatrix<value_type, ColDist, elem::STAR> matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
-    typedef IdxDistributionType idx_distribution_type;
+    typedef IdxDistributionType<int> idx_distribution_type;
     typedef ValueDistribution<value_type> value_distribution_type;
     typedef hash_transform_data_t<int,
                                   ValueType,
@@ -44,7 +44,7 @@ struct hash_transform_t <
      */
     hash_transform_t (hash_transform_t<matrix_type,
                                        output_matrix_type,
-                                       idx_distribution_type,
+                                       IdxDistributionType,
                                        ValueDistribution>& other) :
         base_data_t(other.get_data()) {}
 
@@ -53,7 +53,7 @@ struct hash_transform_t <
      */
     hash_transform_t (hash_transform_data_t<int,
                                             value_type,
-                                            idx_distribution_type,
+                                            IdxDistributionType,
                                             ValueDistribution>& other_data) :
         base_data_t(other_data.get_data()) {}
 

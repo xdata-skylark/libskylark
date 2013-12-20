@@ -11,10 +11,12 @@ template < typename InputMatrixType,
            typename OutputMatrixType = InputMatrixType >
 struct MMT_t : public hash_transform_t<
     InputMatrixType, OutputMatrixType,
-    uniform_t, boost::random::cauchy_distribution > {
+    boost::random::uniform_int_distribution,
+    boost::random::cauchy_distribution > {
     MMT_t(int N, int S, context_t& context)
         : hash_transform_t<InputMatrixType, OutputMatrixType,
-          uniform_t, boost::random::cauchy_distribution>(N, S, context)
+                           boost::random::uniform_int_distribution,
+                           boost::random::cauchy_distribution>(N, S, context)
     {}
 };
 

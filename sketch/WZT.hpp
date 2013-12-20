@@ -19,10 +19,11 @@ template < typename InputMatrixType,
            typename OutputMatrixType = InputMatrixType >
 struct WZT_t : public hash_transform_t<
     InputMatrixType, OutputMatrixType,
-    uniform_t, boost::random::exponential_distribution >
+    boost::random::uniform_int_distribution,
+    boost::random::exponential_distribution >
 {
     typedef hash_transform_t<InputMatrixType, OutputMatrixType,
-                             uniform_t,
+                             boost::random::uniform_int_distribution,
                              boost::random::exponential_distribution> Base;
     WZT_t(int N, int S, double p, context_t& context)
         : Base(N, S, context) {

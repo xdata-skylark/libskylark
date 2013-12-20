@@ -83,10 +83,36 @@ def update_overview(web_dir):
     pass
 
 
+import json
+import commands
+def collect_remote_data(remote_machines):
+    """
+    Collects results from other machines running the performance tests. Assumes
+    passwordless scp is setup with the machines given in the remotes definition
+    file.
+
+    Format:
+    {
+        "m1": {"connection": "joe@machine1.com", "dir": "/tmp/data/"},
+        "m2": {"connection": "joe@machine2.com", "dir": "/tmp/data/"}
+    }
+
+    FIXME: later run master as webserver (flask) push notification of new
+           performance results.
+    """
+    with open(remote_machines, 'r') as f:
+        data = json.load(f)
+        for name in data:
+            print "getting data from %s" % name
+            remote = data[name]
+            #TODO: enable scp
+            #os.getoutput("scp %s:%s/*.perf ." % (remote['connection'], remote['dir']))
+
+
 import os
 import glob
 from datetime import date
-def generate_plots(data_dir, web_dir):
+def generate_plots(data_dir, web_dir, remote_machines='remotes.json'):
     os.chdir(data_dir)
 
     html = "<html><head><link href='http://fonts.googleapis.com/css?family=Voces' rel='stylesheet' type='text/css'></head>"
@@ -95,7 +121,8 @@ def generate_plots(data_dir, web_dir):
     update_overview(web_dir)
     html += "<img src=\"overview.png\" width=\"960px\">"
 
-    #FIXME: collect results from other machines...
+    collect_remote_data(remote_machines)
+
     html += "<h1 style=\"font-family: 'Voces';\">Performance on %s</h1>\n" % (date.today())
     # generate todays plots
     for infile in glob.glob("*_test_*_%s.perf" % date.today()):

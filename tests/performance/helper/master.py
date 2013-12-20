@@ -4,12 +4,18 @@ mpi4py.rc.finalize   = False
 
 from mpi4py import MPI
 
+import argparse
+parser = argparse.ArgumentParser(description='Skylark Performance Tests')
+parser.add_argument("totalnp" , type=int  , help='total number of processors available')
+parser.add_argument("samples" , type=int  , help='number of samples in performance graphs')
+parser.add_argument("serve"   , type=bool , help='is this instance serving the tests')
+parser.add_argument("testdir" , type=str  , help='path of directory containing tests')
+parser.add_argument("webdir"  , type=str  , help='path to directory to output webpages')
+parser.add_argument("datadir" , type=str  , help='path of directory containing data')
+parser.add_argument("remotes" , type=str  , help='path to file describing remote machines')
+args = parser.parse_args()
+
 import sys
-
-if len(sys.argv) != 6:
-    print "master.py test_dir total_nr_procs nr_samples data_dir web_dir"
-    sys.exit(-1)
-
 if MPI.COMM_WORLD.Get_size() != 1:
     print "Please run the master only on one core. It will spawn slaves automatically."
     sys.exit(-1)
@@ -20,15 +26,13 @@ import glob
 import commands
 from   random import sample
 
-_NUM_SAMPLES = int(sys.argv[3])
-
 try:
     #FIXME: fix nps for all tests?
-    nps = sorted(sample(xrange(int(sys.argv[2]) - 1), _NUM_SAMPLES))
+    nps = sorted(sample(xrange(args.totalnp - 1), args.samples))
 except ValueError:
     print "Error: total number of procs must be larger (or equal) to num samples"
 else:
-    os.chdir(sys.argv[1])
+    os.chdir(args.testdir)
     for infile in glob.glob("*_perf_test.py"):
         for np in nps:
             print "spawning " + str(np + 1)
@@ -40,7 +44,8 @@ else:
             comm.Barrier()
             comm.Disconnect()
 
-    from generate_plot import generate_plots
-    commands.getoutput("mv *.perf %s" % sys.argv[4])
-    generate_plots(sys.argv[4], sys.argv[5])
+    if args.serve:
+        from generate_plot import generate_plots
+        commands.getoutput("mv *.perf %s" % args.datadir)
+        generate_plots(args.datadir, args.webdir, args.remotes)
 

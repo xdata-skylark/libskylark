@@ -1,5 +1,6 @@
 import time
 import numpy
+import commands
 
 from datetime import date
 from mpi4py import MPI
@@ -45,7 +46,8 @@ def dump_timings(f):
             average = dt_sum[0] / size
             print "%s took (%s / %s / %s)s" % (function_name, dt_min[0], average, dt_max[0])
 
-            filename = "%s_%s_%s.perf" % (test_class_name, function_name, date.today())
+            hostname = commands.getoutput("hostname")
+            filename = "%s_%s_%s_%s.perf" % (hostname, test_class_name, function_name, date.today())
             measurements = "%s %s %s %s\n" % (size, dt_min[0], average, dt_max[0])
             with open(filename, mode) as out:
                 out.write(measurements)

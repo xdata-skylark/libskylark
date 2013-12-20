@@ -49,11 +49,20 @@ struct hash_transform_t <
         base_data_t(other.get_data()) {}
 
     /**
+     * Constructor from data
+     */
+    hash_transform_t (hash_transform_data_t<int,
+                                            value_type,
+                                            idx_distribution_type,
+                                            ValueDistribution>& other_data) :
+        base_data_t(other_data.get_data()) {}
+
+    /**
      * Apply the sketching transform that is described in by the sketch_of_A.
      */
     template <typename Dimension>
     void apply (const matrix_type& A, output_matrix_type& sketch_of_A,
-        Dimension dimension) {
+        Dimension dimension) const {
 
         switch(ColDist) {
         case elem::VR:
@@ -86,7 +95,7 @@ private:
      */
     void apply_impl_vdist (const matrix_type& A,
         output_matrix_type& sketch_of_A,
-        skylark::sketch::columnwise_tag) {
+        skylark::sketch::columnwise_tag) const {
 
         // Create space to hold local part of SA
         elem::Matrix<value_type> SA_part (sketch_of_A.Height(),
@@ -125,7 +134,7 @@ private:
      */
     void apply_impl_vdist (const matrix_type& A,
         output_matrix_type& sketch_of_A,
-        skylark::sketch::rowwise_tag) {
+        skylark::sketch::rowwise_tag) const {
 
         // Create space to hold local part of SA
         elem::Matrix<value_type> SA_part (sketch_of_A.Height(),

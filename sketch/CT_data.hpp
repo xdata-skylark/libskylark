@@ -1,5 +1,5 @@
-#ifndef SKYLARK_JLT_DATA_HPP
-#define SKYLARK_JLT_DATA_HPP
+#ifndef SKYLARK_CT_DATA_HPP
+#define SKYLARK_CT_DATA_HPP
 
 #include "dense_transform_data.hpp"
 
@@ -8,24 +8,24 @@ namespace skylark { namespace sketch {
 namespace bstrand = boost::random;
 
 /**
- * Johnson-Lindenstrauss Transform (data).
+ * Cauchy Transform (data)
  *
- * The JLT is simply a dense random matrix with i.i.d normal entries.
+ * The CT is simply a dense random matrix with i.i.d Cauchy variables
  */
 template < typename ValueType>
-struct JLT_data_t :
+struct CT_data_t :
    public dense_transform_data_t<ValueType,
-                                 bstrand::normal_distribution > {
+                                 bstrand::cauchy_distribution > {
 
     typedef dense_transform_data_t<ValueType,
-                                   bstrand::normal_distribution > Base;
+                                   bstrand::cauchy_distribution > Base;
     /**
      * Constructor
      * Most of the work is done by base. Here just write scale
      */
-    JLT_data_t(int N, int S, skylark::sketch::context_t& context)
+    CT_data_t(int N, int S, double C, skylark::sketch::context_t& context)
         : Base(N, S, context) {
-        Base::scale = sqrt(1.0 / static_cast<double>(S));
+        Base::scale = C / static_cast<double>(S);
     }
 };
 

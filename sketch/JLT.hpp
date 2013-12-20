@@ -14,7 +14,7 @@ namespace bstrand = boost::random;
  * The JLT is simply a dense random matrix with i.i.d normal entries.
  */
 template < typename InputMatrixType,
-           typename OutputMatrixType>
+           typename OutputMatrixType = InputMatrixType >
 class JLT_t :
   public JLT_data_t<typename
     dense_transform_t<InputMatrixType, OutputMatrixType,

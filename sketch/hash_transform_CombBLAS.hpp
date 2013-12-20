@@ -166,10 +166,19 @@ struct hash_transform_t <
                                        ValueDistribution>& other) :
         base_data_t(other.get_data()) {}
 
+    /**
+     * Constructor from data
+     */
+    hash_transform_t (hash_transform_data_t<index_type,
+                                            value_type,
+                                            IdxDistributionType,
+                                            ValueDistribution>& other_data) :
+        base_data_t(other_data.get_data()) {}
+
     template <typename Dimension>
-    void apply (matrix_type &A,
+    void apply (const matrix_type &A,
         output_matrix_type &sketch_of_A,
-        Dimension dimension) {
+        Dimension dimension) const {
         try {
             apply_impl (A, sketch_of_A, dimension);
         } catch(boost::mpi::exception e) {
@@ -193,9 +202,13 @@ private:
      * Apply the sketching transform that is described in by the sketch_of_A.
      */
     template <typename Dimension>
-    void apply_impl (matrix_type &A,
+    void apply_impl (const matrix_type &A_,
         output_matrix_type &sketch_of_A,
-        Dimension dist) {
+        Dimension dist) const {
+
+        // We are essentially doing a 'const' access to A, but the neccessary,
+        // 'const' option is missing from the interface
+        matrix_type &A = const_cast<matrix_type&>(A_);
 
         const size_t rank = A.getcommgrid()->GetRank();
 
@@ -309,22 +322,22 @@ private:
 
 
     inline index_type getPos(index_type rowid, index_type colid, size_t ncols,
-        columnwise_tag) {
+        columnwise_tag) const {
         return colid + ncols * base_data_t::row_idx[rowid];
     }
 
     inline index_type getPos(index_type rowid, index_type colid, size_t ncols,
-        rowwise_tag) {
+        rowwise_tag) const {
         return rowid * ncols + base_data_t::row_idx[colid];
     }
 
     inline value_type getRowValue(index_type rowid, index_type colid,
-        columnwise_tag) {
+        columnwise_tag) const {
         return base_data_t::row_value[rowid];
     }
 
     inline value_type getRowValue(index_type rowid, index_type colid,
-        rowwise_tag) {
+        rowwise_tag) const {
         return base_data_t::row_value[colid];
     }
 };

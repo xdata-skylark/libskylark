@@ -1,6 +1,7 @@
 #ifndef SKYLARK_JLT_HPP
 #define SKYLARK_JLT_HPP
 
+#include "JLT_data.hpp"
 #include "dense_transform.hpp"
 
 namespace skylark { namespace sketch {
@@ -14,20 +15,39 @@ namespace bstrand = boost::random;
  */
 template < typename InputMatrixType,
            typename OutputMatrixType>
-struct JLT_t :
-   public dense_transform_t<InputMatrixType, OutputMatrixType,
-                            bstrand::normal_distribution > {
+class JLT_t :
+  public JLT_data_t<typename
+    dense_transform_t<InputMatrixType, OutputMatrixType,
+                      bstrand::normal_distribution >::value_type > {
 
+public:
+
+    // We use composition to defer calls to dense_transform_t
     typedef dense_transform_t<InputMatrixType, OutputMatrixType,
-                               bstrand::normal_distribution > Base;
+                               bstrand::normal_distribution > transform_type;
+
+    typedef JLT_data_t<typename transform_type::value_type> Base;
+
     /**
-     * Constructor
-     * Most of the work is done by base. Here just write scale
+     * Regular constructor
      */
     JLT_t(int N, int S, skylark::sketch::context_t& context)
-        : Base(N, S, context) {
-        Base::scale = sqrt(1.0 / static_cast<double>(S));
+        : Base(N, S, context), _transform(*this) {
+
     }
+
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     */
+    template <typename Dimension>
+    void apply (const typename transform_type::matrix_type& A,
+                typename transform_type::output_matrix_type& sketch_of_A,
+                Dimension dimension) const {
+        _transform.apply(A, sketch_of_A, dimension);
+    }
+
+private:
+    transform_type _transform;
 };
 
 } } /** namespace skylark::sketch */

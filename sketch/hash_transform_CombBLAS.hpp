@@ -67,7 +67,7 @@ struct hash_transform_t <FullyDistMultiVec<IndexType, ValueType>,
     template <typename Dimension>
     void apply (mpi_multi_vector_t &A,
         mpi_multi_vector_t &sketch_of_A,
-        Dimension dimension) {
+        Dimension dimension) const {
         try {
             apply_impl (A, sketch_of_A, dimension);
         } catch(boost::mpi::exception e) {
@@ -89,7 +89,7 @@ struct hash_transform_t <FullyDistMultiVec<IndexType, ValueType>,
 private:
     void apply_impl_single (mpi_vector_t& a,
         mpi_vector_t& sketch_of_a,
-        columnwise_tag) {
+        columnwise_tag) const {
         std::vector<value_type> sketch_term(base_data_t::S,0);
 
         /** Accumulate the local sketch vector */
@@ -122,7 +122,7 @@ private:
 
     void apply_impl (mpi_multi_vector_t& A,
         mpi_multi_vector_t& sketch_of_A,
-        columnwise_tag) {
+        columnwise_tag) const {
         const index_type num_rhs = A.size;
         if (sketch_of_A.size != num_rhs) { /** error */; return; }
         if (A.dim != base_data_t::N) { /** error */; return; }

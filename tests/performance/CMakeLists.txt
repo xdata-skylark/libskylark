@@ -3,7 +3,7 @@ message (STATUS "Using Python interpreter to run tests: ${PYTHON_EXECUTABLE}")
 
 if (DEFINED ENV{PERF_INSTALL_DIR})
   add_custom_target(perf-test
-    ${PYTHON_EXECUTABLE}
+    mpirun -np 1 ${PYTHON_EXECUTABLE}
     ${CMAKE_CURRENT_SOURCE_DIR}/helper/master.py
     4 2 True ${CMAKE_CURRENT_SOURCE_DIR} $ENV{PERF_INSTALL_DIR} $ENV{PERF_INSTALL_DIR}/data ${CMAKE_CURRENT_SOURCE_DIR}/remotes.json
   )

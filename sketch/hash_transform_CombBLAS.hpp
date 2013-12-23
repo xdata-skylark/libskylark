@@ -29,6 +29,8 @@ struct hash_transform_t <FullyDistMultiVec<IndexType, ValueType>,
                                      ValueDistribution> {
     typedef IndexType index_type;
     typedef ValueType value_type;
+    typedef FullyDistMultiVec<IndexType, ValueType> matrix_type;
+    typedef FullyDistMultiVec<IndexType, ValueType> output_matrix_type;
     typedef FullyDistVec<IndexType, ValueType> mpi_vector_t;
     typedef FullyDistMultiVec<IndexType, ValueType> mpi_multi_vector_t;
     typedef hash_transform_data_t<IndexType,

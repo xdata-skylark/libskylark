@@ -50,10 +50,19 @@ public:
      */
     template <typename OtherInputMatrixType,
               typename OtherOutputMatrixType>
-    CWT_t(CWT_t<OtherInputMatrixType,OtherOutputMatrixType>& other)
+    CWT_t(const CWT_t<OtherInputMatrixType,OtherOutputMatrixType>& other)
         : Base(other), _transform(*this) {
 
     }
+
+    /**
+     * Constructor from data
+     */
+    CWT_t(const Base& other)
+        : Base(other), _transform(*this) {
+
+    }
+
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.

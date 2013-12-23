@@ -47,7 +47,15 @@ public:
      */
     template< typename OtherInputMatrixType,
               typename OtherOutputMatrixType >
-    MMT_t(MMT_t<OtherInputMatrixType,OtherOutputMatrixType>& other)
+    MMT_t(const MMT_t<OtherInputMatrixType,OtherOutputMatrixType>& other)
+        : Base(other), _transform(*this) {
+
+    }
+
+    /**
+     * Constructor from data
+     */
+    MMT_t(const Base& other)
         : Base(other), _transform(*this) {
 
     }

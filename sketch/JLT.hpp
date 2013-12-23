@@ -37,6 +37,24 @@ public:
     }
 
     /**
+     * Copy constructor
+     */
+    template <typename OtherInputMatrixType,
+              typename OtherOutputMatrixType>
+    JLT_t (const JLT_t<OtherInputMatrixType, OtherOutputMatrixType>& other)
+        : Base(other), _transform(*this) {
+
+    }
+
+    /**
+     * Constructor from data
+     */
+    JLT_t (const Base& other)
+        : Base(other), _transform(*this) {
+
+    }
+
+    /**
      * Apply the sketching transform that is described in by the sketch_of_A.
      */
     template <typename Dimension>

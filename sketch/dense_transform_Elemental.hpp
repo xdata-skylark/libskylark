@@ -40,7 +40,7 @@ struct dense_transform_t <
     /**
      * Copy constructor
      */
-    dense_transform_t (dense_transform_t<matrix_type,
+    dense_transform_t (const dense_transform_t<matrix_type,
                                          output_matrix_type,
                                          ValueDistribution>& other)
         : base_data_t(other.get_data()) {}
@@ -1035,7 +1035,9 @@ struct dense_transform_t <
      * Regular constructor
      */
     dense_transform_t (int N, int S, skylark::sketch::context_t& context)
-        : base_data_t (N, S, context) {}
+        : base_data_t (N, S, context) {
+
+    }
 
     /**
      * Copy constructor
@@ -1043,14 +1045,17 @@ struct dense_transform_t <
     dense_transform_t (dense_transform_t<matrix_type,
                                          output_matrix_type,
                                          ValueDistribution>& other)
-        : base_data_t(other.get_data()) {}
+        : base_data_t(other.get_data()) {
+
+    }
 
     /**
      * Constructor from data
      */
-    dense_transform_t(const dense_transform_data_t<value_type,
-                                            ValueDistribution>& other_data)
-        : base_data_t(other_data.get_data()) {}
+    dense_transform_t(const base_data_t& other_data)
+        : base_data_t(other_data.get_data()) {
+
+    }
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.

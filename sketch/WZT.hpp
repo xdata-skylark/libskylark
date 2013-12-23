@@ -52,10 +52,19 @@ public:
      */
     template< typename OtherInputMatrixType,
               typename OtherOutputMatrixType >
-    WZT_t(WZT_t<OtherInputMatrixType,OtherOutputMatrixType>& other)
+    WZT_t(const WZT_t<OtherInputMatrixType,OtherOutputMatrixType>& other)
         : Base(other), _transform(*this) {
 
     }
+
+    /**
+     * Constructor from data
+     */
+    WZT_t(const Base& other)
+        : Base(other), _transform(*this) {
+
+    }
+
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.

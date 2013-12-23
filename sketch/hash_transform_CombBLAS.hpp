@@ -65,7 +65,7 @@ struct hash_transform_t <FullyDistMultiVec<IndexType, ValueType>,
         base_data_t(other_data.get_data()) {}
 
     template <typename Dimension>
-    void apply (mpi_multi_vector_t &A,
+    void apply (const mpi_multi_vector_t &A,
         mpi_multi_vector_t &sketch_of_A,
         Dimension dimension) const {
         try {
@@ -87,14 +87,14 @@ struct hash_transform_t <FullyDistMultiVec<IndexType, ValueType>,
 
 
 private:
-    void apply_impl_single (mpi_vector_t& a,
+    void apply_impl_single (const mpi_vector_t& a,
         mpi_vector_t& sketch_of_a,
         columnwise_tag) const {
         std::vector<value_type> sketch_term(base_data_t::S,0);
 
         /** Accumulate the local sketch vector */
         /** FIXME: Lot's of random access --- not good for performance */
-        DenseVectorLocalIterator<index_type, value_type> local_iter(a);
+        const DenseVectorLocalIterator<index_type, value_type> local_iter(a);
         while(local_iter.HasNext()) {
             index_type idx = local_iter.GetLocIndex();
             index_type global_idx = local_iter.LocalToGlobal(idx);
@@ -120,7 +120,7 @@ private:
     }
 
 
-    void apply_impl (mpi_multi_vector_t& A,
+    void apply_impl (const mpi_multi_vector_t& A,
         mpi_multi_vector_t& sketch_of_A,
         columnwise_tag) const {
         const index_type num_rhs = A.size;

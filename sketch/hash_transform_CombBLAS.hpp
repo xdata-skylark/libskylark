@@ -94,7 +94,7 @@ private:
 
         // We are essentially doing a 'const' access to a, but the neccessary,
         // 'const' option is missing from the interface.
-        mpi_vector_t& &a = const_cast<mpi_vector_t&>(a_);
+        mpi_vector_t &a = const_cast<mpi_vector_t&>(a_);
 
         /** Accumulate the local sketch vector */
         /** FIXME: Lot's of random access --- not good for performance */

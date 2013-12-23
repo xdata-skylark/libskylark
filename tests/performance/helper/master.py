@@ -39,11 +39,15 @@ create_dir(args.datadir)
 
 try:
     #FIXME: fix nps for all tests?
-    nps = sorted(sample(xrange(args.totalnp - 1), args.samples))
+    nps = sorted(sample(xrange(args.totalnp - 1), args.samples - 1))
+    # always include np as last datapoint
+    nps.append(args.totalnp)
 except ValueError:
     print "Error: total number of procs must be larger (or equal) to num samples"
 else:
+    print os.getcwd()
     os.chdir(args.datadir)
+    print os.getcwd()
 
     for infile in glob.glob(args.testdir + "/*_perf_test.py"):
         for np in nps:

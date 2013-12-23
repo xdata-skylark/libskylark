@@ -87,14 +87,18 @@ struct hash_transform_t <FullyDistMultiVec<IndexType, ValueType>,
 
 
 private:
-    void apply_impl_single (const mpi_vector_t& a,
+    void apply_impl_single (const mpi_vector_t& a_,
         mpi_vector_t& sketch_of_a,
         columnwise_tag) const {
         std::vector<value_type> sketch_term(base_data_t::S,0);
 
+        // We are essentially doing a 'const' access to a, but the neccessary,
+        // 'const' option is missing from the interface.
+        mpi_vector_t& &a = const_cast<mpi_vector_t&>(a_);
+
         /** Accumulate the local sketch vector */
         /** FIXME: Lot's of random access --- not good for performance */
-        const DenseVectorLocalIterator<index_type, value_type> local_iter(a);
+        DenseVectorLocalIterator<index_type, value_type> local_iter(a);
         while(local_iter.HasNext()) {
             index_type idx = local_iter.GetLocIndex();
             index_type global_idx = local_iter.LocalToGlobal(idx);

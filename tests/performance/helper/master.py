@@ -44,9 +44,10 @@ except ValueError:
     print "Error: total number of procs must be larger (or equal) to num samples"
 else:
     os.chdir(args.datadir)
+
     for infile in glob.glob(args.testdir + "/*_perf_test.py"):
         for np in nps:
-            print "spawning " + str(np + 1)
+            print "spawning " + str(np + 1) + ": " + infile
             #cmd = "mpirun -np %s python %s" % (np + 1, infile)
             #print commands.getoutput(cmd)
             comm = MPI.COMM_SELF.Spawn(sys.executable, args=[infile],

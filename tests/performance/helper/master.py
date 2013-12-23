@@ -45,9 +45,6 @@ try:
 except ValueError:
     print "Error: total number of procs must be larger (or equal) to num samples"
 else:
-    print os.getcwd()
-    os.chdir(args.datadir)
-    print os.getcwd()
 
     for infile in glob.glob(args.testdir + "/*_perf_test.py"):
         for np in nps:
@@ -62,5 +59,6 @@ else:
 
     if args.serve:
         from generate_plot import generate_plots
+        commands.getoutput("mv *.perf %s" % args.datadir)
         generate_plots(args.datadir, args.webdir, args.remotes)
 

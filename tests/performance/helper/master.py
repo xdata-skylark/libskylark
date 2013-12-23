@@ -43,8 +43,8 @@ try:
 except ValueError:
     print "Error: total number of procs must be larger (or equal) to num samples"
 else:
-    os.chdir(args.testdir)
-    for infile in glob.glob("*_perf_test.py"):
+    os.chdir(args.datadir)
+    for infile in glob.glob(args.testdir + "/*_perf_test.py"):
         for np in nps:
             print "spawning " + str(np + 1)
             #cmd = "mpirun -np %s python %s" % (np + 1, infile)
@@ -57,6 +57,5 @@ else:
 
     if args.serve:
         from generate_plot import generate_plots
-        commands.getoutput("mv *.perf %s" % args.datadir)
         generate_plots(args.datadir, args.webdir, args.remotes)
 

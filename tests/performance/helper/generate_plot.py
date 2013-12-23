@@ -100,13 +100,16 @@ def collect_remote_data(remote_machines):
     FIXME: later run master as webserver (flask) push notification of new
            performance results.
     """
-    with open(remote_machines, 'r') as f:
-        data = json.load(f)
-        for name in data:
-            print "getting data from %s" % name
-            remote = data[name]
-            #TODO: enable scp
-            #os.getoutput("scp %s:%s/*.perf ." % (remote['connection'], remote['dir']))
+    try:
+        with open(remote_machines, 'r') as f:
+            data = json.load(f)
+            for name in data:
+                print "getting data from %s" % name
+                remote = data[name]
+                #TODO: enable scp
+                #os.getoutput("scp %s:%s/*.perf ." % (remote['connection'], remote['dir']))
+    except IOError:
+        print "No remotes description found."
 
 
 import os

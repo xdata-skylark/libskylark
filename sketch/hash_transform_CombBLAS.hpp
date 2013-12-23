@@ -55,6 +55,15 @@ struct hash_transform_t <FullyDistMultiVec<IndexType, ValueType>,
                                        ValueDistribution>& other) :
         base_data_t(other.get_data()) {}
 
+    /**
+     * Constructor from data
+     */
+    hash_transform_t (hash_transform_data_t<index_type,
+                                            value_type,
+                                            IdxDistributionType,
+                                            ValueDistribution>& other_data) :
+        base_data_t(other_data.get_data()) {}
+
     template <typename Dimension>
     void apply (mpi_multi_vector_t &A,
         mpi_multi_vector_t &sketch_of_A,

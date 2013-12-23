@@ -4,6 +4,13 @@ mpi4py.rc.finalize   = False
 
 from mpi4py import MPI
 
+import os
+def create_dir(dirname):
+    dir = os.path.dirname(dirname + '/')
+    if not os.path.exists(dir):
+        os.makedirs(dir)
+
+
 import argparse
 parser = argparse.ArgumentParser(description='Skylark Performance Tests')
 parser.add_argument("totalnp" , type=int  , help='total number of processors available')
@@ -21,10 +28,14 @@ if MPI.COMM_WORLD.Get_size() != 1:
     sys.exit(-1)
 
 
-import os
 import glob
 import commands
 from   random import sample
+
+# make sure that the necessary dirs exists and create if not.
+create_dir(args.webdir)
+create_dir(args.webdir + "/plots")
+create_dir(args.datadir)
 
 try:
     #FIXME: fix nps for all tests?

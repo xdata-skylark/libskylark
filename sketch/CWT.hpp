@@ -14,7 +14,7 @@ namespace skylark { namespace sketch {
  * sketching originally suggested by Charikar et al.
  * Analysis by Clarkson and Woodruff in STOC 2013 shows that
  * this is sketching scheme can be used to build a subspace embedding.
- *
+ *c
  * CWT was additionally analyzed by Meng and Mahoney (STOC'13) and is equivalent
  * to OSNAP with s=1.
  */
@@ -31,7 +31,7 @@ class CWT_t :
 
 public:
 
-    // We use composition to defer calls to dense_transform_t
+    // We use composition to defer calls to hash_transform_t
     typedef _SL_HTBASE transform_type;
 
     typedef CWT_data_t<typename _SL_HTBASE::index_type,

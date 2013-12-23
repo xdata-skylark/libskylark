@@ -36,4 +36,4 @@ struct CWT_data_t : public hash_transform_data_t<
 
 } } /** namespace skylark::sketch */
 
-#endif // SKYLARK_CWT_HPP
+#endif // SKYLARK_CWT_DATA_HPP

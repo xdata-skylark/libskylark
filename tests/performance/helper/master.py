@@ -39,9 +39,9 @@ create_dir(args.datadir)
 
 try:
     #FIXME: fix nps for all tests?
-    nps = sorted(sample(xrange(args.totalnp - 1), args.samples - 1))
+    nps = sorted(sample(xrange(args.totalnp - 2), args.samples - 1))
     # always include np as last datapoint
-    nps.append(args.totalnp)
+    nps.append(args.totalnp - 1)
 except ValueError:
     print "Error: total number of procs must be larger (or equal) to num samples"
 else:

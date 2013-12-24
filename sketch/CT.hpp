@@ -23,16 +23,16 @@ struct CT_t :
 
     // We use composition to defer calls to dense_transform_t
     typedef dense_transform_t<InputMatrixType, OutputMatrixType,
-                               bstrand::cauchy_distribution > transform_type;
+                               bstrand::cauchy_distribution > transform_t;
 
-    typedef CT_data_t<typename transform_type::value_type> Base;
+    typedef CT_data_t<typename transform_t::value_type> base_t;
 
 
     /**
      * Regular constructor
      */
     CT_t(int N, int S, skylark::sketch::context_t& context)
-        : Base(N, S, context), _transform(*this) {
+        : base_t(N, S, context), _transform(*this) {
     }
 
     /**
@@ -41,15 +41,15 @@ struct CT_t :
     template <typename OtherInputMatrixType,
               typename OtherOutputMatrixType>
     CT_t (const CT_t<OtherInputMatrixType, OtherOutputMatrixType>& other)
-        : Base(other), _transform(*this) {
+        : base_t(other), _transform(*this) {
 
     }
 
     /**
      * Constructor from data
      */
-    CT_t (const Base& other)
-        : Base(other), _transform(*this) {
+    CT_t (const base_t& other)
+        : base_t(other), _transform(*this) {
 
     }
 
@@ -57,14 +57,14 @@ struct CT_t :
      * Apply the sketching transform that is described in by the sketch_of_A.
      */
     template <typename Dimension>
-    void apply (const typename transform_type::matrix_type& A,
-                typename transform_type::output_matrix_type& sketch_of_A,
+    void apply (const typename transform_t::matrix_type& A,
+                typename transform_t::output_matrix_type& sketch_of_A,
                 Dimension dimension) const {
         _transform.apply(A, sketch_of_A, dimension);
     }
 
 private:
-    transform_type _transform;
+    transform_t _transform;
 };
 
 } } /** namespace skylark::sketch */

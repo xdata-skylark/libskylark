@@ -35,9 +35,7 @@ struct FJLT_data_t {
           samples(S),
           underlying_data(N, context) {
         value_distribution_type distribution(0, N-1);
-        samples = context.generate_random_samples_array
-            <value_type, value_distribution_type>
-            (S, distribution);
+        samples = context.generate_random_samples_array(S, distribution);
     }
 
 
@@ -50,7 +48,7 @@ protected:
     const int N; /**< Input dimension  */
     const int S; /**< Output dimension  */
     skylark::sketch::context_t& context; /**< Context for this sketch */
-    std::vector<value_type> samples; /**< Vector of samples */
+    std::vector<int> samples; /**< Vector of samples */
     const underlying_data_type underlying_data;
     /**< Data of the underlying RFUT transformation */
   };

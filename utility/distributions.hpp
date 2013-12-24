@@ -15,6 +15,8 @@ namespace utility {
 template< typename ValueType >
 struct rademacher_distribution_t {
 
+    typedef ValueType result_type;
+
     template< typename URNG >
     ValueType operator()(URNG &prng) const {
         double probabilities[] = { 0.5, 0.0, 0.5 };
@@ -27,12 +29,17 @@ struct rademacher_distribution_t {
 /**
  * Uniform distribution
  */
-template <typename ValueType> struct uniform_distribution_t {};
+template <typename ValueType> struct uniform_distribution_t {
+    typedef ValueType result_type;
+};
 
 /**
  * Uniform distribution specialization for double's
  */
 template <> struct uniform_distribution_t <double> {
+
+    typedef double result_type;
+
     boost::random::uniform_real_distribution<double> distribution;
 
     uniform_distribution_t() {}
@@ -51,6 +58,9 @@ template <> struct uniform_distribution_t <double> {
  * Uniform distribution specialization for int's
  */
 template <> struct uniform_distribution_t <int> {
+
+    typedef int result_type;
+
     boost::random::uniform_int_distribution<int> distribution;
 
     uniform_distribution_t() {}
@@ -69,6 +79,9 @@ template <> struct uniform_distribution_t <int> {
  * Uniform distribution specialization for bool's
  */
 template <> struct uniform_distribution_t <bool> {
+
+    typedef bool result_type;
+
     boost::random::uniform_int_distribution<int> distribution;
 
     uniform_distribution_t() {}

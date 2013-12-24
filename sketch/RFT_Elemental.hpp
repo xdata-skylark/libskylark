@@ -17,27 +17,26 @@ namespace sketch {
  */
 template <typename ValueType,
           elem::Distribution ColDist,
-          template <typename> class UnderlyingValueDistribution>
+          template <typename> class KernelDistribution>
 struct RFT_t <
     elem::DistMatrix<ValueType, ColDist, elem::STAR>,
     elem::DistMatrix<ValueType, ColDist, elem::STAR>,
-    UnderlyingValueDistribution> :
+    KernelDistribution> :
         public RFT_data_t<ValueType,
-                          UnderlyingValueDistribution> {
+                          KernelDistribution> {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
-    typedef boost::random::uniform_real_distribution<> value_distribution_type;
     typedef elem::DistMatrix<value_type, ColDist, elem::STAR> matrix_type;
     typedef elem::DistMatrix<value_type,
                              ColDist, elem::STAR> output_matrix_type;
     typedef RFT_data_t<ValueType,
-                       UnderlyingValueDistribution> base_data_t;
+                       KernelDistribution> base_data_t;
 private:
     typedef skylark::sketch::dense_transform_t <matrix_type,
                                                 output_matrix_type,
-                                                UnderlyingValueDistribution>
-    underlying_type;
+                                                KernelDistribution>
+    underlying_t;
 
 
 public:
@@ -45,15 +44,27 @@ public:
      * Regular constructor
      */
     RFT_t (int N, int S, double sigma, skylark::sketch::context_t& context)
-        : base_data_t (N, S, sigma, context) {}
+        : base_data_t (N, S, sigma, context) {
+
+    }
 
     /**
      * Copy constructor
      */
-    RFT_t(RFT_t<matrix_type,
-                output_matrix_type,
-                UnderlyingValueDistribution>& other)
-        : base_data_t(other.get_data()) {}
+    RFT_t(const RFT_t<matrix_type,
+                      output_matrix_type,
+                      KernelDistribution>& other)
+        : base_data_t(other.get_data()) {
+
+    }
+
+    /**
+     * Constructor from data
+     */
+    RFT_t(const base_data_t& other_data)
+        : base_data_t(other_data.get_data()) {
+
+    }
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
@@ -94,7 +105,7 @@ private:
     void apply_impl_vdist (const matrix_type& A,
                      output_matrix_type& sketch_of_A,
                      skylark::sketch::columnwise_tag tag) const {
-        underlying_type underlying(base_data_t::underlying_data);
+        underlying_t underlying(base_data_t::underlying_data);
         underlying.apply(A, sketch_of_A, tag);
         elem::Matrix<value_type> &Al = sketch_of_A.Matrix();
         for(int j = 0; j < Al.Width(); j++)
@@ -116,7 +127,7 @@ private:
         skylark::sketch::rowwise_tag tag) const {
 
         // TODO verify sizes etc.
-        underlying_type underlying(base_data_t::underlying_data);
+        underlying_t underlying(base_data_t::underlying_data);
         underlying.apply(A, sketch_of_A, tag);
         elem::Matrix<value_type> &Al = sketch_of_A.Matrix();
         for(int j = 0; j < base_data_t::S; j++)

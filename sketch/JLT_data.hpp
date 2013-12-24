@@ -18,14 +18,14 @@ struct JLT_data_t :
                                  bstrand::normal_distribution > {
 
     typedef dense_transform_data_t<ValueType,
-                                   bstrand::normal_distribution > Base;
+                                   bstrand::normal_distribution > base_t;
     /**
      * Constructor
      * Most of the work is done by base. Here just write scale
      */
     JLT_data_t(int N, int S, skylark::sketch::context_t& context)
-        : Base(N, S, context) {
-        Base::scale = sqrt(1.0 / static_cast<double>(S));
+        : base_t(N, S, context) {
+        base_t::scale = sqrt(1.0 / static_cast<double>(S));
     }
 };
 

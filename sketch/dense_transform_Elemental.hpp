@@ -23,7 +23,7 @@ struct dense_transform_t <
     ValueDistribution> :
         public dense_transform_data_t<ValueType,
                                       ValueDistribution> {
-    // Typedef matrix and distribution types so that we can use them regularly
+
     typedef ValueType value_type;
     typedef elem::Matrix<value_type> matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;

@@ -17,7 +17,7 @@ namespace skylark { namespace sketch {
 /* Specialization: FullyDistMultiVec for input, output */
 template <typename IndexType,
           typename ValueType,
-          typename IdxDistributionType,
+          template <typename> class IdxDistributionType,
           template <typename> class ValueDistribution>
 struct hash_transform_t <FullyDistMultiVec<IndexType, ValueType>,
                          FullyDistMultiVec<IndexType, ValueType>,
@@ -29,6 +29,8 @@ struct hash_transform_t <FullyDistMultiVec<IndexType, ValueType>,
                                      ValueDistribution> {
     typedef IndexType index_type;
     typedef ValueType value_type;
+    typedef FullyDistMultiVec<IndexType, ValueType> matrix_type;
+    typedef FullyDistMultiVec<IndexType, ValueType> output_matrix_type;
     typedef FullyDistVec<IndexType, ValueType> mpi_vector_t;
     typedef FullyDistMultiVec<IndexType, ValueType> mpi_multi_vector_t;
     typedef hash_transform_data_t<IndexType,
@@ -53,10 +55,19 @@ struct hash_transform_t <FullyDistMultiVec<IndexType, ValueType>,
                                        ValueDistribution>& other) :
         base_data_t(other.get_data()) {}
 
+    /**
+     * Constructor from data
+     */
+    hash_transform_t (hash_transform_data_t<index_type,
+                                            value_type,
+                                            IdxDistributionType,
+                                            ValueDistribution>& other_data) :
+        base_data_t(other_data.get_data()) {}
+
     template <typename Dimension>
-    void apply (mpi_multi_vector_t &A,
+    void apply (const mpi_multi_vector_t &A,
         mpi_multi_vector_t &sketch_of_A,
-        Dimension dimension) {
+        Dimension dimension) const {
         try {
             apply_impl (A, sketch_of_A, dimension);
         } catch(boost::mpi::exception e) {
@@ -76,10 +87,14 @@ struct hash_transform_t <FullyDistMultiVec<IndexType, ValueType>,
 
 
 private:
-    void apply_impl_single (mpi_vector_t& a,
+    void apply_impl_single (const mpi_vector_t& a_,
         mpi_vector_t& sketch_of_a,
-        columnwise_tag) {
+        columnwise_tag) const {
         std::vector<value_type> sketch_term(base_data_t::S,0);
+
+        // We are essentially doing a 'const' access to a, but the neccessary,
+        // 'const' option is missing from the interface.
+        mpi_vector_t &a = const_cast<mpi_vector_t&>(a_);
 
         /** Accumulate the local sketch vector */
         /** FIXME: Lot's of random access --- not good for performance */
@@ -109,9 +124,9 @@ private:
     }
 
 
-    void apply_impl (mpi_multi_vector_t& A,
+    void apply_impl (const mpi_multi_vector_t& A,
         mpi_multi_vector_t& sketch_of_A,
-        columnwise_tag) {
+        columnwise_tag) const {
         const index_type num_rhs = A.size;
         if (sketch_of_A.size != num_rhs) { /** error */; return; }
         if (A.dim != base_data_t::N) { /** error */; return; }
@@ -128,7 +143,7 @@ private:
 /* Specialization: SpParMat for input, output */
 template <typename IndexType,
           typename ValueType,
-          typename IdxDistributionType,
+          template <typename> class IdxDistributionType,
           template <typename> class ValueDistribution>
 struct hash_transform_t <
     SpParMat<IndexType, ValueType, SpDCCols<IndexType, ValueType> >,
@@ -166,10 +181,19 @@ struct hash_transform_t <
                                        ValueDistribution>& other) :
         base_data_t(other.get_data()) {}
 
+    /**
+     * Constructor from data
+     */
+    hash_transform_t (hash_transform_data_t<index_type,
+                                            value_type,
+                                            IdxDistributionType,
+                                            ValueDistribution>& other_data) :
+        base_data_t(other_data.get_data()) {}
+
     template <typename Dimension>
-    void apply (matrix_type &A,
+    void apply (const matrix_type &A,
         output_matrix_type &sketch_of_A,
-        Dimension dimension) {
+        Dimension dimension) const {
         try {
             apply_impl (A, sketch_of_A, dimension);
         } catch(boost::mpi::exception e) {
@@ -193,9 +217,13 @@ private:
      * Apply the sketching transform that is described in by the sketch_of_A.
      */
     template <typename Dimension>
-    void apply_impl (matrix_type &A,
+    void apply_impl (const matrix_type &A_,
         output_matrix_type &sketch_of_A,
-        Dimension dist) {
+        Dimension dist) const {
+
+        // We are essentially doing a 'const' access to A, but the neccessary,
+        // 'const' option is missing from the interface
+        matrix_type &A = const_cast<matrix_type&>(A_);
 
         const size_t rank = A.getcommgrid()->GetRank();
 
@@ -309,22 +337,22 @@ private:
 
 
     inline index_type getPos(index_type rowid, index_type colid, size_t ncols,
-        columnwise_tag) {
+        columnwise_tag) const {
         return colid + ncols * base_data_t::row_idx[rowid];
     }
 
     inline index_type getPos(index_type rowid, index_type colid, size_t ncols,
-        rowwise_tag) {
+        rowwise_tag) const {
         return rowid * ncols + base_data_t::row_idx[colid];
     }
 
     inline value_type getRowValue(index_type rowid, index_type colid,
-        columnwise_tag) {
+        columnwise_tag) const {
         return base_data_t::row_value[rowid];
     }
 
     inline value_type getRowValue(index_type rowid, index_type colid,
-        rowwise_tag) {
+        rowwise_tag) const {
         return base_data_t::row_value[colid];
     }
 };

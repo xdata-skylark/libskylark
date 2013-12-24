@@ -12,7 +12,7 @@ namespace skylark { namespace sketch {
 
 template <typename ValueType,
           elem::Distribution ColDist,
-          typename IdxDistributionType,
+          template <typename> class IdxDistributionType,
           template <typename> class ValueDistribution>
 struct hash_transform_t <
     elem::DistMatrix<ValueType, ColDist, elem::STAR>,
@@ -27,7 +27,7 @@ struct hash_transform_t <
     typedef ValueType value_type;
     typedef elem::DistMatrix<value_type, ColDist, elem::STAR> matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
-    typedef IdxDistributionType idx_distribution_type;
+    typedef IdxDistributionType<int> idx_distribution_type;
     typedef ValueDistribution<value_type> value_distribution_type;
     typedef hash_transform_data_t<int,
                                   ValueType,
@@ -44,16 +44,25 @@ struct hash_transform_t <
      */
     hash_transform_t (hash_transform_t<matrix_type,
                                        output_matrix_type,
-                                       idx_distribution_type,
+                                       IdxDistributionType,
                                        ValueDistribution>& other) :
         base_data_t(other.get_data()) {}
+
+    /**
+     * Constructor from data
+     */
+    hash_transform_t (hash_transform_data_t<int,
+                                            value_type,
+                                            IdxDistributionType,
+                                            ValueDistribution>& other_data) :
+        base_data_t(other_data.get_data()) {}
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
      */
     template <typename Dimension>
     void apply (const matrix_type& A, output_matrix_type& sketch_of_A,
-        Dimension dimension) {
+        Dimension dimension) const {
 
         switch(ColDist) {
         case elem::VR:
@@ -86,7 +95,7 @@ private:
      */
     void apply_impl_vdist (const matrix_type& A,
         output_matrix_type& sketch_of_A,
-        skylark::sketch::columnwise_tag) {
+        skylark::sketch::columnwise_tag) const {
 
         // Create space to hold local part of SA
         elem::Matrix<value_type> SA_part (sketch_of_A.Height(),
@@ -125,7 +134,7 @@ private:
      */
     void apply_impl_vdist (const matrix_type& A,
         output_matrix_type& sketch_of_A,
-        skylark::sketch::rowwise_tag) {
+        skylark::sketch::rowwise_tag) const {
 
         // Create space to hold local part of SA
         elem::Matrix<value_type> SA_part (sketch_of_A.Height(),

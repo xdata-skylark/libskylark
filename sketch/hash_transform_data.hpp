@@ -15,12 +15,12 @@ namespace skylark { namespace sketch {
  */
 template <typename IndexType,
           typename ValueType,
-          typename IdxDistributionType,
+          template <typename> class IdxDistributionType,
           template <typename> class ValueDistribution>
 struct hash_transform_data_t {
     typedef IndexType index_type;
     typedef ValueType value_type;
-    typedef IdxDistributionType idx_distribution_type;
+    typedef IdxDistributionType<IndexType> idx_distribution_type;
     typedef ValueDistribution<ValueType> value_distribution_type;
 
     /**

@@ -19,22 +19,24 @@
 #include "../../sketch/context.hpp"
 #include "../../sketch/hash_transform.hpp"
 
-typedef boost::random::uniform_int_distribution<int> uniform_t;
 
 template < typename InputMatrixType,
            typename OutputMatrixType = InputMatrixType >
 struct Dummy_t : public skylark::sketch::hash_transform_t<
     InputMatrixType, OutputMatrixType,
-    uniform_t, skylark::utility::rademacher_distribution_t > {
+    boost::random::uniform_int_distribution,
+    skylark::utility::rademacher_distribution_t > {
 
     typedef skylark::sketch::hash_transform_t<
         InputMatrixType, OutputMatrixType,
-        uniform_t, skylark::utility::rademacher_distribution_t >
+        boost::random::uniform_int_distribution,
+        skylark::utility::rademacher_distribution_t >
             hash_t;
 
     Dummy_t(int N, int S, skylark::sketch::context_t& context)
         : skylark::sketch::hash_transform_t<InputMatrixType, OutputMatrixType,
-          uniform_t, skylark::utility::rademacher_distribution_t>(N, S, context)
+          boost::random::uniform_int_distribution,
+          skylark::utility::rademacher_distribution_t>(N, S, context)
     {}
 
     std::vector<int> getRowIdx() { return hash_t::row_idx; }

@@ -1,6 +1,7 @@
 #ifndef SKYLARK_CT_HPP
 #define SKYLARK_CT_HPP
 
+#include "CT_data.hpp"
 #include "dense_transform.hpp"
 
 namespace skylark { namespace sketch {

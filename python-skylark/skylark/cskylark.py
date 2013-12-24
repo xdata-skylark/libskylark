@@ -197,11 +197,7 @@ class _SketchTransform(object):
     sketch_transform = c_void_p()
     self._baseinit(n, s, intype, outtype)
 
-    _lib.sl_create_sketch_transform(_ctxt_obj, ttype, \
-                                    _map_to_adapter[intype].ctype(), \
-                                    _map_to_adapter[outtype].ctype(), n, s, \
-                                    byref(sketch_transform))
-
+    _lib.sl_create_sketch_transform(_ctxt_obj, ttype, n, s, byref(sketch_transform))
     self._obj = sketch_transform.value
 
 
@@ -213,7 +209,9 @@ class _SketchTransform(object):
       raise errors.UnsupportedError("Unsupported input type (%s)" % intype)
 
     self._intype = intype
+    self._intype_ctype = _map_to_adapter[intype].ctype()
     self._outtype = outtype
+    self._outtype_ctype = _map_to_adapter[outtype].ctype()
     self._n = n
     self._s = s
 
@@ -263,7 +261,10 @@ class _SketchTransform(object):
     if (Aobj == -1 or SAobj == -1):
       return -1
 
-    _lib.sl_apply_sketch_transform(self._obj, Aobj, SAobj, dim+1)
+    _lib.sl_apply_sketch_transform(self._obj, \
+                                   self._intype_ctype, Aobj, \
+                                   self._outtype_ctype, SAobj, \
+                                   dim+1)
 
     _map_to_adapter[self._intype].ptr_cleaner(Aobj)
     _map_to_adapter[self._outtype].ptr_cleaner(SAobj)
@@ -295,9 +296,7 @@ class CT(_SketchTransform):
     super(CT, self)._baseinit(n, s, intype, outtype)
 
     sketch_transform = c_void_p()
-    _lib.sl_create_sketch_transform(_ctxt_obj, "CT", \
-                                    _map_to_adapter[intype].ctype(), \
-                                    _map_to_adapter[outtype].ctype(), n, s, \
+    _lib.sl_create_sketch_transform(_ctxt_obj, "CT", n, s, \
                                     byref(sketch_transform), ctypes.c_double(C))
     self._obj = sketch_transform.value
 
@@ -339,9 +338,7 @@ class WZT(_SketchTransform):
     super(WZT, self)._baseinit(n, s, intype, outtype)
 
     sketch_transform = c_void_p()
-    _lib.sl_create_sketch_transform(_ctxt_obj, "WZT", \
-                                    _map_to_adapter[intype].ctype(), \
-                                    _map_to_adapter[outtype].ctype(), n, s, \
+    _lib.sl_create_sketch_transform(_ctxt_obj, "WZT", n, s, \
                                     byref(sketch_transform), ctypes.c_double(p))
     self._obj = sketch_transform.value
 
@@ -353,9 +350,7 @@ class GaussianRFT(_SketchTransform):
     super(GaussianRFT, self)._baseinit(n, s, intype, outtype)
 
     sketch_transform = c_void_p()
-    _lib.sl_create_sketch_transform(_ctxt_obj, "GaussianRFT", \
-                                    _map_to_adapter[intype].ctype(), \
-                                    _map_to_adapter[outtype].ctype(), n, s, \
+    _lib.sl_create_sketch_transform(_ctxt_obj, "GaussianRFT", n, s, \
                                     byref(sketch_transform), ctypes.c_double(sigma))
     self._obj = sketch_transform.value
 
@@ -370,9 +365,7 @@ class LaplacianRFT(_SketchTransform):
     super(LaplacianRFT, self)._baseinit(n, s, intype, outtype)
 
     sketch_transform = c_void_p()
-    _lib.sl_create_sketch_transform(_ctxt_obj, "LaplacianRFT", \
-                                    _map_to_adapter[intype].ctype(), \
-                                    _map_to_adapter[outtype].ctype(), n, s, \
+    _lib.sl_create_sketch_transform(_ctxt_obj, "LaplacianRFT", n, s, \
                                     byref(sketch_transform), ctypes.c_double(sigma))
     self._obj = sketch_transform.value
 

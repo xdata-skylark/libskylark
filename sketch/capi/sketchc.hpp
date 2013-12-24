@@ -39,15 +39,11 @@ enum matrix_type_t {
 
 struct sketch_transform_t {
     const transform_type_t type;
-    const matrix_type_t input;
-    const matrix_type_t output;
     void * const transform_obj;
 
     sketch_transform_t(
-        transform_type_t type, matrix_type_t input,
-        matrix_type_t output, void *transform_obj)
-        : type(type), input(input),
-          output(output), transform_obj(transform_obj) {}
+        transform_type_t type,void *transform_obj)
+        : type(type), transform_obj(transform_obj) {}
 };
 
 } // namespace c
@@ -106,24 +102,22 @@ SKYLARK_EXTERN_API int sl_free_context(sketch::context_t *ctxt);
  *  @return MPI rank
  */
 SKYLARK_EXTERN_API int sl_context_rank(sketch::context_t *ctxt, int *rank);
+
 /** Get total number of processor.
  *  @param ctxt Skylark context
  *  @return number of processors in the context
  */
 SKYLARK_EXTERN_API int sl_context_size(sketch::context_t *ctxt, int *size);
 
-// Transforms
 /** Creating a sketch transformation.
  *  @param ctxt Sklark context
  *  @param type type of the sketch
- *  @param input input matrix type
- *  @param output output matrix type
  *  @param n input size
  *  @param s output size
  *  @return sketch transformation
  */
 SKYLARK_EXTERN_API int sl_create_sketch_transform(
-        sketch::context_t *ctxt, char *type, char *input, char *output,
+        sketch::context_t *ctxt, char *type, 
         int n, int s, sketchc::sketch_transform_t **sketch, ...);
 
 /** Free resources hold by a sketch transformation.
@@ -134,12 +128,16 @@ SKYLARK_EXTERN_API int sl_free_sketch_transform(
 
 /** Apply the sketch transformation to a matrix.
  *  @param S sketch transform
+ *  @param input_type input matrix type
  *  @param A input matrix
- *  @param AS sketched matrix
- *  @param dim direction of sketch application
+ *  @param output_type output matrix type
+ *  @param SA sketched matrix
+ *  @param dim dimension on which to sketch (SL_COLUMNWISE/ROWWISE)
  */
 SKYLARK_EXTERN_API int sl_apply_sketch_transform(
-        sketchc::sketch_transform_t *S, void *A, void *SA, int dim);
+        sketchc::sketch_transform_t *S,
+        char *input_type, void *A,
+        char *output_type, void *SA, int dim);
 
 // Helper functions to allow wrapping of object
 

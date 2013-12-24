@@ -165,18 +165,16 @@ SKYLARK_EXTERN_API int sl_context_size(sketch::context_t *ctxt, int *size) {
 
 /** Transforms */
 SKYLARK_EXTERN_API int sl_create_sketch_transform(sketch::context_t *ctxt,
-    char *type_, char *input_, char *output_, int n, int s,
+    char *type_, int n, int s,
     sketchc::sketch_transform_t **sketch, ...) {
 
     sketchc::transform_type_t type = str2transform_type(type_);
-    sketchc::matrix_type_t input   = str2matrix_type(input_);
-    sketchc::matrix_type_t output  = str2matrix_type(output_);
 
 # define AUTO_NEW_DISPATCH(T, C)                                    \
     SKYLARK_BEGIN_TRY()                                             \
         if (type == T)                                              \
-            *sketch = new sketchc::sketch_transform_t(              \
-                type, input, output, new C(n, s, *ctxt));           \
+            *sketch = new sketchc::sketch_transform_t(type,         \
+                          new C(n, s, *ctxt));                      \
     SKYLARK_END_TRY()                                               \
     SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
 
@@ -187,7 +185,7 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(sketch::context_t *ctxt,
             va_start(argp, sketch);                                  \
             double p1 = va_arg(argp, double);                        \
             sketchc::sketch_transform_t *r =                         \
-                new sketchc::sketch_transform_t(type, input, output, \
+                new sketchc::sketch_transform_t(type,                \
                     new C(n, s, p1, *ctxt));                         \
             va_end(argp);                                            \
             *sketch = r;                                             \
@@ -219,8 +217,6 @@ SKYLARK_EXTERN_API
     int sl_free_sketch_transform(sketchc::sketch_transform_t *S) {
 
     sketchc::transform_type_t type = S->type;
-    sketchc::matrix_type_t input   = S->input;
-    sketchc::matrix_type_t output  = S->output;
 
 # define AUTO_DELETE_DISPATCH(T, C)                             \
     SKYLARK_BEGIN_TRY()                                         \
@@ -251,11 +247,12 @@ SKYLARK_EXTERN_API
 
 SKYLARK_EXTERN_API int
     sl_apply_sketch_transform(sketchc::sketch_transform_t *S_,
-                              void *A_, void *SA_, int dim) {
+                              char *input_, void *A_,
+                              char *output_, void *SA_, int dim) {
 
     sketchc::transform_type_t type = S_->type;
-    sketchc::matrix_type_t input   = S_->input;
-    sketchc::matrix_type_t output  = S_->output;
+    sketchc::matrix_type_t input   = str2matrix_type(input_);
+    sketchc::matrix_type_t output  = str2matrix_type(output_);
 
 # define AUTO_APPLY_DISPATCH(T, I, O, C, IT, OT, CD)                     \
     if (type == T && input == I && output == O) {                        \
@@ -264,9 +261,9 @@ SKYLARK_EXTERN_API int
         OT &SA = * static_cast<OT*>(SA_);                                \
                                                                          \
         SKYLARK_BEGIN_TRY()                                              \
-            if (dim == 1)                                                \
+            if (dim == SL_COLUMNWISE)                                    \
                 S.apply(A, SA, sketch::columnwise_tag());                \
-        if (dim == 2)                                                    \
+            if (dim == SL_ROWWISE)                                       \
             S.apply(A, SA, sketch::rowwise_tag());                       \
         SKYLARK_END_TRY()                                                \
         SKYLARK_CATCH_AND_RETURN_ERROR_CODE();                           \

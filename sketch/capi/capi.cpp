@@ -40,8 +40,8 @@ typedef sketch::CT_data_t<double> CT_data_t;
 typedef sketch::CWT_data_t<int, double> CWT_data_t;
 typedef sketch::MMT_data_t<int, double> MMT_data_t;
 typedef sketch::WZT_data_t<int, double> WZT_data_t;
-//typedef sketch::GaussianRFT_data_t<double> GaussianRFT_data_t;
-//typedef sketch::LaplacianRFT_data_t<double> LaplacianRFT_data_t;
+typedef sketch::GaussianRFT_data_t<double> GaussianRFT_data_t;
+typedef sketch::LaplacianRFT_data_t<double> LaplacianRFT_data_t;
 #if SKYLARK_HAVE_FFTW
 typedef sketch::FJLT_data_t<double> FJLT_data_t;
 #endif
@@ -201,11 +201,8 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(sketch::context_t *ctxt,
     AUTO_NEW_DISPATCH(sketchc::MMT, MMT_data_t);
     AUTO_NEW_DISPATCH_1P(sketchc::WZT, WZT_data_t)
 
-    // TODO
-    /*
     AUTO_NEW_DISPATCH_1P(sketchc::GaussianRFT, GaussianRFT_data_t);
     AUTO_NEW_DISPATCH_1P(sketchc::LaplacianRFT, LaplacianRFT_data_t);
-    */
 
 #if SKYLARK_HAVE_FFTW
 
@@ -238,11 +235,8 @@ SKYLARK_EXTERN_API
     AUTO_DELETE_DISPATCH(sketchc::MMT, MMT_data_t);
     AUTO_DELETE_DISPATCH(sketchc::WZT, WZT_data_t);
 
-    // TODO
-    /*
     AUTO_DELETE_DISPATCH(sketchc::GaussianRFT, GaussianRFT_data_t);
     AUTO_DELETE_DISPATCH(sketchc::LaplacianRFT, LaplacianRFT_data_t);
-    */
 
 #if SKYLARK_HAVE_FFTW
 
@@ -335,8 +329,7 @@ SKYLARK_EXTERN_API int
     AUTO_APPLY_DISPATCH(sketchc::WZT,
         sketchc::DIST_MATRIX_VC_STAR, sketchc::MATRIX,
         sketch::WZT_t, DistMatrix_VC_STAR, Matrix, WZT_data_t);
-    
-    /*
+
     AUTO_APPLY_DISPATCH(sketchc::GaussianRFT,
         sketchc::DIST_MATRIX_VR_STAR, sketchc::DIST_MATRIX_VR_STAR,
         sketch::GaussianRFT_t, DistMatrix_VR_STAR, DistMatrix_VR_STAR,
@@ -356,7 +349,6 @@ SKYLARK_EXTERN_API int
         sketchc::DIST_MATRIX_VC_STAR, sketchc::DIST_MATRIX_VC_STAR,
         sketch::LaplacianRFT_t, DistMatrix_VC_STAR, DistMatrix_VC_STAR,
         LaplacianRFT_data_t);
-    */
 
 #if SKYLARK_HAVE_FFTW
 

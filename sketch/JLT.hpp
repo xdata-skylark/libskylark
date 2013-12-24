@@ -24,15 +24,15 @@ public:
 
     // We use composition to defer calls to dense_transform_t
     typedef dense_transform_t<InputMatrixType, OutputMatrixType,
-                               bstrand::normal_distribution > transform_type;
+                               bstrand::normal_distribution > transform_t;
 
-    typedef JLT_data_t<typename transform_type::value_type> Base;
+    typedef JLT_data_t<typename transform_t::value_type> base_t;
 
     /**
      * Regular constructor
      */
     JLT_t(int N, int S, skylark::sketch::context_t& context)
-        : Base(N, S, context), _transform(*this) {
+        : base_t(N, S, context), _transform(*this) {
 
     }
 
@@ -42,15 +42,15 @@ public:
     template <typename OtherInputMatrixType,
               typename OtherOutputMatrixType>
     JLT_t (const JLT_t<OtherInputMatrixType, OtherOutputMatrixType>& other)
-        : Base(other), _transform(*this) {
+        : base_t(other), _transform(*this) {
 
     }
 
     /**
      * Constructor from data
      */
-    JLT_t (const Base& other)
-        : Base(other), _transform(*this) {
+    JLT_t (const base_t& other)
+        : base_t(other), _transform(*this) {
 
     }
 
@@ -58,14 +58,14 @@ public:
      * Apply the sketching transform that is described in by the sketch_of_A.
      */
     template <typename Dimension>
-    void apply (const typename transform_type::matrix_type& A,
-                typename transform_type::output_matrix_type& sketch_of_A,
+    void apply (const typename transform_t::matrix_type& A,
+                typename transform_t::output_matrix_type& sketch_of_A,
                 Dimension dimension) const {
         _transform.apply(A, sketch_of_A, dimension);
     }
 
 private:
-    transform_type _transform;
+    transform_t _transform;
 };
 
 } } /** namespace skylark::sketch */

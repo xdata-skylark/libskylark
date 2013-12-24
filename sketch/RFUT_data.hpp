@@ -26,9 +26,7 @@ struct RFUT_data_t {
     RFUT_data_t (int N, skylark::sketch::context_t& context)
         : N(N), context(context) {
         value_distribution_type distribution;
-        D = context.generate_random_samples_array<value_type,
-                                                  value_distribution_type>
-            (N, distribution);
+        D = context.generate_random_samples_array(N, distribution);
     }
 
 

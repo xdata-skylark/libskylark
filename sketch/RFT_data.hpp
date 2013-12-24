@@ -35,17 +35,15 @@ struct RFT_data_t {
     /**
      * Regular constructor
      */
-    RFT_data_t (int N, int S, value_type sigma, 
-        skylark::sketch::context_t& context)
+    RFT_data_t (int N, int S, value_type sigma,
+                skylark::sketch::context_t& context)
         : N(N), S(S), sigma(sigma), context(context),
           underlying_data(N, S, context),
           scale(std::sqrt(2.0 / S)) {
         const double pi = boost::math::constants::pi<value_type>();
         boost::random::uniform_real_distribution<value_type>
             distribution(0, 2 * pi);
-        shifts = context.generate_random_samples_array
-            <value_type, boost::random::uniform_real_distribution<value_type> > 
-            (S, distribution);
+        shifts = context.generate_random_samples_array(S, distribution);
     }
 
 

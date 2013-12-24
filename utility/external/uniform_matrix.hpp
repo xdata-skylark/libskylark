@@ -147,9 +147,8 @@ struct uniform_matrix_t <elem::Matrix<ValueType> > {
 
         matrix_t A(M, N);
         distribution_t distribution;
-        random_samples_array_t<value_t, distribution_t> samples =
-            context.allocate_random_samples_array<value_t, distribution_t>
-            (M * N, distribution);
+        random_samples_array_t<distribution_t> samples =
+            context.allocate_random_samples_array(M * N, distribution);
         for (index_t j = 0; j < N; j++) {
             for (index_t i = 0; i < M; i++) {
                 value_t sample;
@@ -178,9 +177,8 @@ struct uniform_matrix_t <elem::DistMatrix<ValueType, CD, RD> > {
 
         mpi_matrix_t A(M, N, grid);
         distribution_t distribution;
-        random_samples_array_t<value_t, distribution_t> samples =
-            context.allocate_random_samples_array<value_t, distribution_t>
-            (M * N, distribution);
+        random_samples_array_t<distribution_t> samples =
+            context.allocate_random_samples_array(M * N, distribution);
         for (index_t j = 0; j < N; j++) {
             for (index_t i = 0; i < M; i++) {
                 value_t sample = samples[j * M + i];

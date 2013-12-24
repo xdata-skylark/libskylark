@@ -14,18 +14,12 @@ def generate_plot_from_file(fname, web_dir):
     procs = []
     with open(fname, 'r') as f:
         reader = csv.reader(f, delimiter=' ')
-        import operator
-        sorted_data = sorted(reader, key=operator.itemgetter(0))
-        ofile = open('tmp.dat', "wb")
-        writer = csv.writer(ofile, delimiter=' ')
-        for row in sorted_data:
+        for row in reader:
             procs.append(int(row[0]))
-            writer.writerow(row)
-        ofile.close()
 
     procs = list(set(procs))
 
-    pylab.plotfile('tmp.dat', cols=(0,1,2,3), delimiter=' ',
+    pylab.plotfile(fname, cols=(0,1,2,3), delimiter=' ',
             names=['$n_p$', 'min', 'avg', 'max'], subplots=False,
             plotfuncs={1:'semilogy', 2:'semilogy', 3:'semilogy'},
             marker='s', linewidth=3)
@@ -43,10 +37,9 @@ def compute_efficiency(fname):
     """
     with open(fname, 'r') as f:
         reader = csv.reader(f, delimiter=' ')
-        import operator
-        sorted_data = sorted(reader, key=operator.itemgetter(0))
-        r1 = sorted_data[0]
-        rk = sorted_data[-1]
+        data = list(reader)
+        r1 = data[0]
+        rk = data[-1]
         return (float(r1[2]) / float(rk[2])) / (int(rk[0]) / float(r1[0]))
 
 

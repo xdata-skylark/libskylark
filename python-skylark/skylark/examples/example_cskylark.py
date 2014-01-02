@@ -56,7 +56,7 @@ for sname in sketches:
   t0 = time.time()
 
   # Create transform. Default output type is "LocalMatrix".
-  S = stype(m, t, intype="DistMatrix_VR_STAR")
+  S = stype(m, t)
 
   # Sketch both A and b using the same sketch
   SA = S * A

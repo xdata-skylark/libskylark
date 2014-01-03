@@ -238,32 +238,19 @@ class _SketchTransform(object):
   which holds the common interface. Derived classes can have different constructors.
   """
   def __init__(self, ttype, n, s, defouttype):
-    # TODO restore this ability!
-
-    #reqcomb = (ttype, \
-    #           _map_to_adapter[intype].ctype(), \
-    #           _map_to_adapter[outtype].ctype())
-
-    #if reqcomb not in SUPPORTED_SKETCH_TRANSFORMS:
-    #  raise errors.UnsupportedError("Unsupported sketch transofrm " + str(reqcomb))
-
     sketch_transform = c_void_p()
-    self._baseinit(n, s, defouttype)
-
+    self._baseinit(ttype, n, s, defouttype)
     _lib.sl_create_sketch_transform(_ctxt_obj, ttype, n, s, byref(sketch_transform))
     self._obj = sketch_transform.value
+    self._ttype = ttype
 
-
-  def _baseinit(self, n, s, defouttype):
-    #if not _map_to_adapter.has_key(intype):
-    #  raise errors.UnsupportedError("Unsupported input type (%s)" % intype)
-
+  def _baseinit(self, ttype, n, s, defouttype):
     if not _map_to_ctor.has_key(defouttype):
-      raise errors.UnsupportedError("Unsupported output type (%s)" % intype)
-
-    self._defouttype = defouttype
+      raise errors.UnsupportedError("Unsupported default output type (%s)" % intype)
+    self._ttype = ttype
     self._n = n
     self._s = s
+    self._defouttype = defouttype
 
   def __del__(self):
     _lib.sl_free_sketch_transform(self._obj)
@@ -288,7 +275,6 @@ class _SketchTransform(object):
       dim = 1
 
     A = _adapt(A)
-    # outgetdim = _map_to_adapter[self._outtype].getdim
 
     # Allocate in case SA is not given, and then adapt it.
     if SA is None:
@@ -298,8 +284,10 @@ class _SketchTransform(object):
       if dim == 1:
         SA = ctor(A.getdim(0), self._s)
     SA = _adapt(SA)
-  
-    # Verify dimensions
+
+    if (self._ttype, A.ctype(), SA.ctype()) not in SUPPORTED_SKETCH_TRANSFORMS:
+      raise errors.UnsupportedError("Unsupported transform-input-output combination: " + str(reqcomb))  
+
     if A.getdim(dim) != self._n:
       raise errors.DimensionMistmatchError("Sketched dimension is incorrect (input)")
     if SA.getdim(dim) != self._s:
@@ -342,7 +330,7 @@ class CT(_SketchTransform):
   Cauchy Transform
   """
   def __init__(self, n, s, C, outtype=_DEF_OUTTYPE):
-    super(CT, self)._baseinit(n, s, outtype)
+    super(CT, self)._baseinit("CT", n, s, outtype)
 
     sketch_transform = c_void_p()
     _lib.sl_create_sketch_transform(_ctxt_obj, "CT", n, s, \
@@ -384,7 +372,7 @@ class WZT(_SketchTransform):
   Using Exponential Random**, COLT 2013
   """
   def __init__(self, n, s, p, outtype=_DEF_OUTTYPE):
-    super(WZT, self)._baseinit(n, s, outtype)
+    super(WZT, self)._baseinit("WZT", n, s, outtype)
 
     sketch_transform = c_void_p()
     _lib.sl_create_sketch_transform(_ctxt_obj, "WZT", n, s, \
@@ -396,7 +384,7 @@ class GaussianRFT(_SketchTransform):
   Random Features Transform for the RBF Kernel
   """
   def __init__(self, n, s, sigma, outtype=_DEF_OUTTYPE):
-    super(GaussianRFT, self)._baseinit(n, s, outtype)
+    super(GaussianRFT, self)._baseinit("GaussianRFT", n, s, outtype)
 
     sketch_transform = c_void_p()
     _lib.sl_create_sketch_transform(_ctxt_obj, "GaussianRFT", n, s, \
@@ -411,10 +399,9 @@ class LaplacianRFT(_SketchTransform):
   Kernel Machines*, NIPS 2009
   """
   def __init__(self, n, s, sigma, outtype=_DEF_OUTTYPE):
-    super(LaplacianRFT, self)._baseinit(n, s, outtype)
+    super(LaplacianRFT, self)._baseinit("LaplacianRFT", n, s, outtype)
 
     sketch_transform = c_void_p()
     _lib.sl_create_sketch_transform(_ctxt_obj, "LaplacianRFT", n, s, \
                                     byref(sketch_transform), ctypes.c_double(sigma))
     self._obj = sketch_transform.value
-

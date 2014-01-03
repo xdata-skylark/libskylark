@@ -85,8 +85,7 @@ if _ELEM_INSTALLED:
       elif isinstance(A, elem.DistMatrix_d_STAR_VR):
         self._typestr = "DistMatrix_STAR_VR"
       else:
-        # TODO error!
-        None
+        raise errors.UnsupportedError("Unsupported Elemental type")
 
     def ctype(self):
       return self._typestr

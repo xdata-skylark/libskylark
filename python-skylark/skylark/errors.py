@@ -10,3 +10,5 @@ class UnexpectedLowerLayerError(SkylarkError):
 class UnsupportedError(SkylarkError):
     pass
 
+class InvalidObjectError(SkylarkError):
+    pass

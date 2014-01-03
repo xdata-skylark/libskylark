@@ -149,20 +149,21 @@ def _adapt(obj):
   if isinstance(obj, numpy.ndarray):
     return _NumpyAdapter(obj)
 
-  if _ELEM_INSTALLED and sys.modules.has_key('elem'):
+  elif _ELEM_INSTALLED and sys.modules.has_key('elem'):
     global elem
     import elem
     sup = [elem.DistMatrix_d_VR_STAR, elem.DistMatrix_d_VC_STAR, elem.DistMatrix_d_STAR_VC, elem.DistMatrix_d_STAR_VR]
     if any(isinstance(obj, c) for c in sup):
       return _ElemAdapter(obj)
 
-  if _KDT_INSTALLED and sys.modules.has_key('kdt'):
+  elif _KDT_INSTALLED and sys.modules.has_key('kdt'):
     global kdt
     import kdt
     if isinstance(obj, kdt.Mat):
       return _KDTAdapter(obj)
-    
-  # TODO error
+  
+  else:
+    raise errors.InvalidObjectError("Invalid object passed as A or SA")
 
 #
 # Create mapping between type string and and constructor for that type
@@ -298,7 +299,7 @@ class _SketchTransform(object):
     Aobj = A.ptr()
     SAobj = SA.ptr()
     if (Aobj == -1 or SAobj == -1):
-      return None # TODO exceptions ?!?!
+      raise errors.InvalidObjectError("Invalid object passed as A or SA")
 
     _lib.sl_apply_sketch_transform(self._obj, \
                                    A.ctype(), Aobj, SA.ctype(), SAobj, dim+1)

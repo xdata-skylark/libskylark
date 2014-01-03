@@ -1,8 +1,4 @@
-#/usr/bin/python
-"""
-Created on April 8, 2013.
-@author: Vikas Sindhwani (vsindhw@us.ibm.com)
-"""
+#!/usr/bin/env python
 import h5py
 import elem
 import numpy

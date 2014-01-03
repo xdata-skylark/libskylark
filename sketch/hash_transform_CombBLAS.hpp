@@ -233,11 +233,7 @@ private:
         const size_t ncols = sketch_of_A.getncol();
         const size_t nrows = sketch_of_A.getnrow();
 
-        // build local mapping (global_idx, value) first
-        //FIXME: come up with more efficient data structure
-        typedef std::map<size_t, value_type> sp_mat_value_t;
-        std::map<size_t, value_type> my_vals_map;
-
+        //FIXME: use comm_grid
         const size_t my_row_offset =
             static_cast<int>(0.5 + (static_cast<double>(A.getnrow()) /
                     A.getcommgrid()->GetGridRows())) *
@@ -248,6 +244,9 @@ private:
                     A.getcommgrid()->GetGridCols())) *
             A.getcommgrid()->GetRankInProcRow(rank);
 
+        // Pre-compute processor targets
+        std::vector<index_type> proc_seq;
+        std::vector<index_type> proc_size(A.getcommgrid()->GetSize(), 0);
         for(typename col_t::SpColIter col = data.begcol();
             col != data.endcol(); col++) {
             for(typename col_t::SpColIter::NzIter nz = data.begnz(col);
@@ -256,43 +255,83 @@ private:
                 const index_type rowid = nz.rowid()  + my_row_offset;
                 const index_type colid = col.colid() + my_col_offset;
 
-                index_type pos   = getPos(rowid, colid, ncols, dist);
-                value_type value = nz.value() * getRowValue(rowid, colid, dist);
-
-                if(my_vals_map.count(pos) != 0)
-                    my_vals_map[pos] += value;
-                else
-                    my_vals_map.insert(std::pair<size_t,
-                                                 value_type>(pos, value));
+                const size_t target_proc = compute_proc(A, rowid, colid, dist);
+                proc_seq.push_back(target_proc);
+                proc_size[target_proc]++;
             }
         }
 
-        // aggregate values
-        boost::mpi::communicator world(A.getcommgrid()->GetWorld(),
-            boost::mpi::comm_duplicate);
-        std::vector< std::map<size_t, value_type> > vector_of_maps;
+        // constructing arrays for one-sided access
+        size_t idx = 0;
+        const size_t total_nz = proc_seq.size();
+        std::vector<index_type> proc_start_idx(A.getcommgrid()->GetSize(), 0);
+        for(size_t i = 1; i < proc_start_idx.size(); ++i)
+           proc_start_idx[i] = proc_start_idx[i-1] + proc_size[i-1];
 
-        //FIXME: best to selectively send to exchange pair of (size, [double])
-        //       with processor that needs the values. It should be possible to
-        //       pre-compute the ranges of positions that are kept
-        //       on a processor.
-        boost::mpi::all_gather< std::map<size_t, value_type> >(world,
-            my_vals_map,
-            vector_of_maps );
+        std::vector<index_type> indicies(total_nz, 0);
+        std::vector<value_type> values(total_nz, 0);
 
-        // re-sort/insert in value map
+        // Apply sketch for all local values. Note that some of the resulting
+        // values might end up on a different processor. The datastructure
+        // fills values (sorted by processor id) in one continuous array.
+        // Subsequently one-sided operations can be used to gather values for
+        // each processor.
+        for(typename col_t::SpColIter col = data.begcol();
+            col != data.endcol(); col++) {
+            for(typename col_t::SpColIter::NzIter nz = data.begnz(col);
+                nz != data.endnz(col); nz++) {
+
+                const index_type rowid = nz.rowid()  + my_row_offset;
+                const index_type colid = col.colid() + my_col_offset;
+
+                // get offset in array for current element
+                const size_t ar_idx = proc_start_idx[proc_seq[idx]]++;
+
+                indicies[ar_idx] = getPos(rowid, colid, ncols, dist);
+                values[ar_idx]   = nz.value() * getRowValue(rowid, colid, dist);
+
+                idx++;
+            }
+        }
+
+        // Creating windows for all relevant arrays
+        ///FIXME: MPI-3 stuff?
+        MPI_Win proc_win, idx_win, val_win;
+        MPI_Win_create(&(proc_size[0]), sizeof(size_t) * proc_size.size(), 1,
+                       MPI_INFO_NULL, A.getcommgrid()->GetWorld(), &proc_win);
+
+        MPI_Win_create(&(indicies[0]), sizeof(index_type) * indicies.size(), 1,
+                       MPI_INFO_NULL, A.getcommgrid()->GetWorld(), &idx_win);
+
+        MPI_Win_create(&(values[0]), sizeof(value_type) * values.size(), 1,
+                       MPI_INFO_NULL, A.getcommgrid()->GetWorld(), &val_win);
+
+        MPI_Win_fence(MPI_MODE_NOPUT, proc_win);
+        MPI_Win_fence(MPI_MODE_NOPUT, idx_win);
+        MPI_Win_fence(MPI_MODE_NOPUT, val_win);
+
+
+        // get values from other procs
         std::map<size_t, value_type> vals_map;
-        typename std::map<size_t, value_type>::iterator itr;
-        for(size_t i = 0; i < vector_of_maps.size(); ++i) {
 
-            for(itr = vector_of_maps[i].begin(); itr != vector_of_maps[i].end();
-                itr++) {
-                if(vals_map.count(itr->first) != 0)
-                    vals_map[itr->first] += itr->second;
+        for(size_t p = 0; p < A.getcommgrid()->GetSize(); ++p) {
+
+            size_t num_values = 0;
+            MPI_Get(&num_values, 1, MPI_INT, p, rank, 1, MPI_INT, proc_win);
+
+            //FIXME: MPI types
+            std::vector<size_t> add_idx;
+            std::vector<value_type> add_val;
+            MPI_Get(&(add_idx[0]), num_values, MPI_INT, p, rank,
+                    num_values, MPI_INT, idx_win);
+            MPI_Get(&(add_val[0]), num_values, MPI_DOUBLE, p, rank,
+                    num_values, MPI_DOUBLE, val_win);
+
+            for(size_t i = 0; i < num_values; ++i) {
+                if(vals_map.count(add_idx[i]) != 0)
+                    vals_map[add_idx[i]] += add_val[i];
                 else
-                    vals_map.insert(std::pair<size_t,
-                                              value_type>(itr->first,
-                                                  itr->second));
+                    vals_map.insert(std::make_pair(add_idx[i], add_val[i]));
             }
         }
 
@@ -301,8 +340,9 @@ private:
         mpi_vector_t cols(matrix_size);
         mpi_vector_t rows(matrix_size);
         mpi_vector_t vals(matrix_size);
-        size_t idx = 0;
+        idx = 0;
 
+        typename std::map<size_t, value_type>::const_iterator itr;
         for(itr = vals_map.begin(); itr != vals_map.end(); itr++, idx++) {
             cols.SetElement(idx, itr->first % ncols);
             rows.SetElement(idx, itr->first / ncols);
@@ -333,6 +373,10 @@ private:
         //}
         //sketch_of_A.SparseCommon(data_val, locsize, sketch_of_A.getnrow(),
                              //sketch_of_A.getncol());
+
+        MPI_Win_free(&proc_win);
+        MPI_Win_free(&idx_win);
+        MPI_Win_free(&val_win);
     }
 
 
@@ -355,6 +399,29 @@ private:
         rowwise_tag) const {
         return base_data_t::row_value[colid];
     }
+
+    //FIXME: move to comm_grid
+    inline size_t compute_proc(const matrix_type &A, index_type row,
+                               index_type col, columnwise_tag) {
+        row = base_data_t::row_idx[row];
+        size_t rows_per_proc = static_cast<size_t>(
+                (static_cast<double>(A.getnrow()) /
+                A.getcommgrid()->GetGridRows()));
+        return A.getcommgrid()->GetRank(static_cast<size_t>(row / rows_per_proc);
+                                        A.getcommgrid()->GetRankInProcCol());
+    }
+
+    //FIXME: move to comm_grid
+    inline size_t compute_proc(const matrix_type &A, index_type row,
+                               index_type col, rowwise_tag) {
+        col = base_data_t::row_idx[col];
+        size_t cols_per_proc = static_cast<size_t>(
+                (static_cast<double>(A.getncol()) /
+                A.getcommgrid()->GetGridCols()));
+        return A.getcommgrid()->GetRank(A.getcommgrid()->GetRankInProcRow(),
+                                        static_cast<size_t>(col / cols_per_proc);
+    }
+
 };
 
 } } /** namespace skylark::sketch */

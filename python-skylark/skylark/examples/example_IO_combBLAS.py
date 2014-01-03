@@ -1,4 +1,4 @@
-#/usr/bin/python
+#!/usr/bin/env python
 from mpi4py import MPI
 from skylark import cskylark
 from skylark.io import sparselibsvm2combBLAS

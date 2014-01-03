@@ -1,5 +1,6 @@
-#!/usr/bin/python
-# Usage : python example_krr.py datasets/usps.t 0.001 10 500 1500
+#!/usr/bin/env python
+# Usage: python example_krr.py datasets/usps.t 0.001 10 500 1500
+
 import skylark, skylark.io
 from skylark.ml.nonlinear import *
 import pkg_resources, sys

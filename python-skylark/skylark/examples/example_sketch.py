@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import skylark, skylark.sketch, skylark.cskylark
 import elem
 from mpi4py import MPI

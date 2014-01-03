@@ -1,5 +1,5 @@
-#!/usr/bin/python
-# Usage: 
+#!/usr/bin/env python
+# MPI usage: 
 # mpiexec -np 2 python skylark/examples/example_cskylark.py
 
 import elem

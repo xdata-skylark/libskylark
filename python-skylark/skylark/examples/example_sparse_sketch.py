@@ -1,4 +1,7 @@
-#!/usr/bin/python
+#!/usr/bin/env python
+# MPI usage: 
+# mpiexec -np 2 python skylark/examples/example_sparse_sketch.py
+
 
 # prevent mpi4py from calling MPI_Finalize()
 import mpi4py.rc

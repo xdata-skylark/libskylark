@@ -2,7 +2,6 @@
 # MPI usage: 
 # mpiexec -np 2 python skylark/examples/example_sparse_sketch.py
 
-
 # prevent mpi4py from calling MPI_Finalize()
 import mpi4py.rc
 mpi4py.rc.finalize   = False
@@ -38,8 +37,8 @@ print ACB
 
 nullVec = kdt.Vec(0, sparse=False)
 SACB    = kdt.Mat(nullVec, nullVec, nullVec, 6, 6)
-S       = cskylark.CWT(10, 6, intype="DistSparseMatrix", outtype="DistSparseMatrix")
-S.apply(ACB, SACB, 0)
+S       = cskylark.CWT(10, 6)
+S.apply(ACB, SACB, "columnwise")
 
 if (rank == 0):
   print("Sketched A (CWT sparse, columnwise)")
@@ -49,8 +48,8 @@ if (rank == 0):
 # and the memory for the sketch reclaimed.
 
 SACB = kdt.Mat(nullVec, nullVec, nullVec, 3, 10)
-S    = cskylark.CWT(6, 3, intype="DistSparseMatrix", outtype="DistSparseMatrix")
-S.apply(ACB, SACB, 1)
+S    = cskylark.CWT(6, 3)
+S.apply(ACB, SACB, "rowwise")
 
 if (rank == 0):
   print("Sketched A (CWT sparse, rowwise)")

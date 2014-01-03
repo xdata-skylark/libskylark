@@ -14,16 +14,13 @@ nrows = mat.getnrow()
 ncols = mat.getncol()
 print "Read a %s x %s matrix" % (nrows, ncols)
 
-ctxt = cskylark.Context(123836)
-S    = cskylark.CWT(ctxt, "DistSparseMatrix", "DistSparseMatrix", nrows, 100)
+S    = cskylark.CWT(nrows, 100)
 
 nullVec = pyCombBLAS.pyDenseParVec(0, 0)
 sketch  = pyCombBLAS.pySpParMat(100, ncols, nullVec, nullVec, nullVec)
 
-S.Apply(mat, sketch, 1)
+S.apply(mat, sketch, "rowwise")
 
 if (rank == 0):
   print("Sketched A (CWT sparse, columnwise)")
 
-S.Free()
-ctxt.Free()

@@ -21,7 +21,7 @@ class JLT_test(TestCase):
         A = elem.DistMatrix_d_VR_STAR()
         elem.Uniform(A, self.n, 100)
 
-        S  = cskylark.JLT(self.n, self.sn, intype="DistMatrix_VR_STAR")
+        S  = cskylark.JLT(self.n, self.sn)
         SA = np.zeros((self.sn, 100), order='F')
         S.apply(A, SA, "columnwise")
 
@@ -30,7 +30,7 @@ class JLT_test(TestCase):
         A = elem.DistMatrix_d_VR_STAR()
         elem.Uniform(A, 100, self.n)
 
-        S  = cskylark.JLT(self.n, self.sn, intype="DistMatrix_VR_STAR")
+        S  = cskylark.JLT(self.n, self.sn)
         SA = np.zeros((100, self.sn), order='F')
         S.apply(A, SA, "rowwise")
 

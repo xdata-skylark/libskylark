@@ -14,13 +14,11 @@ _M = 10000
 _N = 100
 _R = 1000
 
-_INTYPE = "DistMatrix_VR_STAR"
+def construct_CT(n, s, C=1.0)
+    return cskylark.CT(n, s, C)
 
-def construct_CT(n, s, C=1.0, intype=_INTYPE, outtype="LocalMatrix"):
-    return cskylark.CT(n, s, C, intype, outtype)
-
-def construct_WZT(n, s, C=2.0, intype=_INTYPE, outtype="LocalMatrix"):
-    return cskylark.WZT(n, s, C, intype, outtype)
+def construct_WZT(n, s, C=2.0)
+    return cskylark.WZT(n, s, C)
 
 
 class SVD_test(unittest.TestCase):

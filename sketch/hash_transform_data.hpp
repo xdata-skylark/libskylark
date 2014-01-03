@@ -43,7 +43,7 @@ protected:
     const int N; /**< Input dimension  */
     const int S; /**< Output dimension  */
     skylark::sketch::context_t& context; /**< Context for this sketch */
-    std::vector<int> row_idx; /**< precomputed row indices */
+    std::vector<index_type> row_idx; /**< precomputed row indices */
     std::vector<value_type> row_value; /**< precomputed scaling factors */
 };
 

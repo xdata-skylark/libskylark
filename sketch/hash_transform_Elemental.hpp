@@ -19,7 +19,7 @@ struct hash_transform_t <
     elem::Matrix<ValueType>,
     IdxDistributionType,
     ValueDistribution > :
-        public hash_transform_data_t<int,
+        public hash_transform_data_t<size_t,
                                      ValueType,
                                      IdxDistributionType,
                                      ValueDistribution> {
@@ -27,9 +27,9 @@ struct hash_transform_t <
     typedef ValueType value_type;
     typedef elem::DistMatrix<value_type, ColDist, elem::STAR> matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
-    typedef IdxDistributionType<int> idx_distribution_type;
+    typedef IdxDistributionType<size_t> idx_distribution_type;
     typedef ValueDistribution<value_type> value_distribution_type;
-    typedef hash_transform_data_t<int,
+    typedef hash_transform_data_t<size_t,
                                   ValueType,
                                   IdxDistributionType,
                                   ValueDistribution> base_data_t;
@@ -42,7 +42,7 @@ struct hash_transform_t <
     /**
      * Copy constructor
      */
-    hash_transform_t (hash_transform_t<matrix_type,
+    hash_transform_t (const hash_transform_t<matrix_type,
                                        output_matrix_type,
                                        IdxDistributionType,
                                        ValueDistribution>& other) :
@@ -51,10 +51,7 @@ struct hash_transform_t <
     /**
      * Constructor from data
      */
-    hash_transform_t (hash_transform_data_t<int,
-                                            value_type,
-                                            IdxDistributionType,
-                                            ValueDistribution>& other_data) :
+    hash_transform_t (const base_data_t& other_data) :
         base_data_t(other_data.get_data()) {}
 
     /**

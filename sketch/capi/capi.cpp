@@ -37,9 +37,9 @@ static sketchc::transform_type_t str2transform_type(char *str) {
 // Default data types (the ones we use in Python)
 typedef sketch::JLT_data_t<double> JLT_data_t;
 typedef sketch::CT_data_t<double> CT_data_t;
-typedef sketch::CWT_data_t<int, double> CWT_data_t;
-typedef sketch::MMT_data_t<int, double> MMT_data_t;
-typedef sketch::WZT_data_t<int, double> WZT_data_t;
+typedef sketch::CWT_data_t<size_t, double> CWT_data_t;
+typedef sketch::MMT_data_t<size_t, double> MMT_data_t;
+typedef sketch::WZT_data_t<size_t, double> WZT_data_t;
 typedef sketch::GaussianRFT_data_t<double> GaussianRFT_data_t;
 typedef sketch::LaplacianRFT_data_t<double> LaplacianRFT_data_t;
 #if SKYLARK_HAVE_FFTW

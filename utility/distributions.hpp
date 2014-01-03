@@ -76,6 +76,28 @@ template <> struct uniform_distribution_t <int> {
 };
 
 /**
+ * Uniform distribution specialization for size_t
+ */
+template <> struct uniform_distribution_t <size_t> {
+
+    typedef int result_type;
+
+    boost::random::uniform_int_distribution<size_t> distribution;
+
+    uniform_distribution_t() {}
+
+    uniform_distribution_t(size_t low, size_t high) :
+      distribution(low, high) {}
+
+    template< typename URNG >
+    int operator()(URNG &urng) const {
+        return distribution(urng);
+    }
+    void reset() {}
+};
+
+
+/**
  * Uniform distribution specialization for bool's
  */
 template <> struct uniform_distribution_t <bool> {

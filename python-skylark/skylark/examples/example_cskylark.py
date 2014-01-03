@@ -2,6 +2,10 @@
 # MPI usage: 
 # mpiexec -np 2 python skylark/examples/example_cskylark.py
 
+# prevent mpi4py from calling MPI_Finalize()
+import mpi4py.rc
+mpi4py.rc.finalize   = False
+
 import elem
 from skylark import cskylark, elemhelper
 from mpi4py import MPI

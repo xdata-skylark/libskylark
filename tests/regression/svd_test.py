@@ -14,10 +14,10 @@ _M = 10000
 _N = 100
 _R = 1000
 
-def construct_CT(n, s, C=1.0)
+def construct_CT(n, s, C=1.0):
     return cskylark.CT(n, s, C)
 
-def construct_WZT(n, s, C=2.0)
+def construct_WZT(n, s, C=2.0):
     return cskylark.WZT(n, s, C)
 
 

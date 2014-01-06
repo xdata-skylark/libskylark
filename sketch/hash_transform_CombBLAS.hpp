@@ -294,6 +294,23 @@ private:
             }
         }
 
+        //XXX: let CombBLAS redistribute?
+#ifdef COMBBLAS_REDIST
+        const size_t loc_matrix_size = values.size();
+        mpi_vector_t cols(loc_matrix_size);
+        mpi_vector_t rows(loc_matrix_size);
+        mpi_vector_t vals(loc_matrix_size);
+
+        for(size_t i = 0; i < loc_matrix_size; ++i) {
+            cols.SetElement(i, indicies[i] % ncols);
+            rows.SetElement(i, indicies[i] / ncols);
+            vals.SetElement(i, values[i]);
+        }
+
+        output_matrix_type tmp(
+                sketch_of_A.getnrow(), sketch_of_A.getncol(), rows, cols, vals);
+        sketch_of_A = tmp;
+#else
         // Creating windows for all relevant arrays
         ///FIXME: MPI-3 stuff?
         MPI_Win proc_win, idx_win, val_win;
@@ -319,6 +336,8 @@ private:
             size_t num_values = 0;
             MPI_Get(&num_values, 1, MPI_INT, p, rank, 1, MPI_INT, proc_win);
 
+            if(num_values == 0) continue;
+
             //FIXME: MPI types
             std::vector<size_t> add_idx;
             std::vector<value_type> add_val;
@@ -335,48 +354,39 @@ private:
             }
         }
 
-        // .. and finally create a new sparse matrix
-        const size_t matrix_size = vals_map.size();
-        mpi_vector_t cols(matrix_size);
-        mpi_vector_t rows(matrix_size);
-        mpi_vector_t vals(matrix_size);
-        idx = 0;
+        vector< vector < tuple<index_type, index_type, value_type> > >
+            data_val ( rows.commGrid->GetSize() );
 
+        // and fill into sketch matrix (we know that all data is local now)
         typename std::map<size_t, value_type>::const_iterator itr;
         for(itr = vals_map.begin(); itr != vals_map.end(); itr++, idx++) {
-            cols.SetElement(idx, itr->first % ncols);
-            rows.SetElement(idx, itr->first / ncols);
-            vals.SetElement(idx, itr->second);
+            index_type lrow = itr->first % ncols - my_row_offset;
+            index_type lcol = itr->first / ncols - my_col_offset;
+            data_val[rank].push_back(make_tuple(lrow, lcol, itr->second));
         }
-
-        //FIXME: can we set sketch_of_A directly? (See SparseCommon, Owner)
-        output_matrix_type tmp(sketch_of_A.getnrow(), sketch_of_A.getncol(),
-            rows, cols, vals);
-
-        //delete sketch_of_A.spSeq;
-        sketch_of_A = tmp;
 
         //FIXME: add a method for SpParMat to allow setting rows/cols/vals
         //       directly..
-        // and fill into sketch matrix
-        //vector< vector < tuple<index_type, index_type, value_type> > >
-        // data_val (
-        //rows.commGrid->GetSize() );
+        //XXX: set sequence
+        SpTuples<index_type, value_type> tmp_tpl(
+            vals_map.size(), A.getlocalrows(), A.getlocalcols(), data_val[rank]);
+        sketch_of_A.spSeq = new DER(tmp_tpl, false);
 
-        //index_type locsize = rows.LocArrSize();
-        //for(index_type i = 0; i < locsize; ++i) {
-        //index_type lrow, lcol;
-        //int owner = sketch_of_A.Owner(sketch_of_A.getnrow(),
-        //sketch_of_A.getncol(),
-        //rows[i], cols[i], lrow, lcol);
-        //data_val[owner].push_back(make_tuple(lrow, lcol, vals[i]));
-        //}
-        //sketch_of_A.SparseCommon(data_val, locsize, sketch_of_A.getnrow(),
-                             //sketch_of_A.getncol());
+        //XXX: or use SparseCommon (should not communicate anything anymore)
+        //sketch_of_A.SparseCommon(data_val, vals_map.size(), sketch_of_A.getnrow(),
+                                 //sketch_of_A.getncol());
+
+        //FIXME: can we set sketch_of_A directly? (See SparseCommon, Owner)
+        //output_matrix_type tmp(sketch_of_A.getnrow(), sketch_of_A.getncol(),
+            //rows, cols, vals);
+
+        //delete sketch_of_A.spSeq;
+        //sketch_of_A = tmp;
 
         MPI_Win_free(&proc_win);
         MPI_Win_free(&idx_win);
         MPI_Win_free(&val_win);
+#endif
     }
 
 

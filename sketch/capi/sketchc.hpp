@@ -31,9 +31,12 @@ enum transform_type_t {
 
 enum matrix_type_t {
     MATRIX_TYPE_ERROR,
-    MATRIX,                     /**< Dense elemental matrix */
+    MATRIX,                     /**< Dense Elemental matrix */
+    DIST_MATRIX,                /**< Distributed Elemental matrix (MC-MR) */
     DIST_MATRIX_VC_STAR,
     DIST_MATRIX_VR_STAR,
+    DIST_MATRIX_STAR_VC,
+    DIST_MATRIX_STAR_VR,
     DIST_SPARSE_MATRIX          /**< Sparse matrix (CombBLAS) */
 };
 

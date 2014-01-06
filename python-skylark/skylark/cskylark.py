@@ -76,7 +76,9 @@ if _ELEM_INSTALLED:
   class _ElemAdapter:
     def __init__(self, A):
       self._A = A
-      if isinstance(A, elem.DistMatrix_d_VC_STAR):
+      if isinstance(A, elem.DistMatrix_d):
+        self._typestr = "DistMatrix"
+      elif isinstance(A, elem.DistMatrix_d_VC_STAR):
         self._typestr = "DistMatrix_VC_STAR"
       elif isinstance(A, elem.DistMatrix_d_VR_STAR):
         self._typestr = "DistMatrix_VR_STAR"
@@ -107,7 +109,10 @@ if _ELEM_INSTALLED:
 
     @staticmethod
     def ctor(typestr, m, n):
-      cls = eval("elem.DistMatrix_d_" + typestr)
+      if typestr == "":
+        cls = elem.DistMatrix_d
+      else:
+        cls = eval("elem.DistMatrix_d_" + typestr)
       cls(m, n)
 
 
@@ -145,20 +150,29 @@ if _KDT_INSTALLED:
 # that we can have a uniform way of accessing it. 
 #
 def _adapt(obj):
+  if _ELEM_INSTALLED and sys.modules.has_key('elem'):
+    global elem
+    import elem
+    elemcls = [elem.DistMatrix_d,
+               elem.DistMatrix_d_VR_STAR, elem.DistMatrix_d_VC_STAR, 
+               elem.DistMatrix_d_STAR_VC, elem.DistMatrix_d_STAR_VR] 
+  else:
+    elemcls = []
+
+  if _KDT_INSTALLED and sys.modules.has_key('kdt'):
+    global kdt
+    import kdt
+    kdtcls = [kdt.Mat]
+  else:
+    kdtcls = [];
+
   if isinstance(obj, numpy.ndarray):
     return _NumpyAdapter(obj)
 
-  elif _ELEM_INSTALLED and sys.modules.has_key('elem'):
-    global elem
-    import elem
-    sup = [elem.DistMatrix_d_VR_STAR, elem.DistMatrix_d_VC_STAR, elem.DistMatrix_d_STAR_VC, elem.DistMatrix_d_STAR_VR]
-    if any(isinstance(obj, c) for c in sup):
-      return _ElemAdapter(obj)
+  elif any(isinstance(obj, c) for c in elemcls):
+    return _ElemAdapter(obj)
 
-  elif _KDT_INSTALLED and sys.modules.has_key('kdt'):
-    global kdt
-    import kdt
-    if isinstance(obj, kdt.Mat):
+  elif any(isinstance(obj, c) for c in kdtcls):
       return _KDTAdapter(obj)
   
   else:
@@ -175,6 +189,7 @@ if _ELEM_INSTALLED:
   _map_to_ctor["DistMatrix_VC_STAR"] = lambda m, n : _ElemAdapter.ctor("VC_STAR", m, n)
   _map_to_ctor["DistMatrix_STAR_VR"] = lambda m, n : _ElemAdapter.ctor("STAR_VC", m, n)
   _map_to_ctor["DistMatrix_STAR_VC"] = lambda m, n : _ElemAdapter.ctor("STAR_VR", m, n)
+  _map_to_ctor["DistMatrix"] = lambda m, n : _ElemAdapter.ctor("", m, n)
 
 if _KDT_INSTALLED:
   _map_to_ctor["DistSparseMatrix"] = _KDTAdapter.ctor

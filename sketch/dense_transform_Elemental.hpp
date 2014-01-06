@@ -432,7 +432,7 @@ private:
                 elem::NORMAL,
                 1.0,
                 S_part,
-                A_STAR_ColDist.Matrix(),
+                A_STAR_ColDist.LockedMatrix(),
                 0.0,
                 sketch_slice);
             S_num_rows_consumed += S_part_height;
@@ -606,7 +606,7 @@ private:
                 elem::NORMAL,
                 1.0,
                 S_part,
-                A.Matrix(),
+                A.LockedMatrix(),
                 0.0,
                 sketch_slice);
             S_num_rows_consumed += S_part_height;
@@ -676,8 +676,6 @@ private:
     }
 
 };
-
-
 
 /**
  * Specialization distributed input and output in [*, SOMETHING]
@@ -805,7 +803,7 @@ private:
                 elem::NORMAL,
                 1.0,
                 S_part,
-                A.Matrix(),
+                A.LockedMatrix(),
                 0.0,
                 sketch_slice);
             S_num_rows_consumed += S_part_height;

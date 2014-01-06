@@ -401,25 +401,29 @@ private:
     }
 
     //FIXME: move to comm_grid
-    inline size_t compute_proc(const matrix_type &A, index_type row,
-                               index_type col, columnwise_tag) {
-        row = base_data_t::row_idx[row];
-        size_t rows_per_proc = static_cast<size_t>(
-                (static_cast<double>(A.getnrow()) /
-                A.getcommgrid()->GetGridRows()));
-        return A.getcommgrid()->GetRank(static_cast<size_t>(row / rows_per_proc);
-                                        A.getcommgrid()->GetRankInProcCol());
+    inline size_t compute_proc(const matrix_type &A, const index_type row,
+                               const index_type col, columnwise_tag) const {
+
+        const index_type trow = base_data_t::row_idx[row];
+        const size_t rows_per_proc = static_cast<size_t>(
+            (static_cast<double>(A.getnrow()) / A.getcommgrid()->GetGridRows()));
+
+        return A.getcommgrid()->GetRank(
+            static_cast<size_t>(trow / rows_per_proc),
+            A.getcommgrid()->GetRankInProcCol());
     }
 
     //FIXME: move to comm_grid
-    inline size_t compute_proc(const matrix_type &A, index_type row,
-                               index_type col, rowwise_tag) {
-        col = base_data_t::row_idx[col];
-        size_t cols_per_proc = static_cast<size_t>(
-                (static_cast<double>(A.getncol()) /
-                A.getcommgrid()->GetGridCols()));
-        return A.getcommgrid()->GetRank(A.getcommgrid()->GetRankInProcRow(),
-                                        static_cast<size_t>(col / cols_per_proc);
+    inline size_t compute_proc(const matrix_type &A, const index_type row,
+                               const index_type col, rowwise_tag) const {
+
+        const index_type tcol = base_data_t::row_idx[col];
+        const size_t cols_per_proc = static_cast<size_t>(
+            (static_cast<double>(A.getncol()) / A.getcommgrid()->GetGridCols()));
+
+        return A.getcommgrid()->GetRank(
+            A.getcommgrid()->GetRankInProcRow(),
+            static_cast<size_t>(tcol / cols_per_proc));
     }
 
 };

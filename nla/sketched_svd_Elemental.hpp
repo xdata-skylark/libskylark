@@ -3,50 +3,99 @@
 
 #include <elemental.hpp>
 #include "../sketch/context.hpp"
+#include "../utility/exception.hpp"
 
 namespace skylark { namespace nla {
-
+#if 0
 /** Specialization */
-template <typename ValueType,
-          elem::Distribution CD,
-          elem::Distribution RD,
-          template <typename, typename> class SketchTransformType>
-struct sketched_svd_t <elem::DistMatrix<ValueType, CD, RD>,
-                       elem::DistMatrix<ValueType, CD, RD>,
-                       elem::DistMatrix<ValueType, CD, RD>,
-                       SketchTransformType> {
-  typedef elem::DistMatrix<ValueType, CD, RD> mpi_matrix_t;
-  
-  /**
-   * \brief Give a brief description here.
-   * \param[in] k
-   * \param[in] s 
-   * \param[in] p  lkjslajslsad
-   * \param[in] A
-   * \param[out] U
-   * \param[out] S
-   * \param[out] V
-   *
-   * FIXME: You may need more parameters than this, frankly. This is just
-   * a template for you to expand.
-   */
-  static void apply (int k,
-                     int s,
-                     int p,
-                     const mpi_matrix_t& A, 
-                     mpi_matrix_t& U,
-                     mpi_matrix_t& S,
-                     mpi_matrix_t& V,
-                     skylark::sketch::context_t& context) {
-    /** First check that K < min(M,N), where A is (M,N) */
+template <typename ValueType>
+struct sketch_svd_t <elem::DistMatrix<ValueType, elem::MC, elem::MR>,
+                     elem::DistMatrix<ValueType, elem::MC, elem::MR>,
+                     skylark::sketch::JLT_t <
+                         elem::DistMatrix<ValueType, elem::MC, elem::MR>,
+                         elem::DistMatrix<ValueType, elem::MC, elem::MR> > > {
+    typedef ValueType value_type;
+    typedef elem::DistMatrix<value_type, elem::MC, elem::MR> matrix_type;
+    typedef elem::DistMatrix<value_type, elem::MC, elem::MR> output_matrix_type;
+    typedef SketchTransformType sketch_transform_type;
+    typedef sketch_transform_type::output_matrix_type sketched_matrix_type;
 
-    /** Next check that S <= M and S>= K, where A is (M,N) */
+    /**
+     * \param[in]  k           target rank of the approximate decomposition
+     * \param[in]  sketch_size number of columns of the sketched matrix
+     * \param[in]  q           number of subspace iterations
+     * \param[in]  A           input matrix
+     * \param[out] U           approximate left singular vectors output matrix
+     * \param[out] S           approximate singular values output matrix
+     * \param[out] V           approximate right singular vectors output matrix
+     *
+     * FIXME: Provide for the case of column-wise sketching?
+     */
+    static void apply (int k,
+                       int sketch_size,
+                       int q,
+                       const matrix_type& A,
+                       output_matrix_type& U,
+                       output_matrix_type& S,
+                       output_matrix_type& V,
+                       skylark::sketch::context_t& context) {
 
-    /** Check that 'p' is reasonable */
+        int height = A.Height();
+        int width = A.Width();
 
-    /** Execute the algorithm */
+        /**
+         * Sanity checks, raise an exception if:
+         *   i)   the target rank is too large for the given input matrix or
+         *   ii)  the number of columns of the sketched matrix either:
+         *        - exceeds its width or
+         *        - is less than the target rank
+         */
+         if (k > std::min(height, width)) ||
+            (sketch_size > width) ||
+                (sketch_size < k) {
+                SKYLARK_THROW_EXCEPTION(
+                    utility::elemental_exception()
+                        << utility::error_msg(e.what()) );
+          }
+
+         /** Apply the sketching transformation rowwise:
+          *  A (height x width) -> Y (height x sketch_size)
+         */
+         sketch_transform_type sketch_transform(width, sketch_size, context);
+         sketched_matrix_type Y(height, sketch_size);
+         sketch_transform.apply(A, Y, skylark:sketch::rowwise_tag());
+
+         /** Q, _ = numpy.linalg.qr(Y); (Python) */
+         sketched_matrix_type Q(Y);
+         elem::qr::Explicit(Q);
+
+         /** q steps of subspace iteration */
+         for(int step = 0; step < q; step++) {
+             /** Y = numpy.dot(A.T, Q); Q, _ = numpy.linalg.qr(Y); (Python) */
+             elem::Gemm(elem::ADJOINT, elem::NORMAL, 0.0, A, Q, Y);
+             sketched_matrix_type Q(Y);
+             elem::qr::Explicit(Q);
+
+             /** Y = numpy.dot(A, Q); Q, _ = numpy.linalg.qr(Y);   (Python) */
+             elem::Gemm(elem::NORMAL, elem::NORMAL, 0.0, A, Q, Y);
+             sketched_matrix_type Q(Y);
+             elem::qr::Explicit(Q);
+         }
+
+         /** B = numpy.dot(Q.T, A); (Python) */
+         sketched_matrix_type B;
+         elem::Gemm(elem::ADJOINT, elem::NORMAL, value_type(0), Q, A, B);
+
+         /** U, sigma, Vt = numpy.linalg.svd(B); V = Vt.T; (Python) */
+         elem::DistMatrix<elem::VR, elem::STAR> Sigma;
+         elem::SVD(B, Sigma, V);
+         S = Sigma;
+
+         /** U = B; U = numpy.dot(Q, U); (Python) */
+         elem::Gemm(elem::NORMAL, elem::NORMAL, Q, B, value_type(0), U);
   }
 };
+#endif
 
 #if 0
 /*************************************************************************/

@@ -378,7 +378,7 @@ class JLT(_SketchTransform):
     if dim == 0:
       SA1 = numpy.dot(self.S, A)
     if dim == 1:
-      SA1 = numpy(A, self.S.T)
+      SA1 = numpy.dot(A, self.S.T)
 
     # We really want to use the out parameter of numpy.dot, but it does not seem 
     # to work (raises a ValueError)

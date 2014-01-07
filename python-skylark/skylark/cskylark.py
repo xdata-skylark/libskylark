@@ -1,6 +1,7 @@
 import errors
 import ctypes
 from ctypes import byref, cdll, c_double, c_void_p, c_int, c_char_p, pointer, POINTER, c_bool
+import math
 import numpy
 import sys
 import os
@@ -48,7 +49,7 @@ def initialize(seed=-1):
       _lib = None
       _ELEM_INSTALLED = False
       _KDT_INSTALLED = False
-      SUPPORTED_SKETCH_TRANSFORMS = [ ]
+      SUPPORTED_SKETCH_TRANSFORMS = [ ("JLT", "Matrix", "Matrix") ]
 
     # TODO reload dll ?
 
@@ -134,7 +135,12 @@ class _NumpyAdapter:
 
   @staticmethod
   def ctor(m, n):
-    return numpy.empty((m,n), order='F')
+    # C++ layer works only with Fortran ordering, but in a pure Python
+    # implementation we default to C ordering
+    if _lib != None:
+      return numpy.empty((m,n), order='F')
+    else:
+      return numpy.empty((m,n))
 
 if _ELEM_INSTALLED:
   class _ElemAdapter:
@@ -304,6 +310,8 @@ class _SketchTransform(object):
       dim = 0
     if dim == "rowwise" or dim == "right":
       dim = 1
+    if dim != 0 and dim != 1:
+      raise ValueError("Dimension must be either columnwise/rowwise or left/right or 0/1")
 
     A = _adapt(A)
 
@@ -327,16 +335,21 @@ class _SketchTransform(object):
     if A.getdim(1 - dim) != SA.getdim(1 - dim):
       raise errors.DimensionMistmatchError("Sketched dimension is incorrect (input != output)")
 
-    Aobj = A.ptr()
-    SAobj = SA.ptr()
-    if (Aobj == -1 or SAobj == -1):
-      raise errors.InvalidObjectError("Invalid/unsupported object passed as A or SA")
 
-    _lib.sl_apply_sketch_transform(self._obj, \
-                                   A.ctype(), Aobj, SA.ctype(), SAobj, dim+1)
+    if _lib != None:
+      Aobj = A.ptr()
+      SAobj = SA.ptr()
+      if (Aobj == -1 or SAobj == -1):
+        raise errors.InvalidObjectError("Invalid/unsupported object passed as A or SA")
 
-    A.ptrcleaner()
-    SA.ptrcleaner()
+      _lib.sl_apply_sketch_transform(self._obj, \
+                                       A.ctype(), Aobj, SA.ctype(), SAobj, dim+1)
+
+      A.ptrcleaner()
+      SA.ptrcleaner()
+
+    else:
+      self.ppyapply(A.getobj(), SA.getobj(), dim)
 
     return SA.getobj()
 
@@ -345,6 +358,7 @@ class _SketchTransform(object):
 
   def __div__(self, A):
     return self.apply(A, None, dim=1)
+
 
 #
 # Various sketch transforms
@@ -356,6 +370,19 @@ class JLT(_SketchTransform):
   """
   def __init__(self, n, s, outtype=_DEF_OUTTYPE):
     super(JLT, self).__init__("JLT", n, s, outtype);
+    if _lib == None:
+      # The following is not memory efficient, but for a pure Python impl it will do
+      self.S = numpy.matrix(numpy.random.randn(s, n) / math.sqrt(s))
+
+  def ppyapply(self, A, SA, dim):
+    if dim == 0:
+      SA1 = numpy.dot(self.S, A)
+    if dim == 1:
+      SA1 = numpy(A, self.S.T)
+
+    # We really want to use the out parameter of numpy.dot, but it does not seem 
+    # to work (raises a ValueError)
+    numpy.copyto(SA, SA1)
 
 class CT(_SketchTransform):
   """

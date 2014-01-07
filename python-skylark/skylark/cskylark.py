@@ -7,35 +7,68 @@ import os
 import time
 import atexit
 
-_DEF_INTYPE  = "LocalMatrix"
 _DEF_OUTTYPE = "LocalMatrix"
 
-#
-# Load C-API library and set return types
-#
-_lib = cdll.LoadLibrary('libcskylark.so')
-_lib.sl_create_context.restype          = c_int
-_lib.sl_create_default_context.restype  = c_int
-_lib.sl_free_context.restype            = c_int
-_lib.sl_context_rank.restype            = c_int
-_lib.sl_context_size.restype            = c_int
-_lib.sl_create_sketch_transform.restype = c_int
-_lib.sl_wrap_raw_matrix.restype         = c_int
-_lib.sl_free_raw_matrix_wrap.restype    = c_int
+# Function for initialization and reinitilialization
+def initialize(seed=-1):
+  """
+  Reinitalize the library with a seed. If seed is -1 then system time is
+  used to create the seed.
+  """
 
-_lib.sl_strerror.restype                    = c_char_p
-_lib.sl_supported_sketch_transforms.restype = c_char_p
+  global _lib, _ctxt_obj, _ELEM_INSTALLED, _KDT_INSTALLED
+  global SUPPORTED_SKETCH_TRANSFORMS
+  global _rank, _size
 
-_lib.sl_has_elemental.restype = c_bool
-_lib.sl_has_combblas.restype  = c_bool
+  if '_lib' not in globals():
+    #
+    # Load C-API library and set return types
+    #
+    _lib = cdll.LoadLibrary('libcskylark.so')
+    _lib.sl_create_context.restype              = c_int
+    _lib.sl_create_default_context.restype      = c_int
+    _lib.sl_free_context.restype                = c_int
+    _lib.sl_context_rank.restype                = c_int
+    _lib.sl_context_size.restype                = c_int
+    _lib.sl_create_sketch_transform.restype     = c_int
+    _lib.sl_wrap_raw_matrix.restype             = c_int
+    _lib.sl_free_raw_matrix_wrap.restype        = c_int
+    _lib.sl_strerror.restype                    = c_char_p
+    _lib.sl_supported_sketch_transforms.restype = c_char_p
+    _lib.sl_has_elemental.restype               = c_bool
+    _lib.sl_has_combblas.restype                = c_bool
 
-SUPPORTED_SKETCH_TRANSFORMS = map(eval, _lib.sl_supported_sketch_transforms().split())
+    _ELEM_INSTALLED = _lib.sl_has_elemental()
+    _KDT_INSTALLED  = _lib.sl_has_combblas()    
 
-_ELEM_INSTALLED = _lib.sl_has_elemental()
-_KDT_INSTALLED  = _lib.sl_has_combblas()
+    SUPPORTED_SKETCH_TRANSFORMS = map(eval, _lib.sl_supported_sketch_transforms().split())
+    
+    # TODO reload dll ?
 
-def _strerror(errorno):
-  return _lib.sl_strerror(errorno)
+  if seed == -1:
+    seed = int(time.time())
+
+  if '_ctxt_obj' in globals():
+    _lib.sl_free_context(_ctxt_obj)
+
+  ctxt_obj = c_void_p()
+  _lib.sl_create_default_context(seed, byref(ctxt_obj))
+  _ctxt_obj = ctxt_obj.value
+
+  rank = c_int()
+  _lib.sl_context_rank(_ctxt_obj, byref(rank))
+  _rank = rank.value
+
+  size = c_int()
+  _lib.sl_context_size(_ctxt_obj, byref(size))
+  _size = size.value
+
+# Actually initialize the C-API.
+initialize(int(time.time()))
+
+# TODO
+#def _strerror(errorno):
+#  return _lib.sl_strerror(errorno)
 
 #
 # Matrix type adapters: specifies how to interact with the underlying (perhaps in C/C++)
@@ -193,38 +226,6 @@ if _ELEM_INSTALLED:
 
 if _KDT_INSTALLED:
   _map_to_ctor["DistSparseMatrix"] = _KDTAdapter.ctor
-
-# Function for initialization and reinitilialization
-def initialize(seed=-1):
-  """
-  Reinitalize the library with a seed. If seed is -1 then system time is
-  used to create the seed.
-  """
-  # TODO reload dll (?)
-  global _ctxt_obj
-  if seed == -1:
-    seed = int(time.time())
-  if _ctxt_obj != 0:
-    _lib.sl_free_context(_ctxt_obj)
-
-  ctxt_obj = c_void_p()
-  _lib.sl_create_default_context(seed, byref(ctxt_obj))
-  _ctxt_obj = ctxt_obj.value
-
-  global _rank
-  rank = c_int()
-  _lib.sl_context_rank(_ctxt_obj, byref(rank))
-  _rank = rank.value
-
-  global _size
-  size = c_int()
-  _lib.sl_context_size(_ctxt_obj, byref(size))
-  _size = size.value
-
-
-# Actually initialize the C-API.
-_ctxt_obj = 0
-initialize(int(time.time()))
 
 # Allow finalization
 def finalize():

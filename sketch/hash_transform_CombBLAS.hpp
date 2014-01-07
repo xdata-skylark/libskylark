@@ -334,16 +334,17 @@ private:
         for(size_t p = 0; p < A.getcommgrid()->GetSize(); ++p) {
 
             size_t num_values = 0;
-            MPI_Get(&num_values, 1, MPI_INT, p, rank, 1, MPI_INT, proc_win);
+            MPI_Get(&num_values, 1, MPI_LONG, p, rank, 1, MPI_INT, proc_win);
 
             if(num_values == 0) continue;
 
-            //FIXME: MPI types
-            std::vector<size_t> add_idx;
-            std::vector<value_type> add_val;
-            MPI_Get(&(add_idx[0]), num_values, MPI_INT, p, rank,
+            std::vector<index_type> add_idx(num_values);
+            std::vector<value_type> add_val(num_values);
+            MPI_Get(&(add_idx[0]), num_values,
+                    boost::mpi::get_mpi_datatype<index_type>(), p, rank,
                     num_values, MPI_INT, idx_win);
-            MPI_Get(&(add_val[0]), num_values, MPI_DOUBLE, p, rank,
+            MPI_Get(&(add_val[0]), num_values,
+                    boost::mpi::get_mpi_datatype<value_type>(), p, rank,
                     num_values, MPI_DOUBLE, val_win);
 
             for(size_t i = 0; i < num_values; ++i) {
@@ -354,34 +355,27 @@ private:
             }
         }
 
-        vector< vector < tuple<index_type, index_type, value_type> > >
-            data_val ( rows.commGrid->GetSize() );
+        vector < tuple<index_type, index_type, value_type> >
+            data_val ( A.getcommgrid()->GetSize() );
 
         // and fill into sketch matrix (we know that all data is local now)
         typename std::map<size_t, value_type>::const_iterator itr;
         for(itr = vals_map.begin(); itr != vals_map.end(); itr++, idx++) {
             index_type lrow = itr->first % ncols - my_row_offset;
             index_type lcol = itr->first / ncols - my_col_offset;
-            data_val[rank].push_back(make_tuple(lrow, lcol, itr->second));
+            data_val.push_back(make_tuple(lrow, lcol, itr->second));
         }
 
-        //FIXME: add a method for SpParMat to allow setting rows/cols/vals
-        //       directly..
-        //XXX: set sequence
         SpTuples<index_type, value_type> tmp_tpl(
-            vals_map.size(), A.getlocalrows(), A.getlocalcols(), data_val[rank]);
-        sketch_of_A.spSeq = new DER(tmp_tpl, false);
+            vals_map.size(), A.getlocalrows(), A.getlocalcols(), &(data_val[0]));
+
+        //FIXME: we need a method to set spSeq or public SparseCommon
+        //delete sketch_of_A.spSeq;
+        //sketch_of_A.spSeq = new DER(tmp_tpl, false);
 
         //XXX: or use SparseCommon (should not communicate anything anymore)
         //sketch_of_A.SparseCommon(data_val, vals_map.size(), sketch_of_A.getnrow(),
                                  //sketch_of_A.getncol());
-
-        //FIXME: can we set sketch_of_A directly? (See SparseCommon, Owner)
-        //output_matrix_type tmp(sketch_of_A.getnrow(), sketch_of_A.getncol(),
-            //rows, cols, vals);
-
-        //delete sketch_of_A.spSeq;
-        //sketch_of_A = tmp;
 
         MPI_Win_free(&proc_win);
         MPI_Win_free(&idx_win);

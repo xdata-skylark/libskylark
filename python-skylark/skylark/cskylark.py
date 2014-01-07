@@ -59,6 +59,7 @@ def initialize(seed=-1):
     # We assume completly local operation when no C++ layer.
     _rank = 1
     _size = 1
+    numpy.random.seed(seed)
     return
     
   if '_ctxt_obj' in globals():

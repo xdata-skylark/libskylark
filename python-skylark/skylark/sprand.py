@@ -45,18 +45,20 @@ def hashmap(t, n, dimension=0, nz_values=[1], nz_prob_dist=[1.0]):
     -----------
     t : number of bins
     n : number of items hashed
-    dimension : 0 returns t x n matrix, 1 returns n x t matrix (for efficiency later)
+    dimension : 0 returns t x n matrix, 1 returns n x t matrix (for efficiency 
+                later)
     
     Returns
     -------
-    If dimension=0, Sparse binary matrix S of size t x n such that S(h(i), i) = 1 and all other entries are 0.
+    If dimension=0, Sparse binary matrix S of size t x n such that  
+    S(h(i), i) = 1 and all other entries are 0.
     
-    If dimension=1, s is of size n x t with S(i,h(i)) = 1 and all other entries are 0.
+    If dimension=1, s is of size n x t with S(i,h(i)) = 1 and all other entries
+    are 0.
     """
     
     data = scipy.stats.rv_discrete(values=(nz_values, nz_prob_dist), name = 'dist').rvs(size=n)
     col = scipy.arange(n)
-    print t, n
     row = scipy.stats.randint(0,t).rvs(n)
     if dimension==0:
         S = scipy.sparse.csr_matrix( (data, (row, col)), shape = (t,n))

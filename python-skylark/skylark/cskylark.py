@@ -1,8 +1,9 @@
 import errors
 import ctypes
 from ctypes import byref, cdll, c_double, c_void_p, c_int, c_char_p, pointer, POINTER, c_bool
+import sprand
 import math
-import numpy
+import numpy, scipy
 import sys
 import os
 import time
@@ -49,7 +50,8 @@ def initialize(seed=-1):
       _lib = None
       _ELEM_INSTALLED = False
       _KDT_INSTALLED = False
-      SUPPORTED_SKETCH_TRANSFORMS = [ ("JLT", "Matrix", "Matrix") ]
+      SUPPORTED_SKETCH_TRANSFORMS = [ ("JLT", "Matrix", "Matrix"), 
+                                      ("CWT", "Matrix", "Matrix") ]
 
     # TODO reload dll ?
 
@@ -413,6 +415,19 @@ class CWT(_SketchTransform):
   """
   def __init__(self, n, s, outtype=_DEF_OUTTYPE):
     super(CWT, self).__init__("CWT", n, s, outtype);
+    if _lib == None:
+      # The following is not memory efficient, but for a pure Python impl it will do
+      self.S = sprand.hashmap(s, n, dimension=0, nz_values=[-1.0,+1.0], nz_prob_dist=[0.5,0.5])
+
+  def ppyapply(self, A, SA, dim):
+    if dim == 0:
+      SA1 = self.S * A
+    if dim == 1:
+      SA1 = A * self.S.T
+
+    # We really want to use the out parameter of scipy.dot, but it does not seem 
+    # to work (raises a ValueError)
+    numpy.copyto(SA, SA1)
 
 class MMT(_SketchTransform):
   """

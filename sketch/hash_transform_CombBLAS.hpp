@@ -164,6 +164,8 @@ struct hash_transform_t <
                                   ValueType,
                                   IdxDistributionType,
                                   ValueDistribution> base_data_t;
+
+
     /**
      * Regular constructor
      */
@@ -235,18 +237,20 @@ private:
 
         //FIXME: use comm_grid
         const size_t my_row_offset =
-            static_cast<int>(0.5 + (static_cast<double>(A.getnrow()) /
+            static_cast<int>((static_cast<double>(A.getnrow()) /
                     A.getcommgrid()->GetGridRows())) *
             A.getcommgrid()->GetRankInProcCol(rank);
 
         const size_t my_col_offset =
-            static_cast<int>(0.5 + (static_cast<double>(A.getncol()) /
+            static_cast<int>((static_cast<double>(A.getncol()) /
                     A.getcommgrid()->GetGridCols())) *
             A.getcommgrid()->GetRankInProcRow(rank);
 
         // Pre-compute processor targets
-        std::vector<index_type> proc_seq;
-        std::vector<index_type> proc_size(A.getcommgrid()->GetSize(), 0);
+        size_t nnz = 0;
+        size_t comm_size = A.getcommgrid()->GetSize();
+        // how many elements per processor
+        std::vector< std::set<size_t> > proc_set(comm_size);
         for(typename col_t::SpColIter col = data.begcol();
             col != data.endcol(); col++) {
             for(typename col_t::SpColIter::NzIter nz = data.begnz(col);
@@ -256,20 +260,26 @@ private:
                 const index_type colid = col.colid() + my_col_offset;
 
                 const size_t target_proc = compute_proc(A, rowid, colid, dist);
-                proc_seq.push_back(target_proc);
-                proc_size[target_proc]++;
+                const size_t pos         = getPos(rowid, colid, ncols, dist);
+
+                if(proc_set[target_proc].count(pos) == 0) {
+                    nnz++;
+                    proc_set[target_proc].insert(pos);
+                }
             }
         }
 
         // constructing arrays for one-sided access
-        size_t idx = 0;
-        const size_t total_nz = proc_seq.size();
-        std::vector<index_type> proc_start_idx(A.getcommgrid()->GetSize(), 0);
-        for(size_t i = 1; i < proc_start_idx.size(); ++i)
-           proc_start_idx[i] = proc_start_idx[i-1] + proc_size[i-1];
+        std::vector<size_t>     proc_size(comm_size, 0);
+        std::vector<index_type> proc_start_idx(comm_size, 0);
+        proc_size[0] = proc_set[0].size();
+        for(size_t i = 1; i < proc_start_idx.size(); ++i) {
+            proc_size[i]      = proc_set[i].size();
+            proc_start_idx[i] = proc_start_idx[i-1] + proc_set[i-1].size();
+        }
 
-        std::vector<index_type> indicies(total_nz, 0);
-        std::vector<value_type> values(total_nz, 0);
+        std::vector<index_type> indicies(nnz, 0);
+        std::vector<value_type> values(nnz, 0);
 
         // Apply sketch for all local values. Note that some of the resulting
         // values might end up on a different processor. The datastructure
@@ -283,18 +293,18 @@ private:
 
                 const index_type rowid = nz.rowid()  + my_row_offset;
                 const index_type colid = col.colid() + my_col_offset;
+                const size_t pos       = getPos(rowid, colid, ncols, dist);
 
                 // get offset in array for current element
-                const size_t ar_idx = proc_start_idx[proc_seq[idx]]++;
+                const size_t proc   = compute_proc(A, rowid, colid, dist);
+                const size_t ar_idx = proc_start_idx[proc] +
+                    std::distance(proc_set[proc].begin(), proc_set[proc].find(pos));
 
-                indicies[ar_idx] = getPos(rowid, colid, ncols, dist);
-                values[ar_idx]   = nz.value() * getRowValue(rowid, colid, dist);
-
-                idx++;
+                indicies[ar_idx]  = pos;
+                values[ar_idx]   += nz.value() * getRowValue(rowid, colid, dist);
             }
         }
 
-        //XXX: let CombBLAS redistribute?
 #ifdef COMBBLAS_REDIST
         const size_t loc_matrix_size = values.size();
         mpi_vector_t cols(loc_matrix_size);
@@ -314,38 +324,46 @@ private:
         // Creating windows for all relevant arrays
         ///FIXME: MPI-3 stuff?
         MPI_Win proc_win, idx_win, val_win;
-        MPI_Win_create(&(proc_size[0]), sizeof(size_t) * proc_size.size(), 1,
-                       MPI_INFO_NULL, A.getcommgrid()->GetWorld(), &proc_win);
+        MPI_Win_create(&proc_size[0], sizeof(size_t) * comm_size,
+                       sizeof(size_t), MPI_INFO_NULL,
+                       A.getcommgrid()->GetWorld(), &proc_win);
 
-        MPI_Win_create(&(indicies[0]), sizeof(index_type) * indicies.size(), 1,
-                       MPI_INFO_NULL, A.getcommgrid()->GetWorld(), &idx_win);
+        MPI_Win_create(&indicies[0], sizeof(index_type) * indicies.size(),
+                       sizeof(index_type), MPI_INFO_NULL,
+                       A.getcommgrid()->GetWorld(), &idx_win);
 
-        MPI_Win_create(&(values[0]), sizeof(value_type) * values.size(), 1,
-                       MPI_INFO_NULL, A.getcommgrid()->GetWorld(), &val_win);
+        MPI_Win_create(&values[0], sizeof(value_type) * values.size(),
+                       sizeof(value_type), MPI_INFO_NULL,
+                       A.getcommgrid()->GetWorld(), &val_win);
 
-        MPI_Win_fence(MPI_MODE_NOPUT, proc_win);
-        MPI_Win_fence(MPI_MODE_NOPUT, idx_win);
-        MPI_Win_fence(MPI_MODE_NOPUT, val_win);
+        MPI_Win_fence(0, proc_win);
+        MPI_Win_fence(0, idx_win);
+        MPI_Win_fence(0, val_win);
 
 
-        // get values from other procs
+        // accumulate values from other procs
         std::map<size_t, value_type> vals_map;
-
-        for(size_t p = 0; p < A.getcommgrid()->GetSize(); ++p) {
+        for(size_t p = 0; p < comm_size; ++p) {
 
             size_t num_values = 0;
-            MPI_Get(&num_values, 1, MPI_LONG, p, rank, 1, MPI_INT, proc_win);
-
-            if(num_values == 0) continue;
+            MPI_Get(&num_values, 1, boost::mpi::get_mpi_datatype<size_t>(),
+                    p, rank, 1, boost::mpi::get_mpi_datatype<size_t>(),
+                    proc_win);
+            MPI_Win_fence(0, proc_win);
 
             std::vector<index_type> add_idx(num_values);
             std::vector<value_type> add_val(num_values);
             MPI_Get(&(add_idx[0]), num_values,
                     boost::mpi::get_mpi_datatype<index_type>(), p, rank,
-                    num_values, MPI_INT, idx_win);
+                    num_values, boost::mpi::get_mpi_datatype<index_type>(), idx_win);
+            MPI_Win_fence(0, idx_win);
+
             MPI_Get(&(add_val[0]), num_values,
                     boost::mpi::get_mpi_datatype<value_type>(), p, rank,
-                    num_values, MPI_DOUBLE, val_win);
+                    num_values, boost::mpi::get_mpi_datatype<value_type>(), val_win);
+            MPI_Win_fence(0, val_win);
+
+            if(num_values == 0) continue;
 
             for(size_t i = 0; i < num_values; ++i) {
                 if(vals_map.count(add_idx[i]) != 0)
@@ -355,27 +373,56 @@ private:
             }
         }
 
-        vector < tuple<index_type, index_type, value_type> >
-            data_val ( A.getcommgrid()->GetSize() );
+        //FIXME: we need a method to set spSeq or a public SparseCommon (see
+        //       below)!
+        //       For now the only way is to create a temporary matrix and use
+        //       assign operator (deep copy).
 
-        // and fill into sketch matrix (we know that all data is local now)
-        typename std::map<size_t, value_type>::const_iterator itr;
-        for(itr = vals_map.begin(); itr != vals_map.end(); itr++, idx++) {
-            index_type lrow = itr->first % ncols - my_row_offset;
-            index_type lcol = itr->first / ncols - my_col_offset;
-            data_val.push_back(make_tuple(lrow, lcol, itr->second));
-        }
+        //vector < tuple<index_type, index_type, value_type> >
+            //data_val ( comm_size );
 
-        SpTuples<index_type, value_type> tmp_tpl(
-            vals_map.size(), A.getlocalrows(), A.getlocalcols(), &(data_val[0]));
+        //// and fill into sketch matrix (we know that all data is local now)
+        //typename std::map<size_t, value_type>::const_iterator itr;
+        //for(itr = vals_map.begin(); itr != vals_map.end(); itr++, idx++) {
+            //index_type lrow = itr->first % ncols - my_row_offset;
+            //index_type lcol = itr->first / ncols - my_col_offset;
+            //data_val.push_back(make_tuple(lrow, lcol, itr->second));
+        //}
 
-        //FIXME: we need a method to set spSeq or public SparseCommon
+        //SpTuples<index_type, value_type> tmp_tpl(
+            //vals_map.size(), A.getlocalrows(), A.getlocalcols(), &(data_val[0]));
+
         //delete sketch_of_A.spSeq;
-        //sketch_of_A.spSeq = new DER(tmp_tpl, false);
+        //sketch_of_A.spSeq = new col_t(tmp_tpl, false);
 
         //XXX: or use SparseCommon (should not communicate anything anymore)
-        //sketch_of_A.SparseCommon(data_val, vals_map.size(), sketch_of_A.getnrow(),
-                                 //sketch_of_A.getncol());
+        //sketch_of_A.SparseCommon(data_val, vals_map.size(),
+                //sketch_of_A.getnrow(), sketch_of_A.getncol());
+
+
+        const size_t loc_matrix_size = vals_map.size();
+        mpi_vector_t cols(loc_matrix_size);
+        mpi_vector_t rows(loc_matrix_size);
+        mpi_vector_t vals(loc_matrix_size);
+        size_t idx = 0;
+
+        typename std::map<size_t, value_type>::const_iterator itr;
+        for(itr = vals_map.begin(); itr != vals_map.end(); itr++, idx++) {
+            cols.SetElement(idx, itr->first % ncols);
+            rows.SetElement(idx, itr->first / ncols);
+            vals.SetElement(idx, itr->second);
+        }
+
+        // create temporary matrix (no further communication should be
+        // required because all the data is local) and use assign operator
+        // (deep copy)..
+        output_matrix_type tmp(
+                sketch_of_A.getnrow(), sketch_of_A.getncol(), rows, cols, vals);
+        sketch_of_A = tmp;
+
+        MPI_Win_fence(0, proc_win);
+        MPI_Win_fence(0, idx_win);
+        MPI_Win_fence(0, val_win);
 
         MPI_Win_free(&proc_win);
         MPI_Win_free(&idx_win);

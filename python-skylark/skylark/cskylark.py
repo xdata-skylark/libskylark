@@ -21,33 +21,46 @@ def initialize(seed=-1):
   global _rank, _size
 
   if '_lib' not in globals():
-    #
-    # Load C-API library and set return types
-    #
-    _lib = cdll.LoadLibrary('libcskylark.so')
-    _lib.sl_create_context.restype              = c_int
-    _lib.sl_create_default_context.restype      = c_int
-    _lib.sl_free_context.restype                = c_int
-    _lib.sl_context_rank.restype                = c_int
-    _lib.sl_context_size.restype                = c_int
-    _lib.sl_create_sketch_transform.restype     = c_int
-    _lib.sl_wrap_raw_matrix.restype             = c_int
-    _lib.sl_free_raw_matrix_wrap.restype        = c_int
-    _lib.sl_strerror.restype                    = c_char_p
-    _lib.sl_supported_sketch_transforms.restype = c_char_p
-    _lib.sl_has_elemental.restype               = c_bool
-    _lib.sl_has_combblas.restype                = c_bool
+    try:
+      #
+      # Load C-API library and set return types
+      #
+      _lib = cdll.LoadLibrary('libcskylark.so')
+      _lib.sl_create_context.restype              = c_int
+      _lib.sl_create_default_context.restype      = c_int
+      _lib.sl_free_context.restype                = c_int
+      _lib.sl_context_rank.restype                = c_int
+      _lib.sl_context_size.restype                = c_int
+      _lib.sl_create_sketch_transform.restype     = c_int
+      _lib.sl_wrap_raw_matrix.restype             = c_int
+      _lib.sl_free_raw_matrix_wrap.restype        = c_int
+      _lib.sl_strerror.restype                    = c_char_p
+      _lib.sl_supported_sketch_transforms.restype = c_char_p
+      _lib.sl_has_elemental.restype               = c_bool
+      _lib.sl_has_combblas.restype                = c_bool
+      
+      _ELEM_INSTALLED = _lib.sl_has_elemental()
+      _KDT_INSTALLED  = _lib.sl_has_combblas()    
+      
+      SUPPORTED_SKETCH_TRANSFORMS = map(eval, _lib.sl_supported_sketch_transforms().split())
+    except:
+      # Did not find library -- must rely on Python code
+      _lib = None
+      _ELEM_INSTALLED = False
+      _KDT_INSTALLED = False
+      SUPPORTED_SKETCH_TRANSFORMS = [ ]
 
-    _ELEM_INSTALLED = _lib.sl_has_elemental()
-    _KDT_INSTALLED  = _lib.sl_has_combblas()    
-
-    SUPPORTED_SKETCH_TRANSFORMS = map(eval, _lib.sl_supported_sketch_transforms().split())
-    
     # TODO reload dll ?
 
   if seed == -1:
     seed = int(time.time())
 
+  if _lib == None:
+    # We assume completly local operation when no C++ layer.
+    _rank = 1
+    _size = 1
+    return
+    
   if '_ctxt_obj' in globals():
     _lib.sl_free_context(_ctxt_obj)
 
@@ -62,6 +75,23 @@ def initialize(seed=-1):
   size = c_int()
   _lib.sl_context_size(_ctxt_obj, byref(size))
   _size = size.value
+
+# Allow finalization
+def finalize():
+  """
+  Finalize (de-allocate) the library. However, note that that will not cause
+  allocated objects (e.g. sketch transforms) to be freed. They are freed by
+  the garbage collector when detected as garbage (no references).
+  """
+  # TODO free dll (?)
+  global _lib, _ctxt_obj, _rank, _size
+  if _lib != None:
+    if _ctxt_obj != 0:
+      _lib.sl_free_context(_ctxt_obj)
+    _ctxt_obj = 0
+
+# Make sure finalize is called before exiting (just in case).
+atexit.register(finalize)
 
 # Actually initialize the C-API.
 initialize(int(time.time()))
@@ -209,7 +239,7 @@ def _adapt(obj):
       return _KDTAdapter(obj)
   
   else:
-    raise errors.InvalidObjectError("Invalid object passed as A or SA")
+    raise errors.InvalidObjectError("Invalid/unsupported object passed as A or SA")
 
 #
 # Create mapping between type string and and constructor for that type
@@ -218,32 +248,15 @@ _map_to_ctor = { }
 _map_to_ctor["LocalMatrix"] = _NumpyAdapter.ctor
 
 if _ELEM_INSTALLED:
+  _map_to_ctor["DistMatrix"] = lambda m, n : _ElemAdapter.ctor("", m, n)
   _map_to_ctor["DistMatrix_VR_STAR"] = lambda m, n : _ElemAdapter.ctor("VR_STAR", m, n)
   _map_to_ctor["DistMatrix_VC_STAR"] = lambda m, n : _ElemAdapter.ctor("VC_STAR", m, n)
   _map_to_ctor["DistMatrix_STAR_VR"] = lambda m, n : _ElemAdapter.ctor("STAR_VC", m, n)
   _map_to_ctor["DistMatrix_STAR_VC"] = lambda m, n : _ElemAdapter.ctor("STAR_VR", m, n)
-  _map_to_ctor["DistMatrix"] = lambda m, n : _ElemAdapter.ctor("", m, n)
 
 if _KDT_INSTALLED:
   _map_to_ctor["DistSparseMatrix"] = _KDTAdapter.ctor
 
-# Allow finalization
-def finalize():
-  """
-  Finalize (de-allocate) the library. However, note that that will not cause
-  allocated objects (e.g. sketch transforms) to be freed. They are freed by
-  the garbage collector when detected as garbage (no references).
-  """
-  # TODO free dll (?)
-  global _ctxt_obj, _rank, _size
-  if _ctxt_obj != 0:
-    _lib.sl_free_context(_ctxt_obj)
-  _ctxt_obj = 0
-
-# Make sure finalize is called before exiting (just in case).
-atexit.register(finalize)
-
-#
 #
 # Generic Sketch Transform
 #
@@ -254,11 +267,11 @@ class _SketchTransform(object):
   which holds the common interface. Derived classes can have different constructors.
   """
   def __init__(self, ttype, n, s, defouttype):
-    sketch_transform = c_void_p()
     self._baseinit(ttype, n, s, defouttype)
-    _lib.sl_create_sketch_transform(_ctxt_obj, ttype, n, s, byref(sketch_transform))
-    self._obj = sketch_transform.value
-    self._ttype = ttype
+    if _lib != None:
+      sketch_transform = c_void_p()
+      _lib.sl_create_sketch_transform(_ctxt_obj, ttype, n, s, byref(sketch_transform))
+      self._obj = sketch_transform.value
 
   def _baseinit(self, ttype, n, s, defouttype):
     if not _map_to_ctor.has_key(defouttype):
@@ -269,7 +282,8 @@ class _SketchTransform(object):
     self._defouttype = defouttype
 
   def __del__(self):
-    _lib.sl_free_sketch_transform(self._obj)
+    if _lib != None:
+      _lib.sl_free_sketch_transform(self._obj)
 
   def apply(self, A, SA, dim=0):
     """
@@ -301,7 +315,8 @@ class _SketchTransform(object):
         SA = ctor(A.getdim(0), self._s)
     SA = _adapt(SA)
 
-    if (self._ttype, A.ctype(), SA.ctype()) not in SUPPORTED_SKETCH_TRANSFORMS:
+    reqcomb = (self._ttype, A.ctype(), SA.ctype())
+    if reqcomb not in SUPPORTED_SKETCH_TRANSFORMS:
       raise errors.UnsupportedError("Unsupported transform-input-output combination: " + str(reqcomb))  
 
     if A.getdim(dim) != self._n:
@@ -314,7 +329,7 @@ class _SketchTransform(object):
     Aobj = A.ptr()
     SAobj = SA.ptr()
     if (Aobj == -1 or SAobj == -1):
-      raise errors.InvalidObjectError("Invalid object passed as A or SA")
+      raise errors.InvalidObjectError("Invalid/unsupported object passed as A or SA")
 
     _lib.sl_apply_sketch_transform(self._obj, \
                                    A.ctype(), Aobj, SA.ctype(), SAobj, dim+1)
@@ -348,10 +363,11 @@ class CT(_SketchTransform):
   def __init__(self, n, s, C, outtype=_DEF_OUTTYPE):
     super(CT, self)._baseinit("CT", n, s, outtype)
 
-    sketch_transform = c_void_p()
-    _lib.sl_create_sketch_transform(_ctxt_obj, "CT", n, s, \
-                                    byref(sketch_transform), ctypes.c_double(C))
-    self._obj = sketch_transform.value
+    if _lib != None:
+      sketch_transform = c_void_p()
+      _lib.sl_create_sketch_transform(_ctxt_obj, "CT", n, s, \
+                                        byref(sketch_transform), ctypes.c_double(C))
+      self._obj = sketch_transform.value
 
 class FJLT(_SketchTransform):
   """
@@ -390,10 +406,11 @@ class WZT(_SketchTransform):
   def __init__(self, n, s, p, outtype=_DEF_OUTTYPE):
     super(WZT, self)._baseinit("WZT", n, s, outtype)
 
-    sketch_transform = c_void_p()
-    _lib.sl_create_sketch_transform(_ctxt_obj, "WZT", n, s, \
-                                    byref(sketch_transform), ctypes.c_double(p))
-    self._obj = sketch_transform.value
+    if _lib != None:
+      sketch_transform = c_void_p()
+      _lib.sl_create_sketch_transform(_ctxt_obj, "WZT", n, s, \
+                                        byref(sketch_transform), ctypes.c_double(p))
+      self._obj = sketch_transform.value
 
 class GaussianRFT(_SketchTransform):
   """
@@ -402,10 +419,11 @@ class GaussianRFT(_SketchTransform):
   def __init__(self, n, s, sigma, outtype=_DEF_OUTTYPE):
     super(GaussianRFT, self)._baseinit("GaussianRFT", n, s, outtype)
 
-    sketch_transform = c_void_p()
-    _lib.sl_create_sketch_transform(_ctxt_obj, "GaussianRFT", n, s, \
-                                    byref(sketch_transform), ctypes.c_double(sigma))
-    self._obj = sketch_transform.value
+    if _lib != None:
+      sketch_transform = c_void_p()
+      _lib.sl_create_sketch_transform(_ctxt_obj, "GaussianRFT", n, s, \
+                                        byref(sketch_transform), ctypes.c_double(sigma))
+      self._obj = sketch_transform.value
 
 class LaplacianRFT(_SketchTransform):
   """
@@ -417,7 +435,8 @@ class LaplacianRFT(_SketchTransform):
   def __init__(self, n, s, sigma, outtype=_DEF_OUTTYPE):
     super(LaplacianRFT, self)._baseinit("LaplacianRFT", n, s, outtype)
 
-    sketch_transform = c_void_p()
-    _lib.sl_create_sketch_transform(_ctxt_obj, "LaplacianRFT", n, s, \
-                                    byref(sketch_transform), ctypes.c_double(sigma))
-    self._obj = sketch_transform.value
+    if _lib != None:
+      sketch_transform = c_void_p()
+      _lib.sl_create_sketch_transform(_ctxt_obj, "LaplacianRFT", n, s, \
+                                        byref(sketch_transform), ctypes.c_double(sigma))
+      self._obj = sketch_transform.value

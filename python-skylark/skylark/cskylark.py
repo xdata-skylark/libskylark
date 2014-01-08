@@ -50,8 +50,8 @@ def initialize(seed=-1):
       _lib = None
       _ELEM_INSTALLED = False
       _KDT_INSTALLED = False
-      SUPPORTED_SKETCH_TRANSFORMS = [ ("JLT", "Matrix", "Matrix"), 
-                                      ("CWT", "Matrix", "Matrix") ]
+      sketches = ["JLT","CT",  "CWT", "MMT", "WZT"]
+      SUPPORTED_SKETCH_TRANSFORMS = [ (T, "Matrix", "Matrix") for T in sketches]
 
     # TODO reload dll ?
 
@@ -284,7 +284,7 @@ class _SketchTransform(object):
 
   def _baseinit(self, ttype, n, s, defouttype):
     if not _map_to_ctor.has_key(defouttype):
-      raise errors.UnsupportedError("Unsupported default output type (%s)" % intype)
+      raise errors.UnsupportedError("Unsupported default output type (%s)" % defouttype)
     self._ttype = ttype
     self._n = n
     self._s = s
@@ -351,7 +351,7 @@ class _SketchTransform(object):
       SA.ptrcleaner()
 
     else:
-      self.ppyapply(A.getobj(), SA.getobj(), dim)
+      self._ppyapply(A.getobj(), SA.getobj(), dim)
 
     return SA.getobj()
 
@@ -374,9 +374,9 @@ class JLT(_SketchTransform):
     super(JLT, self).__init__("JLT", n, s, outtype);
     if _lib == None:
       # The following is not memory efficient, but for a pure Python impl it will do
-      self.S = numpy.matrix(numpy.random.randn(s, n) / math.sqrt(s))
+      self.S = numpy.random.standard_normal((s, n)) / math.sqrt(s)
 
-  def ppyapply(self, A, SA, dim):
+  def _ppyapply(self, A, SA, dim):
     if dim == 0:
       SA1 = numpy.dot(self.S, A)
     if dim == 1:
@@ -393,11 +393,23 @@ class CT(_SketchTransform):
   def __init__(self, n, s, C, outtype=_DEF_OUTTYPE):
     super(CT, self)._baseinit("CT", n, s, outtype)
 
-    if _lib != None:
+    if _lib == None:
+      self.S = numpy.random.standard_cauchy((s, n)) * (C / s)
+    else:
       sketch_transform = c_void_p()
       _lib.sl_create_sketch_transform(_ctxt_obj, "CT", n, s, \
                                         byref(sketch_transform), ctypes.c_double(C))
       self._obj = sketch_transform.value
+
+  def _ppyapply(self, A, SA, dim):
+    if dim == 0:
+      SA1 = numpy.dot(self.S, A)
+    if dim == 1:
+      SA1 = numpy.dot(A, self.S.T)
+
+    # We really want to use the out parameter of numpy.dot, but it does not seem 
+    # to work (raises a ValueError)
+    numpy.copyto(SA, SA1)
 
 class FJLT(_SketchTransform):
   """
@@ -416,10 +428,13 @@ class CWT(_SketchTransform):
   def __init__(self, n, s, outtype=_DEF_OUTTYPE):
     super(CWT, self).__init__("CWT", n, s, outtype);
     if _lib == None:
-      # The following is not memory efficient, but for a pure Python impl it will do
-      self.S = sprand.hashmap(s, n, dimension=0, nz_values=[-1.0,+1.0], nz_prob_dist=[0.5,0.5])
+      # The following is not memory efficient, but for a pure Python impl 
+      # it will do
+      distribution = scipy.stats.rv_discrete(values=([-1.0, +1.0], [0.5, 0.5]), 
+                                             name = 'dist')
+      self.S = sprand.hashmap(s, n, distribution, dimension = 0)
 
-  def ppyapply(self, A, SA, dim):
+  def _ppyapply(self, A, SA, dim):
     if dim == 0:
       SA1 = self.S * A
     if dim == 1:
@@ -437,7 +452,22 @@ class MMT(_SketchTransform):
   Input-sparsity Time and Applications to Robust Linear Regression**, STOC 2013
   """
   def __init__(self, n, s, outtype=_DEF_OUTTYPE):
-    super(MMT, self).__init__("MMT", n, s, intype, outtype);
+    super(MMT, self).__init__("MMT", n, s, outtype);
+    if _lib == None:
+      # The following is not memory efficient, but for a pure Python impl 
+      # it will do
+      distribution = scipy.stats.cauchy()
+      self.S = sprand.hashmap(s, n, distribution, dimension = 0)
+
+  def _ppyapply(self, A, SA, dim):
+    if dim == 0:
+      SA1 = self.S * A
+    if dim == 1:
+      SA1 = A * self.S.T
+
+    # We really want to use the out parameter of scipy.dot, but it does not seem 
+    # to work (raises a ValueError)
+    numpy.copyto(SA, SA1)
 
 class WZT(_SketchTransform):
   """
@@ -446,14 +476,38 @@ class WZT(_SketchTransform):
   *D. Woodruff* and *Q. Zhang*, **Subspace Embeddings and L_p Regression
   Using Exponential Random**, COLT 2013
   """
+
+  class _WZTDistribution(object):
+    def __init__(self, p):
+      self._edist = scipy.stats.expon()
+      self._bdist = scipy.stats.bernoulli(0.5)
+      self._p = p
+
+    def rvs(self, size):
+      val = numpy.empty(size);
+      for idx in range(0, size):
+        val[idx] = (2 * self._bdist.rvs() - 1) * math.pow(self._edist.rvs(), 1/self._p)
+      return val
+
   def __init__(self, n, s, p, outtype=_DEF_OUTTYPE):
     super(WZT, self)._baseinit("WZT", n, s, outtype)
 
-    if _lib != None:
+    if _lib == None:
+      # The following is not memory efficient, but for a pure Python impl 
+      # it will do
+      distribution = WZT._WZTDistribution(p)
+      self.S = sprand.hashmap(s, n, distribution, dimension = 0)      
+    else:
       sketch_transform = c_void_p()
       _lib.sl_create_sketch_transform(_ctxt_obj, "WZT", n, s, \
                                         byref(sketch_transform), ctypes.c_double(p))
       self._obj = sketch_transform.value
+
+  def _ppyapply(self, A, SA, dim):
+    if dim == 0:
+      SA1 = self.S * A
+    if dim == 1:
+      SA1 = A * self.S.T
 
 class GaussianRFT(_SketchTransform):
   """

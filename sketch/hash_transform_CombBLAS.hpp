@@ -249,11 +249,11 @@ private:
         //FIXME: move to comm_grid
         const size_t grows = sketch_of_A.getcommgrid()->GetGridRows();
         const size_t rows_per_proc = static_cast<size_t>(
-            (static_cast<double>(sketch_of_A.getnrow()) / grows));
+            sketch_of_A.getnrow() / grows);
 
         const size_t gcols = sketch_of_A.getcommgrid()->GetGridCols();
         const size_t cols_per_proc = static_cast<size_t>(
-            (static_cast<double>(sketch_of_A.getncol()) / gcols));
+            sketch_of_A.getncol() / gcols);
 
         // Pre-compute processor targets
         size_t nnz = 0;
@@ -267,8 +267,8 @@ private:
 
                 const index_type rowid = nz.rowid()  + my_row_offset;
                 const index_type colid = col.colid() + my_col_offset;
+                const size_t pos       = getPos(rowid, colid, ncols, dist);
 
-                const size_t pos    = getPos(rowid, colid, ncols, dist);
                 const size_t target = sketch_of_A.getcommgrid()->GetRank(
                     std::min(static_cast<size_t>((pos % ncols) / rows_per_proc), grows - 1),
                     std::min(static_cast<size_t>((pos / ncols) / cols_per_proc), gcols - 1));

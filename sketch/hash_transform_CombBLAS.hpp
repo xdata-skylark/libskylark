@@ -239,12 +239,21 @@ private:
         const size_t my_row_offset =
             static_cast<int>((static_cast<double>(A.getnrow()) /
                     A.getcommgrid()->GetGridRows())) *
-            A.getcommgrid()->GetRankInProcCol(rank);
+                    A.getcommgrid()->GetRankInProcCol(rank);
 
         const size_t my_col_offset =
             static_cast<int>((static_cast<double>(A.getncol()) /
                     A.getcommgrid()->GetGridCols())) *
-            A.getcommgrid()->GetRankInProcRow(rank);
+                    A.getcommgrid()->GetRankInProcRow(rank);
+
+        //FIXME: move to comm_grid
+        const size_t grows = sketch_of_A.getcommgrid()->GetGridRows();
+        const size_t rows_per_proc = static_cast<size_t>(
+            (static_cast<double>(sketch_of_A.getnrow()) / grows));
+
+        const size_t gcols = sketch_of_A.getcommgrid()->GetGridCols();
+        const size_t cols_per_proc = static_cast<size_t>(
+            (static_cast<double>(sketch_of_A.getncol()) / gcols));
 
         // Pre-compute processor targets
         size_t nnz = 0;
@@ -259,12 +268,15 @@ private:
                 const index_type rowid = nz.rowid()  + my_row_offset;
                 const index_type colid = col.colid() + my_col_offset;
 
-                const size_t target_proc = compute_proc(A, rowid, colid, dist);
-                const size_t pos         = getPos(rowid, colid, ncols, dist);
+                const size_t pos    = getPos(rowid, colid, ncols, dist);
+                const size_t target = sketch_of_A.getcommgrid()->GetRank(
+                    std::min(static_cast<size_t>((pos % ncols) / rows_per_proc), grows - 1),
+                    std::min(static_cast<size_t>((pos / ncols) / cols_per_proc), gcols - 1));
 
-                if(proc_set[target_proc].count(pos) == 0) {
+                if(proc_set[target].count(pos) == 0) {
                     nnz++;
-                    proc_set[target_proc].insert(pos);
+                    assert(target < comm_size);
+                    proc_set[target].insert(pos);
                 }
             }
         }
@@ -275,14 +287,14 @@ private:
         proc_size[0] = proc_set[0].size();
         for(size_t i = 1; i < proc_start_idx.size(); ++i) {
             proc_size[i]      = proc_set[i].size();
-            proc_start_idx[i] = proc_start_idx[i-1] + proc_set[i-1].size();
+            proc_start_idx[i] = proc_start_idx[i-1] + proc_size[i-1];
         }
 
         std::vector<index_type> indicies(nnz, 0);
         std::vector<value_type> values(nnz, 0);
 
         // Apply sketch for all local values. Note that some of the resulting
-        // values might end up on a different processor. The datastructure
+        // values might end up on a different processor. The data structure
         // fills values (sorted by processor id) in one continuous array.
         // Subsequently one-sided operations can be used to gather values for
         // each processor.
@@ -293,10 +305,13 @@ private:
 
                 const index_type rowid = nz.rowid()  + my_row_offset;
                 const index_type colid = col.colid() + my_col_offset;
-                const size_t pos       = getPos(rowid, colid, ncols, dist);
+
+                const size_t pos  = getPos(rowid, colid, ncols, dist);
+                const size_t proc = sketch_of_A.getcommgrid()->GetRank(
+                    std::min(static_cast<size_t>((pos % ncols) / rows_per_proc), grows - 1),
+                    std::min(static_cast<size_t>((pos / ncols) / cols_per_proc), gcols - 1));
 
                 // get offset in array for current element
-                const size_t proc   = compute_proc(A, rowid, colid, dist);
                 const size_t ar_idx = proc_start_idx[proc] +
                     std::distance(proc_set[proc].begin(), proc_set[proc].find(pos));
 
@@ -323,10 +338,14 @@ private:
 #else
         // Creating windows for all relevant arrays
         ///FIXME: MPI-3 stuff?
-        MPI_Win proc_win, idx_win, val_win;
+        MPI_Win proc_win, start_offset_win, idx_win, val_win;
         MPI_Win_create(&proc_size[0], sizeof(size_t) * comm_size,
                        sizeof(size_t), MPI_INFO_NULL,
                        A.getcommgrid()->GetWorld(), &proc_win);
+
+        MPI_Win_create(&proc_start_idx[0], sizeof(size_t) * comm_size,
+                       sizeof(size_t), MPI_INFO_NULL,
+                       A.getcommgrid()->GetWorld(), &start_offset_win);
 
         MPI_Win_create(&indicies[0], sizeof(index_type) * indicies.size(),
                        sizeof(index_type), MPI_INFO_NULL,
@@ -337,6 +356,7 @@ private:
                        A.getcommgrid()->GetWorld(), &val_win);
 
         MPI_Win_fence(0, proc_win);
+        MPI_Win_fence(0, start_offset_win);
         MPI_Win_fence(0, idx_win);
         MPI_Win_fence(0, val_win);
 
@@ -351,15 +371,21 @@ private:
                     proc_win);
             MPI_Win_fence(0, proc_win);
 
+            size_t offset = 0;
+            MPI_Get(&offset, 1, boost::mpi::get_mpi_datatype<size_t>(),
+                    p, rank, 1, boost::mpi::get_mpi_datatype<size_t>(),
+                    start_offset_win);
+            MPI_Win_fence(0, start_offset_win);
+
             std::vector<index_type> add_idx(num_values);
             std::vector<value_type> add_val(num_values);
             MPI_Get(&(add_idx[0]), num_values,
-                    boost::mpi::get_mpi_datatype<index_type>(), p, rank,
+                    boost::mpi::get_mpi_datatype<index_type>(), p, offset,
                     num_values, boost::mpi::get_mpi_datatype<index_type>(), idx_win);
             MPI_Win_fence(0, idx_win);
 
             MPI_Get(&(add_val[0]), num_values,
-                    boost::mpi::get_mpi_datatype<value_type>(), p, rank,
+                    boost::mpi::get_mpi_datatype<value_type>(), p, offset,
                     num_values, boost::mpi::get_mpi_datatype<value_type>(), val_win);
             MPI_Win_fence(0, val_win);
 
@@ -421,10 +447,12 @@ private:
         sketch_of_A = tmp;
 
         MPI_Win_fence(0, proc_win);
+        MPI_Win_fence(0, start_offset_win);
         MPI_Win_fence(0, idx_win);
         MPI_Win_fence(0, val_win);
 
         MPI_Win_free(&proc_win);
+        MPI_Win_free(&start_offset_win);
         MPI_Win_free(&idx_win);
         MPI_Win_free(&val_win);
 #endif
@@ -450,33 +478,6 @@ private:
         rowwise_tag) const {
         return base_data_t::row_value[colid];
     }
-
-    //FIXME: move to comm_grid
-    inline size_t compute_proc(const matrix_type &A, const index_type row,
-                               const index_type col, columnwise_tag) const {
-
-        const index_type trow = base_data_t::row_idx[row];
-        const size_t rows_per_proc = static_cast<size_t>(
-            (static_cast<double>(A.getnrow()) / A.getcommgrid()->GetGridRows()));
-
-        return A.getcommgrid()->GetRank(
-            static_cast<size_t>(trow / rows_per_proc),
-            A.getcommgrid()->GetRankInProcCol());
-    }
-
-    //FIXME: move to comm_grid
-    inline size_t compute_proc(const matrix_type &A, const index_type row,
-                               const index_type col, rowwise_tag) const {
-
-        const index_type tcol = base_data_t::row_idx[col];
-        const size_t cols_per_proc = static_cast<size_t>(
-            (static_cast<double>(A.getncol()) / A.getcommgrid()->GetGridCols()));
-
-        return A.getcommgrid()->GetRank(
-            A.getcommgrid()->GetRankInProcRow(),
-            static_cast<size_t>(tcol / cols_per_proc));
-    }
-
 };
 
 } } /** namespace skylark::sketch */

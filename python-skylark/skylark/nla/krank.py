@@ -3,21 +3,21 @@ Implementation of all algorithms for constructing approximate matrix
 decompositions as described in [1]_ An approximate matrix decomposition is
 generally constructed in two stages: 
 
- * In the first stage, an orthonormal matrix Q is constructed by a randomization
- technique that aims at identifying a subspace capturing most of the action of
- the input matrix A; this stage is typically implemented by two substages,
- namely the sketching of A followed by a QR decomposition of the sketched
- matrix. This stage reflects in our `RandomizedRangeFinder` class. 
+ * In the first stage, an orthonormal matrix Q is constructed by a randomization  
+   technique that aims at identifying a subspace capturing most of the action of
+   the input matrix A; this stage is typically implemented by two substages,
+   namely the sketching of A followed by a QR decomposition of the sketched
+   matrix. This stage reflects in our ``RandomizedRangeFinder`` class. 
  
  * In the second stage the orthonormal matrix is used for projecting A and
- subsequently decomposing the projection with a standard (non-randomized)
- method. We provide for singular value decomposition (SVD) and eigenvalue
- decomposition (EVD) in implementation `RangeAssistedSVD` and `RangeAssistedEVD`
- implementation classes respectively.  
+   subsequently decomposing the projection with a standard (non-randomized)
+   method. We provide for singular value decomposition (SVD) and eigenvalue
+   decomposition (EVD) in ``RangeAssistedSVD`` and ``RangeAssistedEVD`` classes
+   respectively.   
 
 .. [1] Nathan Halko, Per-Gunnar Martinsson, Joel A. Tropp, "Finding structure
-with randomness: Probabilistic algorithms for constructing approximate matrix
-decompositions", http://arxiv.org/abs/0909.4061 
+       with randomness: Probabilistic algorithms for constructing approximate
+       matrix decompositions", http://arxiv.org/abs/0909.4061 
 '''
 
 import numpy as np
@@ -28,29 +28,33 @@ import scipy.linalg as slinalg
 
 # FIXME: raise ImportError exception (possibly better at the point of use) in
 # case scipy.linalg.interpolative module is not available.
-import scipy.linalg.interpolative as sli
+try: 
+    import scipy.linalg.interpolative as sli
+except ImportError:
+    print 'Row-extraction methods are not supported'
 
 # FIXME: consider scaling of sketching matrices
 
+
 def SRFT_matrix(n, s):
     '''
-    SRFT (Subsampled Random Fourier Transform) matrix.
+    SRFT (Subsampled Random Fourier Transform) matrix. 
 
-    This is a structured random matrix
-    
-    .. math: \Omega = \sqrt{\frac{n}{s}} D F R
+    This is a structured random matrix 
+    :math:`\\Omega = \\sqrt{\\frac{n}{s}} D F R`.  
     
     Parameters
     ----------
     n : int
      Width of the input matrix (number of columns).
+
     s : int
      Width of the sketched matrix.
     
     Returns
     -------
     omega : numpy array
-     :math:Omega matrix.
+     :math:`\\Omega` matrix.    
     '''
     D = D_matrix(n)
     F = F_matrix(n)
@@ -110,6 +114,7 @@ def R_matrix(n, s):
     ----------
     n : int
      Size of the identity matrix (n x n).
+
     s : int
      Number of columns randomly selected.
     
@@ -133,6 +138,7 @@ def Fisher_Yates_samples(data, size):
     ----------
     data : numpy array
      Container to sample from.
+
     size : int
      Number of samples.
 
@@ -180,40 +186,45 @@ class RandomizedRangeFinder(object):
         ----------
         A : numpy array
          Input matrix.
+
         method : string
           One of the following (see the keys in `args`):
-           * 'generic'            : Algorithm 4.1 in [1]_
-           * 'adaptive'           : Algorithm 4.2 in [1]
-           * 'power_iteration'    : Algorithm 4.3 in [1]_
-           * 'subspace_iteration' : Algorithm 4.4 in [1]_
-           * 'fast_generic'       : Algorithm 4.5 in [1]_
-        params : dict (see the values in `args`):
+           
+           * ``'generic'``            : Algorithm 4.1 in [1]_
+           * ``'adaptive'``           : Algorithm 4.2 in [1]
+           * ``'power_iteration'``    : Algorithm 4.3 in [1]_
+           * ``'subspace_iteration'`` : Algorithm 4.4 in [1]_
+           * ``'fast_generic'``       : Algorithm 4.5 in [1]_
+
+        params : dict (see the values in ``args``):
          Method depending parameters as a map with keys the parameter names
-        (strings) and values the parameter values:
-         * 'generic' and 'fast_generic' need the number of columns `s` of the
-        orthonormal matrix (sketch size)
-         * 'subspace_iteration' and 'power_iteration' need the number of
-        columns `s` of the orthonormal matrix (sketch size) and the number of
-        iterations.
-         * 'adaptive* needs the tolerance `epsilon`, the number of random
-        vectors `r` and maximum number of iterations permitted `max_iters`. The
-        orthonormal matrix Q computed will satisfy:
-        
-        .. math: ||(I - Q Q*{\star} A)|| \leq \epsilon
-        
-        with probability at least 
-        
-        .. math: 1 - \min{m, r} 10^{-r}
-        
-        for an input matrix A of dimensions m x n.
+         (strings) and values the parameter values:
+         
+          * ``'generic'`` and ``'fast_generic'`` need the number of columns
+            ``s`` of the orthonormal matrix (sketch size). 
+          * ``'subspace_iteration'`` and ``'power_iteration'`` need the number
+            of columns ``s`` of the orthonormal matrix (sketch size) and the
+            number of iterations.
+          * ``'adaptive'`` needs the tolerance ``epsilon``, the number of random 
+            vectors ``r`` and maximum number of iterations permitted
+            ``max_iters``.   
+          
         parallel: {False, True}
          Boolean flag whether the computation of Q will run in parallel or
-        not.
+         not.
         
         Returns
         -------
         finder : object
          Ready to use object.
+
+        Notes
+        -----
+        Orthonormal matrix Q computed will satisfy:
+        :math:`||(I - Q Q^{*}) A)|| \\leq \\epsilon`
+        with probability at least 
+        :math:`1 - \\min\{m, r\} 10^{-r}`
+        for an input matrix A of dimensions m x n.
         '''
         kwargs = RandomizedRangeFinder.args[method]
         for key, value in params.iteritems():
@@ -354,20 +365,25 @@ class RangeAssistedSVD(object):
         ----------
         A : numpy array
          Input matrix.
+        
         Q : numpy array
          Orthonormal matrix approximating the range of the input matrix.
+        
         method : string
-          One of the following (see the keys in `args`):
-           * 'direct'             : Algorithm 5.1 in [1]_
-           * 'row_extraction'     : Algorithm 5.2 in [1]_
-        params : dict (see the values in `args`):
+         One of the following (see the keys in ``args``):
+           
+           * ``'direct'``             : Algorithm 5.1 in [1]_
+           * ``'row_extraction'``     : Algorithm 5.2 in [1]_
+        
+        params : dict (see the values in ``args``):
          Method depending parameters as a map with keys the parameter names
-        (strings) and values the parameter values; it is empty but retained for
-        reasons of uniformity with the interface of approximate eigenvalue
-        decomposition.  
+         (strings) and values the parameter values; it is empty but retained for 
+         reasons of uniformity with the interface of approximate eigenvalue
+         decomposition.  
+        
         parallel: {False, True}
          Boolean flag whether the computation of the approximate decomposition
-        will run in parallel or not.
+         will run in parallel or not.
         
         Returns
         -------
@@ -400,9 +416,11 @@ class RangeAssistedSVD(object):
         Returns
         -------
         U : numpy array
-         Matrix containing computed left eigenvectors as its columns. 
+         Matrix containing computed left eigenvectors as its columns.
+ 
         sigma : numpy array
          Vector with computed singular values.
+
         Vt : numpy array
          Matrix containing computed right eigenvectors as its rows.
         '''
@@ -463,22 +481,26 @@ class RangeAssistedEVD(object):
         ----------
         A : numpy array
          Input matrix.
+
         Q : numpy array
          Orthonormal matrix approximating the range of the input matrix.
-        method : string
-          One of the following (see the keys in `args`):
-           * 'direct'             : Algorithm 5.3 in [1]_
-           * 'row_extraction'     : Algorithm 5.4 in [1]_
-           * 'Nystrom'            : Algorithm 5.5 in [1]_
-           * 'one_pass'           : Algorithm 5.6 in [1]_
 
-        params : dict (see the values in `args`):
+        method : string
+          One of the following (see the keys in ``args``):
+
+           * ``'direct'``             : Algorithm 5.3 in [1]_
+           * ``'row_extraction'``     : Algorithm 5.4 in [1]_
+           * ``'Nystrom'``            : Algorithm 5.5 in [1]_
+           * ``'one_pass'``           : Algorithm 5.6 in [1]_
+
+        params : dict (see the values in ``args``):
          Method depending parameters as a map with keys the parameter names
-        (strings) and values the parameter values; 'one_pass' method needs the
-         number of columns `s` of the orthonormal matrix (sketch size).
+        (strings) and values the parameter values; ``'one_pass'`` method needs
+         the number of columns ``s`` of the orthonormal matrix (sketch size).
+        
         parallel: {False, True}
          Boolean flag whether the computation of the approximate decomposition
-        will run in parallel or not.
+         will run in parallel or not.
         
         Returns
         -------
@@ -513,6 +535,7 @@ class RangeAssistedEVD(object):
         -------
         w : numpy array
          Vector with computed eigenvalues.
+        
         U : numpy array
          Matrix containing computed eigenvectors as its columns.
         '''
@@ -584,27 +607,34 @@ def randomized_SVD(A, k, q=1, parallel=False):
     Approximate SVD using a randomization technique. 
 
     This uses the following mix of methods for the two stages:
-     * 'subspace_iteration' for the randomization stage (computing Q). 
-     * 'direct' for the decomposition stage (computing SVD as assisted by Q).
+     
+     * ``'subspace_iteration'`` for the randomization stage (computing Q). 
+     * ``'direct'`` for the decomposition stage (computing SVD as assisted by
+       Q). 
      
     Parameters
     ----------
     A : numpy array
      Input matrix.
+    
     k : int
      Target rank.
+    
     q : int
      Number of subspace iterations.
+    
     parallel : {False, True}
      Boolean flag whether the computation of the approximate decomposition will
-    run in parallel or not. 
+     run in parallel or not. 
 
     Returns
     -------
     U : numpy array
      Matrix containing computed left eigenvectors as its columns. 
+    
     sigma : numpy array
      Vector with computed singular values.
+    
     Vt : numpy array
      Matrix containing computed right eigenvectors as its rows.
     '''
@@ -672,13 +702,13 @@ if __name__ == '__main__':
     
     # compute an example Q using subspace iterations
     params = {'s': pool['s'], 'q': pool['q']}
-    rrf = RandomizedRangeFinder(A, 'subspace_iteration', params) 
+    rrf = RandomizedRangeFinder(A, 'subspace_iteration', params)
     Q = rrf.compute()
     
     # accumulate the method names that failed in computing approximate SVD and
     # EVD of A  assisted by the previously computed  Q
-    svd_failures    = _range_finder_failure_test(A, Q, RangeAssistedSVD, pool)
-    evd_failures    = _range_finder_failure_test(A, Q, RangeAssistedEVD, pool)
+    svd_failures    = _decomposition_failure_test(A, Q, RangeAssistedSVD, pool)
+    evd_failures    = _decomposition_failure_test(A, Q, RangeAssistedEVD, pool)
     
     print finder_failures
     print svd_failures

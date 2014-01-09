@@ -376,13 +376,13 @@ class JLT(_SketchTransform):
     super(JLT, self).__init__("JLT", n, s, outtype);
     if _lib == None:
       # The following is not memory efficient, but for a pure Python impl it will do
-      self.S = numpy.random.standard_normal((s, n)) / sqrt(s)
+      self._S = numpy.random.standard_normal((s, n)) / sqrt(s)
 
   def _ppyapply(self, A, SA, dim):
     if dim == 0:
-      SA1 = numpy.dot(self.S, A)
+      SA1 = numpy.dot(self._S, A)
     if dim == 1:
-      SA1 = numpy.dot(A, self.S.T)
+      SA1 = numpy.dot(A, self._S.T)
 
     # We really want to use the out parameter of numpy.dot, but it does not seem 
     # to work (raises a ValueError)
@@ -396,7 +396,7 @@ class CT(_SketchTransform):
     super(CT, self)._baseinit("CT", n, s, outtype)
 
     if _lib == None:
-      self.S = numpy.random.standard_cauchy((s, n)) * (C / s)
+      self._S = numpy.random.standard_cauchy((s, n)) * (C / s)
     else:
       sketch_transform = c_void_p()
       _lib.sl_create_sketch_transform(_ctxt_obj, "CT", n, s, \
@@ -405,9 +405,9 @@ class CT(_SketchTransform):
 
   def _ppyapply(self, A, SA, dim):
     if dim == 0:
-      SA1 = numpy.dot(self.S, A)
+      SA1 = numpy.dot(self._S, A)
     if dim == 1:
-      SA1 = numpy.dot(A, self.S.T)
+      SA1 = numpy.dot(A, self._S.T)
 
     # We really want to use the out parameter of numpy.dot, but it does not seem 
     # to work (raises a ValueError)
@@ -421,19 +421,19 @@ class FJLT(_SketchTransform):
     super(FJLT, self).__init__("FJLT", n, s, outtype);
     if _lib == None:
       d = scipy.stats.rv_discrete(values=([-1,1], [0.5,0.5]), name = 'uniform').rvs(size=n)
-      self.D = scipy.sparse.spdiags(d, 0, n, n)
-      self.S = URST(n, s, outtype)
+      self._D = scipy.sparse.spdiags(d, 0, n, n)
+      self._S = URST(n, s, outtype)
 
   def _ppyapply(self, A, SA, dim):
     if dim == 0:
-      DA = self.D * A
+      DA = self._D * A
       FDA = scipy.fftpack.dct(DA, axis = 0, norm = 'ortho')
-      self.S.apply(FDA, SA, dim);
+      self._S.apply(FDA, SA, dim);
 
     if dim == 1:
-      AD = A * self.D
+      AD = A * self._D
       ADF = scipy.fftpack.dct(AD, axis = 1, norm = 'ortho')
-      self.S.apply(ADF, SA, dim);
+      self._S.apply(ADF, SA, dim);
 
 class CWT(_SketchTransform):
   """
@@ -449,13 +449,13 @@ class CWT(_SketchTransform):
       # it will do
       distribution = scipy.stats.rv_discrete(values=([-1.0, +1.0], [0.5, 0.5]), 
                                              name = 'dist')
-      self.S = sprand.hashmap(s, n, distribution, dimension = 0)
+      self._S = sprand.hashmap(s, n, distribution, dimension = 0)
 
   def _ppyapply(self, A, SA, dim):
     if dim == 0:
-      SA1 = self.S * A
+      SA1 = self._S * A
     if dim == 1:
-      SA1 = A * self.S.T
+      SA1 = A * self._S.T
 
     # We really want to use the out parameter of scipy.dot, but it does not seem 
     # to work (raises a ValueError)
@@ -474,13 +474,13 @@ class MMT(_SketchTransform):
       # The following is not memory efficient, but for a pure Python impl 
       # it will do
       distribution = scipy.stats.cauchy()
-      self.S = sprand.hashmap(s, n, distribution, dimension = 0)
+      self._S = sprand.hashmap(s, n, distribution, dimension = 0)
 
   def _ppyapply(self, A, SA, dim):
     if dim == 0:
-      SA1 = self.S * A
+      SA1 = self._S * A
     if dim == 1:
-      SA1 = A * self.S.T
+      SA1 = A * self._S.T
 
     # We really want to use the out parameter of scipy.dot, but it does not seem 
     # to work (raises a ValueError)

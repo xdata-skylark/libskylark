@@ -105,6 +105,12 @@ initialize(int(time.time()))
 # TODO
 #def _strerror(errorno):
 #  return _lib.sl_strerror(errorno)
+#
+
+def _callsl(f, *args):
+  errno = f(*args)
+  if errno != 0:
+    raise skylark.UnexpectedLowerLayerError(_lib.sl_strerror(errno))
 
 #
 # Matrix type adapters: specifies how to interact with the underlying (perhaps in C/C++)
@@ -122,14 +128,14 @@ class _NumpyAdapter:
       raise errors.UnsupportedError("Only FORTRAN style (column-major) NumPy arrays are supported")
     else:
       data = c_void_p()
-      _lib.sl_wrap_raw_matrix( \
+      _callsl(_lib.sl_wrap_raw_matrix, \
         self._A.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), \
         self._A.shape[0], self._A.shape[1] if self._A.ndim > 1 else 1 , byref(data))
       self._ptr = data.value
       return data.value
 
   def ptrcleaner(self):
-    _lib.sl_free_raw_matrix_wrap(self._ptr);
+    _callsl(_lib.sl_free_raw_matrix_wrap, self._ptr);
 
   def getdim(self, dim):
     return self._A.shape[dim]
@@ -281,7 +287,7 @@ class _SketchTransform(object):
     self._baseinit(ttype, n, s, defouttype)
     if _lib != None:
       sketch_transform = c_void_p()
-      _lib.sl_create_sketch_transform(_ctxt_obj, ttype, n, s, byref(sketch_transform))
+      _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, ttype, n, s, byref(sketch_transform))
       self._obj = sketch_transform.value
 
   def _baseinit(self, ttype, n, s, defouttype):
@@ -294,7 +300,7 @@ class _SketchTransform(object):
 
   def __del__(self):
     if _lib != None:
-      _lib.sl_free_sketch_transform(self._obj)
+      _callsl(_lib.sl_free_sketch_transform, self._obj)
 
   def apply(self, A, SA, dim=0):
     """
@@ -346,8 +352,8 @@ class _SketchTransform(object):
       if (Aobj == -1 or SAobj == -1):
         raise errors.InvalidObjectError("Invalid/unsupported object passed as A or SA")
 
-      _lib.sl_apply_sketch_transform(self._obj, \
-                                       A.ctype(), Aobj, SA.ctype(), SAobj, dim+1)
+      _callsl(_lib.sl_apply_sketch_transform, self._obj, \
+                A.ctype(), Aobj, SA.ctype(), SAobj, dim+1) 
 
       A.ptrcleaner()
       SA.ptrcleaner()
@@ -399,8 +405,8 @@ class CT(_SketchTransform):
       self._S = numpy.random.standard_cauchy((s, n)) * (C / s)
     else:
       sketch_transform = c_void_p()
-      _lib.sl_create_sketch_transform(_ctxt_obj, "CT", n, s, \
-                                        byref(sketch_transform), ctypes.c_double(C))
+      _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "CT", n, s, \
+                byref(sketch_transform), ctypes.c_double(C))
       self._obj = sketch_transform.value
 
   def _ppyapply(self, A, SA, dim):
@@ -516,8 +522,8 @@ class WZT(_SketchTransform):
       self._S = sprand.hashmap(s, n, distribution, dimension = 0)      
     else:
       sketch_transform = c_void_p()
-      _lib.sl_create_sketch_transform(_ctxt_obj, "WZT", n, s, \
-                                        byref(sketch_transform), ctypes.c_double(p))
+      _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "WZT", n, s, \
+                byref(sketch_transform), ctypes.c_double(p))
       self._obj = sketch_transform.value
 
   def _ppyapply(self, A, SA, dim):
@@ -546,8 +552,8 @@ class GaussianRFT(_SketchTransform):
       self._b = numpy.matrix(numpy.random.uniform(0, 2 * pi, (s,1)))
     else:
       sketch_transform = c_void_p()
-      _lib.sl_create_sketch_transform(_ctxt_obj, "GaussianRFT", n, s, \
-                                        byref(sketch_transform), ctypes.c_double(sigma))
+      _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "GaussianRFT", n, s, \
+                byref(sketch_transform), ctypes.c_double(sigma))
       self._obj = sketch_transform.value
 
   def _ppyapply(self, A, SA, dim):
@@ -570,8 +576,8 @@ class LaplacianRFT(_SketchTransform):
 
     if _lib != None:
       sketch_transform = c_void_p()
-      _lib.sl_create_sketch_transform(_ctxt_obj, "LaplacianRFT", n, s, \
-                                        byref(sketch_transform), ctypes.c_double(sigma))
+      _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "LaplacianRFT", n, s, \
+                byref(sketch_transform), ctypes.c_double(sigma))
       self._obj = sketch_transform.value
 
 class URST(_SketchTransform):

@@ -4,6 +4,7 @@ from ctypes import byref, cdll, c_double, c_void_p, c_int, c_char_p, pointer, PO
 import sprand
 import math
 import numpy, scipy
+import scipy.fftpack
 import sys
 import os
 import time
@@ -27,7 +28,7 @@ def initialize(seed=-1):
       #
       # Load C-API library and set return types
       #
-      _lib = cdll.LoadLibrary('libcskylark.so')
+      _lib = cdll.LoadLibrary('libcskylark1.so')
       _lib.sl_create_context.restype              = c_int
       _lib.sl_create_default_context.restype      = c_int
       _lib.sl_free_context.restype                = c_int
@@ -50,7 +51,7 @@ def initialize(seed=-1):
       _lib = None
       _ELEM_INSTALLED = False
       _KDT_INSTALLED = False
-      sketches = ["JLT","CT",  "CWT", "MMT", "WZT"]
+      sketches = ["JLT", "CT", "FJLT", "CWT", "MMT", "WZT", "URST"]
       SUPPORTED_SKETCH_TRANSFORMS = [ (T, "Matrix", "Matrix") for T in sketches]
 
     # TODO reload dll ?
@@ -417,6 +418,21 @@ class FJLT(_SketchTransform):
   """
   def __init__(self, n, s, outtype=_DEF_OUTTYPE):
     super(FJLT, self).__init__("FJLT", n, s, outtype);
+    if _lib == None:
+      d = scipy.stats.rv_discrete(values=([-1,1], [0.5,0.5]), name = 'uniform').rvs(size=n)
+      self.D = scipy.sparse.spdiags(d, 0, n, n)
+      self.S = URST(n, s, outtype)
+
+  def _ppyapply(self, A, SA, dim):
+    if dim == 0:
+      DA = self.D * A
+      FDA = scipy.fftpack.dct(DA, axis = 0, norm = 'ortho')
+      self.S.apply(FDA, SA, dim);
+
+    if dim == 1:
+      AD = A * self.D
+      ADF = scipy.fftpack.dct(AD, axis = 1, norm = 'ortho')
+      self.S.apply(ADF, SA, dim);
 
 class CWT(_SketchTransform):
   """
@@ -509,6 +525,10 @@ class WZT(_SketchTransform):
     if dim == 1:
       SA1 = A * self.S.T
 
+    # We really want to use the out parameter of scipy.dot, but it does not seem 
+    # to work (raises a ValueError)
+    numpy.copyto(SA, SA1)
+
 class GaussianRFT(_SketchTransform):
   """
   Random Features Transform for the RBF Kernel
@@ -537,3 +557,28 @@ class LaplacianRFT(_SketchTransform):
       _lib.sl_create_sketch_transform(_ctxt_obj, "LaplacianRFT", n, s, \
                                         byref(sketch_transform), ctypes.c_double(sigma))
       self._obj = sketch_transform.value
+
+class URST(_SketchTransform):
+  """
+  Uniform Random Sampling Transform
+
+  For now, only Pure Python implementation, and only sampling with replacement.
+  """
+  def __init__(self, n, s, outtype=_DEF_OUTTYPE):
+    super(URST, self).__init__("URST", n, s, outtype);
+    if _lib == None:
+      self.idxs = numpy.random.permutation(n)[0:s]
+
+  def _ppyapply(self, A, SA, dim):
+    if dim == 0:
+      SA[:, :] = A[self.idxs, :]
+    if dim == 1:
+      SA[:, :] = A[:, self.idxs]
+
+#
+# Additional names for various transforms.
+#
+FastJLT = JLT
+CountSketch = CWT
+RRT = GaussianRFT
+UniformSampler = URST

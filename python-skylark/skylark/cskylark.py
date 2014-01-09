@@ -3,6 +3,7 @@ import ctypes
 from ctypes import byref, cdll, c_double, c_void_p, c_int, c_char_p, pointer, POINTER, c_bool
 import sprand
 import math
+from math import sqrt, pi
 import numpy, scipy
 import scipy.fftpack
 import sys
@@ -28,7 +29,7 @@ def initialize(seed=-1):
       #
       # Load C-API library and set return types
       #
-      _lib = cdll.LoadLibrary('libcskylark1.so')
+      _lib = cdll.LoadLibrary('libcskylark.so')
       _lib.sl_create_context.restype              = c_int
       _lib.sl_create_default_context.restype      = c_int
       _lib.sl_free_context.restype                = c_int
@@ -51,7 +52,7 @@ def initialize(seed=-1):
       _lib = None
       _ELEM_INSTALLED = False
       _KDT_INSTALLED = False
-      sketches = ["JLT", "CT", "FJLT", "CWT", "MMT", "WZT", "URST"]
+      sketches = ["JLT", "CT", "FJLT", "CWT", "MMT", "WZT", "GaussianRFT", "URST"]
       SUPPORTED_SKETCH_TRANSFORMS = [ (T, "Matrix", "Matrix") for T in sketches]
 
     # TODO reload dll ?
@@ -375,7 +376,7 @@ class JLT(_SketchTransform):
     super(JLT, self).__init__("JLT", n, s, outtype);
     if _lib == None:
       # The following is not memory efficient, but for a pure Python impl it will do
-      self.S = numpy.random.standard_normal((s, n)) / math.sqrt(s)
+      self.S = numpy.random.standard_normal((s, n)) / sqrt(s)
 
   def _ppyapply(self, A, SA, dim):
     if dim == 0:
@@ -512,7 +513,7 @@ class WZT(_SketchTransform):
       # The following is not memory efficient, but for a pure Python impl 
       # it will do
       distribution = WZT._WZTDistribution(p)
-      self.S = sprand.hashmap(s, n, distribution, dimension = 0)      
+      self._S = sprand.hashmap(s, n, distribution, dimension = 0)      
     else:
       sketch_transform = c_void_p()
       _lib.sl_create_sketch_transform(_ctxt_obj, "WZT", n, s, \
@@ -521,9 +522,9 @@ class WZT(_SketchTransform):
 
   def _ppyapply(self, A, SA, dim):
     if dim == 0:
-      SA1 = self.S * A
+      SA1 = self._S * A
     if dim == 1:
-      SA1 = A * self.S.T
+      SA1 = A * self._S.T
 
     # We really want to use the out parameter of scipy.dot, but it does not seem 
     # to work (raises a ValueError)
@@ -531,23 +532,38 @@ class WZT(_SketchTransform):
 
 class GaussianRFT(_SketchTransform):
   """
-  Random Features Transform for the RBF Kernel
+  Random Features Transform for the RBF Kernel.
+
+  *A. Rahimi* and *B. Recht*, **Random Features for Large-scale
+  Kernel Machines**, NIPS 2009
   """
   def __init__(self, n, s, sigma, outtype=_DEF_OUTTYPE):
     super(GaussianRFT, self)._baseinit("GaussianRFT", n, s, outtype)
 
-    if _lib != None:
+    self._sigma = sigma
+    if _lib == None:
+      self._T = JLT(n, s)
+      self._b = numpy.matrix(numpy.random.uniform(0, 2 * pi, (s,1)))
+    else:
       sketch_transform = c_void_p()
       _lib.sl_create_sketch_transform(_ctxt_obj, "GaussianRFT", n, s, \
                                         byref(sketch_transform), ctypes.c_double(sigma))
       self._obj = sketch_transform.value
 
+  def _ppyapply(self, A, SA, dim):
+    self._T.apply(A, SA, dim)
+    if dim == 0:
+      bm = self._b * numpy.ones((1, A.shape[1]))
+    if dim == 1:
+      bm = numpy.ones((A.shape[0], 1)) * self._b.T
+    SA[:, :] = sqrt(2.0 / self._s) * numpy.cos(SA * (sqrt(self._s)/self._sigma) + bm) 
+    
 class LaplacianRFT(_SketchTransform):
   """
   Random Features Transform for the Laplacian Kernel
 
   *A. Rahimi* and *B. Recht*, **Random Features for Large-scale
-  Kernel Machines*, NIPS 2009
+  Kernel Machines**, NIPS 2009
   """
   def __init__(self, n, s, sigma, outtype=_DEF_OUTTYPE):
     super(LaplacianRFT, self)._baseinit("LaplacianRFT", n, s, outtype)
@@ -567,13 +583,13 @@ class URST(_SketchTransform):
   def __init__(self, n, s, outtype=_DEF_OUTTYPE):
     super(URST, self).__init__("URST", n, s, outtype);
     if _lib == None:
-      self.idxs = numpy.random.permutation(n)[0:s]
+      self._idxs = numpy.random.permutation(n)[0:s]
 
   def _ppyapply(self, A, SA, dim):
     if dim == 0:
-      SA[:, :] = A[self.idxs, :]
+      SA[:, :] = A[self._idxs, :]
     if dim == 1:
-      SA[:, :] = A[:, self.idxs]
+      SA[:, :] = A[:, self._idxs]
 
 #
 # Additional names for various transforms.

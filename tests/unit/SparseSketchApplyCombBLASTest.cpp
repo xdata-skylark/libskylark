@@ -64,6 +64,7 @@ int test_main(int argc, char *argv[]) {
     namespace mpi = boost::mpi;
     mpi::environment env(argc, argv);
     mpi::communicator world;
+    const size_t rank = world.rank();
 
     skylark::sketch::context_t context (0, world);
 
@@ -82,6 +83,7 @@ int test_main(int argc, char *argv[]) {
     }
 
     DistMatrixType A(n, m, rowsf, colsf, valsf);
+
 
     //////////////////////////////////////////////////////////////////////////
     //[> Column wise application <]
@@ -113,12 +115,11 @@ int test_main(int argc, char *argv[]) {
     Sparse.apply(A, sketch_A, skylark::sketch::columnwise_tag());
 
     //[> 4. Build structure to compare <]
-    DistMatrixType expected_A = PSpGEMM<PTDD>(pi_sketch, A);
+    //DistMatrixType expected_A = PSpGEMM<PTDD>(pi_sketch, A);
+    DistMatrixType expected_A = Mult_AnXBn_Synch<PTDD, double, col_t>(pi_sketch, A, false, false);
 
     if (!static_cast<bool>(expected_A == sketch_A))
         BOOST_FAIL("Result of colwise application not as expected");
-
-
 
 
     //////////////////////////////////////////////////////////////////////////

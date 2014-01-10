@@ -156,10 +156,10 @@ struct hash_transform_t <
                                      ValueDistribution> {
     typedef IndexType index_type;
     typedef ValueType value_type;
-    typedef SpDCCols< IndexType, value_type > col_t;
-    typedef FullyDistVec< IndexType, ValueType > mpi_vector_t;
-    typedef SpParMat< IndexType, value_type, col_t > matrix_type;
-    typedef SpParMat< IndexType, value_type, col_t > output_matrix_type;
+    typedef SpDCCols< index_type, value_type > col_t;
+    typedef FullyDistVec< index_type, value_type> mpi_vector_t;
+    typedef SpParMat< index_type, value_type, col_t > matrix_type;
+    typedef SpParMat< index_type, value_type, col_t > output_matrix_type;
     typedef hash_transform_data_t<IndexType,
                                   ValueType,
                                   IdxDistributionType,
@@ -270,8 +270,8 @@ private:
                 const size_t pos       = getPos(rowid, colid, ncols, dist);
 
                 const size_t target = sketch_of_A.getcommgrid()->GetRank(
-                    std::min(static_cast<size_t>((pos % ncols) / rows_per_proc), grows - 1),
-                    std::min(static_cast<size_t>((pos / ncols) / cols_per_proc), gcols - 1));
+                    std::min(static_cast<size_t>((pos / ncols) / rows_per_proc), grows - 1),
+                    std::min(static_cast<size_t>((pos % ncols) / cols_per_proc), gcols - 1));
 
                 if(proc_set[target].count(pos) == 0) {
                     nnz++;
@@ -308,8 +308,8 @@ private:
 
                 const size_t pos  = getPos(rowid, colid, ncols, dist);
                 const size_t proc = sketch_of_A.getcommgrid()->GetRank(
-                    std::min(static_cast<size_t>((pos % ncols) / rows_per_proc), grows - 1),
-                    std::min(static_cast<size_t>((pos / ncols) / cols_per_proc), gcols - 1));
+                    std::min(static_cast<size_t>((pos / ncols) / rows_per_proc), grows - 1),
+                    std::min(static_cast<size_t>((pos % ncols) / cols_per_proc), gcols - 1));
 
                 // get offset in array for current element
                 const size_t ar_idx = proc_start_idx[proc] +
@@ -322,9 +322,9 @@ private:
 
 #ifdef COMBBLAS_REDIST
         const size_t loc_matrix_size = values.size();
-        mpi_vector_t cols(loc_matrix_size);
-        mpi_vector_t rows(loc_matrix_size);
-        mpi_vector_t vals(loc_matrix_size);
+        FullyDistVec<index_type, index_type> cols(loc_matrix_size);
+        FullyDistVec<index_type, index_type> rows(loc_matrix_size);
+        FullyDistVec<index_type, value_type> vals(loc_matrix_size);
 
         for(size_t i = 0; i < loc_matrix_size; ++i) {
             cols.SetElement(i, indicies[i] % ncols);
@@ -332,9 +332,7 @@ private:
             vals.SetElement(i, values[i]);
         }
 
-        output_matrix_type tmp(
-                sketch_of_A.getnrow(), sketch_of_A.getncol(), rows, cols, vals);
-        sketch_of_A = tmp;
+        sketch_of_A = output_matrix_type(nrows, ncols, rows, cols, vals);
 #else
         // Creating windows for all relevant arrays
         ///FIXME: MPI-3 stuff?
@@ -399,52 +397,38 @@ private:
             }
         }
 
-        //FIXME: we need a method to set spSeq or a public SparseCommon (see
-        //       below)!
-        //       For now the only way is to create a temporary matrix and use
-        //       assign operator (deep copy).
+        std::vector < boost::tuple < index_type, index_type, value_type > >
+            data_val;
 
-        //vector < tuple<index_type, index_type, value_type> >
-            //data_val ( comm_size );
-
-        //// and fill into sketch matrix (we know that all data is local now)
-        //typename std::map<size_t, value_type>::const_iterator itr;
-        //for(itr = vals_map.begin(); itr != vals_map.end(); itr++, idx++) {
-            //index_type lrow = itr->first % ncols - my_row_offset;
-            //index_type lcol = itr->first / ncols - my_col_offset;
-            //data_val.push_back(make_tuple(lrow, lcol, itr->second));
-        //}
-
-        //SpTuples<index_type, value_type> tmp_tpl(
-            //vals_map.size(), A.getlocalrows(), A.getlocalcols(), &(data_val[0]));
-
-        //delete sketch_of_A.spSeq;
-        //sketch_of_A.spSeq = new col_t(tmp_tpl, false);
-
-        //XXX: or use SparseCommon (should not communicate anything anymore)
-        //sketch_of_A.SparseCommon(data_val, vals_map.size(),
-                //sketch_of_A.getnrow(), sketch_of_A.getncol());
-
-
-        const size_t loc_matrix_size = vals_map.size();
-        mpi_vector_t cols(loc_matrix_size);
-        mpi_vector_t rows(loc_matrix_size);
-        mpi_vector_t vals(loc_matrix_size);
-        size_t idx = 0;
-
+        // fill into sketch matrix (we know that all data is local now)
+        const size_t m_row_offset =
+            static_cast<int>((static_cast<double>(nrows) /
+                    sketch_of_A.getcommgrid()->GetGridRows())) *
+                    sketch_of_A.getcommgrid()->GetRankInProcCol(rank);
+        const size_t m_col_offset =
+            static_cast<int>((static_cast<double>(ncols) /
+                    sketch_of_A.getcommgrid()->GetGridCols())) *
+                    sketch_of_A.getcommgrid()->GetRankInProcRow(rank);
         typename std::map<size_t, value_type>::const_iterator itr;
-        for(itr = vals_map.begin(); itr != vals_map.end(); itr++, idx++) {
-            cols.SetElement(idx, itr->first % ncols);
-            rows.SetElement(idx, itr->first / ncols);
-            vals.SetElement(idx, itr->second);
+        for(itr = vals_map.begin(); itr != vals_map.end(); itr++) {
+            index_type lrow = itr->first / ncols - m_row_offset;
+            index_type lcol = itr->first % ncols - m_col_offset;
+            value_type val  = itr->second;
+            data_val.push_back(make_tuple(lrow, lcol, val));
         }
 
+        // this pointer will be freed in destructor of col_t (FIXME check with
+        // Valgrind)
+        SpTuples<index_type, value_type> *tmp_tpl =
+            new SpTuples<index_type, value_type> (
+                vals_map.size(), sketch_of_A.getlocalrows(),
+                sketch_of_A.getlocalcols(), &(data_val[0]));
+
         // create temporary matrix (no further communication should be
-        // required because all the data is local) and use assign operator
-        // (deep copy)..
-        output_matrix_type tmp(
-                sketch_of_A.getnrow(), sketch_of_A.getncol(), rows, cols, vals);
-        sketch_of_A = tmp;
+        // required because all the data are local) and assign (deep copy)..
+        col_t *sp_data = new col_t(*tmp_tpl, false);
+        sketch_of_A    = output_matrix_type(sp_data, sketch_of_A.getcommgrid());
+
 
         MPI_Win_fence(0, proc_win);
         MPI_Win_fence(0, start_offset_win);

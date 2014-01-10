@@ -46,13 +46,16 @@ def initialize(seed=-1):
       _ELEM_INSTALLED = _lib.sl_has_elemental()
       _KDT_INSTALLED  = _lib.sl_has_combblas()    
       
-      SUPPORTED_SKETCH_TRANSFORMS = map(eval, _lib.sl_supported_sketch_transforms().split())
+      csketches = map(eval, _lib.sl_supported_sketch_transforms().split())
+      pysketches = ["SJLT", "URST"]
+      SUPPORTED_SKETCH_TRANSFORMS = \
+          csketches + [ (T, "Matrix", "Matrix") for T in pysketches]
     except:
       # Did not find library -- must rely on Python code
       _lib = None
       _ELEM_INSTALLED = False
       _KDT_INSTALLED = False
-      sketches = ["JLT", "CT", "FJLT", "CWT", "MMT", "WZT", "GaussianRFT", "URST"]
+      sketches = ["JLT", "CT", "SJLT", "FJLT", "CWT", "MMT", "WZT", "GaussianRFT", "URST"]
       SUPPORTED_SKETCH_TRANSFORMS = [ (T, "Matrix", "Matrix") for T in sketches]
 
     # TODO reload dll ?
@@ -102,11 +105,6 @@ atexit.register(finalize)
 # Actually initialize the C-API.
 initialize(int(time.time()))
 
-# TODO
-#def _strerror(errorno):
-#  return _lib.sl_strerror(errorno)
-#
-
 def _callsl(f, *args):
   errno = f(*args)
   if errno != 0:
@@ -124,6 +122,7 @@ class _NumpyAdapter:
     return "Matrix"
 
   def ptr(self):
+    # TODO: support C type matrices as well. How? by passing .T
     if not self._A.flags.f_contiguous:
       raise errors.UnsupportedError("Only FORTRAN style (column-major) NumPy arrays are supported")
     else:
@@ -147,6 +146,7 @@ class _NumpyAdapter:
   def ctor(m, n):
     # C++ layer works only with Fortran ordering, but in a pure Python
     # implementation we default to C ordering
+    # TODO/FIXME the check here on _lib is not correct for pure python.
     if _lib != None:
       return numpy.empty((m,n), order='F')
     else:
@@ -285,7 +285,7 @@ class _SketchTransform(object):
   """
   def __init__(self, ttype, n, s, defouttype):
     self._baseinit(ttype, n, s, defouttype)
-    if _lib != None:
+    if not self._ppy:
       sketch_transform = c_void_p()
       _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, ttype, n, s, byref(sketch_transform))
       self._obj = sketch_transform.value
@@ -297,9 +297,10 @@ class _SketchTransform(object):
     self._n = n
     self._s = s
     self._defouttype = defouttype
+    self._ppy = _lib == None
 
   def __del__(self):
-    if _lib != None:
+    if not self._ppy:
       _callsl(_lib.sl_free_sketch_transform, self._obj)
 
   def apply(self, A, SA, dim=0):
@@ -336,7 +337,8 @@ class _SketchTransform(object):
 
     reqcomb = (self._ttype, A.ctype(), SA.ctype())
     if reqcomb not in SUPPORTED_SKETCH_TRANSFORMS:
-      raise errors.UnsupportedError("Unsupported transform-input-output combination: " + str(reqcomb))  
+      raise errors.UnsupportedError("Unsupported transform-input-output combination: " \
+                                      + str(reqcomb))  
 
     if A.getdim(dim) != self._n:
       raise errors.DimensionMistmatchError("Sketched dimension is incorrect (input)")
@@ -345,8 +347,9 @@ class _SketchTransform(object):
     if A.getdim(1 - dim) != SA.getdim(1 - dim):
       raise errors.DimensionMistmatchError("Sketched dimension is incorrect (input != output)")
 
-
-    if _lib != None:
+    if self._ppy:
+      self._ppyapply(A.getobj(), SA.getobj(), dim)
+    else:
       Aobj = A.ptr()
       SAobj = SA.ptr()
       if (Aobj == -1 or SAobj == -1):
@@ -358,9 +361,6 @@ class _SketchTransform(object):
       A.ptrcleaner()
       SA.ptrcleaner()
 
-    else:
-      self._ppyapply(A.getobj(), SA.getobj(), dim)
-
     return SA.getobj()
 
   def __mul__(self, A):
@@ -368,7 +368,6 @@ class _SketchTransform(object):
 
   def __div__(self, A):
     return self.apply(A, None, dim=1)
-
 
 #
 # Various sketch transforms
@@ -380,7 +379,7 @@ class JLT(_SketchTransform):
   """
   def __init__(self, n, s, outtype=_DEF_OUTTYPE):
     super(JLT, self).__init__("JLT", n, s, outtype);
-    if _lib == None:
+    if self._ppy:
       # The following is not memory efficient, but for a pure Python impl it will do
       self._S = numpy.random.standard_normal((s, n)) / sqrt(s)
 
@@ -394,6 +393,31 @@ class JLT(_SketchTransform):
     # to work (raises a ValueError)
     numpy.copyto(SA, SA1)
 
+class SJLT(_SketchTransform):
+  """
+  Sparse Johnson-Lindenstrauss Transform
+
+  Achlioptas
+  Li+Hastie+Church
+  """
+  def __init__(self, n, s, density = 1 / 3.0, outtype=_DEF_OUTTYPE):
+    super(SJLT, self)._baseinit("SJLT", n, s, outtype);
+    self._ppy = True
+    nz_values = [-sqrt(1.0/density), +sqrt(1.0/density)]
+    nz_prob_dist = [0.5, 0.5]
+    self._S = sprand.sample(s, n, density, nz_values, nz_prob_dist) / sqrt(s)  
+    # QUESTION do we need to mulitply by sqrt(1/density) ???
+    
+  def _ppyapply(self, A, SA, dim):
+    if dim == 0:
+      SA1 = self._S * A
+    if dim == 1:
+      SA1 = A * self._S.T
+
+    # We really want to use the out parameter of numpy.dot, but it does not seem 
+    # to work (raises a ValueError)
+    numpy.copyto(SA, SA1)
+
 class CT(_SketchTransform):
   """
   Cauchy Transform
@@ -401,7 +425,7 @@ class CT(_SketchTransform):
   def __init__(self, n, s, C, outtype=_DEF_OUTTYPE):
     super(CT, self)._baseinit("CT", n, s, outtype)
 
-    if _lib == None:
+    if self._ppy:
       self._S = numpy.random.standard_cauchy((s, n)) * (C / s)
     else:
       sketch_transform = c_void_p()
@@ -425,7 +449,7 @@ class FJLT(_SketchTransform):
   """
   def __init__(self, n, s, outtype=_DEF_OUTTYPE):
     super(FJLT, self).__init__("FJLT", n, s, outtype);
-    if _lib == None:
+    if self._ppy:
       d = scipy.stats.rv_discrete(values=([-1,1], [0.5,0.5]), name = 'uniform').rvs(size=n)
       self._D = scipy.sparse.spdiags(d, 0, n, n)
       self._S = URST(n, s, outtype)
@@ -450,7 +474,7 @@ class CWT(_SketchTransform):
   """
   def __init__(self, n, s, outtype=_DEF_OUTTYPE):
     super(CWT, self).__init__("CWT", n, s, outtype);
-    if _lib == None:
+    if self._ppy:
       # The following is not memory efficient, but for a pure Python impl 
       # it will do
       distribution = scipy.stats.rv_discrete(values=([-1.0, +1.0], [0.5, 0.5]), 
@@ -476,7 +500,7 @@ class MMT(_SketchTransform):
   """
   def __init__(self, n, s, outtype=_DEF_OUTTYPE):
     super(MMT, self).__init__("MMT", n, s, outtype);
-    if _lib == None:
+    if self._ppy:
       # The following is not memory efficient, but for a pure Python impl 
       # it will do
       distribution = scipy.stats.cauchy()
@@ -515,7 +539,7 @@ class WZT(_SketchTransform):
   def __init__(self, n, s, p, outtype=_DEF_OUTTYPE):
     super(WZT, self)._baseinit("WZT", n, s, outtype)
 
-    if _lib == None:
+    if self._ppy:
       # The following is not memory efficient, but for a pure Python impl 
       # it will do
       distribution = WZT._WZTDistribution(p)
@@ -547,7 +571,7 @@ class GaussianRFT(_SketchTransform):
     super(GaussianRFT, self)._baseinit("GaussianRFT", n, s, outtype)
 
     self._sigma = sigma
-    if _lib == None:
+    if self._ppy:
       self._T = JLT(n, s)
       self._b = numpy.matrix(numpy.random.uniform(0, 2 * pi, (s,1)))
     else:
@@ -574,7 +598,7 @@ class LaplacianRFT(_SketchTransform):
   def __init__(self, n, s, sigma, outtype=_DEF_OUTTYPE):
     super(LaplacianRFT, self)._baseinit("LaplacianRFT", n, s, outtype)
 
-    if _lib != None:
+    if not self._ppy:
       sketch_transform = c_void_p()
       _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "LaplacianRFT", n, s, \
                 byref(sketch_transform), ctypes.c_double(sigma))
@@ -587,9 +611,9 @@ class URST(_SketchTransform):
   For now, only Pure Python implementation, and only sampling with replacement.
   """
   def __init__(self, n, s, outtype=_DEF_OUTTYPE):
-    super(URST, self).__init__("URST", n, s, outtype);
-    if _lib == None:
-      self._idxs = numpy.random.permutation(n)[0:s]
+    super(URST, self)._baseinit("URST", n, s, outtype);
+    self._ppy = True
+    self._idxs = numpy.random.permutation(n)[0:s]
 
   def _ppyapply(self, A, SA, dim):
     if dim == 0:
@@ -600,6 +624,7 @@ class URST(_SketchTransform):
 #
 # Additional names for various transforms.
 #
+SparseJLT = SJLT
 FastJLT = JLT
 CountSketch = CWT
 RRT = GaussianRFT

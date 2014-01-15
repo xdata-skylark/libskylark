@@ -116,7 +116,7 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
 #ifdef SKYLARK_HAVE_COMBBLAS
         SKDEF(CWT, DistSparseMatrix, DistSparseMatrix)
 #endif
-        ;
+       "" ;
 }
 
 SKYLARK_EXTERN_API const char* sl_strerror(const int error_code) {
@@ -456,15 +456,24 @@ SKYLARK_EXTERN_API int
 
 SKYLARK_EXTERN_API int sl_wrap_raw_matrix(double *data, int m, int n, void **A)
 {
+#if SKYLARK_HAVE_ELEMENTAL
     Matrix *tmp = new Matrix();
     tmp->Attach(m, n, data, m);
     *A = tmp;
     return 0;
+#else
+    return 103;
+#endif
+
 }
 
 SKYLARK_EXTERN_API int sl_free_raw_matrix_wrap(void *A_) {
+#if SKYLARK_HAVE_ELEMENTAL
     delete static_cast<Matrix *>(A_);
     return 0;
+#else
+    return 103;
+#endif
 }
 
 } // extern "C"

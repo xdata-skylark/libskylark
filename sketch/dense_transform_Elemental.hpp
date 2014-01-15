@@ -85,7 +85,7 @@ private:
                 S.Set(i, j, base_data_t::scale * sample);
             }
         }
-        // Do the multiplication
+
         elem::Gemm (elem::NORMAL,
                     elem::NORMAL,
                     1.0,
@@ -111,12 +111,12 @@ private:
                 S.Set(i, j, base_data_t::scale * sample);
             }
         }
-        // Do the multiplication
+
         elem::Gemm (elem::NORMAL,
                     elem::TRANSPOSE,
                     1.0,
-                    S,
                     A,
+                    S,
                     0.0,
                     sketch_of_A);
     }

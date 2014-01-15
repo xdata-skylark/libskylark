@@ -122,16 +122,21 @@ class _NumpyAdapter:
     return "Matrix"
 
   def ptr(self):
-    # TODO: support C type matrices as well. How? by passing .T
-    if not self._A.flags.f_contiguous:
-      raise errors.UnsupportedError("Only FORTRAN style (column-major) NumPy arrays are supported")
-    else:
-      data = c_void_p()
+    data = c_void_p()
+    # If the matrix is kept in C ordering we are essentially wrapping the transposed
+    # matrix
+    if self.getorder() == "F":
       _callsl(_lib.sl_wrap_raw_matrix, \
-        self._A.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), \
-        self._A.shape[0], self._A.shape[1] if self._A.ndim > 1 else 1 , byref(data))
-      self._ptr = data.value
-      return data.value
+                self._A.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), \
+                self._A.shape[0], self._A.shape[1] if self._A.ndim > 1 else 1 , byref(data))
+    else:
+      _callsl(_lib.sl_wrap_raw_matrix, \
+                self._A.ctypes.data_as(ctypes.POINTER(ctypes.c_double)), \
+                self._A.shape[1] if self._A.ndim > 1 else self._A.shape[0], \
+                self._A.shape[0] if self._A.ndim > 1 else 1 , \
+                byref(data))
+    self._ptr = data.value
+    return data.value
 
   def ptrcleaner(self):
     _callsl(_lib.sl_free_raw_matrix_wrap, self._ptr);
@@ -142,15 +147,30 @@ class _NumpyAdapter:
   def getobj(self):
     return self._A
 
-  @staticmethod
-  def ctor(m, n):
-    # C++ layer works only with Fortran ordering, but in a pure Python
-    # implementation we default to C ordering
-    # TODO/FIXME the check here on _lib is not correct for pure python.
-    if _lib != None:
-      return numpy.empty((m,n), order='F')
+  def getorder(self):
+    if self._A.flags.f_contiguous:
+      return 'F'
     else:
-      return numpy.empty((m,n))
+      return 'C'
+
+  def iscompatible(self, B):
+    if isinstance(B, _NumpyAdapter) and self.getorder() != B.getorder():
+      return "sketching numpy array to numpy array requires same element ordering", None
+    elif not isinstance(B, _NumpyAdapter) and self.getorder() == 'C':
+      return "numpy combined with other types must have fortran ordering", None
+    else:
+      return None, self._A.flags.c_contiguous
+
+  @staticmethod
+  def ctor(m, n, B):
+    # Construct numpy array that is compatible with B. If B is a numpy array the
+    # element order (Fortran or C) must match. For all others (e.g., Elemental 
+    # and KDT) the order must be Fortran because this is what the lower layers 
+    # expect.
+    if isinstance(B, _NumpyAdapter):
+      return numpy.empty((m,n), order=B.getorder())
+    else:
+      return numpy.empty((m,n), order='F')
 
 if _ELEM_INSTALLED:
   class _ElemAdapter:
@@ -187,8 +207,14 @@ if _ELEM_INSTALLED:
     def getobj(self):
       return self._A
 
+    def iscompatible(self, B):
+      if isinstance(B, _NumpyAdapter) and B.getorder() != 'F':
+        return "numpy combined with other types must have fortran ordering", None
+      else:
+        return None, False
+
     @staticmethod
-    def ctor(typestr, m, n):
+    def ctor(typestr, m, n, B):
       if typestr == "":
         cls = elem.DistMatrix_d
       else:
@@ -219,8 +245,14 @@ if _KDT_INSTALLED:
     def getobj(self):
       return self._A
 
+    def iscompatible(self, B):
+      if isinstance(B, _NumpyAdapter) and B.getorder() != 'F':
+        return "numpy combined with other types must have fortran ordering", None
+      else:
+        return None, False
+
     @staticmethod
-    def ctor(m, n):
+    def ctor(m, n, B):
       import kdt
       nullVec = kdt.Vec(0, sparse=False)
       return kdt.Mat(nullVec, nullVec, nullVec, n, m)
@@ -265,11 +297,11 @@ _map_to_ctor = { }
 _map_to_ctor["LocalMatrix"] = _NumpyAdapter.ctor
 
 if _ELEM_INSTALLED:
-  _map_to_ctor["DistMatrix"] = lambda m, n : _ElemAdapter.ctor("", m, n)
-  _map_to_ctor["DistMatrix_VR_STAR"] = lambda m, n : _ElemAdapter.ctor("VR_STAR", m, n)
-  _map_to_ctor["DistMatrix_VC_STAR"] = lambda m, n : _ElemAdapter.ctor("VC_STAR", m, n)
-  _map_to_ctor["DistMatrix_STAR_VR"] = lambda m, n : _ElemAdapter.ctor("STAR_VC", m, n)
-  _map_to_ctor["DistMatrix_STAR_VC"] = lambda m, n : _ElemAdapter.ctor("STAR_VR", m, n)
+  _map_to_ctor["DistMatrix"] = lambda m, n, c : _ElemAdapter.ctor("", m, n, c)
+  _map_to_ctor["DistMatrix_VR_STAR"] = lambda m, n, c : _ElemAdapter.ctor("VR_STAR", m, n, c)
+  _map_to_ctor["DistMatrix_VC_STAR"] = lambda m, n, c : _ElemAdapter.ctor("VC_STAR", m, n, c)
+  _map_to_ctor["DistMatrix_STAR_VR"] = lambda m, n, c : _ElemAdapter.ctor("STAR_VC", m, n, c)
+  _map_to_ctor["DistMatrix_STAR_VC"] = lambda m, n, c : _ElemAdapter.ctor("STAR_VR", m, n, c)
 
 if _KDT_INSTALLED:
   _map_to_ctor["DistSparseMatrix"] = _KDTAdapter.ctor
@@ -279,10 +311,14 @@ if _KDT_INSTALLED:
 #
 class _SketchTransform(object):
   """
-  Base class sketch transforms.
-  The various sketch transforms derive from this class and
-  which holds the common interface. Derived classes can have different constructors.
+  A sketching transform - in very general terms - is a dimensionality-reducing map 
+  from R^n to R^s which preserves key structural properties.
+
+  _SketchTransform is base class sketch transforms. The various sketch transforms derive 
+  from this class and as such it defines a common interface. Derived classes can have different 
+  constructors. The class is not meant
   """
+
   def __init__(self, ttype, n, s, defouttype):
     self._baseinit(ttype, n, s, defouttype)
     if not self._ppy:
@@ -306,16 +342,15 @@ class _SketchTransform(object):
   def apply(self, A, SA, dim=0):
     """
     Apply the transform on **A** along dimension **dim** and write
-    result in **SA**. Note: for rowwise (aka right) sketching A
-    is mapped to A * S^T.
+    result in **SA**. Note: for rowwise (aka right) sketching **A**
+    is mapped to **A S^T**.
 
     :param A: Input matrix.
     :param SA: Ouptut matrix. If "None" then the output will be allocated.
     :param dim: Dimension to apply along. 0 - columnwise, 1 - rowwise.
                 or can use "columnwise"/"rowwise", "left"/"right"
                 default is columnwise
-
-    :return SA
+    :returns: SA
     """
     if dim == 0 or dim == "columnwise" or dim == "left":
       dim = 0
@@ -330,15 +365,19 @@ class _SketchTransform(object):
     if SA is None:
       ctor = _map_to_ctor[self._defouttype]
       if dim == 0:
-        SA = ctor(self._s, A.getdim(1))
+        SA = ctor(self._s, A.getdim(1), A)
       if dim == 1:
-        SA = ctor(A.getdim(0), self._s)
+        SA = ctor(A.getdim(0), self._s, A)
     SA = _adapt(SA)
 
     reqcomb = (self._ttype, A.ctype(), SA.ctype())
     if reqcomb not in SUPPORTED_SKETCH_TRANSFORMS:
       raise errors.UnsupportedError("Unsupported transform-input-output combination: " \
                                       + str(reqcomb))  
+
+    incomp, cinvert = A.iscompatible(SA)
+    if incomp != None:
+      raise errors.UnsupportedError("Input and output are incompatible: " + incomp)
 
     if A.getdim(dim) != self._n:
       raise errors.DimensionMistmatchError("Sketched dimension is incorrect (input)")
@@ -355,8 +394,13 @@ class _SketchTransform(object):
       if (Aobj == -1 or SAobj == -1):
         raise errors.InvalidObjectError("Invalid/unsupported object passed as A or SA")
 
+      if cinvert:
+        cdim = 1 - dim
+      else:
+        cdim = dim
+
       _callsl(_lib.sl_apply_sketch_transform, self._obj, \
-                A.ctype(), Aobj, SA.ctype(), SAobj, dim+1) 
+                A.ctype(), Aobj, SA.ctype(), SAobj, cdim+1) 
 
       A.ptrcleaner()
       SA.ptrcleaner()
@@ -364,9 +408,23 @@ class _SketchTransform(object):
     return SA.getobj()
 
   def __mul__(self, A):
+    """
+    Allocate space for **SA** and apply the transform columnwise to **A**
+    writing the result to **SA** and returning it.
+
+    :param A: Input matrix.
+    :returns: the result of applying the transform to **A** columnwise.
+    """
     return self.apply(A, None, dim=0)
 
   def __div__(self, A):
+    """
+    Allocate space for **SA** and apply the transform rowwise to **A**
+    writing the result to **SA** and returning it.
+
+    :param A: Input matrix.
+    :returns: the result of applying the transform to **A** rowwise.
+    """
     return self.apply(A, None, dim=1)
 
 #
@@ -375,10 +433,57 @@ class _SketchTransform(object):
 
 class JLT(_SketchTransform):
   """
-  Johnson-Lindenstrauss Transform
+  The classic Johnson-Lindenstrauss dense sketching using Gaussian Random maps. 
+  
+  Examples
+  --------
+  Let us bring *skylark* and other relevant Python packages into our environment.
+  Here we demonstrate a non-distributed usage implemented using numpy arrays.  
+  See section on working with distributed dense and sparse matrices.
+
+  >>> import skylark, skylark.utilities, skylark.sketch
+  >>> import scipy
+  >>> import numpy.random
+  >>> import matplotlib.pyplot as plt
+    
+  Let us generate some data, e.g., a data matrix whose entries are sampled 
+  uniformly from the interval [-1, +1].
+    
+  >>> n = 300
+  >>> d = 1000
+  >>> A = numpy.random.uniform(-1.0,1.0, (n,d))
+    
+  Create a sketch operator corresponding to JLT sketching from d = 1000 
+  to s = 100.
+    
+  >>> s = 100 
+  >>> S = skylark.sketch.JLT(d, s)
+    
+  Let us sketch A row-wise:
+    
+  >>> B = S / A
+    
+  Let us compute norms of the row-vectors before and after sketching.
+    
+  >>> norms_A = skylark.utilities.norms(A)
+  >>> norms_B = skylark.utilities.norms(B)
+    
+  Plot the histogram of distortions (ratio of norms for original to sketched 
+  vectors).
+
+  >>> distortions = scipy.ravel(norms_A/norms_B)
+  >>> plt.hist(distortions,10)
+  >>> plt.show()   
   """
-  def __init__(self, n, s, outtype=_DEF_OUTTYPE):
-    super(JLT, self).__init__("JLT", n, s, outtype);
+  def __init__(self, n, s, defouttype=_DEF_OUTTYPE):
+    """
+    :param n: input dimension
+    :param s: output dimension
+    :param defouttype: default output type when using * or /
+
+    :returns the transform object.
+    """
+    super(JLT, self).__init__("JLT", n, s, defouttype);
     if self._ppy:
       # The following is not memory efficient, but for a pure Python impl it will do
       self._S = numpy.random.standard_normal((s, n)) / sqrt(s)
@@ -629,3 +734,33 @@ FastJLT = JLT
 CountSketch = CWT
 RRT = GaussianRFT
 UniformSampler = URST
+
+
+#
+# Small example problem
+#
+if __name__== "__main__":
+  import matplotlib.pyplot as plt
+    
+  # generate a matrix 
+  n = 100
+  d = 1000
+    
+  A = numpy.random.uniform(-1.0,1.0, (n,d))
+  s = 200
+    
+  sketcher = FJLT(seed)
+  B = sketcher.sketch(A, k, dimension = "right")
+  
+  print "size of sketched matrix ", B.shape
+  
+  #Let us check if norms are preserved. 
+  norms_A = numpy.dot((A*A), numpy.ones((A.shape[1],1)))
+  norms_B = numpy.dot((B*B), numpy.ones((B.shape[1],1)))
+    
+  #D = scipy.sparse.diags(scipy.ones(n), 0) 
+  #distances_A = euclidean(A,A) + D
+  #distances_B = euclidean(B,B) + D
+  distortions = scipy.ravel(norms_A/norms_B)    
+  plt.hist(distortions, 50)
+  plt.show()

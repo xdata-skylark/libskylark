@@ -320,6 +320,17 @@ class _SketchTransform(object):
   """
 
   def __init__(self, ttype, n, s, defouttype):
+    """
+    Create the transform from n dimensional vectors to s dimensional vectors. Here we define
+    the interface, but the constructor should not be called directly by the user.
+
+    :param ttype: String identifying the sketch type. This parameter is omitted in derived classes.
+    :param n: Number of dimensions in input vectors.
+    :param s: Number of dimensions in output vectors.
+    :param defouttype: Default output type when using the * and / operators.
+    :returns: the transform object
+    """
+    
     self._baseinit(ttype, n, s, defouttype)
     if not self._ppy:
       sketch_transform = c_void_p()
@@ -434,7 +445,11 @@ class _SketchTransform(object):
 class JLT(_SketchTransform):
   """
   The classic Johnson-Lindenstrauss dense sketching using Gaussian Random maps. 
-  
+
+  :param n: Number of dimensions in input vectors.
+  :param s: Number of dimensions in output vectors.
+  :param defouttype: Default output type when using the * and / operators.  
+
   Examples
   --------
   Let us bring *skylark* and other relevant Python packages into our environment.
@@ -476,13 +491,6 @@ class JLT(_SketchTransform):
   >>> plt.show()   
   """
   def __init__(self, n, s, defouttype=_DEF_OUTTYPE):
-    """
-    :param n: input dimension
-    :param s: output dimension
-    :param defouttype: default output type when using * or /
-
-    :returns the transform object.
-    """
     super(JLT, self).__init__("JLT", n, s, defouttype);
     if self._ppy:
       # The following is not memory efficient, but for a pure Python impl it will do
@@ -502,8 +510,18 @@ class SJLT(_SketchTransform):
   """
   Sparse Johnson-Lindenstrauss Transform
 
-  Achlioptas
-  Li+Hastie+Church
+  Alternative name: SparseJLT
+
+  :param n: Number of dimensions in input vectors.
+  :param s: Number of dimensions in output vectors.
+  :param density: Density of the transform matrix. Lower density require higher s.
+  :param defouttype: Default output type when using the * and / operators.
+
+  *D. Achlipotas*, **Database-frinedly random projections: Johnson-Lindenstrauss
+  with binary coins**, Journal of Computer and System Sciences 66 (2003) 671-687
+
+  *P. Li*, *T. Hastie* and *K. W. Church*, **Very Sparse Random Projections**,
+  KDD 2006
   """
   def __init__(self, n, s, density = 1 / 3.0, outtype=_DEF_OUTTYPE):
     super(SJLT, self)._baseinit("SJLT", n, s, outtype);
@@ -526,6 +544,14 @@ class SJLT(_SketchTransform):
 class CT(_SketchTransform):
   """
   Cauchy Transform
+
+  :param n: Number of dimensions in input vectors.
+  :param s: Number of dimensions in output vectors.
+  :param C: Parameter trading embedding size and distortion. See paper for details.
+  :param defouttype: Default output type when using the * and / operators.
+
+  *C. Sohler* and *D. Woodruff*, **Subspace Embeddings for the L_1-norm with 
+  Application**, STOC 2011
   """
   def __init__(self, n, s, C, outtype=_DEF_OUTTYPE):
     super(CT, self)._baseinit("CT", n, s, outtype)
@@ -551,6 +577,15 @@ class CT(_SketchTransform):
 class FJLT(_SketchTransform):
   """
   Fast Johnson-Lindenstrauss Transform
+
+  Alternative class name: FastJLT
+
+  :param n: Number of dimensions in input vectors.
+  :param s: Number of dimensions in output vectors.
+  :param defouttype: Default output type when using the * and / operators.
+
+  *N. Ailon* and *B. Chazelle*, **The Fast Johnson-Lindenstrauss Transform and 
+  Approximate Nearest Neighbors**, SIAM Journal on Computing 39 (1), pg. 302-322
   """
   def __init__(self, n, s, outtype=_DEF_OUTTYPE):
     super(FJLT, self).__init__("FJLT", n, s, outtype);
@@ -574,6 +609,12 @@ class CWT(_SketchTransform):
   """
   Clarkson-Woodruff Transform (also known as CountSketch)
 
+  Alternative class name: CountSketch
+  
+  :param n: Number of dimensions in input vectors.
+  :param s: Number of dimensions in output vectors.
+  :param defouttype: Default output type when using the * and / operators.
+  
   *K. Clarkson* and *D. Woodruff*, **Low Rank Approximation and Regression
   in Input Sparsity Time**, STOC 2013
   """
@@ -598,7 +639,12 @@ class CWT(_SketchTransform):
 
 class MMT(_SketchTransform):
   """
-  Meng-Mahoney Transform
+  Meng-Mahoney Transform. A variant of CountSketch (Clarkson-Woodruff Transform)
+  using for low-distrition in the L1-norm.
+
+  :param n: Number of dimensions in input vectors.
+  :param s: Number of dimensions in output vectors.
+  :param defouttype: Default output type when using the * and / operators.
 
   *X. Meng* and *M. W. Mahoney*, **Low-distortion Subspace Embeddings in
   Input-sparsity Time and Applications to Robust Linear Regression**, STOC 2013
@@ -623,7 +669,14 @@ class MMT(_SketchTransform):
 
 class WZT(_SketchTransform):
   """
-  Woodruff-Zhang Transform
+  Woodruff-Zhang Transform. A variant of CountSketch (Clarkson-Woodruff Transform)
+  using for low-distrition in Lp-norm. p is supplied as a parameter in the 
+  constructor.
+
+  :param n: Number of dimensions in input vectors.
+  :param s: Number of dimensions in output vectors.
+  :param p: Defines the norm for the embedding (Lp).
+  :param defouttype: Default output type when using the * and / operators.
 
   *D. Woodruff* and *Q. Zhang*, **Subspace Embeddings and L_p Regression
   Using Exponential Random**, COLT 2013
@@ -667,12 +720,17 @@ class WZT(_SketchTransform):
 
 class GaussianRFT(_SketchTransform):
   """
-  Random Features Transform for the RBF Kernel.
+  Random Features Transform for the RBF Kernel. 
 
+  :param n: Number of dimensions in input vectors.
+  :param s: Number of dimensions in output vectors.
+  :param sigma: bandwidth of the kernel.
+  :param defouttype: Default output type when using the * and / operators.
+    
   *A. Rahimi* and *B. Recht*, **Random Features for Large-scale
   Kernel Machines**, NIPS 2009
   """
-  def __init__(self, n, s, sigma, outtype=_DEF_OUTTYPE):
+  def __init__(self, n, s, sigma=1.0, outtype=_DEF_OUTTYPE):
     super(GaussianRFT, self)._baseinit("GaussianRFT", n, s, outtype)
 
     self._sigma = sigma
@@ -697,10 +755,15 @@ class LaplacianRFT(_SketchTransform):
   """
   Random Features Transform for the Laplacian Kernel
 
+  :param n: Number of dimensions in input vectors.
+  :param s: Number of dimensions in output vectors.
+  :param sigma: bandwidth of the kernel.
+  :param defouttype: Default output type when using the * and / operators.
+
   *A. Rahimi* and *B. Recht*, **Random Features for Large-scale
   Kernel Machines**, NIPS 2009
   """
-  def __init__(self, n, s, sigma, outtype=_DEF_OUTTYPE):
+  def __init__(self, n, s, sigma=1.0, outtype=_DEF_OUTTYPE):
     super(LaplacianRFT, self)._baseinit("LaplacianRFT", n, s, outtype)
 
     if not self._ppy:
@@ -712,8 +775,13 @@ class LaplacianRFT(_SketchTransform):
 class URST(_SketchTransform):
   """
   Uniform Random Sampling Transform
-
   For now, only Pure Python implementation, and only sampling with replacement.
+
+  Alternative class name: UniformSampler
+
+  :param n: Number of dimensions in input vectors.
+  :param s: Number of dimensions in output vectors.
+  :param defouttype: Default output type when using the * and / operators.
   """
   def __init__(self, n, s, outtype=_DEF_OUTTYPE):
     super(URST, self)._baseinit("URST", n, s, outtype);

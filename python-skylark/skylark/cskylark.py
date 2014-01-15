@@ -734,33 +734,3 @@ FastJLT = JLT
 CountSketch = CWT
 RRT = GaussianRFT
 UniformSampler = URST
-
-
-#
-# Small example problem
-#
-if __name__== "__main__":
-  import matplotlib.pyplot as plt
-    
-  # generate a matrix 
-  n = 100
-  d = 1000
-    
-  A = numpy.random.uniform(-1.0,1.0, (n,d))
-  s = 200
-    
-  sketcher = FJLT(seed)
-  B = sketcher.sketch(A, k, dimension = "right")
-  
-  print "size of sketched matrix ", B.shape
-  
-  #Let us check if norms are preserved. 
-  norms_A = numpy.dot((A*A), numpy.ones((A.shape[1],1)))
-  norms_B = numpy.dot((B*B), numpy.ones((B.shape[1],1)))
-    
-  #D = scipy.sparse.diags(scipy.ones(n), 0) 
-  #distances_A = euclidean(A,A) + D
-  #distances_B = euclidean(B,B) + D
-  distortions = scipy.ravel(norms_A/norms_B)    
-  plt.hist(distortions, 50)
-  plt.show()

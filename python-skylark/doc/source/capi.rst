@@ -44,6 +44,10 @@ SketchTransform
 .. autoclass:: _SketchTransform
                 :members:
 
+                .. automethod:: _SketchTransform.__mul__
+
+                .. automethod:: _SketchTransform.__div__
+
 Supported Sketches
 ------------------
 

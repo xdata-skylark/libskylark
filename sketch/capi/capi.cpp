@@ -101,8 +101,10 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
         SKDEF(MMT, DistMatrix_VC_STAR, Matrix)
         SKDEF(WZT, DistMatrix_VR_STAR, Matrix)
         SKDEF(WZT, DistMatrix_VC_STAR, Matrix)
+        SKDEF(GaussianRFT, Matrix, Matrix)
         SKDEF(GaussianRFT, DistMatrix_VR_STAR, DistMatrix_VR_STAR)
         SKDEF(GaussianRFT, DistMatrix_VC_STAR, DistMatrix_VC_STAR)
+        SKDEF(LaplacianRFT, Matrix, Matrix)
         SKDEF(LaplacianRFT, DistMatrix_VR_STAR, DistMatrix_VR_STAR)
         SKDEF(LaplacianRFT, DistMatrix_VC_STAR, DistMatrix_VC_STAR)
 
@@ -404,6 +406,11 @@ SKYLARK_EXTERN_API int
         sketch::WZT_t, DistMatrix_VC_STAR, Matrix, WZT_data_t);
 
     AUTO_APPLY_DISPATCH(sketchc::GaussianRFT,
+        sketchc::MATRIX, sketchc::MATRIX,
+        sketch::GaussianRFT_t, Matrix, Matrix,
+        GaussianRFT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::GaussianRFT,
         sketchc::DIST_MATRIX_VR_STAR, sketchc::DIST_MATRIX_VR_STAR,
         sketch::GaussianRFT_t, DistMatrix_VR_STAR, DistMatrix_VR_STAR,
         GaussianRFT_data_t);
@@ -412,6 +419,11 @@ SKYLARK_EXTERN_API int
         sketchc::DIST_MATRIX_VC_STAR, sketchc::DIST_MATRIX_VC_STAR,
         sketch::GaussianRFT_t, DistMatrix_VC_STAR, DistMatrix_VC_STAR,
         GaussianRFT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
+        sketchc::MATRIX, sketchc::MATRIX,
+        sketch::LaplacianRFT_t, Matrix, Matrix,
+        LaplacianRFT_data_t);
 
     AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
         sketchc::DIST_MATRIX_VR_STAR, sketchc::DIST_MATRIX_VR_STAR,

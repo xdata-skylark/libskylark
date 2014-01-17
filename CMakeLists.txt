@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 2.8.2)
+cmake_minimum_required (VERSION 2.8.3)
 
 # we don't allow Skylark to be build in the source directory
 set (CMAKE_DISABLE_IN_SOURCE_BUILD ON)
@@ -56,12 +56,87 @@ endif (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
 
 message (STATUS "Build type is: " ${CMAKE_BUILD_TYPE})
 
-# Select flags.
+
+# Select compiler dependen flags.
 set (CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g")
 set (CMAKE_CXX_FLAGS_RELEASE "-O3")
 set (CMAKE_CXX_FLAGS_DEBUG  "-O0 -g")
 
-set (CMAKE_CXX_FLAGS "-W -Wall -Wno-write-strings -Wno-strict-aliasing -Wno-format -Wno-deprecated -Wno-unused-variable -Wno-unused-parameter -Wno-sign-compare ${CMAKE_CXX_FLAGS}")
+message(STATUS "Building with ${CMAKE_CXX_COMPILER_ID} compiler")
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+
+    if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin" )
+        include_directories (
+            /usr/llvm-gcc-4.2/lib/gcc/i686-apple-darwin11/4.2.1/include
+        )
+    endif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin" )
+
+    set (SKYLARK_LIBS
+        m
+        ${Boost_LIBRARIES}
+    )
+
+    set (COMPILER_SPEC_FLAGS
+        "-W -Wall -Wno-write-strings -Wno-strict-aliasing -Wno-format
+        -Wno-deprecated -Wno-unused-variable -Wno-unused-parameter
+        -Wno-sign-compare"
+    )
+
+    set (LINK_FLAGS
+    )
+
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+
+    set (SKYLARK_LIBS
+        m
+    )
+
+    set (COMPILER_SPEC_FLAGS
+        "-W -Wall -Wno-write-strings -Wno-strict-aliasing -Wno-format
+        -Wno-deprecated -Wno-unused-variable -Wno-unused-parameter
+        -Wno-sign-compare"
+    )
+
+    set (LINK_FLAGS
+    )
+
+
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+    #TODO: using Intel C++
+
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "XL")
+
+    set (COMPILER_SPEC_FLAGS
+        "-qtune=qp -qarch=qp -qmaxmem=-1 -qcpluscmt -qstrict"
+    )
+    # -qlanglvl=extended0x
+
+    include_directories (
+    )
+
+    link_directories (
+        /opt/ibmcmp/xlf/bg/14.1/bglib64/
+        /bgsys/drivers/ppcfloor/spi/lib
+        /bgsys/drivers/ppcfloor/bgpm/lib/
+    )
+
+    set (SKYLARK_LIBS
+        xlf90_r
+        xlfmath
+    )
+        #mpihpm
+        #bgpm
+
+    #set (CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -qsmp=omp")
+    #set (CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-qdynamic")
+
+else()
+    message (FATAL "Unsupported compiler!")
+
+endif()
+
+set (CMAKE_CXX_FLAGS "${COMPILER_SPEC_FLAGS} ${CMAKE_CXX_FLAGS}")
+
 
 message (STATUS "Building on ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} on
                  $ENV{HOSTNAME}")
@@ -83,24 +158,22 @@ set (CMAKE_CXX_COMPILER ${MPI_COMPILER})
 # 2. Find Boost with the relevant packages --- Use dynamic boost!
 # Without dynamic linking, it's tough to create python bindings.
 set(BOOST_ROOT $ENV{BOOST_ROOT})
-set(BOOST_NO_SYSTEM_PATHS TRUE)
-set(BOOST_INCLUDEDIR $ENV{BOOST_ROOT})
-set(BOOST_LIBRARYDIR $ENV{BOOST_ROOT}}/lib)
-set(BOOST_MIN_VERSION 1.49.0)
-find_package (Boost
-              REQUIRED
-              mpi
-              serialization
-              random)
+set(Boost_NO_SYSTEM_PATHS ON)
+set(Boost_NO_BOOST_CMAKE ON)
+#set(BOOST_INCLUDEDIR $ENV{BOOST_ROOT})
+#set(BOOST_LIBRARYDIR $ENV{BOOST_ROOT}}/lib)
+set(BOOST_MIN_VERSION 1.53.0)
+find_package (Boost REQUIRED mpi exception)
 if (Boost_FOUND)
   set (SKYLARK_HAVE_BOOST
        1
        CACHE
        STRING
-       "Enables use of Elemental Libraries"
+       "Enables use of Boost Libraries"
        FORCE)
   include_directories (${Boost_INCLUDE_DIRS})
   link_directories (${Boost_LIBRARY_DIRS})
+  message(STATUS "Found Boost: ${Boost_INCLUDE_DIRS}" )
 endif (Boost_FOUND)
 
 # 3. BLAS and LAPACK

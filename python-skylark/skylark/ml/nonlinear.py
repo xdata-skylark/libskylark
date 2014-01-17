@@ -202,9 +202,9 @@ class nystromrls(object):
     
   def train(self,X,Y, regularization=1, bandwidth=1, random_features=100, probdist = 'uniform', multiclass=True):
     """
-    type = 'uniform' | 'leverages' | 'fourier_leverages'
-    l: number of Nystrom random samples to take
-    k: rank-k approximation to the Gram matrix of the sampled data is used
+    :param probdist: probability distribution of rows. Either 'uniform' or 'leverages'.
+    :param l: number of Nystrom random samples to take
+    :param k: rank-k approximation to the Gram matrix of the sampled data is used
     """
     m,n = X.shape
     
@@ -213,11 +213,14 @@ class nystromrls(object):
     #uniform
     if probdist == 'uniform':
       nz_prob_dist = numpy.ones((m,1))/m
-      if probdist ==  'leverages':
+    elif probdist ==  'leverages':
         K = kernels.gaussian(X,None,sigma=bandwidth)
         Im = numpy.identity(m)
         nz_prob_dist = numpy.diag(K*scipy.linalg.inv(K+regularization*Im))
         nz_prob_dist = nz_prob_dist/sum(nz_prob_dist)
+    else:
+      raise skylark.errors.InvalidParamterError("Unknown probability distribution strategy")
+
     indices = scipy.stats.rv_discrete(values=(nz_values, nz_prob_dist), name = 'uniform').rvs(size=random_features)
     K_II = kernels.gaussian(X[indices, :], None, sigma = bandwidth)
     I = numpy.identity(random_features)

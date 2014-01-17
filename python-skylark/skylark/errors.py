@@ -13,5 +13,8 @@ class UnsupportedError(SkylarkError):
 class ParameterMistmatchError(SkylarkError):
   pass
 
+class InvalidParamterError(SkylarkError):
+  pass
+
 class InvalidObjectError(SkylarkError):
   pass

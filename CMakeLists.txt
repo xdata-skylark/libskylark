@@ -82,6 +82,8 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     #set (LINK_FLAGS
     #)
 
+    set (CMAKE_LIB_LINKER_FLAGS  "${CMAKE_LIB_LINKER_FLAGS} -fPIC")
+
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 
     set (SKYLARK_LIBS
@@ -94,6 +96,8 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 
     #set (LINK_FLAGS
     #)
+
+    set (CMAKE_LIB_LINKER_FLAGS  "${CMAKE_LIB_LINKER_FLAGS} -fPIC")
 
 
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")

@@ -221,7 +221,8 @@ class nystromrls(object):
     else:
       raise skylark.errors.InvalidParamterError("Unknown probability distribution strategy")
 
-    SX = skylark.cskylark.NonUniformSampler(m, random_features, nz_prob_dist) * X
+    #SX = skylark.cskylark.NonUniformSampler(m, random_features, nz_prob_dist) * X
+    SX = skylark.cskylark.JLT(m, random_features) * X
     K_II = kernels.gaussian(SX, None, sigma = bandwidth)
     I = numpy.identity(random_features)
     eps = 1e-8

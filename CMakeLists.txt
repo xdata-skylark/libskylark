@@ -163,7 +163,7 @@ set(Boost_NO_BOOST_CMAKE ON)
 #set(BOOST_INCLUDEDIR $ENV{BOOST_ROOT})
 #set(BOOST_LIBRARYDIR $ENV{BOOST_ROOT}}/lib)
 set(BOOST_MIN_VERSION 1.53.0)
-find_package (Boost REQUIRED mpi exception)
+find_package (Boost REQUIRED mpi)
 if (Boost_FOUND)
   set (SKYLARK_HAVE_BOOST
        1

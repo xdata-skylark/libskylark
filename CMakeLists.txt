@@ -73,17 +73,14 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 
     set (SKYLARK_LIBS
         m
-        ${Boost_LIBRARIES}
     )
 
     set (COMPILER_SPEC_FLAGS
-        "-W -Wall -Wno-write-strings -Wno-strict-aliasing -Wno-format
-        -Wno-deprecated -Wno-unused-variable -Wno-unused-parameter
-        -Wno-sign-compare"
+        "-W -Wall -Wno-write-strings -Wno-strict-aliasing -Wno-format -Wno-deprecated -Wno-unused-variable -Wno-unused-parameter -Wno-sign-compare"
     )
 
-    set (LINK_FLAGS
-    )
+    #set (LINK_FLAGS
+    #)
 
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 
@@ -92,13 +89,11 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     )
 
     set (COMPILER_SPEC_FLAGS
-        "-W -Wall -Wno-write-strings -Wno-strict-aliasing -Wno-format
-        -Wno-deprecated -Wno-unused-variable -Wno-unused-parameter
-        -Wno-sign-compare"
+        "-W -Wall -Wno-write-strings -Wno-strict-aliasing -Wno-format -Wno-deprecated -Wno-unused-variable -Wno-unused-parameter -Wno-sign-compare"
     )
 
-    set (LINK_FLAGS
-    )
+    #set (LINK_FLAGS
+    #)
 
 
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
@@ -128,7 +123,6 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "XL")
         #bgpm
 
     #set (CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -qsmp=omp")
-    #set (CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "-qdynamic")
 
 else()
     message (FATAL "Unsupported compiler!")

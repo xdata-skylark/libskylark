@@ -24,9 +24,11 @@ endif (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
 
 if (SKYLARK_HAVE_COMBBLAS)
 
+  #FIXME: not nice that we need Elemental_LIBRARY here..
   add_executable(sparse_cb_apply SparseSketchApplyCombBLASTest.cpp)
   target_link_libraries( sparse_cb_apply
                          ${SKYLARK_LIBS}
+                         ${Elemental_LIBRARY}
                          ${CombBLAS_LIBRARIES}
                          ${Boost_LIBRARIES} )
   add_test( sparse_cb_apply_test sparse_cb_apply )

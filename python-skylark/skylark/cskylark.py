@@ -219,7 +219,7 @@ if _ELEM_INSTALLED:
         cls = elem.DistMatrix_d
       else:
         cls = eval("elem.DistMatrix_d_" + typestr)
-      cls(m, n)
+      return cls(m, n)
 
 
 if _KDT_INSTALLED:
@@ -523,8 +523,8 @@ class SJLT(_SketchTransform):
   *P. Li*, *T. Hastie* and *K. W. Church*, **Very Sparse Random Projections**,
   KDD 2006
   """
-  def __init__(self, n, s, density = 1 / 3.0, outtype=_DEF_OUTTYPE):
-    super(SJLT, self)._baseinit("SJLT", n, s, outtype);
+  def __init__(self, n, s, density = 1 / 3.0, defouttype=_DEF_OUTTYPE):
+    super(SJLT, self)._baseinit("SJLT", n, s, defouttype);
     self._ppy = True
     nz_values = [-sqrt(1.0/density), +sqrt(1.0/density)]
     nz_prob_dist = [0.5, 0.5]
@@ -553,8 +553,8 @@ class CT(_SketchTransform):
   *C. Sohler* and *D. Woodruff*, **Subspace Embeddings for the L_1-norm with 
   Application**, STOC 2011
   """
-  def __init__(self, n, s, C, outtype=_DEF_OUTTYPE):
-    super(CT, self)._baseinit("CT", n, s, outtype)
+  def __init__(self, n, s, C, defouttype=_DEF_OUTTYPE):
+    super(CT, self)._baseinit("CT", n, s, defouttype)
 
     if self._ppy:
       self._S = numpy.random.standard_cauchy((s, n)) * (C / s)
@@ -587,8 +587,8 @@ class FJLT(_SketchTransform):
   *N. Ailon* and *B. Chazelle*, **The Fast Johnson-Lindenstrauss Transform and 
   Approximate Nearest Neighbors**, SIAM Journal on Computing 39 (1), pg. 302-322
   """
-  def __init__(self, n, s, outtype=_DEF_OUTTYPE):
-    super(FJLT, self).__init__("FJLT", n, s, outtype);
+  def __init__(self, n, s, defouttype=_DEF_OUTTYPE):
+    super(FJLT, self).__init__("FJLT", n, s, defouttype);
     if self._ppy:
       d = scipy.stats.rv_discrete(values=([-1,1], [0.5,0.5]), name = 'uniform').rvs(size=n)
       self._D = scipy.sparse.spdiags(d, 0, n, n)
@@ -618,8 +618,8 @@ class CWT(_SketchTransform):
   *K. Clarkson* and *D. Woodruff*, **Low Rank Approximation and Regression
   in Input Sparsity Time**, STOC 2013
   """
-  def __init__(self, n, s, outtype=_DEF_OUTTYPE):
-    super(CWT, self).__init__("CWT", n, s, outtype);
+  def __init__(self, n, s, defouttype=_DEF_OUTTYPE):
+    super(CWT, self).__init__("CWT", n, s, defouttype);
     if self._ppy:
       # The following is not memory efficient, but for a pure Python impl 
       # it will do
@@ -649,8 +649,8 @@ class MMT(_SketchTransform):
   *X. Meng* and *M. W. Mahoney*, **Low-distortion Subspace Embeddings in
   Input-sparsity Time and Applications to Robust Linear Regression**, STOC 2013
   """
-  def __init__(self, n, s, outtype=_DEF_OUTTYPE):
-    super(MMT, self).__init__("MMT", n, s, outtype);
+  def __init__(self, n, s, defouttype=_DEF_OUTTYPE):
+    super(MMT, self).__init__("MMT", n, s, defouttype);
     if self._ppy:
       # The following is not memory efficient, but for a pure Python impl 
       # it will do
@@ -694,8 +694,8 @@ class WZT(_SketchTransform):
         val[idx] = (2 * self._bdist.rvs() - 1) * math.pow(self._edist.rvs(), 1/self._p)
       return val
 
-  def __init__(self, n, s, p, outtype=_DEF_OUTTYPE):
-    super(WZT, self)._baseinit("WZT", n, s, outtype)
+  def __init__(self, n, s, p, defouttype=_DEF_OUTTYPE):
+    super(WZT, self)._baseinit("WZT", n, s, defouttype)
 
     if self._ppy:
       # The following is not memory efficient, but for a pure Python impl 
@@ -730,8 +730,8 @@ class GaussianRFT(_SketchTransform):
   *A. Rahimi* and *B. Recht*, **Random Features for Large-scale
   Kernel Machines**, NIPS 2009
   """
-  def __init__(self, n, s, sigma=1.0, outtype=_DEF_OUTTYPE):
-    super(GaussianRFT, self)._baseinit("GaussianRFT", n, s, outtype)
+  def __init__(self, n, s, sigma=1.0, defouttype=_DEF_OUTTYPE):
+    super(GaussianRFT, self)._baseinit("GaussianRFT", n, s, defouttype)
 
     self._sigma = sigma
     if self._ppy:
@@ -763,8 +763,8 @@ class LaplacianRFT(_SketchTransform):
   *A. Rahimi* and *B. Recht*, **Random Features for Large-scale
   Kernel Machines**, NIPS 2009
   """
-  def __init__(self, n, s, sigma=1.0, outtype=_DEF_OUTTYPE):
-    super(LaplacianRFT, self)._baseinit("LaplacianRFT", n, s, outtype)
+  def __init__(self, n, s, sigma=1.0, defouttype=_DEF_OUTTYPE):
+    super(LaplacianRFT, self)._baseinit("LaplacianRFT", n, s, defouttype)
 
     if not self._ppy:
       sketch_transform = c_void_p()
@@ -783,8 +783,8 @@ class URST(_SketchTransform):
   :param s: Number of dimensions in output vectors.
   :param defouttype: Default output type when using the * and / operators.
   """
-  def __init__(self, n, s, outtype=_DEF_OUTTYPE):
-    super(URST, self)._baseinit("URST", n, s, outtype);
+  def __init__(self, n, s, defouttype=_DEF_OUTTYPE):
+    super(URST, self)._baseinit("URST", n, s, defouttype);
     self._ppy = True
     self._idxs = numpy.random.permutation(n)[0:s]
 

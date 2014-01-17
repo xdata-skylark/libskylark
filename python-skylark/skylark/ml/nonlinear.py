@@ -214,20 +214,19 @@ class nystromrls(object):
     if probdist == 'uniform':
       nz_prob_dist = numpy.ones((m,1))/m
     elif probdist ==  'leverages':
-        K = kernels.gaussian(X,None,sigma=bandwidth)
-        Im = numpy.identity(m)
-        nz_prob_dist = numpy.diag(K*scipy.linalg.inv(K+regularization*Im))
-        nz_prob_dist = nz_prob_dist/sum(nz_prob_dist)
+      K = kernels.gaussian(X,None,sigma=bandwidth)
+      Im = numpy.identity(m)
+      nz_prob_dist = numpy.diag(K*scipy.linalg.inv(K+regularization*Im))
+      nz_prob_dist = nz_prob_dist/sum(nz_prob_dist)
     else:
       raise skylark.errors.InvalidParamterError("Unknown probability distribution strategy")
 
-    indices = scipy.stats.rv_discrete(values=(nz_values, nz_prob_dist), name = 'uniform').rvs(size=random_features)
-    K_II = kernels.gaussian(X[indices, :], None, sigma = bandwidth)
+    SX = skylark.cskylark.NonUniformSampler(m, random_features, nz_prob_dist) * X
+    K_II = kernels.gaussian(SX, None, sigma = bandwidth)
     I = numpy.identity(random_features)
     eps = 1e-8
     (evals, evecs) = scipy.linalg.eigh(K_II + eps*I)
-    Xtrain = X[indices, :]
-    Z  =  kernels.gaussian(Xtrain, X, sigma = bandwidth)
+    Z  =  kernels.gaussian(SX, X, sigma = bandwidth)
     U = (evecs*numpy.diagflat(1.0/numpy.sqrt(evals)))
     Z = Z*U
     if multiclass:
@@ -235,9 +234,9 @@ class nystromrls(object):
       Y = 2*Y - 1
       
     A = numpy.dot(Z.T, Z) + regularization*I
-    weights = scipy.linalg.solve(A, Z.T*Y, sym_pos=True)
+    weights = scipy.linalg.solve(A, numpy.dot(Z.T, Y), sym_pos=True)
     self.model = {"bandwidth": bandwidth, "weights": weights, "random_features": random_features,  
-                  "regularization": regularization, "multiclass":multiclass, "Xtrain":Xtrain, "U":U }
+                  "regularization": regularization, "multiclass":multiclass, "SX":SX, "U":U }
     
   def predict(self, Xt):
     """
@@ -251,11 +250,11 @@ class nystromrls(object):
     -------
     m x 1 array of predictions on the test set.
     """
-    Zt =  kernels.gaussian(self.model["Xtrain"], Xt, sigma = self.model["bandwidth"])*self.model["U"]
+    Zt =  kernels.gaussian(self.model["SX"], Xt, sigma = self.model["bandwidth"])*self.model["U"]
     pred = Zt*self.model["weights"]
     if self.model["multiclass"]:
       pred = numpy.argmax(numpy.array(pred), axis=1)+1
-      return pred
+    return pred
     
 # Small test problem    
 if __name__=="__main__":

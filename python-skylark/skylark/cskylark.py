@@ -47,7 +47,7 @@ def initialize(seed=-1):
       _KDT_INSTALLED  = _lib.sl_has_combblas()    
       
       csketches = map(eval, _lib.sl_supported_sketch_transforms().split())
-      pysketches = ["SJLT", "URST"]
+      pysketches = ["SJLT", "URST", "NURST"]
       SUPPORTED_SKETCH_TRANSFORMS = \
           csketches + [ (T, "Matrix", "Matrix") for T in pysketches]
     except:
@@ -108,7 +108,7 @@ initialize(int(time.time()))
 def _callsl(f, *args):
   errno = f(*args)
   if errno != 0:
-    raise skylark.UnexpectedLowerLayerError(_lib.sl_strerror(errno))
+    raise errors.UnexpectedLowerLayerError(_lib.sl_strerror(errno))
 
 #
 # Matrix type adapters: specifies how to interact with the underlying (perhaps in C/C++)
@@ -794,6 +794,32 @@ class URST(_SketchTransform):
     if dim == 1:
       SA[:, :] = A[:, self._idxs]
 
+class NURST(_SketchTransform):
+  """
+  Non-Uniform Random Sampling Transform
+  For now, only Pure Python implementation, and only sampling with replacement.
+
+  Alternative class name: NonUniformSampler
+
+  :param n: Number of dimensions in input vectors.
+  :param s: Number of dimensions in output vectors.
+  :param p: Probability distribution on the n rows.
+  :param defouttype: Default output type when using the * and / operators.
+  """
+  def __init__(self, n, s, p, defouttype=_DEF_OUTTYPE):
+    super(NURST, self)._baseinit("NURST", n, s, defouttype);
+    if p.shape[0] != n:
+      raise errors.InvalidParamterError("size of probability array should be exactly n")
+    self._ppy = True
+    self._idxs = scipy.stats.rv_discrete(values=(numpy.arange(0,n), p), \
+                                         name = 'uniform').rvs(size=s)
+
+  def _ppyapply(self, A, SA, dim):
+    if dim == 0:
+      SA[:, :] = A[self._idxs, :]
+    if dim == 1:
+      SA[:, :] = A[:, self._idxs]
+
 #
 # Additional names for various transforms.
 #
@@ -802,3 +828,4 @@ FastJLT = JLT
 CountSketch = CWT
 RRT = GaussianRFT
 UniformSampler = URST
+NonUniformSampler = NURST

@@ -2,7 +2,6 @@
 #define SKYLARK_HASH_TRANSFORM_COMBBLAS_HPP
 
 #include <map>
-#include "boost/serialization/map.hpp"
 
 #include <CombBLAS.h>
 #include "../utility/external/FullyDistMultiVec.hpp"
@@ -397,8 +396,7 @@ private:
             }
         }
 
-        std::vector < boost::tuple < index_type, index_type, value_type > >
-            data_val;
+        std::vector< tuple< index_type, index_type, value_type > > data_val;
 
         // fill into sketch matrix (we know that all data is local now)
         const size_t m_row_offset =

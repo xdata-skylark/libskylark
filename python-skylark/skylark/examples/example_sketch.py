@@ -59,7 +59,7 @@ for sname in sketches:
   t0 = time.time()
 
   # Create transform. Default output type is "LocalMatrix".
-  S = stype(m, t)
+  S = stype(m, t, defouttype="LocalMatrix")
 
   # Sketch both A and b using the same sketch
   SA = S * A

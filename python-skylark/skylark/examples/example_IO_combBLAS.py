@@ -1,26 +1,31 @@
 #!/usr/bin/env python
+
+# prevent mpi4py from calling MPI_Finalize()
+import mpi4py.rc
+mpi4py.rc.finalize   = False
+
 from mpi4py import MPI
 from skylark import cskylark
-from skylark.io import sparselibsvm2combBLAS
-import pyCombBLAS
+import skylark.io
+import kdt
+import os
 
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 
-filename = '../datasets/usps.t'
-(mat, labels) = sparselibsvm2combBLAS(filename)
+libsvm_path = '../datasets/usps.t'
+libsvm_store = skylark.io.libsvm(libsvm_path)
+(libsvm_mat, labels) = libsvm_store.read()
 
-nrows = mat.getnrow()
-ncols = mat.getncol()
-print "Read a %s x %s matrix" % (nrows, ncols)
+mtx_path = './usps.mtx'
+mtx_store = skylark.io.mtx(mtx_path) 
+mtx_store.write(libsvm_mat)
+combblas_mat = mtx_store.read('combblas-sparse')
 
-S    = cskylark.CWT(nrows, 100)
+nrows = combblas_mat.nrow()
+ncols = combblas_mat.ncol()
 
-nullVec = pyCombBLAS.pyDenseParVec(0, 0)
-sketch  = pyCombBLAS.pySpParMat(100, ncols, nullVec, nullVec, nullVec)
-
-S.apply(mat, sketch, "rowwise")
-
-if (rank == 0):
-  print("Sketched A (CWT sparse, columnwise)")
+if rank == 0:
+  print "Read a %s x %s matrix" % (nrows, ncols)
+comm.barrier()
 

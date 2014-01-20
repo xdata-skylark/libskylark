@@ -1,36 +1,41 @@
 #!/usr/bin/env python
+
+# prevent mpi4py from calling MPI_Finalize()
+import mpi4py.rc
+mpi4py.rc.finalize   = False
+
 import h5py
 import elem
 import numpy
+import numpy.linalg
 from mpi4py import MPI
 import skylark, skylark.io
 
 comm = MPI.COMM_WORLD
 
-# create a HDF5 file.
-filename = 'mydataset.hdf5'
-   
-# create a 5 x 10 dat matrix and dump into filename 
+# Create a HDF5 file and encapsulate this and its metadata in store
+filename = 'mydataset.hdf5' 
+store = skylark.io.hdf5(filename, dataset='MyDataset')
+
+# Create a 5 x 10 dat matrix and populate its store
 if comm.Get_rank() == 0:
   m = 8
   n = 10
-  writer = skylark.io.hdf5(filename, "w")
-  writer.write_dense(numpy.array(range(1,81)).reshape(m,n), dataset = 'MyDataset')
-  writer.close()
-        
+  matrix = numpy.array(range(1,81)).reshape(m,n)
+  store.write(matrix)
+      
 # Let all processes wait till the file is created.
 comm.barrier()
     
-# All processes create a reader object associated with the file  and query it to get the matrix dimensions
-reader = skylark.io.hdf5(filename, "r")
-(m, n) = reader.dimensions("MyDataset")
-    
-# read from the reader into A, the dataset "MyDataset"
-# Note that a single HDF5 file can contain multiple datasets e.g., features and labels.
-#if pypar.rank() == 0:
-A = elem.DistMatrix_d_VC_STAR(m, n)
-reader.read_dense(A, "MyDataset")
-reader.close()
-        
-# Check that Elemental has the dataset - need to fix column-major / row-major issue somehow.
-A.Print("A - final rank=%d" % A.Grid.Rank)
+# All processes read into the file
+A = store.read('elemental-dense', distribution='VC_STAR')
+
+# Check the Frobenius norm of the difference of generated/written and read-back matrices
+# Gather at root
+A_CIRC_CIRC = elem.DistMatrix_d_CIRC_CIRC()
+elem.Copy(A, A_CIRC_CIRC)
+
+# Compute the norm at root and output
+if comm.rank == 0:
+  diff_fro_norm = numpy.linalg.norm(A_CIRC_CIRC.Matrix[:] - matrix, ord='fro')
+  print '||generated_matrix - read_matrix||_F = %f' % diff_fro_norm 

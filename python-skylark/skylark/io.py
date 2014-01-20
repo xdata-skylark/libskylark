@@ -102,7 +102,7 @@ class hdf5(object):
         """
         dataset = self.file[dataset]
         A.ResizeTo(dataset.shape[0], dataset.shape[1])
-        buffer = A.Matrix
+        buffer = A.Matrix.T    
         if A.LocalHeight > 0:
             space_id = dataset.id.get_space()
             space_id.select_hyperslab((0, A.ColShift), \

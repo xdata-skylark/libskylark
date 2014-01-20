@@ -2,7 +2,7 @@
 from mpi4py import MPI
 import elem
 import skylark.io
-import skylark.cskylark as sketch
+import skylark.sketch as sketch
 import skylark.elemhelper
 import numpy as np
 import urllib

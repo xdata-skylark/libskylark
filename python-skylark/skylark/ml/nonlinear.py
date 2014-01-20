@@ -2,7 +2,7 @@ import numpy, numpy.random, scipy.linalg, scipy.stats
 import kernels
 import utils
 from math import sqrt, cos, pi
-import skylark.io, skylark.metrics, skylark.cskylark
+import skylark.io, skylark.metrics, skylark.sketch
 import sys
 
 class rls(object):
@@ -163,7 +163,7 @@ class sketchrls(object):
     m,n = X.shape
     self.random_features = random_features
     self.bandwidth = bandwidth
-    self.rft = skylark.cskylark.GaussianRFT(n, random_features, bandwidth)
+    self.rft = skylark.sketch.GaussianRFT(n, random_features, bandwidth)
     Z = self.rft / X
     
     I = numpy.identity(random_features)
@@ -221,7 +221,7 @@ class nystromrls(object):
     else:
       raise skylark.errors.InvalidParamterError("Unknown probability distribution strategy")
 
-    SX = skylark.cskylark.NonUniformSampler(m, random_features, nz_prob_dist) * X
+    SX = skylark.sketch.NonUniformSampler(m, random_features, nz_prob_dist) * X
     K_II = kernels.gaussian(SX, None, sigma = bandwidth)
     I = numpy.identity(random_features)
     eps = 1e-8

@@ -7,7 +7,7 @@ import mpi4py.rc
 mpi4py.rc.finalize   = False
 
 from mpi4py import MPI
-from skylark import cskylark
+from skylark import sketch
 
 import kdt
 import math
@@ -15,10 +15,10 @@ import math
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 
-# Skylark is automatically initilalized when you import Skylark,
+# Lower layers are automatically initilalized when you import Skylark,
 # It will use system time to generate the seed. However, we can 
 # reinitialize for so to fix the seed.
-cskylark.initialize(123834);
+sketch.initialize(123834);
 
 # creating an example matrix
 # It seems that pySpParMat can only be created from dense vectors
@@ -37,7 +37,7 @@ print ACB
 
 nullVec = kdt.Vec(0, sparse=False)
 SACB    = kdt.Mat(nullVec, nullVec, nullVec, 6, 6)
-S       = cskylark.CWT(10, 6)
+S       = sketch.CWT(10, 6)
 S.apply(ACB, SACB, "columnwise")
 
 if (rank == 0):
@@ -48,13 +48,13 @@ if (rank == 0):
 # and the memory for the sketch reclaimed.
 
 SACB = kdt.Mat(nullVec, nullVec, nullVec, 3, 10)
-S    = cskylark.CWT(6, 3)
+S    = sketch.CWT(6, 3)
 S.apply(ACB, SACB, "rowwise")
 
 if (rank == 0):
   print("Sketched A (CWT sparse, rowwise)")
   print SACB
 
-# Really no need to close skylark -- it will do it automatically.
+# Really no need to "close" the lower layers -- it will do it automatically.
 # However, if you really want to you can do it.
-cskylark.finalize()
+sketch.finalize()

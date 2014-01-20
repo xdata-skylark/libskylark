@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 # MPI usage: 
-# mpiexec -np 2 python skylark/examples/example_cskylark.py
+# mpiexec -np 2 python skylark/examples/example_sketch.py
 
 # prevent mpi4py from calling MPI_Finalize()
 import mpi4py.rc
 mpi4py.rc.finalize   = False
 
 import elem
-from skylark import cskylark, elemhelper
+from skylark import sketch, elemhelper
 from mpi4py import MPI
 import numpy as np
 import time
@@ -16,7 +16,7 @@ import time
 m = 20000;
 n = 300;
 t = 1000;
-sketches = { "JLT" : cskylark.JLT, "FJLT" : cskylark.FJLT, "CWT" : cskylark.CWT }
+sketches = { "JLT" : sketch.JLT, "FJLT" : sketch.FJLT, "CWT" : sketch.CWT }
 
 # Set up the random regression problem.
 A = elem.DistMatrix_d_VR_STAR()
@@ -45,15 +45,14 @@ if (MPI.COMM_WORLD.Get_rank() == 0):
   print "Exact solution residual %(res).3f\t\t\ttook %(elp).2e sec" % \
       { "res" : res, "elp": telp }
 
-# Skylark is automatically initilalized when you import Skylark,
+# Lower-layers are automatically initilalized when you import Skylark,
 # It will use system time to generate the seed. However, we can 
 # reinitialize for so to fix the seed.
-cskylark.initialize(123834);
+sketch.initialize(123834);
 
 #
 # Solve the problem using sketching
 #
-
 for sname in sketches:
   stype = sketches[sname]
   
@@ -97,8 +96,8 @@ for sname in sketches:
   # You can also explicitly free them.
   del S     # S = 0 will also free memory.
 
-# Really no need to close skylark -- it will do it automatically.
+# Really no need to "close" the lower layers -- it will do it automatically.
 # However, if you really want to you can do it.
-cskylark.finalize()
+sketch.finalize()
 
 

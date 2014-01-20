@@ -11,8 +11,6 @@ import os
 import time
 import atexit
 
-_DEF_OUTTYPE = "LocalMatrix"
-
 # Function for initialization and reinitilialization
 def initialize(seed=-1):
   """
@@ -63,7 +61,7 @@ def initialize(seed=-1):
   if seed == -1:
     seed = int(time.time())
 
-  if _lib == None:
+  if _lib is None:
     # We assume completly local operation when no C++ layer.
     _rank = 1
     _size = 1
@@ -94,7 +92,7 @@ def finalize():
   """
   # TODO free dll (?)
   global _lib, _ctxt_obj, _rank, _size
-  if _lib != None:
+  if _lib is not None:
     if _ctxt_obj != 0:
       _lib.sl_free_context(_ctxt_obj)
     _ctxt_obj = 0
@@ -161,6 +159,9 @@ class _NumpyAdapter:
     else:
       return None, self._A.flags.c_contiguous
 
+  def getctor(self):
+    return ctor
+
   @staticmethod
   def ctor(m, n, B):
     # Construct numpy array that is compatible with B. If B is a numpy array the
@@ -177,17 +178,18 @@ if _ELEM_INSTALLED:
     def __init__(self, A):
       self._A = A
       if isinstance(A, elem.DistMatrix_d):
-        self._typestr = "DistMatrix"
+        self._typeid = ""
       elif isinstance(A, elem.DistMatrix_d_VC_STAR):
-        self._typestr = "DistMatrix_VC_STAR"
+        self._typeid ="VC_STAR"
       elif isinstance(A, elem.DistMatrix_d_VR_STAR):
-        self._typestr = "DistMatrix_VR_STAR"
+        self._typeid = "VR_STAR"
       elif isinstance(A, elem.DistMatrix_d_STAR_VC):
-        self._typestr = "DistMatrix_STAR_VC"
+        self._typeid = "STAR_VC"
       elif isinstance(A, elem.DistMatrix_d_STAR_VR):
-        self._typestr = "DistMatrix_STAR_VR"
+        self._typeid = "STAR_VR"
       else:
         raise errors.UnsupportedError("Unsupported Elemental type")
+      self._typestr = "DistMatrix_" + self._typeid
 
     def ctype(self):
       return self._typestr
@@ -196,7 +198,7 @@ if _ELEM_INSTALLED:
       return ctypes.c_void_p(long(self._A.this))
 
     def ptrcleaner(self):
-      None
+      pass
 
     def getdim(self, dim):
       if dim == 0:
@@ -213,12 +215,15 @@ if _ELEM_INSTALLED:
       else:
         return None, False
 
+    def getctor(self):
+      return lambda m, n, c : _ElemAdapter.ctor(self._typeid, m, n, c)
+ 
     @staticmethod
-    def ctor(typestr, m, n, B):
-      if typestr == "":
+    def ctor(typeid, m, n, B):
+      if typeid is "":
         cls = elem.DistMatrix_d
       else:
-        cls = eval("elem.DistMatrix_d_" + typestr)
+        cls = eval("elem.DistMatrix_d_" + typeid)
       return cls(m, n)
 
 
@@ -234,7 +239,7 @@ if _KDT_INSTALLED:
       return ctypes.c_void_p(long(self._A._m_.this))
 
     def ptrcleaner(self):
-      None
+      pass
 
     def getdim(self, A, dim):
       if dim == 0:
@@ -250,6 +255,9 @@ if _KDT_INSTALLED:
         return "numpy combined with other types must have fortran ordering", None
       else:
         return None, False
+
+    def getctor(self):
+      return ctor
 
     @staticmethod
     def ctor(m, n, B):
@@ -319,15 +327,17 @@ class _SketchTransform(object):
   constructors. The class is not meant
   """
 
-  def __init__(self, ttype, n, s, defouttype):
+  def __init__(self, ttype, n, s, defouttype=None):
     """
     Create the transform from n dimensional vectors to s dimensional vectors. Here we define
     the interface, but the constructor should not be called directly by the user.
 
-    :param ttype: String identifying the sketch type. This parameter is omitted in derived classes.
+    :param ttype: String identifying the sketch type. This parameter is omitted 
+                  in derived classes.
     :param n: Number of dimensions in input vectors.
     :param s: Number of dimensions in output vectors.
-    :param defouttype: Default output type when using the * and / operators.
+    :param defouttype: Default output type when using the * and / operators. 
+                       If None the output will have same type as the input.
     :returns: the transform object
     """
     
@@ -338,13 +348,13 @@ class _SketchTransform(object):
       self._obj = sketch_transform.value
 
   def _baseinit(self, ttype, n, s, defouttype):
-    if not _map_to_ctor.has_key(defouttype):
+    if defouttype is not None and not _map_to_ctor.has_key(defouttype):
       raise errors.UnsupportedError("Unsupported default output type (%s)" % defouttype)
     self._ttype = ttype
     self._n = n
     self._s = s
     self._defouttype = defouttype
-    self._ppy = _lib == None
+    self._ppy = _lib is None
 
   def __del__(self):
     if not self._ppy:
@@ -374,7 +384,11 @@ class _SketchTransform(object):
 
     # Allocate in case SA is not given, and then adapt it.
     if SA is None:
-      ctor = _map_to_ctor[self._defouttype]
+      if self._defouttype is None:
+        ctor = A.getctor()
+      else:
+        ctor = _map_to_ctor[self._defouttype]
+
       if dim == 0:
         SA = ctor(self._s, A.getdim(1), A)
       if dim == 1:
@@ -387,7 +401,7 @@ class _SketchTransform(object):
                                       + str(reqcomb))  
 
     incomp, cinvert = A.iscompatible(SA)
-    if incomp != None:
+    if incomp is not None:
       raise errors.UnsupportedError("Input and output are incompatible: " + incomp)
 
     if A.getdim(dim) != self._n:
@@ -490,7 +504,7 @@ class JLT(_SketchTransform):
   >>> plt.hist(distortions,10)
   >>> plt.show()   
   """
-  def __init__(self, n, s, defouttype=_DEF_OUTTYPE):
+  def __init__(self, n, s, defouttype=None):
     super(JLT, self).__init__("JLT", n, s, defouttype);
     if self._ppy:
       # The following is not memory efficient, but for a pure Python impl it will do
@@ -523,7 +537,7 @@ class SJLT(_SketchTransform):
   *P. Li*, *T. Hastie* and *K. W. Church*, **Very Sparse Random Projections**,
   KDD 2006
   """
-  def __init__(self, n, s, density = 1 / 3.0, defouttype=_DEF_OUTTYPE):
+  def __init__(self, n, s, density = 1 / 3.0, defouttype=None):
     super(SJLT, self)._baseinit("SJLT", n, s, defouttype);
     self._ppy = True
     nz_values = [-sqrt(1.0/density), +sqrt(1.0/density)]
@@ -553,7 +567,7 @@ class CT(_SketchTransform):
   *C. Sohler* and *D. Woodruff*, **Subspace Embeddings for the L_1-norm with 
   Application**, STOC 2011
   """
-  def __init__(self, n, s, C, defouttype=_DEF_OUTTYPE):
+  def __init__(self, n, s, C, defouttype=None):
     super(CT, self)._baseinit("CT", n, s, defouttype)
 
     if self._ppy:
@@ -587,7 +601,7 @@ class FJLT(_SketchTransform):
   *N. Ailon* and *B. Chazelle*, **The Fast Johnson-Lindenstrauss Transform and 
   Approximate Nearest Neighbors**, SIAM Journal on Computing 39 (1), pg. 302-322
   """
-  def __init__(self, n, s, defouttype=_DEF_OUTTYPE):
+  def __init__(self, n, s, defouttype=None):
     super(FJLT, self).__init__("FJLT", n, s, defouttype);
     if self._ppy:
       d = scipy.stats.rv_discrete(values=([-1,1], [0.5,0.5]), name = 'uniform').rvs(size=n)
@@ -618,7 +632,7 @@ class CWT(_SketchTransform):
   *K. Clarkson* and *D. Woodruff*, **Low Rank Approximation and Regression
   in Input Sparsity Time**, STOC 2013
   """
-  def __init__(self, n, s, defouttype=_DEF_OUTTYPE):
+  def __init__(self, n, s, defouttype=None):
     super(CWT, self).__init__("CWT", n, s, defouttype);
     if self._ppy:
       # The following is not memory efficient, but for a pure Python impl 
@@ -649,7 +663,7 @@ class MMT(_SketchTransform):
   *X. Meng* and *M. W. Mahoney*, **Low-distortion Subspace Embeddings in
   Input-sparsity Time and Applications to Robust Linear Regression**, STOC 2013
   """
-  def __init__(self, n, s, defouttype=_DEF_OUTTYPE):
+  def __init__(self, n, s, defouttype=None):
     super(MMT, self).__init__("MMT", n, s, defouttype);
     if self._ppy:
       # The following is not memory efficient, but for a pure Python impl 
@@ -694,7 +708,7 @@ class WZT(_SketchTransform):
         val[idx] = (2 * self._bdist.rvs() - 1) * math.pow(self._edist.rvs(), 1/self._p)
       return val
 
-  def __init__(self, n, s, p, defouttype=_DEF_OUTTYPE):
+  def __init__(self, n, s, p, defouttype=None):
     super(WZT, self)._baseinit("WZT", n, s, defouttype)
 
     if self._ppy:
@@ -730,7 +744,7 @@ class GaussianRFT(_SketchTransform):
   *A. Rahimi* and *B. Recht*, **Random Features for Large-scale
   Kernel Machines**, NIPS 2009
   """
-  def __init__(self, n, s, sigma=1.0, defouttype=_DEF_OUTTYPE):
+  def __init__(self, n, s, sigma=1.0, defouttype=None):
     super(GaussianRFT, self)._baseinit("GaussianRFT", n, s, defouttype)
 
     self._sigma = sigma
@@ -763,7 +777,7 @@ class LaplacianRFT(_SketchTransform):
   *A. Rahimi* and *B. Recht*, **Random Features for Large-scale
   Kernel Machines**, NIPS 2009
   """
-  def __init__(self, n, s, sigma=1.0, defouttype=_DEF_OUTTYPE):
+  def __init__(self, n, s, sigma=1.0, defouttype=None):
     super(LaplacianRFT, self)._baseinit("LaplacianRFT", n, s, defouttype)
 
     if not self._ppy:
@@ -783,7 +797,7 @@ class URST(_SketchTransform):
   :param s: Number of dimensions in output vectors.
   :param defouttype: Default output type when using the * and / operators.
   """
-  def __init__(self, n, s, defouttype=_DEF_OUTTYPE):
+  def __init__(self, n, s, defouttype=None):
     super(URST, self)._baseinit("URST", n, s, defouttype);
     self._ppy = True
     self._idxs = numpy.random.permutation(n)[0:s]
@@ -806,7 +820,7 @@ class NURST(_SketchTransform):
   :param p: Probability distribution on the n rows.
   :param defouttype: Default output type when using the * and / operators.
   """
-  def __init__(self, n, s, p, defouttype=_DEF_OUTTYPE):
+  def __init__(self, n, s, p, defouttype=None):
     super(NURST, self)._baseinit("NURST", n, s, defouttype);
     if p.shape[0] != n:
       raise errors.InvalidParamterError("size of probability array should be exactly n")

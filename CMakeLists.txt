@@ -174,18 +174,6 @@ if (Boost_FOUND)
   message(STATUS "Found Boost: ${Boost_INCLUDE_DIRS}" )
 endif (Boost_FOUND)
 
-# 3. BLAS and LAPACK
-find_package(BLAS REQUIRED)
-find_package(LAPACK REQUIRED)
-
-# Set up a dummy variable that lists the common libraries to include.
-# Note that Elemental is added to this list only later.
-set (SKYLARK_LIBS
-    m  # libmath
-    ${BLAS_LIBRARIES} # blas
-    ${LAPACK_LIBRARIES} # lapack
-)
-
 # 4. Random123
 set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules")
 find_package(Random123 REQUIRED)
@@ -210,6 +198,15 @@ if (USE_ELEMENTAL)
          "Enables use of Elemental Libraries"
          FORCE)
   endif (Elemental_FOUND)
+
+  # Elemental requires BLAS and LAPACK libraries
+  find_package(BLAS REQUIRED)
+  find_package(LAPACK REQUIRED)
+  set (Elemental_LIBRARY
+    ${Elemental_LIBRARY}
+    ${BLAS_LIBRARIES}
+    ${LAPACK_LIBRARIES}
+  )
 endif (USE_ELEMENTAL)
 
 

@@ -155,11 +155,13 @@ set (CMAKE_CXX_COMPILER ${MPI_COMPILER})
 
 # 2. Find Boost with the relevant packages --- Use dynamic boost!
 # Without dynamic linking, it's tough to create python bindings.
-set(BOOST_ROOT $ENV{BOOST_ROOT})
-set(Boost_NO_SYSTEM_PATHS ON)
-set(Boost_NO_BOOST_CMAKE ON)
-#set(BOOST_INCLUDEDIR $ENV{BOOST_ROOT})
-#set(BOOST_LIBRARYDIR $ENV{BOOST_ROOT}}/lib)
+set (BOOST_ROOT $ENV{BOOST_ROOT})
+# turn off system paths if BOOST_ROOT is defined
+if (BOOST_ROOT)
+  set(Boost_NO_SYSTEM_PATHS ON)
+  set(Boost_NO_BOOST_CMAKE ON)
+endif (BOOST_ROOT)
+
 set(BOOST_MIN_VERSION 1.53.0)
 find_package (Boost REQUIRED mpi)
 if (Boost_FOUND)
@@ -174,7 +176,7 @@ if (Boost_FOUND)
   message(STATUS "Found Boost: ${Boost_INCLUDE_DIRS}" )
 endif (Boost_FOUND)
 
-# 4. Random123
+# 3. Random123
 set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules")
 find_package(Random123 REQUIRED)
 if (Random123_FOUND)

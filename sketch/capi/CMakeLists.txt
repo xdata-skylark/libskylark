@@ -31,16 +31,6 @@ target_link_libraries(cskylark
                       ${Boost_LIBRARIES}
                       ${CombBLAS_LIBRARIES}
 )
-set_target_properties(cskylark
-                      PROPERTIES COMPILE_FLAGS
-                      "-Wall \\
-                      -Werror \\
-                      -Wno-strict-aliasing \\
-                      -Wno-sign-compare \\
-                      -Wno-comment \\
-                      -Wno-unused-variable \\
-                      -fPIC"
-)
 set_target_properties(cskylark PROPERTIES SUFFIX ".so")
 
 install (

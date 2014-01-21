@@ -90,26 +90,28 @@ Currently it uses the c-types interface of Elemental. For sparse distributed mat
 `ComboBLAS <http://gauss.cs.ucsb.edu/~aydin/CombBLAS/html/>`_.  
 
 The accelerated NLA kernels are then used to accelerate higher level machine learning algorithms, e.g., kernel-based 
-nonlinear regression, matrix completion and statistical dimensionality reduction techniques such as Principal component analysis. 
+nonlinear regression, matrix completion and statistical dimensionality reduction techniques such as Principal Component Analysis. 
 We also provide Python bindings to Skylark lower layers to enable rapid prototyping of data analysis algorithms, and exploration of the
 sketching design space for optimal performance in a given domain.  Input matrices can also be local numpy or scipy arrays 
 for single node execution of Skylark.  We use Python bindings for Elemental and Combinatorial BLAS (through `KDT <http://kdt.sourceforge.net/wiki/index.php/Main_Page>`_).
 
 We also plan to support a streaming interface for out-of-core sketching and matrix computations. 
 
-Currently, a number of distributed sketching transforms are supported in Skylark. The first eight transforms below are implemented, and form the basis of faster 
+Currently, a number of distributed sketching transforms are supported in Skylark. The first seven transforms below are implemented, and form the basis of faster 
 :math:`l_2, l_1` regression and randomized SVD. 
 
     * JLT - Johnson–Lindenstrauss Transform
     * FJLT - Fast Johnson–Lindenstrauss Transform
-    * FJLTp - "FJLT plus", that is SFD as usual but with S an hashing matrix (CWT, MMT, ...)/OSNAP instead of just sampling.
     * CT - Cauchy Transform
-    * FCT - Fast Cauchy Transform
     * MMT - Meng-Mahoney Transform
     * CWT - Clarkson-Woodruff Transform
     * WZT - Woodruff-Zhang Transform
-    * OSNAP - Oblivious Sparse Norm-Approximating Projection ( http://http://arxiv.org/abs/1211.1002)
     * SRFUT - Subsampled Randomized Fast Unitary Transform
+
+The following transforms are to be implemented soon:
+    * FJLTp - "FJLT plus", that is SFD as usual but with S an hashing matrix (CWT, MMT, ...)/OSNAP instead of just sampling.
+    * FCT - Fast Cauchy Transform
+    * OSNAP - Oblivious Sparse Norm-Approximating Projection ( http://http://arxiv.org/abs/1211.1002)
     * PPT - Pahm-Pagh Transform (fast sketching of polynomial kernel/tensor sketch,  http://www.itu.dk/people/pagh/papers/tensorsketch.pdf)
     * RKP - Random Kronecker Product ( http://nuit-blanche.blogspot.fr/2008/05/cs-new-cs-measurement-matrices-some.html)
     * RBT - Random Butterfly Transform ( http://hal.inria.fr/docs/00/72/40/59/PDF/RR-8043.pdf) 
@@ -131,7 +133,7 @@ We provide a separate install guide in pdf.
 License and Copyright
 ----------------------  
 
-Copyright IBM Corporation, 2012-2013 ::
+Copyright IBM Corporation, 2012-2014 ::
  
 This program and the accompanying materials are made available under the terms of the Eclipse Public License v1.0 
 which accompanies this distribution and is available at `<http://www.eclipse.org/legal/epl-v10.html>`_ 

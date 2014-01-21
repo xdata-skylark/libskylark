@@ -15,7 +15,6 @@ skylark
    sketching
    ml
    io
-   capi
   
    
 Indices and tables

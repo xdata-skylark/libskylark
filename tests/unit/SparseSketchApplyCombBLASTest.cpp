@@ -64,6 +64,7 @@ int test_main(int argc, char *argv[]) {
     namespace mpi = boost::mpi;
     mpi::environment env(argc, argv);
     mpi::communicator world;
+    const size_t rank = world.rank();
 
     skylark::sketch::context_t context (0, world);
 
@@ -82,6 +83,7 @@ int test_main(int argc, char *argv[]) {
     }
 
     DistMatrixType A(n, m, rowsf, colsf, valsf);
+
 
     //////////////////////////////////////////////////////////////////////////
     //[> Column wise application <]
@@ -107,27 +109,17 @@ int test_main(int argc, char *argv[]) {
 
     //[> 2. Create space for the sketched matrix <]
     mpi_vector_t zero;
-    DistMatrixType sketch_A(n_s, n, zero, zero, zero);
+    DistMatrixType sketch_A(n_s, m, zero, zero, zero);
 
     //[> 3. Apply the transform <]
     Sparse.apply(A, sketch_A, skylark::sketch::columnwise_tag());
 
     //[> 4. Build structure to compare <]
-    DistMatrixType expected_A = PSpGEMM<PTDD>(pi_sketch, A);
+    //DistMatrixType expected_A = PSpGEMM<PTDD>(pi_sketch, A);
+    DistMatrixType expected_A = Mult_AnXBn_Synch<PTDD, double, col_t>(pi_sketch, A, false, false);
 
-
-    Arr<size_t, double> sk = sketch_A.seq().GetArrays();
-    Arr<size_t, double> ex = expected_A.seq().GetArrays();
-
-    for(size_t j = 0; j < 3; ++j)
-        for(size_t i = 0; i < ex.indarrs[j].count; ++i)
-            if(ex.indarrs[j].addr[i] != sk.indarrs[j].addr[i])
-                BOOST_FAIL("Result of colwise application not as expected (indices differ)");
-
-    for(size_t i = 0; i < ex.numarrs[0].count; ++i)
-        if(ex.numarrs[0].addr[i] != sk.numarrs[0].addr[i])
-            BOOST_FAIL("Result of colwise application not as expected (values differ)");
-
+    if (!static_cast<bool>(expected_A == sketch_A))
+        BOOST_FAIL("Result of colwise application not as expected");
 
 
     //////////////////////////////////////////////////////////////////////////
@@ -162,18 +154,8 @@ int test_main(int argc, char *argv[]) {
     //[> 4. Build structure to compare <]
     DistMatrixType expected_AR = PSpGEMM<PTDD>(A, pi_sketch_r);
 
-
-    sk = sketch_A_r.seq().GetArrays();
-    ex = expected_AR.seq().GetArrays();
-
-    for(size_t j = 0; j < 3; ++j)
-        for(size_t i = 0; i < ex.indarrs[j].count; ++i)
-            if(ex.indarrs[j].addr[i] != sk.indarrs[j].addr[i])
-                BOOST_FAIL("Result of rowwise application not as expected (indices differ)");
-
-    for(size_t i = 0; i < ex.numarrs[0].count; ++i)
-        if(ex.numarrs[0].addr[i] != sk.numarrs[0].addr[i])
-            BOOST_FAIL("Result of rowwise application not as expected (values differ)");
+    if (!static_cast<bool>(expected_AR == sketch_A_r))
+        BOOST_FAIL("Result of rowwise application not as expected");
 
     return 0;
 }

@@ -425,7 +425,7 @@ private:
             index_type lrow = itr->first / ncols - m_row_offset;
             index_type lcol = itr->first % ncols - m_col_offset;
             value_type val  = itr->second;
-            data_val.push_back(boost::make_tuple(lrow, lcol, val));
+            data_val.push_back(make_tuple(lrow, lcol, val));
         }
 
         // this pointer will be freed in the destructor of col_t (see below).

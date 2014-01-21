@@ -201,9 +201,11 @@ private:
         output_matrix_type& sketch_of_A,
         skylark::sketch::columnwise_tag) const {
 
-        // TODO this implementation is communication efficient. 
+        // TODO this implementation is communication efficient.
         // Sketching a nxd matrix to sxd will communicate O(sdP)
-        // doubles, when you really should only communicate O(sd).
+        // doubles, when you can sometime communicate less:
+        // For [MC,MR] or [MR,MC] you need O(sd sqrt(P)).
+        // For [*, VC/VR] you need only O(sd).
 
         // Create space to hold local part of SA
         elem::Matrix<value_type> SA_part (sketch_of_A.Height(),
@@ -244,8 +246,10 @@ private:
         skylark::sketch::rowwise_tag) const {
 
         // TODO this implementation is communication efficient.
-        // Sketching a nxd matrix to nxs will communicate O(nsP)
-        // doubles, when you really should only communicate O(ns).
+        // Sketching a nxd matrix to sxd will communicate O(sdP)
+        // doubles, when you can sometime communicate less:
+        // For [MC,MR] or [MR,MC] you need O(sd sqrt(P)).
+        // For [VC/VR, *] you need only O(sd).
 
         // Create space to hold local part of SA
         elem::Matrix<value_type> SA_part (sketch_of_A.Height(),

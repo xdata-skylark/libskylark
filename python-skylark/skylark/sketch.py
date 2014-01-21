@@ -160,7 +160,7 @@ class _NumpyAdapter:
       return None, self._A.flags.c_contiguous
 
   def getctor(self):
-    return ctor
+    return _NumpyAdapter.ctor
 
   @staticmethod
   def ctor(m, n, B):
@@ -257,7 +257,7 @@ if _KDT_INSTALLED:
         return None, False
 
     def getctor(self):
-      return ctor
+      return _KDTAdapter.ctor
 
     @staticmethod
     def ctor(m, n, B):

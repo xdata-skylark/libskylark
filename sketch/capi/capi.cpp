@@ -95,12 +95,24 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
         SKDEF(CT, DistMatrix_STAR_VC, Matrix)
         SKDEF(CT, DistMatrix_STAR_VR, DistMatrix_STAR_VR)
         SKDEF(CT, DistMatrix_STAR_VC, DistMatrix_STAR_VC)
+        SKDEF(CWT, Matrix, Matrix)
+        SKDEF(CWT, DistMatrix, Matrix)
         SKDEF(CWT, DistMatrix_VR_STAR, Matrix)
         SKDEF(CWT, DistMatrix_VC_STAR, Matrix)
+        SKDEF(CWT, DistMatrix_STAR_VR, Matrix)
+        SKDEF(CWT, DistMatrix_STAR_VC, Matrix)
+        SKDEF(MMT, Matrix, Matrix)
+        SKDEF(MMT, DistMatrix, Matrix)
         SKDEF(MMT, DistMatrix_VR_STAR, Matrix)
         SKDEF(MMT, DistMatrix_VC_STAR, Matrix)
+        SKDEF(MMT, DistMatrix_STAR_VR, Matrix)
+        SKDEF(MMT, DistMatrix_STAR_VC, Matrix)
+        SKDEF(WZT, Matrix, Matrix)
+        SKDEF(WZT, DistMatrix, Matrix)
         SKDEF(WZT, DistMatrix_VR_STAR, Matrix)
         SKDEF(WZT, DistMatrix_VC_STAR, Matrix)
+        SKDEF(WZT, DistMatrix_STAR_VR, Matrix)
+        SKDEF(WZT, DistMatrix_STAR_VC, Matrix)
         SKDEF(GaussianRFT, Matrix, Matrix)
         SKDEF(GaussianRFT, DistMatrix_VR_STAR, DistMatrix_VR_STAR)
         SKDEF(GaussianRFT, DistMatrix_VC_STAR, DistMatrix_VC_STAR)
@@ -382,12 +394,36 @@ SKYLARK_EXTERN_API int
         sketch::CT_t, DistMatrix_STAR_VC, DistMatrix_STAR_VC, CT_data_t);
 
     AUTO_APPLY_DISPATCH(sketchc::CWT,
+        sketchc::MATRIX, sketchc::MATRIX,
+        sketch::CWT_t, Matrix, Matrix, CWT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::CWT,
+        sketchc::DIST_MATRIX, sketchc::MATRIX,
+        sketch::CWT_t, DistMatrix, Matrix, CWT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::CWT,
         sketchc::DIST_MATRIX_VR_STAR, sketchc::MATRIX,
         sketch::CWT_t, DistMatrix_VR_STAR, Matrix, CWT_data_t);
 
     AUTO_APPLY_DISPATCH(sketchc::CWT,
         sketchc::DIST_MATRIX_VC_STAR, sketchc::MATRIX,
         sketch::CWT_t, DistMatrix_VC_STAR, Matrix, CWT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::CWT,
+        sketchc::DIST_MATRIX_STAR_VR, sketchc::MATRIX,
+        sketch::CWT_t, DistMatrix_STAR_VR, Matrix, CWT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::CWT,
+        sketchc::DIST_MATRIX_STAR_VC, sketchc::MATRIX,
+        sketch::CWT_t, DistMatrix_STAR_VC, Matrix, CWT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::MMT,
+        sketchc::MATRIX, sketchc::MATRIX,
+        sketch::MMT_t, Matrix, Matrix, MMT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::MMT,
+        sketchc::DIST_MATRIX, sketchc::MATRIX,
+        sketch::MMT_t, DistMatrix, Matrix, MMT_data_t);
 
     AUTO_APPLY_DISPATCH(sketchc::MMT,
         sketchc::DIST_MATRIX_VR_STAR, sketchc::MATRIX,
@@ -397,6 +433,22 @@ SKYLARK_EXTERN_API int
         sketchc::DIST_MATRIX_VC_STAR, sketchc::MATRIX,
         sketch::MMT_t, DistMatrix_VC_STAR, Matrix, MMT_data_t);
 
+    AUTO_APPLY_DISPATCH(sketchc::MMT,
+        sketchc::DIST_MATRIX_STAR_VR, sketchc::MATRIX,
+        sketch::MMT_t, DistMatrix_STAR_VR, Matrix, MMT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::MMT,
+        sketchc::DIST_MATRIX_STAR_VC, sketchc::MATRIX,
+        sketch::MMT_t, DistMatrix_STAR_VC, Matrix, MMT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::WZT,
+        sketchc::MATRIX, sketchc::MATRIX,
+        sketch::WZT_t, Matrix, Matrix, WZT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::WZT,
+        sketchc::DIST_MATRIX, sketchc::MATRIX,
+        sketch::WZT_t, DistMatrix, Matrix, WZT_data_t);
+
     AUTO_APPLY_DISPATCH(sketchc::WZT,
         sketchc::DIST_MATRIX_VR_STAR, sketchc::MATRIX,
         sketch::WZT_t, DistMatrix_VR_STAR, Matrix, WZT_data_t);
@@ -404,6 +456,14 @@ SKYLARK_EXTERN_API int
     AUTO_APPLY_DISPATCH(sketchc::WZT,
         sketchc::DIST_MATRIX_VC_STAR, sketchc::MATRIX,
         sketch::WZT_t, DistMatrix_VC_STAR, Matrix, WZT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::WZT,
+        sketchc::DIST_MATRIX_STAR_VR, sketchc::MATRIX,
+        sketch::WZT_t, DistMatrix_STAR_VR, Matrix, WZT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::WZT,
+        sketchc::DIST_MATRIX_STAR_VC, sketchc::MATRIX,
+        sketch::WZT_t, DistMatrix_STAR_VC, Matrix, WZT_data_t);
 
     AUTO_APPLY_DISPATCH(sketchc::GaussianRFT,
         sketchc::MATRIX, sketchc::MATRIX,

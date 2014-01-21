@@ -123,8 +123,6 @@ private:
 
 };
 
-
-
 /**
  * Specialization distributed input, local output, for [SOMETHING, *]
  */
@@ -227,7 +225,7 @@ private:
             // adapt size of local portion (can be less than slice_width)
             S_local.ResizeTo(base_data_t::S, je-js);
             for(int j = js; j < je; j++) {
-                int col = A.RowShift() + A.RowStride() * j;
+                int col = A.ColShift() + A.ColStride() * j;
                 for (int i = 0; i < base_data_t::S; i++) {
                     value_type sample =
                         base_data_t::random_samples[col * base_data_t::S + i];

@@ -44,17 +44,23 @@ SketchTransform
 .. autoclass:: _SketchTransform
                 :members:
 
+                .. automethod:: _SketchTransform.__mul__
+
+                .. automethod:: _SketchTransform.__div__
+
 Supported Sketches
 ------------------
 
 .. autoclass:: JLT
 .. autoclass:: FJLT
+.. autoclass:: SJLT
 .. autoclass:: CT
 .. autoclass:: CWT
 .. autoclass:: MMT
 .. autoclass:: WZT
 .. autoclass:: GaussianRFT
 .. autoclass:: LaplacianRFT
+.. autoclass:: URST
 
 Example
 -------

@@ -1,4 +1,3 @@
-from skylark.sketch import SketchingTransform
 import numpy.random
 import scipy.sparse, scipy.stats
 

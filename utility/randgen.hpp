@@ -13,11 +13,12 @@ namespace skylark { namespace utility {
  * Random-access array of samples drawn from a distribution.
  * It is templated over the types of each sample value and the distribution.
  */
-template <typename ValueType,
-          typename Distribution>
+template <typename Distribution>
 struct random_samples_array_t {
 
 public:
+
+    typedef typename Distribution::result_type value_type;
     /**
      * Convenience nicknames for Random123 types
      */
@@ -74,7 +75,7 @@ public:
      * (e.g. normal distribution). So the reason for copying is the
      * const-correctness.
      */
-    ValueType operator[](size_t index) const {
+    value_type operator[](size_t index) const {
         // Could be more specific exception std::out_of_range
         if( index >= _size ) {
             std::ostringstream msg;

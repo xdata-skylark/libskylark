@@ -38,15 +38,27 @@ public:
      * Regular constructor
      */
     FJLT_t(int N, int S, skylark::sketch::context_t& context)
-        : base_data_t (N, S, context) {}
+        : base_data_t (N, S, context) {
+
+    }
 
     /**
      * Copy constructor
      */
-    FJLT_t(FJLT_t<matrix_type,
-                  output_matrix_type>& other)
-    : base_data_t(other.get_data()) {}
+    template <typename OtherInputMatrixType,
+              typename OtherOutputMatrixType>
+    FJLT_t(const FJLT_t<OtherInputMatrixType, OtherOutputMatrixType>& other)
+        : base_data_t(other.get_data()) {
 
+    }
+
+    /**
+     * Constructor from data
+     */
+    FJLT_t(const base_data_t& other_data)
+        : base_data_t(other_data.get_data()) {
+
+    }
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.

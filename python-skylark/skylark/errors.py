@@ -1,12 +1,20 @@
 class SkylarkError(Exception):
-    pass
+  pass
 
 class DimensionMistmatchError(SkylarkError):
-    pass
+  pass
 
 class UnexpectedLowerLayerError(SkylarkError):
-    pass
+  pass
 
 class UnsupportedError(SkylarkError):
-    pass
+  pass
 
+class ParameterMistmatchError(SkylarkError):
+  pass
+
+class InvalidParamterError(SkylarkError):
+  pass
+
+class InvalidObjectError(SkylarkError):
+  pass

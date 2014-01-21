@@ -14,21 +14,57 @@ namespace bstrand = boost::random;
  * The CT is simply a dense random matrix with i.i.d Cauchy variables
  */
 template < typename InputMatrixType,
-           typename OutputMatrixType>
+           typename OutputMatrixType = InputMatrixType >
 struct CT_t :
-   public dense_transform_t<InputMatrixType, OutputMatrixType,
-                            bstrand::cauchy_distribution > {
+  public CT_data_t<typename
+    dense_transform_t<InputMatrixType, OutputMatrixType,
+                      bstrand::cauchy_distribution >::value_type > {
 
+
+    // We use composition to defer calls to dense_transform_t
     typedef dense_transform_t<InputMatrixType, OutputMatrixType,
-                               bstrand::cauchy_distribution > Base;
+                               bstrand::cauchy_distribution > transform_t;
+
+    typedef CT_data_t<typename transform_t::value_type> base_t;
+
+
     /**
-     * Constructor
-     * Most of the work is done by base. Here just write scale
+     * Regular constructor
      */
-    CT_t(int N, int S, double C, skylark::sketch::context_t& context)
-        : Base(N, S, context) {
-        Base::scale = C / static_cast<double>(S);
+    CT_t(int N, int S, skylark::sketch::context_t& context)
+        : base_t(N, S, context), _transform(*this) {
     }
+
+    /**
+     * Copy constructor
+     */
+    template <typename OtherInputMatrixType,
+              typename OtherOutputMatrixType>
+    CT_t (const CT_t<OtherInputMatrixType, OtherOutputMatrixType>& other)
+        : base_t(other), _transform(*this) {
+
+    }
+
+    /**
+     * Constructor from data
+     */
+    CT_t (const base_t& other)
+        : base_t(other), _transform(*this) {
+
+    }
+
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     */
+    template <typename Dimension>
+    void apply (const typename transform_t::matrix_type& A,
+                typename transform_t::output_matrix_type& sketch_of_A,
+                Dimension dimension) const {
+        _transform.apply(A, sketch_of_A, dimension);
+    }
+
+private:
+    transform_t _transform;
 };
 
 } } /** namespace skylark::sketch */

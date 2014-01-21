@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import skylark.streaming, skylark.io, skylark.nla, skylark.ml.linear, skylark.ml.utils
 import scipy.sparse.linalg
 import numpy

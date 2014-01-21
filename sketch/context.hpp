@@ -60,17 +60,15 @@ struct context_t {
      * of successive samples. operator () can either trigger a run of
      * the Threefry4x64 algorithm for creating a fresh result array
      * (also consisting of 4 uint64's) and use one or more of its components or
-     * use those components from a previous run that are not processed yet. 
+     * use those components from a previous run that are not processed yet.
      *
      * @caveat This should be used as a global operation to keep the
      * the internal state of the context synchronized.
      */
-    template <typename ValueType,
-              typename Distribution>
-    skylark::utility::random_samples_array_t<ValueType, Distribution>
+    template <typename Distribution>
+    skylark::utility::random_samples_array_t<Distribution>
     allocate_random_samples_array(size_t size, Distribution& distribution) {
-        skylark::utility::random_samples_array_t<ValueType,
-                                                 Distribution>
+        skylark::utility::random_samples_array_t<Distribution>
             random_samples_array(_counter, size, _seed, distribution);
         _counter = _counter + size;
         return random_samples_array;
@@ -83,15 +81,14 @@ struct context_t {
      * @param[in] distribution The distribution to draw samples from.
      * @return Random samples' vector.
      */
-    template <typename ValueType,
-              typename Distribution>
-    std::vector<ValueType> generate_random_samples_array(size_t size,
+    template <typename Distribution >
+    std::vector<typename Distribution::result_type>
+      generate_random_samples_array(size_t size,
         Distribution& distribution) {
-        skylark::utility::random_samples_array_t<ValueType,
-                                                 Distribution>
+        skylark::utility::random_samples_array_t<Distribution>
             allocated_random_samples_array(_counter, size,_seed, distribution);
         _counter = _counter + size;
-        std::vector<ValueType> random_samples_array;
+        std::vector<typename Distribution::result_type> random_samples_array;
         try {
             random_samples_array.resize(size);
         } catch (std::bad_alloc ba) {

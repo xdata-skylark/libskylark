@@ -30,12 +30,8 @@ struct hash_transform_data_t {
         : N(N), S(S), context(context) {
         idx_distribution_type row_idx_distribution(0, S-1);
         value_distribution_type row_value_distribution;
-        row_idx = context.generate_random_samples_array<int,
-                                                        idx_distribution_type>
-            (N, row_idx_distribution);
-        row_value = context.generate_random_samples_array<value_type,
-                                                    value_distribution_type>
-            (N, row_value_distribution);
+        row_idx = context.generate_random_samples_array(N, row_idx_distribution);
+        row_value = context.generate_random_samples_array(N, row_value_distribution);
     }
 
 
@@ -47,7 +43,7 @@ protected:
     const int N; /**< Input dimension  */
     const int S; /**< Output dimension  */
     skylark::sketch::context_t& context; /**< Context for this sketch */
-    std::vector<int> row_idx; /**< precomputed row indices */
+    std::vector<index_type> row_idx; /**< precomputed row indices */
     std::vector<value_type> row_value; /**< precomputed scaling factors */
 };
 

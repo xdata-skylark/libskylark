@@ -1,5 +1,6 @@
-#!/usr/bin/python
-# Usage : python example_krr.py datasets/usps.t 0.001 10 500 1500
+#!/usr/bin/env python
+# Usage: python example_krr.py datasets/usps.t 0.001 10 500 1500
+
 import skylark, skylark.io
 from skylark.ml.nonlinear import *
 import pkg_resources, sys
@@ -10,6 +11,9 @@ regularization= float(sys.argv[2])
 bandwidth = float(sys.argv[3])
 randomfeatures = int(sys.argv[4])
 trn = int(sys.argv[5])
+
+# For now we support only dense matrices in pure python
+X = X.todense()
     
 model = rls()  
 model.train(X[1:trn,:],Y[1:trn],regularization,bandwidth)    

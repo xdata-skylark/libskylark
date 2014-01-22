@@ -325,21 +325,6 @@ private:
             }
         }
 
-#ifdef COMBBLAS_REDIST
-        const size_t loc_matrix_size = values.size();
-        FullyDistVec<index_type, index_type> cols(loc_matrix_size);
-        FullyDistVec<index_type, index_type> rows(loc_matrix_size);
-        FullyDistVec<index_type, value_type> vals(loc_matrix_size);
-
-        //FIXME: i is global idx
-        for(size_t i = 0; i < loc_matrix_size; ++i) {
-            cols.SetElement(i, indicies[i] % ncols);
-            rows.SetElement(i, indicies[i] / ncols);
-            vals.SetElement(i, values[i]);
-        }
-
-        sketch_of_A = output_matrix_type(nrows, ncols, rows, cols, vals);
-#else
         // Creating windows for all relevant arrays
         ///FIXME: MPI-3 stuff?
         MPI_Win proc_win, start_offset_win, idx_win, val_win;
@@ -408,40 +393,7 @@ private:
             }
         }
 
-        // creating a local structure to hold sparse data triplets
-        std::vector< tuple< index_type, index_type, value_type > > data_val;
-
-        // fill into sketch matrix (we know that all data is local now)
-        const size_t m_row_offset =
-            static_cast<int>((static_cast<double>(nrows) /
-                    sketch_of_A.getcommgrid()->GetGridRows())) *
-                    sketch_of_A.getcommgrid()->GetRankInProcCol(rank);
-        const size_t m_col_offset =
-            static_cast<int>((static_cast<double>(ncols) /
-                    sketch_of_A.getcommgrid()->GetGridCols())) *
-                    sketch_of_A.getcommgrid()->GetRankInProcRow(rank);
-        typename std::map<size_t, value_type>::const_iterator itr;
-        for(itr = vals_map.begin(); itr != vals_map.end(); itr++) {
-            index_type lrow = itr->first / ncols - m_row_offset;
-            index_type lcol = itr->first % ncols - m_col_offset;
-            value_type val  = itr->second;
-            data_val.push_back(boost::make_tuple(lrow, lcol, val));
-        }
-
-        // this pointer will be freed in the destructor of col_t (see below).
-        //FIXME: verify with Valgrind
-        SpTuples<index_type, value_type> *tmp_tpl =
-            new SpTuples<index_type, value_type> (
-                vals_map.size(), sketch_of_A.getlocalrows(),
-                sketch_of_A.getlocalcols(), &(data_val[0]));
-
-        // create temporary matrix (no further communication should be
-        // required because all the data are local) and assign (deep copy)..
-        //FIXME: is there a direct way to set the "data buffer" for
-        //       sketch_of_A?
-        col_t *sp_data = new col_t(*tmp_tpl, false);
-        sketch_of_A    = output_matrix_type(sp_data, sketch_of_A.getcommgrid());
-
+        create_local_sp_mat(vals_map, sketch_of_A);
 
         MPI_Win_fence(0, proc_win);
         MPI_Win_fence(0, start_offset_win);
@@ -452,7 +404,61 @@ private:
         MPI_Win_free(&start_offset_win);
         MPI_Win_free(&idx_win);
         MPI_Win_free(&val_win);
-#endif
+    }
+
+
+    //FIXME: move to util
+    /** Create a sparse CombBLAS matrix given a mapping of local indices to
+     *  values. The 1D index is defined as:
+     *
+     *      index = row_index * num_cols + col_index
+     *
+     *  where num_cols denotes the number of columns in the output matrix.
+     *
+     *  FIXME: is there a direct way to set the "data buffer" for the output
+     *         matrix? Currently this method creates a temporary matrix and
+     *         then assigns to the output matrix (deep copy).
+     */
+    void create_local_sp_mat(std::map<size_t, value_type> &vals_map,
+                             output_matrix_type &matrix) const {
+
+        const size_t ncols = matrix.getncol();
+        const size_t rank  = matrix.getcommgrid()->GetRank();
+
+        // creating a local structure to hold sparse data triplets
+        std::vector< tuple< index_type, index_type, value_type > > data;
+
+        // in order to convert global row/col index to local we need to know
+        // the row/col offsets for each processor.
+        const size_t row_offset =
+            static_cast<size_t>((static_cast<double>(matrix.getnrow()) /
+                    matrix.getcommgrid()->GetGridRows())) *
+                    matrix.getcommgrid()->GetRankInProcCol(rank);
+        const size_t col_offset =
+            static_cast<size_t>((static_cast<double>(ncols) /
+                    matrix.getcommgrid()->GetGridCols())) *
+                    matrix.getcommgrid()->GetRankInProcRow(rank);
+
+        // fill into sketch matrix
+        typename std::map<size_t, value_type>::const_iterator itr;
+        for(itr = vals_map.begin(); itr != vals_map.end(); itr++) {
+            index_type lrow = itr->first / ncols - row_offset;
+            index_type lcol = itr->first % ncols - col_offset;
+            value_type val  = itr->second;
+            data.push_back(make_tuple(lrow, lcol, val));
+        }
+
+        // this pointer will be freed in the destructor of col_t (see below).
+        //FIXME: verify with Valgrind
+        SpTuples<index_type, value_type> *tmp_tpl =
+            new SpTuples<index_type, value_type> (
+                data.size(), matrix.getlocalrows(), matrix.getlocalcols(),
+                &data[0]);
+
+        // create temporary matrix (no further communication should be
+        // required because all the data are local) and assign (deep copy).
+        col_t *sp_data = new col_t(*tmp_tpl, false);
+        matrix         = output_matrix_type(sp_data, matrix.getcommgrid());
     }
 
 

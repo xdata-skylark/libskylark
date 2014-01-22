@@ -1,32 +1,61 @@
 import numpy 
 import skylark
+from skylark import sketch
 from distances import euclidean
 import sys
 
-def gaussian(X, Xtest=None,sigma=1.0):
+class Gaussian(object):
   """
-  gaussian(X, Xtest=None,sigma=1.0)
-  
-  Returns dense Gram matrix for Gaussian Kernels evaluated over datapoints
-  
-  Parameters:
-  -------
-  X  : m-by-n data matrix where m is number of examples, n is number of features
-  Xt : Optional t x n matrix where t is number of test examples
-  sigma : bandwidth of the Gaussian kernel
-  
-  Returns:
-  -------
-  m x m Gram matrix over X (if Xt is not provided)
-  t x m Gram matrix between Xt and X if X is provided
+  A object representing the Gaussian kernel over d dimensional vectors, with
+  bandwidth sigma.
+
+  :param d: dimension of vectors on which kernel operates.
+  :param sigma: bandwidth of the kernel.
   """
+
+  def __init__(self, d, sigma):
+    self._d = d
+    self._sigma = sigma
+    
+  def gram(self, X, Xt=None):
+    """
+    Returns the dense Gram matrix evaluated over the datapoints.
   
-  if Xtest is None:
-    K = numpy.exp(-euclidean(X,X)/(2*sigma**2))
-  else:
-    K = numpy.exp(-euclidean(X, Xtest)/(2*sigma**2))
-                
-  return K
+    :param X:  n-by-d data matrix
+    :param Xt: optional t-by-d test matrix
+
+    Returns: 
+    -------
+    n-by-n Gram matrix over X (if Xt is not provided)
+    t-by-n Gram matrix between Xt and X if X is provided
+    """
+  
+    # TODO the test, and this function, should work for all matrix types.
+    if X.shape[1] != self._d:
+      raise ValueError("X must have vectors of dimension d")
+
+    sigma = self._sigma
+    if Xt is None:
+      K = numpy.exp(-euclidean(X, X)/(2*sigma**2))
+    else:
+      if Xt.shape[1] != self._d:
+        raise ValueError("Xt must have vectors of dimension d")
+      K = numpy.exp(-euclidean(X, Xt)/(2*sigma**2))
+      
+    return K
+  
+  def rft(self, s, defouttype=None):
+    """
+    Create a random features transform for the kernel.
+    This function uses random Fourier features (Rahimi-Recht).
+    
+    :param s: number of random features.
+    :param defouttype: default output type for the transform.
+    :returns: random features sketching transform object.
+    """
+    
+    return sketch.GaussianRFT(self._d, s, self._sigma, defouttype)
+
 
 
         

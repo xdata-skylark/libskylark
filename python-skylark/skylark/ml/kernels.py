@@ -1,6 +1,6 @@
 import numpy 
 import skylark
-from skylark import sketch
+from skylark import sketch, errors
 from distances import euclidean
 import sys
 
@@ -56,6 +56,64 @@ class Gaussian(object):
     
     return sketch.GaussianRFT(self._d, s, self._sigma, defouttype)
 
+class Polynomial(object):
+  """
+  A object representing the polynomial kernel over d dimensional vectors, with
+  bandwidth exponent q and parameter c.
 
+  :param d: dimension of vectors on which kernel operates.
+  :param q: exponent of the kernel.
+  :param c: kernel parameter, must be >= 0.
+  """
 
+  def __init__(self, d, q, c):
+    if c < 0:
+      raise ValueError("kernel paramter must be >= 0")
+    if type(q) is not int:
+      raise errors.InvalidParamterError("exponent must be integer")
+
+    self._d = d
+    self._q = q
+    self._c = c
+    
+  def gram(self, X, Xt=None):
+    """
+    Returns the dense Gram matrix evaluated over the datapoints.
+  
+    :param X:  n-by-d data matrix
+    :param Xt: optional t-by-d test matrix
+
+    Returns: 
+    -------
+    n-by-n Gram matrix over X (if Xt is not provided)
+    t-by-n Gram matrix between Xt and X if X is provided
+    """
+  
+    # TODO the test, and this function, should work for all matrix types.
+    if X.shape[1] != self._d:
+      raise ValueError("X must have vectors of dimension d")
+
+    if Xt is None:
+      n = X.shape[0]
+      K = numpy.power(numpy.dot(X, X.T) + self._c * numpy.ones((n,n)), self._q)
+    else:
+      if Xt.shape[1] != self._d:
+        raise ValueError("Xt must have vectors of dimension d")
+      n = X.shape[0]
+      t = Xt.shape[0]
+      K = numpy.power(numpy.dot(Xt, X.T) + self._c * numpy.ones((t,n)), self._q)
+      
+    return K
+  
+  def rft(self, s, defouttype=None):
+    """
+    Create a random features transform for the kernel.
+    This function uses TensorSketch (Pahm-Pagh Transform)
+    
+    :param s: number of random features.
+    :param defouttype: default output type for the transform.
+    :returns: random features sketching transform object.
+    """
+    
+    return sketch.PPT(self._d, s, self._q, self._c, defouttype)
         

@@ -45,7 +45,7 @@ def initialize(seed=-1):
       _KDT_INSTALLED  = _lib.sl_has_combblas()    
       
       csketches = map(eval, _lib.sl_supported_sketch_transforms().split())
-      pysketches = ["SJLT", "URST", "NURST"]
+      pysketches = ["SJLT", "PPT", "URST", "NURST"]
       SUPPORTED_SKETCH_TRANSFORMS = \
           csketches + [ (T, "Matrix", "Matrix") for T in pysketches]
     except:
@@ -53,7 +53,8 @@ def initialize(seed=-1):
       _lib = None
       _ELEM_INSTALLED = False
       _KDT_INSTALLED = False
-      sketches = ["JLT", "CT", "SJLT", "FJLT", "CWT", "MMT", "WZT", "GaussianRFT", "URST"]
+      sketches = ["JLT", "CT", "SJLT", "FJLT", "CWT", "MMT", "WZT", "GaussianRFT", 
+                  "PPT", "URST", "NURST"]
       SUPPORTED_SKETCH_TRANSFORMS = [ (T, "Matrix", "Matrix") for T in sketches]
 
     # TODO reload dll ?
@@ -786,6 +787,42 @@ class LaplacianRFT(_SketchTransform):
                 byref(sketch_transform), ctypes.c_double(sigma))
       self._obj = sketch_transform.value
 
+class PPT(_SketchTransform):
+  """
+  Pham-Pagh Transform - features sketching for the polynomial kernel.
+
+  Alternative class name: TensorSketch
+
+  :param n: Number of dimensions in input vectors.
+  :param s: Number of dimensions in output vectors.
+  :param defouttype: Default output type when using the * and / operators.
+
+  *N. Pham* and *R. Pagh*, **Fast and Scalable Polynomial Kernels via Explicit 
+  Feature Maps**, KDD 2013
+  """
+  def __init__(self, n, s, q, c, defouttype=None):
+    super(PPT, self)._baseinit("PPT", n, s, defouttype);
+    self._ppy = True
+    self._q = q
+    if c < 0:
+      raise ValueError("c parameter must be >= 0")
+    self._c = c
+    self._css = [CWT(n + (c > 0), s) for i in range(q)]
+
+  def _ppyapply(self, A, SA, dim):
+    if self._c != 0:
+      sc = sqrt(self._c)
+      if dim == 0:
+        A = numpy.concatenate((A, sc * numpy.ones((1, A.shape[1]))))
+      else:
+        A = numpy.concatenate((A, sc * numpy.ones((A.shape[0], 1))), 1)
+    
+    P = numpy.ones(SA.shape)
+    for i in range(self._q):
+      self._css[i].apply(A, SA, dim)
+      P = numpy.multiply(P, numpy.fft.fft(SA, axis=dim) / sqrt(s))
+    numpy.copyto(SA, numpy.fft.ifft(P, axis=dim).real * sqrt(s))
+      
 class URST(_SketchTransform):
   """
   Uniform Random Sampling Transform
@@ -841,5 +878,6 @@ SparseJLT = SJLT
 FastJLT = JLT
 CountSketch = CWT
 RRT = GaussianRFT
+TensorSketch = PPT
 UniformSampler = URST
 NonUniformSampler = NURST

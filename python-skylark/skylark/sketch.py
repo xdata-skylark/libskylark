@@ -818,6 +818,7 @@ class PPT(_SketchTransform):
         A = numpy.concatenate((A, sc * numpy.ones((A.shape[0], 1))), 1)
     
     P = numpy.ones(SA.shape)
+    s = self._s
     for i in range(self._q):
       self._css[i].apply(A, SA, dim)
       P = numpy.multiply(P, numpy.fft.fft(SA, axis=dim) / sqrt(s))

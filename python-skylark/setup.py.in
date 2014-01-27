@@ -6,7 +6,7 @@ setup(name='skylark',
       author='Skylark Team',
       author_email='vsindhw@us.ibm.com',
       url='http://www.skylark.org',
-      packages=['skylark', 'skylark.ml'],
+      packages=['skylark', 'skylark.nla', 'skylark.ml'],
       package_data={'skylark': ['datasets/*', 'examples/*']}, 
       package_dir = {'': '${CMAKE_CURRENT_SOURCE_DIR}'}
      )

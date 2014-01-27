@@ -2,6 +2,7 @@ import mpi4py.rc
 mpi4py.rc.finalize = False
 
 import numpy
+import scipy
 import elem
 from mpi4py import MPI
 
@@ -18,6 +19,8 @@ class IO_test(unittest.TestCase):
         elem.Uniform(self.ele_A, 10, 30)
 
         self.np_A = numpy.random.random((20, 65))
+
+        self.sp_A = scipy.sparse.rand(20, 65, density=0.2, format='csr')
 
     def tearDown(self):
         pass
@@ -37,27 +40,13 @@ class IO_test(unittest.TestCase):
         matrix_fpath = 'test_matrix.mtx'
         store = io.mtx(matrix_fpath)
 
-        store.write(self.np_A)
+        store.write(self.sp_A)
         B = store.read('combblas-sparse')
         C = store.read('scipy-sparse')
-        D = store.read('numpy-dense')
+        D = store.read('numpy-dense').reshape((20, 65))
 
-    def test_libsvm(self):
-        pass
-        #fpath = usps_path
-        ## read features matrix and labels vector
-        #try:
-            #store = libsvm(fpath)
-        #except ImportError:
-            #print 'Please provide the path to usps.t as an argument'
-            #import sys; sys.exit()
-        #features_matrix, labels_matrix = store.read()
-        #matrix_info = features_matrix.shape, features_matrix.nnz, labels_matrix.shape
-
-        ## stream features matrix and labels vector
-        #store = libsvm(fpath)
-        #for features_matrix, labels_matrix in store.stream(num_features=400, block_size=100):
-            #matrix_info = features_matrix.shape, features_matrix.nnz, labels_matrix.shape
+        self.assertTrue((self.sp_A.todense() - D < 1e-7).all())
+        self.assertTrue(((self.sp_A - C).todense() < 1e-7).all())
 
     def test_hdf5(self):
         fpath = 'test_matrix.h5'
@@ -99,6 +88,23 @@ class IO_test(unittest.TestCase):
         with self.assertRaises(Exception):
             B = store.read('elemental-dense')
             B = store.read('combblas-dense')
+
+    def test_libsvm(self):
+        pass
+        #fpath = usps_path
+        ## read features matrix and labels vector
+        #try:
+            #store = libsvm(fpath)
+        #except ImportError:
+            #print 'Please provide the path to usps.t as an argument'
+            #import sys; sys.exit()
+        #features_matrix, labels_matrix = store.read()
+        #matrix_info = features_matrix.shape, features_matrix.nnz, labels_matrix.shape
+
+        ## stream features matrix and labels vector
+        #store = libsvm(fpath)
+        #for features_matrix, labels_matrix in store.stream(num_features=400, block_size=100):
+            #matrix_info = features_matrix.shape, features_matrix.nnz, labels_matrix.shape
 
 if __name__ == '__main__':
     unittest.main()

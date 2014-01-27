@@ -37,7 +37,6 @@ Matrix types are identified with string identifiers that are self-explanatory:
 # them as skylark-specific exception objects.
 
 import re
-import sys
 import scipy.sparse
 import scipy.io
 import numpy
@@ -329,9 +328,7 @@ class mtx(object):
     def _read_scipy_sparse(self):
         A = scipy.io.mmread(self.fpath)
         rows, cols, entries, fmt, field, symm = scipy.io.mminfo(self.fpath)
-        if fmt == 'array':
-            A = scipy.sparse.csr_matrix(A)
-        return A
+        return scipy.sparse.csr_matrix(A)
 
 
     def _read_combblas_sparse(self):

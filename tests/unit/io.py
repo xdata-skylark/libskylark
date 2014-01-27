@@ -109,21 +109,15 @@ class IO_test(unittest.TestCase):
             B = store.read('combblas-dense')
 
     def test_libsvm(self):
-        pass
-        #fpath = usps_path
-        ## read features matrix and labels vector
-        #try:
-            #store = libsvm(fpath)
-        #except ImportError:
-            #print 'Please provide the path to usps.t as an argument'
-            #import sys; sys.exit()
-        #features_matrix, labels_matrix = store.read()
-        #matrix_info = features_matrix.shape, features_matrix.nnz, labels_matrix.shape
+        fpath = '../../python-skylark/skylark/datasets/usps.t'
+        store = io.libsvm(fpath)
+        features_matrix, labels_matrix = store.read()
+        matrix_info = features_matrix.shape, features_matrix.nnz, labels_matrix.shape
 
-        ## stream features matrix and labels vector
-        #store = libsvm(fpath)
-        #for features_matrix, labels_matrix in store.stream(num_features=400, block_size=100):
-            #matrix_info = features_matrix.shape, features_matrix.nnz, labels_matrix.shape
+        #FIXME: currently there is no way to test this in a sophisticated way.
+        #       For now just test matrix_info
+        self.assertEqual(matrix_info, ((2007, 257), 513792, (2007,)))
+
 
 if __name__ == '__main__':
     unittest.main()

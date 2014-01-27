@@ -43,10 +43,29 @@ class IO_test(unittest.TestCase):
         store.write(self.sp_A)
         B = store.read('combblas-sparse')
         C = store.read('scipy-sparse')
-        D = store.read('numpy-dense').reshape((20, 65))
+        D = store.read('numpy-dense')
+
+        # convert CombBLAS matrix to (coo) sparse matrix
+        col, row, data = B.toVec()
+        sp_cb = scipy.sparse.coo_matrix((data, (row, col)), shape=(20, 65))
+        self.assertTrue(((self.sp_A - sp_cb).todense() < 1e-7).all())
 
         self.assertTrue((self.sp_A.todense() - D < 1e-7).all())
         self.assertTrue(((self.sp_A - C).todense() < 1e-7).all())
+
+        #FIXME: throws exception
+        #store.write(B)
+        #B = store.read('combblas-sparse')
+        #C = store.read('scipy-sparse')
+        #D = store.read('numpy-dense')
+
+        ## convert CombBLAS matrix to (coo) sparse matrix
+        #col, row, data = B.toVec()
+        #sp_cb = scipy.sparse.coo_matrix((data, (row, col)), shape=(20, 65))
+        #self.assertTrue(((self.sp_A - sp_cb).todense() < 1e-7).all())
+
+        #self.assertTrue((self.sp_A.todense() - D < 1e-7).all())
+        #self.assertTrue(((self.sp_A - C).todense() < 1e-7).all())
 
     def test_hdf5(self):
         fpath = 'test_matrix.h5'
@@ -59,7 +78,7 @@ class IO_test(unittest.TestCase):
 
         self.compareMatrixNorm(C, self.np_A)
         self.compareMatrixNorm(D, self.np_A)
-        #FIXME: why??
+        #FIXME: why does this test fail?
         #self.compareMatrixNorm(C, B)
 
         store.write(self.ele_A)

@@ -795,17 +795,23 @@ class PPT(_SketchTransform):
 
   :param n: Number of dimensions in input vectors.
   :param s: Number of dimensions in output vectors.
+  :param q: degree of kernel
+  :param c: kernel parameter.
+  :param gamma: normalization coefficient.
   :param defouttype: Default output type when using the * and / operators.
 
   *N. Pham* and *R. Pagh*, **Fast and Scalable Polynomial Kernels via Explicit 
   Feature Maps**, KDD 2013
   """
-  def __init__(self, n, s, q, c, defouttype=None):
+  def __init__(self, n, s, q=3,  c=0, gamma=1, defouttype=None):
     super(PPT, self)._baseinit("PPT", n, s, defouttype);
-    self._ppy = True
-    self._q = q
+
     if c < 0:
       raise ValueError("c parameter must be >= 0")
+
+    self._ppy = True
+    self._q = q
+    self._gamma = gamma
     self._c = c
     self._css = [CWT(n + (c > 0), s) for i in range(q)]
 
@@ -820,7 +826,7 @@ class PPT(_SketchTransform):
     P = numpy.ones(SA.shape)
     s = self._s
     for i in range(self._q):
-      self._css[i].apply(A, SA, dim)
+      self._css[i].apply(sqrt(self._gamma) * A, SA, dim)
       P = numpy.multiply(P, numpy.fft.fft(SA, axis=dim) / sqrt(s))
     numpy.copyto(SA, numpy.fft.ifft(P, axis=dim).real * sqrt(s))
       

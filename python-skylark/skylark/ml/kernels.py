@@ -122,12 +122,14 @@ class Polynomial(object):
   A object representing the polynomial kernel over d dimensional vectors, with
   bandwidth exponent q and parameter c.
 
+  Kernel function is :math:`k(x,y)=(\\gamma x^T y + c)^q`.
+
   :param d: dimension of vectors on which kernel operates.
   :param q: exponent of the kernel.
   :param c: kernel parameter, must be >= 0.
   """
 
-  def __init__(self, d, q, c):
+  def __init__(self, d, q=3, c=0, gamma=1):
     if c < 0:
       raise ValueError("kernel paramter must be >= 0")
     if type(q) is not int:
@@ -136,6 +138,7 @@ class Polynomial(object):
     self._d = d
     self._q = q
     self._c = c
+    self._gamma = gamma
     
   def gram(self, X, Xt=None):
     """
@@ -179,5 +182,5 @@ class Polynomial(object):
     :returns: random features sketching transform object.
     """
     
-    return sketch.PPT(self._d, s, self._q, self._c, defouttype)
+    return sketch.PPT(self._d, s, self._q, self._c, self._gamma, defouttype)
         

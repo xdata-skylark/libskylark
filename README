@@ -1,10 +1,10 @@
- (c) IBM Corporation, 2013
- This program and the accompanying materials are made available 
- under the terms of the Eclipse Public License v1.0 which accompanies this distribution 
- and is available at http://www.eclipse.org/legal/epl-v10.html. 
+ (c) IBM Corporation, 2014
+ This program and the accompanying materials are made available
+ under the terms of the Apache License, Version 2.0 which is available at
+ http://www.apache.org/licenses/LICENSE-2.0.
 
- This is a distribution of SKYLARK: an open source software library for 
- distributed randomized numerical linear algebra with applications to 
+ This is a distribution of SKYLARK: an open source software library for
+ distributed randomized numerical linear algebra with applications to
  machine learning and statistical data analysis.
 
  Please see INSTALL for required dependencies and compile/installation

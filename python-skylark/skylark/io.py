@@ -253,12 +253,11 @@ class hdf5(object):
         size = comm.Get_size()
 
         # XXX currently gathers at root
-        #FIXME: root not defined
         root = 0
         height, width = A.Height, A.Width
         A_CIRC_CIRC = elem.DistMatrix_d_CIRC_CIRC(height, width)
         elem.Copy(A, A_CIRC_CIRC)
-        if root == 0:
+        if rank == root:
             A_numpy_dense = A_CIRC_CIRC.Matrix[:]
             self._write_numpy_dense(A_numpy_dense)
 
@@ -676,7 +675,15 @@ class txt(object):
         self.parallel = parallel
 
     def _read_numpy_dense(self):
-        A = numpy.loadtxt(self.fpath)
+        # A = numpy.loadtxt(self.fpath)
+        f = open('test_matrix.txt')
+        lines = filter(lambda x: x != '', 
+                       [line.strip() for line in f.readlines()])
+        f.close()
+        numbers = []
+        for line in lines:
+            numbers.append(map(float, line.split(' ')))
+        A = numpy.array(numbers)
         return A
 
     def read(self, matrix_type='numpy-dense'):
@@ -688,9 +695,6 @@ class txt(object):
         matrix_type : string, optional
          String identifier for the matrix object that is read in. One option
           * ``'numpy-dense'`` for array objects in numpy package (default).
-          * 'asasas'
-        hello : string
-         hi
         '''
         if matrix_type == 'numpy-dense':
             A = self._read_numpy_dense()
@@ -703,6 +707,7 @@ class txt(object):
 
     def _write_elemental_dense(self, A):
         elem.Write(A, '', self.fpath)
+        MPI.COMM_WORLD.barrier()
 
     def write(self, A):
         '''

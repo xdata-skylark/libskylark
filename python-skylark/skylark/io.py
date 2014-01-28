@@ -31,10 +31,17 @@ Matrix types are identified with string identifiers that are self-explanatory:
 
 '''
 
+
 # FIXME: IOError exceptions will be raised to indicate IO problems. Currently
 # we expect the user to handle such cases which is typically the norm when
 # issuing IO calls. Alternatively, we could catch them at this layer and throw
 # them as skylark-specific exception objects.
+class SkylarkIOTypeError(Exception):
+    pass
+
+import mpi4py.rc
+mpi4py.rc.finalize = False
+from mpi4py import MPI
 
 import re
 import scipy.sparse
@@ -42,7 +49,6 @@ import scipy.io
 import numpy
 import h5py
 import elem
-from mpi4py import MPI
 
 
 # TODO: Add support for parallel IO along the implementation show-cased in the
@@ -423,7 +429,7 @@ class mtx(object):
             if isinstance(A, kdt.Mat):
                 self._write_combblas_sparse(A)
             else:
-                raise Exception("Unknown matrix type")
+                raise SkylarkIOTypeError("Cannot handle write with matrix type " + str(type(A)))
 
 
 class libsvm(object):
@@ -689,7 +695,7 @@ class txt(object):
         if matrix_type == 'numpy-dense':
             A = self._read_numpy_dense()
         else:
-            raise Exception("Reader cannot handle " + matrix_type)
+            raise SkylarkIOTypeError("Cannot reader matrix of type " + matrix_type)
         return A
 
     def _write_numpy_dense(self, A):

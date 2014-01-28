@@ -1,20 +1,14 @@
-import mpi4py.rc
-mpi4py.rc.finalize = False
+import unittest
+
+from skylark import io
 
 import numpy
 import scipy
 import elem
-from mpi4py import MPI
-
-from skylark import io
-
-import unittest
 
 
 class IO_test(unittest.TestCase):
     def setUp(self):
-        self.comm = MPI.COMM_WORLD
-
         self.ele_A = elem.DistMatrix_d()
         elem.Uniform(self.ele_A, 10, 30)
 
@@ -104,12 +98,12 @@ class IO_test(unittest.TestCase):
         B = store.read('numpy-dense')
         self.assertTrue((self.np_A == B).all())
 
-        with self.assertRaises(Exception):
+        with self.assertRaises(io.SkylarkIOTypeError):
             B = store.read('elemental-dense')
             B = store.read('combblas-dense')
 
     def test_libsvm(self):
-        fpath = '../../python-skylark/skylark/datasets/usps.t'
+        fpath = '../../../python-skylark/skylark/datasets/usps.t'
         store = io.libsvm(fpath)
         features_matrix, labels_matrix = store.read()
         matrix_info = features_matrix.shape, features_matrix.nnz, labels_matrix.shape

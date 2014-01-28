@@ -36,6 +36,6 @@ foreach (TEST ${PY_TEST_LIST})
     string (REGEX REPLACE "([a-zA-Z]+).py" "\\1" NAME ${TEST})
 
     add_test(NAME ${NAME}
-        COMMAND mpirun -np 1 ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/${TEST}
+        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/${TEST}
     )
 endforeach (TEST)

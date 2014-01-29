@@ -219,6 +219,8 @@ class hdf5(object):
                 A = self._read_elemental_dense(distribution)
         elif matrix_type == 'numpy-dense':
             A = self._read_numpy_dense()
+        else:
+            raise SkylarkIOTypeError("Cannot read with matrix type " + matrix_type)
         return A
 
 
@@ -677,7 +679,7 @@ class txt(object):
     def _read_numpy_dense(self):
         # A = numpy.loadtxt(self.fpath)
         f = open('test_matrix.txt')
-        lines = filter(lambda x: x != '', 
+        lines = filter(lambda x: x != '',
                        [line.strip() for line in f.readlines()])
         f.close()
         numbers = []

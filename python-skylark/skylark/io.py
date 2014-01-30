@@ -629,6 +629,7 @@ class libsvm(object):
         
     def _parse(self, index, line):
         tokens = re.split(re.compile('[:\s]'), line.strip())
+        tokens = filter(lambda s : s is not '',  tokens)
         label = float(tokens[0])    
         features = map(int, tokens[1::2])
         values = map(float, tokens[2::2])

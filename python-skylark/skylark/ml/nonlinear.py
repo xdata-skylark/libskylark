@@ -46,7 +46,7 @@ class rls(object):
     self._model = {}
     self._kernel = kernel
     
-  def train(self, X, Y, regularization=1,  multiclass=True):
+  def train(self, X, Y, regularization=1,  multiclass=True, zerobased=False):
     """
     Train the model.
     
@@ -61,7 +61,8 @@ class rls(object):
     regularization: regularization parameter
 
     multiclass: is it a multiclass problem or not
-   
+
+    zerobased: for multiclass, whether the labels start with 0 or 1
     
     Returns
     --------
@@ -72,7 +73,7 @@ class rls(object):
     K = self._kernel.gram(X)
     I = numpy.identity(m)
     if multiclass:
-      Y = utils.dummycoding(Y)
+      Y = utils.dummycoding(Y, zerobased=zerobased)
       Y = 2*Y - 1
     A = K + regularization*I
     alpha = scipy.linalg.solve(A, Y, sym_pos=True)
@@ -80,7 +81,8 @@ class rls(object):
                   "alpha": alpha, 
                   "regularization": regularization, 
                   "data": X, 
-                  "multiclass":multiclass}
+                  "multiclass":multiclass,
+                  "zerobased":zerobased}
       
   def predict(self, Xt):
     """
@@ -98,9 +100,10 @@ class rls(object):
     """
     kernel = self._kernel
     K = kernel.gram(self.model["data"], Xt)
-    pred = K*self.model["alpha"]
+    pred = numpy.dot(K, self.model["alpha"])
     if self.model["multiclass"]:
-      pred = numpy.argmax(numpy.array(pred), axis=1)+1
+      pred = utils.dummydecode(pred, self.model["zerobased"])
+
     return pred
     
 class sketchrls(object):
@@ -150,7 +153,7 @@ class sketchrls(object):
     self._kernel = kernel				
 
   def train(self, X, Y, random_features=100, regularization=1, 
-            multiclass=True, subtype=None):
+            multiclass=True, zerobased=False, subtype=None):
     """
     Train the model.
     
@@ -166,9 +169,11 @@ class sketchrls(object):
 
     multiclass: is it a multiclass problem or not
 
-    random_features: number of random features to use.
+    zerobased: for multiclass, whether the labels start with 0 or 1
+
+    random_features: number of random features to use
     
-    subtype: subtype for random features sketching.
+    subtype: subtype for random features sketching
 
     Returns
     --------
@@ -181,7 +186,7 @@ class sketchrls(object):
     
     I = numpy.identity(random_features)
     if multiclass:
-      Y= utils.dummycoding(Y)
+      Y= utils.dummycoding(Y,zerobased=zerobased)
       Y = 2*Y - 1
       
     A = numpy.dot(Z.T, Z) + regularization*I
@@ -191,7 +196,8 @@ class sketchrls(object):
                   "weights": weights, 
                   "random_features": random_features,  
                   "regularization": regularization, 
-                  "multiclass":multiclass}
+                  "multiclass":multiclass,
+                  "zerobased":zerobased}
       
   def predict(self, Xt):
     """
@@ -208,7 +214,8 @@ class sketchrls(object):
     Zt = self._rft / Xt
     pred = numpy.dot(Zt, self.model["weights"])
     if self.model["multiclass"]:
-      pred = numpy.argmax(numpy.array(pred), axis=1)+1
+      pred = utils.dummydecode(pred, self.model["zerobased"])
+
     return pred
     
 class nystromrls(object):
@@ -218,7 +225,7 @@ class nystromrls(object):
     self._kernel = kernel
     
   def train(self,X, Y, random_features=100, regularization=1, bandwidth=1, 
-            probdist='uniform', multiclass=True):
+            probdist='uniform', multiclass=True,zerobased=False):
     """
     :param probdist: probability distribution of rows. Either 'uniform' or 'leverages'.
     :param l: number of Nystrom random samples to take
@@ -249,7 +256,7 @@ class nystromrls(object):
     U = (evecs*numpy.diagflat(1.0/numpy.sqrt(evals)))
     Z = Z*U
     if multiclass:
-      Y= utils.dummycoding(Y)
+      Y= utils.dummycoding(Y, zerobased=zerobased)
       Y = 2*Y - 1
       
     A = numpy.dot(Z.T, Z) + regularization*I
@@ -259,6 +266,7 @@ class nystromrls(object):
                   "random_features": random_features,  
                   "regularization": regularization, 
                   "multiclass":multiclass, 
+                  "zerobased":zerobased,
                   "SX":SX, 
                   "U":U }
     
@@ -275,9 +283,10 @@ class nystromrls(object):
     m x 1 array of predictions on the test set.
     """
     Zt = self._kernel.gram(self.model["SX"], Xt)*self.model["U"]
-    pred = Zt * self.model["weights"]
+    pred = numpy.dot(Zt, self.model["weights"])
     if self.model["multiclass"]:
-      pred = numpy.argmax(numpy.array(pred), axis=1)+1
+      pred = utils.dummydecode(pred, self.model["zerobased"])
+
     return pred
 
 
@@ -328,8 +337,8 @@ class sketchpcr(object):
     self.model = {}
     self._kernel = kernel				
 
-  def train(self, X, Y, rank, s=None, t=None, 
-            multiclass=True, subtype=None):
+  def train(self, X, Y, rank, s=None, t=None, samplesize=None, 
+            multiclass=True, zerobased=False, subtype=None):
     """
     Train the model.
     
@@ -347,7 +356,12 @@ class sketchpcr(object):
     
     t: Second parameter for sketching. Defaults to s * 2.
 
+    samplesize: If not None, then will sample this amount of examples
+                for X and use only them to produce the projection.
+
     multiclass: is it a multiclass problem or not
+
+    zerobased: for multiclass, whether the labels start with 0 or 1
 
     subtype: subtype for kernel sketching.
     
@@ -361,15 +375,26 @@ class sketchpcr(object):
       s = 2 * rank
     if t is None:
       t = 2 * s
+    
+    if samplesize is None:
+      Xs = X
+    else:
+      Xs = skylark.sketch.UniformSampler(X.shape[0], samplesize) * X
 
-    Z, S, R, V = lr.approximate_domsubspace_basis(X, rank, s, t, 
+    Z, S, R, V = lr.approximate_domsubspace_basis(Xs, rank, s, t, 
                                                   self._kernel, subtype)
         
     if multiclass:
-      Y= utils.dummycoding(Y)
+      Y= utils.dummycoding(Y, zerobased=zerobased)
       Y = 2*Y - 1
 
-    weights0 = numpy.dot(Z.T, Y)      
+    if samplesize is None:
+      # Z is the features and it is orthogonal.
+      weights0 = numpy.dot(Z.T, Y)      
+    else:
+      Z = numpy.dot(S / X, scipy.linalg.solve_triangular(R, V, lower=False))
+      weights0 = numpy.linalg.lstsq(Z, Y)[0]
+      
     weights = scipy.linalg.solve_triangular(R, numpy.dot(V, weights0), lower=False)
     
     self._rft = S
@@ -379,7 +404,8 @@ class sketchpcr(object):
                   "s": s,
                   "t": t,
                   "rank": rank,
-                  "multiclass":multiclass}
+                  "multiclass":multiclass,
+                  "zerobased":zerobased}
       
   def predict(self, Xt):
     """
@@ -396,5 +422,6 @@ class sketchpcr(object):
     Zt = self._rft / Xt
     pred = numpy.dot(Zt, self.model["weights"])
     if self.model["multiclass"]:
-      pred = numpy.argmax(numpy.array(pred), axis=1)+1
+      pred = utils.dummydecode(pred, self.model["zerobased"])
+
     return pred

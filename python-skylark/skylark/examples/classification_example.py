@@ -2,7 +2,7 @@
 from mpi4py import MPI
 import elem
 import skylark.io
-import skylark.cskylark as sketch
+import skylark.sketch as sketch
 import skylark.elemhelper
 import numpy as np
 import urllib
@@ -61,11 +61,11 @@ for i in range(rY.LocalHeight): rY.Matrix[i, Y.Matrix[i, 0]] = 1.0
 # the local matrices of X, Y and RY correspond to the same row.
 
 # Apply random feature transform
-R = sketch.GaussianRFT(d, D, SIGMA, intype="DistMatrix_VC_STAR", outtype="DistMatrix_VC_STAR")
+R = sketch.GaussianRFT(d, D, SIGMA)
 XR = R / X    # <-------- Apply on the rows
 
 # Reduce number of rows by sketching on the colums
-S = sketch.CWT(n, T, intype="DistMatrix_VC_STAR")
+S = sketch.CWT(n, T, defouttype="LocalMatrix")
 SXR = S * XR
 SY = S * rY
 

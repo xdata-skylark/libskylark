@@ -3,7 +3,7 @@ import numpy as np
 
 from mpi4py import MPI
 
-from skylark import cskylark
+from skylark import sketch
 
 from helper.test import test_helper
 from collections import namedtuple
@@ -14,13 +14,11 @@ _M = 10000
 _N = 100
 _R = 1000
 
-_INTYPE = "DistMatrix_VR_STAR"
+def construct_CT(n, s, C=1.0):
+    return sketch.CT(n, s, C)
 
-def construct_CT(n, s, C=1.0, intype=_INTYPE, outtype="LocalMatrix"):
-    return cskylark.CT(n, s, C, intype, outtype)
-
-def construct_WZT(n, s, C=2.0, intype=_INTYPE, outtype="LocalMatrix"):
-    return cskylark.WZT(n, s, C, intype, outtype)
+def construct_WZT(n, s, C=2.0):
+    return sketch.WZT(n, s, C)
 
 
 class SVD_test(unittest.TestCase):
@@ -30,14 +28,14 @@ class SVD_test(unittest.TestCase):
         # from system time (new seed each time).
         # To be clean, and have every test self contained, we reinitalize
         # Skylark with a new time based seed
-        cskylark.initialize()
+        sketch.initialize()
 
         #params
         self.num_repeats = 5
         self.accuracy    = 0.5
         _R = _N / self.accuracy**2
 
-        self.sketches = [cskylark.JLT, cskylark.FJLT, cskylark.CWT]
+        self.sketches = [sketch.JLT, sketch.FJLT, sketch.CWT]
 
     def tearDown(self):
         pass
@@ -106,7 +104,7 @@ class SVD_test(unittest.TestCase):
         elem.Uniform(A, _M, _N)
 
         #measures = [svd_bound] #.. add more measures to be computed in a test
-        #results  = test_helper(A, _M, _N, _R, cskylark.JLT, measures, MPI, direction="rowwise")
+        #results  = test_helper(A, _M, _N, _R, sketch.JLT, measures, MPI, direction="rowwise")
 
         #self.check_result(results)
 

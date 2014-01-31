@@ -41,8 +41,14 @@ struct WZT_data_t : public hash_transform_data_t<
         // a parameter. We also cannot just use the distribution as template.
         // The only solution I found is to let the base class generate the
         // numbers and then modify them to the correct distribution.
+        // We also need it to +/- with equal probability. This solves this as
+        // well.
+        utility::rademacher_distribution_t<ValueType> pmdist;
+        std::vector<ValueType> pmvals =
+            context.generate_random_samples_array(N, pmdist);
         for(int i = 0; i < N; i++)
-             Base::row_value[i] = pow(1.0 / Base::row_value[i], 1.0 / p);
+             Base::row_value[i] =
+                 pmvals[i] * pow(1.0 / Base::row_value[i], 1.0 / p);
 
    }
 

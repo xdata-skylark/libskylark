@@ -1,24 +1,41 @@
 import numpy, scipy, scipy.sparse
 
-def dummycoding(Y, K=-1):
-	"""
-	Y has discrete 1.to.K labels.
-	Returns an indicator sparse matrix 
-	K = -1 infers the number of classes from Y. K>0 uses K classes for the coding (asusming that in streaming or testing settings, not all classes may be represented in Y
-	"""
-	
-	Y = numpy.array(Y-1, dtype=int)
-	m = len(Y)
-	if K == -1:
-		n = max(Y)+1
-	else:
-		n = K
-		
-	data = numpy.ones(m)
-	col = Y.squeeze()
-	row = scipy.arange(m)
+def dummycoding(Y, K=None, zerobased=False):
+  """
+  Returns an indicator matrix that can be used for classification.
 
-	Y = scipy.sparse.csr_matrix( (data, (row, col)), shape = (m,n))
+  :param Y: discrete input labels, 1.to.K (or 0.to.K-1 if zerobased is True)
+  :param K: number of classes. Infers the number if None.
+  :param zerobased: whether labels are zero based on 1 based.
+  """
+
+  Y = numpy.array(Y, dtype=int)
+  if not zerobased:
+    Y = Y - 1
+  m = len(Y)
+  if K is None:
+    n = max(Y)+1
+  else:
+    n = K
+		
+  data = numpy.ones(m)
+  col = Y.squeeze()
+  row = scipy.arange(m)
+
+  Y = scipy.sparse.csr_matrix( (data, (row, col)), shape = (m,n))
 	
-	return Y.todense()
+  return Y.todense()
+
+
+def dummydecode(pred, zerobased=False):
+  """
+  Decode prediction on indicator matrix back to labels.
+
+  :param Y: predicitons, number of classes is number of columns.
+  :param zerobased: whether labels are zero based on 1 based.
+  """
+  pred = numpy.argmax(numpy.array(pred), axis=1)
+  if not zerobased:
+    pred = pred + 1
+  return pred
 

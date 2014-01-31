@@ -32,16 +32,16 @@ class CWT_t :
 public:
 
     // We use composition to defer calls to hash_transform_t
-    typedef _SL_HTBASE transform_type;
+    typedef _SL_HTBASE transform_t;
 
     typedef CWT_data_t<typename _SL_HTBASE::index_type,
-                       typename _SL_HTBASE::value_type> Base;
+                       typename _SL_HTBASE::value_type> base_t;
 
     /**
      * Regular constructor
      */
     CWT_t(int N, int S, context_t& context)
-        : Base(N, S, context), _transform(*this) {
+        : base_t(N, S, context), _transform(*this) {
 
     }
 
@@ -50,23 +50,32 @@ public:
      */
     template <typename OtherInputMatrixType,
               typename OtherOutputMatrixType>
-    CWT_t(CWT_t<OtherInputMatrixType,OtherOutputMatrixType>& other)
-        : Base(other), _transform(*this) {
+    CWT_t(const CWT_t<OtherInputMatrixType,OtherOutputMatrixType>& other)
+        : base_t(other), _transform(*this) {
 
     }
+
+    /**
+     * Constructor from data
+     */
+    CWT_t(const base_t& other)
+        : base_t(other), _transform(*this) {
+
+    }
+
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
      */
     template <typename Dimension>
-    void apply (const typename transform_type::matrix_type& A,
-                typename transform_type::output_matrix_type& sketch_of_A,
+    void apply (const typename transform_t::matrix_type& A,
+                typename transform_t::output_matrix_type& sketch_of_A,
                 Dimension dimension) const {
         _transform.apply(A, sketch_of_A, dimension);
     }
 
 private:
-    transform_type _transform;
+    transform_t _transform;
 };
 
 #undef _SL_HTBASE

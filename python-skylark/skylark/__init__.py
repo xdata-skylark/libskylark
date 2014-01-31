@@ -1,7 +1,6 @@
+# TODO I am not sure the following line should really be here, but without
+#      it Python just exits (complains of not initilizing MPI).
 import elem
-__all__ = ["io", "sketch", "cskylark", "ml", "streaming", \
-           "nla", "elemhelper", "errors"]
-DISTMAT = elem.DistMatrix_d_VR_STAR
-DISTMAT_STR = "DistMatrix_VR_STAR"
-SKETCHMAT_STR = "LocalMatrix"
+__all__ = ["io", "sketch", "ml", "streaming", "nla", "elemhelper", "errors"]
+
 

@@ -1,315 +1,427 @@
 import numpy, numpy.random, scipy.linalg, scipy.stats
-import kernels
 import utils
 from math import sqrt, cos, pi
 import skylark.io, skylark.metrics, skylark.sketch
+import skylark.nla.lowrank as lr
 import sys
 
 class rls(object):
-	"""
-	Class for solving Non-linear Regularized Least Squares problems using Gaussian Kernels.
-	
-	Examples
-	---------
-	
-	Read a digit classification dataset
-	
-	>>> X,Y = skylark.io.sparselibsvm2scipy('../datasets/usps.t')
-	
-	Set Regularization Parameter and Gaussian Kernel Bandwidth
-	
-	>>> regularization = 0.001
-	>>> bandwidth = 10.0
-	
-	Build a model on 1000 training examples
-	
-	>>> model = skylark.ml.nonlinear.rls()
-	>>> model.train(X[1:1000,:],Y[1:1000],regularization, bandwidth)	
-	
-	Make Predictions on 1000 test examples
-	
-	>>> predictions = model.predict(X[1001:2000,:])
-	
-	Compute classification accuracy
-	
-	>>> accuracy = skylark.metrics.classification_accuracy(predictions, Y[1001:2000])
-	>>> print "RLS Accuracy=%f%%" % accuracy
-	RLS Accuracy=92.792793%
-	
-	"""
-	def __init__(self):
-		self.model = {}
-		
-	def train(self,X,Y, regularization=1, bandwidth=1, multiclass=True):
-		"""
-		Train a Regularized Least Squares model with Gaussian Kernel
-		
-		train(self,X,Y, regularization=1, bandwidth=1, multiclass=True)
-		
-		Parameters
-        ----------
-        X: m x n input matrix
-        
-        Y: m x 1 label vector (if multi-class classification problem, labels are from 0 to K-1 - trains one-vs-rest)
-        
-        regularization: regularization parameter 
-        
-        bandwidth: Gaussian kernel bandwidth i.e., K(x,z) = exp(-||x-z||^2/(2bandwidth^2))
-        
-        Returns
-        --------
-        Nothing. Internally sets the model parameters.
-        
-		"""
-		m,n = X.shape
-		K = kernels.gaussian(X,None,sigma=bandwidth)
-		I = numpy.identity(m)
-		if multiclass:
-			Y = utils.dummycoding(Y)
-			Y = 2*Y - 1
-		A = K + regularization*I
-		alpha = scipy.linalg.solve(A, Y, sym_pos=True)
-		self.model = {"bandwidth": bandwidth, "alpha": alpha, "regularization": regularization, "data": X, "multiclass":multiclass}
-	
-	def predict(self, Xt):
-		"""
-		Make Predictions on test data
-		
-		predict(Xt)
-		
-		Parameters
-        ----------
-        Xt: m x n input test matrix
-        
-        Returns
-        -------
-        m x 1 array of predictions on the test set.
-		"""
-		K = kernels.gaussian(self.model["data"], Xt, self.model["bandwidth"])
-		pred = K*self.model["alpha"]
-		if self.model["multiclass"]:
-			pred = numpy.argmax(numpy.array(pred), axis=1)+1
-		return pred
+  """
+  Class for solving Non-linear Regularized Least Squares problems using
+  the provided kernel.
+  
+  Example
+  -------
+  
+  Read a digit classification dataset
+  
+  >>> X, Y = skylark.io.libsvm(sys.argv[1]).read()
+  
+  Set Regularization Parameter and Gaussian Kernel Bandwidth
+  
+  >>> regularization = 0.001
+  >>> bandwidth = 10.0
+  
+  Setup kernel:
+  
+  >>> import kernels
+  >>> kernel = kernels.gaussian(X.shape[1], bandwidth)
 
+  Build a model on 1000 training examples
+  
+  >>> model = skylark.ml.nonlinear.rls(kernel)
+  >>> model.train(X[1:1000,:], Y[1:1000], regularization)	
+	
+  Make Predictions on 1000 test examples
+  
+  >>> predictions = model.predict(X[1001:2000,:])
+  
+  Compute classification accuracy
+  
+  >>> accuracy = skylark.metrics.classification_accuracy(predictions, Y[1001:2000])
+  >>> print "RLS Accuracy=%f%%" % accuracy
+  RLS Accuracy=92.792793%
+  """
+  def __init__(self, kernel):
+    self._model = {}
+    self._kernel = kernel
+    
+  def train(self, X, Y, regularization=1,  multiclass=True, zerobased=False):
+    """
+    Train the model.
+    
+    
+    Parameters
+    ----------
+    X: m x n input matrix
+    
+    Y: m x 1 label vector (if multi-class classification problem, 
+       labels are from 0 to K-1 - trains one-vs-rest)
+    
+    regularization: regularization parameter
+
+    multiclass: is it a multiclass problem or not
+
+    zerobased: for multiclass, whether the labels start with 0 or 1
+    
+    Returns
+    --------
+    Nothing. Internally sets the model parameters.
+    
+    """
+    m,n = X.shape
+    K = self._kernel.gram(X)
+    I = numpy.identity(m)
+    if multiclass:
+      Y = utils.dummycoding(Y, zerobased=zerobased)
+      Y = 2*Y - 1
+    A = K + regularization*I
+    alpha = scipy.linalg.solve(A, Y, sym_pos=True)
+    self.model = {"kernel": self._kernel, 
+                  "alpha": alpha, 
+                  "regularization": regularization, 
+                  "data": X, 
+                  "multiclass":multiclass,
+                  "zerobased":zerobased}
+      
+  def predict(self, Xt):
+    """
+    Make Predictions on test data
+    
+    predict(Xt)
+    
+    Parameters
+    ----------
+    Xt: m x n input test matrix
+    
+    Returns
+    -------
+    m x 1 array of predictions on the test set.
+    """
+    kernel = self._kernel
+    K = kernel.gram(self.model["data"], Xt)
+    pred = numpy.dot(K, self.model["alpha"])
+    if self.model["multiclass"]:
+      pred = utils.dummydecode(pred, self.model["zerobased"])
+
+    return pred
+    
 class sketchrls(object):
-	"""
-	Class for sketching based Non-linear Regularized Least Squares problems using Gaussian Kernels.
-	
-	The approach is based on [7]_
-	
-	Generate Randomized Feature maps associated with the Gaussian Kernel
-            
-        
-        References
-        -------------
-        
-        .. [7] A. Rahimi and B. Recht, Random Features for Large-scale Kernel Machines, NIPS 2009
-	
-	Examples
-	---------
-	
-	Read a digit classification dataset
-	
-	>>> X,Y = skylark.read.sparselibsvm('../datasets/usps.t')
-	
-	Set Regularization Parameter and Gaussian Kernel Bandwidth
-	
-	>>> regularization = 0.001
-	>>> bandwidth = 10.0
-	
-	Set number of random features
-	
-	>>> random_features = 100
-	
-	Build a model on 1000 training examples
-	
-	>>> model = skylark.ml.nonlinear.sketchrls()
-	>>> model.train(X[1:1000,:],Y[1:1000],regularization, bandwidth, random_features)	
-	
-	Make Predictions on 1000 test examples
-	
-	>>> predictions = model.predict(X[1001:2000,:])
-	
-	Compute classification accuracy
-	
-	>>> accuracy = skylark.metrics.classification_accuracy(predictions, Y[1001:2000])
-	>>> print "SketchedRLS Accuracy=%f%%" % accuracy
-	SketchedRLS Accuracy=86.386386%
-	
-	"""
-	
-	def __init__(self, seed=123):
-		self.model = {}
-		self.seed = 123
-		
-		
-	def sketch(self, A):
-		"""
-		Implements the Rahimi-Recht sketch on a given matrix A
-		
-		"""
-		
-		m,n = A.shape
-		k = self.random_features
-		Z = self.mysketch.sketch(A,2)
-		Z = Z*(sqrt(k)/self.bandwidth)
-		b = self.bias
-		ones_m = numpy.matrix(numpy.ones((m,1)))
-		Z = sqrt(2.0/k) * numpy.cos(Z + ones_m*b.T) # note: numpy.cos works elementwise unlike math.cos
-		return Z
+  """
+  Class for sketching based (aka random features) Non-linear Regularized Least 
+  Squares problems,
+  
+  Example
+  -------
 
-		
-	def train(self,X,Y, regularization=1, bandwidth=1, random_features=100, multiclass=True):
-		"""
-		Train an RLS model with sketching primitives
-		
-		Parameters
-        ----------
-        X: m x n input matrix
-        
-        Y: m x 1 label vector (if multi-class classification problem, labels are from 0 to K-1 - trains one-vs-rest)
- 		
- 		regularization: regularization parameter 
-        
-        bandwidth: Gaussian kernel bandwidth i.e., K(x,z) = exp(-||x-z||^2/(2bandwidth^2))
-        
-        randomfeatures: how many random fourier features to generate
-        
-        Returns
-        --------
-        Nothing. Internally sets the model parameters.
-        
-		"""
-		m,n = X.shape
-		self.random_features = random_features
-		self.bandwidth = bandwidth
-		self.mysketch = skylark.sketch.JLT(n, random_features, self.seed)
-		self.bias = numpy.matrix(numpy.random.uniform(0, 2*pi, (random_features,1)))
-		Z = self.sketch(X)
-		
-		I = numpy.identity(random_features)
-		if multiclass:
-			Y= utils.dummycoding(Y)
-			Y = 2*Y - 1
-			
-		A = Z.T*Z + regularization*I
-		weights = scipy.linalg.solve(A, Z.T*Y, sym_pos=True)
-		self.model = {"bandwidth": bandwidth, "weights": weights, "random_features": random_features,  
-					"regularization": regularization, "multiclass":multiclass}
+  Read a digit classification dataset
+  
+  >>> X, Y = skylark.io.libsvm(sys.argv[1]).read()
+  
+  Set Regularization Parameter and Gaussian Kernel Bandwidth
+  
+  >>> regularization = 0.001
+  >>> bandwidth = 10.0
+  
+  Setup kernel:
+  
+  >>> import kernels
+  >>> kernel = kernels.gaussian(X.shape[1], bandwidth)
+  
+  Set number of random features
+  
+  >>> random_features = 100
 	
-	def predict(self, Xt):
-		"""
-		Make predictions on test data
-		
-		Parameters
-        ----------
-        Xt: m x n input test matrix
-        
-        Returns
-        -------
-        m x 1 array of predictions on the test set.
-		"""
-		Zt = self.sketch(Xt)
-		pred = Zt*self.model["weights"]
-		if self.model["multiclass"]:
-			pred = numpy.argmax(numpy.array(pred), axis=1)+1
-		return pred
+  Build a model on 1000 training examples
+  
+  >>> model = skylark.ml.nonlinear.sketchrls(kernel)
+  >>> model.train(X[1:1000,:], Y[1:1000], random_features, regularization)	
+  
+  Make Predictions on 1000 test examples
+  
+  >>> predictions = model.predict(X[1001:2000,:])
+  
+  Compute classification accuracy
+  
+  >>> accuracy = skylark.metrics.classification_accuracy(predictions, Y[1001:2000])
+  >>> print "SketchedRLS Accuracy=%f%%" % accuracy
+  SketchedRLS Accuracy=86.386386%
+  """
+  
+  def __init__(self, kernel):
+    self.model = {}
+    self._kernel = kernel				
 
+  def train(self, X, Y, random_features=100, regularization=1, 
+            multiclass=True, zerobased=False, subtype=None):
+    """
+    Train the model.
+    
+    
+    Parameters
+    ----------
+    X: m x n input matrix
+    
+    Y: m x 1 label vector (if multi-class classification problem, 
+       labels are from 0 to K-1 - trains one-vs-rest)
+    
+    regularization: regularization parameter
+
+    multiclass: is it a multiclass problem or not
+
+    zerobased: for multiclass, whether the labels start with 0 or 1
+
+    random_features: number of random features to use
+    
+    subtype: subtype for random features sketching
+
+    Returns
+    --------
+    Nothing. Internally sets the model parameters.
+    
+    """
+
+    self._rft = self._kernel.rft(random_features, subtype)
+    Z = self._rft / X
+    
+    I = numpy.identity(random_features)
+    if multiclass:
+      Y= utils.dummycoding(Y,zerobased=zerobased)
+      Y = 2*Y - 1
+      
+    A = numpy.dot(Z.T, Z) + regularization*I
+    weights = scipy.linalg.solve(A, numpy.dot(Z.T, Y), sym_pos=True)
+    self.model = {"kernel": self._kernel,
+                  "rft": self._rft,
+                  "weights": weights, 
+                  "random_features": random_features,  
+                  "regularization": regularization, 
+                  "multiclass":multiclass,
+                  "zerobased":zerobased}
+      
+  def predict(self, Xt):
+    """
+    Make predictions on test data
+    
+    Parameters
+    ----------
+    Xt: m x n input test matrix
+    
+    Returns
+    -------
+    m x 1 array of predictions on the test set.
+    """
+    Zt = self._rft / Xt
+    pred = numpy.dot(Zt, self.model["weights"])
+    if self.model["multiclass"]:
+      pred = utils.dummydecode(pred, self.model["zerobased"])
+
+    return pred
+    
 class nystromrls(object):
+      
+  def __init__(self, kernel):
+    self.model = {}
+    self._kernel = kernel
+    
+  def train(self,X, Y, random_features=100, regularization=1, bandwidth=1, 
+            probdist='uniform', multiclass=True,zerobased=False):
+    """
+    :param probdist: probability distribution of rows. Either 'uniform' or 'leverages'.
+    :param l: number of Nystrom random samples to take
+    :param k: rank-k approximation to the Gram matrix of the sampled data is used
+    """
+    m,n = X.shape
+    nz_values = range(0, m)
+    
+    #uniform
+    if probdist == 'uniform':
+      nz_prob_dist = numpy.ones((m,1))/m
+    elif probdist ==  'leverages':
+      # TODO the following is probably not correct as leverages are define w.r. 
+      #      to rank.
+      K = self._kernel.gram(X)
+      Im = numpy.identity(m)
+      nz_prob_dist = numpy.diag(K*scipy.linalg.inv(K+regularization*Im))
+      nz_prob_dist = nz_prob_dist/sum(nz_prob_dist)
+    else:
+      raise skylark.errors.InvalidParamterError("Unknown probability distribution strategy")
+
+    SX = skylark.sketch.NonUniformSampler(m, random_features, nz_prob_dist) * X
+    K_II = self._kernel.gram(SX)
+    I = numpy.identity(random_features)
+    eps = 1e-8
+    (evals, evecs) = scipy.linalg.eigh(K_II + eps*I)
+    Z = self._kernel.gram(SX, X)
+    U = (evecs*numpy.diagflat(1.0/numpy.sqrt(evals)))
+    Z = Z*U
+    if multiclass:
+      Y= utils.dummycoding(Y, zerobased=zerobased)
+      Y = 2*Y - 1
+      
+    A = numpy.dot(Z.T, Z) + regularization*I
+    weights = scipy.linalg.solve(A, numpy.dot(Z.T, Y), sym_pos=True)
+    self.model = {"kernel": self._kernel, 
+                  "weights": weights, 
+                  "random_features": random_features,  
+                  "regularization": regularization, 
+                  "multiclass":multiclass, 
+                  "zerobased":zerobased,
+                  "SX":SX, 
+                  "U":U }
+    
+  def predict(self, Xt):
+    """
+    Make predictions on test data
+    
+    Parameters
+    ----------
+    Xt: m x n input test matrix
+    
+    Returns
+    -------
+    m x 1 array of predictions on the test set.
+    """
+    Zt = self._kernel.gram(self.model["SX"], Xt)*self.model["U"]
+    pred = numpy.dot(Zt, self.model["weights"])
+    if self.model["multiclass"]:
+      pred = utils.dummydecode(pred, self.model["zerobased"])
+
+    return pred
+
+
+class sketchpcr(object):
+  """
+  Class for sketching based (aka random features) Non-linear Principal
+  Component Regression
+  
+  Example
+  -------
+
+  Read a digit classification dataset
+  
+  >>> X, Y = skylark.io.libsvm(sys.argv[1]).read()
+  
+  Set Regularization Parameter and Gaussian Kernel Bandwidth
+  
+  >>> bandwidth = 10.0
+  
+  Setup kernel:
+  
+  >>> import kernels
+  >>> kernel = kernels.gaussian(X.shape[1], bandwidth)
+  
+  Set number of random features
+  
+  >>> rank = 100
+  >>> s = 200
+  >>> t = 400
 	
-	def __init__(self, seed=123):
-		self.model = {}
-		self.seed = 123
-		
-	def train(self,X,Y, regularization=1, bandwidth=1, random_features=100, probdist = 'uniform', multiclass=True):
-		"""
-		type = 'uniform' | 'leverages' | 'fourier_leverages'
-		l: number of Nystrom random samples to take
-		k: rank-k approximation to the Gram matrix of the sampled data is used
-		"""
-		m,n = X.shape
-		
-		nz_values = range(0, m)
-		
-		#uniform
-		if probdist == 'uniform':
-			nz_prob_dist = numpy.ones((m,1))/m
-		if probdist ==  'leverages':
-			K = kernels.gaussian(X,None,sigma=bandwidth)
-			Im = numpy.identity(m)
-			nz_prob_dist = numpy.diag(K*scipy.linalg.inv(K+regularization*Im))
-			nz_prob_dist = nz_prob_dist/sum(nz_prob_dist)
-		indices = scipy.stats.rv_discrete(values=(nz_values, nz_prob_dist), name = 'uniform').rvs(size=random_features)
-		K_II = kernels.gaussian(X[indices, :], None, sigma = bandwidth)
-		I = numpy.identity(random_features)
-		eps = 1e-8
-		(evals, evecs) = scipy.linalg.eigh(K_II + eps*I)
-		Xtrain = X[indices, :]
-		Z  =  kernels.gaussian(Xtrain, X, sigma = bandwidth)
-		U = (evecs*numpy.diagflat(1.0/numpy.sqrt(evals)))
-		Z = Z*U
-		if multiclass:
-			Y= utils.dummycoding(Y)
-			Y = 2*Y - 1
-			
-		A = Z.T*Z + regularization*I
-		weights = scipy.linalg.solve(A, Z.T*Y, sym_pos=True)
-		self.model = {"bandwidth": bandwidth, "weights": weights, "random_features": random_features,  
-					"regularization": regularization, "multiclass":multiclass, "Xtrain":Xtrain, "U":U }
-	
-	def predict(self, Xt):
-		"""
-		Make predictions on test data
-		
-		Parameters
-        ----------
-        Xt: m x n input test matrix
+  Build a model on 1000 training examples
+  
+  >>> model = skylark.ml.nonlinear.sketchpcr(kernel)
+  >>> model.train(X[1:1000,:], Y[1:1000], rank)	
+  
+  Make Predictions on 1000 test examples
+  
+  >>> predictions = model.predict(X[1001:2000,:])
+  
+  Compute classification accuracy
+  
+  >>> accuracy = skylark.metrics.classification_accuracy(predictions, Y[1001:2000])
+  >>> print "SketchedPCR Accuracy=%f%%" % accuracy
+  SketchedRLS Accuracy=86.386386%
+  """
+  
+  def __init__(self, kernel):
+    self.model = {}
+    self._kernel = kernel				
+
+  def train(self, X, Y, rank, s=None, t=None, samplesize=None, 
+            multiclass=True, zerobased=False, subtype=None):
+    """
+    Train the model.
+    
+    
+    Parameters
+    ----------
+    X: m x n input matrix
+    
+    Y: m x 1 label vector (if multi-class classification problem, 
+       labels are from 0 to K-1 - trains one-vs-rest)
+    
+    rank: number of principal components to use.
+
+    s: First parameter for sketching. Defaults to rank * 2.
+    
+    t: Second parameter for sketching. Defaults to s * 2.
+
+    samplesize: If not None, then will sample this amount of examples
+                for X and use only them to produce the projection.
+
+    multiclass: is it a multiclass problem or not
+
+    zerobased: for multiclass, whether the labels start with 0 or 1
+
+    subtype: subtype for kernel sketching.
+    
+    Returns
+    --------
+    Nothing. Internally sets the model parameters.
+    
+    """
+
+    if s is None:
+      s = 2 * rank
+    if t is None:
+      t = 2 * s
+    
+    if samplesize is None:
+      Xs = X
+    else:
+      Xs = skylark.sketch.UniformSampler(X.shape[0], samplesize) * X
+
+    Z, S, R, V = lr.approximate_domsubspace_basis(Xs, rank, s, t, 
+                                                  self._kernel, subtype)
         
-        Returns
-        -------
-        m x 1 array of predictions on the test set.
-		"""
-		Zt =  kernels.gaussian(self.model["Xtrain"], Xt, sigma = self.model["bandwidth"])*self.model["U"]
-		pred = Zt*self.model["weights"]
-		if self.model["multiclass"]:
-			pred = numpy.argmax(numpy.array(pred), axis=1)+1
-		return pred
+    if multiclass:
+      Y= utils.dummycoding(Y, zerobased=zerobased)
+      Y = 2*Y - 1
 
+    if samplesize is None:
+      # Z is the features and it is orthogonal.
+      weights0 = numpy.dot(Z.T, Y)      
+    else:
+      Z = numpy.dot(S / X, scipy.linalg.solve_triangular(R, V, lower=False))
+      weights0 = numpy.linalg.lstsq(Z, Y)[0]
+      
+    weights = scipy.linalg.solve_triangular(R, numpy.dot(V, weights0), lower=False)
+    
+    self._rft = S
+    self.model = {"kernel": self._kernel,
+                  "rft": self._rft,
+                  "weights": weights, 
+                  "s": s,
+                  "t": t,
+                  "rank": rank,
+                  "multiclass":multiclass,
+                  "zerobased":zerobased}
+      
+  def predict(self, Xt):
+    """
+    Make predictions on test data
+    
+    Parameters
+    ----------
+    Xt: m x n input test matrix
+    
+    Returns
+    -------
+    m x 1 array of predictions on the test set.
+    """
+    Zt = self._rft / Xt
+    pred = numpy.dot(Zt, self.model["weights"])
+    if self.model["multiclass"]:
+      pred = utils.dummydecode(pred, self.model["zerobased"])
 
-if __name__=="__main__":
-	X,Y = skylark.io.sparselibsvm2scipy(sys.argv[1])
-	regularization= float(sys.argv[2])
-	bandwidth = float(sys.argv[3])
-	randomfeatures = int(sys.argv[4])
-	trn = int(sys.argv[5])
-	
-	model = rls()
-	print len(Y[1:trn]), len(Y[trn+1:])
-	
-	model.train(X[1:trn,:],Y[1:trn],regularization,bandwidth)	
-	predictions = model.predict(X[trn+1:,:])
-	accuracy = skylark.metrics.classification_accuracy(predictions, Y[trn+1:])
-	print "RLS Accuracy=%f%%" % accuracy
-	
-	model = sketchrls()
-	
-	model.train(X[1:trn,:],Y[1:trn],regularization,bandwidth,randomfeatures)	
-	predictions = model.predict(X[trn+1:,:])
-	accuracy = skylark.metrics.classification_accuracy(predictions, Y[trn+1:])
-	print "SketchedRLS Accuracy=%f%%" % accuracy
-	
-	model = nystromrls()
-	model.train(X[1:trn,:],Y[1:trn],regularization,bandwidth,randomfeatures, probdist = 'uniform')
-	predictions = model.predict(X[trn+1:,:])
-	accuracy = skylark.metrics.classification_accuracy(predictions, Y[trn+1:])
-	print "Nystrom uniform Accuracy=%f%%" % accuracy
-	
-	
-	model = nystromrls()
-	model.train(X[1:trn,:],Y[1:trn],regularization,bandwidth,randomfeatures, probdist = 'leverages')
-	predictions = model.predict(X[trn+1:,:])
-	accuracy = skylark.metrics.classification_accuracy(predictions, Y[trn+1:])
-	print "Nystrom leverages Accuracy=%f%%" % accuracy
-	
-	
-	
+    return pred

@@ -40,7 +40,7 @@ struct dense_transform_t <
     /**
      * Copy constructor
      */
-    dense_transform_t (dense_transform_t<matrix_type,
+    dense_transform_t (const dense_transform_t<matrix_type,
                                          output_matrix_type,
                                          ValueDistribution>& other)
         : base_data_t(other.get_data()) {}
@@ -85,7 +85,7 @@ private:
                 S.Set(i, j, base_data_t::scale * sample);
             }
         }
-        // Do the multiplication
+
         elem::Gemm (elem::NORMAL,
                     elem::NORMAL,
                     1.0,
@@ -111,19 +111,17 @@ private:
                 S.Set(i, j, base_data_t::scale * sample);
             }
         }
-        // Do the multiplication
+
         elem::Gemm (elem::NORMAL,
                     elem::TRANSPOSE,
                     1.0,
-                    S,
                     A,
+                    S,
                     0.0,
                     sketch_of_A);
     }
 
 };
-
-
 
 /**
  * Specialization distributed input, local output, for [SOMETHING, *]
@@ -227,7 +225,7 @@ private:
             // adapt size of local portion (can be less than slice_width)
             S_local.ResizeTo(base_data_t::S, je-js);
             for(int j = js; j < je; j++) {
-                int col = A.RowShift() + A.RowStride() * j;
+                int col = A.ColShift() + A.ColStride() * j;
                 for (int i = 0; i < base_data_t::S; i++) {
                     value_type sample =
                         base_data_t::random_samples[col * base_data_t::S + i];
@@ -432,7 +430,7 @@ private:
                 elem::NORMAL,
                 1.0,
                 S_part,
-                A_STAR_ColDist.Matrix(),
+                A_STAR_ColDist.LockedMatrix(),
                 0.0,
                 sketch_slice);
             S_num_rows_consumed += S_part_height;
@@ -606,7 +604,7 @@ private:
                 elem::NORMAL,
                 1.0,
                 S_part,
-                A.Matrix(),
+                A.LockedMatrix(),
                 0.0,
                 sketch_slice);
             S_num_rows_consumed += S_part_height;
@@ -676,8 +674,6 @@ private:
     }
 
 };
-
-
 
 /**
  * Specialization distributed input and output in [*, SOMETHING]
@@ -805,7 +801,7 @@ private:
                 elem::NORMAL,
                 1.0,
                 S_part,
-                A.Matrix(),
+                A.LockedMatrix(),
                 0.0,
                 sketch_slice);
             S_num_rows_consumed += S_part_height;
@@ -1035,7 +1031,9 @@ struct dense_transform_t <
      * Regular constructor
      */
     dense_transform_t (int N, int S, skylark::sketch::context_t& context)
-        : base_data_t (N, S, context) {}
+        : base_data_t (N, S, context) {
+
+    }
 
     /**
      * Copy constructor
@@ -1043,14 +1041,17 @@ struct dense_transform_t <
     dense_transform_t (dense_transform_t<matrix_type,
                                          output_matrix_type,
                                          ValueDistribution>& other)
-        : base_data_t(other.get_data()) {}
+        : base_data_t(other.get_data()) {
+
+    }
 
     /**
      * Constructor from data
      */
-    dense_transform_t(const dense_transform_data_t<value_type,
-                                            ValueDistribution>& other_data)
-        : base_data_t(other_data.get_data()) {}
+    dense_transform_t(const base_data_t& other_data)
+        : base_data_t(other_data.get_data()) {
+
+    }
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.

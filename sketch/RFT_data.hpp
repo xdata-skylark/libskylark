@@ -10,34 +10,40 @@
 
 namespace skylark { namespace sketch {
 
+
 /**
- * This is the base data class for RFT. Essentially, it
- * holds the input and sketched matrix sizes, the vector of shifts
- * and the data of the underlying transform.
+ * Random Features Transform (data)
+ *
+ * Sketch transform into Eucledian space of fuctions in an RKHS
+ * implicitly defined by a vector and a kernel.
+ * See:
+ * Ali Rahimi and Benjamin Recht
+ * Random Features for Large-Scale Kernel Machines
+ * NIPS 2007.
+ *
+ * FIXME control of kernel parameter is not done correctly
  */
 template <typename ValueType,
-          template <typename> class UnderlyingValueDistribution>
+          template <typename> class KernelDistribution>
 struct RFT_data_t {
-    // Typedef value, distribution and data types so that we can use them
-    // regularly and consistently
+
     typedef ValueType value_type;
-    typedef boost::random::uniform_real_distribution<> value_distribution_type;
     typedef skylark::sketch::dense_transform_data_t<value_type,
-                                                    UnderlyingValueDistribution>
+                                                    KernelDistribution>
     underlying_data_type;
 
     /**
      * Regular constructor
      */
-    RFT_data_t (int N, int S, double sigma, skylark::sketch::context_t& context)
+    RFT_data_t (int N, int S, value_type sigma,
+                skylark::sketch::context_t& context)
         : N(N), S(S), sigma(sigma), context(context),
           underlying_data(N, S, context),
           scale(std::sqrt(2.0 / S)) {
-        const double pi = boost::math::constants::pi<double>();
-        value_distribution_type distribution(0, 2 * pi);
-        shifts = context.generate_random_samples_array<double,
-                                                       value_distribution_type>
-            (S, distribution);
+        const double pi = boost::math::constants::pi<value_type>();
+        boost::random::uniform_real_distribution<value_type>
+            distribution(0, 2 * pi);
+        shifts = context.generate_random_samples_array(S, distribution);
     }
 
 
@@ -49,12 +55,47 @@ struct RFT_data_t {
 protected:
     const int N; /**< Input dimension  */
     const int S; /**< Output dimension  */
-    const double sigma; /**< Bandwidth (sigma)  */
+    const value_type sigma; /**< Bandwidth (sigma)  */
     skylark::sketch::context_t& context; /**< Context for this sketch */
     const underlying_data_type underlying_data;
     /**< Data of the underlying dense transformation */
-    const double scale; /** Scaling for trigonometric factor */
-    std::vector<double> shifts; /** Shifts for scaled trigonometric factor */
+    const value_type scale; /** Scaling for trigonometric factor */
+    std::vector<value_type> shifts; /** Shifts for scaled trigonometric factor */
+};
+
+template<typename ValueType>
+struct GaussianRFT_data_t :
+        public RFT_data_t<ValueType, bstrand::normal_distribution> {
+
+    typedef RFT_data_t<ValueType, bstrand::normal_distribution > base_t;
+
+    /**
+     * Constructor
+     * Most of the work is done by base. Here just write scale
+     */
+    GaussianRFT_data_t(int N, int S, typename base_t::value_type sigma,
+        skylark::sketch::context_t& context)
+        : base_t(N, S, sigma, context) {
+
+    }
+
+};
+
+template<typename ValueType>
+struct LaplacianRFT_data_t :
+        public RFT_data_t<ValueType, bstrand::cauchy_distribution> {
+
+    typedef RFT_data_t<ValueType, bstrand::cauchy_distribution > base_t;
+
+    /**
+     * Constructor
+     */
+    LaplacianRFT_data_t(int N, int S, typename base_t::value_type sigma,
+        skylark::sketch::context_t& context)
+        : base_t(N, S, sigma, context) {
+
+    }
+
 };
 
 } } /** namespace skylark::sketch */

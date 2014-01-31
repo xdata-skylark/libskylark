@@ -1,0 +1,1 @@
+g++ -o train train.cpp -lelemental -lboost_mpi -lboost_program_options -L/home/vikas/research/software/fftw-3.3.3/install/lib -lmpich -lfftw3

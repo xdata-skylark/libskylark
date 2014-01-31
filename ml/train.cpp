@@ -1,25 +1,26 @@
 #include <elemental.hpp>
+#include <skylark.hpp>
 #include <fstream>
 #include <iostream>
-#include <vector>
 #include <sstream>
 #include <cstdlib>
 #include <string>
 #include <boost/mpi.hpp>
-#include "../sketch/context.hpp"
+#include <boost/program_options.hpp>
+#include "hilbert.hpp"
 
 namespace bmpi =  boost::mpi;
+namespace po = boost::program_options;
 using namespace std;
 
 typedef skylark::sketch::context_t skylark_context_t;
-typedef elem::DistMatrix<float, elem::distribution_wrapper::VC, elem::distribution_wrapper::STAR> DistInputMatrixType;
-typedef elem::DistMatrix<float, elem::distribution_wrapper::CIRC, elem::distribution_wrapper::CIRC> DistCircMatrixType;
+typedef elem::DistMatrix<double, elem::VC, elem::STAR> DistInputMatrixType;
+typedef elem::DistMatrix<double, elem::CIRC, elem::CIRC> DistCircMatrixType;
 
-void print_vector(vector<float> x) {
-	for( std::vector<float>::const_iterator i = x.begin(); i != x.end(); ++i)
-	    cout << *i << " ";
-}
 void read_libsvm_dense(skylark_context_t& context, string fName, DistInputMatrixType& X, DistInputMatrixType& Y) {
+	if (context.rank==0)
+			cout << "Reading from file " << fName << endl;
+
 	ifstream file(fName.c_str());
 	string line;
 	string token, val, ind;
@@ -30,6 +31,8 @@ void read_libsvm_dense(skylark_context_t& context, string fName, DistInputMatrix
 	int d = 0;
 	int i, j, last;
 	char c;
+
+	bmpi::timer timer;
 
 
 	// make one pass over the data to figure out dimensions - will pay in terms of preallocated storage.
@@ -56,8 +59,8 @@ void read_libsvm_dense(skylark_context_t& context, string fName, DistInputMatrix
 	y.SetRoot(0);
 
 	if(context.rank==0) {
-		float *Xdata = x.Matrix().Buffer();
-		float *Ydata = y.Matrix().Buffer();
+		double *Xdata = x.Matrix().Buffer();
+		double *Ydata = y.Matrix().Buffer();
 
 		// second pass
 		file.clear();
@@ -72,32 +75,42 @@ void read_libsvm_dense(skylark_context_t& context, string fName, DistInputMatrix
 			istringstream tokenstream (line);
 			tokenstream >> label;
 			Ydata[i] = label;
+
 			while (tokenstream >> token)
 			 {
 				delim  = token.find(':');
 				ind = token.substr(0, delim);
 				val = token.substr(delim+1); //.substr(delim+1);
 				j = atoi(ind.c_str()) - 1;
-				Xdata[d*i + j] = atof(val.c_str());
+				Xdata[n*j + i] = atof(val.c_str());
 			 }
 		}
 	}
 
 	// The calls below should distribute the data to all the nodes.
-	cout << "Distributing Data.." << endl;
+	if (context.rank==0)
+		cout << "Distributing Data.." << endl;
 
 	X = x;
 	Y = y;
 
-	cout << "Read Matrix with dimensions: " << n << " by " << d << endl;
+	double readtime = timer.elapsed();
+	if (context.rank==0)
+		cout << "Read Matrix with dimensions: " << n << " by " << d << " (" << readtime << "secs)" << endl;
 }
 
 int main (int argc, char** argv) {
 	/* Initialize MPI */
+
+	  hilbert_options_t options (argc, argv);
+	  if (options.exit_on_return) { return -1; }
+	  options.print();
+
 	  bmpi::environment env (argc, argv);
 
 	/* Create a global communicator */
 	  bmpi::communicator world;
+
 
 	 skylark::sketch::context_t context (12345, world);
 
@@ -107,9 +120,48 @@ int main (int argc, char** argv) {
 
 	 DistInputMatrixType X, Y;
 
-	 read_libsvm_dense(context, string(argv[1]), X, Y);
+	 read_libsvm_dense(context, options.trainfile, X, Y);
+
+	 lossfunction *loss = NULL;
+	 switch(options.lossfunction) {
+	 	 case SQUARED:
+	 		 loss = new squaredloss();
+	 		 break;
+	 }
+
+	 regularization *regularizer = NULL;
+	 switch(options.regularizer) {
+	 	 case L2:
+	 		 regularizer = new l2();
+	 		 break;
+	 }
+
+	 FeatureTransform *featureMap = NULL;
+	 switch(options.kernel) {
+	 	 case LINEAR:
+	 		 featureMap = new Identity();
+	 		 options.randomfeatures = X.Width();
+	 		 break;
+	 }
+
+
+	 BlockADMMSolver *Solver = new BlockADMMSolver(
+			 	 	 loss,
+	 				 regularizer,
+	 				 featureMap,
+	 				 options.lambda,
+	 				 options.randomfeatures,
+	 				 options.numfeaturepartitions,
+	 				 options.numthreads,
+	 				 options.tolerance,
+	 				 options.MAXITER,
+	 				 options.rho);
+
+	 elem::Matrix<double> Wbar(options.randomfeatures, 1);
+	 Solver->train(context, X,Y,Wbar);
 
 	 cout << " Rank " << context.rank << " owns : " << X.LocalHeight() <<  " x " << X.LocalWidth() << endl;
 
+	 elem::Finalize();
 	 return 0;
 }

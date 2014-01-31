@@ -13,9 +13,6 @@
 #include "BlockADMM.hpp"
 #include "options.hpp"
 
-enum LossType {SQUARED, LAD, HINGE, LOGISTIC};
-enum RegularizerType {L2, L1};
-enum ProblemType {REGRESSION, CLASSIFICATION};
-enum KernelType {RBF};
+
 
 #endif /* HILBERT_HPP_ */

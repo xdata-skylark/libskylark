@@ -290,8 +290,8 @@ class KernelMachine(object):
 			
 			for j in range(0, N):
 				start = int(math.floor(numpy.round(j*D*1.0/N)))
-				finish = int(math.floor(numpy.round((j+1)*D*1.0/N)))
-	                        JJ = range(start, finish)
+				finish = int(math.floor(numpy.round((j+1)*D*1.0/N))) - 1
+	            JJ = range(start, finish)
 				Dj = len(JJ)
 
 				Z = self.TransformOperator.map(X.Matrix, JJ)
@@ -321,7 +321,7 @@ class KernelMachine(object):
 			o = numpy.zeros((ni, k));
 			for j in range(0,N):
 				start = int(math.floor(numpy.round(j*D*1.0/N)))
-                                finish = int(math.floor(numpy.round((j+1)*D*1.0/N)))
+                                finish = int(math.floor(numpy.round((j+1)*D*1.0/N))) - 1
                                 JJ = range(start, finish)
                                 Dj = len(JJ)
 				Z = self.TransformOperator.map(X.Matrix, JJ)

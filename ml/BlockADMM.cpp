@@ -4,28 +4,25 @@
  *  Created on: Jan 12, 2014
  *      Author: vikas
  */
-
+#include <iostream>
 #include <elemental.hpp>
-#include "../sketch/context.hpp"
 #include "BlockADMM.hpp"
 
-namespace mpi boost::mpi;
-
-typedef elem::DistMatrix<double, elem::distribution_wrapper::VC, elem::distribution_wrapper::STAR> DistMatrixType;
+typedef elem::DistMatrix<double, elem::VC, elem::STAR> DistMatrixType;
 typedef elem::Matrix<double> LocalMatrixType;
 
 BlockADMMSolver::BlockADMMSolver(const lossfunction* loss,
 		const regularization* regularizer,
-		const FeatureTransform& featureMap,
+		const FeatureTransform* featureMap,
 		int NumFeaturePartitions,
 		int NumThreads,
 		double TOL,
 		int MAXITER,
 		double RHO) {
 
-		this->loss = loss;
-		this->regularizer = regularizer;
-		this->featureMap = featureMap;
+		this->loss = const_cast<lossfunction *> (loss);
+		this->regularizer = const_cast<regularization *> (regularizer);
+		this->featureMap = const_cast<FeatureTransform *> (featureMap);
 		this->NumFeaturePartitions = NumFeaturePartitions;
 		this->NumThreads = NumThreads;
 		this->TOL = TOL;
@@ -47,13 +44,13 @@ int BlockADMMSolver::train(skylark_context_t& context,  DistInputMatrixType& X, 
 	// number of random features
 	int D = Wbar.Height();
 
-	elem::Grid grid = elem::DefaultGrid();
+	//elem::Grid grid;
 
-	DistMatrixType O(grid, n, k); //uses default Grid
+	DistMatrixType O(n, k); //uses default Grid
 	elem::Zeros(O, n, k);
-	DistMatrixType Obar(grid, n, k); //uses default Grid
+	DistMatrixType Obar(n, k); //uses default Grid
 	elem::Zeros(Obar, n, k);
-	DistMatrixType nu(grid, n, k); //uses default Grid
+	DistMatrixType nu(n, k); //uses default Grid
 	elem::Zeros(nu, n, k);
 
 	LocalMatrixType W, mu, Wi, mu_ij, ZtObar_ij;
@@ -81,7 +78,7 @@ int BlockADMMSolver::train(skylark_context_t& context,  DistInputMatrixType& X, 
 
 		reduce(context.comm, localloss, totalloss, std::plus<double>(), 0);
 		if(context.rank==0) {
-
+				std::cout << " total loss:" << totalloss << std::endl;
 		}
 
 

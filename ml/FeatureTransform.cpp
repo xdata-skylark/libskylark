@@ -8,15 +8,9 @@
 #include "FeatureTransform.hpp"
 
 /* Identity transform for linear models */
-
-class Identity: public FeatureTransform {
-public:
-	LocalInputMatrixType& map(LocalInputMatrixType& X, Int start, Int end) {
+void Identity::map(LocalInputMatrixType& X, Int start, Int end, LocalInputMatrixType& Z) {
 		// create a view attached to a location
-		LocalInputMatrixType Z;
 		elem::View(Z, X, 0, start, X.Height(), end - start + 1);
-		return Z;
-	}
-};
+}
 
 /* To implement: RR and Fastfood and Rounding */

@@ -224,8 +224,8 @@ class nystromrls(object):
     self.model = {}
     self._kernel = kernel
     
-  def train(self,X, Y, random_features=100, regularization=1, bandwidth=1, 
-            probdist='uniform', multiclass=True,zerobased=False):
+  def train(self,X, Y, random_features=100, regularization=1, 
+            probdist='uniform', multiclass=True, zerobased=False):
     """
     :param probdist: probability distribution of rows. Either 'uniform' or 'leverages'.
     :param l: number of Nystrom random samples to take
@@ -254,7 +254,7 @@ class nystromrls(object):
     (evals, evecs) = scipy.linalg.eigh(K_II + eps*I)
     Z = self._kernel.gram(SX, X)
     U = (evecs*numpy.diagflat(1.0/numpy.sqrt(evals)))
-    Z = Z*U
+    Z = numpy.dot(Z, U)
     if multiclass:
       Y= utils.dummycoding(Y, zerobased=zerobased)
       Y = 2*Y - 1
@@ -282,7 +282,7 @@ class nystromrls(object):
     -------
     m x 1 array of predictions on the test set.
     """
-    Zt = self._kernel.gram(self.model["SX"], Xt)*self.model["U"]
+    Zt = numpy.dot(self._kernel.gram(self.model["SX"], Xt), self.model["U"])
     pred = numpy.dot(Zt, self.model["weights"])
     if self.model["multiclass"]:
       pred = utils.dummydecode(pred, self.model["zerobased"])

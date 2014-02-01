@@ -84,6 +84,11 @@ def initialize(seed=-1):
   _lib.sl_context_size(_ctxt_obj, byref(size))
   _size = size.value
 
+  # TODO the following is temporary. Random numbers should be taken from library
+  #      even for pure-Python implementations.
+  if _lib is not None:
+    numpy.random.seed(seed)
+
 # Allow finalization
 def finalize():
   """

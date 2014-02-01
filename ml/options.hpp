@@ -46,7 +46,7 @@ struct hilbert_options_t {
   LossType lossfunction;
   RegularizerType regularizer;
   KernelType kernel;
-  ProblemType problem;
+ // ProblemType problem;
 
  /** Kernel parameters */
  double kernelparam;
@@ -127,23 +127,24 @@ struct hilbert_options_t {
     	        }
   }
 
-  void print () const {
-	 std::cout << "\n\t\t************HILBERT OPTIONS************************" << std::endl;
-	 std::cout << "\t\t* Training File = " << trainfile << std::endl;
-	 std::cout << "\t\t* Model File = " << modelfile << std::endl;
-	 std::cout << "\t\t* Loss function = " << lossfunction << " ("<< Losses[lossfunction]<< ")" << std::endl;
-	 std::cout << "\t\t* Regularizer = " << regularizer << " ("<< Regularizers[regularizer]<< ")" << std::endl;
-	 std::cout << "\t\t* Kernel = " << kernel << " ("<< Kernels[kernel]<< ")" << std::endl;
-	 std::cout << "\t\t* Kernel Parameter = " << kernelparam << std::endl;
-	 std::cout << "\t\t* Regularization Parameter = " << lambda << std::endl;
-	 std::cout << "\t\t* Maximum Iterations = " << MAXITER << std::endl;
-	 std::cout << "\t\t* Tolerance = " << tolerance << std::endl;
-	 std::cout << "\t\t* rho = " << rho << std::endl;
-	 std::cout << "\t\t* Seed = " << seed << std::endl;
-	 std::cout << "\t\t* Random Features = " << randomfeatures << std::endl;
-	 std::cout << "\t\t* Number of feature partitions = " << numfeaturepartitions << std::endl;
-	 std::cout << "\t\t* Threads = " << numthreads << std::endl;
-	 std::cout << std::endl;
+  std::string print () const {
+	 std::stringstream optionstring;
+	 optionstring << "# HILBERT OPTIONS:" << "\n";
+	 optionstring << "# Training File = " << trainfile << "\n";
+	 optionstring << "# Model File = " << modelfile << "\n";
+	 optionstring << "# Loss function = " << lossfunction << " ("<< Losses[lossfunction]<< ")" << "\n";
+	 optionstring << "# Regularizer = " << regularizer << " ("<< Regularizers[regularizer]<< ")" << "\n";
+	 optionstring << "# Kernel = " << kernel << " ("<< Kernels[kernel]<< ")" << "\n";
+	 optionstring << "# Kernel Parameter = " << kernelparam << "\n";
+	 optionstring << "# Regularization Parameter = " << lambda << "\n";
+	 optionstring << "# Maximum Iterations = " << MAXITER << "\n";
+	 optionstring << "# Tolerance = " << tolerance << "\n";
+	 optionstring << "# rho = " << rho << "\n";
+	 optionstring << "# Seed = " << seed << "\n";
+	 optionstring << "# Random Features = " << randomfeatures << "\n";
+	 optionstring << "# Number of feature partitions = " << numfeaturepartitions << "\n";
+	 optionstring << "# Threads = " << numthreads << "\n";
+	 return optionstring.str();
   }
 };
 

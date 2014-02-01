@@ -156,13 +156,10 @@ int BlockADMMSolver::train(skylark_context_t& context,  DistInputMatrixType& X, 
 
 		broadcast(context.comm, Wbar.Buffer(), Dk, 0);
 
-		//matrixminus(mu_ij.Buffer(), Wbar.Buffer(), Dk);
 
 		elem::Axpy(-1.0, Wbar, mu_ij);
 
 		elem::Axpy(-1.0, nu.Matrix(), Obar.Matrix());
-
-	//	matrixminus(Obar.Buffer(), nu.Buffer(), nik);
 
 		loss->proxoperator(Obar.Matrix(), 1.0/RHO, y, O.Matrix());
 
@@ -170,7 +167,6 @@ int BlockADMMSolver::train(skylark_context_t& context,  DistInputMatrixType& X, 
 			regularizer->proxoperator(Wbar, lambda/RHO, mu, W);
 		}
 
-		//LocalMatrixType **Cache = new LocalMatrixType* [NumFeaturePartitions];
 
 
 		elem::Zeros(sum_o, ni, k);
@@ -199,6 +195,7 @@ int BlockADMMSolver::train(skylark_context_t& context,  DistInputMatrixType& X, 
 				//elem::Cholesky(elem::UPPER, *Cache[j]);
 				elem::Inverse(*Cache[j]);
 				//	Ones.Empty();
+
 			}
 
 
@@ -282,6 +279,7 @@ int BlockADMMSolver::train(skylark_context_t& context,  DistInputMatrixType& X, 
 			elem::Axpy(+1.0, W, mu);
 			elem::Axpy(-1.0, Wbar, mu);
 		}
+
 		// deleteCache()
 		context.comm.barrier();
 	}

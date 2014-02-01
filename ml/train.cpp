@@ -104,7 +104,8 @@ int main (int argc, char** argv) {
 
 	  hilbert_options_t options (argc, argv);
 	  if (options.exit_on_return) { return -1; }
-	  options.print();
+
+
 
 	  bmpi::environment env (argc, argv);
 
@@ -120,12 +121,18 @@ int main (int argc, char** argv) {
 
 	 DistInputMatrixType X, Y;
 
+	 if (context.rank==0)
+		 std::cout << options.print();
+
 	 read_libsvm_dense(context, options.trainfile, X, Y);
 
 	 lossfunction *loss = NULL;
 	 switch(options.lossfunction) {
 	 	 case SQUARED:
 	 		 loss = new squaredloss();
+	 		 break;
+	 	 case HINGE:
+	 		 loss = new hingeloss();
 	 		 break;
 	 }
 
@@ -145,6 +152,7 @@ int main (int argc, char** argv) {
 	 }
 
 
+
 	 BlockADMMSolver *Solver = new BlockADMMSolver(
 			 	 	 loss,
 	 				 regularizer,
@@ -158,9 +166,11 @@ int main (int argc, char** argv) {
 	 				 options.rho);
 
 	 elem::Matrix<double> Wbar(options.randomfeatures, 1);
+	 elem::MakeZeros(Wbar);
 	 Solver->train(context, X,Y,Wbar);
 
-	 cout << " Rank " << context.rank << " owns : " << X.LocalHeight() <<  " x " << X.LocalWidth() << endl;
+	 elem::Write(Wbar, options.print(), options.modelfile);
+//	 cout << " Rank " << context.rank << " owns : " << X.LocalHeight() <<  " x " << X.LocalWidth() << endl;
 
 	 elem::Finalize();
 	 return 0;

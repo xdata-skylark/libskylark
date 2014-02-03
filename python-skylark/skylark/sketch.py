@@ -832,15 +832,21 @@ class FastGaussianRFT(_SketchTransform):
     SA[:, :] = sqrt(2.0 / self._s) * numpy.cos(SA0 / (self._sigma * sqrt(self._s)) + bm) 
 
   def _ppyapplyblk(self, A, dim, i):
-    n = self._n
-    B = self._B[i]
-    G = self._G[i]
+    B = scipy.sparse.spdiags(self._B[i], 0, self._n, self._n)
+    G = scipy.sparse.spdiags(self._G[i], 0, self._n, self._n)
     P = self._P[i]
-    if dim == 1:
-      ABF = scipy.fftpack.dct(A * scipy.sparse.spdiags(B, 0, n, n), axis = 1)
-      ABFPGF = scipy.fftpack.dct(ABF[:, P] * scipy.sparse.spdiags(G, 0, n, n), axis = 1) 
 
-    return ABFPGF
+    if dim == 0:
+      FBA = scipy.fftpack.dct(B * A, axis = 0)
+      FGPFBA = scipy.fftpack.dct(G * ABF[P, :], axis = 0) 
+      return FGPFBA
+
+    if dim == 1:
+      ABF = scipy.fftpack.dct(A * B, axis = 1)
+      ABFPGF = scipy.fftpack.dct(ABF[:, P] * G, axis = 1) 
+      return ABFPGF
+
+
 
 class PPT(_SketchTransform):
   """

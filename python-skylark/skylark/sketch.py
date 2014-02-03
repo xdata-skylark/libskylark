@@ -45,7 +45,7 @@ def initialize(seed=-1):
       _KDT_INSTALLED  = _lib.sl_has_combblas()    
       
       csketches = map(eval, _lib.sl_supported_sketch_transforms().split())
-      pysketches = ["SJLT", "PPT", "URST", "NURST"]
+      pysketches = ["FastGaussianRFT", "SJLT", "PPT", "URST", "NURST"]
       SUPPORTED_SKETCH_TRANSFORMS = \
           csketches + [ (T, "Matrix", "Matrix") for T in pysketches]
     except:
@@ -54,7 +54,7 @@ def initialize(seed=-1):
       _ELEM_INSTALLED = False
       _KDT_INSTALLED = False
       sketches = ["JLT", "CT", "SJLT", "FJLT", "CWT", "MMT", "WZT", "GaussianRFT", 
-                  "PPT", "URST", "NURST"]
+                  "FastGaussianRFT", "PPT", "URST", "NURST"]
       SUPPORTED_SKETCH_TRANSFORMS = [ (T, "Matrix", "Matrix") for T in sketches]
 
     # TODO reload dll ?
@@ -766,9 +766,9 @@ class GaussianRFT(_SketchTransform):
   def _ppyapply(self, A, SA, dim):
     self._T.apply(A, SA, dim)
     if dim == 0:
-      bm = self._b * numpy.ones((1, A.shape[1]))
+      bm = self._b * numpy.ones((1, SA.shape[1]))
     if dim == 1:
-      bm = numpy.ones((A.shape[0], 1)) * self._b.T
+      bm = numpy.ones((SA.shape[0], 1)) * self._b.T
     SA[:, :] = sqrt(2.0 / self._s) * numpy.cos(SA * (sqrt(self._s)/self._sigma) + bm) 
     
 class LaplacianRFT(_SketchTransform):
@@ -807,16 +807,40 @@ class FastGaussianRFT(_SketchTransform):
   Expansions in Loglinear Time**, ICML 2013
   """
   def __init__(self, n, s, sigma=1.0, defouttype=None):
-    super(PPT, self)._baseinit("FastGaussianRFT", n, s, defouttype);
-
-    if c < 0:
-      raise ValueError("c parameter must be >= 0")
+    super(FastGaussianRFT, self)._baseinit("FastGaussianRFT", n, s, defouttype);
 
     self._ppy = True
-    pass
+    self._blocks = int(math.ceil(float(s) / n))
+    self._sigma = sigma
+    self._b = numpy.matrix(numpy.random.uniform(0, 2 * pi, (s,1)))
+    binary = scipy.stats.bernoulli(0.5)
+    self._B = [2.0 * binary.rvs(n) - 1.0 for i in range(self._blocks)]
+    self._G = [numpy.random.randn(n) for i in range(self._blocks)]
+    self._P = [numpy.random.permutation(n) for i in range(self._blocks)]
 
   def _ppyapply(self, A, SA, dim):
-    pass
+    blks = [self._ppyapplyblk(A, dim, i) for i in range(self._blocks)]
+    SA0 = numpy.concatenate(blks, axis=dim)
+    if dim == 0:
+      bm = self._b * numpy.ones((1, SA.shape[1]))
+      if self._s < SA0.shape[0]:
+        SA0 = SA0[:self._s, :]
+    if dim == 1:
+      bm = numpy.ones((SA.shape[0], 1)) * self._b.T
+      if self._s < SA0.shape[1]:
+        SA0 = SA0[:, :self._s]
+    SA[:, :] = sqrt(2.0 / self._s) * numpy.cos(SA0 / (self._sigma * sqrt(self._s)) + bm) 
+
+  def _ppyapplyblk(self, A, dim, i):
+    n = self._n
+    B = self._B[i]
+    G = self._G[i]
+    P = self._P[i]
+    if dim == 1:
+      ABF = scipy.fftpack.dct(A * scipy.sparse.spdiags(B, 0, n, n), axis = 1)
+      ABFPGF = scipy.fftpack.dct(ABF[:, P] * scipy.sparse.spdiags(G, 0, n, n), axis = 1) 
+
+    return ABFPGF
 
 class PPT(_SketchTransform):
   """

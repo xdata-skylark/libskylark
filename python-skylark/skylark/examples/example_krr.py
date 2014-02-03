@@ -29,6 +29,12 @@ predictions = model.predict(X[trn+1:,:])
 accuracy = skylark.metrics.classification_accuracy(predictions, Y[trn+1:])
 print "SketchedRLS Accuracy=%f%%" % accuracy
 
+model = sketchrls(kernel)
+model.train(X[1:trn,:], Y[1:trn], randomfeatures, regularization, subtype='fast')    
+predictions = model.predict(X[trn+1:,:])
+accuracy = skylark.metrics.classification_accuracy(predictions, Y[trn+1:])
+print "SketchedRLS (Fast) Accuracy=%f%%" % accuracy
+
 model = sketchpcr(kernel)
 model.train(X[1:trn,:], Y[1:trn], randomfeatures)    
 predictions = model.predict(X[trn+1:,:])

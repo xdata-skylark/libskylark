@@ -114,8 +114,10 @@ class Gaussian(object):
     :param defouttype: default output type for the transform.
     :returns: random features sketching transform object.
     """
-    
-    return sketch.GaussianRFT(self._d, s, self._sigma, defouttype)
+    if subtype is 'fast':
+      return sketch.FastGaussianRFT(self._d, s, self._sigma, defouttype)
+    else:
+      return sketch.GaussianRFT(self._d, s, self._sigma, defouttype)
 
 class Polynomial(object):
   """

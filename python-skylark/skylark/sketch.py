@@ -792,6 +792,32 @@ class LaplacianRFT(_SketchTransform):
                 byref(sketch_transform), ctypes.c_double(sigma))
       self._obj = sketch_transform.value
 
+class FastGaussianRFT(_SketchTransform):
+  """
+  Fast variant of Random Features Transform for the RBF Kernel. 
+
+  Alternative class name: Fastfood
+
+  :param n: Number of dimensions in input vectors.
+  :param s: Number of dimensions in output vectors.
+  :param sigma: bandwidth of the kernel.
+  :param defouttype: Default output type when using the * and / operators.
+    
+  *Q. Le*, *T. Sarlos*, *A. Smola*, **Fastfood - Computing Hilbert Space 
+  Expansions in Loglinear Time**, ICML 2013
+  """
+  def __init__(self, n, s, sigma=1.0, defouttype=None):
+    super(PPT, self)._baseinit("FastGaussianRFT", n, s, defouttype);
+
+    if c < 0:
+      raise ValueError("c parameter must be >= 0")
+
+    self._ppy = True
+    pass
+
+  def _ppyapply(self, A, SA, dim):
+    pass
+
 class PPT(_SketchTransform):
   """
   Pham-Pagh Transform - features sketching for the polynomial kernel.
@@ -890,6 +916,7 @@ SparseJLT = SJLT
 FastJLT = JLT
 CountSketch = CWT
 RRT = GaussianRFT
+Fastfood=FastGaussianRFT
 TensorSketch = PPT
 UniformSampler = URST
 NonUniformSampler = NURST

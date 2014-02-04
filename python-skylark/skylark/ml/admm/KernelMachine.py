@@ -14,119 +14,20 @@ comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 NumProcessors = comm.Get_size()
 
-class Fastfood(object):
-    def __init__(self, dimensions, kernel='gaussian', kernelparam=1.0, randomfeatures=1000, SEED=45678):
-        self.kernel = kernel
-        self.kernelparam = kernelparam
-        self.randomfeatures = randomfeatures
-        self.SEED = SEED
-        self.dimensions = dimensions
-        numpy.random.seed(SEED)
-        # currently only Gaussian
-        #self.W = numpy.array(numpy.random.randn(self.dimensions, self.randomfeatures), order='F');
-        self.blocks = int(math.ceil(self.randomfeatures*1.0/self.dimensions))
-        self.finalrandomfeatures = self.blocks*self.dimensions
-        self.scale = 1.0/(kernelparam*math.sqrt(self.dimensions))
-
-
-        self.B=numpy.zeros((self.blocks, self.dimensions))
-        self.G=numpy.zeros((self.blocks, self.dimensions))
-        self.P=numpy.zeros((self.blocks, self.dimensions), dtype=numpy.int32)
-        binary = scipy.stats.bernoulli(0.5)
-        for i in range(0,self.blocks):
-            self.B[i,:] = 2.0*binary.rvs(self.dimensions) - 1.0
-            self.G[i,:] = numpy.random.randn(1,self.dimensions)
-            self.P[i,:] = numpy.random.permutation(self.dimensions)
-
-
-        self.b = numpy.random.uniform(0, 2*math.pi, (1,self.finalrandomfeatures))
-
-
-#       @profile
-    def map(self, X, J=-1):
-        X = numpy.asarray(X)
-        m,n = X.shape
-
-        if J==-1:
-            J = range(0,self.finalrandomfeatures)
-
-        startblock = int(numpy.floor(J[0]*1.0/n))
-        endblock = int(numpy.floor(J[-1]*1.0/n))
-
-        Ztmp = numpy.zeros((m,n), order='F')
-        Z1 = numpy.zeros((m, (endblock-startblock+1)*n), order='F')
-
-        for i in range(startblock, endblock+1):
-            # row vector B times X uses numpy broadcast rules below; dct works rowwise
-            # check if column assignment in Ztmp will causing the code to be slowish
-            Ztmp[:,self.P[i,:]] = scipy.fftpack.dct(self.B[i,:]*X, norm='ortho')*math.sqrt(n);
-            Z1[:,((i-startblock)*n):((i+1-startblock)*n)] = self.scale*scipy.fftpack.dct(self.G[i,:]*Ztmp, norm='ortho')*math.sqrt(n);
-
-        Z = Z1[:, (J[0]-startblock*n):(J[-1]-startblock*n+1)]
-
-        ones = numpy.ones((m,1));
-
-        Z = Z + self.b[:,J] # using numpy broadcast rules
-        Z = numpy.cos(Z)*math.sqrt(2.0/self.finalrandomfeatures);
-
-        return Z
-
-
-# can be replaced by more efficient Fastfood like operations
-class ExplicitFeatureMap(object):
-    def __init__(self, dimensions, kernel='gaussian', kernelparam=1.0, randomfeatures=1000, SEED=1234):
-        self.kernel = kernel
-        self.kernelparam = kernelparam
-        self.randomfeatures = randomfeatures
-        self.SEED = SEED
-        self.dimensions = dimensions
-        numpy.random.seed(SEED)
-        # currently only Gaussian
-        self.W = numpy.array(numpy.random.randn(self.dimensions, self.randomfeatures), order='F');
-        self.b = numpy.random.uniform(0, 2*math.pi, (1,self.randomfeatures))
-#       @profile
-    def map(self, X, J=-1):
-        n,d = X.shape
-        if J==-1:
-            J = range(0,self.randomfeatures)
-        ones = numpy.ones((n,1));
-        w = self.W[:,J]
-        Z2 = numpy.dot(X,w)/self.kernelparam;
-        Z2 = Z2 + self.b[:,J] # using numpy broadcast rules
-        Z = numpy.cos(Z2)*math.sqrt(2.0/self.randomfeatures);
-        return Z
-
-    def covariance(self, X, J):
-        Z = map(X,J)
-        ZtZ = numpy.dot(Z.T, Z)
-        return ZtZ
-
-    def matmul(self, X, J, Y):
-        Z = map(X,J)
-        ZY = numpy.dot(Z,Y)
-        return ZY
-
-    def matmul_transp(self, X, J, Y):
-        Z = map(X,J)
-        ZtY = numpy.dot(Z.T, Y)
-        return ZtY
-
 
 class KernelMachine(object):
-    def __init__(self, lossfunction='squared',
-                  regularizer='l2',
-                  regparam=0,
-                  randomfeatures=1000,
-                  kernel='gaussian',
-                  kernelparam=1.0,
-                  numfeaturepartitions=5,
-                  TOL=1e-3,
-                  MAXITER=100,
-                  SEED=12345,
-                  rho=1.0,
-                  problem='multiclass_classification',
-                  coefficients=None,
-                  TransformOperator=None, fastfood=True):
+    def __init__(self, kernel, 
+                 lossfunction='squared',
+                 regularizer='l2',
+                 regparam=0,
+                 randomfeatures=1000,
+                 numfeaturepartitions=5,
+                 TOL=1e-3,
+                 MAXITER=100,
+                 rho=1.0,
+                 problem='multiclass_classification',
+                 coefficients=None,
+                 subtype='fast'):
 
         self.lossfunction = lossfunction
         self.regularizer = regularizer
@@ -137,12 +38,10 @@ class KernelMachine(object):
         self.numfeaturepartitions = numfeaturepartitions
         self.TOL = TOL
         self.MAXITER = MAXITER
-        self.SEED = SEED
         self.rho = rho
         self.coefficients = coefficients
         self.problem = problem
-        self.TransformOperator = TransformOperator
-        self.fastfood = fastfood
+        self.subtype = subtype
 
     def save(self, outputfile):
         f = open(outputfile,'wb')
@@ -159,13 +58,15 @@ class KernelMachine(object):
         D,k = W.shape
         n = X.shape[0]
         o = numpy.zeros((n,k))
+        blksize = math.ceil(D / N)
 
         results = []
         for j in range(0,N):
-            start = int(math.floor(numpy.round(j*D*1.0/N)))
-            finish = int(math.floor(numpy.round((j+1)*D*1.0/N)))
+            start = j * blksize
+            finish = min((j + 1) * blksize, D)
             JJ = range(start, finish)
-            Z = self.TransformOperator.map(X, JJ)
+            Dj = len(JJ)
+            Z = (self.RFTs[j] / X.Matrix) * math.sqrt(Dj / D)
             o = o + numpy.dot(Z, W[JJ,:])
 
         results.append(o)
@@ -180,7 +81,6 @@ class KernelMachine(object):
 
         return tuple(results)
 
- #       @profile
     def train(self, data):
         (X,Y) = data
         lossfunction = loss(self.lossfunction)
@@ -242,11 +142,12 @@ class KernelMachine(object):
 
         iter = 0
         ni = O.LocalHeight
-            # Instiantiate an explict feature map, but compute with it implicitly
-        if self.fastfood:
-            self.TransformOperator = Fastfood(d, self.kernel, self.kernelparam, self.randomfeatures, self.SEED)
-        else:
-            self.TransformOperator = ExplicitFeatureMap(d, self.kernel, self.kernelparam, self.randomfeatures, self.SEED)
+
+
+        # Create RFTs
+        blksize = math.ceil(D / N)
+        self.RFTs = [self.kernel.rft(blksize, self.subtype) for i in range(N-1)]
+        self.RFTs.append(self.kernel.rft(D - (N - 1) * blksize, self.subtype))
 
         Precomputed = []
 
@@ -289,12 +190,12 @@ class KernelMachine(object):
 
 
             for j in range(0, N):
-                start = int(math.floor(numpy.round(j*D*1.0/N)))
-                finish = int(math.floor(numpy.round((j+1)*D*1.0/N))) - 1
+                start = j * blksize
+                finish = min((j + 1) * blksize, D)
                 JJ = range(start, finish)
                 Dj = len(JJ)
 
-                Z = self.TransformOperator.map(X.Matrix, JJ)
+                Z = (self.RFTs[j] / X.Matrix) * math.sqrt(Dj / D)
                 if iter==1:
                     ZtZ = numpy.dot(Z.T, Z)
                     A = linalg.inv(ZtZ + numpy.identity(Dj))
@@ -320,11 +221,11 @@ class KernelMachine(object):
             localloss = 0.0
             o = numpy.zeros((ni, k));
             for j in range(0,N):
-                start = int(math.floor(numpy.round(j*D*1.0/N)))
-                finish = int(math.floor(numpy.round((j+1)*D*1.0/N))) - 1
+                start = j * blksize
+                finish = min((j + 1) * blksize, D)
                 JJ = range(start, finish)
                 Dj = len(JJ)
-                Z = self.TransformOperator.map(X.Matrix, JJ)
+                Z = (self.RFTs[j] / X.Matrix) * math.sqrt(Dj / D)
                 ZtObar_ij[JJ,:] = ZtObar_ij[JJ,:] + numpy.dot(Z.T, (O.Matrix - sum_o))/(N+1);
                 o = o + numpy.dot(Z, Wbar[JJ,:])
             localloss = localloss + lossfunction(o, y)

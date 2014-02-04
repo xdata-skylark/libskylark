@@ -1,6 +1,6 @@
 import sys
 import elem
-import skylark, skylark.io, skylark.ml.utils
+import skylark, skylark.io, skylark.ml.kernels, skylark.ml.utils
 import numpy as np
 import numpy.linalg
 from mpi4py import MPI
@@ -30,7 +30,7 @@ parser.add_argument("--numfeaturepartitions", type=float, help='Number of Featur
 parser.add_argument("--TOL", type=float, help='Convergance tolerance (default: 1e-3)', default=0.001)
 parser.add_argument("--MAXITER", type=int, help='Maximum ADMM iterations (default: 10)', default=10)
 parser.add_argument("--SEED", type=int, help='Seed for random numbers (default: 12345)', default=12345)
-parser.add_argument("--fastfood", help='Enable Fastfood acceleration', action='store_true')
+parser.add_argument("--subtype", help='Subtype for random feature transform. ''fast'' will attempt acceleration if possible (default: fast)', default='fast')
 
 parser.add_argument("--modelfile", type=str, help='Save model in filename', required=True)
 
@@ -89,18 +89,21 @@ elem.Copy(Y_cc, Y);
 if rank==0:
     print "Reading and distributing the data toolk %f seconds" % (MPI.Wtime() - starttime)
 
+# Create kernel
+if args.kernel is "gaussian":
+    kernel = skylark.ml.kernels.Gaussian(shape_X[1], args.kernelparam)
+
 # train the model
 model = KernelMachine(lossfunction=args.lossfunction,
                       regularizer=args.regularizer,
                       regparam=args.regparam,
                       randomfeatures=args.randomfeatures,
-                      kernel=args.kernel,
+                      kernel=kernel,
                       kernelparam=args.kernelparam,
                       numfeaturepartitions=args.numfeaturepartitions,
                       TOL=args.TOL,
                       MAXITER=args.MAXITER,
-                      SEED=args.SEED,
-                      fastfood=args.fastfood)
+                      subtype=args.subtype)
 
 #pr.enable()
 

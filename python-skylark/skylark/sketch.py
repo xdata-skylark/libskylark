@@ -458,6 +458,18 @@ class _SketchTransform(object):
     """
     return self.apply(A, None, dim=1)
 
+  def getindim(self):
+    """
+    Get size of input.
+    """
+    return self._n
+
+  def getsketchdim(self):
+    """
+    Get dimension of sketched output.
+    """
+    return self._s
+
 #
 # Various sketch transforms
 #

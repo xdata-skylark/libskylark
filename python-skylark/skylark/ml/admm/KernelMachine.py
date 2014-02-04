@@ -26,7 +26,9 @@ class KernelMachine(object):
                  MAXITER=100,
                  rho=1.0,
                  problem='multiclass_classification',
+                 zerobased=False,
                  coefficients=None,
+                 RFTs=None,         # Only for serializatoin
                  subtype='fast'):
 
         self.lossfunction = lossfunction
@@ -34,7 +36,6 @@ class KernelMachine(object):
         self.regparam = regparam
         self.randomfeatures = randomfeatures
         self.kernel = kernel
-        self.kernelparam = kernelparam
         self.numfeaturepartitions = numfeaturepartitions
         self.TOL = TOL
         self.MAXITER = MAXITER
@@ -42,6 +43,8 @@ class KernelMachine(object):
         self.coefficients = coefficients
         self.problem = problem
         self.subtype = subtype
+        self.zerobased = zerobased
+        self.RFTs = RFTs
 
     def save(self, outputfile):
         f = open(outputfile,'wb')
@@ -62,17 +65,17 @@ class KernelMachine(object):
 
         results = []
         for j in range(0,N):
-            start = j * blksize
-            finish = min((j + 1) * blksize, D)
+            start = int(j * blksize)
+            finish = int(min((j + 1) * blksize, D))
             JJ = range(start, finish)
             Dj = len(JJ)
-            Z = (self.RFTs[j] / X.Matrix) * math.sqrt(Dj / D)
+            Z = (self.RFTs[j] / X) * math.sqrt(Dj / D)
             o = o + numpy.dot(Z, W[JJ,:])
 
         results.append(o)
 
         if self.problem=="multiclass_classification":
-            pred = numpy.argmax(numpy.array(o), axis=1)+1
+            pred = skylark.ml.utils.dummydecode(numpy.array(o), self.zerobased)
             results.append(pred)
 
         if self.lossfunction=="crossentropy":
@@ -94,6 +97,8 @@ class KernelMachine(object):
         n = X.Height
         if self.problem=="multiclass_classification":
             k = int(comm.allreduce(max(Y.Matrix), op=MPI.MAX)) # number of classes
+            if self.zerobased:
+                k = k + 1
         else:
             k = Y.Matrix.shape[1]
 
@@ -145,7 +150,7 @@ class KernelMachine(object):
 
 
         # Create RFTs
-        blksize = math.ceil(D / N)
+        blksize = int(math.ceil(D / N))
         self.RFTs = [self.kernel.rft(blksize, self.subtype) for i in range(N-1)]
         self.RFTs.append(self.kernel.rft(D - (N - 1) * blksize, self.subtype))
 
@@ -153,9 +158,10 @@ class KernelMachine(object):
 
         #y = preprocess_labels(Y.Matrix)
         if self.lossfunction=="crossentropy" or self.lossfunction=="hinge":
-            y = Y.Matrix - 1.0 # convert from 1-to-K to 0-to-(K-1) representation
+            if not self.zerobased:
+                y = Y.Matrix - 1.0 # convert from 1-to-K to 0-to-(K-1) representation
         else:
-            y = skylark.ml.utils.dummycoding(Y.Matrix, k)
+            y = skylark.ml.utils.dummycoding(Y.Matrix, k, self.zerobased)
             y = 2*y-1
 
         localloss = lossfunction(O.Matrix, y)

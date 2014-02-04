@@ -33,15 +33,17 @@ objective = 0
 if rank == 0:
     print "Parsing the data..."
     data = skylark.io.libsvm(args.testfile).read()
+    X = data[0].todense() # TODO we want to keep it sparse for now.
+    Y = data[1]
 
     # If missing features, then augment the data
-    if data[0].shape[1] < model.RFTs[0].getindim():
+    if X.shape[1] < model.RFTs[0].getindim():
         fulldim = model.RFTs[0].getindim()
-        n = data[0].shape[0]
-        partialdim = data[0].shape[1]
-        data[0] = numpy.concatenate((data[0], numpy.zeros((n, fulldim - partialdim))))
+        n = X.shape[0]
+        partialdim = X.shape[1]
+        X = numpy.concatenate((X, numpy.zeros((n, fulldim - partialdim))), axis=1)
 
-shape_X = data[0].shape if rank == 0 else None
+shape_X = X.shape if rank == 0 else None
 shape_X = comm.bcast(shape_X, root=0)
 if rank == 0 :
     print "Distributing the matrix..."
@@ -50,7 +52,7 @@ if rank == 0 :
 X_cc = elem.DistMatrix_d_CIRC_CIRC(shape_X[0], shape_X[1])
 Y_cc = elem.DistMatrix_d_CIRC_CIRC(shape_X[0], 1)
 if rank == 0:
-    X_cc.Matrix[:] = data[0].todense()
+    X_cc.Matrix[:] = X
     data[1].resize((shape_X[0], 1))
     np.copyto(Y_cc.Matrix, data[1])
 
@@ -63,7 +65,9 @@ elem.Copy(Y_cc, Y);
 predictions, labels = model.predict(X.Matrix)
 
 # need distributed accuracy computation
-accuracy = skylark.metrics.classification_accuracy(labels, y[:,0])
+accuracy = skylark.metrics.classification_accuracy(labels, Y.Matrix[0, :])
+
+# TODO should aggregate accuracy.
 
 print accuracy
 

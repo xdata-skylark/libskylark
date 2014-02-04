@@ -829,7 +829,7 @@ class FastGaussianRFT(_SketchTransform):
       bm = numpy.ones((SA.shape[0], 1)) * self._b.T
       if self._s < SA0.shape[1]:
         SA0 = SA0[:, :self._s]
-    SA[:, :] = sqrt(2.0 / self._s) * numpy.cos(SA0 / (self._sigma * sqrt(self._s)) + bm) 
+    SA[:, :] = sqrt(2.0 / self._s) * numpy.cos(SA0 / (self._sigma * sqrt(self._n)) + bm) 
 
   def _ppyapplyblk(self, A, dim, i):
     B = scipy.sparse.spdiags(self._B[i], 0, self._n, self._n)
@@ -837,13 +837,13 @@ class FastGaussianRFT(_SketchTransform):
     P = self._P[i]
 
     if dim == 0:
-      FBA = scipy.fftpack.dct(B * A, axis = 0)
-      FGPFBA = scipy.fftpack.dct(G * ABF[P, :], axis = 0) 
+      FBA = scipy.fftpack.dct(B * A, axis = 0, norm='ortho') * sqrt(self._n)
+      FGPFBA = scipy.fftpack.dct(G * ABF[P, :], axis = 0, norm='ortho') * sqrt(self._n)
       return FGPFBA
 
     if dim == 1:
-      ABF = scipy.fftpack.dct(A * B, axis = 1)
-      ABFPGF = scipy.fftpack.dct(ABF[:, P] * G, axis = 1) 
+      ABF = scipy.fftpack.dct(A * B, axis = 1, norm='ortho') * sqrt(self._n)
+      ABFPGF = scipy.fftpack.dct(ABF[:, P] * G, axis = 1, norm='ortho') * sqrt(self._n) 
       return ABFPGF
 
 

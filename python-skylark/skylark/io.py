@@ -631,7 +631,7 @@ class libsvm(object):
         tokens = re.split(re.compile('[:\s]'), line.strip())
         tokens = filter(lambda s : s is not '',  tokens)
         label = float(tokens[0])    
-        features = map(int, tokens[1::2])
+        features = map(lambda x: int(x) - 1, tokens[1::2])
         values = map(float, tokens[2::2])
         indices = [index] * len(features)
         return label, indices, features, values

@@ -629,7 +629,7 @@ class FJLT(_SketchTransform):
     if self._ppy:
       d = scipy.stats.rv_discrete(values=([-1,1], [0.5,0.5]), name = 'uniform').rvs(size=n)
       self._D = scipy.sparse.spdiags(d, 0, n, n)
-      self._S = URST(n, s, outtype)
+      self._S = URST(n, s, outtype, forceppy=forceppy)
 
   def _ppyapply(self, A, SA, dim):
     if dim == 0:
@@ -776,7 +776,7 @@ class GaussianRFT(_SketchTransform):
 
     self._sigma = sigma
     if self._ppy:
-      self._T = JLT(n, s)
+      self._T = JLT(n, s, forceppy=forceppy)
       self._b = numpy.matrix(numpy.random.uniform(0, 2 * pi, (s,1)))
     else:
       sketch_transform = c_void_p()
@@ -813,6 +813,8 @@ class LaplacianRFT(_SketchTransform):
       _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "LaplacianRFT", n, s, \
                 byref(sketch_transform), ctypes.c_double(sigma))
       self._obj = sketch_transform.value
+
+    # TODO ppy implementation
 
 class FastGaussianRFT(_SketchTransform):
   """
@@ -898,7 +900,7 @@ class PPT(_SketchTransform):
     self._q = q
     self._gamma = gamma
     self._c = c
-    self._css = [CWT(n + (c > 0), s) for i in range(q)]
+    self._css = [CWT(n + (c > 0), s, forceppy=forceppy) for i in range(q)]
 
   def _ppyapply(self, A, SA, dim):
     if self._c != 0:

@@ -333,7 +333,7 @@ class _SketchTransform(object):
   constructors. The class is not meant
   """
 
-  def __init__(self, ttype, n, s, defouttype=None):
+  def __init__(self, ttype, n, s, defouttype=None, forceppy=False):
     """
     Create the transform from n dimensional vectors to s dimensional vectors. Here we define
     the interface, but the constructor should not be called directly by the user.
@@ -344,23 +344,24 @@ class _SketchTransform(object):
     :param s: Number of dimensions in output vectors.
     :param defouttype: Default output type when using the * and / operators. 
                        If None the output will have same type as the input.
+    :param forceppy: whether to force a pure python implementation
     :returns: the transform object
     """
     
-    self._baseinit(ttype, n, s, defouttype)
+    self._baseinit(ttype, n, s, defouttype, forceppy)
     if not self._ppy:
       sketch_transform = c_void_p()
       _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, ttype, n, s, byref(sketch_transform))
       self._obj = sketch_transform.value
 
-  def _baseinit(self, ttype, n, s, defouttype):
+  def _baseinit(self, ttype, n, s, defouttype, forceppy):
     if defouttype is not None and not _map_to_ctor.has_key(defouttype):
       raise errors.UnsupportedError("Unsupported default output type (%s)" % defouttype)
     self._ttype = ttype
     self._n = n
     self._s = s
     self._defouttype = defouttype
-    self._ppy = _lib is None
+    self._ppy = _lib is None or forceppy
 
   def __del__(self):
     if not self._ppy:
@@ -481,6 +482,7 @@ class JLT(_SketchTransform):
   :param n: Number of dimensions in input vectors.
   :param s: Number of dimensions in output vectors.
   :param defouttype: Default output type when using the * and / operators.  
+  :param forceppy: whether to force a pure python implementation
 
   Examples
   --------
@@ -522,8 +524,8 @@ class JLT(_SketchTransform):
   >>> plt.hist(distortions,10)
   >>> plt.show()   
   """
-  def __init__(self, n, s, defouttype=None):
-    super(JLT, self).__init__("JLT", n, s, defouttype);
+  def __init__(self, n, s, defouttype=None, forceppy=False):
+    super(JLT, self).__init__("JLT", n, s, defouttype, forceppy);
     if self._ppy:
       # The following is not memory efficient, but for a pure Python impl it will do
       self._S = numpy.random.standard_normal((s, n)) / sqrt(s)
@@ -548,6 +550,7 @@ class SJLT(_SketchTransform):
   :param s: Number of dimensions in output vectors.
   :param density: Density of the transform matrix. Lower density require higher s.
   :param defouttype: Default output type when using the * and / operators.
+  :param forceppy: whether to force a pure python implementation
 
   *D. Achlipotas*, **Database-frinedly random projections: Johnson-Lindenstrauss
   with binary coins**, Journal of Computer and System Sciences 66 (2003) 671-687
@@ -555,8 +558,8 @@ class SJLT(_SketchTransform):
   *P. Li*, *T. Hastie* and *K. W. Church*, **Very Sparse Random Projections**,
   KDD 2006
   """
-  def __init__(self, n, s, density = 1 / 3.0, defouttype=None):
-    super(SJLT, self)._baseinit("SJLT", n, s, defouttype);
+  def __init__(self, n, s, density = 1 / 3.0, defouttype=None, forceppy=False):
+    super(SJLT, self)._baseinit("SJLT", n, s, defouttype, forceppy);
     self._ppy = True
     nz_values = [-sqrt(1.0/density), +sqrt(1.0/density)]
     nz_prob_dist = [0.5, 0.5]
@@ -581,12 +584,13 @@ class CT(_SketchTransform):
   :param s: Number of dimensions in output vectors.
   :param C: Parameter trading embedding size and distortion. See paper for details.
   :param defouttype: Default output type when using the * and / operators.
+  :param forceppy: whether to force a pure python implementation
 
   *C. Sohler* and *D. Woodruff*, **Subspace Embeddings for the L_1-norm with 
   Application**, STOC 2011
   """
-  def __init__(self, n, s, C, defouttype=None):
-    super(CT, self)._baseinit("CT", n, s, defouttype)
+  def __init__(self, n, s, C, defouttype=None, forceppy=False):
+    super(CT, self)._baseinit("CT", n, s, defouttype, forceppy)
 
     if self._ppy:
       self._S = numpy.random.standard_cauchy((s, n)) * (C / s)
@@ -615,12 +619,13 @@ class FJLT(_SketchTransform):
   :param n: Number of dimensions in input vectors.
   :param s: Number of dimensions in output vectors.
   :param defouttype: Default output type when using the * and / operators.
-
+  :param forceppy: whether to force a pure python implementation
+    
   *N. Ailon* and *B. Chazelle*, **The Fast Johnson-Lindenstrauss Transform and 
   Approximate Nearest Neighbors**, SIAM Journal on Computing 39 (1), pg. 302-322
   """
-  def __init__(self, n, s, defouttype=None):
-    super(FJLT, self).__init__("FJLT", n, s, defouttype);
+  def __init__(self, n, s, defouttype=None, forceppy=False):
+    super(FJLT, self).__init__("FJLT", n, s, defouttype, forceppy);
     if self._ppy:
       d = scipy.stats.rv_discrete(values=([-1,1], [0.5,0.5]), name = 'uniform').rvs(size=n)
       self._D = scipy.sparse.spdiags(d, 0, n, n)
@@ -646,11 +651,12 @@ class CWT(_SketchTransform):
   :param n: Number of dimensions in input vectors.
   :param s: Number of dimensions in output vectors.
   :param defouttype: Default output type when using the * and / operators.
-  
+  :param forceppy: whether to force a pure python implementation
+
   *K. Clarkson* and *D. Woodruff*, **Low Rank Approximation and Regression
   in Input Sparsity Time**, STOC 2013
   """
-  def __init__(self, n, s, defouttype=None):
+  def __init__(self, n, s, defouttype=None, forceppy=False):
     super(CWT, self).__init__("CWT", n, s, defouttype);
     if self._ppy:
       # The following is not memory efficient, but for a pure Python impl 
@@ -677,12 +683,13 @@ class MMT(_SketchTransform):
   :param n: Number of dimensions in input vectors.
   :param s: Number of dimensions in output vectors.
   :param defouttype: Default output type when using the * and / operators.
+  :param forceppy: whether to force a pure python implementation
 
   *X. Meng* and *M. W. Mahoney*, **Low-distortion Subspace Embeddings in
   Input-sparsity Time and Applications to Robust Linear Regression**, STOC 2013
   """
-  def __init__(self, n, s, defouttype=None):
-    super(MMT, self).__init__("MMT", n, s, defouttype);
+  def __init__(self, n, s, defouttype=None, forceppy=False):
+    super(MMT, self).__init__("MMT", n, s, defouttype, forceppy);
     if self._ppy:
       # The following is not memory efficient, but for a pure Python impl 
       # it will do
@@ -709,6 +716,7 @@ class WZT(_SketchTransform):
   :param s: Number of dimensions in output vectors.
   :param p: Defines the norm for the embedding (Lp).
   :param defouttype: Default output type when using the * and / operators.
+  :param forceppy: whether to force a pure python implementation
 
   *D. Woodruff* and *Q. Zhang*, **Subspace Embeddings and L_p Regression
   Using Exponential Random**, COLT 2013
@@ -726,8 +734,8 @@ class WZT(_SketchTransform):
         val[idx] = (2 * self._bdist.rvs() - 1) * math.pow(self._edist.rvs(), 1/self._p)
       return val
 
-  def __init__(self, n, s, p, defouttype=None):
-    super(WZT, self)._baseinit("WZT", n, s, defouttype)
+  def __init__(self, n, s, p, defouttype=None, forceppy=False):
+    super(WZT, self)._baseinit("WZT", n, s, defouttype, forceppy)
 
     if self._ppy:
       # The following is not memory efficient, but for a pure Python impl 
@@ -758,12 +766,13 @@ class GaussianRFT(_SketchTransform):
   :param s: Number of dimensions in output vectors.
   :param sigma: bandwidth of the kernel.
   :param defouttype: Default output type when using the * and / operators.
-    
+  :param forceppy: whether to force a pure python implementation
+
   *A. Rahimi* and *B. Recht*, **Random Features for Large-scale
   Kernel Machines**, NIPS 2009
   """
-  def __init__(self, n, s, sigma=1.0, defouttype=None):
-    super(GaussianRFT, self)._baseinit("GaussianRFT", n, s, defouttype)
+  def __init__(self, n, s, sigma=1.0, defouttype=None, forceppy=False):
+    super(GaussianRFT, self)._baseinit("GaussianRFT", n, s, defouttype, forceppy)
 
     self._sigma = sigma
     if self._ppy:
@@ -791,12 +800,13 @@ class LaplacianRFT(_SketchTransform):
   :param s: Number of dimensions in output vectors.
   :param sigma: bandwidth of the kernel.
   :param defouttype: Default output type when using the * and / operators.
-
+  :param forceppy: whether to force a pure python implementation
+    
   *A. Rahimi* and *B. Recht*, **Random Features for Large-scale
   Kernel Machines**, NIPS 2009
   """
-  def __init__(self, n, s, sigma=1.0, defouttype=None):
-    super(LaplacianRFT, self)._baseinit("LaplacianRFT", n, s, defouttype)
+  def __init__(self, n, s, sigma=1.0, defouttype=None, forceppy=False):
+    super(LaplacianRFT, self)._baseinit("LaplacianRFT", n, s, defouttype, forceppy)
 
     if not self._ppy:
       sketch_transform = c_void_p()
@@ -814,12 +824,13 @@ class FastGaussianRFT(_SketchTransform):
   :param s: Number of dimensions in output vectors.
   :param sigma: bandwidth of the kernel.
   :param defouttype: Default output type when using the * and / operators.
-    
+  :param forceppy: whether to force a pure python implementation
+
   *Q. Le*, *T. Sarlos*, *A. Smola*, **Fastfood - Computing Hilbert Space 
   Expansions in Loglinear Time**, ICML 2013
   """
-  def __init__(self, n, s, sigma=1.0, defouttype=None):
-    super(FastGaussianRFT, self)._baseinit("FastGaussianRFT", n, s, defouttype);
+  def __init__(self, n, s, sigma=1.0, defouttype=None, forceppy=False):
+    super(FastGaussianRFT, self)._baseinit("FastGaussianRFT", n, s, defouttype, forceppy);
 
     self._ppy = True
     self._blocks = int(math.ceil(float(s) / n))
@@ -872,12 +883,13 @@ class PPT(_SketchTransform):
   :param c: kernel parameter.
   :param gamma: normalization coefficient.
   :param defouttype: Default output type when using the * and / operators.
+  :param forceppy: whether to force a pure python implementation
 
   *N. Pham* and *R. Pagh*, **Fast and Scalable Polynomial Kernels via Explicit 
   Feature Maps**, KDD 2013
   """
-  def __init__(self, n, s, q=3,  c=0, gamma=1, defouttype=None):
-    super(PPT, self)._baseinit("PPT", n, s, defouttype);
+  def __init__(self, n, s, q=3,  c=0, gamma=1, defouttype=None, forceppy=False):
+    super(PPT, self)._baseinit("PPT", n, s, defouttype, forceppy);
 
     if c < 0:
       raise ValueError("c parameter must be >= 0")
@@ -913,9 +925,10 @@ class URST(_SketchTransform):
   :param n: Number of dimensions in input vectors.
   :param s: Number of dimensions in output vectors.
   :param defouttype: Default output type when using the * and / operators.
+  :param forceppy: whether to force a pure python implementation
   """
-  def __init__(self, n, s, defouttype=None):
-    super(URST, self)._baseinit("URST", n, s, defouttype);
+  def __init__(self, n, s, defouttype=None, forceppy=False):
+    super(URST, self)._baseinit("URST", n, s, defouttype, forceppy);
     self._ppy = True
     self._idxs = numpy.random.permutation(n)[0:s]
 
@@ -936,9 +949,10 @@ class NURST(_SketchTransform):
   :param s: Number of dimensions in output vectors.
   :param p: Probability distribution on the n rows.
   :param defouttype: Default output type when using the * and / operators.
+  :param forceppy: whether to force a pure python implementation
   """
-  def __init__(self, n, s, p, defouttype=None):
-    super(NURST, self)._baseinit("NURST", n, s, defouttype);
+  def __init__(self, n, s, p, defouttype=None, forceppy=False):
+    super(NURST, self)._baseinit("NURST", n, s, defouttype, forceppy);
     if p.shape[0] != n:
       raise errors.InvalidParamterError("size of probability array should be exactly n")
     self._ppy = True

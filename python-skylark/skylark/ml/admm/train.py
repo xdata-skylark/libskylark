@@ -91,8 +91,11 @@ if rank==0:
     print "Reading and distributing the data toolk %f seconds" % (MPI.Wtime() - starttime)
 
 # Create kernel
-if args.kernel is "gaussian":
+if args.kernel == "gaussian":
     kernel = skylark.ml.kernels.Gaussian(shape_X[1], args.kernelparam)
+
+if args.kernel == "polynomial":
+    kernel = skylark.ml.kernels.Polynomial(shape_X[1], q=3, c=1)
 
 # train the model
 model = KernelMachine(lossfunction=args.lossfunction,
@@ -119,5 +122,6 @@ model.train((X,Y))
 #print s.getvalue()
 
 
-# Write model to modelfile - need both coefficients as well as random number generator
-model.save(args.modelfile)
+# Write model to modelfile - need both coefficients as well as transforms
+if rank == 0:
+    model.save(args.modelfile)

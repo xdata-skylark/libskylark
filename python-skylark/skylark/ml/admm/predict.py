@@ -65,7 +65,7 @@ elem.Copy(Y_cc, Y);
 predictions, labels = model.predict(X.Matrix)
 
 # need distributed accuracy computation
-accuracy = skylark.metrics.classification_accuracy(labels, Y.Matrix[0, :])
+accuracy = skylark.metrics.classification_accuracy(labels, Y.Matrix[:, 0])
 
 # TODO should aggregate accuracy.
 

@@ -69,7 +69,7 @@ class KernelMachine(object):
             finish = int(min((j + 1) * blksize, D))
             JJ = range(start, finish)
             Dj = len(JJ)
-            Z = (self.RFTs[j] / X) * math.sqrt(Dj / D)
+            Z = (self.RFTs[j] / X) * math.sqrt(float(Dj) / D)
             o = o + numpy.dot(Z, W[JJ,:])
 
         results.append(o)
@@ -201,7 +201,7 @@ class KernelMachine(object):
                 JJ = range(start, finish)
                 Dj = len(JJ)
 
-                Z = (self.RFTs[j] / X.Matrix) * math.sqrt(Dj / D)
+                Z = (self.RFTs[j] / X.Matrix) * math.sqrt(float(Dj) / D)
                 if iter==1:
                     ZtZ = numpy.dot(Z.T, Z)
                     A = linalg.inv(ZtZ + numpy.identity(Dj))
@@ -231,7 +231,7 @@ class KernelMachine(object):
                 finish = min((j + 1) * blksize, D)
                 JJ = range(start, finish)
                 Dj = len(JJ)
-                Z = (self.RFTs[j] / X.Matrix) * math.sqrt(Dj / D)
+                Z = (self.RFTs[j] / X.Matrix) * math.sqrt(float(Dj) / D)
                 ZtObar_ij[JJ,:] = ZtObar_ij[JJ,:] + numpy.dot(Z.T, (O.Matrix - sum_o))/(N+1);
                 o = o + numpy.dot(Z, Wbar[JJ,:])
             localloss = localloss + lossfunction(o, y)

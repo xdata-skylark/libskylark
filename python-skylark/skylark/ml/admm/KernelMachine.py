@@ -151,8 +151,10 @@ class KernelMachine(object):
 
         # Create RFTs
         blksize = int(math.ceil(D / N))
-        self.RFTs = [self.kernel.rft(blksize, self.subtype) for i in range(N-1)]
-        self.RFTs.append(self.kernel.rft(D - (N - 1) * blksize, self.subtype))
+        self.RFTs = [self.kernel.rft(blksize, self.subtype, forceppy=True) for i in range(N-1)]
+        self.RFTs.append(self.kernel.rft(D - (N - 1) * blksize, self.subtype, forceppy=True))
+        # FIXME for now we are forcing pure python implementation since C++ layer
+        #       transforms still do not have a good serialization solution
 
         Precomputed = []
 

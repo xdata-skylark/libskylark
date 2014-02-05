@@ -40,7 +40,7 @@ class Linear(object):
       
     return K
   
-  def rft(self, s, subtype=None, defouttype=None):
+  def rft(self, s, subtype=None, defouttype=None, **args):
     """
     Create a random features transform for the kernel.
     This function uses random Fourier features (Rahimi-Recht).
@@ -54,11 +54,11 @@ class Linear(object):
     :returns: random features sketching transform object.
     """
     if subtype is None:
-      return sketch.JLT(self._d, s, defouttype)
+      return sketch.JLT(self._d, s, defouttype, **args)
     elif subtype is 'fast':
-      return sketch.FJLT(self._d, s, defouttype)
+      return sketch.FJLT(self._d, s, defouttype, **args)
     elif subtype is 'hash':
-      return skethc.CWT(self._d, s, defouttype)
+      return skethc.CWT(self._d, s, defouttype, **args)
     else:
       raise ValueError("invalide subtype supplied")
 
@@ -102,7 +102,7 @@ class Gaussian(object):
       
     return K
   
-  def rft(self, s, subtype=None, defouttype=None):
+  def rft(self, s, subtype=None, defouttype=None, **args):
     """
     Create a random features transform for the kernel.
     This function uses random Fourier features (Rahimi-Recht).
@@ -115,9 +115,9 @@ class Gaussian(object):
     :returns: random features sketching transform object.
     """
     if subtype is 'fast':
-      return sketch.FastGaussianRFT(self._d, s, self._sigma, defouttype)
+      return sketch.FastGaussianRFT(self._d, s, self._sigma, defouttype, **args)
     else:
-      return sketch.GaussianRFT(self._d, s, self._sigma, defouttype)
+      return sketch.GaussianRFT(self._d, s, self._sigma, defouttype, **args)
 
 class Polynomial(object):
   """
@@ -171,7 +171,7 @@ class Polynomial(object):
       
     return K
   
-  def rft(self, s, subtype=None, defouttype=None):
+  def rft(self, s, subtype=None, defouttype=None, **args):
     """
     Create a random features transform for the kernel.
     This function uses TensorSketch (Pahm-Pagh Transform)
@@ -184,5 +184,5 @@ class Polynomial(object):
     :returns: random features sketching transform object.
     """
     
-    return sketch.PPT(self._d, s, self._q, self._c, self._gamma, defouttype)
+    return sketch.PPT(self._d, s, self._q, self._c, self._gamma, defouttype, **args)
         

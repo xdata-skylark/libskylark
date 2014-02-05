@@ -657,7 +657,7 @@ class CWT(_SketchTransform):
   in Input Sparsity Time**, STOC 2013
   """
   def __init__(self, n, s, defouttype=None, forceppy=False):
-    super(CWT, self).__init__("CWT", n, s, defouttype);
+    super(CWT, self).__init__("CWT", n, s, defouttype, forceppy);
     if self._ppy:
       # The following is not memory efficient, but for a pure Python impl 
       # it will do

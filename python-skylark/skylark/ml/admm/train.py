@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import sys
 import elem
 import skylark, skylark.io, skylark.ml.kernels, skylark.ml.utils
@@ -20,7 +22,7 @@ parser.add_argument("--lossfunction", type=str, help='Loss function (squared, cr
 parser.add_argument("--regularizer", type=str, help='Regularizer (l2,l1 - default: l2)', default='l2')
 
 parser.add_argument("--kernel", type=str, help='Kernel (default: gaussian)', default='gaussian')
-parser.add_argument("--kernelparam", type=float, help='Kernel Parameters (e.g., Gaussian Kernel bandwidth) - negative value means estimate', required=True)
+parser.add_argument("--kernelparams", type=str, help='Dictionary of kernel parameters', default="{}")
 
 parser.add_argument("--randomfeatures", type=int, help='Number of random features (default: 1000)', default=1000)
 parser.add_argument("--regparam", type=float, help='Regularization parameter (i.e. lambda - default: 0)', default=0)
@@ -91,11 +93,7 @@ if rank==0:
     print "Reading and distributing the data toolk %f seconds" % (MPI.Wtime() - starttime)
 
 # Create kernel
-if args.kernel == "gaussian":
-    kernel = skylark.ml.kernels.Gaussian(shape_X[1], args.kernelparam)
-
-if args.kernel == "polynomial":
-    kernel = skylark.ml.kernels.Polynomial(shape_X[1], q=3, c=1)
+kernel = skylark.ml.kernels.kernel(args.kernel, shape_X[1], **eval(args.kernelparams))
 
 # train the model
 model = KernelMachine(lossfunction=args.lossfunction,

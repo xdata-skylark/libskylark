@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import sys
 import elem
 import skylark, skylark.io, skylark.ml.utils, skylark.metrics

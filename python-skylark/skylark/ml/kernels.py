@@ -4,6 +4,26 @@ from skylark import sketch, errors
 from distances import euclidean
 import sys
 
+def kernel(kerneltype, d, **params):
+  """
+  Returns a kernel based on the input parameters.
+
+  :param kerneltype: string identifying the kernel requested.
+  :param d: dimension of the kernel.
+  :param params: dictonary of kernel parameters, kernel dependent.
+  :returns: kernel object
+  """
+  if not isinstance(kerneltype, str):
+    raise ValueError("kerneltype must be a string")
+  elif kerneltype.lower() == "linear":
+    return Linear(d, **params)
+  elif kerneltype.lower() == "gaussian":
+    return Gaussian(d, **params)
+  elif kerneltype.lower() == "polynomial":
+    return Polynomial(d, **params)
+  else:
+    raise ValueError("kerneltype not recognized")
+
 class Linear(object):
   """
   A object representing the Linear kernel over d dimensional vectors.

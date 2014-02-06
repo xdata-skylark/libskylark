@@ -33,21 +33,21 @@ static sketchc::transform_type_t str2transform_type(char *str) {
     STRCMP_TYPE(WZT, sketchc::WZT);
     STRCMP_TYPE(GaussianRFT, sketchc::GaussianRFT);
     STRCMP_TYPE(LaplacianRFT, sketchc::LaplacianRFT);
+    STRCMP_TYPE(FastGaussianRFT, sketchc::FastGaussianRFT);
 
     return sketchc::TRANSFORM_TYPE_ERROR;
 }
 
 // Default data types (the ones we use in Python)
 typedef sketch::JLT_data_t<double> JLT_data_t;
+typedef sketch::FJLT_data_t<double> FJLT_data_t;
 typedef sketch::CT_data_t<double> CT_data_t;
 typedef sketch::CWT_data_t<size_t, double> CWT_data_t;
 typedef sketch::MMT_data_t<size_t, double> MMT_data_t;
 typedef sketch::WZT_data_t<size_t, double> WZT_data_t;
 typedef sketch::GaussianRFT_data_t<double> GaussianRFT_data_t;
 typedef sketch::LaplacianRFT_data_t<double> LaplacianRFT_data_t;
-#if SKYLARK_HAVE_FFTW
-typedef sketch::FJLT_data_t<double> FJLT_data_t;
-#endif
+typedef sketch::FastGaussianRFT_data_t<double> FastGaussianRFT_data_t;
 
 // Just for shorter notation
 #if SKYLARK_HAVE_ELEMENTAL
@@ -123,6 +123,7 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
 #if SKYLARK_HAVE_FFTW
         SKDEF(FJLT, DistMatrix_VR_STAR, Matrix)
         SKDEF(FJLT, DistMatrix_VC_STAR, Matrix)
+        SKDEF(FastGaussianRFT, Matrix, Matrix)
 #endif
 
 #endif
@@ -228,21 +229,14 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(sketch::context_t *ctxt,
     SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
 
     AUTO_NEW_DISPATCH(sketchc::JLT, JLT_data_t);
+    AUTO_NEW_DISPATCH(sketchc::FJLT, FJLT_data_t);
     AUTO_NEW_DISPATCH_1P(sketchc::CT, CT_data_t);
     AUTO_NEW_DISPATCH(sketchc::CWT, CWT_data_t);
     AUTO_NEW_DISPATCH(sketchc::MMT, MMT_data_t);
     AUTO_NEW_DISPATCH_1P(sketchc::WZT, WZT_data_t)
-
     AUTO_NEW_DISPATCH_1P(sketchc::GaussianRFT, GaussianRFT_data_t);
     AUTO_NEW_DISPATCH_1P(sketchc::LaplacianRFT, LaplacianRFT_data_t);
-
-#if SKYLARK_HAVE_FFTW
-
-    AUTO_NEW_DISPATCH(sketchc::FJLT, FJLT_data_t);
-
-#endif
-
-
+    AUTO_NEW_DISPATCH_1P(sketchc::FastGaussianRFT, FastGaussianRFT_data_t);
 
     return 0;
 }
@@ -260,19 +254,14 @@ SKYLARK_EXTERN_API
     SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
 
     AUTO_DELETE_DISPATCH(sketchc::JLT, JLT_data_t);
+    AUTO_DELETE_DISPATCH(sketchc::FJLT, FJLT_data_t);
     AUTO_DELETE_DISPATCH(sketchc::CT, CT_data_t);
     AUTO_DELETE_DISPATCH(sketchc::CWT, CWT_data_t);
     AUTO_DELETE_DISPATCH(sketchc::MMT, MMT_data_t);
     AUTO_DELETE_DISPATCH(sketchc::WZT, WZT_data_t);
-
     AUTO_DELETE_DISPATCH(sketchc::GaussianRFT, GaussianRFT_data_t);
     AUTO_DELETE_DISPATCH(sketchc::LaplacianRFT, LaplacianRFT_data_t);
-
-#if SKYLARK_HAVE_FFTW
-
-    AUTO_DELETE_DISPATCH(sketchc::FJLT, FJLT_data_t);
-
-#endif
+    AUTO_DELETE_DISPATCH(sketchc::FastGaussianRFT, FastGaussianRFT_data_t);
 
     // Now can delete object
     delete S;
@@ -506,6 +495,11 @@ SKYLARK_EXTERN_API int
         sketchc::DIST_MATRIX_VC_STAR, sketchc::MATRIX,
         sketch::FJLT_t, DistMatrix_VC_STAR, Matrix,
         FJLT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::FastGaussianRFT,
+        sketchc::MATRIX, sketchc::MATRIX,
+        sketch::FastGaussianRFT_t, Matrix, Matrix,
+        FastGaussianRFT_data_t);
 
 #endif
 #ifdef SKYLARK_HAVE_COMBBLAS

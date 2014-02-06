@@ -15,6 +15,7 @@
 #include "JLT.hpp"
 #include "FJLT.hpp"
 #include "RFT.hpp"
+#include "FRFT.hpp"
 #include "CWT.hpp"
 #include "MMT.hpp"
 #include "WZT.hpp"

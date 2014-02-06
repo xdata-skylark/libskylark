@@ -45,7 +45,7 @@ def initialize(seed=-1):
       _KDT_INSTALLED  = _lib.sl_has_combblas()    
       
       csketches = map(eval, _lib.sl_supported_sketch_transforms().split())
-      pysketches = ["FastGaussianRFT", "SJLT", "PPT", "URST", "NURST"]
+      pysketches = ["SJLT", "PPT", "URST", "NURST"]
       SUPPORTED_SKETCH_TRANSFORMS = \
           csketches + [ (T, "Matrix", "Matrix") for T in pysketches]
     except:
@@ -834,14 +834,21 @@ class FastGaussianRFT(_SketchTransform):
   def __init__(self, n, s, sigma=1.0, defouttype=None, forceppy=False):
     super(FastGaussianRFT, self)._baseinit("FastGaussianRFT", n, s, defouttype, forceppy);
 
-    self._ppy = True
-    self._blocks = int(math.ceil(float(s) / n))
     self._sigma = sigma
-    self._b = numpy.matrix(numpy.random.uniform(0, 2 * pi, (s,1)))
-    binary = scipy.stats.bernoulli(0.5)
-    self._B = [2.0 * binary.rvs(n) - 1.0 for i in range(self._blocks)]
-    self._G = [numpy.random.randn(n) for i in range(self._blocks)]
-    self._P = [numpy.random.permutation(n) for i in range(self._blocks)]
+    if self._ppy:
+      self._ppy = True
+      self._blocks = int(math.ceil(float(s) / n))
+      self._sigma = sigma
+      self._b = numpy.matrix(numpy.random.uniform(0, 2 * pi, (s,1)))
+      binary = scipy.stats.bernoulli(0.5)
+      self._B = [2.0 * binary.rvs(n) - 1.0 for i in range(self._blocks)]
+      self._G = [numpy.random.randn(n) for i in range(self._blocks)]
+      self._P = [numpy.random.permutation(n) for i in range(self._blocks)]
+    else:
+      sketch_transform = c_void_p()
+      _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "FastGaussianRFT", n, s, \
+                byref(sketch_transform), ctypes.c_double(sigma))
+      self._obj = sketch_transform.value
 
   def _ppyapply(self, A, SA, dim):
     blks = [self._ppyapplyblk(A, dim, i) for i in range(self._blocks)]

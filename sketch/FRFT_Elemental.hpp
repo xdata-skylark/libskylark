@@ -79,6 +79,22 @@ private:
         output_matrix_type& sketch_of_A,
         skylark::sketch::columnwise_tag tag) const {
 
+        // Create a work array W
+        matrix_type W = A;
+
+        for(int i = 0; i < base_data_t::numblks; i++) {
+            int s = i * base_data_t::N;
+            int e = std::min(s + base_data_t::N, base_data_t::S);
+
+            // DO SOME MAGIC HERE!
+
+            // Copy that part to the output
+            output_matrix_type view_sketch_of_A;
+            elem::View(view_sketch_of_A, sketch_of_A, s, 0, e - s, A.Width());
+            matrix_type view_W;
+            elem::View(view_W, W, 0, 0, e - s, A.Width());
+            view_sketch_of_A = W;
+        }
     }
 
     /**

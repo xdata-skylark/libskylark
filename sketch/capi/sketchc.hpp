@@ -37,15 +37,15 @@ enum matrix_type_t {
     DIST_MATRIX_VR_STAR,
     DIST_MATRIX_STAR_VC,
     DIST_MATRIX_STAR_VR,
-    DIST_SPARSE_MATRIX          /**< Sparse matrix (CombBLAS) */
+    DIST_SPARSE_MATRIX,          /**< Sparse matrix (CombBLAS) */
+    SPARSE_MATRIX                /**< Sparse local matrix */
 };
 
 struct sketch_transform_t {
     const transform_type_t type;
     void * const transform_obj;
 
-    sketch_transform_t(
-        transform_type_t type,void *transform_obj)
+    sketch_transform_t(transform_type_t type, void *transform_obj)
         : type(type), transform_obj(transform_obj) {}
 };
 
@@ -120,7 +120,7 @@ SKYLARK_EXTERN_API int sl_context_size(sketch::context_t *ctxt, int *size);
  *  @return sketch transformation
  */
 SKYLARK_EXTERN_API int sl_create_sketch_transform(
-        sketch::context_t *ctxt, char *type, 
+        sketch::context_t *ctxt, char *type,
         int n, int s, sketchc::sketch_transform_t **sketch, ...);
 
 /** Free resources hold by a sketch transformation.
@@ -148,6 +148,19 @@ SKYLARK_EXTERN_API int sl_wrap_raw_matrix(double *data, int m, int n, void **A);
 
 SKYLARK_EXTERN_API int sl_free_raw_matrix_wrap(void *A_);
 
+SKYLARK_EXTERN_API int sl_wrap_raw_sp_matrix(int *indptr, int *ind,
+        double *data, int n_indptr, int n_ind, void **A);
+
+SKYLARK_EXTERN_API int sl_free_raw_sp_matrix_wrap(void *A_);
+
+SKYLARK_EXTERN_API int sl_raw_sp_matrix_size(void *A_, int *n_indptr,
+        int *n_indices);
+
+SKYLARK_EXTERN_API int sl_raw_sp_matrix_needs_update(void *A_,
+        bool *needs_update);
+
+SKYLARK_EXTERN_API int sl_raw_sp_matrix_data(void *A_, int32_t **indptr,
+        int32_t **indices, double **values);
 
 } // extern "C"
 

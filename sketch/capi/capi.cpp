@@ -1,6 +1,8 @@
 #include "sketchc.hpp"
 #include "../../utility/exception.hpp"
 
+#include "../../utility/sparse_matrix.hpp"
+
 #ifdef SKYLARK_HAVE_COMBBLAS
 #include "CombBLAS.h"
 #include "SpParMat.h"
@@ -13,7 +15,8 @@
         return TYPE;
 
 static sketchc::matrix_type_t str2matrix_type(char *str) {
-    STRCMP_TYPE(Matrix, sketchc::MATRIX);
+    STRCMP_TYPE(Matrix,   sketchc::MATRIX);
+    STRCMP_TYPE(SpMatrix, sketchc::SPARSE_MATRIX);
     STRCMP_TYPE(DistMatrix, sketchc::DIST_MATRIX);
     STRCMP_TYPE(DistMatrix_VC_STAR, sketchc::DIST_MATRIX_VC_STAR);
     STRCMP_TYPE(DistMatrix_VR_STAR, sketchc::DIST_MATRIX_VR_STAR);
@@ -58,6 +61,7 @@ typedef elem::DistMatrix<double, elem::VC, elem::STAR> DistMatrix_VC_STAR;
 typedef elem::DistMatrix<double, elem::STAR, elem::VR> DistMatrix_STAR_VR;
 typedef elem::DistMatrix<double, elem::STAR, elem::VC> DistMatrix_STAR_VC;
 #endif
+typedef skylark::utility::sparse_matrix_t<size_t, double> SpMatrix_t;
 #ifdef SKYLARK_HAVE_COMBBLAS
 typedef SpDCCols< size_t, double > col_t;
 typedef SpParMat< size_t, double, col_t > DistSparseMatrix_t;
@@ -130,7 +134,8 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
 #ifdef SKYLARK_HAVE_COMBBLAS
         SKDEF(CWT, DistSparseMatrix, DistSparseMatrix)
 #endif
-       "" ;
+        SKDEF(CWT, SpMatrix, SpMatrix)
+        "";
 }
 
 SKYLARK_EXTERN_API const char* sl_strerror(const int error_code) {
@@ -523,6 +528,16 @@ SKYLARK_EXTERN_API int
 #endif
 #endif
 
+    AUTO_APPLY_DISPATCH(sketchc::CWT,
+        sketchc::SPARSE_MATRIX, sketchc::SPARSE_MATRIX,
+        sketch::CWT_t, SpMatrix_t, SpMatrix_t,
+        CWT_data_t);
+
+    //AUTO_APPLY_DISPATCH(sketchc::MMT,
+        //sketchc::SPARSE_MATRIX, sketchc::SPARSE_MATRIX,
+        //sketch::MMT_t, SpMatrix_t, SpMatrix_t,
+        //MMT_data_t);
+
     return 0;
 }
 
@@ -546,6 +561,39 @@ SKYLARK_EXTERN_API int sl_free_raw_matrix_wrap(void *A_) {
 #else
     return 103;
 #endif
+}
+
+
+SKYLARK_EXTERN_API int sl_wrap_raw_sp_matrix(
+        int *indptr, int *ind, double *data, int n_indptr, int n_ind, void **A)
+{
+    SpMatrix_t *tmp = new SpMatrix_t();
+    tmp->Attach(indptr, ind, data, n_indptr, n_ind);
+    *A = tmp;
+    return 0;
+}
+
+SKYLARK_EXTERN_API int sl_free_raw_sp_matrix_wrap(void *A_) {
+    delete static_cast<SpMatrix_t *>(A_);
+    return 0;
+}
+
+SKYLARK_EXTERN_API int sl_raw_sp_matrix_size(void *A_,
+        int *n_indptr, int *n_indices) {
+    static_cast<SpMatrix_t *>(A_)->Size(n_indptr, n_indices);
+    return 0;
+}
+
+SKYLARK_EXTERN_API int sl_raw_sp_matrix_needs_update(void *A_,
+        bool *needs_update) {
+    *needs_update = static_cast<SpMatrix_t *>(A_)->needsUpdate();
+    return 0;
+}
+
+SKYLARK_EXTERN_API int sl_raw_sp_matrix_data(void *A_, int32_t **indptr,
+        int32_t **indices, double **values) {
+    static_cast<SpMatrix_t *>(A_)->Detach(*indptr, *indices, *values);
+    return 0;
 }
 
 } // extern "C"

@@ -23,4 +23,6 @@ struct hash_transform_t { };
 #include "hash_transform_CombBLAS.hpp"
 #endif
 
+#include "hash_transform_local_sparse.hpp"
+
 #endif // SKYLARK_HASH_TRANSFORM_HPP

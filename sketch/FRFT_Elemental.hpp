@@ -5,6 +5,7 @@
 
 #include "context.hpp"
 #include "transforms.hpp"
+#include "FUT.hpp"
 #include "FRFT_data.hpp"
 #include "../utility/exception.hpp"
 
@@ -27,7 +28,7 @@ struct FastRFT_t <
     typedef elem::Matrix<value_type> output_matrix_type;
     typedef FastRFT_data_t<ValueType> base_data_t;
 private:
-    // DEFINE DCT
+    typename fft_futs<ValueType>::DCT dct;
 
 public:
 
@@ -78,23 +79,61 @@ private:
     void apply_impl(const matrix_type& A,
         output_matrix_type& sketch_of_A,
         skylark::sketch::columnwise_tag tag) const {
-
+        
         // Create a work array W
-        matrix_type W = A;
+        matrix_type W(A.Height(), A.Width());
 
+        output_matrix_type B(base_data_t::N, 1), G(base_data_t::N, 1);
+        output_matrix_type Sm(base_data_t::N, 1);
         for(int i = 0; i < base_data_t::numblks; i++) {
             int s = i * base_data_t::N;
             int e = std::min(s + base_data_t::N, base_data_t::S);
 
-            // DO SOME MAGIC HERE!
+            W = A;
+
+            // Set the local values of B, G and S
+            value_type scal =
+                std::sqrt(base_data_t::N) * dct.scale(W, tag);
+            for(int j = 0; j < base_data_t::N; j++) {
+                B.Set(j, 0, base_data_t::B[i * base_data_t::N + j]);
+                G.Set(j, 0, scal * base_data_t::G[i * base_data_t::N + j]);
+                Sm.Set(j, 0, scal * base_data_t::Sm[i * base_data_t::N + j]);
+            }
+
+            elem::DiagonalScale(elem::LEFT, elem::NORMAL, B, W);
+
+            dct.apply(W, tag);
+
+            double *w = W.Buffer();
+            for(int c = 0; c < W.Width(); c++)
+                for(int l = 0; l < base_data_t::N - 1; l++) {
+                    int idx1 = c * W.LDim() + base_data_t::N - 1 - l;
+                    int idx2 = c * W.LDim() +
+                        base_data_t::P[i * (base_data_t::N - 1) + l];
+                    std::swap(w[idx1], w[idx2]);
+                }
+
+            elem::DiagonalScale(elem::LEFT, elem::NORMAL, G, W);
+
+            dct.apply(W, tag);
+
+            elem::DiagonalScale(elem::LEFT, elem::NORMAL, Sm, W);
 
             // Copy that part to the output
             output_matrix_type view_sketch_of_A;
             elem::View(view_sketch_of_A, sketch_of_A, s, 0, e - s, A.Width());
+            view_sketch_of_A = W;
             matrix_type view_W;
             elem::View(view_W, W, 0, 0, e - s, A.Width());
-            view_sketch_of_A = W;
         }
+
+        for(int j = 0; j < A.Width(); j++)
+            for(int i = 0; i < base_data_t::S; i++) {
+                value_type val = sketch_of_A.Get(i, j);
+                value_type trans =
+                    base_data_t::scale * std::cos(val + base_data_t::shifts[i]);
+                sketch_of_A.Set(i, j, trans);
+            }
     }
 
     /**

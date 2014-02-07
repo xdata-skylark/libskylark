@@ -105,6 +105,16 @@ class fftw_r2r_fut_t {
         elem::Transpose(matrix, A);
     }
 
+    double scale_impl(const elem::Matrix<ValueType>& A,
+                      skylark::sketch::columnwise_tag) const {
+        return 1 / sqrt((double)ScaleVal * A.Height());
+    }
+
+    double scale(const elem::Matrix<ValueType>& A,
+                 skylark::sketch::rowwise_tag) const {
+        return 1 / sqrt((double)ScaleVal * A.Width());
+    }
+
 public:
 
     template <typename Dimension>
@@ -117,8 +127,9 @@ public:
         return apply_inverse_impl (A, dimension);
     }
 
-    double scale(const elem::Matrix<ValueType>& A) const {
-        return 1 / sqrt((double)ScaleVal * A.Height());
+    template <typename Dimension>
+    double scale(const elem::Matrix<ValueType>& A, Dimension dimension) const {
+        return scale_impl(A, dimension);
     }
 };
 

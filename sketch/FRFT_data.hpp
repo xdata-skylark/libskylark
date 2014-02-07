@@ -33,7 +33,8 @@ struct FastRFT_data_t {
      */
     FastRFT_data_t (int N, int S, skylark::sketch::context_t& context)
         : N(N), S(S), context(context),
-          numblks(1 + ((S - 1) / N)), scale(std::sqrt(2.0 / S)), Sm(S)  {
+          numblks(1 + ((S - 1) / N)), scale(std::sqrt(2.0 / S)), 
+          Sm(numblks * N)  {
 
         const double pi = boost::math::constants::pi<value_type>();
         bstrand::uniform_real_distribution<value_type> dist_shifts(0, 2 * pi);
@@ -89,7 +90,7 @@ struct FastGaussianRFT_data_t :
         skylark::sketch::context_t& context)
         : base_t(N, S, context), sigma(sigma) {
 
-        std::fill(base_t::Sm.begin(), base_t::Sm.end(), 1.0 / (sigma * sqrt(N)));
+        std::fill(base_t::Sm.begin(), base_t::Sm.end(), 1.0 / (sigma * std::sqrt(N)));
     }
 
 protected:

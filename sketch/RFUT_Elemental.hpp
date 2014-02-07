@@ -100,7 +100,7 @@ private:
         // Scale
         const local_type& local_A = A.LockedMatrix();
         local_type& local_TA = mixed_A.Matrix();
-        value_type scale = T.scale(local_A);
+        value_type scale = T.scale(local_A, skylark::sketch::columnwise_tag());
         for (int j = 0; j < local_A.Width(); j++)
             for (int i = 0; i < base_data_t::N; i++)
                 local_TA.Set(i, j,

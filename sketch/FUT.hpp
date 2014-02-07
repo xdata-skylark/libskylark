@@ -68,7 +68,7 @@ class fftw_r2r_fut_t {
 
         // Using transpositions instead of moving
         // to the advanced interface of FFTW
-        elem::Matrix<ValueType> matrix(A.Grid());
+        elem::Matrix<ValueType> matrix;
         elem::Transpose(A, matrix);
         double* matrix_buffer = matrix.Buffer();
         PlanType plan = PlanFun(matrix.Height(), matrix_buffer, matrix_buffer,
@@ -110,7 +110,7 @@ class fftw_r2r_fut_t {
         return 1 / sqrt((double)ScaleVal * A.Height());
     }
 
-    double scale(const elem::Matrix<ValueType>& A,
+    double scale_impl(const elem::Matrix<ValueType>& A,
                  skylark::sketch::rowwise_tag) const {
         return 1 / sqrt((double)ScaleVal * A.Width());
     }

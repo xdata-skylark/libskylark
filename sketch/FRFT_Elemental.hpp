@@ -122,9 +122,9 @@ private:
             // Copy that part to the output
             output_matrix_type view_sketch_of_A;
             elem::View(view_sketch_of_A, sketch_of_A, s, 0, e - s, A.Width());
-            view_sketch_of_A = W;
             matrix_type view_W;
             elem::View(view_W, W, 0, 0, e - s, A.Width());
+            view_sketch_of_A = view_W;
         }
 
         for(int j = 0; j < A.Width(); j++)
@@ -144,7 +144,60 @@ private:
         output_matrix_type& sketch_of_A,
         skylark::sketch::rowwise_tag tag) const {
 
+        // Create a work array W
+        matrix_type W(A.Height(), A.Width());
 
+        output_matrix_type B(base_data_t::N, 1), G(base_data_t::N, 1);
+        output_matrix_type Sm(base_data_t::N, 1);
+        for(int i = 0; i < base_data_t::numblks; i++) {
+            int s = i * base_data_t::N;
+            int e = std::min(s + base_data_t::N, base_data_t::S);
+
+            W = A;
+
+            // Set the local values of B, G and S
+            value_type scal =
+                std::sqrt(base_data_t::N) * dct.scale(W, tag);
+            for(int j = 0; j < base_data_t::N; j++) {
+                B.Set(j, 0, base_data_t::B[i * base_data_t::N + j]);
+                G.Set(j, 0, scal * base_data_t::G[i * base_data_t::N + j]);
+                Sm.Set(j, 0, scal * base_data_t::Sm[i * base_data_t::N + j]);
+            }
+
+            elem::DiagonalScale(elem::RIGHT, elem::NORMAL, B, W);
+
+            dct.apply(W, tag);
+
+            double *w = W.Buffer();
+            for(int c = 0; c < W.Height(); c++)
+                for(int l = 0; l < base_data_t::N - 1; l++) {
+                    int idx1 = c + (base_data_t::N - 1 - l) * W.LDim();
+                    int idx2 = c  +
+                        (base_data_t::P[i * (base_data_t::N - 1) + l]) * W.LDim();
+                    std::swap(w[idx1], w[idx2]);
+                }
+
+            elem::DiagonalScale(elem::RIGHT, elem::NORMAL, G, W);
+
+            dct.apply(W, tag);
+
+            elem::DiagonalScale(elem::RIGHT, elem::NORMAL, Sm, W);
+
+            // Copy that part to the output
+            output_matrix_type view_sketch_of_A;
+            elem::View(view_sketch_of_A, sketch_of_A, 0, s, A.Height(), e - s);
+            matrix_type view_W;
+            elem::View(view_W, W, 0, 0, A.Height(), e - s);
+            view_sketch_of_A = view_W;
+        }
+
+        for(int j = 0; j < base_data_t::S; j++)
+            for(int i = 0; i < A.Height(); i++) {
+                value_type val = sketch_of_A.Get(i, j);
+                value_type trans =
+                    base_data_t::scale * std::cos(val + base_data_t::shifts[j]);
+                sketch_of_A.Set(i, j, trans);
+            }
     }
 };
 

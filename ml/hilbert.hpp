@@ -12,7 +12,6 @@
 #include "FeatureTransform.hpp"
 #include "BlockADMM.hpp"
 #include "options.hpp"
-
-
+#include "io.hpp"
 
 #endif /* HILBERT_HPP_ */

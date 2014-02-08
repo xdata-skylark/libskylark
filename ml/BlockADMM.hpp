@@ -97,9 +97,10 @@ int BlockADMMSolver::train(skylark_context_t& context,  DistInputMatrixType& X, 
 
 	int n = X.Height();
 	int d = X.Width();
-
+	int k = Wbar.Width();
 	// number of classes, targets - to generalize
-	int k = Y.Width();
+
+	//(context.comm, &kmax, 1, &k, boost::mpi::maximum);
 
 	// number of random features
 	int D = NumFeatures;

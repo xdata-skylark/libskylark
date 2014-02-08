@@ -10,6 +10,7 @@
 
 #include <elemental.hpp>
 #include "options.hpp"
+#include <cstdlib>
 
 // Simple abstract class to represent a function and its prox operator
 // these are defined for local matrices.
@@ -43,11 +44,23 @@ public:
 	virtual void proxoperator(LocalDenseMatrixType& X, double lambda, LocalTargetMatrixType& T, LocalDenseMatrixType& Y);
 };
 
-// Class to represent 0.5*||O - T||^2_{fro}
+// Class to represent hinge loss
 class hingeloss : public lossfunction {
 public:
 	virtual double evaluate(LocalDenseMatrixType& O, LocalTargetMatrixType& T);
 	virtual void proxoperator(LocalDenseMatrixType& X, double lambda, LocalTargetMatrixType& T, LocalDenseMatrixType& Y);
+};
+
+class logisticloss : public lossfunction {
+public:
+    virtual double evaluate(LocalDenseMatrixType& O, LocalTargetMatrixType& T);
+    virtual void proxoperator(LocalDenseMatrixType& X, double lambda, LocalTargetMatrixType& T, LocalDenseMatrixType& Y);
+private:
+    double logsumexp(double* x, int n);
+    double normsquare(double* x, double* y, int n);
+    double objective(int index, double* x, double* v, int n, double lambda);
+    int logexp(int index, double* v, int n, double lambda, double* x, int MAXITER, double epsilon, int DISPLAY);
+
 };
 
 
@@ -187,6 +200,96 @@ void hingeloss::proxoperator(LocalDenseMatrixType& X, double lambda, LocalTarget
 	}
 
 
+double logisticloss::logsumexp(double* x, int n) {
+        int i;
+        double max=x[0];
+        double f = 0.0;
+        for(i=0;i<n;i++) {
+                if (x[i]>max) {
+                        max = x[i];
+                }
+        }
+        for(i=0;i<n;i++)
+                f +=  exp(x[i] - max);
+        f = max + log(f);
+
+        return f;
+}
+
+double logisticloss::objective(int index, double* x, double* v, int n, double lambda) {
+        double nrmsqr = normsquare(x,v,n);
+        double obj = -x[index] + logsumexp(x, n) + 0.5*lambda*nrmsqr;
+        return obj;
+        }
+
+double logisticloss::normsquare(double* x, double* y, int n){
+        double nrm = 0.0;
+        int i;
+        for(i=0;i<n;i++)
+                nrm+= pow(x[i] - y[i], 2);
+        return nrm;
+}
+
+int logisticloss::logexp(int index, double* v, int n, double lambda, double* x, int MAXITER, double epsilon, int DISPLAY) {
+    /* solution to - log exp(x(i))/sum(exp(x(j))) + lambda/2 ||x - v||_2^2 */
+    /* n is length of v and x */
+    /* writes over x */
+    double alpha = 0.1;
+    double beta = 0.5;
+    int iter, i;
+    double t, logsum, p, pu, pptil, decrement;
+    double *u = (double *) malloc(n*sizeof(double));
+    double *z = (double *) malloc(n*sizeof(double));
+    double *grad = (double *) malloc(n*sizeof(double));
+    double newobj=0.0, obj=0.0;
+    obj = objective(index, x, v, n, lambda);
+
+    for(iter=0;iter<MAXITER;iter++) {
+        logsum = logsumexp(x,n);
+        if(DISPLAY)
+            printf("iter=%d, obj=%f\n", iter, obj);
+        pu = 0.0;
+        pptil = 0.0;
+        for(i=0;i<n;i++) {
+            p = exp(x[i] - logsum);
+            grad[i] = p + lambda*(x[i] - v[i]);
+            if(i==index)
+                grad[i] += -1.0;
+            u[i] = grad[i]/(p+lambda);
+            pu += p*u[i];
+            z[i] = p/(p+lambda);
+            pptil += z[i]*p;
+        }
+        decrement = 0.0;
+        for(i=0;i<n;i++) {
+            u[i] -= (pu/pptil)*z[i];
+            decrement += grad[i]*u[i];
+        }
+        if (decrement < 2*epsilon) {
+            free(u);
+            free(z);
+            free(grad);
+            return 0;
+        }
+        t = 1.0;
+        while(1) {
+            for(i=0;i<n;i++)
+                z[i] = x[i] - t*u[i];
+            newobj = objective(index, z, v, n, lambda);
+            if (newobj <= obj + alpha*t*decrement)
+                break;
+            t = beta*t;
+        }
+        for(i=0;i<n;i++)
+            x[i] = z[i];
+            obj = newobj;
+    }
+    free(u);
+    free(z);
+    free(grad);
+    return 1;
+}
+
 double l2::evaluate(LocalDenseMatrixType& W) {
 		double norm = elem::Norm(W);
 		return 0.5*norm*norm;
@@ -203,6 +306,8 @@ void l2::proxoperator(LocalDenseMatrixType& W, double lambda, LocalDenseMatrixTy
 		for(int i=0;i<mn; i++)
 			Pbuf[i] = (Wbuf[i] - mubuf[i])*ilambda;
 	}
+
+
 
 
 #endif /* FUNCTIONPROX_HPP_ */

@@ -11,6 +11,7 @@
 #include <elemental.hpp>
 #include "options.hpp"
 #include <cstdlib>
+#include <omp.h>
 
 // Simple abstract class to represent a function and its prox operator
 // these are defined for local matrices.
@@ -60,7 +61,9 @@ private:
     double normsquare(double* x, double* y, int n);
     double objective(int index, double* x, double* v, int n, double lambda);
     int logexp(int index, double* v, int n, double lambda, double* x, int MAXITER, double epsilon, int DISPLAY);
-
+    static const int MAXITER = 10;
+    static const double epsilon = 1e-3;
+    static const int DISPLAY = 0;
 };
 
 
@@ -107,9 +110,9 @@ void squaredloss::proxoperator(LocalDenseMatrixType& X, double lambda, LocalTarg
 
 double hingeloss::evaluate(LocalDenseMatrixType& O, LocalTargetMatrixType& T) {
 		double loss = 0.0;
-		int m = O.Height();
+		int k = O.Height();
 		int n = O.Width();
-		int mn = O.Height()*O.Width();
+		int kn = O.Height()*O.Width();
 		int label, i, j;
 		// check for size compatability
 
@@ -121,23 +124,27 @@ double hingeloss::evaluate(LocalDenseMatrixType& O, LocalTargetMatrixType& T) {
 		int noutputs = O.Width();
 
 		if(noutputs==1) {
-		       for(i=0;i<m;i++) {
+               #pragma omp parallel for reduction(+:obj) private(i, yx)
+		       for(i=0;i<n;i++) {
 		                        yx = Obuf[i]*Tbuf[i];
 		                        if(yx<1.0)
 		                                obj += (1.0 - yx);
 		                }
+
 		        }
 
 
 		if(noutputs>1) {
-		       for(i=0;i<m;i++) {
+               #pragma omp parallel for reduction(+:obj) private(i, j, label, yx)
+		       for(i=0;i<n;i++) {
 		                label = (int) Tbuf[i];
-		                for(j=0;j<n;j++) {
-		                     yx = O.Get(i,j)* (j==label ? 1.0:-1.0);
+		                for(j=0;j<k;j++) {
+		                     yx = O.Get(j,i)* (j==label ? 1.0:-1.0);
 		                     if(yx<1.0)
 		                         obj += (1.0 - yx);
 		                }
 		       }
+
 		}
 		return obj;
 	}
@@ -149,14 +156,15 @@ void hingeloss::proxoperator(LocalDenseMatrixType& X, double lambda, LocalTarget
 	double* Tbuf = T.Buffer();
 	double* Xbuf = X.Buffer();
 	double* Ybuf = Y.Buffer();
-	int m = X.Height();
-	int n = X.Width();
+	int k = X.Height();
+	int m = X.Width();
     double yv, yy;
     int label;
 
-    int noutputs = X.Width();
+    int noutputs = k;
 
 	if(noutputs==1) { // We assume cy has +1 or -1 entries for n=1 outputs
+                        #pragma omp parallel for private(i,yv)
 		                for(i=0;i<m;i++) {
 		                        yv = Tbuf[i]*Xbuf[i];
 
@@ -175,22 +183,23 @@ void hingeloss::proxoperator(LocalDenseMatrixType& X, double lambda, LocalTarget
 		        }
 
 	if (noutputs>1) {
+                        #pragma omp parallel for private(i,j,yv, yy, label)
 		                for(i=0;i<m;i++) {
 		                        label = (int) Tbuf[i];
-		                        for(j=0;j<n;j++) {
-		                                yv = X.Get(i,j);
+		                        for(j=0;j<k;j++) {
+		                                yv = X.Get(j,i);
 		                                yy = +1.0;
 		                                if(!(j==label)) {
 		                                        yv = -yv;
 		                                        yy = -1.0;
 		                                }
 		                                if (yv>1.0)
-		                                                                Y.Set(i,j,  X.Get(i,j));
+		                                                                Y.Set(j,i,  X.Get(j,i));
 		                                                        else {
 		                                                                if(yv<1.0-lambda)
-		                                                                        Y.Set(i,j, X.Get(i,j) + lambda*yy);
+		                                                                        Y.Set(j,i, X.Get(j,i) + lambda*yy);
 		                                                                else
-		                                                                        Y.Set(i,j, yy);
+		                                                                        Y.Set(j,i, yy);
 		                                                        }
 		                        }
 		                }
@@ -199,6 +208,38 @@ void hingeloss::proxoperator(LocalDenseMatrixType& X, double lambda, LocalTarget
 
 	}
 
+
+double logisticloss::evaluate(LocalDenseMatrixType& O, LocalTargetMatrixType& T) {
+        double obj = 0.0;
+        int m = O.Width();
+        int n = O.Height();
+
+        double start = omp_get_wtime( );
+
+        #pragma omp parallel for reduction(+:obj)
+        for(int i=0;i<m;i++) {
+            obj += -O.Get((int) T.Get(i, 0), i) + logsumexp(O.Buffer(0, i), n);
+        }
+
+        double end = omp_get_wtime( );
+
+        // std::cout << end - start <<  " secs " << std::endl;
+
+        return obj;
+}
+
+
+void logisticloss::proxoperator(LocalDenseMatrixType& X, double lambda, LocalTargetMatrixType& T, LocalDenseMatrixType& Y) {
+    int flag = 0;
+    int m = X.Width();
+    int n = X.Height();
+
+    #pragma omp parallel for
+    for(int i=0;i<m;i++) {
+                flag = logexp((int) T.Get(i, 0), X.Buffer(0, i), n, lambda, Y.Buffer(0, i), MAXITER, epsilon, DISPLAY);
+    }
+
+}
 
 double logisticloss::logsumexp(double* x, int n) {
         int i;

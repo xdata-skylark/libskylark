@@ -8,6 +8,8 @@
 #include <boost/mpi.hpp>
 #include <boost/program_options.hpp>
 #include "hilbert.hpp"
+#include <omp.h>
+
 
 namespace bmpi =  boost::mpi;
 namespace po = boost::program_options;
@@ -16,10 +18,11 @@ using namespace std;
 int main (int argc, char** argv) {
 	/* Initialize MPI */
 
+      int provided;
+      MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
+
 	  hilbert_options_t options (argc, argv);
 	  if (options.exit_on_return) { return -1; }
-
-
 
 	  bmpi::environment env (argc, argv);
 
@@ -30,8 +33,12 @@ int main (int argc, char** argv) {
 	 skylark::sketch::context_t context (12345, world);
 
 	 elem::Initialize (argc, argv);
+
 	 MPI_Comm mpi_world(world);
+
 	 //elem::Grid grid (mpi_world);
+
+	 omp_set_num_threads(options.numthreads);
 
 	 DistInputMatrixType X, Y;
 
@@ -48,6 +55,9 @@ int main (int argc, char** argv) {
 	 	 case HINGE:
 	 		 loss = new hingeloss();
 	 		 break;
+	 	 case LOGISTIC:
+	 	     loss = new logisticloss();
+	 	     break;
 	 }
 
 	 regularization *regularizer = NULL;
@@ -74,6 +84,7 @@ int main (int argc, char** argv) {
 	 if (k>1) // we assume 0-to-N encoding of classes. Hence N = k+1. For two classes, k=1.
 	 	k++;
 
+
 	 BlockADMMSolver *Solver = new BlockADMMSolver(
 			 	 	 loss,
 	 				 regularizer,
@@ -86,8 +97,11 @@ int main (int argc, char** argv) {
 	 				 options.MAXITER,
 	 				 options.rho);
 
+
+
 	 elem::Matrix<double> Wbar(options.randomfeatures, k);
 	 elem::MakeZeros(Wbar);
+
 	 Solver->train(context, X,Y,Wbar);
 	 if (context.rank==0) {
 		 std::stringstream dimensionstring;

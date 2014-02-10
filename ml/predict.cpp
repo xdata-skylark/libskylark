@@ -10,6 +10,9 @@
 
 int main (int argc, char** argv) {
 
+    int provided;
+    MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
+
 	std::string testfile = argv[1];
 	std::string modelfile = argv[2];
 	bmpi::environment env (argc, argv);

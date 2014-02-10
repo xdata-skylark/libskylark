@@ -260,7 +260,7 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 
 	int Dk = D*k;
 	int nik  = ni*k;
-	int start, finish, sj;
+	int start, next_start = 0, sj;
 
 	boost::mpi::timer timer;
 
@@ -287,8 +287,6 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 			regularizer->proxoperator(Wbar, lambda/RHO, mu, W);
 		}
 
-
-
 		elem::Zeros(sum_o, k, ni);
 		//elem::Matrix<double> o(ni, k);
 		
@@ -314,7 +312,7 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 			elem::Matrix<double> tmp(sj, k);
 			elem::Matrix<double> rhs(sj, k);
 			elem::Matrix<double> o(k, ni);
-			
+
 			if(iter==1) {
 
 				elem::Matrix<double> Ones;

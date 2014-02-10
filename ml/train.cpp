@@ -70,7 +70,29 @@ int main (int argc, char** argv) {
 	 		 regularizer = new l2();
 	 		 break;
 	 }
+<<<<<<< HEAD
 	 
+=======
+
+	 BlockADMMSolver::feature_transform_list_t featureMaps;
+	 switch(options.kernel) {
+	 	 case LINEAR:
+	 		 // TODO
+	 		 options.randomfeatures = X.Width();
+	 		 break;
+	 		 
+	 	 case GAUSSIAN:
+	 		int blksize = int(ceil(double(options.randomfeatures) / options.numfeaturepartitions));
+	 		for(int i = 0; i < options.numfeaturepartitions - 1; i++)
+	 			featureMaps.push_front(new skylark::sketch::FastGaussianRFT_t<LocalMatrixType>(X.Width(), blksize, options.kernelparam, context));
+	 		featureMaps.push_front(new skylark::sketch::FastGaussianRFT_t<LocalMatrixType>(X.Width(), options.randomfeatures - (options.numfeaturepartitions - 1) * blksize, options.kernelparam, context));
+	 		break;
+	 		 
+	 	 
+	 }
+
+
+>>>>>>> Compiles and runs without issue, but didn't test predict yet
 	 // int k = Y.Width();
 	 int k;
 	 int kmax = *std::max_element(Y.Buffer(), Y.Buffer() + Y.LocalHeight());
@@ -79,6 +101,7 @@ int main (int argc, char** argv) {
 	 if (k>1) // we assume 0-to-N encoding of classes. Hence N = k+1. For two classes, k=1.
 	 	k++;
 
+<<<<<<< HEAD
 	 BlockADMMSolver *Solver = NULL;
 	 BlockADMMSolver::feature_transform_array_t featureMaps;
 	 int blksize;
@@ -90,6 +113,13 @@ int main (int argc, char** argv) {
 	 				context, 
 	 				loss,
 	 				 regularizer,	
+=======
+
+	 BlockADMMSolver *Solver = new BlockADMMSolver(
+			 	 	 loss,
+	 				 regularizer,
+	 				 &featureMaps,
+>>>>>>> Compiles and runs without issue, but didn't test predict yet
 	 				 options.lambda,
 	 				 X.Width(),
 	 				 options.numfeaturepartitions,

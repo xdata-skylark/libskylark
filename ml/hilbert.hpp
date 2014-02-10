@@ -9,7 +9,6 @@
 #define HILBERT_HPP_
 
 #include "FunctionProx.hpp"
-#include "FeatureTransform.hpp"
 #include "BlockADMM.hpp"
 #include "options.hpp"
 #include "io.hpp"

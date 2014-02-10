@@ -67,12 +67,21 @@ int main (int argc, char** argv) {
 	 		 break;
 	 }
 
-	 FeatureTransform *featureMap = NULL;
+	 BlockADMMSolver::feature_transform_list_t featureMaps;
 	 switch(options.kernel) {
 	 	 case LINEAR:
-	 		 featureMap = new Identity();
+	 		 // TODO
 	 		 options.randomfeatures = X.Width();
 	 		 break;
+	 		 
+	 	 case GAUSSIAN:
+	 		int blksize = int(ceil(double(options.randomfeatures) / options.numfeaturepartitions));
+	 		for(int i = 0; i < options.numfeaturepartitions - 1; i++)
+	 			featureMaps.push_front(new skylark::sketch::FastGaussianRFT_t<LocalMatrixType>(X.Width(), blksize, options.kernelparam, context));
+	 		featureMaps.push_front(new skylark::sketch::FastGaussianRFT_t<LocalMatrixType>(X.Width(), options.randomfeatures - (options.numfeaturepartitions - 1) * blksize, options.kernelparam, context));
+	 		break;
+	 		 
+	 	 
 	 }
 
 
@@ -88,7 +97,7 @@ int main (int argc, char** argv) {
 	 BlockADMMSolver *Solver = new BlockADMMSolver(
 			 	 	 loss,
 	 				 regularizer,
-	 				 featureMap,
+	 				 &featureMaps,
 	 				 options.lambda,
 	 				 options.randomfeatures,
 	 				 options.numfeaturepartitions,
@@ -110,8 +119,12 @@ int main (int argc, char** argv) {
 	 }
 //	 cout << " Rank " << context.rank << " owns : " << X.LocalHeight() <<  " x " << X.LocalWidth() << endl;
 
-	 context.comm.barrier();
+	 // Clear random features
+	 for (BlockADMMSolver::feature_transform_list_t::iterator it = featureMaps.begin(); it != featureMaps.end(); it++)
+		 delete *it;
 
+	context.comm.barrier();
+	 
 	 elem::Finalize();
 	 return 0;
 }

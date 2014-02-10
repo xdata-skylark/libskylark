@@ -21,14 +21,20 @@ typedef elem::DistMatrix<double, elem::VC, elem::STAR> DistMatrixType;
 typedef elem::DistMatrix<double, elem::STAR, elem::VC> DistMatrixTypeT;
 
 typedef elem::Matrix<double> LocalMatrixType;
+typedef skylark::sketch::sketch_transform_t<LocalMatrixType, LocalMatrixType> 
+	feature_transform_t;
+
 typedef skylark::sketch::context_t skylark_context_t;
 
 class BlockADMMSolver
 {
 public:
+	
+	typedef std::list<const feature_transform_t *> feature_transform_list_t; // TODO move to private
+	
 	BlockADMMSolver(const lossfunction* loss,
 					const regularization* regularizer,
-					const FeatureTransform* featureMap,
+					const feature_transform_list_t* featureMaps,
 					double lambda, // regularization parameter
 					int NumFeatures,
 					int NumFeaturePartitions = 1,
@@ -49,9 +55,10 @@ private:
 	int NumFeaturePartitions;
 	int NumThreads;
 	int NumFeatures;
+	int BlockSize;
 	lossfunction* loss;
 	regularization* regularizer;
-	FeatureTransform* featureMap;
+	feature_transform_list_t *featureMaps;
 	LocalMatrixType **Cache;
 };
 
@@ -69,7 +76,7 @@ void BlockADMMSolver::InitializeCache() {
 
 BlockADMMSolver::BlockADMMSolver(const lossfunction* loss,
 		const regularization* regularizer,
-		const FeatureTransform* featureMap,
+		const feature_transform_list_t *featureMaps,
 		double lambda,
 		int NumFeatures,
 		int NumFeaturePartitions,
@@ -80,11 +87,12 @@ BlockADMMSolver::BlockADMMSolver(const lossfunction* loss,
 
 		this->loss = const_cast<lossfunction *> (loss);
 		this->regularizer = const_cast<regularization *> (regularizer);
-		this->featureMap = const_cast<FeatureTransform *> (featureMap);
+		this->featureMaps = const_cast<feature_transform_list_t *> (featureMaps);
 		this->lambda = lambda;
 		this->NumFeatures = NumFeatures;
 		this->NumFeaturePartitions = NumFeaturePartitions;
 		this->NumThreads = NumThreads;
+		this->BlockSize = int(ceil(double(NumFeatures) / NumFeaturePartitions));
 		this->TOL = TOL;
 		this->MAXITER = MAXITER;
 		this->RHO = RHO;
@@ -147,7 +155,7 @@ int BlockADMMSolver::train(skylark_context_t& context,  DistInputMatrixType& X, 
 
 	int Dk = D*k;
 	int nik  = ni*k;
-	int start, finish, sj;
+	int start, next_start = 0, sj;
 
 	boost::mpi::timer timer;
 
@@ -176,25 +184,27 @@ int BlockADMMSolver::train(skylark_context_t& context,  DistInputMatrixType& X, 
 
 
 
-		elem::Zeros(sum_o, k, ni);
-		// elem::Matrix<double> o(k, ni);
-		int j;
-
-        #pragma omp parallel for private(j, start, finish, sj)
-		for(j=0; j<NumFeaturePartitions; j++) {
-			start = floor(round(j*D*1.0/NumFeaturePartitions));
-			finish = floor(round((j+1)*D*1.0/NumFeaturePartitions))-1;
-			sj = finish - start  + 1;
+		elem::Zeros(sum_o, ni, k);
+		//elem::Matrix<double> o(ni, k);
+		
+		int j = 0, next_start = 0;
+		// #pragma omp parallel for private(j, start, finish, sj) // TODO    	
+		for(feature_transform_list_t::iterator it = featureMaps->begin(); it != featureMaps->end(); it++, j++) {
+			// TODO handle NULL in featureMaps
+			const feature_transform_t& featureMap = **it;
+			
+			start = next_start; 
+			sj = featureMap.get_S();
+			next_start = start + sj;
 
 			elem::Matrix<double> z(ni, sj);
 			elem::Matrix<double> tmp(sj, k);
 			elem::Matrix<double> rhs(sj, k);
 			elem::Matrix<double> o(k, ni);
 
-    		featureMap->map(x, start, finish, z);
-
-
-
+			featureMap.apply(x, z, skylark::sketch::rowwise_tag());
+			elem::Scal(sqrt(double(sj) / d), z);  // Might be better to just adjust scalar in later operations.
+    		
 			if(iter==1) {
 
 				elem::Matrix<double> Ones;
@@ -249,15 +259,21 @@ int BlockADMMSolver::train(skylark_context_t& context,  DistInputMatrixType& X, 
 		elem::MakeZeros(o);
 		elem::Scal(-1.0, sum_o);
 		elem::Axpy(+1.0, O.Matrix(), sum_o); // sum_o = O.Matrix - sum_o
+		
+		next_start = 0;
+		// #pragma omp parallel for private(j, start, finish, sj) // TODO
+		for(feature_transform_list_t::iterator it = featureMaps->begin(); it != featureMaps->end(); it++, j++) {
+					const feature_transform_t& featureMap = **it;
+			
+					start = next_start; 
+					sj = featureMap.get_S();
+					next_start = start + sj;
 
-        #pragma omp parallel for private(j, start, finish, sj)
-		for(int j=0; j<NumFeaturePartitions; j++) {
-					start = floor(round(j*D*1.0/NumFeaturePartitions));
-					finish = floor(round((j+1)*D*1.0/NumFeaturePartitions))-1;
-					sj = finish - start  + 1;
 					elem::Matrix<double> z(ni, sj);
 					elem::Matrix<double> tmp(sj, k);
-					featureMap->map(x, start, finish, z);
+					
+					featureMap.apply(x, z, skylark::sketch::rowwise_tag());
+					elem::Scal(sqrt(double(sj) / d), z);  // Might be better to just adjust scalar in later operations.
 
 					elem::View(tmp, ZtObar_ij, start, 0, sj, k);
 					elem::Gemm(elem::TRANSPOSE, elem::TRANSPOSE, 1.0/(NumFeaturePartitions + 1.0), z, sum_o, 1.0, tmp);

@@ -75,6 +75,9 @@ public:
         _transform.apply(A, sketch_of_A, dimension);
     }
 
+    int get_N() const { return this->N; } /**< Get input dimesion. */
+    int get_S() const { return this->S; } /**< Get output dimesion. */
+
 private:
     transform_t _transform;
 };

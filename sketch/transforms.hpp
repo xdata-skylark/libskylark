@@ -27,6 +27,10 @@ public:
     virtual void apply (const InputMatrixType& A,
         OutputMatrixType& sketch_of_A, rowwise_tag dimension) const = 0;
 
+    virtual int get_N() const = 0; /**< Get input dimension */
+
+    virtual int get_S() const = 0; /**< Get output dimension */
+
 };
 
 } } /** namespace skylark::sketch */

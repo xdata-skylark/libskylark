@@ -31,6 +31,10 @@ public:
 
     virtual int get_S() const = 0; /**< Get output dimension */
 
+    virtual ~sketch_transform_t<InputMatrixType, OutputMatrixType>() {
+
+    }
+
 };
 
 } } /** namespace skylark::sketch */

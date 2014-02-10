@@ -272,7 +272,7 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 
 	int Dk = D*k;
 	int nik  = ni*k;
-	int start, finish, sj;
+	int start, next_start = 0, sj;
 
 	boost::mpi::timer timer;
 

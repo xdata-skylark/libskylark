@@ -14,10 +14,20 @@ struct columnwise_tag : dimension_tag {};
 struct rowwise_tag : dimension_tag {};
 
 /**
- * TWO SIDED: This can be thought of as a composition operation. Therefore,
- * there is no need to separately include this in config!
+ * Abstract base class for all sketch transforms.
  */
+template < typename InputMatrixType,
+           typename OutputMatrixType = InputMatrixType >
+class sketch_transform_t {
+public:
 
+    virtual void apply (const InputMatrixType& A,
+        OutputMatrixType& sketch_of_A, columnwise_tag dimension) const = 0;
+
+    virtual void apply (const InputMatrixType& A,
+        OutputMatrixType& sketch_of_A, rowwise_tag dimension) const = 0;
+
+};
 
 } } /** namespace skylark::sketch */
 

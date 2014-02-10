@@ -28,11 +28,11 @@ class FastRFT_t {
  * FastRandom Features for Gaussian Kernel
  */
 template< typename InputMatrixType,
-          typename OutputMatrixType>
+          typename OutputMatrixType = InputMatrixType >
 struct FastGaussianRFT_t :
     public FastGaussianRFT_data_t<typename
-      FastRFT_t<InputMatrixType, OutputMatrixType >::value_type > {
-
+        FastRFT_t<InputMatrixType, OutputMatrixType >::value_type >,
+    virtual public sketch_transform_t<InputMatrixType, OutputMatrixType > {
 
     // We use composition to defer calls to RFT_t
     typedef FastRFT_t<InputMatrixType, OutputMatrixType > transform_t;
@@ -60,6 +60,7 @@ struct FastGaussianRFT_t :
 
     }
 
+
     /**
      * Constructor from data
      */
@@ -69,12 +70,22 @@ struct FastGaussianRFT_t :
     }
 
     /**
-     * Apply the sketching transform that is described in by the sketch_of_A.
+     * Apply columnwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
      */
-    template <typename Dimension>
     void apply (const typename transform_t::matrix_type& A,
                 typename transform_t::output_matrix_type& sketch_of_A,
-                Dimension dimension) const {
+                columnwise_tag dimension) const {
+        _transform.apply(A, sketch_of_A, dimension);
+    }
+
+    /**
+     * Apply rowwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply (const typename transform_t::matrix_type& A,
+                typename transform_t::output_matrix_type& sketch_of_A,
+                rowwise_tag dimension) const {
         _transform.apply(A, sketch_of_A, dimension);
     }
 

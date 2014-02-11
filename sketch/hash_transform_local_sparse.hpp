@@ -102,13 +102,13 @@ private:
             for(size_t idx = 0; idx < (*(ritr.first + 1) - *ritr.first);
                 citr.first++, vitr.first++, ++idx) {
 
+                index_type row     =  row_idx;
                 index_type col_idx = *citr.first;
-                value_type value   = *vitr.first *
-                                     getRowValue(row_idx, col_idx, dist);
+                value_type value   = *vitr.first * getValue(row_idx, col_idx, dist);
 
-                newPos(row_idx, col_idx, dist);
+                finalPos(row, col_idx, dist);
                 typename output_matrix_type::coord_tuple_t new_entry(
-                        row_idx, col_idx, value);
+                         row, col_idx, value);
 
                 coords.push_back(new_entry);
             }
@@ -117,20 +117,20 @@ private:
         sketch_of_A.Attach(coords);
     }
 
-    inline void newPos(index_type &rowid, index_type &colid, columnwise_tag) const {
+    inline void finalPos(index_type &rowid, index_type &colid, columnwise_tag) const {
         rowid = base_data_t::row_idx[rowid];
     }
 
-    inline void newPos(index_type &rowid, index_type &colid, rowwise_tag) const {
+    inline void finalPos(index_type &rowid, index_type &colid, rowwise_tag) const {
         colid = base_data_t::row_idx[colid];
     }
 
-    inline value_type getRowValue(index_type rowid, index_type colid,
+    inline value_type getValue(index_type rowid, index_type colid,
         columnwise_tag) const {
         return base_data_t::row_value[rowid];
     }
 
-    inline value_type getRowValue(index_type rowid, index_type colid,
+    inline value_type getValue(index_type rowid, index_type colid,
         rowwise_tag) const {
         return base_data_t::row_value[colid];
     }

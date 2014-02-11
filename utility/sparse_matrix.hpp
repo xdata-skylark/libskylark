@@ -22,7 +22,7 @@ struct sparse_matrix_t {
     typedef typename std::vector<value_type>::const_iterator const_val_itr_t;
     typedef std::pair<const_val_itr_t, const_val_itr_t> const_val_itr_range_t;
 
-    typedef tuple<index_type, index_type, value_type> coord_tuple_t;
+    typedef boost::tuple<index_type, index_type, value_type> coord_tuple_t;
     typedef std::vector<coord_tuple_t> coords_t;
 
     sparse_matrix_t()
@@ -73,23 +73,21 @@ struct sparse_matrix_t {
     // input to local output.
     void Attach(coords_t coords) {
 
-        index_type n_indptr = _indptr.size();
-
         _indptr.clear();
         _indices.clear();
         _values.clear();
 
         sort(coords.begin(), coords.end(), &sparse_matrix_t::_sort_coords);
 
-        index_type indptr_idx  = 0;
-        index_type row_counter = 0;
+        _indptr.push_back(0);
+        index_type indptr_idx = 0;
         for(size_t i = 0; i < coords.size(); ++i) {
             index_type cur_row = boost::get<0>(coords[i]);
             index_type cur_col = boost::get<1>(coords[i]);
             value_type cur_val = boost::get<2>(coords[i]);
 
             for(; indptr_idx < cur_row; ++indptr_idx)
-                _indptr.push_back(row_counter);
+                _indptr.push_back(_indices.size());
 
             // sum duplicates
             while(i + 1 < coords.size() &&
@@ -102,11 +100,9 @@ struct sparse_matrix_t {
 
             _indices.push_back(cur_col);
             _values.push_back(cur_val);
-            row_counter++;
         }
 
-        for(; indptr_idx < n_indptr; ++indptr_idx)
-            _indptr.push_back(row_counter);
+        _indptr.push_back(_indices.size());
 
         _dirty = !_dirty;
     }
@@ -123,6 +119,12 @@ struct sparse_matrix_t {
         return std::make_pair(_values.begin(), _values.end());
     }
 
+    bool operator==(const sparse_matrix_t &rhs) const {
+
+        return (_indptr  == rhs._indptr) &&
+               (_indices == rhs._indices) &&
+               (_values  == rhs._values);
+    }
 
 private:
     std::vector<index_type> _indptr;

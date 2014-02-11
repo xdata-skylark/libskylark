@@ -5,10 +5,12 @@ if (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
                         ${FFTW_LIBRARY}
                         ${Pmrrr_LIBRARY}
                         ${SKYLARK_LIBS}
-                        ${Boost_LIBRARIES})
+                        ${Boost_LIBRARIES}
+                        "-fopenmp")
   set_target_properties(hilbert_train
                         PROPERTIES COMPILE_FLAGS
-                        "-Wall \\
+                        "-fopenmp \\
+                        -Wall \\
                         -Wno-write-strings \\
                         -Wno-strict-aliasing \\
                         -Wno-format \\

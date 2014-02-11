@@ -71,7 +71,7 @@ struct sparse_matrix_t {
 
     // attaching a coordinate structure facilitates going from distributed
     // input to local output.
-    void Attach(coords_t coords) {
+    void Attach(coords_t coords, size_t n_rows = 0) {
 
         _indptr.clear();
         _indices.clear();
@@ -102,7 +102,12 @@ struct sparse_matrix_t {
             _values.push_back(cur_val);
         }
 
-        _indptr.push_back(_indices.size());
+        // in case we specified the rows fill possible empty rows in the end.
+        if(n_rows > 0)
+            for(; indptr_idx < n_rows + 1; ++indptr_idx)
+                _indptr.push_back(_indices.size());
+        else
+            _indptr.push_back(_indices.size());
 
         _dirty = !_dirty;
     }

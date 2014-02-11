@@ -78,6 +78,7 @@ public:
 	int train(DistInputMatrixType& X, DistTargetMatrixType& Y, LocalMatrixType& W);
 	void predict(DistInputMatrixType& X, DistTargetMatrixType& Y,LocalMatrixType& W);
 
+
 private:
 	skylark_context_t& context;
 	double lambda;
@@ -429,11 +430,10 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 	return 0;
 }
 
-
 void BlockADMMSolver::predict(DistInputMatrixType& X, DistTargetMatrixType& Y, LocalMatrixType& W) {
 
 	// TOD W should be really kept as part of the model
-	
+
 	int n = X.Height();
 	int d = X.Width();
 	int k = Y.Width();
@@ -462,6 +462,7 @@ void BlockADMMSolver::predict(DistInputMatrixType& X, DistTargetMatrixType& Y, L
 		
 		elem::Matrix<double> o(ni, k);
 		
+
 		elem::View(Wslice, W, start, 0, sj, k);
 		elem::Gemm(elem::NORMAL, elem::NORMAL, 1.0, z, Wslice, 0.0, o);
 		elem::Axpy(+1.0, o, Y.Matrix());

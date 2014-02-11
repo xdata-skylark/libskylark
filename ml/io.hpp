@@ -61,7 +61,6 @@ void read_libsvm_dense(skylark_context_t& context, string fName, DistInputMatrix
 	
 	if (min_d > 0)
 		d = std::max(d, min_d);
-
 	}
 
 	boost::mpi::broadcast(context.comm, n, 0);

@@ -117,8 +117,44 @@ int main (int argc, char** argv) {
 		 dimensionstring << "# Dimensions " << options.randomfeatures << " " << k << "\n";
 		 elem::Write(Wbar, options.print().append(dimensionstring.str()), options.modelfile);
 	 }
-//	 cout << " Rank " << context.rank << " owns : " << X.LocalHeight() <<  " x " << X.LocalWidth() << endl;
+	 
+	 // Testing - if specified by the user.
+	 if (!options.testfile.empty()) {
+		 context.comm.barrier();
+		 
+		 if(context.rank == 0) std::cout << "Starting testing phase." << std::endl;
+		 
+		 DistInputMatrixType Xt, Yt;
+		 read_libsvm_dense(context, options.testfile, Xt, Yt, X.Width());
+		 
+		 DistTargetMatrixType Yp(Yt.Height(), k);
+		 Solver->predict(context, Xt, Yp, Wbar);
+		 		 
+		 int correct = 0;
+		 double o, o1;
+		 int pred;
+		 for(int i=0; i < Yp.LocalHeight(); i++) {
+			 o = Yp.GetLocal(i,0);
+			 pred = 0;
+			 for(int j=1; j < Yp.Width(); j++) {
+				 o1 = Yp.GetLocal(i,j);
+				 if ( o1 > o) {
+					 o = o1;
+					 pred = j;
+				 }
+			 }
 
+			 if(pred == (int) Yt.GetLocal(i,0))
+				 correct++;
+		  }	
+		
+		 int totalcorrect;
+		 boost::mpi::reduce(context.comm, correct, totalcorrect, std::plus<double>(), 0);
+		 if(context.rank ==0)
+			 std::cout << "Accuracy = " << totalcorrect*100.0/Xt.Height() << " %" << std::endl;
+
+	 } 
+	 
 	 // Clear random features
 	 for (BlockADMMSolver::feature_transform_array_t::iterator it = featureMaps.begin(); it != featureMaps.end(); it++)
 		 delete *it;

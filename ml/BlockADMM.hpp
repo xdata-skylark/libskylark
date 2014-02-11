@@ -46,6 +46,7 @@ public:
 
 	void InitializeCache();
 	int train(skylark_context_t& context, DistInputMatrixType& X, DistTargetMatrixType& Y, LocalMatrixType& W);
+	void predict(skylark_context_t& context, DistInputMatrixType& X, DistTargetMatrixType& Y,LocalMatrixType& W);
 
 private:
 	double lambda;
@@ -203,8 +204,6 @@ int BlockADMMSolver::train(skylark_context_t& context,  DistInputMatrixType& X, 
 			elem::Matrix<double> rhs(sj, k);
 			elem::Matrix<double> o(k, ni);
 			
-			//std::cout << j << " " << start << " " << finish << " " << sj << " " << featureMap->get_N() << " " << featureMap->get_S() << std::endl;
-			//std::cout << x.Height() << " " << ni << std::endl;
 			featureMap->apply(x, z, skylark::sketch::rowwise_tag());
 			elem::Scal(sqrt(double(sj) / d), z);  // Might be better to just adjust scalar in later operations.
 			
@@ -323,6 +322,38 @@ int BlockADMMSolver::train(skylark_context_t& context,  DistInputMatrixType& X, 
 }
 
 
+void BlockADMMSolver::predict(skylark_context_t& context,  DistInputMatrixType& X, DistTargetMatrixType& Y, LocalMatrixType& W) {
 
+	// TOD W should be really kept as part of the model
+
+	int n = X.Height();
+	int d = X.Width();
+	int k = Y.Width();
+	int ni = X.LocalHeight();
+
+
+	elem::Zeros(Y, n, k);
+	
+	LocalMatrixType Wslice;
+	
+	for(int j = 0; j < NumFeaturePartitions; j++) {
+		// TODO handle NULL in featureMaps
+		const feature_transform_t* featureMap = featureMaps[j];
+		
+		int start = BlockSize * j;
+		int finish = std::min(BlockSize * (j + 1), NumFeatures) - 1;
+		int sj = finish - start + 1;
+		
+		elem::Matrix<double> z(ni, sj);
+		elem::Matrix<double> o(ni, k);
+		
+		featureMap->apply(X.Matrix(), z, skylark::sketch::rowwise_tag());  // Should be a dist operation
+		elem::Scal(sqrt(double(sj) / d), z);  // Might be better to just adjust scalar in later operations.
+		
+		elem::View(Wslice, W, start, 0, sj, k);
+		elem::Gemm(elem::NORMAL, elem::NORMAL, 1.0, z, Wslice, 0.0, o);
+		elem::Axpy(+1.0, o, Y.Matrix());
+	}
+}			
 
 #endif /* BLOCKADMM_H_ */

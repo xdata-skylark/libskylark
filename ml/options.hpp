@@ -72,6 +72,7 @@ struct hilbert_options_t {
  /**  IO */
  std::string trainfile;
  std::string modelfile;
+ std::string testfile;
 
   /** A parameter indicating if we need to continue or not */
  bool exit_on_return;
@@ -97,7 +98,8 @@ struct hilbert_options_t {
   ("numthreads,t", po::value<int>(&numthreads)->default_value(DEFAULT_THREADS), "Number of Threads (default: 1)")
   ("MAXITER,i", po::value<int>(&MAXITER)->default_value(DEFAULT_MAXITER), "Maximum Number of Iterations (default: 100)")
   ("trainfile", po::value<std::string>(&trainfile)->required(), "Training data file")
-  ("modelfile", po::value<std::string>(&modelfile)->required(), "Model output file");
+  ("modelfile", po::value<std::string>(&modelfile)->required(), "Model output file")
+  ("testfile", po::value<std::string>(&testfile)->default_value(""), "Test file (optional)")
       ; /* end options */
 
     po::positional_options_description positionalOptions;
@@ -132,6 +134,7 @@ struct hilbert_options_t {
 	 optionstring << "# HILBERT OPTIONS:" << "\n";
 	 optionstring << "# Training File = " << trainfile << "\n";
 	 optionstring << "# Model File = " << modelfile << "\n";
+	 optionstring << "# Test File = " << testfile << "\n";
 	 optionstring << "# Loss function = " << lossfunction << " ("<< Losses[lossfunction]<< ")" << "\n";
 	 optionstring << "# Regularizer = " << regularizer << " ("<< Regularizers[regularizer]<< ")" << "\n";
 	 optionstring << "# Kernel = " << kernel << " ("<< Kernels[kernel]<< ")" << "\n";

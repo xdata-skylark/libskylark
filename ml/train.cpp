@@ -183,7 +183,7 @@ int main (int argc, char** argv) {
 			 std::cout << "Accuracy = " << totalcorrect*100.0/Xt.Height() << " %" << std::endl;
 
 	 } 
-
+	 
 	context.comm.barrier();
 	 
 	 elem::Finalize();

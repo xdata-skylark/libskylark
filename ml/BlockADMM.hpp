@@ -78,7 +78,6 @@ public:
 	int train(DistInputMatrixType& X, DistTargetMatrixType& Y, LocalMatrixType& W);
 	void predict(DistInputMatrixType& X, DistTargetMatrixType& Y,LocalMatrixType& W);
 
-
 private:
 	skylark_context_t& context;
 	double lambda;
@@ -299,11 +298,6 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 			regularizer->proxoperator(Wbar, lambda/RHO, mu, W);
 		}
 
-<<<<<<< HEAD
-=======
-
-
->>>>>>> After rebase: again working (compile and run), and support OpenMP
 		elem::Zeros(sum_o, k, ni);
 		//elem::Matrix<double> o(ni, k);
 		
@@ -312,16 +306,8 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 		
 		#pragma omp parallel for private(j, start, finish, sj, featureMap)    
 		for(j = 0; j < NumFeaturePartitions; j++) {
-<<<<<<< HEAD
 			start = starts[j];
 			finish = finishes[j];
-=======
-			// TODO handle NULL in featureMaps
-			featureMap = featureMaps[j];
-			
-			start = BlockSize * j;
-			finish = std::min(BlockSize * (j + 1), NumFeatures) - 1;
->>>>>>> After rebase: again working (compile and run), and support OpenMP
 			sj = finish - start  + 1;
 
 			elem::Matrix<double> z(ni, sj);
@@ -337,16 +323,7 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 			elem::Matrix<double> tmp(sj, k);
 			elem::Matrix<double> rhs(sj, k);
 			elem::Matrix<double> o(k, ni);
-<<<<<<< HEAD
 
-=======
-			
-			//std::cout << j << " " << start << " " << finish << " " << sj << " " << featureMap->get_N() << " " << featureMap->get_S() << std::endl;
-			//std::cout << x.Height() << " " << ni << std::endl;
-			featureMap->apply(x, z, skylark::sketch::rowwise_tag());
-			elem::Scal(sqrt(double(sj) / d), z);  // Might be better to just adjust scalar in later operations.
-			
->>>>>>> After rebase: again working (compile and run), and support OpenMP
 			if(iter==1) {
 
 				elem::Matrix<double> Ones;
@@ -404,7 +381,6 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 		
 		#pragma omp parallel for private(j, start, finish, sj, featureMap) 
 		for(j = 0; j < NumFeaturePartitions; j++) {
-<<<<<<< HEAD
 					start = starts[j];
 					finish = finishes[j];
 					sj = finish - start  + 1;
@@ -418,20 +394,6 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 							elem::Scal(sqrt(double(sj) / d), z); 
 					} else 
 						elem::View(z, x, 0, start, ni, sj);
-=======
-					// TODO handle NULL in featureMaps
-					featureMap = featureMaps[j];
-			
-					start = BlockSize * j;
-					finish = std::min(BlockSize * (j + 1), NumFeatures) - 1;
-					sj = finish - start  + 1;
-					
-					elem::Matrix<double> z(ni, sj);
-					elem::Matrix<double> tmp(sj, k);
-					
-					featureMap->apply(x, z, skylark::sketch::rowwise_tag());
-					elem::Scal(sqrt(double(sj) / d), z);  // Might be better to just adjust scalar in later operations.
->>>>>>> After rebase: again working (compile and run), and support OpenMP
 
 					elem::Matrix<double> tmp(sj, k);
 					elem::View(tmp, ZtObar_ij, start, 0, sj, k);
@@ -510,7 +472,6 @@ void BlockADMMSolver::predict(DistInputMatrixType& X, DistTargetMatrixType& Y, L
 		
 		elem::Matrix<double> o(ni, k);
 		
-
 		elem::View(Wslice, W, start, 0, sj, k);
 		elem::Gemm(elem::NORMAL, elem::NORMAL, 1.0, z, Wslice, 0.0, o);
 		elem::Axpy(+1.0, o, Y.Matrix());

@@ -110,6 +110,8 @@ int main (int argc, char** argv) {
 	 }
 //	 cout << " Rank " << context.rank << " owns : " << X.LocalHeight() <<  " x " << X.LocalWidth() << endl;
 
+	 context.comm.barrier();
+
 	 elem::Finalize();
 	 return 0;
 }

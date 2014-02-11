@@ -24,7 +24,7 @@ struct FJLT_t <
     typedef elem::Matrix<value_type> output_matrix_type;
     typedef elem::DistMatrix<ValueType,
                              elem::STAR, ColDist> intermediate_type;
-    typedef fft_futs<double>::DCT transform_type;
+    typedef fft_futs<double>::DCT_t transform_type;
     typedef FJLT_data_t<value_type> base_data_t;
     typedef utility::rademacher_distribution_t<value_type>
     underlying_value_distribution_type;

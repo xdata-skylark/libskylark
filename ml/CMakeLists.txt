@@ -6,6 +6,7 @@ if (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
                         ${Pmrrr_LIBRARY}
                         ${SKYLARK_LIBS}
 <<<<<<< HEAD
+<<<<<<< HEAD
                         ${Boost_LIBRARIES}
                         "-fopenmp")
   set_target_properties(hilbert_train
@@ -18,6 +19,14 @@ if (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
                         PROPERTIES COMPILE_FLAGS
                         "-Wall \\
 >>>>>>> Adding CMake support for hilbert
+=======
+                        ${Boost_LIBRARIES}
+                        "-fopenmp")
+  set_target_properties(hilbert_train
+                        PROPERTIES COMPILE_FLAGS
+                        "-fopenmp \\
+                        -Wall \\
+>>>>>>> After rebase: again working (compile and run), and support OpenMP
                         -Wno-write-strings \\
                         -Wno-strict-aliasing \\
                         -Wno-format \\

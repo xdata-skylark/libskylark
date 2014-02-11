@@ -184,7 +184,6 @@ int main (int argc, char** argv) {
 
 	 } 
 
-
 	context.comm.barrier();
 	 
 	 elem::Finalize();

@@ -33,8 +33,9 @@ public:
 	typedef std::vector<const feature_transform_t *> feature_transform_array_t; // TODO move to private
 	
 	
-	// No feature tranforms (aka just linear regression).
-	BlockADMMSolver(const lossfunction* loss,
+	// No feature transforms (aka just linear regression).
+	BlockADMMSolver(skylark_context_t& context,  
+					const lossfunction* loss,
 					const regularization* regularizer,
 					double lambda, // regularization parameter
 					int NumFeatures,
@@ -44,8 +45,24 @@ public:
 					int MAXITER = 1000,
 					double RHO = 1.0);
 	
+	// Easy interface, aka kernel based.
+	template<typename Kernel, typename MapTypeTag>
+	BlockADMMSolver(skylark_context_t& context,  
+					const lossfunction* loss,
+					const regularization* regularizer,
+					double lambda, // regularization parameter
+					int NumFeatures,
+					Kernel kernel, 
+					MapTypeTag tag,
+					int NumFeaturePartitions = 1,
+					int NumThreads = 1,
+					double TOL = 0.1,
+					int MAXITER = 1000,
+					double RHO = 1.0);
+	
 	// Guru interface.
-	BlockADMMSolver(const lossfunction* loss,
+	BlockADMMSolver(skylark_context_t& context,  
+					const lossfunction* loss,
 					const regularization* regularizer,
 					const feature_transform_array_t& featureMaps,
 					double lambda, // regularization parameter
@@ -58,15 +75,16 @@ public:
 	~BlockADMMSolver();
 
 	void InitializeCache();
-	int train(skylark_context_t& context, DistInputMatrixType& X, DistTargetMatrixType& Y, LocalMatrixType& W);
-	void predict(skylark_context_t& context, DistInputMatrixType& X, DistTargetMatrixType& Y,LocalMatrixType& W);
+	int train(DistInputMatrixType& X, DistTargetMatrixType& Y, LocalMatrixType& W);
+	void predict(DistInputMatrixType& X, DistTargetMatrixType& Y,LocalMatrixType& W);
 
 private:
+	skylark_context_t& context;
 	double lambda;
 	double RHO;
 	int MAXITER;
 	double TOL;
-	const feature_transform_array_t featureMaps;
+	feature_transform_array_t featureMaps;
 	int NumFeatures;
 	int NumFeaturePartitions;
 	int NumThreads;
@@ -88,8 +106,9 @@ void BlockADMMSolver::InitializeCache() {
 	}
 }
 
-// No feature tranforms (aka just linear regression).
-BlockADMMSolver::BlockADMMSolver(const lossfunction* loss,
+// No feature transforms (aka just linear regression).
+BlockADMMSolver::BlockADMMSolver(skylark_context_t& context,
+				const lossfunction* loss,
 				const regularization* regularizer,
 				double lambda, // regularization parameter
 				int NumFeatures,
@@ -97,7 +116,7 @@ BlockADMMSolver::BlockADMMSolver(const lossfunction* loss,
 				int NumThreads,
 				double TOL,
 				int MAXITER,
-				double RHO) : NumFeatures(NumFeatures), NumFeaturePartitions(NumFeaturePartitions),
+				double RHO) : context(context), NumFeatures(NumFeatures), NumFeaturePartitions(NumFeaturePartitions),
 					starts(NumFeaturePartitions), finishes(NumFeaturePartitions) {
 
 		this->loss = const_cast<lossfunction *> (loss);
@@ -117,8 +136,44 @@ BlockADMMSolver::BlockADMMSolver(const lossfunction* loss,
 		InitializeCache();
 }
 
+// Easy interface, aka kernel based.
+template<typename Kernel, typename MapTypeTag>
+BlockADMMSolver::BlockADMMSolver(skylark_context_t& context,
+				const lossfunction* loss,
+				const regularization* regularizer,
+				double lambda, // regularization parameter
+				int NumFeatures,
+				Kernel kernel, 
+				MapTypeTag tag,
+				int NumFeaturePartitions,
+				int NumThreads,
+				double TOL,
+				int MAXITER,
+				double RHO) : context(context), featureMaps(NumFeaturePartitions), 
+					NumFeatures(NumFeatures), NumFeaturePartitions(NumFeaturePartitions),
+					starts(NumFeaturePartitions), finishes(NumFeaturePartitions) {
+
+		this->loss = const_cast<lossfunction *> (loss);
+		this->regularizer = const_cast<regularization *> (regularizer);
+		this->lambda = lambda;
+		this->NumThreads = NumThreads;
+		int blksize = int(ceil(double(NumFeatures) / NumFeaturePartitions));
+		for(int i = 0; i < NumFeaturePartitions; i++) {
+			starts[i] = i * blksize;
+			finishes[i] = std::min((i + 1) * blksize, NumFeatures) - 1;
+			int sj = finishes[i] - starts[i] + 1;
+			featureMaps[i] = kernel.template create_rft< LocalMatrixType, LocalMatrixType >(sj, tag, context);	
+		}
+		this->ScaleFeatureMaps = true;
+		this->TOL = TOL;
+		this->MAXITER = MAXITER;
+		this->RHO = RHO;
+		InitializeCache();
+}
+
 // Guru interface
-BlockADMMSolver::BlockADMMSolver(const lossfunction* loss,
+BlockADMMSolver::BlockADMMSolver(skylark_context_t& context,
+		const lossfunction* loss,
 		const regularization* regularizer,
 		const feature_transform_array_t &featureMaps,
 		double lambda,
@@ -126,7 +181,7 @@ BlockADMMSolver::BlockADMMSolver(const lossfunction* loss,
 		bool ScaleFeatureMaps,
 		double TOL,
 		int MAXITER,
-		double RHO) : featureMaps(featureMaps), NumFeaturePartitions(featureMaps.size()),
+		double RHO) : context(context), featureMaps(featureMaps), NumFeaturePartitions(featureMaps.size()),
 			starts(NumFeaturePartitions), finishes(NumFeaturePartitions) {
 
 		this->loss = const_cast<lossfunction *> (loss);
@@ -138,6 +193,8 @@ BlockADMMSolver::BlockADMMSolver(const lossfunction* loss,
 			starts[i] = NumFeatures;
 			finishes[i] = NumFeatures + featureMaps[i]->get_S() - 1;
 			NumFeatures += featureMaps[i]->get_S();
+			
+			std::cout << starts[i] << " " << finishes[i] << "\n";
 		}
 		this->NumThreads = NumThreads;
 		this->ScaleFeatureMaps = ScaleFeatureMaps;
@@ -150,7 +207,7 @@ BlockADMMSolver::BlockADMMSolver(const lossfunction* loss,
 
 
 
-int BlockADMMSolver::train(skylark_context_t& context,  DistInputMatrixType& X, DistTargetMatrixType& Y, LocalMatrixType& Wbar) {
+int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, LocalMatrixType& Wbar) {
 
 	int P = context.size;
 
@@ -375,7 +432,7 @@ int BlockADMMSolver::train(skylark_context_t& context,  DistInputMatrixType& X, 
 }
 
 
-void BlockADMMSolver::predict(skylark_context_t& context,  DistInputMatrixType& X, DistTargetMatrixType& Y, LocalMatrixType& W) {
+void BlockADMMSolver::predict(DistInputMatrixType& X, DistTargetMatrixType& Y, LocalMatrixType& W) {
 
 	// TOD W should be really kept as part of the model
 	

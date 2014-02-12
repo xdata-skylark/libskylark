@@ -7,6 +7,7 @@
 #include <string>
 #include <boost/mpi.hpp>
 #include <boost/program_options.hpp>
+#include "kernels.hpp"
 #include "hilbert.hpp"
 #include <omp.h>
 
@@ -83,7 +84,8 @@ int main (int argc, char** argv) {
 	 	 case LINEAR:
 	 		 features = X.Width();
 	 		 Solver = new BlockADMMSolver(
-	 				 loss,
+	 				context, 
+	 				loss,
 	 				 regularizer,	
 	 				 options.lambda,
 	 				 X.Width(),
@@ -94,23 +96,21 @@ int main (int argc, char** argv) {
 	 				 options.rho);
 	 		 break;
 	 		 
-	 	 case GAUSSIAN: 
-	 		features = options.randomfeatures;
-	 		featureMaps.resize(options.numfeaturepartitions);
-	 		blksize = int(ceil(double(options.randomfeatures) / options.numfeaturepartitions));
-	 		for(int i = 0; i < options.numfeaturepartitions - 1; i++)
-	 			featureMaps[i] = new skylark::sketch::FastGaussianRFT_t<LocalMatrixType>(X.Width(), blksize, options.kernelparam, context);
-	 		featureMaps[options.numfeaturepartitions - 1] = new skylark::sketch::FastGaussianRFT_t<LocalMatrixType>(X.Width(), options.randomfeatures - (options.numfeaturepartitions - 1) * blksize, options.kernelparam, context);
-	 		Solver = new BlockADMMSolver(
-	 				loss,
-	 				regularizer,	
-	 				featureMaps,
-	 				options.lambda,
-	 				options.numthreads,
-	 				true,
-	 				options.tolerance,
-	 				options.MAXITER,
-	 				options.rho);
+	 	 case GAUSSIAN:
+	 		 features = options.randomfeatures;
+	 		 Solver = new BlockADMMSolver(
+	 				 context, 
+	 				 loss,
+	 				 regularizer,	
+	 				 options.lambda,
+	 				 features,
+	 				 skylark::ml::kernels::gaussian_t(X.Width(), options.kernelparam),
+	 				 skylark::ml::fast_feature_transform_tag(),
+	 				 options.numfeaturepartitions,
+	 				 options.numthreads,
+	 				 options.tolerance,
+	 				 options.MAXITER,
+	 				 options.rho);	 
 	 	 	break;
 	 		
 	 	 default:
@@ -122,7 +122,7 @@ int main (int argc, char** argv) {
 	 elem::Matrix<double> Wbar(features, k);
 	 elem::MakeZeros(Wbar);
 
-	 Solver->train(context, X,Y,Wbar);
+	 Solver->train(X, Y, Wbar);
 	 if (context.rank==0) {
 		 std::stringstream dimensionstring;
 		 dimensionstring << "# Dimensions " << features << " " << k << "\n";
@@ -139,7 +139,7 @@ int main (int argc, char** argv) {
 		 read_libsvm_dense(context, options.testfile, Xt, Yt, X.Width());
 		 
 		 DistTargetMatrixType Yp(Yt.Height(), k);
-		 Solver->predict(context, Xt, Yp, Wbar);
+		 Solver->predict(Xt, Yp, Wbar);
 		 		 
 		 int correct = 0;
 		 double o, o1;

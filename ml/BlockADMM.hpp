@@ -59,7 +59,7 @@ private:
 	int BlockSize;
 	lossfunction* loss;
 	regularization* regularizer;
-	const feature_transform_array_t &featureMaps;
+	const feature_transform_array_t featureMaps;
 	LocalMatrixType **Cache;
 };
 

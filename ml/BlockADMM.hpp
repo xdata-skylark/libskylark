@@ -192,20 +192,22 @@ int BlockADMMSolver::train(skylark_context_t& context,  DistInputMatrixType& X, 
 		
 		#pragma omp parallel for private(j, start, finish, sj, featureMap)    
 		for(j = 0; j < NumFeaturePartitions; j++) {
-			// TODO handle NULL in featureMaps
-			featureMap = featureMaps[j];
-			
 			start = BlockSize * j;
 			finish = std::min(BlockSize * (j + 1), NumFeatures) - 1;
 			sj = finish - start  + 1;
 
 			elem::Matrix<double> z(ni, sj);
+		
+			if (featureMaps.size() > 0) {
+				featureMap = featureMaps[j];
+				featureMap->apply(x, z, skylark::sketch::rowwise_tag());
+				elem::Scal(sqrt(double(sj) / d), z); 
+			} else 
+				elem::View(z, x, 0, start, ni, sj);
+
 			elem::Matrix<double> tmp(sj, k);
 			elem::Matrix<double> rhs(sj, k);
 			elem::Matrix<double> o(k, ni);
-			
-			featureMap->apply(x, z, skylark::sketch::rowwise_tag());
-			elem::Scal(sqrt(double(sj) / d), z);  // Might be better to just adjust scalar in later operations.
 			
 			if(iter==1) {
 
@@ -264,19 +266,20 @@ int BlockADMMSolver::train(skylark_context_t& context,  DistInputMatrixType& X, 
 		
 		#pragma omp parallel for private(j, start, finish, sj, featureMap) 
 		for(j = 0; j < NumFeaturePartitions; j++) {
-					// TODO handle NULL in featureMaps
-					featureMap = featureMaps[j];
-			
 					start = BlockSize * j;
 					finish = std::min(BlockSize * (j + 1), NumFeatures) - 1;
 					sj = finish - start  + 1;
-					
-					elem::Matrix<double> z(ni, sj);
-					elem::Matrix<double> tmp(sj, k);
-					
-					featureMap->apply(x, z, skylark::sketch::rowwise_tag());
-					elem::Scal(sqrt(double(sj) / d), z);  // Might be better to just adjust scalar in later operations.
 
+					elem::Matrix<double> z(ni, sj);
+			
+					if (featureMaps.size() > 0) {
+						featureMap = featureMaps[j];
+						featureMap->apply(x, z, skylark::sketch::rowwise_tag());
+						elem::Scal(sqrt(double(sj) / d), z); 
+					} else 
+						elem::View(z, x, 0, start, ni, sj);
+
+					elem::Matrix<double> tmp(sj, k);
 					elem::View(tmp, ZtObar_ij, start, 0, sj, k);
 					elem::Gemm(elem::TRANSPOSE, elem::TRANSPOSE, 1.0/(NumFeaturePartitions + 1.0), z, sum_o, 1.0, tmp);
 					elem::View(tmp, Wbar, start, 0, sj, k);
@@ -325,30 +328,33 @@ int BlockADMMSolver::train(skylark_context_t& context,  DistInputMatrixType& X, 
 void BlockADMMSolver::predict(skylark_context_t& context,  DistInputMatrixType& X, DistTargetMatrixType& Y, LocalMatrixType& W) {
 
 	// TOD W should be really kept as part of the model
-
+	
 	int n = X.Height();
 	int d = X.Width();
 	int k = Y.Width();
 	int ni = X.LocalHeight();
-
-
+	
+	if (featureMaps.size() == 0) {
+		Y.ResizeTo(n, k);
+		elem::Gemm(elem::NORMAL,elem::NORMAL,1.0, X.Matrix(), W, 0.0, Y.Matrix());	
+		return;
+	}
+	
 	elem::Zeros(Y, n, k);
 	
 	LocalMatrixType Wslice;
 	
 	for(int j = 0; j < NumFeaturePartitions; j++) {
-		// TODO handle NULL in featureMaps
-		const feature_transform_t* featureMap = featureMaps[j];
-		
 		int start = BlockSize * j;
 		int finish = std::min(BlockSize * (j + 1), NumFeatures) - 1;
-		int sj = finish - start + 1;
-		
+		int sj = finish - start  + 1;
+
 		elem::Matrix<double> z(ni, sj);
-		elem::Matrix<double> o(ni, k);
+		const feature_transform_t* featureMap = featureMaps[j];
+		featureMap->apply(X.Matrix(), z, skylark::sketch::rowwise_tag());
+		elem::Scal(sqrt(double(sj) / d), z); 
 		
-		featureMap->apply(X.Matrix(), z, skylark::sketch::rowwise_tag());  // Should be a dist operation
-		elem::Scal(sqrt(double(sj) / d), z);  // Might be better to just adjust scalar in later operations.
+		elem::Matrix<double> o(ni, k);
 		
 		elem::View(Wslice, W, start, 0, sj, k);
 		elem::Gemm(elem::NORMAL, elem::NORMAL, 1.0, z, Wslice, 0.0, o);

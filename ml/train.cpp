@@ -67,7 +67,7 @@ int main (int argc, char** argv) {
 	 		 break;
 	 }
 
-	 BlockADMMSolver::feature_transform_array_t featureMaps(options.numfeaturepartitions);
+	 BlockADMMSolver::feature_transform_array_t featureMaps;
 	 switch(options.kernel) {
 	 	 case LINEAR:
 	 		 // TODO
@@ -75,6 +75,7 @@ int main (int argc, char** argv) {
 	 		 break;
 	 		 
 	 	 case GAUSSIAN:
+	 		featureMaps.resize(options.numfeaturepartitions);
 	 		int blksize = int(ceil(double(options.randomfeatures) / options.numfeaturepartitions));
 	 		for(int i = 0; i < options.numfeaturepartitions - 1; i++)
 	 			featureMaps[i] = new skylark::sketch::FastGaussianRFT_t<LocalMatrixType>(X.Width(), blksize, options.kernelparam, context);

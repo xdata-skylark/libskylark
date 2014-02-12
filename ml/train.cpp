@@ -98,19 +98,35 @@ int main (int argc, char** argv) {
 	 		 
 	 	 case GAUSSIAN:
 	 		 features = options.randomfeatures;
-	 		 Solver = new BlockADMMSolver(
-	 				 context, 
-	 				 loss,
-	 				 regularizer,	
-	 				 options.lambda,
-	 				 features,
-	 				 skylark::ml::kernels::gaussian_t(X.Width(), options.kernelparam),
-	 				 skylark::ml::fast_feature_transform_tag(),
-	 				 options.numfeaturepartitions,
-	 				 options.numthreads,
-	 				 options.tolerance,
-	 				 options.MAXITER,
-	 				 options.rho);	 
+	 		 if (options.regularmap)
+		 		 Solver = new BlockADMMSolver(
+		 				 context, 
+		 				 loss,
+		 				 regularizer,	
+		 				 options.lambda,
+		 				 features,
+		 				 skylark::ml::kernels::gaussian_t(X.Width(), options.kernelparam),
+		 				 skylark::ml::regular_feature_transform_tag(),
+		 				 options.numfeaturepartitions,
+		 				 options.numthreads,
+		 				 options.tolerance,
+		 				 options.MAXITER,
+		 				 options.rho);	 
+
+	 		 else
+	 			 Solver = new BlockADMMSolver(
+	 					 context, 
+	 					 loss	,
+	 					 regularizer,	
+	 					 options.lambda,
+	 					 features,
+	 					 skylark::ml::kernels::gaussian_t(X.Width(), options.kernelparam),
+	 					 skylark::ml::fast_feature_transform_tag(),
+	 					 options.numfeaturepartitions,
+	 					 options.numthreads,
+	 					 options.tolerance,
+	 					 options.MAXITER,
+	 					 options.rho);	 
 	 	 	break;
 	 		
 	 	 default:

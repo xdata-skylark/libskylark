@@ -60,6 +60,7 @@ struct hilbert_options_t {
  /** Randomization options */
  int seed;
  int randomfeatures;
+ bool regularmap;
 
  /* parallelization options */
  int numfeaturepartitions;
@@ -96,6 +97,7 @@ struct hilbert_options_t {
   ("randomfeatures,f", po::value<int>(&randomfeatures)->default_value(DEFAULT_RF), "Number of Random Features (default: 100)")
   ("numfeaturepartitions,n", po::value<int>(&numfeaturepartitions)->default_value(DEFAULT_FEATURE_PARTITIONS), "Number of Feature Partitions (default: 1)")
   ("numthreads,t", po::value<int>(&numthreads)->default_value(DEFAULT_THREADS), "Number of Threads (default: 1)")
+  ("regular", po::value<bool>(&regularmap)->default_value(false), "Default is to use 'fast' feature mapping, if availble. Use this flag to force regular mapping (default: false)")
   ("MAXITER,i", po::value<int>(&MAXITER)->default_value(DEFAULT_MAXITER), "Maximum Number of Iterations (default: 100)")
   ("trainfile", po::value<std::string>(&trainfile)->required(), "Training data file")
   ("modelfile", po::value<std::string>(&modelfile)->required(), "Model output file")

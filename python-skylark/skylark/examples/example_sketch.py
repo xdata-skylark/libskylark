@@ -13,9 +13,9 @@ import numpy as np
 import time
 
 # Configuration 
-m = 40000;
+m = 20000;
 n = 300;
-t = 5000;
+t = 1000;
 sketches = { "JLT" : sketch.JLT, "FJLT" : sketch.FJLT, "CWT" : sketch.CWT }
 
 # Set up the random regression problem.

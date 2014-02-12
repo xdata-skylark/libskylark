@@ -106,8 +106,6 @@ int main (int argc, char** argv) {
 	 				regularizer,	
 	 				featureMaps,
 	 				options.lambda,
-	 				options.randomfeatures,
-	 				options.numfeaturepartitions,
 	 				options.numthreads,
 	 				true,
 	 				options.tolerance,

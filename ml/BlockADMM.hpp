@@ -49,8 +49,6 @@ public:
 					const regularization* regularizer,
 					const feature_transform_array_t& featureMaps,
 					double lambda, // regularization parameter
-					int NumFeatures,
-					int NumFeaturePartitions = 1,
 					int NumThreads = 1,
 					bool ScaleFeatureMaps = true,
 					double TOL = 0.1,
@@ -68,13 +66,13 @@ private:
 	double RHO;
 	int MAXITER;
 	double TOL;
+	const feature_transform_array_t featureMaps;
+	int NumFeatures;
 	int NumFeaturePartitions;
 	int NumThreads;
-	int NumFeatures;
-	int BlockSize;
 	lossfunction* loss;
 	regularization* regularizer;
-	const feature_transform_array_t featureMaps;
+	std::vector<int> starts, finishes;
 	bool ScaleFeatureMaps;
 	LocalMatrixType **Cache;
 };
@@ -82,11 +80,10 @@ private:
 
 void BlockADMMSolver::InitializeCache() {
 	Cache = new LocalMatrixType* [NumFeaturePartitions];
-	int start, finish, sj;
 	for(int j=0; j<NumFeaturePartitions; j++) {
-		start = BlockSize * j;
-		finish = std::min(BlockSize * (j + 1), NumFeatures) - 1;
-		sj = finish - start  + 1;
+		int start = starts[j];
+		int finish = finishes[j];
+		int sj = finish - start  + 1;
 		Cache[j]  = new elem::Matrix<double>(sj, sj);
 	}
 }
@@ -100,15 +97,19 @@ BlockADMMSolver::BlockADMMSolver(const lossfunction* loss,
 				int NumThreads,
 				double TOL,
 				int MAXITER,
-				double RHO) {
+				double RHO) : NumFeatures(NumFeatures), NumFeaturePartitions(NumFeaturePartitions),
+					starts(NumFeaturePartitions), finishes(NumFeaturePartitions) {
 
 		this->loss = const_cast<lossfunction *> (loss);
 		this->regularizer = const_cast<regularization *> (regularizer);
 		this->lambda = lambda;
-		this->NumFeatures = NumFeatures;
 		this->NumFeaturePartitions = NumFeaturePartitions;
 		this->NumThreads = NumThreads;
-		this->BlockSize = int(ceil(double(NumFeatures) / NumFeaturePartitions));
+		int blksize = int(ceil(double(NumFeatures) / NumFeaturePartitions));
+		for(int i = 0; i < NumFeaturePartitions; i++) {
+			starts[i] = i * blksize;
+			finishes[i] = std::min((i + 1) * blksize, NumFeatures) - 1;
+		}
 		this->ScaleFeatureMaps = false;
 		this->TOL = TOL;
 		this->MAXITER = MAXITER;
@@ -121,21 +122,24 @@ BlockADMMSolver::BlockADMMSolver(const lossfunction* loss,
 		const regularization* regularizer,
 		const feature_transform_array_t &featureMaps,
 		double lambda,
-		int NumFeatures,
-		int NumFeaturePartitions,
 		int NumThreads,
 		bool ScaleFeatureMaps,
 		double TOL,
 		int MAXITER,
-		double RHO) : featureMaps(featureMaps) {
+		double RHO) : featureMaps(featureMaps), NumFeaturePartitions(featureMaps.size()),
+			starts(NumFeaturePartitions), finishes(NumFeaturePartitions) {
 
 		this->loss = const_cast<lossfunction *> (loss);
 		this->regularizer = const_cast<regularization *> (regularizer);
 		this->lambda = lambda;
-		this->NumFeatures = NumFeatures;
-		this->NumFeaturePartitions = NumFeaturePartitions;
+		NumFeaturePartitions = featureMaps.size();
+		NumFeatures = 0;
+		for(int i = 0; i < NumFeaturePartitions; i++) {
+			starts[i] = NumFeatures;
+			finishes[i] = NumFeatures + featureMaps[i]->get_S() - 1;
+			NumFeatures += featureMaps[i]->get_S();
+		}
 		this->NumThreads = NumThreads;
-		this->BlockSize = int(ceil(double(NumFeatures) / NumFeaturePartitions));
 		this->ScaleFeatureMaps = ScaleFeatureMaps;
 		this->TOL = TOL;
 		this->MAXITER = MAXITER;
@@ -236,8 +240,8 @@ int BlockADMMSolver::train(skylark_context_t& context,  DistInputMatrixType& X, 
 		
 		#pragma omp parallel for private(j, start, finish, sj, featureMap)    
 		for(j = 0; j < NumFeaturePartitions; j++) {
-			start = BlockSize * j;
-			finish = std::min(BlockSize * (j + 1), NumFeatures) - 1;
+			start = starts[j];
+			finish = finishes[j];
 			sj = finish - start  + 1;
 
 			elem::Matrix<double> z(ni, sj);
@@ -311,8 +315,8 @@ int BlockADMMSolver::train(skylark_context_t& context,  DistInputMatrixType& X, 
 		
 		#pragma omp parallel for private(j, start, finish, sj, featureMap) 
 		for(j = 0; j < NumFeaturePartitions; j++) {
-					start = BlockSize * j;
-					finish = std::min(BlockSize * (j + 1), NumFeatures) - 1;
+					start = starts[j];
+					finish = finishes[j];
 					sj = finish - start  + 1;
 
 					elem::Matrix<double> z(ni, sj);
@@ -391,8 +395,8 @@ void BlockADMMSolver::predict(skylark_context_t& context,  DistInputMatrixType& 
 	LocalMatrixType Wslice;
 	
 	for(int j = 0; j < NumFeaturePartitions; j++) {
-		int start = BlockSize * j;
-		int finish = std::min(BlockSize * (j + 1), NumFeatures) - 1;
+		int start = starts[j];
+		int finish = finishes[j];
 		int sj = finish - start  + 1;
 
 		elem::Matrix<double> z(ni, sj);

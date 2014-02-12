@@ -66,26 +66,7 @@ int main (int argc, char** argv) {
 	 		 regularizer = new l2();
 	 		 break;
 	 }
-
-	 BlockADMMSolver::feature_transform_array_t featureMaps;
-	 switch(options.kernel) {
-	 	 case LINEAR:
-	 		 // TODO
-	 		 options.randomfeatures = X.Width();
-	 		 break;
-	 		 
-	 	 case GAUSSIAN:
-	 		featureMaps.resize(options.numfeaturepartitions);
-	 		int blksize = int(ceil(double(options.randomfeatures) / options.numfeaturepartitions));
-	 		for(int i = 0; i < options.numfeaturepartitions - 1; i++)
-	 			featureMaps[i] = new skylark::sketch::FastGaussianRFT_t<LocalMatrixType>(X.Width(), blksize, options.kernelparam, context);
-	 		featureMaps[options.numfeaturepartitions - 1] = new skylark::sketch::FastGaussianRFT_t<LocalMatrixType>(X.Width(), options.randomfeatures - (options.numfeaturepartitions - 1) * blksize, options.kernelparam, context);
-	 		break;
-	 		 
-	 	 
-	 }
-
-
+	 
 	 // int k = Y.Width();
 	 int k;
 	 int kmax = *std::max_element(Y.Buffer(), Y.Buffer() + Y.LocalHeight());
@@ -94,28 +75,59 @@ int main (int argc, char** argv) {
 	 if (k>1) // we assume 0-to-N encoding of classes. Hence N = k+1. For two classes, k=1.
 	 	k++;
 
-
-	 BlockADMMSolver *Solver = new BlockADMMSolver(
-			 	 	 loss,
-	 				 regularizer,
-	 				 featureMaps,
+	 BlockADMMSolver *Solver = NULL;
+	 BlockADMMSolver::feature_transform_array_t featureMaps;
+	 int blksize;
+	 int features;
+	 switch(options.kernel) {
+	 	 case LINEAR:
+	 		 features = X.Width();
+	 		 Solver = new BlockADMMSolver(
+	 				 loss,
+	 				 regularizer,	
 	 				 options.lambda,
-	 				 options.randomfeatures,
+	 				 X.Width(),
 	 				 options.numfeaturepartitions,
 	 				 options.numthreads,
 	 				 options.tolerance,
 	 				 options.MAXITER,
 	 				 options.rho);
+	 		 break;
+	 		 
+	 	 case GAUSSIAN: 
+	 		features = options.randomfeatures;
+	 		featureMaps.resize(options.numfeaturepartitions);
+	 		blksize = int(ceil(double(options.randomfeatures) / options.numfeaturepartitions));
+	 		for(int i = 0; i < options.numfeaturepartitions - 1; i++)
+	 			featureMaps[i] = new skylark::sketch::FastGaussianRFT_t<LocalMatrixType>(X.Width(), blksize, options.kernelparam, context);
+	 		featureMaps[options.numfeaturepartitions - 1] = new skylark::sketch::FastGaussianRFT_t<LocalMatrixType>(X.Width(), options.randomfeatures - (options.numfeaturepartitions - 1) * blksize, options.kernelparam, context);
+	 		Solver = new BlockADMMSolver(
+	 				loss,
+	 				regularizer,	
+	 				featureMaps,
+	 				options.lambda,
+	 				options.randomfeatures,
+	 				options.numfeaturepartitions,
+	 				options.numthreads,
+	 				true,
+	 				options.tolerance,
+	 				options.MAXITER,
+	 				options.rho);
+	 	 	break;
+	 		
+	 	 default:
+	 		// TODO!
+	 		break; 
+	 	 
+	 }
 
-
-
-	 elem::Matrix<double> Wbar(options.randomfeatures, k);
+	 elem::Matrix<double> Wbar(features, k);
 	 elem::MakeZeros(Wbar);
 
 	 Solver->train(context, X,Y,Wbar);
 	 if (context.rank==0) {
 		 std::stringstream dimensionstring;
-		 dimensionstring << "# Dimensions " << options.randomfeatures << " " << k << "\n";
+		 dimensionstring << "# Dimensions " << features << " " << k << "\n";
 		 elem::Write(Wbar, options.print().append(dimensionstring.str()), options.modelfile);
 	 }
 	 

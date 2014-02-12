@@ -32,9 +32,10 @@ public:
 	
 	typedef std::vector<const feature_transform_t *> feature_transform_array_t; // TODO move to private
 	
+	
+	// No feature tranforms (aka just linear regression).
 	BlockADMMSolver(const lossfunction* loss,
 					const regularization* regularizer,
-					const feature_transform_array_t& featureMaps,
 					double lambda, // regularization parameter
 					int NumFeatures,
 					int NumFeaturePartitions = 1,
@@ -42,6 +43,20 @@ public:
 					double TOL = 0.1,
 					int MAXITER = 1000,
 					double RHO = 1.0);
+	
+	// Guru interface.
+	BlockADMMSolver(const lossfunction* loss,
+					const regularization* regularizer,
+					const feature_transform_array_t& featureMaps,
+					double lambda, // regularization parameter
+					int NumFeatures,
+					int NumFeaturePartitions = 1,
+					int NumThreads = 1,
+					bool ScaleFeatureMaps = true,
+					double TOL = 0.1,
+					int MAXITER = 1000,
+					double RHO = 1.0);
+	
 	~BlockADMMSolver();
 
 	void InitializeCache();
@@ -60,6 +75,7 @@ private:
 	lossfunction* loss;
 	regularization* regularizer;
 	const feature_transform_array_t featureMaps;
+	bool ScaleFeatureMaps;
 	LocalMatrixType **Cache;
 };
 
@@ -75,6 +91,32 @@ void BlockADMMSolver::InitializeCache() {
 	}
 }
 
+// No feature tranforms (aka just linear regression).
+BlockADMMSolver::BlockADMMSolver(const lossfunction* loss,
+				const regularization* regularizer,
+				double lambda, // regularization parameter
+				int NumFeatures,
+				int NumFeaturePartitions,
+				int NumThreads,
+				double TOL,
+				int MAXITER,
+				double RHO) {
+
+		this->loss = const_cast<lossfunction *> (loss);
+		this->regularizer = const_cast<regularization *> (regularizer);
+		this->lambda = lambda;
+		this->NumFeatures = NumFeatures;
+		this->NumFeaturePartitions = NumFeaturePartitions;
+		this->NumThreads = NumThreads;
+		this->BlockSize = int(ceil(double(NumFeatures) / NumFeaturePartitions));
+		this->ScaleFeatureMaps = false;
+		this->TOL = TOL;
+		this->MAXITER = MAXITER;
+		this->RHO = RHO;
+		InitializeCache();
+}
+
+// Guru interface
 BlockADMMSolver::BlockADMMSolver(const lossfunction* loss,
 		const regularization* regularizer,
 		const feature_transform_array_t &featureMaps,
@@ -82,6 +124,7 @@ BlockADMMSolver::BlockADMMSolver(const lossfunction* loss,
 		int NumFeatures,
 		int NumFeaturePartitions,
 		int NumThreads,
+		bool ScaleFeatureMaps,
 		double TOL,
 		int MAXITER,
 		double RHO) : featureMaps(featureMaps) {
@@ -93,6 +136,7 @@ BlockADMMSolver::BlockADMMSolver(const lossfunction* loss,
 		this->NumFeaturePartitions = NumFeaturePartitions;
 		this->NumThreads = NumThreads;
 		this->BlockSize = int(ceil(double(NumFeatures) / NumFeaturePartitions));
+		this->ScaleFeatureMaps = ScaleFeatureMaps;
 		this->TOL = TOL;
 		this->MAXITER = MAXITER;
 		this->RHO = RHO;
@@ -201,7 +245,8 @@ int BlockADMMSolver::train(skylark_context_t& context,  DistInputMatrixType& X, 
 			if (featureMaps.size() > 0) {
 				featureMap = featureMaps[j];
 				featureMap->apply(x, z, skylark::sketch::rowwise_tag());
-				elem::Scal(sqrt(double(sj) / d), z); 
+				if (ScaleFeatureMaps)
+					elem::Scal(sqrt(double(sj) / d), z); 
 			} else 
 				elem::View(z, x, 0, start, ni, sj);
 
@@ -275,7 +320,8 @@ int BlockADMMSolver::train(skylark_context_t& context,  DistInputMatrixType& X, 
 					if (featureMaps.size() > 0) {
 						featureMap = featureMaps[j];
 						featureMap->apply(x, z, skylark::sketch::rowwise_tag());
-						elem::Scal(sqrt(double(sj) / d), z); 
+						if (ScaleFeatureMaps)
+							elem::Scal(sqrt(double(sj) / d), z); 
 					} else 
 						elem::View(z, x, 0, start, ni, sj);
 
@@ -352,7 +398,8 @@ void BlockADMMSolver::predict(skylark_context_t& context,  DistInputMatrixType& 
 		elem::Matrix<double> z(ni, sj);
 		const feature_transform_t* featureMap = featureMaps[j];
 		featureMap->apply(X.Matrix(), z, skylark::sketch::rowwise_tag());
-		elem::Scal(sqrt(double(sj) / d), z); 
+		if (ScaleFeatureMaps)
+			elem::Scal(sqrt(double(sj) / d), z); 
 		
 		elem::Matrix<double> o(ni, k);
 		

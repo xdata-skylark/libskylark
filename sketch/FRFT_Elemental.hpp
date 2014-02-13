@@ -27,8 +27,6 @@ struct FastRFT_t <
     typedef elem::Matrix<value_type> matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
     typedef FastRFT_data_t<ValueType> base_data_t;
-private:
-    typename fft_futs<ValueType>::DCT dct;
 
 public:
 
@@ -39,7 +37,7 @@ public:
      */
     FastRFT_t(const FastRFT_t<matrix_type,
                       output_matrix_type>& other)
-        : base_data_t(other) {
+        : base_data_t(other), _dct(base_data_t::N) {
 
     }
 
@@ -47,7 +45,7 @@ public:
      * Constructor from data
      */
     FastRFT_t(const base_data_t& other_data)
-        : base_data_t(other_data) {
+        : base_data_t(other_data), _dct(base_data_t::N) {
 
     }
 
@@ -93,7 +91,7 @@ private:
 
             // Set the local values of B, G and S
             value_type scal =
-                std::sqrt(base_data_t::N) * dct.scale(W, tag);
+                std::sqrt(base_data_t::N) * _dct.scale(W, tag);
             for(int j = 0; j < base_data_t::N; j++) {
                 B.Set(j, 0, base_data_t::B[i * base_data_t::N + j]);
                 G.Set(j, 0, scal * base_data_t::G[i * base_data_t::N + j]);
@@ -102,7 +100,7 @@ private:
 
             elem::DiagonalScale(elem::LEFT, elem::NORMAL, B, W);
 
-            dct.apply(W, tag);
+            _dct.apply(W, tag);
 
             double *w = W.Buffer();
             for(int c = 0; c < W.Width(); c++)
@@ -115,7 +113,7 @@ private:
 
             elem::DiagonalScale(elem::LEFT, elem::NORMAL, G, W);
 
-            dct.apply(W, tag);
+            _dct.apply(W, tag);
 
             elem::DiagonalScale(elem::LEFT, elem::NORMAL, Sm, W);
 
@@ -157,7 +155,7 @@ private:
 
             // Set the local values of B, G and S
             value_type scal =
-                std::sqrt(base_data_t::N) * dct.scale(W, tag);
+                std::sqrt(base_data_t::N) * _dct.scale(W, tag);
             for(int j = 0; j < base_data_t::N; j++) {
                 B.Set(j, 0, base_data_t::B[i * base_data_t::N + j]);
                 G.Set(j, 0, scal * base_data_t::G[i * base_data_t::N + j]);
@@ -166,7 +164,7 @@ private:
 
             elem::DiagonalScale(elem::RIGHT, elem::NORMAL, B, W);
 
-            dct.apply(W, tag);
+            _dct.apply(W, tag);
 
             double *w = W.Buffer();
             for(int c = 0; c < W.Height(); c++)
@@ -179,7 +177,7 @@ private:
 
             elem::DiagonalScale(elem::RIGHT, elem::NORMAL, G, W);
 
-            dct.apply(W, tag);
+            _dct.apply(W, tag);
 
             elem::DiagonalScale(elem::RIGHT, elem::NORMAL, Sm, W);
 
@@ -199,6 +197,9 @@ private:
                 sketch_of_A.Set(i, j, trans);
             }
     }
+
+private:
+    typename fft_futs<ValueType>::DCT_t _dct;
 };
 
 

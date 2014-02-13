@@ -98,24 +98,28 @@ private:
                 Sm.Set(j, 0, scal * base_data_t::Sm[i * base_data_t::N + j]);
             }
 
-            elem::DiagonalScale(elem::LEFT, elem::NORMAL, B, W);
+            int c;
+            matrix_type Wc;
+            for(c = 0; c < A.Width(); c++) {
+                elem::View(Wc, W, 0, c, W.Height(), 1);
 
-            _dct.apply(W, tag);
+                elem::DiagonalScale(elem::LEFT, elem::NORMAL, B, Wc);
 
-            double *w = W.Buffer();
-            for(int c = 0; c < W.Width(); c++)
+                _dct.apply(Wc, tag);
+
+                double *w = Wc.Buffer();
                 for(int l = 0; l < base_data_t::N - 1; l++) {
-                    int idx1 = c * W.LDim() + base_data_t::N - 1 - l;
-                    int idx2 = c * W.LDim() +
-                        base_data_t::P[i * (base_data_t::N - 1) + l];
+                    int idx1 = base_data_t::N - 1 - l;
+                    int idx2 = base_data_t::P[i * (base_data_t::N - 1) + l];
                     std::swap(w[idx1], w[idx2]);
                 }
 
-            elem::DiagonalScale(elem::LEFT, elem::NORMAL, G, W);
+                elem::DiagonalScale(elem::LEFT, elem::NORMAL, G, Wc);
 
-            _dct.apply(W, tag);
+                _dct.apply(Wc, tag);
 
-            elem::DiagonalScale(elem::LEFT, elem::NORMAL, Sm, W);
+                elem::DiagonalScale(elem::LEFT, elem::NORMAL, Sm, Wc);
+            }
 
             // Copy that part to the output
             output_matrix_type view_sketch_of_A;

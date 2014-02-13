@@ -80,7 +80,6 @@ int main (int argc, char** argv) {
 	 	k++;
 
 	 BlockADMMSolver *Solver = NULL;
-	 BlockADMMSolver::feature_transform_array_t featureMaps;
 	 int blksize;
 	 int features;
 	 switch(options.kernel) {
@@ -184,10 +183,6 @@ int main (int argc, char** argv) {
 			 std::cout << "Accuracy = " << totalcorrect*100.0/Xt.Height() << " %" << std::endl;
 
 	 } 
-	 
-	 // Clear random features
-	 for (BlockADMMSolver::feature_transform_array_t::iterator it = featureMaps.begin(); it != featureMaps.end(); it++)
-		 delete *it;
 
 	context.comm.barrier();
 	 

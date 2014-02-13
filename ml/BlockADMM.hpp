@@ -93,6 +93,7 @@ private:
 	regularization* regularizer;
 	std::vector<int> starts, finishes;
 	bool ScaleFeatureMaps;
+	bool OwnFeatureMaps;
 	LocalMatrixType **Cache;
 };
 
@@ -134,6 +135,7 @@ BlockADMMSolver::BlockADMMSolver(skylark_context_t& context,
 		this->TOL = TOL;
 		this->MAXITER = MAXITER;
 		this->RHO = RHO;
+		OwnFeatureMaps = false;
 		InitializeCache();
 }
 
@@ -169,6 +171,7 @@ BlockADMMSolver::BlockADMMSolver(skylark_context_t& context,
 		this->TOL = TOL;
 		this->MAXITER = MAXITER;
 		this->RHO = RHO;
+		OwnFeatureMaps = true;
 		InitializeCache();
 }
 
@@ -202,10 +205,18 @@ BlockADMMSolver::BlockADMMSolver(skylark_context_t& context,
 		this->TOL = TOL;
 		this->MAXITER = MAXITER;
 		this->RHO = RHO;
+		OwnFeatureMaps = false;
 		InitializeCache();
 }
 
-
+BlockADMMSolver::~BlockADMMSolver() {
+	for(int i=0; i  < NumFeaturePartitions; i++) {
+		delete Cache[i];
+		if (OwnFeatureMaps)
+			delete featureMaps[i];
+	}
+	delete Cache;
+}
 
 
 int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, LocalMatrixType& Wbar) {

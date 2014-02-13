@@ -41,7 +41,8 @@ int main (int argc, char** argv) {
 
 	 omp_set_num_threads(options.numthreads);
 
-	 DistInputMatrixType X, Y;
+	 DistInputMatrixType X;
+	 DistTargetMatrixType Y;
 
 	 if (context.rank==0)
 		 std::cout << options.print();
@@ -84,13 +85,13 @@ int main (int argc, char** argv) {
 	 int features;
 	 switch(options.kernel) {
 	 	 case LINEAR:
-	 		 features = X.Width();
+	 		 features = X.Height();
 	 		 Solver = new BlockADMMSolver(
 	 				context, 
 	 				loss,
 	 				 regularizer,	
 	 				 options.lambda,
-	 				 X.Width(),
+	 				 X.Height(),
 	 				 options.numfeaturepartitions,
 	 				 options.numthreads,
 	 				 options.tolerance,
@@ -107,7 +108,7 @@ int main (int argc, char** argv) {
 		 				 regularizer,	
 		 				 options.lambda,
 		 				 features,
-		 				 skylark::ml::kernels::gaussian_t(X.Width(), options.kernelparam),
+		 				 skylark::ml::kernels::gaussian_t(X.Height(), options.kernelparam),
 		 				 skylark::ml::regular_feature_transform_tag(),
 		 				 options.numfeaturepartitions,
 		 				 options.numthreads,
@@ -122,7 +123,7 @@ int main (int argc, char** argv) {
 	 					 regularizer,	
 	 					 options.lambda,
 	 					 features,
-	 					 skylark::ml::kernels::gaussian_t(X.Width(), options.kernelparam),
+	 					 skylark::ml::kernels::gaussian_t(X.Height(), options.kernelparam),
 	 					 skylark::ml::fast_feature_transform_tag(),
 	 					 options.numfeaturepartitions,
 	 					 options.numthreads,
@@ -153,8 +154,9 @@ int main (int argc, char** argv) {
 		 
 		 if(context.rank == 0) std::cout << "Starting testing phase." << std::endl;
 		 
-		 DistInputMatrixType Xt, Yt;
-		 read_libsvm_dense(context, options.testfile, Xt, Yt, X.Width());
+		 DistInputMatrixType Xt;
+		 DistTargetMatrixType Yt;
+		 read_libsvm_dense(context, options.testfile, Xt, Yt, X.Height());
 		 
 		 DistTargetMatrixType Yp(Yt.Height(), k);
 		 Solver->predict(Xt, Yp, Wbar);
@@ -180,7 +182,7 @@ int main (int argc, char** argv) {
 		 int totalcorrect;
 		 boost::mpi::reduce(context.comm, correct, totalcorrect, std::plus<double>(), 0);
 		 if(context.rank ==0)
-			 std::cout << "Accuracy = " << totalcorrect*100.0/Xt.Height() << " %" << std::endl;
+			 std::cout << "Accuracy = " << totalcorrect*100.0/Xt.Width() << " %" << std::endl;
 
 	 } 
 	 

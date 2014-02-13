@@ -17,11 +17,13 @@ using namespace std;
 namespace bmpi =  boost::mpi;
 
 typedef skylark::sketch::context_t skylark_context_t;
-typedef elem::DistMatrix<double, elem::VC, elem::STAR> DistInputMatrixType;
 typedef elem::DistMatrix<double, elem::CIRC, elem::CIRC> DistCircMatrixType;
 
 
-void read_libsvm_dense(skylark_context_t& context, string fName, DistInputMatrixType& X, DistInputMatrixType& Y, int min_d = 0) {
+void read_libsvm_dense(skylark_context_t& context, string fName, 
+		elem::DistMatrix<double, elem::STAR, elem::VC>& X, 
+		elem::DistMatrix<double, elem::VC, elem::STAR>& Y, 
+		int min_d = 0) {
 	if (context.rank==0)
 			cout << "Reading from file " << fName << endl;
 
@@ -65,7 +67,7 @@ void read_libsvm_dense(skylark_context_t& context, string fName, DistInputMatrix
 	boost::mpi::broadcast(context.comm, n, 0);
 	boost::mpi::broadcast(context.comm, d, 0);
 
-	DistCircMatrixType x(n, d), y(n, 1);
+	DistCircMatrixType x(d, n), y(n, 1);
 	x.SetRoot(0);
 	y.SetRoot(0);
 	elem::MakeZeros(x);
@@ -94,7 +96,7 @@ void read_libsvm_dense(skylark_context_t& context, string fName, DistInputMatrix
 				ind = token.substr(0, delim);
 				val = token.substr(delim+1); //.substr(delim+1);
 				j = atoi(ind.c_str()) - 1;
-				Xdata[n*j + i] = atof(val.c_str());
+				Xdata[i * d + j] = atof(val.c_str());
 			 }
 		}
 	}

@@ -15,8 +15,13 @@
 #include "hilbert.hpp"
 #include <omp.h>
 
-typedef elem::DistMatrix<double, elem::VC, elem::STAR> DistInputMatrixType;
+// Columns are examples, rows are features
+typedef elem::DistMatrix<double, elem::STAR, elem::VC> DistInputMatrixType;
+
+// Rows are examples, columns are target values
 typedef elem::DistMatrix<double, elem::VC, elem::STAR> DistTargetMatrixType;
+
+
 typedef elem::DistMatrix<double, elem::VC, elem::STAR> DistMatrixType;
 typedef elem::DistMatrix<double, elem::STAR, elem::VC> DistMatrixTypeT;
 
@@ -223,8 +228,8 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 
 	int P = context.size;
 
-	int n = X.Height();
-	int d = X.Width();
+	int n = X.Width();
+	int d = X.Height();
 	int k = Wbar.Width();
 	// number of classes, targets - to generalize
 
@@ -311,15 +316,15 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 			finish = finishes[j];
 			sj = finish - start  + 1;
 
-			elem::Matrix<double> z(ni, sj);
+			elem::Matrix<double> z(sj, ni);
 		
 			if (featureMaps.size() > 0) {
 				featureMap = featureMaps[j];
-				featureMap->apply(x, z, skylark::sketch::rowwise_tag());
+				featureMap->apply(x, z, skylark::sketch::columnwise_tag());
 				if (ScaleFeatureMaps)
 					elem::Scal(sqrt(double(sj) / d), z); 
 			} else 
-				elem::View(z, x, 0, start, ni, sj);
+				elem::View(z, x, start, 0, sj, ni);
 
 			elem::Matrix<double> tmp(sj, k);
 			elem::Matrix<double> rhs(sj, k);
@@ -330,7 +335,7 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 				elem::Matrix<double> Ones;
 				elem::Ones(Ones, sj, 1);
 			//elem::Syrk(elem::UPPER, elem::TRANSPOSE, 1.0, z, 0.0, *Cache[j]);
-				elem::Gemm(elem::TRANSPOSE, elem::NORMAL, 1.0, z, z, 0.0, *Cache[j]);
+				elem::Gemm(elem::NORMAL, elem::TRANSPOSE, 1.0, z, z, 0.0, *Cache[j]);
 				Cache[j]->UpdateDiagonal(Ones);
 				//elem::Cholesky(elem::UPPER, *Cache[j]);
 				elem::Inverse(*Cache[j]);
@@ -346,13 +351,13 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 			elem::Axpy(-1.0, tmp, rhs); // rhs = rhs - mu_ij[J,:] = Wbar[J,:] - mu_ij[J,:]
 			elem::View(tmp, ZtObar_ij, start, 0, sj, k);
 			elem::Axpy(+1.0, tmp, rhs); // rhs = rhs + ZtObar_ij[J,:]
-			elem::Gemm(elem::TRANSPOSE, elem::TRANSPOSE, 1.0, z, nu.Matrix(), 1.0, rhs); // rhs = rhs + z'*nu
+			elem::Gemm(elem::NORMAL, elem::TRANSPOSE, 1.0, z, nu.Matrix(), 1.0, rhs); // rhs = rhs + z'*nu
 
 			elem::View(tmp, Wi, start, 0, sj, k);
 		    elem::Gemm(elem::NORMAL, elem::NORMAL, 1.0, *Cache[j], rhs, 0.0, tmp); // ]tmp = Wi[J,:] = Cache[j]*rhs
 
 		 //   double st = omp_get_wtime( );
-			elem::Gemm(elem::TRANSPOSE, elem::TRANSPOSE, 1.0, tmp, z, 0.0, o); // o = (z*tmp)' = (z*Wi[J,:])'
+			elem::Gemm(elem::TRANSPOSE, elem::NORMAL, 1.0, tmp, z, 0.0, o); // o = (z*tmp)' = (z*Wi[J,:])'
 		//	double ed = omp_get_wtime( );
 
 			// std::cout << ed - st << std::endl;
@@ -364,7 +369,7 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 
 		    //ZtObar_ij[JJ,:] = numpy.dot(Z.T, o);
 	 		elem::View(tmp, ZtObar_ij, start, 0, sj, k);
-			elem::Gemm(elem::TRANSPOSE, elem::TRANSPOSE, 1.0, z, o, 0.0, tmp);
+			elem::Gemm(elem::NORMAL, elem::TRANSPOSE, 1.0, z, o, 0.0, tmp);
 
 			//  sum_o += o
             #pragma omp critical
@@ -386,21 +391,21 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 					finish = finishes[j];
 					sj = finish - start  + 1;
 
-					elem::Matrix<double> z(ni, sj);
+					elem::Matrix<double> z(sj, ni);
 			
 					if (featureMaps.size() > 0) {
 						featureMap = featureMaps[j];
-						featureMap->apply(x, z, skylark::sketch::rowwise_tag());
+						featureMap->apply(x, z, skylark::sketch::columnwise_tag());
 						if (ScaleFeatureMaps)
 							elem::Scal(sqrt(double(sj) / d), z); 
 					} else 
-						elem::View(z, x, 0, start, ni, sj);
+						elem::View(z, x, start, 0, sj, ni);
 
 					elem::Matrix<double> tmp(sj, k);
 					elem::View(tmp, ZtObar_ij, start, 0, sj, k);
-					elem::Gemm(elem::TRANSPOSE, elem::TRANSPOSE, 1.0/(NumFeaturePartitions + 1.0), z, sum_o, 1.0, tmp);
+					elem::Gemm(elem::NORMAL, elem::TRANSPOSE, 1.0/(NumFeaturePartitions + 1.0), z, sum_o, 1.0, tmp);
 					elem::View(tmp, Wbar, start, 0, sj, k);
-					elem::Gemm(elem::TRANSPOSE, elem::TRANSPOSE, 1.0, tmp, z, 1.0, o);
+					elem::Gemm(elem::TRANSPOSE, elem::NORMAL, 1.0, tmp, z, 1.0, o);
 		}
 
 
@@ -445,14 +450,14 @@ void BlockADMMSolver::predict(DistInputMatrixType& X, DistTargetMatrixType& Y, L
 
 	// TOD W should be really kept as part of the model
 
-	int n = X.Height();
-	int d = X.Width();
+	int n = X.Width();
+	int d = X.Height();
 	int k = Y.Width();
-	int ni = X.LocalHeight();
+	int ni = X.LocalWidth();
 	
 	if (featureMaps.size() == 0) {
 		Y.ResizeTo(n, k);
-		elem::Gemm(elem::NORMAL,elem::NORMAL,1.0, X.Matrix(), W, 0.0, Y.Matrix());	
+		elem::Gemm(elem::TRANSPOSE,elem::NORMAL,1.0, X.Matrix(), W, 0.0, Y.Matrix());	
 		return;
 	}
 	
@@ -465,9 +470,9 @@ void BlockADMMSolver::predict(DistInputMatrixType& X, DistTargetMatrixType& Y, L
 		int finish = finishes[j];
 		int sj = finish - start  + 1;
 
-		elem::Matrix<double> z(ni, sj);
+		elem::Matrix<double> z(sj, ni);
 		const feature_transform_t* featureMap = featureMaps[j];
-		featureMap->apply(X.Matrix(), z, skylark::sketch::rowwise_tag());
+		featureMap->apply(X.Matrix(), z, skylark::sketch::columnwise_tag());
 		if (ScaleFeatureMaps)
 			elem::Scal(sqrt(double(sj) / d), z); 
 		
@@ -475,7 +480,7 @@ void BlockADMMSolver::predict(DistInputMatrixType& X, DistTargetMatrixType& Y, L
 		
 
 		elem::View(Wslice, W, start, 0, sj, k);
-		elem::Gemm(elem::NORMAL, elem::NORMAL, 1.0, z, Wslice, 0.0, o);
+		elem::Gemm(elem::TRANSPOSE, elem::NORMAL, 1.0, z, Wslice, 0.0, o);
 		elem::Axpy(+1.0, o, Y.Matrix());
 	}
 }			

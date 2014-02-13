@@ -5,3 +5,5 @@ examples/elemental.dbg
 config.h
 build
 *.pyc
+.pydevproject
+.settings/

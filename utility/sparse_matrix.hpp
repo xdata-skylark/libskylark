@@ -129,11 +129,14 @@ struct sparse_matrix_t {
     }
 
 private:
+    bool _dirty;
+
     std::vector<index_type> _indptr;
     std::vector<index_type> _indices;
     std::vector<value_type> _values;
 
-    bool _dirty;
+    sparse_matrix_t(const sparse_matrix_t&);
+    void operator=(const sparse_matrix_t&);
 
     static bool _sort_coords(coord_tuple_t lhs, coord_tuple_t rhs) {
         if(boost::get<0>(lhs) != boost::get<0>(rhs))

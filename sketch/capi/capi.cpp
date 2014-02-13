@@ -61,7 +61,7 @@ typedef elem::DistMatrix<double, elem::VC, elem::STAR> DistMatrix_VC_STAR;
 typedef elem::DistMatrix<double, elem::STAR, elem::VR> DistMatrix_STAR_VR;
 typedef elem::DistMatrix<double, elem::STAR, elem::VC> DistMatrix_STAR_VC;
 #endif
-typedef skylark::utility::sparse_matrix_t<size_t, double> SpMatrix_t;
+typedef skylark::utility::sparse_matrix_t<size_t, double> SparseMatrix_t;
 #ifdef SKYLARK_HAVE_COMBBLAS
 typedef SpDCCols< size_t, double > col_t;
 typedef SpParMat< size_t, double, col_t > DistSparseMatrix_t;
@@ -133,6 +133,7 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
 
 #ifdef SKYLARK_HAVE_COMBBLAS
         SKDEF(CWT, DistSparseMatrix, DistSparseMatrix)
+        SKDEF(CWT, DistSparseMatrix, SparseMatrix)
 #endif
         SKDEF(CWT, SparseMatrix, SparseMatrix)
         "";
@@ -520,6 +521,11 @@ SKYLARK_EXTERN_API int
         sketch::CWT_t, DistSparseMatrix_t, DistSparseMatrix_t,
         CWT_data_t);
 
+    AUTO_APPLY_DISPATCH(sketchc::CWT,
+        sketchc::DIST_SPARSE_MATRIX, sketchc::SPARSE_MATRIX,
+        sketch::CWT_t, DistSparseMatrix_t, SparseMatrix_t,
+        CWT_data_t);
+
     AUTO_APPLY_DISPATCH(sketchc::MMT,
         sketchc::DIST_SPARSE_MATRIX, sketchc::DIST_SPARSE_MATRIX,
         sketch::MMT_t, DistSparseMatrix_t, DistSparseMatrix_t,
@@ -530,12 +536,12 @@ SKYLARK_EXTERN_API int
 
     AUTO_APPLY_DISPATCH(sketchc::CWT,
         sketchc::SPARSE_MATRIX, sketchc::SPARSE_MATRIX,
-        sketch::CWT_t, SpMatrix_t, SpMatrix_t,
+        sketch::CWT_t, SparseMatrix_t, SparseMatrix_t,
         CWT_data_t);
 
     //AUTO_APPLY_DISPATCH(sketchc::MMT,
         //sketchc::SPARSE_MATRIX, sketchc::SPARSE_MATRIX,
-        //sketch::MMT_t, SpMatrix_t, SpMatrix_t,
+        //sketch::MMT_t, SparseMatrix_t, SparseMatrix_t,
         //MMT_data_t);
 
     return 0;
@@ -567,32 +573,32 @@ SKYLARK_EXTERN_API int sl_free_raw_matrix_wrap(void *A_) {
 SKYLARK_EXTERN_API int sl_wrap_raw_sp_matrix(
         int *indptr, int *ind, double *data, int n_indptr, int n_ind, void **A)
 {
-    SpMatrix_t *tmp = new SpMatrix_t();
+    SparseMatrix_t *tmp = new SparseMatrix_t();
     tmp->attach(indptr, ind, data, n_indptr, n_ind);
     *A = tmp;
     return 0;
 }
 
 SKYLARK_EXTERN_API int sl_free_raw_sp_matrix_wrap(void *A_) {
-    delete static_cast<SpMatrix_t *>(A_);
+    delete static_cast<SparseMatrix_t *>(A_);
     return 0;
 }
 
 SKYLARK_EXTERN_API int sl_raw_sp_matrix_size(void *A_,
         int *n_indptr, int *n_indices) {
-    static_cast<SpMatrix_t *>(A_)->get_size(n_indptr, n_indices);
+    static_cast<SparseMatrix_t *>(A_)->get_size(n_indptr, n_indices);
     return 0;
 }
 
 SKYLARK_EXTERN_API int sl_raw_sp_matrix_needs_update(void *A_,
         bool *needs_update) {
-    *needs_update = static_cast<SpMatrix_t *>(A_)->needs_update();
+    *needs_update = static_cast<SparseMatrix_t *>(A_)->needs_update();
     return 0;
 }
 
 SKYLARK_EXTERN_API int sl_raw_sp_matrix_data(void *A_, int32_t **indptr,
         int32_t **indices, double **values) {
-    static_cast<SpMatrix_t *>(A_)->detach(*indptr, *indices, *values);
+    static_cast<SparseMatrix_t *>(A_)->detach(*indptr, *indices, *values);
     return 0;
 }
 

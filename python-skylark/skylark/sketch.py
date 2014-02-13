@@ -188,7 +188,7 @@ class _NumpyAdapter:
 class _ScipyAdapter:
   def __init__(self, A):
 
-    if isinstance(A, scipy.sparse.csr_matrix):
+    if isinstance(A, scipy.sparse.csr_matrix) or isinstance(A, scipy.sparse.csc_matrix):
         self._A = A
     else:
         self._A = scipy.sparse.csr_matrix(A)

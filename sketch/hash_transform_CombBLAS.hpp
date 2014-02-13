@@ -2,10 +2,12 @@
 #define SKYLARK_HASH_TRANSFORM_COMBBLAS_HPP
 
 #include <map>
+#include "boost/serialization/map.hpp"
 
 #include <CombBLAS.h>
 #include "../utility/external/FullyDistMultiVec.hpp"
 #include "../utility/exception.hpp"
+#include "../utility/sparse_matrix.hpp"
 
 #include "context.hpp"
 #include "transforms.hpp"
@@ -483,6 +485,178 @@ private:
     }
 };
 
+
+/* Specialization: SpParMat for input, output */
+template <typename IndexType,
+          typename ValueType,
+          template <typename> class IdxDistributionType,
+          template <typename> class ValueDistribution>
+struct hash_transform_t <
+    SpParMat<IndexType, ValueType, SpDCCols<IndexType, ValueType> >,
+    utility::sparse_matrix_t<IndexType, ValueType>,
+    IdxDistributionType,
+    ValueDistribution > :
+        public hash_transform_data_t<IndexType,
+                                     ValueType,
+                                     IdxDistributionType,
+                                     ValueDistribution> {
+    typedef IndexType index_type;
+    typedef ValueType value_type;
+    typedef SpDCCols< index_type, value_type > col_t;
+    typedef FullyDistVec< index_type, value_type> mpi_vector_t;
+    typedef SpParMat< index_type, value_type, col_t > matrix_type;
+    typedef utility::sparse_matrix_t< index_type, value_type > output_matrix_type;
+    typedef hash_transform_data_t<IndexType,
+                                  ValueType,
+                                  IdxDistributionType,
+                                  ValueDistribution> base_data_t;
+
+
+    /**
+     * Regular constructor
+     */
+    hash_transform_t (int N, int S, skylark::sketch::context_t& context) :
+        base_data_t(N, S, context) {}
+
+    /**
+     * Copy constructor
+     */
+    template <typename InputMatrixType,
+              typename OutputMatrixType>
+    hash_transform_t (hash_transform_t<InputMatrixType,
+                                       OutputMatrixType,
+                                       IdxDistributionType,
+                                       ValueDistribution>& other) :
+        base_data_t(other.get_data()) {}
+
+    /**
+     * Constructor from data
+     */
+    hash_transform_t (hash_transform_data_t<index_type,
+                                            value_type,
+                                            IdxDistributionType,
+                                            ValueDistribution>& other_data) :
+        base_data_t(other_data.get_data()) {}
+
+    template <typename Dimension>
+    void apply (const matrix_type &A,
+        output_matrix_type &sketch_of_A,
+        Dimension dimension) const {
+        try {
+            apply_impl (A, sketch_of_A, dimension);
+        } catch(boost::mpi::exception e) {
+            SKYLARK_THROW_EXCEPTION (
+                utility::mpi_exception()
+                    << utility::error_msg(e.what()) );
+        } catch (std::string e) {
+            SKYLARK_THROW_EXCEPTION (
+                utility::combblas_exception()
+                    << utility::error_msg(e) );
+        } catch (std::logic_error e) {
+            SKYLARK_THROW_EXCEPTION (
+                utility::combblas_exception()
+                    << utility::error_msg(e.what()) );
+        }
+    }
+
+
+private:
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     */
+    template <typename Dimension>
+    void apply_impl (const matrix_type &A_,
+        output_matrix_type &sketch_of_A,
+        Dimension dist) const {
+
+        // We are essentially doing a 'const' access to A, but the necessary,
+        // 'const' option is missing from the interface
+        matrix_type &A = const_cast<matrix_type&>(A_);
+
+        const size_t rank = A.getcommgrid()->GetRank();
+
+        // extract columns of matrix
+        col_t &data = A.seq();
+
+        //FIXME: use comm_grid
+        const size_t my_row_offset =
+            static_cast<int>((static_cast<double>(A.getnrow()) /
+                    A.getcommgrid()->GetGridRows())) *
+                    A.getcommgrid()->GetRankInProcCol(rank);
+
+        const size_t my_col_offset =
+            static_cast<int>((static_cast<double>(A.getncol()) /
+                    A.getcommgrid()->GetGridCols())) *
+                    A.getcommgrid()->GetRankInProcRow(rank);
+
+        // Apply sketch for all local values. Subsequently, all values are
+        // gathered on processor 0 and the local matrix is populated.
+        std::map< std::pair< index_type, index_type>, value_type > coords;
+        for(typename col_t::SpColIter col = data.begcol();
+            col != data.endcol(); col++) {
+            for(typename col_t::SpColIter::NzIter nz = data.begnz(col);
+                nz != data.endnz(col); nz++) {
+
+                index_type rowid = nz.rowid()  + my_row_offset;
+                index_type colid = col.colid() + my_col_offset;
+
+                const value_type value =
+                    nz.value() * getValue(rowid, colid, dist);
+
+                finalPos(rowid, colid, dist);
+
+                std::pair<index_type, index_type> pos =
+                    std::make_pair(rowid, colid);
+                if(coords.count(pos) != 0)
+                    coords[pos] += value;
+                else
+                    coords.insert(std::make_pair(pos, value));
+            }
+        }
+
+        boost::mpi::communicator world(A.getcommgrid()->GetWorld(),
+                                       boost::mpi::comm_duplicate);
+
+        std::vector< std::map<std::pair<index_type, index_type>, value_type> >
+            result;
+        boost::mpi::gather(world, coords, result, 0);
+
+        // unpack
+        typedef typename output_matrix_type::coords_t coords_t;
+        coords_t coord_matrix;
+        for(size_t i = 0; i < result.size(); ++i) {
+            typename std::map<
+                std::pair<index_type, index_type>, value_type>::iterator itr;
+            for(itr = result[i].begin(); itr != result[i].end(); itr++) {
+
+                typename output_matrix_type::coord_tuple_t new_entry(
+                         itr->first.first, itr->first.second, itr->second);
+
+                coord_matrix.push_back(new_entry);
+            }
+        }
+
+        sketch_of_A.attach(coord_matrix);
+    }
+
+    inline void finalPos(index_type &rowid, index_type &colid, columnwise_tag) const {
+        rowid = base_data_t::row_idx[rowid];
+    }
+
+    inline void finalPos(index_type &rowid, index_type &colid, rowwise_tag) const {
+        colid = base_data_t::row_idx[colid];
+    }
+
+    inline value_type getValue(index_type rowid, index_type colid,
+        columnwise_tag) const {
+        return base_data_t::row_value[rowid];
+    }
+
+    inline value_type getValue(index_type rowid, index_type colid,
+        rowwise_tag) const {
+        return base_data_t::row_value[colid];
+    }
+};
 
 } } /** namespace skylark::sketch */
 

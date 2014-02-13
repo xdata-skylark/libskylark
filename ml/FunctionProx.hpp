@@ -61,8 +61,8 @@ private:
     double normsquare(double* x, double* y, int n);
     double objective(int index, double* x, double* v, int n, double lambda);
     int logexp(int index, double* v, int n, double lambda, double* x, int MAXITER, double epsilon, int DISPLAY);
-    static const int MAXITER = 10;
-    static const double epsilon = 1e-3;
+    static const int MAXITER = 100;
+    static const double epsilon = 1e-4;
     static const int DISPLAY = 0;
 };
 
@@ -75,17 +75,33 @@ public:
 
 double squaredloss::evaluate(LocalDenseMatrixType& O, LocalTargetMatrixType& T) {
 		double loss = 0.0;
-		int mn = O.Height()*O.Width();
+		int k = O.Height();
+		int n = O.Width();
 
 		// check for size compatability
 
 		double* Obuf = O.Buffer();
 		double*  Tbuf = T.Buffer();
 		double x;
-
-		for(int i=0; i<mn; i++) {
-			x = Obuf[i] - Tbuf[i];
-			loss += x*x;
+		int i, j, label;
+	
+		if (k==1) {
+			#pragma omp parallel for reduction(+:loss) private(i, x)
+			for(i=0; i<n; i++) {
+				x = Obuf[i] - Tbuf[i];
+				loss += x*x;
+			}
+		}
+		
+		if (k>1) {
+			#pragma omp parallel for reduction(+:loss) private(i,j, x, label)
+			for(i=0; i<n; i++) {
+				label = (int) Tbuf[i];
+                                for(j=0;j<k;j++) {
+                                     x = O.Get(j,i) - (j==label ? 1.0:-1.0);
+                        	     loss += x*x;
+	                       	}			
+			}
 		}
 
 		return 0.5*loss;
@@ -93,7 +109,8 @@ double squaredloss::evaluate(LocalDenseMatrixType& O, LocalTargetMatrixType& T) 
 
 	//solution to Y = prox[X] = argmin_Y 0.5*||X-Y||^2_{fro} + lambda 0.5 ||Y-T||^2_{fro}
 void squaredloss::proxoperator(LocalDenseMatrixType& X, double lambda, LocalTargetMatrixType& T, LocalDenseMatrixType& Y) {
-		int mn = X.Height()*X.Width();
+		int k = X.Height();
+		int n = X.Width();
 
 				// check for size compatability
 
@@ -103,8 +120,21 @@ void squaredloss::proxoperator(LocalDenseMatrixType& X, double lambda, LocalTarg
 		double* Ybuf = Y.Buffer();
 		double ilambda = 1.0/(1.0 + lambda);
 
-		for(int i=0; i<mn; i++)
-			Ybuf[i] = ilambda*(Xbuf[i] + lambda*Tbuf[i]);
+		int label, i, j;
+
+		if (k==1) {
+			for(int i=0; i<n; i++)
+				Ybuf[i] = ilambda*(Xbuf[i] + lambda*Tbuf[i]);
+		}
+
+		if(k>1) {
+			for(int i=0; i<n; i++) {
+				label = (int) Tbuf[i];
+                                for(j=0;j<k;j++) {
+                                     Y.Set(j, i,  ilambda*(X.Get(j,i) + lambda*(j==label ? 1.0:-1.0)));			
+				}
+			}			
+		}
 	}
 
 

@@ -47,6 +47,9 @@ int main (int argc, char** argv) {
 
 	 read_libsvm_dense(context, options.trainfile, X, Y);
 
+         cout << " Rank " << context.rank << " on " << env.processor_name() << " owns : " << X.LocalHeight() <<  " x " << X.LocalWidth() << endl;
+
+
 	 lossfunction *loss = NULL;
 	 switch(options.lossfunction) {
 	 	 case SQUARED:
@@ -108,7 +111,6 @@ int main (int argc, char** argv) {
 		 dimensionstring << "# Dimensions " << options.randomfeatures << " " << k << "\n";
 		 elem::Write(Wbar, options.print().append(dimensionstring.str()), options.modelfile);
 	 }
-//	 cout << " Rank " << context.rank << " owns : " << X.LocalHeight() <<  " x " << X.LocalWidth() << endl;
 
 	 context.comm.barrier();
 

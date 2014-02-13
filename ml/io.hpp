@@ -40,6 +40,7 @@ void read_libsvm_dense(skylark_context_t& context, string fName, DistInputMatrix
 
 
 	// make one pass over the data to figure out dimensions - will pay in terms of preallocated storage.
+	if (context.rank==0) {
 	while(!file.eof()) {
 		getline(file, line);
 		if(line.length()==0)
@@ -57,6 +58,10 @@ void read_libsvm_dense(skylark_context_t& context, string fName, DistInputMatrix
 		if (last>d)
 			d = last;
 	}
+	}
+
+	boost::mpi::broadcast(context.comm, n, 0);
+	boost::mpi::broadcast(context.comm, d, 0);
 
 	DistCircMatrixType x(n, d), y(n, 1);
 	x.SetRoot(0);

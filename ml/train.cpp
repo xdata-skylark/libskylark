@@ -49,8 +49,7 @@ int main (int argc, char** argv) {
 
 	 read_libsvm_dense(context, options.trainfile, X, Y);
 
-         cout << " Rank " << context.rank << " on " << env.processor_name() << " owns : " << X.LocalHeight() <<  " x " << X.LocalWidth() << endl;
-
+	 cout << " Rank " << context.rank << " on " << env.processor_name() << " owns : " << X.LocalHeight() <<  " x " << X.LocalWidth() << endl;
 
 	 lossfunction *loss = NULL;
 	 switch(options.lossfunction) {
@@ -141,7 +140,20 @@ int main (int argc, char** argv) {
 	 elem::Matrix<double> Wbar(features, k);
 	 elem::MakeZeros(Wbar);
 
-	 Solver->train(X, Y, Wbar);
+	 DistInputMatrixType Xv;
+	 DistTargetMatrixType Yv;
+
+	 if (!options.valfile.empty()) {
+	          context.comm.barrier();
+
+	          if(context.rank == 0) std::cout << "Loading validation data." << std::endl;
+
+	          read_libsvm_dense(context, options.valfile, Xv, Yv, X.Height());
+	 }
+
+	 Solver->train(X, Y, Wbar, Xv, Yv);
+
+
 	 if (context.rank==0) {
 		 std::stringstream dimensionstring;
 		 dimensionstring << "# Dimensions " << features << " " << k << "\n";
@@ -160,30 +172,9 @@ int main (int argc, char** argv) {
 		 
 		 DistTargetMatrixType Yp(Yt.Height(), k);
 		 Solver->predict(Xt, Yp, Wbar);
-		 		 
-		 int correct = 0;
-		 double o, o1;
-		 int pred;
-		 for(int i=0; i < Yp.LocalHeight(); i++) {
-			 o = Yp.GetLocal(i,0);
-			 pred = 0;
-			 for(int j=1; j < Yp.Width(); j++) {
-				 o1 = Yp.GetLocal(i,j);
-				 if ( o1 > o) {
-					 o = o1;
-					 pred = j;
-				 }
-			 }
+		 double accuracy = Solver->evaluate(Yt, Yp);
 
-			 if(pred == (int) Yt.GetLocal(i,0))
-				 correct++;
-		  }	
-		
-		 int totalcorrect;
-		 boost::mpi::reduce(context.comm, correct, totalcorrect, std::plus<double>(), 0);
-		 if(context.rank ==0)
-			 std::cout << "Accuracy = " << totalcorrect*100.0/Xt.Width() << " %" << std::endl;
-
+		 if(context.rank == 0) std::cout << "Test Accuracy = " <<  accuracy << " %" << std::endl;
 	 } 
 	 
 	context.comm.barrier();

@@ -74,6 +74,7 @@ struct hilbert_options_t {
  std::string trainfile;
  std::string modelfile;
  std::string testfile;
+ std::string valfile;
 
   /** A parameter indicating if we need to continue or not */
  bool exit_on_return;
@@ -101,6 +102,7 @@ struct hilbert_options_t {
   ("MAXITER,i", po::value<int>(&MAXITER)->default_value(DEFAULT_MAXITER), "Maximum Number of Iterations (default: 100)")
   ("trainfile", po::value<std::string>(&trainfile)->required(), "Training data file")
   ("modelfile", po::value<std::string>(&modelfile)->required(), "Model output file")
+  ("valfile", po::value<std::string>(&valfile)->default_value(""), "Validation file (optional)")
   ("testfile", po::value<std::string>(&testfile)->default_value(""), "Test file (optional)")
       ; /* end options */
 
@@ -136,6 +138,7 @@ struct hilbert_options_t {
 	 optionstring << "# HILBERT OPTIONS:" << "\n";
 	 optionstring << "# Training File = " << trainfile << "\n";
 	 optionstring << "# Model File = " << modelfile << "\n";
+	 optionstring << "# Validation File = " << valfile << "\n";
 	 optionstring << "# Test File = " << testfile << "\n";
 	 optionstring << "# Loss function = " << lossfunction << " ("<< Losses[lossfunction]<< ")" << "\n";
 	 optionstring << "# Regularizer = " << regularizer << " ("<< Regularizers[regularizer]<< ")" << "\n";

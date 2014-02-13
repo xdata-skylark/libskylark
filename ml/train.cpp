@@ -7,6 +7,7 @@
 #include <string>
 #include <boost/mpi.hpp>
 #include <boost/program_options.hpp>
+#include "kernels.hpp"
 #include "hilbert.hpp"
 #include <omp.h>
 
@@ -70,15 +71,6 @@ int main (int argc, char** argv) {
 	 		 break;
 	 }
 
-	 FeatureTransform *featureMap = NULL;
-	 switch(options.kernel) {
-	 	 case LINEAR:
-	 		 featureMap = new Identity();
-	 		 options.randomfeatures = X.Width();
-	 		 break;
-	 }
-
-
 	 // int k = Y.Width();
 	 int k;
 	 int kmax = *std::max_element(Y.Buffer(), Y.Buffer() + Y.LocalHeight());
@@ -87,33 +79,113 @@ int main (int argc, char** argv) {
 	 if (k>1) // we assume 0-to-N encoding of classes. Hence N = k+1. For two classes, k=1.
 	 	k++;
 
-
-	 BlockADMMSolver *Solver = new BlockADMMSolver(
-			 	 	 loss,
-	 				 regularizer,
-	 				 featureMap,
+	 BlockADMMSolver *Solver = NULL;
+	 int blksize;
+	 int features;
+	 switch(options.kernel) {
+	 	 case LINEAR:
+	 		 features = X.Width();
+	 		 Solver = new BlockADMMSolver(
+	 				context, 
+	 				loss,
+	 				 regularizer,	
 	 				 options.lambda,
-	 				 options.randomfeatures,
+	 				 X.Width(),
 	 				 options.numfeaturepartitions,
 	 				 options.numthreads,
 	 				 options.tolerance,
 	 				 options.MAXITER,
 	 				 options.rho);
+	 		 break;
+	 		 
+	 	 case GAUSSIAN:
+	 		 features = options.randomfeatures;
+	 		 if (options.regularmap)
+		 		 Solver = new BlockADMMSolver(
+		 				 context, 
+		 				 loss,
+		 				 regularizer,	
+		 				 options.lambda,
+		 				 features,
+		 				 skylark::ml::kernels::gaussian_t(X.Width(), options.kernelparam),
+		 				 skylark::ml::regular_feature_transform_tag(),
+		 				 options.numfeaturepartitions,
+		 				 options.numthreads,
+		 				 options.tolerance,
+		 				 options.MAXITER,
+		 				 options.rho);	 
 
+	 		 else
+	 			 Solver = new BlockADMMSolver(
+	 					 context, 
+	 					 loss	,
+	 					 regularizer,	
+	 					 options.lambda,
+	 					 features,
+	 					 skylark::ml::kernels::gaussian_t(X.Width(), options.kernelparam),
+	 					 skylark::ml::fast_feature_transform_tag(),
+	 					 options.numfeaturepartitions,
+	 					 options.numthreads,
+	 					 options.tolerance,
+	 					 options.MAXITER,
+	 					 options.rho);	 
+	 	 	break;
+	 		
+	 	 default:
+	 		// TODO!
+	 		break; 
+	 	 
+	 }
 
-
-	 elem::Matrix<double> Wbar(options.randomfeatures, k);
+	 elem::Matrix<double> Wbar(features, k);
 	 elem::MakeZeros(Wbar);
 
-	 Solver->train(context, X,Y,Wbar);
+	 Solver->train(X, Y, Wbar);
 	 if (context.rank==0) {
 		 std::stringstream dimensionstring;
-		 dimensionstring << "# Dimensions " << options.randomfeatures << " " << k << "\n";
+		 dimensionstring << "# Dimensions " << features << " " << k << "\n";
 		 elem::Write(Wbar, options.print().append(dimensionstring.str()), options.modelfile);
 	 }
 
-	 context.comm.barrier();
+	 // Testing - if specified by the user.
+	 if (!options.testfile.empty()) {
+		 context.comm.barrier();
+		 
+		 if(context.rank == 0) std::cout << "Starting testing phase." << std::endl;
+		 
+		 DistInputMatrixType Xt, Yt;
+		 read_libsvm_dense(context, options.testfile, Xt, Yt, X.Width());
+		 
+		 DistTargetMatrixType Yp(Yt.Height(), k);
+		 Solver->predict(Xt, Yp, Wbar);
+		 		 
+		 int correct = 0;
+		 double o, o1;
+		 int pred;
+		 for(int i=0; i < Yp.LocalHeight(); i++) {
+			 o = Yp.GetLocal(i,0);
+			 pred = 0;
+			 for(int j=1; j < Yp.Width(); j++) {
+				 o1 = Yp.GetLocal(i,j);
+				 if ( o1 > o) {
+					 o = o1;
+					 pred = j;
+				 }
+			 }
 
+			 if(pred == (int) Yt.GetLocal(i,0))
+				 correct++;
+		  }	
+		
+		 int totalcorrect;
+		 boost::mpi::reduce(context.comm, correct, totalcorrect, std::plus<double>(), 0);
+		 if(context.rank ==0)
+			 std::cout << "Accuracy = " << totalcorrect*100.0/Xt.Height() << " %" << std::endl;
+
+	 } 
+	 
+	context.comm.barrier();
+	 
 	 elem::Finalize();
 	 return 0;
 }

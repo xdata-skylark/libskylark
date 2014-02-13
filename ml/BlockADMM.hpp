@@ -21,14 +21,22 @@ typedef elem::DistMatrix<double, elem::VC, elem::STAR> DistMatrixType;
 typedef elem::DistMatrix<double, elem::STAR, elem::VC> DistMatrixTypeT;
 
 typedef elem::Matrix<double> LocalMatrixType;
+typedef skylark::sketch::sketch_transform_t<LocalMatrixType, LocalMatrixType> 
+	feature_transform_t;
+
 typedef skylark::sketch::context_t skylark_context_t;
 
 class BlockADMMSolver
 {
 public:
-	BlockADMMSolver(const lossfunction* loss,
+	
+	typedef std::vector<const feature_transform_t *> feature_transform_array_t; // TODO move to private
+	
+	
+	// No feature transforms (aka just linear regression).
+	BlockADMMSolver(skylark_context_t& context,  
+					const lossfunction* loss,
 					const regularization* regularizer,
-					const FeatureTransform* featureMap,
 					double lambda, // regularization parameter
 					int NumFeatures,
 					int NumFeaturePartitions = 1,
@@ -36,65 +44,182 @@ public:
 					double TOL = 0.1,
 					int MAXITER = 1000,
 					double RHO = 1.0);
+	
+	// Easy interface, aka kernel based.
+	template<typename Kernel, typename MapTypeTag>
+	BlockADMMSolver(skylark_context_t& context,  
+					const lossfunction* loss,
+					const regularization* regularizer,
+					double lambda, // regularization parameter
+					int NumFeatures,
+					Kernel kernel, 
+					MapTypeTag tag,
+					int NumFeaturePartitions = 1,
+					int NumThreads = 1,
+					double TOL = 0.1,
+					int MAXITER = 1000,
+					double RHO = 1.0);
+	
+	// Guru interface.
+	BlockADMMSolver(skylark_context_t& context,  
+					const lossfunction* loss,
+					const regularization* regularizer,
+					const feature_transform_array_t& featureMaps,
+					double lambda, // regularization parameter
+					int NumThreads = 1,
+					bool ScaleFeatureMaps = true,
+					double TOL = 0.1,
+					int MAXITER = 1000,
+					double RHO = 1.0);
+	
 	~BlockADMMSolver();
 
 	void InitializeCache();
-	int train(skylark_context_t& context, DistInputMatrixType& X, DistTargetMatrixType& Y, LocalMatrixType& W);
+	int train(DistInputMatrixType& X, DistTargetMatrixType& Y, LocalMatrixType& W);
+	void predict(DistInputMatrixType& X, DistTargetMatrixType& Y,LocalMatrixType& W);
+
 
 private:
+	skylark_context_t& context;
 	double lambda;
 	double RHO;
 	int MAXITER;
 	double TOL;
+	feature_transform_array_t featureMaps;
+	int NumFeatures;
 	int NumFeaturePartitions;
 	int NumThreads;
-	int NumFeatures;
 	lossfunction* loss;
 	regularization* regularizer;
-	FeatureTransform* featureMap;
+	std::vector<int> starts, finishes;
+	bool ScaleFeatureMaps;
+	bool OwnFeatureMaps;
 	LocalMatrixType **Cache;
 };
 
 
 void BlockADMMSolver::InitializeCache() {
 	Cache = new LocalMatrixType* [NumFeaturePartitions];
-	int start, finish, sj;
 	for(int j=0; j<NumFeaturePartitions; j++) {
-		start = floor(round(j*NumFeatures*1.0/NumFeaturePartitions));
-		finish = floor(round((j+1)*NumFeatures*1.0/NumFeaturePartitions))-1;
-		sj = finish - start  + 1;
+		int start = starts[j];
+		int finish = finishes[j];
+		int sj = finish - start  + 1;
 		Cache[j]  = new elem::Matrix<double>(sj, sj);
 	}
 }
 
-BlockADMMSolver::BlockADMMSolver(const lossfunction* loss,
-		const regularization* regularizer,
-		const FeatureTransform* featureMap,
-		double lambda,
-		int NumFeatures,
-		int NumFeaturePartitions,
-		int NumThreads,
-		double TOL,
-		int MAXITER,
-		double RHO) {
+// No feature transforms (aka just linear regression).
+BlockADMMSolver::BlockADMMSolver(skylark_context_t& context,
+				const lossfunction* loss,
+				const regularization* regularizer,
+				double lambda, // regularization parameter
+				int NumFeatures,
+				int NumFeaturePartitions,
+				int NumThreads,
+				double TOL,
+				int MAXITER,
+				double RHO) : context(context), NumFeatures(NumFeatures), NumFeaturePartitions(NumFeaturePartitions),
+					starts(NumFeaturePartitions), finishes(NumFeaturePartitions) {
 
 		this->loss = const_cast<lossfunction *> (loss);
 		this->regularizer = const_cast<regularization *> (regularizer);
-		this->featureMap = const_cast<FeatureTransform *> (featureMap);
 		this->lambda = lambda;
-		this->NumFeatures = NumFeatures;
 		this->NumFeaturePartitions = NumFeaturePartitions;
 		this->NumThreads = NumThreads;
+		int blksize = int(ceil(double(NumFeatures) / NumFeaturePartitions));
+		for(int i = 0; i < NumFeaturePartitions; i++) {
+			starts[i] = i * blksize;
+			finishes[i] = std::min((i + 1) * blksize, NumFeatures) - 1;
+		}
+		this->ScaleFeatureMaps = false;
 		this->TOL = TOL;
 		this->MAXITER = MAXITER;
 		this->RHO = RHO;
+		OwnFeatureMaps = false;
 		InitializeCache();
 }
 
+// Easy interface, aka kernel based.
+template<typename Kernel, typename MapTypeTag>
+BlockADMMSolver::BlockADMMSolver(skylark_context_t& context,
+				const lossfunction* loss,
+				const regularization* regularizer,
+				double lambda, // regularization parameter
+				int NumFeatures,
+				Kernel kernel, 
+				MapTypeTag tag,
+				int NumFeaturePartitions,
+				int NumThreads,
+				double TOL,
+				int MAXITER,
+				double RHO) : context(context), featureMaps(NumFeaturePartitions), 
+					NumFeatures(NumFeatures), NumFeaturePartitions(NumFeaturePartitions),
+					starts(NumFeaturePartitions), finishes(NumFeaturePartitions) {
+
+		this->loss = const_cast<lossfunction *> (loss);
+		this->regularizer = const_cast<regularization *> (regularizer);
+		this->lambda = lambda;
+		this->NumThreads = NumThreads;
+		int blksize = int(ceil(double(NumFeatures) / NumFeaturePartitions));
+		for(int i = 0; i < NumFeaturePartitions; i++) {
+			starts[i] = i * blksize;
+			finishes[i] = std::min((i + 1) * blksize, NumFeatures) - 1;
+			int sj = finishes[i] - starts[i] + 1;
+			featureMaps[i] = kernel.template create_rft< LocalMatrixType, LocalMatrixType >(sj, tag, context);	
+		}
+		this->ScaleFeatureMaps = true;
+		this->TOL = TOL;
+		this->MAXITER = MAXITER;
+		this->RHO = RHO;
+		OwnFeatureMaps = true;
+		InitializeCache();
+}
+
+// Guru interface
+BlockADMMSolver::BlockADMMSolver(skylark_context_t& context,
+		const lossfunction* loss,
+		const regularization* regularizer,
+		const feature_transform_array_t &featureMaps,
+		double lambda,
+		int NumThreads,
+		bool ScaleFeatureMaps,
+		double TOL,
+		int MAXITER,
+		double RHO) : context(context), featureMaps(featureMaps), NumFeaturePartitions(featureMaps.size()),
+			starts(NumFeaturePartitions), finishes(NumFeaturePartitions) {
+
+		this->loss = const_cast<lossfunction *> (loss);
+		this->regularizer = const_cast<regularization *> (regularizer);
+		this->lambda = lambda;
+		NumFeaturePartitions = featureMaps.size();
+		NumFeatures = 0;
+		for(int i = 0; i < NumFeaturePartitions; i++) {
+			starts[i] = NumFeatures;
+			finishes[i] = NumFeatures + featureMaps[i]->get_S() - 1;
+			NumFeatures += featureMaps[i]->get_S();
+			
+			std::cout << starts[i] << " " << finishes[i] << "\n";
+		}
+		this->NumThreads = NumThreads;
+		this->ScaleFeatureMaps = ScaleFeatureMaps;
+		this->TOL = TOL;
+		this->MAXITER = MAXITER;
+		this->RHO = RHO;
+		OwnFeatureMaps = false;
+		InitializeCache();
+}
+
+BlockADMMSolver::~BlockADMMSolver() {
+	for(int i=0; i  < NumFeaturePartitions; i++) {
+		delete Cache[i];
+		if (OwnFeatureMaps)
+			delete featureMaps[i];
+	}
+	delete Cache;
+}
 
 
-
-int BlockADMMSolver::train(skylark_context_t& context,  DistInputMatrixType& X, DistTargetMatrixType& Y, LocalMatrixType& Wbar) {
+int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, LocalMatrixType& Wbar) {
 
 	int P = context.size;
 
@@ -174,26 +299,31 @@ int BlockADMMSolver::train(skylark_context_t& context,  DistInputMatrixType& X, 
 			regularizer->proxoperator(Wbar, lambda/RHO, mu, W);
 		}
 
-
-
 		elem::Zeros(sum_o, k, ni);
-		// elem::Matrix<double> o(k, ni);
+		//elem::Matrix<double> o(ni, k);
+		
 		int j;
-
-        #pragma omp parallel for private(j, start, finish, sj)
-		for(j=0; j<NumFeaturePartitions; j++) {
-			start = floor(round(j*D*1.0/NumFeaturePartitions));
-			finish = floor(round((j+1)*D*1.0/NumFeaturePartitions))-1;
+		const feature_transform_t* featureMap;
+		
+		#pragma omp parallel for private(j, start, finish, sj, featureMap)    
+		for(j = 0; j < NumFeaturePartitions; j++) {
+			start = starts[j];
+			finish = finishes[j];
 			sj = finish - start  + 1;
 
 			elem::Matrix<double> z(ni, sj);
+		
+			if (featureMaps.size() > 0) {
+				featureMap = featureMaps[j];
+				featureMap->apply(x, z, skylark::sketch::rowwise_tag());
+				if (ScaleFeatureMaps)
+					elem::Scal(sqrt(double(sj) / d), z); 
+			} else 
+				elem::View(z, x, 0, start, ni, sj);
+
 			elem::Matrix<double> tmp(sj, k);
 			elem::Matrix<double> rhs(sj, k);
 			elem::Matrix<double> o(k, ni);
-
-    		featureMap->map(x, start, finish, z);
-
-
 
 			if(iter==1) {
 
@@ -249,16 +379,24 @@ int BlockADMMSolver::train(skylark_context_t& context,  DistInputMatrixType& X, 
 		elem::MakeZeros(o);
 		elem::Scal(-1.0, sum_o);
 		elem::Axpy(+1.0, O.Matrix(), sum_o); // sum_o = O.Matrix - sum_o
-
-        #pragma omp parallel for private(j, start, finish, sj)
-		for(int j=0; j<NumFeaturePartitions; j++) {
-					start = floor(round(j*D*1.0/NumFeaturePartitions));
-					finish = floor(round((j+1)*D*1.0/NumFeaturePartitions))-1;
+		
+		#pragma omp parallel for private(j, start, finish, sj, featureMap) 
+		for(j = 0; j < NumFeaturePartitions; j++) {
+					start = starts[j];
+					finish = finishes[j];
 					sj = finish - start  + 1;
-					elem::Matrix<double> z(ni, sj);
-					elem::Matrix<double> tmp(sj, k);
-					featureMap->map(x, start, finish, z);
 
+					elem::Matrix<double> z(ni, sj);
+			
+					if (featureMaps.size() > 0) {
+						featureMap = featureMaps[j];
+						featureMap->apply(x, z, skylark::sketch::rowwise_tag());
+						if (ScaleFeatureMaps)
+							elem::Scal(sqrt(double(sj) / d), z); 
+					} else 
+						elem::View(z, x, 0, start, ni, sj);
+
+					elem::Matrix<double> tmp(sj, k);
 					elem::View(tmp, ZtObar_ij, start, 0, sj, k);
 					elem::Gemm(elem::TRANSPOSE, elem::TRANSPOSE, 1.0/(NumFeaturePartitions + 1.0), z, sum_o, 1.0, tmp);
 					elem::View(tmp, Wbar, start, 0, sj, k);
@@ -303,7 +441,43 @@ int BlockADMMSolver::train(skylark_context_t& context,  DistInputMatrixType& X, 
 	return 0;
 }
 
+void BlockADMMSolver::predict(DistInputMatrixType& X, DistTargetMatrixType& Y, LocalMatrixType& W) {
 
+	// TOD W should be really kept as part of the model
 
+	int n = X.Height();
+	int d = X.Width();
+	int k = Y.Width();
+	int ni = X.LocalHeight();
+	
+	if (featureMaps.size() == 0) {
+		Y.ResizeTo(n, k);
+		elem::Gemm(elem::NORMAL,elem::NORMAL,1.0, X.Matrix(), W, 0.0, Y.Matrix());	
+		return;
+	}
+	
+	elem::Zeros(Y, n, k);
+	
+	LocalMatrixType Wslice;
+	
+	for(int j = 0; j < NumFeaturePartitions; j++) {
+		int start = starts[j];
+		int finish = finishes[j];
+		int sj = finish - start  + 1;
+
+		elem::Matrix<double> z(ni, sj);
+		const feature_transform_t* featureMap = featureMaps[j];
+		featureMap->apply(X.Matrix(), z, skylark::sketch::rowwise_tag());
+		if (ScaleFeatureMaps)
+			elem::Scal(sqrt(double(sj) / d), z); 
+		
+		elem::Matrix<double> o(ni, k);
+		
+
+		elem::View(Wslice, W, start, 0, sj, k);
+		elem::Gemm(elem::NORMAL, elem::NORMAL, 1.0, z, Wslice, 0.0, o);
+		elem::Axpy(+1.0, o, Y.Matrix());
+	}
+}			
 
 #endif /* BLOCKADMM_H_ */

@@ -21,7 +21,7 @@ typedef elem::DistMatrix<double, elem::VC, elem::STAR> DistInputMatrixType;
 typedef elem::DistMatrix<double, elem::CIRC, elem::CIRC> DistCircMatrixType;
 
 
-void read_libsvm_dense(skylark_context_t& context, string fName, DistInputMatrixType& X, DistInputMatrixType& Y) {
+void read_libsvm_dense(skylark_context_t& context, string fName, DistInputMatrixType& X, DistInputMatrixType& Y, int min_d = 0) {
 	if (context.rank==0)
 			cout << "Reading from file " << fName << endl;
 
@@ -58,6 +58,8 @@ void read_libsvm_dense(skylark_context_t& context, string fName, DistInputMatrix
 		if (last>d)
 			d = last;
 	}
+	if (min_d > 0)
+		d = std::max(d, min_d);
 	}
 
 	boost::mpi::broadcast(context.comm, n, 0);
@@ -66,6 +68,7 @@ void read_libsvm_dense(skylark_context_t& context, string fName, DistInputMatrix
 	DistCircMatrixType x(n, d), y(n, 1);
 	x.SetRoot(0);
 	y.SetRoot(0);
+	elem::MakeZeros(x);
 
 	if(context.rank==0) {
 		double *Xdata = x.Matrix().Buffer();

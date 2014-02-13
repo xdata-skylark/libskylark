@@ -18,7 +18,8 @@ template < typename InputMatrixType,
 class JLT_t :
   public JLT_data_t<typename
     dense_transform_t<InputMatrixType, OutputMatrixType,
-                      bstrand::normal_distribution >::value_type > {
+                      bstrand::normal_distribution >::value_type >,
+  virtual public sketch_transform_t<InputMatrixType, OutputMatrixType > {
 
 public:
 
@@ -55,14 +56,27 @@ public:
     }
 
     /**
-     * Apply the sketching transform that is described in by the sketch_of_A.
+     * Apply columnwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
      */
-    template <typename Dimension>
     void apply (const typename transform_t::matrix_type& A,
                 typename transform_t::output_matrix_type& sketch_of_A,
-                Dimension dimension) const {
+                columnwise_tag dimension) const {
         _transform.apply(A, sketch_of_A, dimension);
     }
+
+    /**
+     * Apply rowwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply (const typename transform_t::matrix_type& A,
+                typename transform_t::output_matrix_type& sketch_of_A,
+                rowwise_tag dimension) const {
+        _transform.apply(A, sketch_of_A, dimension);
+    }
+
+    int get_N() const { return this->N; } /**< Get input dimesion. */
+    int get_S() const { return this->S; } /**< Get output dimesion. */
 
 private:
     transform_t _transform;

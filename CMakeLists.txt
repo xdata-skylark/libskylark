@@ -164,6 +164,7 @@ endif (BOOST_ROOT)
 
 set(BOOST_MIN_VERSION 1.53.0)
 find_package (Boost REQUIRED mpi)
+find_package (Boost REQUIRED program_options)
 if (Boost_FOUND)
   set (SKYLARK_HAVE_BOOST
        1
@@ -269,6 +270,11 @@ if (BUILD_PYTHON)
   add_subdirectory(sketch/capi)
   add_subdirectory(python-skylark)
 endif (BUILD_PYTHON)
+
+option (BUILD_ML "Whether we should build the machine learning solvers" ON)
+if (BUILD_ML)
+  add_subdirectory(ml)
+endif (BUILD_ML)
 
 option (BUILD_EXAMPLES "Whether we should build the examples" ON)
 if (BUILD_EXAMPLES)

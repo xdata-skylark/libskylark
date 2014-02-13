@@ -49,7 +49,7 @@ set (VERSION \"0.1\")
 if (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   SET (CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING
        "Choose the type of build, options are: None Debug Release
-        RelWithDebInfo MinSizeRel."
+        RelWithDebInfo HybridRel HybridRelWithDebInfo."
         FORCE
       )
 endif (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
@@ -57,8 +57,10 @@ endif (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
 message (STATUS "Build type is: " ${CMAKE_BUILD_TYPE})
 
 
-# Select compiler dependen flags.
+# Select compiler dependent flags.
+set (CMAKE_CXX_FLAGS_HYBRIDRELWITHDEBINFO "-O3 -g -fopenmp")
 set (CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g")
+set (CMAKE_CXX_FLAGS_HYBRIDREL "-O3 -fopenmp")
 set (CMAKE_CXX_FLAGS_RELEASE "-O3")
 set (CMAKE_CXX_FLAGS_DEBUG  "-O0 -g")
 

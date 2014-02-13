@@ -48,6 +48,9 @@ int main (int argc, char** argv) {
 
 	 read_libsvm_dense(context, options.trainfile, X, Y);
 
+         cout << " Rank " << context.rank << " on " << env.processor_name() << " owns : " << X.LocalHeight() <<  " x " << X.LocalWidth() << endl;
+
+
 	 lossfunction *loss = NULL;
 	 switch(options.lossfunction) {
 	 	 case SQUARED:

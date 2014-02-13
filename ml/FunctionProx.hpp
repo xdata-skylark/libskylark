@@ -123,11 +123,13 @@ void squaredloss::proxoperator(LocalDenseMatrixType& X, double lambda, LocalTarg
 		int label, i, j;
 
 		if (k==1) {
+            #pragma omp parallel for private(i,yv,lambda, ilambda)
 			for(int i=0; i<n; i++)
 				Ybuf[i] = ilambda*(Xbuf[i] + lambda*Tbuf[i]);
 		}
 
 		if(k>1) {
+            #pragma omp parallel for private(i,j, label, lambda, ilambda)
 			for(int i=0; i<n; i++) {
 				label = (int) Tbuf[i];
                                 for(j=0;j<k;j++) {

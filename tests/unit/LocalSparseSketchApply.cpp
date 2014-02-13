@@ -83,7 +83,7 @@ int test_main(int argc, char *argv[]) {
     }
 
     Matrix_t A;
-    A.Attach(&rowsf[0], &colsf[0], &valsf[0], n + 1, matrix_full);
+    A.attach(&rowsf[0], &colsf[0], &valsf[0], n + 1, matrix_full);
 
     count = 1;
     size_t row = 0;
@@ -122,7 +122,7 @@ int test_main(int argc, char *argv[]) {
     }
 
     Matrix_t pi_sketch;
-    pi_sketch.Attach(coords);
+    pi_sketch.attach(coords);
 
     //[> 2. Create sketched matrix <]
     Matrix_t sketch_A;
@@ -155,7 +155,7 @@ int test_main(int argc, char *argv[]) {
     }
 
     Matrix_t expected_A;
-    expected_A.Attach(coords_new);
+    expected_A.attach(coords_new);
 
     if (!static_cast<bool>(expected_A == sketch_A))
         BOOST_FAIL("Result of colwise application not as expected");

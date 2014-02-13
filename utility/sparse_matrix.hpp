@@ -4,11 +4,8 @@
 namespace skylark { namespace utility {
 
 /**
- *  This implements a very crude sparse matrix container only intended to hold
- *  local sparse matrices.
- *  Implementing a container rather than using e.g. CombBLAS SpMat, enables to
- *  user to have (local) sparse matrix support without the additional
- *  dependencies.
+ *  This implements a very crude CSR sparse matrix container only intended to
+ *  hold local sparse matrices.
  */
 template<typename IndexType, typename ValueType>
 struct sparse_matrix_t {
@@ -32,17 +29,17 @@ struct sparse_matrix_t {
     ~sparse_matrix_t() {}
 
     // expose size to allocate arrays for detach
-    void Size(int *n_indptr, int *n_indices) const {
+    void get_size(int *n_indptr, int *n_indices) const {
 
         *n_indptr  = _indptr.size();
         *n_indices = _indices.size();
     }
 
     // expose dirty flag to CAPI
-    bool needsUpdate() const { return _dirty; }
+    bool needs_update() const { return _dirty; }
 
     // expose to the CAPI layer assume memory has been allocated
-    void Detach(int32_t *indptr, int32_t *indices, double *values) const {
+    void detach(int32_t *indptr, int32_t *indices, double *values) const {
 
         for(size_t i = 0; i < _indptr.size(); ++i)
             indptr[i] = static_cast<int32_t>(_indptr[i]);
@@ -55,7 +52,7 @@ struct sparse_matrix_t {
     }
 
     // attach data from CAPI
-    void Attach(int *indptr, int *indices, double *values,
+    void attach(int *indptr, int *indices, double *values,
                 int n_indptr, int n_ind) {
 
         //XXX: we could use pointer for indptr array, indicies and values
@@ -71,7 +68,7 @@ struct sparse_matrix_t {
 
     // attaching a coordinate structure facilitates going from distributed
     // input to local output.
-    void Attach(coords_t coords, size_t n_rows = 0) {
+    void attach(coords_t coords, size_t n_rows = 0) {
 
         _indptr.clear();
         _indices.clear();

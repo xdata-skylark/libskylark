@@ -194,7 +194,7 @@ class _ScipyAdapter:
         self._A = scipy.sparse.csr_matrix(A)
 
   def ctype(self):
-    return "SpMatrix"
+    return "SparseMatrix"
 
   def ptr(self):
     data = c_void_p()

@@ -15,13 +15,13 @@
         return TYPE;
 
 static sketchc::matrix_type_t str2matrix_type(char *str) {
-    STRCMP_TYPE(Matrix,   sketchc::MATRIX);
-    STRCMP_TYPE(SpMatrix, sketchc::SPARSE_MATRIX);
+    STRCMP_TYPE(Matrix,     sketchc::MATRIX);
     STRCMP_TYPE(DistMatrix, sketchc::DIST_MATRIX);
     STRCMP_TYPE(DistMatrix_VC_STAR, sketchc::DIST_MATRIX_VC_STAR);
     STRCMP_TYPE(DistMatrix_VR_STAR, sketchc::DIST_MATRIX_VR_STAR);
     STRCMP_TYPE(DistMatrix_STAR_VC, sketchc::DIST_MATRIX_VC_STAR);
     STRCMP_TYPE(DistMatrix_STAR_VR, sketchc::DIST_MATRIX_VR_STAR);
+    STRCMP_TYPE(SparseMatrix,       sketchc::SPARSE_MATRIX);
     STRCMP_TYPE(DistSparseMatrix,   sketchc::DIST_SPARSE_MATRIX);
 
     return sketchc::MATRIX_TYPE_ERROR;
@@ -134,7 +134,7 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
 #ifdef SKYLARK_HAVE_COMBBLAS
         SKDEF(CWT, DistSparseMatrix, DistSparseMatrix)
 #endif
-        SKDEF(CWT, SpMatrix, SpMatrix)
+        SKDEF(CWT, SparseMatrix, SparseMatrix)
         "";
 }
 
@@ -568,7 +568,7 @@ SKYLARK_EXTERN_API int sl_wrap_raw_sp_matrix(
         int *indptr, int *ind, double *data, int n_indptr, int n_ind, void **A)
 {
     SpMatrix_t *tmp = new SpMatrix_t();
-    tmp->Attach(indptr, ind, data, n_indptr, n_ind);
+    tmp->attach(indptr, ind, data, n_indptr, n_ind);
     *A = tmp;
     return 0;
 }
@@ -580,19 +580,19 @@ SKYLARK_EXTERN_API int sl_free_raw_sp_matrix_wrap(void *A_) {
 
 SKYLARK_EXTERN_API int sl_raw_sp_matrix_size(void *A_,
         int *n_indptr, int *n_indices) {
-    static_cast<SpMatrix_t *>(A_)->Size(n_indptr, n_indices);
+    static_cast<SpMatrix_t *>(A_)->get_size(n_indptr, n_indices);
     return 0;
 }
 
 SKYLARK_EXTERN_API int sl_raw_sp_matrix_needs_update(void *A_,
         bool *needs_update) {
-    *needs_update = static_cast<SpMatrix_t *>(A_)->needsUpdate();
+    *needs_update = static_cast<SpMatrix_t *>(A_)->needs_update();
     return 0;
 }
 
 SKYLARK_EXTERN_API int sl_raw_sp_matrix_data(void *A_, int32_t **indptr,
         int32_t **indices, double **values) {
-    static_cast<SpMatrix_t *>(A_)->Detach(*indptr, *indices, *values);
+    static_cast<SpMatrix_t *>(A_)->detach(*indptr, *indices, *values);
     return 0;
 }
 

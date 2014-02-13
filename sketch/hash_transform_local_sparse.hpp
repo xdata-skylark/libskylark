@@ -114,7 +114,7 @@ private:
             }
         }
 
-        sketch_of_A.Attach(coords);
+        sketch_of_A.attach(coords);
     }
 
     inline void finalPos(index_type &rowid, index_type &colid, columnwise_tag) const {

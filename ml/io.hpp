@@ -58,7 +58,6 @@ void read_libsvm_dense(skylark_context_t& context, string fName, DistInputMatrix
 		if (last>d)
 			d = last;
 	}
-	
 	if (min_d > 0)
 		d = std::max(d, min_d);
 	}

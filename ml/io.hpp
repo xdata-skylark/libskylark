@@ -65,6 +65,11 @@ void read_libsvm_dense(skylark_context_t& context, string fName, DistInputMatrix
 	boost::mpi::broadcast(context.comm, n, 0);
 	boost::mpi::broadcast(context.comm, d, 0);
 
+	}
+
+	boost::mpi::broadcast(context.comm, n, 0);
+	boost::mpi::broadcast(context.comm, d, 0);
+
 	DistCircMatrixType x(n, d), y(n, 1);
 	x.SetRoot(0);
 	y.SetRoot(0);

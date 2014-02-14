@@ -22,6 +22,7 @@ namespace po = boost::program_options;
 #define DEFAULT_SEED 12345
 #define DEFAULT_RF 100
 #define DEFAULT_KERNEL 0
+#define DEFAULT_FILEFORMAT 0
 
 enum LossType {SQUARED = 0, LAD = 1, HINGE = 2, LOGISTIC = 3};
 std::string Losses[] = {"Squared Loss", "Least Absolute Deviations", "Hinge Loss (SVMs)", "Logistic Loss"};
@@ -35,6 +36,8 @@ std::string Problems[] = {"Regression", "Classification"};
 enum KernelType {LINEAR = 0, GAUSSIAN = 1};
 std::string Kernels[] = {"Linear", "Gaussian"};
 
+enum FileFormatType {LIBSVM = 0, HDF5 = 1};
+std::string FileFormats[] = {"Libsvm", "HDF5"};
 
 /**
  * A structure that is used to pass options to the ADMM solver. This structure
@@ -65,6 +68,8 @@ struct hilbert_options_t {
  /* parallelization options */
  int numfeaturepartitions;
  int numthreads;
+
+ int fileformat;
 
  /* acceleration options */
  // bool fastfood;
@@ -98,7 +103,8 @@ struct hilbert_options_t {
   ("randomfeatures,f", po::value<int>(&randomfeatures)->default_value(DEFAULT_RF), "Number of Random Features (default: 100)")
   ("numfeaturepartitions,n", po::value<int>(&numfeaturepartitions)->default_value(DEFAULT_FEATURE_PARTITIONS), "Number of Feature Partitions (default: 1)")
   ("numthreads,t", po::value<int>(&numthreads)->default_value(DEFAULT_THREADS), "Number of Threads (default: 1)")
-  ("regular", po::value<bool>(&regularmap)->default_value(false), "Default is to use 'fast' feature mapping, if availble. Use this flag to force regular mapping (default: false)")
+  ("regular", po::value<bool>(&regularmap)->default_value(false), "Default is to use 'fast' feature mapping, if available. Use this flag to force regular mapping (default: false)")
+  ("fileformat", po::value<int>(&fileformat)->default_value(DEFAULT_FILEFORMAT), "Fileformat (default: 0 (libsvm), 1 (hdf5)")
   ("MAXITER,i", po::value<int>(&MAXITER)->default_value(DEFAULT_MAXITER), "Maximum Number of Iterations (default: 100)")
   ("trainfile", po::value<std::string>(&trainfile)->required(), "Training data file")
   ("modelfile", po::value<std::string>(&modelfile)->required(), "Model output file")
@@ -140,6 +146,7 @@ struct hilbert_options_t {
 	 optionstring << "# Model File = " << modelfile << "\n";
 	 optionstring << "# Validation File = " << valfile << "\n";
 	 optionstring << "# Test File = " << testfile << "\n";
+	 optionstring << "# File Format = " << fileformat << "\n";
 	 optionstring << "# Loss function = " << lossfunction << " ("<< Losses[lossfunction]<< ")" << "\n";
 	 optionstring << "# Regularizer = " << regularizer << " ("<< Regularizers[regularizer]<< ")" << "\n";
 	 optionstring << "# Kernel = " << kernel << " ("<< Kernels[kernel]<< ")" << "\n";

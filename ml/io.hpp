@@ -12,6 +12,8 @@
 #include <sstream>
 #include <cstdlib>
 #include <string>
+#include <elemental.hpp>
+#include <H5Cpp.h>
 
 using namespace std;
 namespace bmpi =  boost::mpi;
@@ -20,7 +22,125 @@ typedef skylark::sketch::context_t skylark_context_t;
 typedef elem::DistMatrix<double, elem::CIRC, elem::CIRC> DistCircMatrixType;
 
 
-void read_libsvm_dense(skylark_context_t& context, string fName, 
+int write_elem_hdf5(string fName, elem::Matrix<double>& X,
+        elem::Matrix<double>& Y) {
+
+    try {
+
+        cout << "Writing to file " << fName << endl;
+
+        H5::Exception::dontPrint();
+
+        H5::H5File file( fName, H5F_ACC_TRUNC );
+        hsize_t dimsf[2]; // dataset dimensions
+        dimsf[0] = X.Width();
+        dimsf[1] = X.Height();
+        H5::DataSpace dataspace( 2, dimsf );
+
+       H5::FloatType datatype( H5::PredType::NATIVE_DOUBLE );
+       datatype.setOrder( H5T_ORDER_LE );
+       /*
+       * Create a new dataset within the file using defined dataspace and
+       * datatype and default dataset creation properties.
+       */
+       H5::DataSet dataset = file.createDataSet( "X", datatype, dataspace );
+       /*
+       * Write the data to the dataset using default memory space, file
+       * space, and transfer properties.
+       */
+       cout << "Writing X" << endl;
+       dataset.write( X.Buffer(), H5::PredType::NATIVE_DOUBLE );
+
+
+       hsize_t dimsf2[1]; // dataset dimensions
+       dimsf2[0] = Y.Height();
+       H5::DataSpace dataspace2( 1, dimsf2 );
+
+
+       H5::DataSet dataset2 = file.createDataSet( "Y", datatype, dataspace2 );
+              /*
+              * Write the data to the dataset using default memory space, file
+              * space, and transfer properties.
+              */
+       cout << "Writing Y" << endl;
+       dataset2.write( Y.Buffer(), H5::PredType::NATIVE_DOUBLE );
+
+
+    }
+   // catch failure caused by the H5File operations
+      catch( H5::FileIException error )
+      {
+      error.printError();
+      return -1;
+      }
+      // catch failure caused by the DataSet operations
+      catch( H5::DataSetIException error )
+      {
+      error.printError();
+      return -1;
+      }
+      // catch failure caused by the DataSpace operations
+      catch( H5::DataSpaceIException error )
+      {
+      error.printError();
+      return -1;
+      }
+      // catch failure caused by the DataSpace operations
+      catch( H5::DataTypeIException error )
+      {
+      error.printError();
+      return -1;
+      }
+  return 0; // successfully terminated
+}
+
+void read_hdf5_dense(skylark_context_t& context, string fName,
+        elem::DistMatrix<double, elem::STAR, elem::VC>& X,
+        elem::DistMatrix<double, elem::VC, elem::STAR>& Y) {
+
+        bmpi::timer timer;
+
+       H5::H5File file( fName, H5F_ACC_RDONLY );
+       H5::DataSet datasetX = file.openDataSet( "X" );
+       H5::DataSpace filespaceX = datasetX.getSpace();
+       int rank = filespaceX.getSimpleExtentNdims();
+       hsize_t dimsX[2]; // dataset dimensions
+       rank = filespaceX.getSimpleExtentDims( dimsX );
+       hsize_t n = dimsX[0];
+       hsize_t d = dimsX[1];
+
+        DistCircMatrixType x(d, n), y(n, 1);
+        x.SetRoot(0);
+        y.SetRoot(0);
+        elem::MakeZeros(x);
+
+        H5::DataSet datasetY = file.openDataSet( "Y" );
+        H5::DataSpace filespaceY = datasetY.getSpace();
+        hsize_t dimsY[1]; // dataset dimensions
+        rank = filespaceX.getSimpleExtentDims( dimsY );
+
+
+        if(context.rank==0) {
+            double *Xdata = x.Matrix().Buffer();
+            double *Ydata = y.Matrix().Buffer();
+
+            H5::DataSpace mspace1(2, dimsX);
+            datasetX.read( Xdata, H5::PredType::NATIVE_DOUBLE, mspace1, filespaceX );
+
+            H5::DataSpace mspace2(1,dimsY);
+            datasetY.read( Ydata, H5::PredType::NATIVE_DOUBLE, mspace2, filespaceY );
+        }
+        X = x;
+        Y = y;
+
+        double readtime = timer.elapsed();
+        if (context.rank==0)
+                cout << "Read Matrix with dimensions: " << n << " by " << d << " (" << readtime << "secs)" << endl;
+
+}
+
+
+void read_libsvm_dense(skylark_context_t& context, string fName,
 		elem::DistMatrix<double, elem::STAR, elem::VC>& X, 
 		elem::DistMatrix<double, elem::VC, elem::STAR>& Y, 
 		int min_d = 0) {

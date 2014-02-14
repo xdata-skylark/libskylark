@@ -47,9 +47,14 @@ int main (int argc, char** argv) {
 	 if (context.rank==0)
 		 std::cout << options.print();
 
-	 read_libsvm_dense(context, options.trainfile, X, Y);
-
-	 cout << " Rank " << context.rank << " on " << env.processor_name() << " owns : " << X.LocalHeight() <<  " x " << X.LocalWidth() << endl;
+	 switch(options.fileformat) {
+	     case LIBSVM:
+	         read_libsvm_dense(context, options.trainfile, X, Y);
+	         break;
+	     case HDF5:
+	         read_hdf5_dense(context, options.trainfile, X, Y);
+	 }
+	 std::cout << " Rank " << context.rank << " on " << env.processor_name() << " owns : " << X.LocalHeight() <<  " x " << X.LocalWidth() << std::endl;
 
 	 lossfunction *loss = NULL;
 	 switch(options.lossfunction) {

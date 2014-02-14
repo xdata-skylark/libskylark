@@ -12,7 +12,7 @@
 
 namespace po = boost::program_options;
 
-#define DEFAULT_LAMBDA 0.01
+#define DEFAULT_LAMBDA 0.0
 #define DEFAULT_RHO 1.0
 #define DEFAULT_THREADS 1
 #define DEFAULT_FEATURE_PARTITIONS 1
@@ -68,6 +68,7 @@ struct hilbert_options_t {
  /* parallelization options */
  int numfeaturepartitions;
  int numthreads;
+ int nummpiprocesses;
 
  int fileformat;
 
@@ -87,8 +88,9 @@ struct hilbert_options_t {
 /**
    * The constructor takes in all the command line parameters and parses them.
    */
-  hilbert_options_t (int argc, char** argv) : exit_on_return(false) {
+  hilbert_options_t (int argc, char** argv, int nproc) : exit_on_return(false) {
     /** Set up the options that we want */
+      this->nummpiprocesses = nproc;
     po::options_description desc ("Usage: hilbert_train [options] trainfile modelfile");
     desc.add_options()
   ("help,h", "produce a help message")
@@ -159,6 +161,7 @@ struct hilbert_options_t {
 	 optionstring << "# Random Features = " << randomfeatures << "\n";
 	 optionstring << "# Number of feature partitions = " << numfeaturepartitions << "\n";
 	 optionstring << "# Threads = " << numthreads << "\n";
+	 optionstring <<"# Number of MPI Processes = " << nummpiprocesses << "\n";
 	 return optionstring.str();
   }
 };

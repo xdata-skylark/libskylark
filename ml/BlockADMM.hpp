@@ -80,9 +80,9 @@ public:
 	~BlockADMMSolver();
 
 	void InitializeCache();
-	int train(DistInputMatrixType& X, DistTargetMatrixType& Y, LocalMatrixType& W);
+	int train(DistInputMatrixType& X, DistTargetMatrixType& Y, LocalMatrixType& W, DistInputMatrixType& Xv, DistTargetMatrixType& Yv);
 	void predict(DistInputMatrixType& X, DistTargetMatrixType& Y,LocalMatrixType& W);
-
+	double evaluate(DistTargetMatrixType& Y, DistTargetMatrixType& Yp);
 
 private:
 	skylark_context_t& context;
@@ -224,7 +224,7 @@ BlockADMMSolver::~BlockADMMSolver() {
 }
 
 
-int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, LocalMatrixType& Wbar) {
+int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, LocalMatrixType& Wbar, DistInputMatrixType& Xv, DistTargetMatrixType& Yv) {
 
 	int P = context.size;
 
@@ -273,7 +273,7 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 
 
 	double localloss = loss->evaluate(O.Matrix(), y);
-	double totalloss;
+	double totalloss, accuracy, obj;
 
 	int Dk = D*k;
 	int nik  = ni*k;
@@ -282,13 +282,26 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 	boost::mpi::timer timer;
 
 	LocalMatrixType sum_o;
+	DistTargetMatrixType Yp(Yv.Height(), k);
 
 	while(iter<MAXITER) {
 		iter++;
 
 		reduce(context.comm, localloss, totalloss, std::plus<double>(), 0);
+		if (Xv.Width() > 0) {
+		    elem::MakeZeros(Yp);
+		    predict(Xv, Yp, Wbar);
+		    accuracy = evaluate(Yv, Yp);
+		}
+
 		if(context.rank==0) {
-				std::cout << "iteration "<< iter << " total loss:" << totalloss << " ("<< timer.elapsed() << " seconds)" << std::endl;
+		        obj = totalloss + lambda*regularizer->evaluate(Wbar);
+		        if (Xv.Width()==0) {
+		                std::cout << "iteration " << iter << " objective " << obj << " time " << timer.elapsed() << " seconds" << std::endl;
+		        }
+		        else {
+		                std::cout << "iteration " << iter << " objective " << obj << " accuracy " << accuracy << " time " << timer.elapsed() << " seconds" << std::endl;
+		        }
 		}
 
 		broadcast(context.comm, Wbar.Buffer(), Dk, 0);
@@ -483,6 +496,36 @@ void BlockADMMSolver::predict(DistInputMatrixType& X, DistTargetMatrixType& Y, L
 		elem::Gemm(elem::TRANSPOSE, elem::NORMAL, 1.0, z, Wslice, 0.0, o);
 		elem::Axpy(+1.0, o, Y.Matrix());
 	}
-}			
+}
+
+
+double BlockADMMSolver::evaluate(DistTargetMatrixType& Yt, DistTargetMatrixType& Yp) {
+    int correct = 0;
+             double o, o1;
+             int pred;
+             double accuracy = 0.0;
+
+             for(int i=0; i < Yp.LocalHeight(); i++) {
+                 o = Yp.GetLocal(i,0);
+                 pred = 0;
+                 for(int j=1; j < Yp.Width(); j++) {
+                     o1 = Yp.GetLocal(i,j);
+                     if ( o1 > o) {
+                         o = o1;
+                         pred = j;
+                     }
+                 }
+
+                 if(pred == (int) Yt.GetLocal(i,0))
+                     correct++;
+              }
+
+             int totalcorrect;
+             boost::mpi::reduce(context.comm, correct, totalcorrect, std::plus<double>(), 0);
+             if(context.rank ==0)
+                 accuracy =  totalcorrect*100.0/Yt.Height();
+
+             return accuracy;
+}
 
 #endif /* BLOCKADMM_H_ */

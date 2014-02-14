@@ -878,7 +878,29 @@ class FastGaussianRFT(_SketchTransform):
       ABFPGF = scipy.fftpack.dct(ABF[:, P] * G, axis = 1, norm='ortho') * sqrt(self._n) 
       return ABFPGF
 
+class ExpSemigroupRLT(_SketchTransform):
+  """
+  Random Features Transform for the Exponential Semigroup Kernel. 
 
+  :param n: Number of dimensions in input vectors.
+  :param s: Number of dimensions in output vectors.
+  :param beta: kernel parameter
+  :param defouttype: Default output type when using the * and / operators.
+  :param forceppy: whether to force a pure python implementation
+
+  **Random Laplace Feature Maps for Semigroup Kernels on Histograms**, 2014
+  """
+  def __init__(self, n, s, beta=1.0, defouttype=None, forceppy=False):
+    super(ExpSemigroupRLT, self)._baseinit("ExpSemigroupRLT", n, s, defouttype, forceppy)
+
+    self._beta = beta
+    if not self._ppy:
+      sketch_transform = c_void_p()
+      _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "ExpSemigroupRLT", n, s, \
+                byref(sketch_transform), ctypes.c_double(beta))
+      self._obj = sketch_transform.value
+
+    # TODO ppy implementation
 
 class PPT(_SketchTransform):
   """

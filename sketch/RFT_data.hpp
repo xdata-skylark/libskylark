@@ -12,7 +12,7 @@ namespace skylark { namespace sketch {
 
 
 /**
- * Random Features Transform (data)
+ * Random Fourier Transform (data)
  *
  * Sketch transform into Eucledian space of fuctions in an RKHS
  * implicitly defined by a vector and a shift-invariant kernel.

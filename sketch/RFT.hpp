@@ -11,7 +11,8 @@ namespace bstrand = boost::random;
  * Random Features Transform
  *
  * Sketch transform into Eucledian space of fuctions in an RKHS
- * implicitly defined by a vector and a kernel.
+ * implicitly defined by a vector and a shift-invariant kernel.
+ *
  * See:
  * Ali Rahimi and Benjamin Recht
  * Random Features for Large-Scale Kernel Machines
@@ -93,8 +94,8 @@ struct GaussianRFT_t :
         _transform.apply(A, sketch_of_A, dimension);
     }
 
-    int get_N() const { return this->N; } /**< Get input dimesion. */
-    int get_S() const { return this->S; } /**< Get output dimesion. */
+    int get_N() const { return this->_N; } /**< Get input dimesion. */
+    int get_S() const { return this->_S; } /**< Get output dimesion. */
 
 private:
     transform_t _transform;

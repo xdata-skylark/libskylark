@@ -9,7 +9,7 @@ namespace skylark { namespace sketch {
  * Fast Random Features Transform
  *
  * Sketch transform into Eucledian space of fuctions in an RKHS
- * implicitly defined by a vector and a kernel. Fast variant
+ * implicitly defined by a vector and a shift invariant kernel. Fast variant
  * (also known as Fastfood).
  *
  * See:

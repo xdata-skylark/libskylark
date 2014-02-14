@@ -148,6 +148,23 @@ int main (int argc, char** argv) {
 	 					 options.MAXITER,
 	 					 options.rho);	 
 	 	 	break;
+	 	 	
+	 	 	
+	 	 case LAPLACIAN:
+	 		 features = options.randomfeatures;
+	 		 Solver = new BlockADMMSolver(
+	 				 context, 
+	 				 loss,
+	 				 regularizer,	
+	 				 options.lambda,
+	 				 features,
+	 				 skylark::ml::kernels::laplacian_t(X.Height(), options.kernelparam),
+		 			 skylark::ml::regular_feature_transform_tag(),
+		 			 options.numfeaturepartitions,
+		 			 options.numthreads,
+		 			 options.tolerance,
+		 			 options.MAXITER,
+		 			 options.rho);	 
 	 		
 	 	 default:
 	 		// TODO!

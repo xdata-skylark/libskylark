@@ -36,6 +36,27 @@ private:
     const double _sigma;
 };
 
+struct laplacian_t {
+
+    laplacian_t(int N, double sigma) : _N(N), _sigma(sigma) {
+
+    }
+
+    template<typename IT, typename OT>
+    skysk::sketch_transform_t<IT, OT> *create_rft(int S,
+        regular_feature_transform_tag, skysk::context_t& context) const {
+        return
+            new skysk::LaplacianRFT_t<IT, OT>(_N, S, _sigma, context);
+    }
+
+    // TODO method for gram matrix ?
+
+
+private:
+    const int _N;
+    const double _sigma;
+};
+
 } } }
 
 #endif // SKYLARK_KERNELS_HPP

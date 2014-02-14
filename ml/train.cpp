@@ -51,8 +51,14 @@ int main (int argc, char** argv) {
 	     case LIBSVM:
 	         read_libsvm_dense(context, options.trainfile, X, Y);
 	         break;
+	         
 	     case HDF5:
+#ifdef SKYLARK_HAVE_HDF5
 	         read_hdf5_dense(context, options.trainfile, X, Y);
+#else
+	         // TODO
+#endif
+	         break;
 	 }
 	 std::cout << " Rank " << context.rank << " on " << env.processor_name() << " owns : " << X.LocalHeight() <<  " x " << X.LocalWidth() << std::endl;
 

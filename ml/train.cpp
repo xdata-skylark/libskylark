@@ -164,7 +164,23 @@ int main (int argc, char** argv) {
 		 			 options.numthreads,
 		 			 options.tolerance,
 		 			 options.MAXITER,
-		 			 options.rho);	 
+		 			 options.rho);	
+	 		 
+	 	 case EXPSEMIGROUP:
+	 		 features = options.randomfeatures;
+	 		 Solver = new BlockADMMSolver(
+	 				 context, 
+	 				 loss,
+	 				 regularizer,	
+	 				 options.lambda,
+	 				 features,
+	 				 skylark::ml::kernels::expsemigroup_t(X.Height(), options.kernelparam),
+		 			 skylark::ml::regular_feature_transform_tag(),
+		 			 options.numfeaturepartitions,
+		 			 options.numthreads,
+		 			 options.tolerance,
+		 			 options.MAXITER,
+		 			 options.rho);	
 	 		
 	 	 default:
 	 		// TODO!

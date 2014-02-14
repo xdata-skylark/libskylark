@@ -33,8 +33,8 @@ std::string Regularizers[] = {"L2", "L1"};
 enum ProblemType {REGRESSION = 0, CLASSIFICATION = 1};
 std::string Problems[] = {"Regression", "Classification"};
 
-enum KernelType {LINEAR = 0, GAUSSIAN = 1, LAPLACIAN};
-std::string Kernels[] = {"Linear", "Gaussian", "Laplacian"};
+enum KernelType {LINEAR = 0, GAUSSIAN = 1, LAPLACIAN = 2, EXPSEMIGROUP = 3};
+std::string Kernels[] = {"Linear", "Gaussian", "Laplacian", "ExpSemigroup"};
 
 enum FileFormatType {LIBSVM = 0, HDF5 = 1};
 std::string FileFormats[] = {"Libsvm", "HDF5"};
@@ -94,7 +94,7 @@ struct hilbert_options_t {
   ("help,h", "produce a help message")
   ("lossfunction,l", po::value<int>((int*) &lossfunction)->default_value(SQUARED), "Loss function (0:SQUARED, 1:LAD, 2:HINGE, 3:LOGISTIC")
   ("regularizer,r",    po::value<int>((int*) &regularizer)->default_value(L2), "Regularizer (0:L2, 1:L1)")
-  ("kernel,k", po::value<int>((int*) &kernel)->default_value(LINEAR), "Kernel (0:LINEAR, 1:GAUSSIAN, 2:LAPLACIAN)")
+  ("kernel,k", po::value<int>((int*) &kernel)->default_value(LINEAR), "Kernel (0:LINEAR, 1:GAUSSIAN, 2:LAPLACIAN, 3:EXPSEMIGROUP)")
   ("kernelparam,g", po::value<double>(&kernelparam)->default_value(DEFAULT_KERNELPARAM), "Kernel Parameter")
   ("lambda,c", po::value<double>(&lambda)->default_value(DEFAULT_LAMBDA), "Regularization Parameter")
   ("tolerance,e", po::value<double>(&tolerance)->default_value(DEFAULT_TOL), "Tolerance")

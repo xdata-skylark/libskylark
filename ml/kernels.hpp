@@ -57,6 +57,27 @@ private:
     const double _sigma;
 };
 
+struct expsemigroup_t {
+
+    expsemigroup_t(int N, double beta) : _N(N), _beta(beta) {
+
+    }
+
+    template<typename IT, typename OT>
+    skysk::sketch_transform_t<IT, OT> *create_rft(int S,
+        regular_feature_transform_tag, skysk::context_t& context) const {
+        return
+            new skysk::ExpSemigroupRLT_t<IT, OT>(_N, S, _beta, context);
+    }
+
+    // TODO method for gram matrix ?
+
+
+private:
+    const int _N;
+    const double _beta;
+};
+
 } } }
 
 #endif // SKYLARK_KERNELS_HPP

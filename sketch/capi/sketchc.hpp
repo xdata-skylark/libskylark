@@ -27,7 +27,8 @@ enum transform_type_t {
     WZT,
     GaussianRFT,
     LaplacianRFT,
-    FastGaussianRFT
+    FastGaussianRFT,
+    ExpSemigroupRLT
 };
 
 enum matrix_type_t {

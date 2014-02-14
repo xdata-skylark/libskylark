@@ -7,3 +7,12 @@ build
 *.pyc
 .pydevproject
 .settings/
+.KDT_log
+build_dbg1/
+build-dbg/
+build1/
+build2/
+build3/
+mnist.scale*
+*.h5
+*.hdf5

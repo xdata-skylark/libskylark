@@ -1,13 +1,38 @@
 /**
  * Some additional useful distributions (only bare operator()).
  */
-#ifndef DISTRIBUTIONS_HPP
-#define DISTRIBUTIONS_HPP
+#ifndef SKYLARK_DISTRIBUTIONS_HPP
+#define SKYLARK_DISTRIBUTIONS_HPP
 
 #include <boost/random.hpp>
 
 namespace skylark {
 namespace utility {
+
+
+/**
+ * Levy distribution
+ */
+template< typename ValueType >
+struct standard_levy_distribution_t {
+
+    // TODO not really sure this is the standard, or implemented correctly
+
+    typedef ValueType result_type;
+
+    standard_levy_distribution_t() {
+
+    }
+
+    template< typename URNG >
+    ValueType operator()(URNG &prng) const {
+        boost::random::gamma_distribution<ValueType> dist(0.5, 2);
+        result_type y = static_cast<ValueType>(dist(prng));
+        return (1.0 / y);
+    }
+    void reset() {}
+
+};
 
 /**
  * Radamachar distribution - +1 and -1 with equal probability.
@@ -118,4 +143,4 @@ template <> struct uniform_distribution_t <bool> {
 } // namespace utility
 } // namespace skylark
 
-#endif // DISTRIBUTIONS_HPP
+#endif // SKYLARK_DISTRIBUTIONS_HPP

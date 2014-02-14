@@ -2,8 +2,29 @@ import numpy
 import skylark
 from skylark import sketch, errors
 from distances import euclidean
-import sys
+import sys, math
 
+def gram(kfun, X, Xt=None):
+    """
+    Returns the dense Gram matrix evaluated over the datapoints with kernel kfun.
+    A generic implementation that will work for every kernel, but most likely
+    not the most efficient.
+
+    :param kfun: kernel function that recieves two input vectors
+    :param X:  n-by-d data matrix
+    :param Xt: optional t-by-d test matrix
+
+    Returns: 
+    -------
+    n-by-n Gram matrix over X (if Xt is not provided)
+    t-by-n Gram matrix between Xt and X if X is provided
+    """
+    # TODO check sizes etc.
+    if Xt is None:
+      Xt = X
+
+    return numpy.array(map(lambda x : map(lambda y: kfun(x,y), X), Xt))
+    
 def kernel(kerneltype, d, **params):
   """
   Returns a kernel based on the input parameters.
@@ -21,6 +42,8 @@ def kernel(kerneltype, d, **params):
     return Gaussian(d, **params)
   elif kerneltype.lower() == "polynomial":
     return Polynomial(d, **params)
+  elif kerneltype.lower() == "expsemigroup":
+    return ExpSemigroup(d, **params)
   else:
     raise ValueError("kerneltype not recognized")
 
@@ -129,8 +152,7 @@ class Gaussian(object):
     
     :param s: number of random features.
     :param subtype: subtype of rft to use (e.g. sparse, fast).
-           Currently we support only regular (None), but we keep
-           this argument to have a unifying interface.
+           Currently we support regular (None) and fast.
     :param defouttype: default output type for the transform.
     :returns: random features sketching transform object.
     """
@@ -206,3 +228,50 @@ class Polynomial(object):
     
     return sketch.PPT(self._d, s, self._q, self._c, self._gamma, defouttype, **args)
         
+class ExpSemigroup(object):
+  """
+  A object representing the Exponential Semigroup kernel over d dimensional vectors, with
+  parameter beta.
+
+  :param d: dimension of vectors on which kernel operates.
+  :param beta: kernel parameter
+  """
+
+  def __init__(self, d, beta):
+    self._d = d
+    self._beta = beta
+    self._k = lambda x, y: math.exp(-beta * numpy.sum(numpy.sqrt(x + y)))
+    
+  def gram(self, X, Xt=None):
+    """
+    Returns the dense Gram matrix evaluated over the datapoints.
+  
+    :param X:  n-by-d data matrix
+    :param Xt: optional t-by-d test matrix
+
+    Returns: 
+    -------
+    n-by-n Gram matrix over X (if Xt is not provided)
+    t-by-n Gram matrix between Xt and X if X is provided
+    """
+  
+    # TODO the test, and this function, should work for all matrix types.
+    if X.shape[1] != self._d:
+      raise ValueError("X must have vectors of dimension d")
+
+    return gram(self._k, X, Xt)
+  
+  def rft(self, s, subtype=None, defouttype=None, **args):
+    """
+    Create a random features transform for the kernel.
+    This function uses random Laplace features.
+    
+    :param s: number of random features.
+    :param subtype: subtype of rlt to use (e.g. sparse, fast).
+           Currently we support only regular (None), but we keep
+           this argument to have a unifying interface.
+    :param defouttype: default output type for the transform.
+    :returns: random features sketching transform object.
+    """
+
+    return sketch.ExpSemigroupRLT(self._d, s, self._beta, defouttype, **args)

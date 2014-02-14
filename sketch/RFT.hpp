@@ -8,7 +8,7 @@ namespace skylark { namespace sketch {
 namespace bstrand = boost::random;
 
 /**
- * Random Features Transform
+ * Random Fourier Transform
  *
  * Sketch transform into Eucledian space of fuctions in an RKHS
  * implicitly defined by a vector and a shift-invariant kernel.

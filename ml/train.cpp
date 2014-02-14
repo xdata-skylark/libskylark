@@ -22,8 +22,7 @@ int main (int argc, char** argv) {
       int provided;
       MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
 
-	  hilbert_options_t options (argc, argv);
-	  if (options.exit_on_return) { return -1; }
+
 
 	  bmpi::environment env (argc, argv);
 
@@ -33,7 +32,12 @@ int main (int argc, char** argv) {
 
 	 skylark::sketch::context_t context (12345, world);
 
+
+
 	 elem::Initialize (argc, argv);
+
+	 hilbert_options_t options (argc, argv, context.size);
+	 if (options.exit_on_return) { return -1; }
 
 	 MPI_Comm mpi_world(world);
 

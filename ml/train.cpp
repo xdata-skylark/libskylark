@@ -166,7 +166,14 @@ int main (int argc, char** argv) {
 
 	          if(context.rank == 0) std::cout << "Loading validation data." << std::endl;
 
-	          read_libsvm_dense(context, options.valfile, Xv, Yv, X.Height());
+	          switch(options.fileformat) {
+	                   case LIBSVM:
+	                       read_libsvm_dense(context, options.valfile, Xv, Yv, X.Height());
+	                       break;
+	                   case HDF5:
+	                       read_hdf5_dense(context, options.valfile, Xv, Yv);
+	               }
+
 	 }
 
 	 Solver->train(X, Y, Wbar, Xv, Yv);
@@ -186,7 +193,14 @@ int main (int argc, char** argv) {
 		 
 		 DistInputMatrixType Xt;
 		 DistTargetMatrixType Yt;
-		 read_libsvm_dense(context, options.testfile, Xt, Yt, X.Height());
+
+		 switch(options.fileformat) {
+		                        case LIBSVM:
+		                            read_libsvm_dense(context, options.testfile, Xt, Yt, X.Height());
+		                            break;
+		                        case HDF5:
+		                            read_hdf5_dense(context, options.testfile, Xt, Yt);
+		                    }
 		 
 		 DistTargetMatrixType Yp(Yt.Height(), k);
 		 Solver->predict(Xt, Yp, Wbar);

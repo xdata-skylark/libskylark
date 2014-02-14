@@ -11,7 +11,8 @@ namespace bstrand = boost::random;
  * Random Features Transform
  *
  * Sketch transform into Eucledian space of fuctions in an RKHS
- * implicitly defined by a vector and a kernel.
+ * implicitly defined by a vector and a shift-invariant kernel.
+ *
  * See:
  * Ali Rahimi and Benjamin Recht
  * Random Features for Large-Scale Kernel Machines
@@ -93,8 +94,8 @@ struct GaussianRFT_t :
         _transform.apply(A, sketch_of_A, dimension);
     }
 
-    int get_N() const { return this->N; } /**< Get input dimesion. */
-    int get_S() const { return this->S; } /**< Get output dimesion. */
+    int get_N() const { return this->_N; } /**< Get input dimesion. */
+    int get_S() const { return this->_S; } /**< Get output dimesion. */
 
 private:
     transform_t _transform;
@@ -109,7 +110,8 @@ template< typename InputMatrixType,
 struct LaplacianRFT_t :
     public LaplacianRFT_data_t<typename
       RFT_t<InputMatrixType, OutputMatrixType,
-            bstrand::cauchy_distribution >::value_type > {
+            bstrand::cauchy_distribution >::value_type >,
+    virtual public sketch_transform_t<InputMatrixType, OutputMatrixType > {
 
 
     // We use composition to defer calls to RFT_t
@@ -149,14 +151,27 @@ struct LaplacianRFT_t :
     }
 
     /**
-     * Apply the sketching transform that is described in by the sketch_of_A.
+     * Apply columnwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
      */
-    template <typename Dimension>
     void apply (const typename transform_t::matrix_type& A,
                 typename transform_t::output_matrix_type& sketch_of_A,
-                Dimension dimension) const {
+                columnwise_tag dimension) const {
         _transform.apply(A, sketch_of_A, dimension);
     }
+
+    /**
+     * Apply rowwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply (const typename transform_t::matrix_type& A,
+                typename transform_t::output_matrix_type& sketch_of_A,
+                rowwise_tag dimension) const {
+        _transform.apply(A, sketch_of_A, dimension);
+    }
+
+    int get_N() const { return this->_N; } /**< Get input dimension. */
+    int get_S() const { return this->_S; } /**< Get output dimension. */
 
 private:
     transform_t _transform;

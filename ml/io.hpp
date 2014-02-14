@@ -13,7 +13,7 @@
 #include <cstdlib>
 #include <string>
 #include <elemental.hpp>
-#include <H5Cpp.h>
+
 
 using namespace std;
 namespace bmpi =  boost::mpi;
@@ -21,6 +21,9 @@ namespace bmpi =  boost::mpi;
 typedef skylark::sketch::context_t skylark_context_t;
 typedef elem::DistMatrix<double, elem::CIRC, elem::CIRC> DistCircMatrixType;
 
+
+#ifdef SKYLARK_HAVE_HDF5
+#include <H5Cpp.h>
 
 int write_elem_hdf5(string fName, elem::Matrix<double>& X,
         elem::Matrix<double>& Y) {
@@ -183,7 +186,7 @@ void read_hdf5_dense(skylark_context_t& context, string fName,
                 cout << "Read Matrix with dimensions: " << n << " by " << d << " (" << readtime << "secs)" << endl;
 
 }
-
+#endif
 
 void read_libsvm_dense(skylark_context_t& context, string fName,
 		elem::DistMatrix<double, elem::STAR, elem::VC>& X, 
@@ -302,7 +305,7 @@ void read_model_file(string fName, elem::Matrix<double>& W) {
 				continue;
 			}
 			else {
-				if(line[0] == '#' | line.length()==0)
+				if(line[0] == '#' || line.length()==0)
 					continue;
 			}
 

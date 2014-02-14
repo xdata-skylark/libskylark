@@ -15,7 +15,7 @@ namespace bstrand = boost::random;
  * Fast Random Features Transform (data)
  *
  * Sketch transform into Eucledian space of fuctions in an RKHS
- * implicitly defined by a vector and a kernel. Fast variant
+ * implicitly defined by a vector and a shift invaraint kernel. Fast variant
  * (also known as Fastfood).
  *
  * See:

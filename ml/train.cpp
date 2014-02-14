@@ -51,8 +51,14 @@ int main (int argc, char** argv) {
 	     case LIBSVM:
 	         read_libsvm_dense(context, options.trainfile, X, Y);
 	         break;
+	         
 	     case HDF5:
+#ifdef SKYLARK_HAVE_HDF5
 	         read_hdf5_dense(context, options.trainfile, X, Y);
+#else
+	         // TODO
+#endif
+	         break;
 	 }
 	 std::cout << " Rank " << context.rank << " on " << env.processor_name() << " owns : " << X.LocalHeight() <<  " x " << X.LocalWidth() << std::endl;
 
@@ -67,12 +73,20 @@ int main (int argc, char** argv) {
 	 	 case LOGISTIC:
 	 	     loss = new logisticloss();
 	 	     break;
+	 	 case LAD:
+	 	 default:
+	 		 // TODO
+	 		 break;
 	 }
 
 	 regularization *regularizer = NULL;
 	 switch(options.regularizer) {
 	 	 case L2:
 	 		 regularizer = new l2();
+	 		 break;
+	 	 case L1:
+	 	 default:
+	 		 // TODO
 	 		 break;
 	 }
 
@@ -85,8 +99,7 @@ int main (int argc, char** argv) {
 	 	k++;
 
 	 BlockADMMSolver *Solver = NULL;
-	 int blksize;
-	 int features;
+	 int features = 0;
 	 switch(options.kernel) {
 	 	 case LINEAR:
 	 		 features = X.Height();

@@ -163,7 +163,7 @@ if (BOOST_ROOT)
 endif (BOOST_ROOT)
 
 set(BOOST_MIN_VERSION 1.53.0)
-find_package (Boost REQUIRED mpi)
+find_package (Boost REQUIRED mpi serialization)
 if (Boost_FOUND)
   set (SKYLARK_HAVE_BOOST
        1

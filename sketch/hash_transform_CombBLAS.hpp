@@ -486,7 +486,7 @@ private:
 };
 
 
-/* Specialization: SpParMat for input, output */
+/* Specialization: SpParMat for input, Local SpMat output */
 template <typename IndexType,
           typename ValueType,
           template <typename> class IdxDistributionType,
@@ -604,9 +604,9 @@ private:
                     nz.value() * getValue(rowid, colid, dist);
 
                 finalPos(rowid, colid, dist);
-
                 std::pair<index_type, index_type> pos =
                     std::make_pair(rowid, colid);
+
                 if(coords.count(pos) != 0)
                     coords[pos] += value;
                 else
@@ -648,12 +648,12 @@ private:
     }
 
     inline value_type getValue(index_type rowid, index_type colid,
-        columnwise_tag) const {
+                               columnwise_tag) const {
         return base_data_t::row_value[rowid];
     }
 
     inline value_type getValue(index_type rowid, index_type colid,
-        rowwise_tag) const {
+                               rowwise_tag) const {
         return base_data_t::row_value[colid];
     }
 };

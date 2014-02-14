@@ -131,7 +131,6 @@ int test_main(int argc, char *argv[]) {
     Sparse.apply(A, sketch_A, skylark::sketch::columnwise_tag());
 
     //[> 4. Build structure to compare: PI * A ?= sketch_A <]
-
     row = 0;
     typename Matrix_t::coords_t coords_new;
     ritr = pi_sketch.indptr_itr();
@@ -166,6 +165,7 @@ int test_main(int argc, char *argv[]) {
     //[> Row wise application <]
 
     //[> 1. Create the sketching matrix <]
+    //TODO
 */
 
     return 0;

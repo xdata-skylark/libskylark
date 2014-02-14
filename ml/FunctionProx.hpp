@@ -262,13 +262,12 @@ double logisticloss::evaluate(LocalDenseMatrixType& O, LocalTargetMatrixType& T)
 
 
 void logisticloss::proxoperator(LocalDenseMatrixType& X, double lambda, LocalTargetMatrixType& T, LocalDenseMatrixType& Y) {
-    int flag = 0;
     int m = X.Width();
     int n = X.Height();
 
     #pragma omp parallel for
     for(int i=0;i<m;i++) {
-                flag = logexp((int) T.Get(i, 0), X.Buffer(0, i), n, lambda, Y.Buffer(0, i), MAXITER, epsilon, DISPLAY);
+                logexp((int) T.Get(i, 0), X.Buffer(0, i), n, lambda, Y.Buffer(0, i), MAXITER, epsilon, DISPLAY);
     }
 
 }

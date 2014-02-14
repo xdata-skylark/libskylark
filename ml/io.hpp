@@ -260,7 +260,7 @@ void read_model_file(string fName, elem::Matrix<double>& W) {
 				continue;
 			}
 			else {
-				if(line[0] == '#' | line.length()==0)
+				if(line[0] == '#' || line.length()==0)
 					continue;
 			}
 

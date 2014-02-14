@@ -67,7 +67,9 @@ private:
         // The follwing is purely sequential (may want to do something different
         // in the final version). SO: this is a PRELIMINARY version.
         double* AA = A.Buffer();
-        for (int j = 0; j < A.Width(); j++)
+        int j;
+#pragma omp parallel for private(j)
+        for (j = 0; j < A.Width(); j++)
             ExecuteFun(_plan, AA + j * A.LDim(), AA + j * A.LDim());
     }
 
@@ -76,18 +78,22 @@ private:
         // The follwing is purely sequential (may want to do something different
         // in the final version). SO: this is a PRELIMINARY version.
         double* AA = A.Buffer();
-        for (int j = 0; j < A.Width(); j++)
+        int j;
+#pragma omp parallel for private(j)
+        for (j = 0; j < A.Width(); j++)
             ExecuteFun(_plan_inverse, AA + j * A.LDim(), AA + j * A.LDim());
     }
 
     void apply_impl(elem::Matrix<ValueType>& A,
                     skylark::sketch::rowwise_tag) const {
-        // Using transpositions instead of moving to the advanced interface 
+        // Using transpositions instead of moving to the advanced interface
         // of FFTW
         elem::Matrix<ValueType> matrix;
         elem::Transpose(A, matrix);
         double* matrix_buffer = matrix.Buffer();
-        for (int j = 0; j < matrix.Width(); j++)
+        int j;
+#pragma omp parallel for private(j)
+        for (j = 0; j < matrix.Width(); j++)
             ExecuteFun(_plan, matrix_buffer + j * matrix.LDim(),
                 matrix_buffer + j * matrix.LDim());
         elem::Transpose(matrix, A);
@@ -95,12 +101,14 @@ private:
 
     void apply_inverse_impl(elem::Matrix<ValueType>& A,
                             skylark::sketch::rowwise_tag) const {
-        // Using transpositions instead of moving to the advanced interface 
+        // Using transpositions instead of moving to the advanced interface
         // of FFTW
         elem::Matrix<ValueType> matrix;
         elem::Transpose(A, matrix);
         double* matrix_buffer = matrix.Buffer();
-        for (int j = 0; j < matrix.Width(); j++)
+        int j;
+#pragma omp parallel for private(j)
+        for (j = 0; j < matrix.Width(); j++)
             ExecuteFun(_plan_inverse, matrix_buffer + j * matrix.LDim(),
                 matrix_buffer + j * matrix.LDim());
         elem::Transpose(matrix, A);

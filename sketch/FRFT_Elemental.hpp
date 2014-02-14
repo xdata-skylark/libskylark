@@ -101,7 +101,7 @@ private:
             int c, l, idx1, idx2;
             double *w;
             matrix_type Wc;
-#pragma parallel for default(shared) private(c, l, w, idx1, idx2, Wc)
+#pragma omp parallel for default(shared) private(c, l, w, idx1, idx2, Wc)
             for(c = 0; c < A.Width(); c++) {
                 elem::View(Wc, W, 0, c, W.Height(), 1);
 

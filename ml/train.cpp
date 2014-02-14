@@ -170,8 +170,11 @@ int main (int argc, char** argv) {
 	                   case LIBSVM:
 	                       read_libsvm_dense(context, options.valfile, Xv, Yv, X.Height());
 	                       break;
+#ifdef SKYLARK_HAVE_HDF5
 	                   case HDF5:
 	                       read_hdf5_dense(context, options.valfile, Xv, Yv);
+	                       break;
+#endif
 	               }
 
 	 }
@@ -198,8 +201,11 @@ int main (int argc, char** argv) {
 		                        case LIBSVM:
 		                            read_libsvm_dense(context, options.testfile, Xt, Yt, X.Height());
 		                            break;
+#ifdef SKYLARK_HAVE_HDF5
 		                        case HDF5:
 		                            read_hdf5_dense(context, options.testfile, Xt, Yt);
+		                            break;
+#endif
 		                    }
 		 
 		 DistTargetMatrixType Yp(Yt.Height(), k);

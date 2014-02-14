@@ -98,8 +98,10 @@ private:
                 Sm.Set(j, 0, scal * base_data_t::Sm[i * base_data_t::N + j]);
             }
 
-            int c;
+            int c, l, idx1, idx2;
+            double *w;
             matrix_type Wc;
+#pragma parallel for default(shared) private(c, l, w, idx1, idx2, Wc)
             for(c = 0; c < A.Width(); c++) {
                 elem::View(Wc, W, 0, c, W.Height(), 1);
 
@@ -107,10 +109,10 @@ private:
 
                 _dct.apply(Wc, tag);
 
-                double *w = Wc.Buffer();
-                for(int l = 0; l < base_data_t::N - 1; l++) {
-                    int idx1 = base_data_t::N - 1 - l;
-                    int idx2 = base_data_t::P[i * (base_data_t::N - 1) + l];
+                w = Wc.Buffer();
+                for(l = 0; l < base_data_t::N - 1; l++) {
+                    idx1 = base_data_t::N - 1 - l;
+                    idx2 = base_data_t::P[i * (base_data_t::N - 1) + l];
                     std::swap(w[idx1], w[idx2]);
                 }
 

@@ -96,7 +96,7 @@ int write_elem_hdf5(string fName, elem::Matrix<double>& X,
 
 void read_hdf5_dense(skylark_context_t& context, string fName,
         elem::DistMatrix<double, elem::STAR, elem::VC>& X,
-        elem::DistMatrix<double, elem::VC, elem::STAR>& Y) {
+        elem::DistMatrix<double, elem::VC, elem::STAR>& Y, int blocksize = 10000) {
 
         bmpi::timer timer;
 
@@ -109,29 +109,74 @@ void read_hdf5_dense(skylark_context_t& context, string fName,
        hsize_t n = dimsX[0];
        hsize_t d = dimsX[1];
 
-        DistCircMatrixType x(d, n), y(n, 1);
-        x.SetRoot(0);
-        y.SetRoot(0);
-        elem::MakeZeros(x);
+       H5::DataSet datasetY = file.openDataSet( "Y" );
+       H5::DataSpace filespaceY = datasetY.getSpace();
+       hsize_t dimsY[1]; // dataset dimensions
+       rank = filespaceX.getSimpleExtentDims( dimsY );
 
-        H5::DataSet datasetY = file.openDataSet( "Y" );
-        H5::DataSpace filespaceY = datasetY.getSpace();
-        hsize_t dimsY[1]; // dataset dimensions
-        rank = filespaceX.getSimpleExtentDims( dimsY );
+       hsize_t countX[2];
+       hsize_t countY[1];
+
+        int numblocks = ((int) n/ (int) blocksize); // of size blocksize
+        int leftover = n % blocksize;
+        int block = blocksize;
+
+        hsize_t offsetX[2], offsetY[1];
+
+        X.ResizeTo(d, n);
+        Y.ResizeTo(n,1);
+
+        for(int i=0; i<numblocks+1; i++) {
+
+            if (i==numblocks)
+                block = leftover;
+            if (block==0)
+                break;
+
+            DistCircMatrixType x(d, block), y(block, 1);
+            x.SetRoot(0);
+            y.SetRoot(0);
+            elem::MakeZeros(x);
 
 
-        if(context.rank==0) {
-            double *Xdata = x.Matrix().Buffer();
-            double *Ydata = y.Matrix().Buffer();
+            offsetX[0] = i*blocksize;
+            offsetX[1] = 0;
+            countX[0] = block;
+            countX[1] = d;
+            offsetY[0] = i*blocksize;
+            countY[0] = block;
 
-            H5::DataSpace mspace1(2, dimsX);
-            datasetX.read( Xdata, H5::PredType::NATIVE_DOUBLE, mspace1, filespaceX );
 
-            H5::DataSpace mspace2(1,dimsY);
-            datasetY.read( Ydata, H5::PredType::NATIVE_DOUBLE, mspace2, filespaceY );
+            filespaceX.selectHyperslab( H5S_SELECT_SET, countX, offsetX );
+            filespaceY.selectHyperslab( H5S_SELECT_SET, countY, offsetY );
+
+            if(context.rank==0) {
+                cout << "Reading and distributing chunk " << i*blocksize << " to " << i*blocksize + block - 1 << " ("<< block << " elements )" << endl;
+
+                double *Xdata = x.Matrix().Buffer();
+                double *Ydata = y.Matrix().Buffer();
+
+                dimsX[0] = block;
+                dimsX[1] = d;
+                H5::DataSpace mspace1(2, dimsX);
+                datasetX.read( Xdata, H5::PredType::NATIVE_DOUBLE, mspace1, filespaceX );
+
+                dimsY[0] = block;
+                H5::DataSpace mspace2(1,dimsY);
+                datasetY.read( Ydata, H5::PredType::NATIVE_DOUBLE, mspace2, filespaceY );
+
+            }
+
+            elem::DistMatrix<double, elem::STAR, elem::VC> viewX;
+            elem::DistMatrix<double, elem::VC, elem::STAR> viewY;
+
+            elem::View(viewX, X, 0, i*blocksize, x.Height(), x.Width());
+            elem::View(viewY, Y, i*blocksize, 0, x.Width(), 1);
+
+            viewX = x;
+            viewY = y;
+
         }
-        X = x;
-        Y = y;
 
         double readtime = timer.elapsed();
         if (context.rank==0)

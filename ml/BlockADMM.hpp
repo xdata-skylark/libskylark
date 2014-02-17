@@ -12,8 +12,17 @@
 #include <skylark.hpp>
 #include <cmath>
 #include <boost/mpi.hpp>
-#include "hilbert.hpp"
+
 #include <omp.h>
+
+#ifdef SKYLARK_PROFILE
+#include "../utility/timer.hpp"
+#include "profiler.hpp"
+#endif
+
+#include "hilbert.hpp"
+
+
 
 // Columns are examples, rows are features
 typedef elem::DistMatrix<double, elem::STAR, elem::VC> DistInputMatrixType;
@@ -284,10 +293,27 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 	LocalMatrixType sum_o;
 	DistTargetMatrixType Yp(Yv.Height(), k);
 
+#ifdef SKYLARK_PROFILE
+	 SKYLARK_TIMER_INITIALIZE(ITERATIONS_PROFILE)
+	 SKYLARK_TIMER_INITIALIZE(COMMUNICATION_PROFILE)
+	 SKYLARK_TIMER_INITIALIZE(TRANSFORM_PROFILE)
+#endif
+
 	while(iter<MAXITER) {
+
+#ifdef SKYLARK_PROFILE
+	    SKYLARK_TIMER_RESTART(ITERATIONS_PROFILE)
+        SKYLARK_TIMER_RESTART(COMMUNICATION_PROFILE)
+#endif
+
 		iter++;
 
 		reduce(context.comm, localloss, totalloss, std::plus<double>(), 0);
+#ifdef SKYLARK_PROFILE
+		SKYLARK_TIMER_ACCUMULATE(COMMUNICATION_PROFILE)
+#endif
+
+
 		if (Xv.Width() > 0) {
 		    elem::MakeZeros(Yp);
 		    predict(Xv, Yp, Wbar);
@@ -303,9 +329,13 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 		                std::cout << "iteration " << iter << " objective " << obj << " accuracy " << accuracy << " time " << timer.elapsed() << " seconds" << std::endl;
 		        }
 		}
-
+#ifdef SKYLARK_PROFILE
+		SKYLARK_TIMER_RESTART(COMMUNICATION_PROFILE)
+#endif
 		broadcast(context.comm, Wbar.Buffer(), Dk, 0);
-
+#ifdef SKYLARK_PROFILE
+        SKYLARK_TIMER_ACCUMULATE(COMMUNICATION_PROFILE)
+#endif
 
 		elem::Axpy(-1.0, Wbar, mu_ij);
 
@@ -323,6 +353,10 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 		int j;
 		const feature_transform_t* featureMap;
 		
+#ifdef SKYLARK_PROFILE
+        SKYLARK_TIMER_RESTART(TRANSFORM_PROFILE)
+#endif
+
 		#pragma omp parallel for private(j, start, finish, sj, featureMap)    
 		for(j = 0; j < NumFeaturePartitions; j++) {
 			start = starts[j];
@@ -390,6 +424,9 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 
 			z.Empty();
 		}
+#ifdef SKYLARK_PROFILE
+        SKYLARK_TIMER_ACCUMULATE(TRANSFORM_PROFILE)
+#endif
 
 		localloss = 0.0 ;
 	 //	elem::Zeros(o, ni, k);
@@ -398,6 +435,10 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 		elem::Scal(-1.0, sum_o);
 		elem::Axpy(+1.0, O.Matrix(), sum_o); // sum_o = O.Matrix - sum_o
 		
+#ifdef SKYLARK_PROFILE
+        SKYLARK_TIMER_RESTART(TRANSFORM_PROFILE)
+#endif
+
 		#pragma omp parallel for private(j, start, finish, sj, featureMap) 
 		for(j = 0; j < NumFeaturePartitions; j++) {
 					start = starts[j];
@@ -421,7 +462,9 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 					elem::Gemm(elem::TRANSPOSE, elem::NORMAL, 1.0, tmp, z, 1.0, o);
 		}
 
-
+#ifdef SKYLARK_PROFILE
+        SKYLARK_TIMER_ACCUMULATE(TRANSFORM_PROFILE)
+#endif
 
 		localloss+= loss->evaluate(o, y);
 
@@ -433,13 +476,18 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 		elem::Axpy(-1.0, Obar.Matrix(), nu.Matrix());
 
 		//Wbar = comm.reduce(Wi)
-
+#ifdef SKYLARK_PROFILE
+        SKYLARK_TIMER_RESTART(COMMUNICATION_PROFILE)
+#endif
 		boost::mpi::reduce (context.comm,
 		                        Wi.LockedBuffer(),
 		                        Wi.MemorySize(),
 		                        Wbar.Buffer(),
 		                        std::plus<double>(),
 		                        0);
+#ifdef SKYLARK_PROFILE
+        SKYLARK_TIMER_ACCUMULATE(COMMUNICATION_PROFILE)
+#endif
 
 		if(context.rank==0) {
 			//Wbar = (Wisum + W)/(P+1)
@@ -453,8 +501,16 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 
 		// deleteCache()
 		context.comm.barrier();
+#ifdef SKYLARK_PROFILE
+        SKYLARK_TIMER_ACCUMULATE(ITERATIONS_PROFILE)
+#endif
 	}
 
+#ifdef SKYLARK_PROFILE
+        SKYLARK_TIMER_REPORT(ITERATIONS_PROFILE)
+        SKYLARK_TIMER_REPORT(COMMUNICATION_PROFILE)
+        SKYLARK_TIMER_REPORT(TRANSFORM_PROFILE)
+#endif
 
 	return 0;
 }

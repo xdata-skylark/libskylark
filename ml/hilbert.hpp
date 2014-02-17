@@ -12,5 +12,8 @@
 #include "BlockADMM.hpp"
 #include "options.hpp"
 #include "io.hpp"
+#include "profiler.hpp"
+
+
 
 #endif /* HILBERT_HPP_ */

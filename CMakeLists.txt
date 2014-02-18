@@ -270,6 +270,12 @@ if (USE_COMBBLAS)
 endif (USE_COMBBLAS)
 
 
+option (USE_PROFILER "Use Skylark profiling tools" OFF)
+if (USE_PROFILER)
+  add_definitions(-DSKYLARK_PROFILE)
+endif (USE_PROFILER)
+
+
 option (BUILD_PYTHON "Whether we should build the python interface" ON)
 if (BUILD_PYTHON)
 

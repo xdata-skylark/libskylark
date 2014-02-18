@@ -244,18 +244,40 @@ class _ScipyAdapter:
   def getobj(self):
     return self._A
 
-  def iscompatible(self, B):
-    if not isinstance(B, _ScipyAdapter):
-      return "not compatible with other types", None
+  def getorder(self):
+    if isinstance(self._A, scipy.sparse.csr_matrix):
+      return 'C'
     else:
-      return None, None
+      return 'F'
+
+  #FIXME:
+  # What you do is when getting a CSR (CSC??) matrix just consider it as a
+  # transposed.
+  # Now if you get as output another CSR matrix you need only to invert the
+  # columnwise to row-wise and vice versa.
+  # If the output is numpy matrix, then if it is in 'C' order then again you
+  # column-wise and row-wise are inverted.
+  #
+  # We should also support
+  #   * SparseMatrix -> Dense matrix
+  def iscompatible(self, B):
+    if isinstance(B, _ScipyAdapter) and self.getorder() != B.getorder():
+      return "sketching scipy matrix to scipy matrix requires same format", None
+    elif not isinstance(B, _ScipyAdapter) and B.getorder() != 'F':
+      return "scipy matrix combined with other types must be CSR", None
+    else:
+      return None, self.getorder() == 'F'
 
   def getctor(self):
     return _ScipyAdapter.ctor
 
   @staticmethod
   def ctor(m, n, B):
-    return scipy.sparse.csr_matrix((m, n))
+    # Construct scipy matrix that is compatible with B.
+    if isinstance(B, _ScipyAdapter) and B.getorder() == 'F':
+      return scipy.sparse.csc_matrix(((m, n))
+    else:
+      return scipy.sparse.csr_matrix(((m, n))
 
 if _ELEM_INSTALLED:
   class _ElemAdapter:

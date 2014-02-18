@@ -25,4 +25,12 @@ if (SKYLARK_HAVE_COMBBLAS)
                          ${Boost_LIBRARIES} )
   add_test( sparse_cb_apply_test sparse_cb_apply )
 
+  add_executable(simple_json_parser SimpleJSONParserTest.cpp)
+  target_link_libraries( simple_json_parser
+                         ${SKYLARK_LIBS}
+                         ${DEP_LIBRARIES}
+                         ${CombBLAS_LIBRARIES}
+                         ${Boost_LIBRARIES} )
+  add_test( simple_json_parser_test simple_json_parser )
+
 endif (SKYLARK_HAVE_COMBBLAS)

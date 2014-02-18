@@ -6,6 +6,8 @@
 #include "context.hpp"
 #include "../utility/randgen.hpp"
 
+#include "transform_data.hpp"
+
 namespace skylark { namespace sketch {
 
 /**
@@ -15,7 +17,7 @@ namespace skylark { namespace sketch {
  */
 template <typename ValueType,
           template <typename> class ValueDistribution>
-struct dense_transform_data_t {
+struct dense_transform_data_t : public transform_data_t {
     // For reasons of naming consistency
     typedef ValueType value_type;
     typedef ValueDistribution<ValueType> value_distribution_type;
@@ -24,28 +26,35 @@ struct dense_transform_data_t {
      * Regular constructor
      */
     dense_transform_data_t (int N, int S, skylark::sketch::context_t& context)
-        : N(N), S(S), context(context),
+        : transform_data_t(N, S, context),
           distribution(),
           random_samples(context.allocate_random_samples_array(N * S, distribution)) {
+
         // No scaling in "raw" form
         scale = 1.0;
     }
 
+    dense_transform_data_t (const std::string json_filename,
+                            context_t& context)
+        : transform_data_t(json_filename, context),
+          distribution(),
+          random_samples(context.allocate_random_samples_array(N * S, distribution)) {
+
+        // No scaling in "raw" form
+        scale = 1.0;
+    }
 
     const dense_transform_data_t& get_data() const {
         return static_cast<const dense_transform_data_t&>(*this);
     }
 
 protected:
-    const int N; /**< Input dimension  */
-    const int S; /**< Output dimension  */
-    skylark::sketch::context_t& context; /**< Context for this sketch */
     value_distribution_type distribution; /**< Distribution for samples */
-    const skylark::utility::random_samples_array_t < value_distribution_type>
+    skylark::utility::random_samples_array_t < value_distribution_type>
         random_samples;
     /**< Array of samples, to be lazily computed */
     double scale; /**< Scaling factor for the samples */
-  };
+};
 
 } } /** namespace skylark::sketch */
 

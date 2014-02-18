@@ -45,6 +45,11 @@ public:
 
     }
 
+    CWT_t(const std::string json_filename, context_t& context)
+        : base_t(json_filename, context), _transform(*this) {
+
+    }
+
     /**
      * Copy constructor
      */

@@ -195,6 +195,7 @@ if (HDF5_FOUND)
        "Enables use of HDF5 Libraries"
        FORCE)
   include_directories (${HDF5_INCLUDE_DIR})
+  find_package(ZLIB)
 else (HDF5_FOUND)
   set (SKYLARK_HAVE_HDF5
        0

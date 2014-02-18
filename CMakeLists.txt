@@ -165,8 +165,7 @@ if (BOOST_ROOT)
 endif (BOOST_ROOT)
 
 set(BOOST_MIN_VERSION 1.53.0)
-find_package (Boost REQUIRED mpi)
-find_package (Boost REQUIRED program_options)
+find_package (Boost REQUIRED mpi program_options)
 if (Boost_FOUND)
   set (SKYLARK_HAVE_BOOST
        1
@@ -185,6 +184,25 @@ find_package(Random123 REQUIRED)
 if (Random123_FOUND)
   include_directories (${Random123_INCLUDE_DIR})
 endif (Random123_FOUND)
+
+# 4. HDF5
+find_package(HDF5)
+if (HDF5_FOUND)
+  set (SKYLARK_HAVE_HDF5
+       1
+       CACHE
+       STRING
+       "Enables use of HDF5 Libraries"
+       FORCE)
+  include_directories (${HDF5_INCLUDE_DIR})
+else (HDF5_FOUND)
+  set (SKYLARK_HAVE_HDF5
+       0
+       CACHE
+       STRING
+       "Enables use of HDF5 Libraries"
+       FORCE)
+endif (HDF5_FOUND)
 
 #-----------------------------------------------------------------------------
 # options

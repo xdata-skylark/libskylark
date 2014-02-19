@@ -3,6 +3,14 @@ from distutils.extension import Extension
 from Cython.Build import cythonize
 import os
 
+if not os.path.exists('randgen.pyx'):
+    print 'Generating randgen.pyx'
+    execfile('generate_randgen.py')
+
+if not os.path.exists('test_randgen.py'):
+    print 'Generating test_randgen.py'
+    execfile('generate_test_randgen.py')
+
 extensions = [
     Extension('randgen', 
               ['randgen.pyx'],
@@ -11,6 +19,7 @@ extensions = [
               extra_compile_args = ['-D__STDC_CONSTANT_MACROS'],
               language = 'c++'),
 ]
+
 
 setup(
   name = 'randgen',

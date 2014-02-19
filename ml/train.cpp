@@ -22,8 +22,6 @@ int main (int argc, char** argv) {
       int provided;
       MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
 
-
-
 	  bmpi::environment env (argc, argv);
 
 	/* Create a global communicator */

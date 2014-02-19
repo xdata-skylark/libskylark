@@ -439,7 +439,7 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
         SKYLARK_TIMER_RESTART(TRANSFORM_PROFILE)
 #endif
 
-		#pragma omp parallel for private(j, start, finish, sj, featureMap) 
+		#pragma omp parallel for private(j, start, finish, sj, featureMap)
 		for(j = 0; j < NumFeaturePartitions; j++) {
 					start = starts[j];
 					finish = finishes[j];
@@ -459,6 +459,8 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 					elem::View(tmp, ZtObar_ij, start, 0, sj, k);
 					elem::Gemm(elem::NORMAL, elem::TRANSPOSE, 1.0/(NumFeaturePartitions + 1.0), z, sum_o, 1.0, tmp);
 					elem::View(tmp, Wbar, start, 0, sj, k);
+
+					#pragma omp critical
 					elem::Gemm(elem::TRANSPOSE, elem::NORMAL, 1.0, tmp, z, 1.0, o);
 		}
 

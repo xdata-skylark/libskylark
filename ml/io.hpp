@@ -102,6 +102,9 @@ void read_hdf5_dense(skylark_context_t& context, string fName,
         elem::DistMatrix<double, elem::VC, elem::STAR>& Y, int blocksize = 10000) {
 
         bmpi::timer timer;
+        if (context.rank==0)
+                    cout << "Reading from file " << fName << endl;
+
 
        H5::H5File file( fName, H5F_ACC_RDONLY );
        H5::DataSet datasetX = file.openDataSet( "X" );
@@ -184,14 +187,13 @@ void read_hdf5_dense(skylark_context_t& context, string fName,
         double readtime = timer.elapsed();
         if (context.rank==0)
                 cout << "Read Matrix with dimensions: " << n << " by " << d << " (" << readtime << "secs)" << endl;
-
 }
 #endif
 
 void read_libsvm_dense(skylark_context_t& context, string fName,
 		elem::DistMatrix<double, elem::STAR, elem::VC>& X, 
 		elem::DistMatrix<double, elem::VC, elem::STAR>& Y, 
-		int min_d = 0) {
+		int min_d = 0, int blocksize = 10000) {
 	if (context.rank==0)
 			cout << "Reading from file " << fName << endl;
 
@@ -211,70 +213,99 @@ void read_libsvm_dense(skylark_context_t& context, string fName,
 
 	// make one pass over the data to figure out dimensions - will pay in terms of preallocated storage.
 	if (context.rank==0) {
-	while(!file.eof()) {
-		getline(file, line);
-		if(line.length()==0)
-			break;
-		delim = line.find_last_of(":");
-		if(delim > line.length())
-			continue;
-		n++;
-		t = delim;
-		while(line[t]!=' ') {
-			t--;
-		}
-		val = line.substr(t+1, delim - t);
-		last = atoi(val.c_str());
-		if (last>d)
-			d = last;
-	}
-	if (min_d > 0)
-		d = std::max(d, min_d);
+	    while(!file.eof()) {
+	        getline(file, line);
+	        if(line.length()==0)
+	            break;
+	        delim = line.find_last_of(":");
+	        if(delim > line.length())
+	            continue;
+	        n++;
+	        t = delim;
+	        while(line[t]!=' ') {
+	            t--;
+	        }
+	        val = line.substr(t+1, delim - t);
+	        last = atoi(val.c_str());
+	        if (last>d)
+	            d = last;
+	    }
+	    if (min_d > 0)
+	        d = std::max(d, min_d);
+
+	    // prepare for second pass
+	    file.clear();
+	    file.seekg(0, std::ios::beg);
 	}
 
 	boost::mpi::broadcast(context.comm, n, 0);
 	boost::mpi::broadcast(context.comm, d, 0);
 
-	DistCircMatrixType x(d, n), y(n, 1);
-	x.SetRoot(0);
-	y.SetRoot(0);
-	elem::MakeZeros(x);
+	int numblocks = ((int) n/ (int) blocksize); // of size blocksize
+	int leftover = n % blocksize;
+	int block = blocksize;
 
-	if(context.rank==0) {
-		double *Xdata = x.Matrix().Buffer();
-		double *Ydata = y.Matrix().Buffer();
+	X.ResizeTo(d, n);
+	Y.ResizeTo(n,1);
 
-		// second pass
-		file.clear();
-		file.seekg(0, std::ios::beg);
-		i = -1;
-		while(!file.eof()) {
-			getline(file, line);
-			if( line.length()==0) {
-				break;
-			}
-			i++;
-			istringstream tokenstream (line);
-			tokenstream >> label;
-			Ydata[i] = label;
+	for(int i=0; i<numblocks+1; i++) {
 
-			while (tokenstream >> token)
-			 {
-				delim  = token.find(':');
-				ind = token.substr(0, delim);
-				val = token.substr(delim+1); //.substr(delim+1);
-				j = atoi(ind.c_str()) - 1;
-				Xdata[i * d + j] = atof(val.c_str());
-			 }
-		}
+	            if (i==numblocks)
+	                block = leftover;
+	            if (block==0)
+	                break;
+
+	            DistCircMatrixType x(d, block), y(block, 1);
+	            x.SetRoot(0);
+	            y.SetRoot(0);
+	            elem::MakeZeros(x);
+
+                if(context.rank==0) {
+
+                    cout << "Reading and distributing chunk " << i*blocksize << " to " << i*blocksize + block - 1 << " ("<< block << " elements )" << endl;
+                    double *Xdata = x.Matrix().Buffer();
+                    double *Ydata = y.Matrix().Buffer();
+
+                    t = 0;
+                    while(!file.eof() && t<block) {
+                        getline(file, line);
+                        if( line.length()==0) {
+                            break;
+                        }
+
+                        istringstream tokenstream (line);
+                        tokenstream >> label;
+                        Ydata[t] = label;
+
+                        while (tokenstream >> token)
+                         {
+                            delim  = token.find(':');
+                            ind = token.substr(0, delim);
+                            val = token.substr(delim+1); //.substr(delim+1);
+                            j = atoi(ind.c_str()) - 1;
+                            Xdata[t * d + j] = atof(val.c_str());
+                         }
+
+                        t++;
+                    }
+                 }
+
+                // The calls below should distribute the data to all the nodes.
+               // if (context.rank==0)
+                //    cout << "Distributing Data.." << endl;
+
+                elem::DistMatrix<double, elem::STAR, elem::VC> viewX;
+                elem::DistMatrix<double, elem::VC, elem::STAR> viewY;
+
+                elem::View(viewX, X, 0, i*blocksize, x.Height(), x.Width());
+                elem::View(viewY, Y, i*blocksize, 0, x.Width(), 1);
+
+                viewX = x;
+                viewY = y;
+
+//	X = x;
+//	Y = y;
 	}
-
-	// The calls below should distribute the data to all the nodes.
-	if (context.rank==0)
-		cout << "Distributing Data.." << endl;
-
-	X = x;
-	Y = y;
 
 	double readtime = timer.elapsed();
 	if (context.rank==0)

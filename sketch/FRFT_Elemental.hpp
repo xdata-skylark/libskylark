@@ -77,7 +77,7 @@ private:
     void apply_impl(const matrix_type& A,
         output_matrix_type& sketch_of_A,
         skylark::sketch::columnwise_tag tag) const {
-        
+
         // Create a work array W
         matrix_type W(A.Height(), A.Width());
 
@@ -101,7 +101,9 @@ private:
             int c, l, idx1, idx2;
             double *w;
             matrix_type Wc;
+#ifdef SKYLARK_OPENMP
 #pragma omp parallel for default(shared) private(c, l, w, idx1, idx2, Wc)
+#endif
             for(c = 0; c < A.Width(); c++) {
                 elem::View(Wc, W, 0, c, W.Height(), 1);
 

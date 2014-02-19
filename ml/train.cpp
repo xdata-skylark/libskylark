@@ -41,7 +41,9 @@ int main (int argc, char** argv) {
 
 	 //elem::Grid grid (mpi_world);
 
+#ifdef SKYLARK_OPENMP
 	 omp_set_num_threads(options.numthreads);
+#endif
 
 	 DistInputMatrixType X;
 	 DistTargetMatrixType Y;
@@ -53,7 +55,7 @@ int main (int argc, char** argv) {
 	     case LIBSVM:
 	         read_libsvm_dense(context, options.trainfile, X, Y);
 	         break;
-	         
+
 	     case HDF5:
 #ifdef SKYLARK_HAVE_HDF5
 	         read_hdf5_dense(context, options.trainfile, X, Y);
@@ -106,9 +108,9 @@ int main (int argc, char** argv) {
 	 	 case LINEAR:
 	 		 features = X.Height();
 	 		 Solver = new BlockADMMSolver(
-	 				context, 
+	 				context,
 	 				loss,
-	 				 regularizer,	
+	 				 regularizer,
 	 				 options.lambda,
 	 				 X.Height(),
 	 				 options.numfeaturepartitions,
@@ -117,14 +119,14 @@ int main (int argc, char** argv) {
 	 				 options.MAXITER,
 	 				 options.rho);
 	 		 break;
-	 		 
+
 	 	 case GAUSSIAN:
 	 		 features = options.randomfeatures;
 	 		 if (options.regularmap)
 		 		 Solver = new BlockADMMSolver(
-		 				 context, 
+		 				 context,
 		 				 loss,
-		 				 regularizer,	
+		 				 regularizer,
 		 				 options.lambda,
 		 				 features,
 		 				 skylark::ml::kernels::gaussian_t(X.Height(), options.kernelparam),
@@ -133,13 +135,13 @@ int main (int argc, char** argv) {
 		 				 options.numthreads,
 		 				 options.tolerance,
 		 				 options.MAXITER,
-		 				 options.rho);	 
+		 				 options.rho);
 
 	 		 else
 	 			 Solver = new BlockADMMSolver(
-	 					 context, 
+	 					 context,
 	 					 loss	,
-	 					 regularizer,	
+	 					 regularizer,
 	 					 options.lambda,
 	 					 features,
 	 					 skylark::ml::kernels::gaussian_t(X.Height(), options.kernelparam),
@@ -148,16 +150,16 @@ int main (int argc, char** argv) {
 	 					 options.numthreads,
 	 					 options.tolerance,
 	 					 options.MAXITER,
-	 					 options.rho);	 
+	 					 options.rho);
 	 	 	break;
-	 	 	
-	 	 	
+
+
 	 	 case LAPLACIAN:
 	 		 features = options.randomfeatures;
 	 		 Solver = new BlockADMMSolver(
-	 				 context, 
+	 				 context,
 	 				 loss,
-	 				 regularizer,	
+	 				 regularizer,
 	 				 options.lambda,
 	 				 features,
 	 				 skylark::ml::kernels::laplacian_t(X.Height(), options.kernelparam),
@@ -166,14 +168,14 @@ int main (int argc, char** argv) {
 		 			 options.numthreads,
 		 			 options.tolerance,
 		 			 options.MAXITER,
-		 			 options.rho);	
-	 		 
+		 			 options.rho);
+
 	 	 case EXPSEMIGROUP:
 	 		 features = options.randomfeatures;
 	 		 Solver = new BlockADMMSolver(
-	 				 context, 
+	 				 context,
 	 				 loss,
-	 				 regularizer,	
+	 				 regularizer,
 	 				 options.lambda,
 	 				 features,
 	 				 skylark::ml::kernels::expsemigroup_t(X.Height(), options.kernelparam),
@@ -182,12 +184,12 @@ int main (int argc, char** argv) {
 		 			 options.numthreads,
 		 			 options.tolerance,
 		 			 options.MAXITER,
-		 			 options.rho);	
-	 		
+		 			 options.rho);
+
 	 	 default:
 	 		// TODO!
-	 		break; 
-	 	 
+	 		break;
+
 	 }
 
 	 elem::Matrix<double> Wbar(features, k);
@@ -226,9 +228,9 @@ int main (int argc, char** argv) {
 	 // Testing - if specified by the user.
 	 if (!options.testfile.empty()) {
 		 context.comm.barrier();
-		 
+
 		 if(context.rank == 0) std::cout << "Starting testing phase." << std::endl;
-		 
+
 		 DistInputMatrixType Xt;
 		 DistTargetMatrixType Yt;
 
@@ -242,16 +244,16 @@ int main (int argc, char** argv) {
 		                            break;
 #endif
 		                    }
-		 
+
 		 DistTargetMatrixType Yp(Yt.Height(), k);
 		 Solver->predict(Xt, Yp, Wbar);
 		 double accuracy = Solver->evaluate(Yt, Yp);
 
 		 if(context.rank == 0) std::cout << "Test Accuracy = " <<  accuracy << " %" << std::endl;
-	 } 
-	 
+	 }
+
 	context.comm.barrier();
-	 
+
 	 elem::Finalize();
 	 return 0;
 }

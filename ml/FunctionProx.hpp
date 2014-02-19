@@ -11,7 +11,10 @@
 #include <elemental.hpp>
 #include "options.hpp"
 #include <cstdlib>
+
+#ifdef SKYLARK_OPENMP
 #include <omp.h>
+#endif
 
 // Simple abstract class to represent a function and its prox operator
 // these are defined for local matrices.
@@ -84,23 +87,27 @@ double squaredloss::evaluate(LocalDenseMatrixType& O, LocalTargetMatrixType& T) 
 		double*  Tbuf = T.Buffer();
 		double x;
 		int i, j, label;
-	
+
 		if (k==1) {
+#ifdef SKYLARK_OPENMP
 			#pragma omp parallel for reduction(+:loss) private(i, x)
+#endif
 			for(i=0; i<n; i++) {
 				x = Obuf[i] - Tbuf[i];
 				loss += x*x;
 			}
 		}
-		
+
 		if (k>1) {
+#ifdef SKYLARK_OPENMP
 			#pragma omp parallel for reduction(+:loss) private(i,j, x, label)
+#endif
 			for(i=0; i<n; i++) {
 				label = (int) Tbuf[i];
                                 for(j=0;j<k;j++) {
                                      x = O.Get(j,i) - (j==label ? 1.0:-1.0);
                         	     loss += x*x;
-	                       	}			
+	                       	}
 			}
 		}
 
@@ -123,19 +130,23 @@ void squaredloss::proxoperator(LocalDenseMatrixType& X, double lambda, LocalTarg
 		int label, i, j;
 
 		if (k==1) {
+#ifdef SKYLARK_OPENMP
             #pragma omp parallel for private(i)
+#endif
 			for(int i=0; i<n; i++)
 				Ybuf[i] = ilambda*(Xbuf[i] + lambda*Tbuf[i]);
 		}
 
 		if(k>1) {
+#ifdef SKYLARK_OPENMP
             #pragma omp parallel for private(i,j, label)
+#endif
 			for(int i=0; i<n; i++) {
 				label = (int) Tbuf[i];
                                 for(j=0;j<k;j++) {
-                                     Y.Set(j, i,  ilambda*(X.Get(j,i) + lambda*(j==label ? 1.0:-1.0)));			
+                                     Y.Set(j, i,  ilambda*(X.Get(j,i) + lambda*(j==label ? 1.0:-1.0)));
 				}
-			}			
+			}
 		}
 	}
 
@@ -156,7 +167,9 @@ double hingeloss::evaluate(LocalDenseMatrixType& O, LocalTargetMatrixType& T) {
 		int noutputs = O.Width();
 
 		if(noutputs==1) {
+#ifdef SKYLARK_OPENMP
                #pragma omp parallel for reduction(+:obj) private(i, yx)
+#endif
 		       for(i=0;i<n;i++) {
 		                        yx = Obuf[i]*Tbuf[i];
 		                        if(yx<1.0)
@@ -167,7 +180,9 @@ double hingeloss::evaluate(LocalDenseMatrixType& O, LocalTargetMatrixType& T) {
 
 
 		if(noutputs>1) {
+#ifdef SKYLARK_OPENMP
                #pragma omp parallel for reduction(+:obj) private(i, j, label, yx)
+#endif
 		       for(i=0;i<n;i++) {
 		                label = (int) Tbuf[i];
 		                for(j=0;j<k;j++) {
@@ -196,7 +211,9 @@ void hingeloss::proxoperator(LocalDenseMatrixType& X, double lambda, LocalTarget
     int noutputs = k;
 
 	if(noutputs==1) { // We assume cy has +1 or -1 entries for n=1 outputs
+#ifdef SKYLARK_OPENMP
                         #pragma omp parallel for private(i,yv)
+#endif
 		                for(i=0;i<m;i++) {
 		                        yv = Tbuf[i]*Xbuf[i];
 
@@ -215,7 +232,9 @@ void hingeloss::proxoperator(LocalDenseMatrixType& X, double lambda, LocalTarget
 		        }
 
 	if (noutputs>1) {
+#ifdef SKYLARK_OPENMP
                         #pragma omp parallel for private(i,j,yv, yy, label)
+#endif
 		                for(i=0;i<m;i++) {
 		                        label = (int) Tbuf[i];
 		                        for(j=0;j<k;j++) {
@@ -246,14 +265,16 @@ double logisticloss::evaluate(LocalDenseMatrixType& O, LocalTargetMatrixType& T)
         int m = O.Width();
         int n = O.Height();
 
-        double start = omp_get_wtime( );
+        //double start = omp_get_wtime( );
 
+#ifdef SKYLARK_OPENMP
         #pragma omp parallel for reduction(+:obj)
+#endif
         for(int i=0;i<m;i++) {
             obj += -O.Get((int) T.Get(i, 0), i) + logsumexp(O.Buffer(0, i), n);
         }
 
-        double end = omp_get_wtime( );
+        //double end = omp_get_wtime( );
 
         // std::cout << end - start <<  " secs " << std::endl;
 
@@ -265,7 +286,9 @@ void logisticloss::proxoperator(LocalDenseMatrixType& X, double lambda, LocalTar
     int m = X.Width();
     int n = X.Height();
 
+#ifdef SKYLARK_OPENMP
     #pragma omp parallel for
+#endif
     for(int i=0;i<m;i++) {
                 logexp((int) T.Get(i, 0), X.Buffer(0, i), n, lambda, Y.Buffer(0, i), MAXITER, epsilon, DISPLAY);
     }

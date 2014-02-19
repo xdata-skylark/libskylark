@@ -277,6 +277,17 @@ if (USE_PROFILER)
 endif (USE_PROFILER)
 
 
+option (USE_HYBRID "Use hybrid MPI OpenMPI parallelization" OFF)
+if (USE_HYBRID)
+  find_package(OpenMP)
+    if (OPENMP_FOUND)
+      add_definitions(-DSKYLARK_OPENMP)
+    else (OPENMP_FOUND)
+      message (STATUS "No suitable OpenMP support detected")
+    endif (OPENMP_FOUND)
+endif (USE_HYBRID)
+
+
 option (BUILD_PYTHON "Whether we should build the python interface" ON)
 if (BUILD_PYTHON)
 

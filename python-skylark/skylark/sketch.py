@@ -34,16 +34,17 @@ def initialize(seed=-1):
       _lib.sl_context_rank.restype                = c_int
       _lib.sl_context_size.restype                = c_int
       _lib.sl_create_sketch_transform.restype     = c_int
+      _lib.sl_load_sketch_transform.restype       = c_int
       _lib.sl_wrap_raw_matrix.restype             = c_int
       _lib.sl_free_raw_matrix_wrap.restype        = c_int
       _lib.sl_strerror.restype                    = c_char_p
       _lib.sl_supported_sketch_transforms.restype = c_char_p
       _lib.sl_has_elemental.restype               = c_bool
       _lib.sl_has_combblas.restype                = c_bool
-      
+
       _ELEM_INSTALLED = _lib.sl_has_elemental()
-      _KDT_INSTALLED  = _lib.sl_has_combblas()    
-      
+      _KDT_INSTALLED  = _lib.sl_has_combblas()
+
       csketches = map(eval, _lib.sl_supported_sketch_transforms().split())
       pysketches = ["FastGaussianRFT", "SJLT", "PPT", "URST", "NURST"]
       SUPPORTED_SKETCH_TRANSFORMS = \
@@ -53,7 +54,7 @@ def initialize(seed=-1):
       _lib = None
       _ELEM_INSTALLED = False
       _KDT_INSTALLED = False
-      sketches = ["JLT", "CT", "SJLT", "FJLT", "CWT", "MMT", "WZT", "GaussianRFT", 
+      sketches = ["JLT", "CT", "SJLT", "FJLT", "CWT", "MMT", "WZT", "GaussianRFT",
                   "FastGaussianRFT", "PPT", "URST", "NURST"]
       SUPPORTED_SKETCH_TRANSFORMS = [ (T, "Matrix", "Matrix") for T in sketches]
 
@@ -68,7 +69,7 @@ def initialize(seed=-1):
     _size = 1
     numpy.random.seed(seed)
     return
-    
+
   if '_ctxt_obj' in globals():
     _lib.sl_free_context(_ctxt_obj)
 
@@ -113,6 +114,31 @@ def _callsl(f, *args):
   errno = f(*args)
   if errno != 0:
     raise errors.UnexpectedLowerLayerError(_lib.sl_strerror(errno))
+
+def load_json(filename, defouttype = None):
+  """
+  Load Serialized Transform
+
+  :param filename: Filename of the file holding the serialized JSON structure.
+  """
+  with open (filename, "r") as file:
+    json_data = file.read().replace('\n', '')
+
+  import json
+  try:
+    dict = json.loads(json_data)
+  except ValueError:
+    print "Failed to parse JSON file"
+  else:
+    sketch_name = str(dict['sketch']['name'])
+    sketch_dims = dict['sketch']['size']
+    sketch_transform = c_void_p()
+    _callsl(_lib.sl_load_sketch_transform, _ctxt_obj, sketch_name, filename, \
+              byref(sketch_transform))
+
+    #sketch_class = eval(sketch_name)
+    return _SketchTransform(sketch_name, int(sketch_dims[0]), \
+            int(sketch_dims[1]), defouttype, sketch_transform.value)
 
 #
 # Matrix type adapters: specifies how to interact with the underlying (perhaps in C/C++)
@@ -171,8 +197,8 @@ class _NumpyAdapter:
   @staticmethod
   def ctor(m, n, B):
     # Construct numpy array that is compatible with B. If B is a numpy array the
-    # element order (Fortran or C) must match. For all others (e.g., Elemental 
-    # and KDT) the order must be Fortran because this is what the lower layers 
+    # element order (Fortran or C) must match. For all others (e.g., Elemental
+    # and KDT) the order must be Fortran because this is what the lower layers
     # expect.
     if isinstance(B, _NumpyAdapter):
       return numpy.empty((m,n), order=B.getorder())
@@ -223,7 +249,7 @@ if _ELEM_INSTALLED:
 
     def getctor(self):
       return lambda m, n, c : _ElemAdapter.ctor(self._typeid, m, n, c)
- 
+
     @staticmethod
     def ctor(typeid, m, n, B):
       if typeid is "":
@@ -247,7 +273,7 @@ if _KDT_INSTALLED:
     def ptrcleaner(self):
       pass
 
-    def getdim(self, A, dim):
+    def getdim(self, dim):
       if dim == 0:
         return self._A.nrow()
       if dim == 1:
@@ -272,19 +298,20 @@ if _KDT_INSTALLED:
       return kdt.Mat(nullVec, nullVec, nullVec, n, m)
 
 #
-# The following functions adapts an object to a uniform interface, so 
-# that we can have a uniform way of accessing it. 
+# The following functions adapts an object to a uniform interface, so
+# that we can have a uniform way of accessing it.
 #
 def _adapt(obj):
   if _ELEM_INSTALLED and sys.modules.has_key('elem'):
     global elem
     import elem
     elemcls = [elem.DistMatrix_d,
-               elem.DistMatrix_d_VR_STAR, elem.DistMatrix_d_VC_STAR, 
-               elem.DistMatrix_d_STAR_VC, elem.DistMatrix_d_STAR_VR] 
+               elem.DistMatrix_d_VR_STAR, elem.DistMatrix_d_VC_STAR,
+               elem.DistMatrix_d_STAR_VC, elem.DistMatrix_d_STAR_VR]
   else:
     elemcls = []
 
+  #FIXME: check if object is KDT without loading kdt
   if _KDT_INSTALLED and sys.modules.has_key('kdt'):
     global kdt
     import kdt
@@ -300,7 +327,7 @@ def _adapt(obj):
 
   elif any(isinstance(obj, c) for c in kdtcls):
       return _KDTAdapter(obj)
-  
+
   else:
     raise errors.InvalidObjectError("Invalid/unsupported object passed as A or SA")
 
@@ -325,33 +352,37 @@ if _KDT_INSTALLED:
 #
 class _SketchTransform(object):
   """
-  A sketching transform - in very general terms - is a dimensionality-reducing map 
+  A sketching transform - in very general terms - is a dimensionality-reducing map
   from R^n to R^s which preserves key structural properties.
 
-  _SketchTransform is base class sketch transforms. The various sketch transforms derive 
-  from this class and as such it defines a common interface. Derived classes can have different 
+  _SketchTransform is base class sketch transforms. The various sketch transforms derive
+  from this class and as such it defines a common interface. Derived classes can have different
   constructors. The class is not meant
   """
 
-  def __init__(self, ttype, n, s, defouttype=None):
+  def __init__(self, ttype, n, s, defouttype=None, sketch_transform=None):
     """
     Create the transform from n dimensional vectors to s dimensional vectors. Here we define
     the interface, but the constructor should not be called directly by the user.
 
-    :param ttype: String identifying the sketch type. This parameter is omitted 
+    :param ttype: String identifying the sketch type. This parameter is omitted
                   in derived classes.
     :param n: Number of dimensions in input vectors.
     :param s: Number of dimensions in output vectors.
-    :param defouttype: Default output type when using the * and / operators. 
+    :param defouttype: Default output type when using the * and / operators.
                        If None the output will have same type as the input.
+    :param sketch_transform: Loaded sketch transform from serialized data.
     :returns: the transform object
     """
-    
+
     self._baseinit(ttype, n, s, defouttype)
     if not self._ppy:
-      sketch_transform = c_void_p()
-      _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, ttype, n, s, byref(sketch_transform))
-      self._obj = sketch_transform.value
+      if sketch_transform is None:
+        sketch_transform = c_void_p()
+        _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, ttype, n, s, byref(sketch_transform))
+        self._obj = sketch_transform.value
+      else:
+        self._obj = sketch_transform
 
   def _baseinit(self, ttype, n, s, defouttype):
     if defouttype is not None and not _map_to_ctor.has_key(defouttype):
@@ -404,7 +435,7 @@ class _SketchTransform(object):
     reqcomb = (self._ttype, A.ctype(), SA.ctype())
     if reqcomb not in SUPPORTED_SKETCH_TRANSFORMS:
       raise errors.UnsupportedError("Unsupported transform-input-output combination: " \
-                                      + str(reqcomb))  
+                                      + str(reqcomb))
 
     incomp, cinvert = A.iscompatible(SA)
     if incomp is not None:
@@ -431,7 +462,7 @@ class _SketchTransform(object):
         cdim = dim
 
       _callsl(_lib.sl_apply_sketch_transform, self._obj, \
-                A.ctype(), Aobj, SA.ctype(), SAobj, cdim+1) 
+                A.ctype(), Aobj, SA.ctype(), SAobj, cdim+1)
 
       A.ptrcleaner()
       SA.ptrcleaner()
@@ -464,51 +495,51 @@ class _SketchTransform(object):
 
 class JLT(_SketchTransform):
   """
-  The classic Johnson-Lindenstrauss dense sketching using Gaussian Random maps. 
+  The classic Johnson-Lindenstrauss dense sketching using Gaussian Random maps.
 
   :param n: Number of dimensions in input vectors.
   :param s: Number of dimensions in output vectors.
-  :param defouttype: Default output type when using the * and / operators.  
+  :param defouttype: Default output type when using the * and / operators.
 
   Examples
   --------
   Let us bring *skylark* and other relevant Python packages into our environment.
-  Here we demonstrate a non-distributed usage implemented using numpy arrays.  
+  Here we demonstrate a non-distributed usage implemented using numpy arrays.
   See section on working with distributed dense and sparse matrices.
 
   >>> import skylark, skylark.utilities, skylark.sketch
   >>> import scipy
   >>> import numpy.random
   >>> import matplotlib.pyplot as plt
-    
-  Let us generate some data, e.g., a data matrix whose entries are sampled 
+
+  Let us generate some data, e.g., a data matrix whose entries are sampled
   uniformly from the interval [-1, +1].
-    
+
   >>> n = 300
   >>> d = 1000
   >>> A = numpy.random.uniform(-1.0,1.0, (n,d))
-    
-  Create a sketch operator corresponding to JLT sketching from d = 1000 
+
+  Create a sketch operator corresponding to JLT sketching from d = 1000
   to s = 100.
-    
-  >>> s = 100 
+
+  >>> s = 100
   >>> S = skylark.sketch.JLT(d, s)
-    
+
   Let us sketch A row-wise:
-    
+
   >>> B = S / A
-    
+
   Let us compute norms of the row-vectors before and after sketching.
-    
+
   >>> norms_A = skylark.utilities.norms(A)
   >>> norms_B = skylark.utilities.norms(B)
-    
-  Plot the histogram of distortions (ratio of norms for original to sketched 
+
+  Plot the histogram of distortions (ratio of norms for original to sketched
   vectors).
 
   >>> distortions = scipy.ravel(norms_A/norms_B)
   >>> plt.hist(distortions,10)
-  >>> plt.show()   
+  >>> plt.show()
   """
   def __init__(self, n, s, defouttype=None):
     super(JLT, self).__init__("JLT", n, s, defouttype);
@@ -522,7 +553,7 @@ class JLT(_SketchTransform):
     if dim == 1:
       SA1 = numpy.dot(A, self._S.T)
 
-    # We really want to use the out parameter of numpy.dot, but it does not seem 
+    # We really want to use the out parameter of numpy.dot, but it does not seem
     # to work (raises a ValueError)
     numpy.copyto(SA, SA1)
 
@@ -548,16 +579,16 @@ class SJLT(_SketchTransform):
     self._ppy = True
     nz_values = [-sqrt(1.0/density), +sqrt(1.0/density)]
     nz_prob_dist = [0.5, 0.5]
-    self._S = sprand.sample(s, n, density, nz_values, nz_prob_dist) / sqrt(s)  
+    self._S = sprand.sample(s, n, density, nz_values, nz_prob_dist) / sqrt(s)
     # QUESTION do we need to mulitply by sqrt(1/density) ???
-    
+
   def _ppyapply(self, A, SA, dim):
     if dim == 0:
       SA1 = self._S * A
     if dim == 1:
       SA1 = A * self._S.T
 
-    # We really want to use the out parameter of numpy.dot, but it does not seem 
+    # We really want to use the out parameter of numpy.dot, but it does not seem
     # to work (raises a ValueError)
     numpy.copyto(SA, SA1)
 
@@ -570,7 +601,7 @@ class CT(_SketchTransform):
   :param C: Parameter trading embedding size and distortion. See paper for details.
   :param defouttype: Default output type when using the * and / operators.
 
-  *C. Sohler* and *D. Woodruff*, **Subspace Embeddings for the L_1-norm with 
+  *C. Sohler* and *D. Woodruff*, **Subspace Embeddings for the L_1-norm with
   Application**, STOC 2011
   """
   def __init__(self, n, s, C, defouttype=None):
@@ -590,7 +621,7 @@ class CT(_SketchTransform):
     if dim == 1:
       SA1 = numpy.dot(A, self._S.T)
 
-    # We really want to use the out parameter of numpy.dot, but it does not seem 
+    # We really want to use the out parameter of numpy.dot, but it does not seem
     # to work (raises a ValueError)
     numpy.copyto(SA, SA1)
 
@@ -604,7 +635,7 @@ class FJLT(_SketchTransform):
   :param s: Number of dimensions in output vectors.
   :param defouttype: Default output type when using the * and / operators.
 
-  *N. Ailon* and *B. Chazelle*, **The Fast Johnson-Lindenstrauss Transform and 
+  *N. Ailon* and *B. Chazelle*, **The Fast Johnson-Lindenstrauss Transform and
   Approximate Nearest Neighbors**, SIAM Journal on Computing 39 (1), pg. 302-322
   """
   def __init__(self, n, s, defouttype=None):
@@ -630,20 +661,20 @@ class CWT(_SketchTransform):
   Clarkson-Woodruff Transform (also known as CountSketch)
 
   Alternative class name: CountSketch
-  
+
   :param n: Number of dimensions in input vectors.
   :param s: Number of dimensions in output vectors.
   :param defouttype: Default output type when using the * and / operators.
-  
+
   *K. Clarkson* and *D. Woodruff*, **Low Rank Approximation and Regression
   in Input Sparsity Time**, STOC 2013
   """
   def __init__(self, n, s, defouttype=None):
     super(CWT, self).__init__("CWT", n, s, defouttype);
     if self._ppy:
-      # The following is not memory efficient, but for a pure Python impl 
+      # The following is not memory efficient, but for a pure Python impl
       # it will do
-      distribution = scipy.stats.rv_discrete(values=([-1.0, +1.0], [0.5, 0.5]), 
+      distribution = scipy.stats.rv_discrete(values=([-1.0, +1.0], [0.5, 0.5]),
                                              name = 'dist')
       self._S = sprand.hashmap(s, n, distribution, dimension = 0)
 
@@ -653,7 +684,7 @@ class CWT(_SketchTransform):
     if dim == 1:
       SA1 = A * self._S.T
 
-    # We really want to use the out parameter of scipy.dot, but it does not seem 
+    # We really want to use the out parameter of scipy.dot, but it does not seem
     # to work (raises a ValueError)
     numpy.copyto(SA, SA1)
 
@@ -672,7 +703,7 @@ class MMT(_SketchTransform):
   def __init__(self, n, s, defouttype=None):
     super(MMT, self).__init__("MMT", n, s, defouttype);
     if self._ppy:
-      # The following is not memory efficient, but for a pure Python impl 
+      # The following is not memory efficient, but for a pure Python impl
       # it will do
       distribution = scipy.stats.cauchy()
       self._S = sprand.hashmap(s, n, distribution, dimension = 0)
@@ -683,14 +714,14 @@ class MMT(_SketchTransform):
     if dim == 1:
       SA1 = A * self._S.T
 
-    # We really want to use the out parameter of scipy.dot, but it does not seem 
+    # We really want to use the out parameter of scipy.dot, but it does not seem
     # to work (raises a ValueError)
     numpy.copyto(SA, SA1)
 
 class WZT(_SketchTransform):
   """
   Woodruff-Zhang Transform. A variant of CountSketch (Clarkson-Woodruff Transform)
-  using for low-distrition in Lp-norm. p is supplied as a parameter in the 
+  using for low-distrition in Lp-norm. p is supplied as a parameter in the
   constructor.
 
   :param n: Number of dimensions in input vectors.
@@ -718,10 +749,10 @@ class WZT(_SketchTransform):
     super(WZT, self)._baseinit("WZT", n, s, defouttype)
 
     if self._ppy:
-      # The following is not memory efficient, but for a pure Python impl 
+      # The following is not memory efficient, but for a pure Python impl
       # it will do
       distribution = WZT._WZTDistribution(p)
-      self._S = sprand.hashmap(s, n, distribution, dimension = 0)      
+      self._S = sprand.hashmap(s, n, distribution, dimension = 0)
     else:
       sketch_transform = c_void_p()
       _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "WZT", n, s, \
@@ -734,19 +765,19 @@ class WZT(_SketchTransform):
     if dim == 1:
       SA1 = A * self._S.T
 
-    # We really want to use the out parameter of scipy.dot, but it does not seem 
+    # We really want to use the out parameter of scipy.dot, but it does not seem
     # to work (raises a ValueError)
     numpy.copyto(SA, SA1)
 
 class GaussianRFT(_SketchTransform):
   """
-  Random Features Transform for the RBF Kernel. 
+  Random Features Transform for the RBF Kernel.
 
   :param n: Number of dimensions in input vectors.
   :param s: Number of dimensions in output vectors.
   :param sigma: bandwidth of the kernel.
   :param defouttype: Default output type when using the * and / operators.
-    
+
   *A. Rahimi* and *B. Recht*, **Random Features for Large-scale
   Kernel Machines**, NIPS 2009
   """
@@ -769,8 +800,8 @@ class GaussianRFT(_SketchTransform):
       bm = self._b * numpy.ones((1, SA.shape[1]))
     if dim == 1:
       bm = numpy.ones((SA.shape[0], 1)) * self._b.T
-    SA[:, :] = sqrt(2.0 / self._s) * numpy.cos(SA * (sqrt(self._s)/self._sigma) + bm) 
-    
+    SA[:, :] = sqrt(2.0 / self._s) * numpy.cos(SA * (sqrt(self._s)/self._sigma) + bm)
+
 class LaplacianRFT(_SketchTransform):
   """
   Random Features Transform for the Laplacian Kernel
@@ -794,7 +825,7 @@ class LaplacianRFT(_SketchTransform):
 
 class FastGaussianRFT(_SketchTransform):
   """
-  Fast variant of Random Features Transform for the RBF Kernel. 
+  Fast variant of Random Features Transform for the RBF Kernel.
 
   Alternative class name: Fastfood
 
@@ -802,8 +833,8 @@ class FastGaussianRFT(_SketchTransform):
   :param s: Number of dimensions in output vectors.
   :param sigma: bandwidth of the kernel.
   :param defouttype: Default output type when using the * and / operators.
-    
-  *Q. Le*, *T. Sarlos*, *A. Smola*, **Fastfood - Computing Hilbert Space 
+
+  *Q. Le*, *T. Sarlos*, *A. Smola*, **Fastfood - Computing Hilbert Space
   Expansions in Loglinear Time**, ICML 2013
   """
   def __init__(self, n, s, sigma=1.0, defouttype=None):
@@ -829,7 +860,7 @@ class FastGaussianRFT(_SketchTransform):
       bm = numpy.ones((SA.shape[0], 1)) * self._b.T
       if self._s < SA0.shape[1]:
         SA0 = SA0[:, :self._s]
-    SA[:, :] = sqrt(2.0 / self._s) * numpy.cos(SA0 / (self._sigma * sqrt(self._s)) + bm) 
+    SA[:, :] = sqrt(2.0 / self._s) * numpy.cos(SA0 / (self._sigma * sqrt(self._s)) + bm)
 
   def _ppyapplyblk(self, A, dim, i):
     B = scipy.sparse.spdiags(self._B[i], 0, self._n, self._n)
@@ -838,12 +869,12 @@ class FastGaussianRFT(_SketchTransform):
 
     if dim == 0:
       FBA = scipy.fftpack.dct(B * A, axis = 0)
-      FGPFBA = scipy.fftpack.dct(G * ABF[P, :], axis = 0) 
+      FGPFBA = scipy.fftpack.dct(G * ABF[P, :], axis = 0)
       return FGPFBA
 
     if dim == 1:
       ABF = scipy.fftpack.dct(A * B, axis = 1)
-      ABFPGF = scipy.fftpack.dct(ABF[:, P] * G, axis = 1) 
+      ABFPGF = scipy.fftpack.dct(ABF[:, P] * G, axis = 1)
       return ABFPGF
 
 
@@ -861,7 +892,7 @@ class PPT(_SketchTransform):
   :param gamma: normalization coefficient.
   :param defouttype: Default output type when using the * and / operators.
 
-  *N. Pham* and *R. Pagh*, **Fast and Scalable Polynomial Kernels via Explicit 
+  *N. Pham* and *R. Pagh*, **Fast and Scalable Polynomial Kernels via Explicit
   Feature Maps**, KDD 2013
   """
   def __init__(self, n, s, q=3,  c=0, gamma=1, defouttype=None):
@@ -883,14 +914,14 @@ class PPT(_SketchTransform):
         A = numpy.concatenate((A, sc * numpy.ones((1, A.shape[1]))))
       else:
         A = numpy.concatenate((A, sc * numpy.ones((A.shape[0], 1))), 1)
-    
+
     P = numpy.ones(SA.shape)
     s = self._s
     for i in range(self._q):
       self._css[i].apply(sqrt(self._gamma) * A, SA, dim)
       P = numpy.multiply(P, numpy.fft.fft(SA, axis=dim) / sqrt(s))
     numpy.copyto(SA, numpy.fft.ifft(P, axis=dim).real * sqrt(s))
-      
+
 class URST(_SketchTransform):
   """
   Uniform Random Sampling Transform

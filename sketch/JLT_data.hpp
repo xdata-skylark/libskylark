@@ -26,6 +26,7 @@ struct JLT_data_t :
     JLT_data_t(int N, int S, skylark::sketch::context_t& context)
         : base_t(N, S, context) {
         base_t::scale = sqrt(1.0 / static_cast<double>(S));
+        base_t::_name = "JLT";
     }
 };
 

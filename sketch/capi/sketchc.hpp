@@ -120,8 +120,18 @@ SKYLARK_EXTERN_API int sl_context_size(sketch::context_t *ctxt, int *size);
  *  @return sketch transformation
  */
 SKYLARK_EXTERN_API int sl_create_sketch_transform(
-        sketch::context_t *ctxt, char *type, 
+        sketch::context_t *ctxt, char *type,
         int n, int s, sketchc::sketch_transform_t **sketch, ...);
+
+/** Load a sketch transformation.
+ *  @param ctxt Sklark context
+ *  @param type type of the sketch
+ *  @param filename of the serialized JSON structure
+ *  @return sketch transformation
+ */
+SKYLARK_EXTERN_API int sl_load_sketch_transform(
+        sketch::context_t *ctxt, char *type,
+        char *filename, sketchc::sketch_transform_t **sketch);
 
 /** Free resources hold by a sketch transformation.
  *  @param S sketch transform

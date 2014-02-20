@@ -247,6 +247,37 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(sketch::context_t *ctxt,
     return 0;
 }
 
+SKYLARK_EXTERN_API int sl_load_sketch_transform(sketch::context_t *ctxt,
+    char *type_, char *filename, sketchc::sketch_transform_t **sketch) {
+
+    sketchc::transform_type_t type = str2transform_type(type_);
+
+# define AUTO_LOAD_DISPATCH(T, C)                                   \
+    SKYLARK_BEGIN_TRY()                                             \
+        if (type == T)                                              \
+            *sketch = new sketchc::sketch_transform_t(type,         \
+                          new C(filename, *ctxt));                  \
+    SKYLARK_END_TRY()                                               \
+    SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
+
+    //AUTO_NEW_DISPATCH(sketchc::JLT, JLT_data_t);
+    //AUTO_NEW_DISPATCH_1P(sketchc::CT, CT_data_t);
+    AUTO_LOAD_DISPATCH(sketchc::CWT, CWT_data_t);
+    AUTO_LOAD_DISPATCH(sketchc::MMT, MMT_data_t);
+    //AUTO_NEW_DISPATCH_1P(sketchc::WZT, WZT_data_t)
+
+    //AUTO_NEW_DISPATCH(sketchc::GaussianRFT, GaussianRFT_data_t);
+    //AUTO_NEW_DISPATCH(sketchc::LaplacianRFT, LaplacianRFT_data_t);
+
+//#if SKYLARK_HAVE_FFTW
+
+    //AUTO_NEW_DISPATCH(sketchc::FJLT, FJLT_data_t);
+
+//#endif
+
+    return 0;
+}
+
 SKYLARK_EXTERN_API
     int sl_free_sketch_transform(sketchc::sketch_transform_t *S) {
 

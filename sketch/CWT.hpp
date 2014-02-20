@@ -1,7 +1,7 @@
 #ifndef SKYLARK_CWT_HPP
 #define SKYLARK_CWT_HPP
 
-#include "../utility/distributions.hpp"
+
 #include "CWT_data.hpp"
 #include "hash_transform.hpp"
 

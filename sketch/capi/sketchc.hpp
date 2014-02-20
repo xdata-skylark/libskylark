@@ -25,6 +25,7 @@ enum transform_type_t {
     CWT,
     MMT,
     WZT,
+    PPT,
     GaussianRFT,
     LaplacianRFT,
     FastGaussianRFT,

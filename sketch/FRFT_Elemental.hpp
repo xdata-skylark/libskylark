@@ -77,7 +77,7 @@ private:
     void apply_impl(const matrix_type& A,
         output_matrix_type& sketch_of_A,
         skylark::sketch::columnwise_tag tag) const {
-        
+
         // Create a work array W
         matrix_type W(A.Height(), A.Width());
 

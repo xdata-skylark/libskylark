@@ -4,7 +4,7 @@
 # FFTW
 # It can be found at:
 #
-# FFTW_INCLUDE_DIR - where to find H5hut.h
+# FFTW_INCLUDE_DIR - where to find FFTW.
 # FFTW_LIBRARY     - qualified libraries to link against.
 # FFTW_FOUND       - do not attempt to use if "no" or undefined.
 

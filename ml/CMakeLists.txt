@@ -6,7 +6,9 @@ if (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
                         ${Pmrrr_LIBRARY}
                         ${SKYLARK_LIBS}
                         ${Boost_LIBRARIES}
-                        "-fopenmp")
+                        ${HDF5_LIBRARIES}
+                        ${ZLIB_LIBRARIES}
+                        ${OpenMP_CXX_FLAGS})
   set_target_properties(hilbert_train
                         PROPERTIES COMPILE_FLAGS
                         "-fopenmp \\

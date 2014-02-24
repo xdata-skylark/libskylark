@@ -67,7 +67,9 @@ private:
         // in the final version). SO: this is a PRELIMINARY version.
         double* AA = A.Buffer();
         int j;
+#ifdef SKYLARK_OPENMP
 #pragma omp parallel for private(j)
+#endif
         for (j = 0; j < A.Width(); j++)
             ExecuteFun(_plan, AA + j * A.LDim(), AA + j * A.LDim());
     }
@@ -78,7 +80,9 @@ private:
         // in the final version). SO: this is a PRELIMINARY version.
         double* AA = A.Buffer();
         int j;
+#ifdef SKYLARK_OPENMP
 #pragma omp parallel for private(j)
+#endif
         for (j = 0; j < A.Width(); j++)
             ExecuteFun(_plan_inverse, AA + j * A.LDim(), AA + j * A.LDim());
     }
@@ -91,7 +95,9 @@ private:
         elem::Transpose(A, matrix);
         double* matrix_buffer = matrix.Buffer();
         int j;
+#ifdef SKYLARK_OPENMP
 #pragma omp parallel for private(j)
+#endif
         for (j = 0; j < matrix.Width(); j++)
             ExecuteFun(_plan, matrix_buffer + j * matrix.LDim(),
                 matrix_buffer + j * matrix.LDim());
@@ -106,7 +112,9 @@ private:
         elem::Transpose(A, matrix);
         double* matrix_buffer = matrix.Buffer();
         int j;
+#ifdef SKYLARK_OPENMP
 #pragma omp parallel for private(j)
+#endif
         for (j = 0; j < matrix.Width(); j++)
             ExecuteFun(_plan_inverse, matrix_buffer + j * matrix.LDim(),
                 matrix_buffer + j * matrix.LDim());

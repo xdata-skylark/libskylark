@@ -129,8 +129,12 @@ void read_hdf5_dense(skylark_context_t& context, string fName,
 
         hsize_t offsetX[2], offsetY[1];
 
+//        if (min_d > 0)
+ //                   d = std::max(d, min_d);
+
         X.ResizeTo(d, n);
         Y.ResizeTo(n,1);
+
 
         for(int i=0; i<numblocks+1; i++) {
 

@@ -299,6 +299,9 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 	 SKYLARK_TIMER_INITIALIZE(ITERATIONS_PROFILE)
 	 SKYLARK_TIMER_INITIALIZE(COMMUNICATION_PROFILE)
 	 SKYLARK_TIMER_INITIALIZE(TRANSFORM_PROFILE)
+	 SKYLARK_TIMER_INITIALIZE(PROXLOSS_PROFILE)
+	 SKYLARK_TIMER_INITIALIZE(BARRIER_PROFILE)
+	 SKYLARK_TIMER_INITIALIZE(PREDICTION_PROFILE)
 #endif
 
 	while(iter<MAXITER) {
@@ -315,12 +318,19 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 		SKYLARK_TIMER_ACCUMULATE(COMMUNICATION_PROFILE)
 #endif
 
-
+#ifdef SKYLARK_PROFILE
+        SKYLARK_TIMER_RESTART(PREDICTION_PROFILE)
+#endif
 		if (Xv.Width() > 0) {
 		    elem::MakeZeros(Yp);
-		    predict(Xv, Yp, Wbar);
-		    accuracy = evaluate(Yv, Yp);
+		        predict(Xv, Yp, Wbar);
+		        accuracy = evaluate(Yv, Yp);
 		}
+#ifdef SKYLARK_PROFILE
+        SKYLARK_TIMER_ACCUMULATE(PREDICTION_PROFILE)
+#endif
+
+
 
 		if(context.rank==0) {
 		        obj = totalloss + lambda*regularizer->evaluate(Wbar);
@@ -343,7 +353,13 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 
 		elem::Axpy(-1.0, nu.Matrix(), Obar.Matrix());
 
+#ifdef SKYLARK_PROFILE
+		SKYLARK_TIMER_RESTART(PROXLOSS_PROFILE)
+#endif
 		loss->proxoperator(Obar.Matrix(), 1.0/RHO, y, O.Matrix());
+#ifdef SKYLARK_PROFILE
+        SKYLARK_TIMER_ACCUMULATE(PROXLOSS_PROFILE)
+#endif
 
 		if(context.rank==0) {
 			regularizer->proxoperator(Wbar, lambda/RHO, mu, W);
@@ -471,9 +487,8 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 					elem::View(tmp, Wbar, start, 0, sj, k);
 
 #ifdef SKYLARK_OPENMP
-					#pragma omp critical
+                    #pragma omp critical
 #endif
-
 					elem::Gemm(elem::TRANSPOSE, elem::NORMAL, 1.0, tmp, z, 1.0, o);
 		}
 
@@ -515,7 +530,15 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 		}
 
 		// deleteCache()
-		context.comm.barrier();
+#ifdef SKYLARK_PROFILE
+        SKYLARK_TIMER_RESTART(BARRIER_PROFILE)
+#endif
+        context.comm.barrier();
+#ifdef SKYLARK_PROFILE
+        SKYLARK_TIMER_ACCUMULATE(BARRIER_PROFILE)
+#endif
+
+
 #ifdef SKYLARK_PROFILE
         SKYLARK_TIMER_ACCUMULATE(ITERATIONS_PROFILE)
 #endif
@@ -525,6 +548,9 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
         SKYLARK_TIMER_REPORT(ITERATIONS_PROFILE)
         SKYLARK_TIMER_REPORT(COMMUNICATION_PROFILE)
         SKYLARK_TIMER_REPORT(TRANSFORM_PROFILE)
+        SKYLARK_TIMER_REPORT(PROXLOSS_PROFILE)
+        SKYLARK_TIMER_REPORT(BARRIER_PROFILE)
+        SKYLARK_TIMER_REPORT(PREDICTION_PROFILE)
 #endif
 
 	return 0;
@@ -538,6 +564,8 @@ void BlockADMMSolver::predict(DistInputMatrixType& X, DistTargetMatrixType& Y, L
 	int d = X.Height();
 	int k = Y.Width();
 	int ni = X.LocalWidth();
+	int j, start, finish, sj;
+	const feature_transform_t* featureMap;
 
 	if (featureMaps.size() == 0) {
 		Y.ResizeTo(n, k);
@@ -549,13 +577,18 @@ void BlockADMMSolver::predict(DistInputMatrixType& X, DistTargetMatrixType& Y, L
 
 	LocalMatrixType Wslice;
 
-	for(int j = 0; j < NumFeaturePartitions; j++) {
-		int start = starts[j];
-		int finish = finishes[j];
-		int sj = finish - start  + 1;
+
+#ifdef SKYLARK_OPENMP
+        #pragma omp parallel for private(j, start, finish, sj, featureMap)
+#endif
+
+	for(j = 0; j < NumFeaturePartitions; j++) {
+		start = starts[j];
+		finish = finishes[j];
+		sj = finish - start  + 1;
 
 		elem::Matrix<double> z(sj, ni);
-		const feature_transform_t* featureMap = featureMaps[j];
+		featureMap = featureMaps[j];
 		featureMap->apply(X.Matrix(), z, skylark::sketch::columnwise_tag());
 		if (ScaleFeatureMaps)
 			elem::Scal(sqrt(double(sj) / d), z);
@@ -565,6 +598,9 @@ void BlockADMMSolver::predict(DistInputMatrixType& X, DistTargetMatrixType& Y, L
 
 		elem::View(Wslice, W, start, 0, sj, k);
 		elem::Gemm(elem::TRANSPOSE, elem::NORMAL, 1.0, z, Wslice, 0.0, o);
+#ifdef SKYLARK_OPENMP
+            #pragma omp critical
+#endif
 		elem::Axpy(+1.0, o, Y.Matrix());
 	}
 }

@@ -33,8 +33,8 @@ std::string Regularizers[] = {"L2", "L1"};
 enum ProblemType {REGRESSION = 0, CLASSIFICATION = 1};
 std::string Problems[] = {"Regression", "Classification"};
 
-enum KernelType {LINEAR = 0, GAUSSIAN = 1, LAPLACIAN = 2, EXPSEMIGROUP = 3};
-std::string Kernels[] = {"Linear", "Gaussian", "Laplacian", "ExpSemigroup"};
+enum KernelType {LINEAR = 0, GAUSSIAN = 1, POLYNOMIAL = 2, LAPLACIAN = 3, EXPSEMIGROUP = 4};
+std::string Kernels[] = {"Linear", "Gaussian", "Polynomial", "Laplacian", "ExpSemigroup"};
 
 enum FileFormatType {LIBSVM = 0, HDF5 = 1};
 std::string FileFormats[] = {"Libsvm", "HDF5"};
@@ -53,6 +53,9 @@ struct hilbert_options_t {
 
  /** Kernel parameters */
  double kernelparam;
+ double kernelparam2;
+ double kernelparam3;
+ 
  double lambda;
 
  /** Optimization options */;
@@ -96,8 +99,10 @@ struct hilbert_options_t {
   ("help,h", "produce a help message")
   ("lossfunction,l", po::value<int>((int*) &lossfunction)->default_value(SQUARED), "Loss function (0:SQUARED, 1:LAD, 2:HINGE, 3:LOGISTIC")
   ("regularizer,r",    po::value<int>((int*) &regularizer)->default_value(L2), "Regularizer (0:L2, 1:L1)")
-  ("kernel,k", po::value<int>((int*) &kernel)->default_value(LINEAR), "Kernel (0:LINEAR, 1:GAUSSIAN, 2:LAPLACIAN, 3:EXPSEMIGROUP)")
+  ("kernel,k", po::value<int>((int*) &kernel)->default_value(LINEAR), "Kernel (0:LINEAR, 1:GAUSSIAN, 2:POLYNOMIAL, 3:LAPLACIAN, 4:EXPSEMIGROUP)")
   ("kernelparam,g", po::value<double>(&kernelparam)->default_value(DEFAULT_KERNELPARAM), "Kernel Parameter")
+  ("kernelparam2,x", po::value<double>(&kernelparam2)->default_value(-1), "If Applicable - Second Kernel Parameter (Polynomial Kernel: c)")
+  ("kernelparam3,y", po::value<double>(&kernelparam3)->default_value(-1), "If Applicable - Third Kernel Parameter (Polynomial Kernel: gamma)")
   ("lambda,c", po::value<double>(&lambda)->default_value(DEFAULT_LAMBDA), "Regularization Parameter")
   ("tolerance,e", po::value<double>(&tolerance)->default_value(DEFAULT_TOL), "Tolerance")
   ("rho", po::value<double>(&rho)->default_value(DEFAULT_RHO), "ADMM rho parameter")
@@ -153,6 +158,10 @@ struct hilbert_options_t {
 	 optionstring << "# Regularizer = " << regularizer << " ("<< Regularizers[regularizer]<< ")" << "\n";
 	 optionstring << "# Kernel = " << kernel << " ("<< Kernels[kernel]<< ")" << "\n";
 	 optionstring << "# Kernel Parameter = " << kernelparam << "\n";
+	 if (kernelparam2 != -1)
+		 optionstring << "# Second Kernel Parameter = " << kernelparam2 << "\n";
+	 if (kernelparam3 != -1)
+		 optionstring << "# Third Kernel Parameter = " << kernelparam3 << "\n";
 	 optionstring << "# Regularization Parameter = " << lambda << "\n";
 	 optionstring << "# Maximum Iterations = " << MAXITER << "\n";
 	 optionstring << "# Tolerance = " << tolerance << "\n";

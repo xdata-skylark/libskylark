@@ -141,6 +141,18 @@ int main (int argc, char** argv) {
 	 					 options.numfeaturepartitions);	 
 	 	 	break;
 
+	 	 case POLYNOMIAL:
+	 		 features = options.randomfeatures;
+	 		 Solver = new BlockADMMSolver(
+	 				 context,
+	 				 loss,
+	 				 regularizer,
+	 				 options.lambda,
+	 				 features,
+	 				 skylark::ml::kernels::polynomial_t(X.Height(), options.kernelparam, options.kernelparam2, options.kernelparam3),
+		 			 skylark::ml::regular_feature_transform_tag(),
+		 			 options.numfeaturepartitions);	
+	 		 break;
 
 	 	 case LAPLACIAN:
 	 		 features = options.randomfeatures;
@@ -153,6 +165,7 @@ int main (int argc, char** argv) {
 	 				 skylark::ml::kernels::laplacian_t(X.Height(), options.kernelparam),
 		 			 skylark::ml::regular_feature_transform_tag(),
 		 			 options.numfeaturepartitions);	
+	 		 break;
 	 		 
 	 	 case EXPSEMIGROUP:
 	 		 features = options.randomfeatures;
@@ -165,6 +178,7 @@ int main (int argc, char** argv) {
 	 				 skylark::ml::kernels::expsemigroup_t(X.Height(), options.kernelparam),
 		 			 skylark::ml::regular_feature_transform_tag(),
 		 			 options.numfeaturepartitions);	
+	 		 break;
 	 		
 	 	 default:
 	 		// TODO!

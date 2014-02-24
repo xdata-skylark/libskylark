@@ -36,6 +36,30 @@ private:
     const double _sigma;
 };
 
+struct polynomial_t {
+
+    polynomial_t(int N, int q = 2, double c = 1.0, double gamma = 1.0)
+        : _N(N), _q(q), _c(c), _gamma(gamma) {
+
+    }
+
+    template<typename IT, typename OT>
+    skysk::sketch_transform_t<IT, OT> *create_rft(int S,
+        regular_feature_transform_tag, skysk::context_t& context) const {
+        return
+            new skysk::PPT_t<IT, OT>(_N, S, _q, _c, _gamma, context);
+    }
+
+    // TODO method for gram matrix ?
+
+
+private:
+    const int _N;
+    const int _q;
+    const double _c;
+    const double _gamma;
+};
+
 struct laplacian_t {
 
     laplacian_t(int N, double sigma) : _N(N), _sigma(sigma) {

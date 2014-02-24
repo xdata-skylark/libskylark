@@ -836,7 +836,6 @@ class FastGaussianRFT(_SketchTransform):
 
     self._sigma = sigma
     if self._ppy:
-      self._ppy = True
       self._blocks = int(math.ceil(float(s) / n))
       self._sigma = sigma
       self._b = numpy.matrix(numpy.random.uniform(0, 2 * pi, (s,1)))
@@ -925,26 +924,33 @@ class PPT(_SketchTransform):
     if c < 0:
       raise ValueError("c parameter must be >= 0")
 
-    self._ppy = True
-    self._q = q
-    self._gamma = gamma
-    self._c = c
-    self._css = [CWT(n + (c > 0), s, forceppy=forceppy) for i in range(q)]
+    if self._ppy:
+      self._q = q
+      self._gamma = gamma
+      self._c = c
+      self._css = [CWT(n + (c > 0), s, forceppy=forceppy) for i in range(q)]
+    else:
+      sketch_transform = c_void_p()
+      _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "PPT", n, s, \
+                byref(sketch_transform), \
+                ctypes.c_int(q), ctypes.c_double(c), ctypes.c_double(gamma))
+      self._obj = sketch_transform.value
 
   def _ppyapply(self, A, SA, dim):
+    sc = sqrt(self._c)
+    sg = sqrt(self._gamma);
     if self._c != 0:
-      sc = sqrt(self._c)
       if dim == 0:
-        A = numpy.concatenate((A, sc * numpy.ones((1, A.shape[1]))))
+        A = numpy.concatenate((A, (sc/sg) * numpy.ones((1, A.shape[1]))))
       else:
-        A = numpy.concatenate((A, sc * numpy.ones((A.shape[0], 1))), 1)
+        A = numpy.concatenate((A, (sc/sg) * numpy.ones((A.shape[0], 1))), 1)
     
     P = numpy.ones(SA.shape)
     s = self._s
     for i in range(self._q):
-      self._css[i].apply(sqrt(self._gamma) * A, SA, dim)
-      P = numpy.multiply(P, numpy.fft.fft(SA, axis=dim) / sqrt(s))
-    numpy.copyto(SA, numpy.fft.ifft(P, axis=dim).real * sqrt(s))
+      self._css[i].apply(sg * A, SA, dim)
+      P = numpy.multiply(P, numpy.fft.fft(SA, axis=dim))
+    numpy.copyto(SA, numpy.fft.ifft(P, axis=dim).real)
       
 class URST(_SketchTransform):
   """

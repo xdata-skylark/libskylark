@@ -3,8 +3,7 @@
 
 #include "../config.h"
 
-//TODO: currently also needs elemental
-#if SKYLARK_HAVE_FFTW
+#if SKYLARK_HAVE_FFTW && SKYLARK_HAVE_ELEMENTAL
 
 #include <elemental.hpp>
 #include <fftw3.h>

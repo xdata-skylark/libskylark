@@ -20,6 +20,7 @@
 #include "CWT.hpp"
 #include "MMT.hpp"
 #include "WZT.hpp"
+#include "PPT.hpp"
 
 /** skylark::sketch::context_t also happens to be a powerful utility for RNG*/
 #include "context.hpp"

@@ -113,11 +113,7 @@ int main (int argc, char** argv) {
 	 				 regularizer,
 	 				 options.lambda,
 	 				 X.Height(),
-	 				 options.numfeaturepartitions,
-	 				 options.numthreads,
-	 				 options.tolerance,
-	 				 options.MAXITER,
-	 				 options.rho);
+	 				 options.numfeaturepartitions);
 	 		 break;
 
 	 	 case GAUSSIAN:
@@ -131,11 +127,7 @@ int main (int argc, char** argv) {
 		 				 features,
 		 				 skylark::ml::kernels::gaussian_t(X.Height(), options.kernelparam),
 		 				 skylark::ml::regular_feature_transform_tag(),
-		 				 options.numfeaturepartitions,
-		 				 options.numthreads,
-		 				 options.tolerance,
-		 				 options.MAXITER,
-		 				 options.rho);
+		 				 options.numfeaturepartitions);	 
 
 	 		 else
 	 			 Solver = new BlockADMMSolver(
@@ -146,13 +138,21 @@ int main (int argc, char** argv) {
 	 					 features,
 	 					 skylark::ml::kernels::gaussian_t(X.Height(), options.kernelparam),
 	 					 skylark::ml::fast_feature_transform_tag(),
-	 					 options.numfeaturepartitions,
-	 					 options.numthreads,
-	 					 options.tolerance,
-	 					 options.MAXITER,
-	 					 options.rho);
+	 					 options.numfeaturepartitions);	 
 	 	 	break;
 
+	 	 case POLYNOMIAL:
+	 		 features = options.randomfeatures;
+	 		 Solver = new BlockADMMSolver(
+	 				 context,
+	 				 loss,
+	 				 regularizer,
+	 				 options.lambda,
+	 				 features,
+	 				 skylark::ml::kernels::polynomial_t(X.Height(), options.kernelparam, options.kernelparam2, options.kernelparam3),
+		 			 skylark::ml::regular_feature_transform_tag(),
+		 			 options.numfeaturepartitions);	
+	 		 break;
 
 	 	 case LAPLACIAN:
 	 		 features = options.randomfeatures;
@@ -164,12 +164,9 @@ int main (int argc, char** argv) {
 	 				 features,
 	 				 skylark::ml::kernels::laplacian_t(X.Height(), options.kernelparam),
 		 			 skylark::ml::regular_feature_transform_tag(),
-		 			 options.numfeaturepartitions,
-		 			 options.numthreads,
-		 			 options.tolerance,
-		 			 options.MAXITER,
-		 			 options.rho);
-
+		 			 options.numfeaturepartitions);	
+	 		 break;
+	 		 
 	 	 case EXPSEMIGROUP:
 	 		 features = options.randomfeatures;
 	 		 Solver = new BlockADMMSolver(
@@ -180,17 +177,20 @@ int main (int argc, char** argv) {
 	 				 features,
 	 				 skylark::ml::kernels::expsemigroup_t(X.Height(), options.kernelparam),
 		 			 skylark::ml::regular_feature_transform_tag(),
-		 			 options.numfeaturepartitions,
-		 			 options.numthreads,
-		 			 options.tolerance,
-		 			 options.MAXITER,
-		 			 options.rho);
-
+		 			 options.numfeaturepartitions);	
+	 		 break;
+	 		
 	 	 default:
 	 		// TODO!
 	 		break;
 
 	 }
+	 
+	 // Set parameters
+	 Solver->set_rho(options.rho);
+	 Solver->set_maxiter(options.MAXITER);
+	 Solver->set_tol(options.tolerance);
+	 Solver->set_nthreads(options.numthreads);
 
 	 elem::Matrix<double> Wbar(features, k);
 	 elem::MakeZeros(Wbar);

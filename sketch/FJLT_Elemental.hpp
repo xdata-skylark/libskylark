@@ -25,10 +25,11 @@ struct FJLT_t <
     typedef elem::DistMatrix<ValueType,
                              elem::STAR, ColDist> intermediate_type;
     typedef fft_futs<double>::DCT_t transform_type;
-    typedef FJLT_data_t<value_type> base_data_t;
     typedef utility::rademacher_distribution_t<value_type>
     underlying_value_distribution_type;
-private:
+
+protected:
+    typedef FJLT_data_t<value_type> base_data_t;
     typedef RFUT_t<intermediate_type,
                    transform_type,
                    underlying_value_distribution_type> underlying_type;
@@ -48,7 +49,7 @@ public:
     template <typename OtherInputMatrixType,
               typename OtherOutputMatrixType>
     FJLT_t(const FJLT_t<OtherInputMatrixType, OtherOutputMatrixType>& other)
-        : base_data_t(other.get_data()) {
+        : base_data_t(other) {
 
     }
 

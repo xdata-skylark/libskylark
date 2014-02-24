@@ -31,6 +31,7 @@ static sketchc::transform_type_t str2transform_type(char *str) {
     STRCMP_TYPE(CWT, sketchc::CWT);
     STRCMP_TYPE(MMT, sketchc::MMT);
     STRCMP_TYPE(WZT, sketchc::WZT);
+    STRCMP_TYPE(PPT, sketchc::PPT);
     STRCMP_TYPE(GaussianRFT, sketchc::GaussianRFT);
     STRCMP_TYPE(LaplacianRFT, sketchc::LaplacianRFT);
     STRCMP_TYPE(FastGaussianRFT, sketchc::FastGaussianRFT);
@@ -46,6 +47,7 @@ typedef sketch::CT_data_t<double> CT_data_t;
 typedef sketch::CWT_data_t<size_t, double> CWT_data_t;
 typedef sketch::MMT_data_t<size_t, double> MMT_data_t;
 typedef sketch::WZT_data_t<size_t, double> WZT_data_t;
+typedef sketch::PPT_data_t<double> PPT_data_t;
 typedef sketch::GaussianRFT_data_t<double> GaussianRFT_data_t;
 typedef sketch::LaplacianRFT_data_t<double> LaplacianRFT_data_t;
 typedef sketch::FastGaussianRFT_data_t<double> FastGaussianRFT_data_t;
@@ -115,6 +117,7 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
         SKDEF(WZT, DistMatrix_VC_STAR, Matrix)
         SKDEF(WZT, DistMatrix_STAR_VR, Matrix)
         SKDEF(WZT, DistMatrix_STAR_VC, Matrix)
+        SKDEF(PPT, Matrix, Matrix)
         SKDEF(GaussianRFT, Matrix, Matrix)
         SKDEF(GaussianRFT, DistMatrix_VR_STAR, DistMatrix_VR_STAR)
         SKDEF(GaussianRFT, DistMatrix_VC_STAR, DistMatrix_VC_STAR)
@@ -242,6 +245,22 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(sketch::context_t *ctxt,
     AUTO_NEW_DISPATCH_1P(sketchc::ExpSemigroupRLT, ExpSemigroupRLT_data_t);
     AUTO_NEW_DISPATCH_1P(sketchc::FastGaussianRFT, FastGaussianRFT_data_t);
 
+    SKYLARK_BEGIN_TRY()
+        if (type == sketchc::PPT)  {
+            va_list argp;
+            va_start(argp, sketch);
+            double q = va_arg(argp, int);
+            double c = va_arg(argp, double);
+            double g = va_arg(argp, double);
+            sketchc::sketch_transform_t *r =
+                new sketchc::sketch_transform_t(sketchc::PPT,
+                    new PPT_data_t(n, s, q, c, g, *ctxt));
+            va_end(argp);
+            *sketch = r;
+        }
+    SKYLARK_END_TRY()
+    SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
+
     return 0;
 }
 
@@ -263,6 +282,7 @@ SKYLARK_EXTERN_API
     AUTO_DELETE_DISPATCH(sketchc::CWT, CWT_data_t);
     AUTO_DELETE_DISPATCH(sketchc::MMT, MMT_data_t);
     AUTO_DELETE_DISPATCH(sketchc::WZT, WZT_data_t);
+    AUTO_DELETE_DISPATCH(sketchc::PPT, PPT_data_t);
     AUTO_DELETE_DISPATCH(sketchc::GaussianRFT, GaussianRFT_data_t);
     AUTO_DELETE_DISPATCH(sketchc::LaplacianRFT, LaplacianRFT_data_t);
     AUTO_DELETE_DISPATCH(sketchc::ExpSemigroupRLT, ExpSemigroupRLT_data_t);
@@ -458,6 +478,11 @@ SKYLARK_EXTERN_API int
     AUTO_APPLY_DISPATCH(sketchc::WZT,
         sketchc::DIST_MATRIX_STAR_VC, sketchc::MATRIX,
         sketch::WZT_t, DistMatrix_STAR_VC, Matrix, WZT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::PPT,
+        sketchc::MATRIX, sketchc::MATRIX,
+        sketch::PPT_t, Matrix, Matrix,
+        PPT_data_t);
 
     AUTO_APPLY_DISPATCH(sketchc::GaussianRFT,
         sketchc::MATRIX, sketchc::MATRIX,

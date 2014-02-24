@@ -1,12 +1,5 @@
-/*
- * BlockADMM.h
- *
- *  Created on: Jan 12, 2014
- *      Author: vikas
- */
-
-#ifndef BLOCKADMM_H_
-#define BLOCKADMM_H_
+#ifndef SKYLARK_BLOCKADMM_HPP
+#define SKYLARK_BLOCKADMM_HPP
 
 #include <elemental.hpp>
 #include <skylark.hpp>
@@ -24,8 +17,6 @@
 
 #include "hilbert.hpp"
 
-
-
 // Columns are examples, rows are features
 typedef elem::DistMatrix<double, elem::STAR, elem::VC> DistInputMatrixType;
 
@@ -37,57 +28,49 @@ typedef elem::DistMatrix<double, elem::VC, elem::STAR> DistMatrixType;
 typedef elem::DistMatrix<double, elem::STAR, elem::VC> DistMatrixTypeT;
 
 typedef elem::Matrix<double> LocalMatrixType;
-typedef skylark::sketch::sketch_transform_t<LocalMatrixType, LocalMatrixType>
-	feature_transform_t;
 
-typedef skylark::sketch::context_t skylark_context_t;
 
 class BlockADMMSolver
 {
 public:
 
-	typedef std::vector<const feature_transform_t *> feature_transform_array_t; // TODO move to private
+	typedef skylark::sketch::sketch_transform_t<LocalMatrixType, LocalMatrixType>
+		feature_transform_t;
+	typedef std::vector<const feature_transform_t *> feature_transform_array_t; 
 
 
 	// No feature transforms (aka just linear regression).
-	BlockADMMSolver(skylark_context_t& context,
+	BlockADMMSolver(skylark::sketch::context_t& context,
 					const lossfunction* loss,
 					const regularization* regularizer,
 					double lambda, // regularization parameter
 					int NumFeatures,
-					int NumFeaturePartitions = 1,
-					int NumThreads = 1,
-					double TOL = 0.1,
-					int MAXITER = 1000,
-					double RHO = 1.0);
-
+					int NumFeaturePartitions = 1);
+	
 	// Easy interface, aka kernel based.
 	template<typename Kernel, typename MapTypeTag>
-	BlockADMMSolver(skylark_context_t& context,
+	BlockADMMSolver(skylark::sketch::context_t& context,
 					const lossfunction* loss,
 					const regularization* regularizer,
 					double lambda, // regularization parameter
 					int NumFeatures,
 					Kernel kernel,
 					MapTypeTag tag,
-					int NumFeaturePartitions = 1,
-					int NumThreads = 1,
-					double TOL = 0.1,
-					int MAXITER = 1000,
-					double RHO = 1.0);
-
+					int NumFeaturePartitions = 1);
+	
 	// Guru interface.
-	BlockADMMSolver(skylark_context_t& context,
+	BlockADMMSolver(skylark::sketch::context_t& context,
 					const lossfunction* loss,
 					const regularization* regularizer,
 					const feature_transform_array_t& featureMaps,
 					double lambda, // regularization parameter
-					int NumThreads = 1,
-					bool ScaleFeatureMaps = true,
-					double TOL = 0.1,
-					int MAXITER = 1000,
-					double RHO = 1.0);
-
+					bool ScaleFeatureMaps = true);
+	
+	void set_nthreads(int NumThreads) { this->NumThreads = NumThreads; }	
+	void set_rho(double RHO) { this->RHO = RHO; }
+	void set_maxiter(double MAXITER) { this->MAXITER = MAXITER; }
+	void set_tol(double TOL) { this->TOL = TOL; }
+	
 	~BlockADMMSolver();
 
 	void InitializeCache();
@@ -96,21 +79,23 @@ public:
 	double evaluate(DistTargetMatrixType& Y, DistTargetMatrixType& Yp);
 
 private:
-	skylark_context_t& context;
-	double lambda;
-	double RHO;
-	int MAXITER;
-	double TOL;
+	skylark::sketch::context_t& context;
+
 	feature_transform_array_t featureMaps;
 	int NumFeatures;
 	int NumFeaturePartitions;
-	int NumThreads;
 	lossfunction* loss;
 	regularization* regularizer;
 	std::vector<int> starts, finishes;
 	bool ScaleFeatureMaps;
 	bool OwnFeatureMaps;
 	LocalMatrixType **Cache;
+	int NumThreads;
+	
+	double lambda;
+	double RHO;
+	int MAXITER;
+	double TOL;
 };
 
 
@@ -125,57 +110,46 @@ void BlockADMMSolver::InitializeCache() {
 }
 
 // No feature transforms (aka just linear regression).
-BlockADMMSolver::BlockADMMSolver(skylark_context_t& context,
+BlockADMMSolver::BlockADMMSolver(skylark::sketch::context_t& context,
 				const lossfunction* loss,
 				const regularization* regularizer,
 				double lambda, // regularization parameter
 				int NumFeatures,
-				int NumFeaturePartitions,
-				int NumThreads,
-				double TOL,
-				int MAXITER,
-				double RHO) : context(context), NumFeatures(NumFeatures), NumFeaturePartitions(NumFeaturePartitions),
-					starts(NumFeaturePartitions), finishes(NumFeaturePartitions) {
+				int NumFeaturePartitions) : context(context), NumFeatures(NumFeatures), NumFeaturePartitions(NumFeaturePartitions),
+					starts(NumFeaturePartitions), finishes(NumFeaturePartitions), 
+					NumThreads(1), RHO(1.0), MAXITER(1000), TOL(0.1) {
 
 		this->loss = const_cast<lossfunction *> (loss);
 		this->regularizer = const_cast<regularization *> (regularizer);
 		this->lambda = lambda;
 		this->NumFeaturePartitions = NumFeaturePartitions;
-		this->NumThreads = NumThreads;
 		int blksize = int(ceil(double(NumFeatures) / NumFeaturePartitions));
 		for(int i = 0; i < NumFeaturePartitions; i++) {
 			starts[i] = i * blksize;
 			finishes[i] = std::min((i + 1) * blksize, NumFeatures) - 1;
 		}
 		this->ScaleFeatureMaps = false;
-		this->TOL = TOL;
-		this->MAXITER = MAXITER;
-		this->RHO = RHO;
 		OwnFeatureMaps = false;
 		InitializeCache();
 }
 
 // Easy interface, aka kernel based.
 template<typename Kernel, typename MapTypeTag>
-BlockADMMSolver::BlockADMMSolver(skylark_context_t& context,
+BlockADMMSolver::BlockADMMSolver(skylark::sketch::context_t& context,
 				const lossfunction* loss,
 				const regularization* regularizer,
 				double lambda, // regularization parameter
 				int NumFeatures,
 				Kernel kernel,
 				MapTypeTag tag,
-				int NumFeaturePartitions,
-				int NumThreads,
-				double TOL,
-				int MAXITER,
-				double RHO) : context(context), featureMaps(NumFeaturePartitions),
+				int NumFeaturePartitions) : context(context), featureMaps(NumFeaturePartitions), 
 					NumFeatures(NumFeatures), NumFeaturePartitions(NumFeaturePartitions),
-					starts(NumFeaturePartitions), finishes(NumFeaturePartitions) {
+					starts(NumFeaturePartitions), finishes(NumFeaturePartitions),
+					NumThreads(1), RHO(1.0), MAXITER(1000), TOL(0.1) {
 
 		this->loss = const_cast<lossfunction *> (loss);
 		this->regularizer = const_cast<regularization *> (regularizer);
 		this->lambda = lambda;
-		this->NumThreads = NumThreads;
 		int blksize = int(ceil(double(NumFeatures) / NumFeaturePartitions));
 		for(int i = 0; i < NumFeaturePartitions; i++) {
 			starts[i] = i * blksize;
@@ -184,25 +158,19 @@ BlockADMMSolver::BlockADMMSolver(skylark_context_t& context,
 			featureMaps[i] = kernel.template create_rft< LocalMatrixType, LocalMatrixType >(sj, tag, context);
 		}
 		this->ScaleFeatureMaps = true;
-		this->TOL = TOL;
-		this->MAXITER = MAXITER;
-		this->RHO = RHO;
 		OwnFeatureMaps = true;
 		InitializeCache();
 }
 
 // Guru interface
-BlockADMMSolver::BlockADMMSolver(skylark_context_t& context,
+BlockADMMSolver::BlockADMMSolver(skylark::sketch::context_t& context,
 		const lossfunction* loss,
 		const regularization* regularizer,
 		const feature_transform_array_t &featureMaps,
 		double lambda,
-		int NumThreads,
-		bool ScaleFeatureMaps,
-		double TOL,
-		int MAXITER,
-		double RHO) : context(context), featureMaps(featureMaps), NumFeaturePartitions(featureMaps.size()),
-			starts(NumFeaturePartitions), finishes(NumFeaturePartitions) {
+		bool ScaleFeatureMaps) : context(context), featureMaps(featureMaps), NumFeaturePartitions(featureMaps.size()),
+			starts(NumFeaturePartitions), finishes(NumFeaturePartitions),
+			NumThreads(1), RHO(1.0), MAXITER(1000), TOL(0.1)  {
 
 		this->loss = const_cast<lossfunction *> (loss);
 		this->regularizer = const_cast<regularization *> (regularizer);
@@ -216,11 +184,7 @@ BlockADMMSolver::BlockADMMSolver(skylark_context_t& context,
 
 			std::cout << starts[i] << " " << finishes[i] << "\n";
 		}
-		this->NumThreads = NumThreads;
 		this->ScaleFeatureMaps = ScaleFeatureMaps;
-		this->TOL = TOL;
-		this->MAXITER = MAXITER;
-		this->RHO = RHO;
 		OwnFeatureMaps = false;
 		InitializeCache();
 }
@@ -635,4 +599,4 @@ double BlockADMMSolver::evaluate(DistTargetMatrixType& Yt, DistTargetMatrixType&
              return accuracy;
 }
 
-#endif /* BLOCKADMM_H_ */
+#endif /* SKYLARK_BLOCKADDM_HPP */

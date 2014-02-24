@@ -1,12 +1,5 @@
-/*
- * BlockADMM.h
- *
- *  Created on: Jan 12, 2014
- *      Author: vikas
- */
-
-#ifndef BLOCKADMM_H_
-#define BLOCKADMM_H_
+#ifndef SKYLARK_BLOCKADMM_HPP
+#define SKYLARK_BLOCKADMM_HPP
 
 #include <elemental.hpp>
 #include <skylark.hpp>
@@ -24,8 +17,6 @@
 
 #include "hilbert.hpp"
 
-
-
 // Columns are examples, rows are features
 typedef elem::DistMatrix<double, elem::STAR, elem::VC> DistInputMatrixType;
 
@@ -37,20 +28,19 @@ typedef elem::DistMatrix<double, elem::VC, elem::STAR> DistMatrixType;
 typedef elem::DistMatrix<double, elem::STAR, elem::VC> DistMatrixTypeT;
 
 typedef elem::Matrix<double> LocalMatrixType;
-typedef skylark::sketch::sketch_transform_t<LocalMatrixType, LocalMatrixType>
-	feature_transform_t;
 
-typedef skylark::sketch::context_t skylark_context_t;
 
 class BlockADMMSolver
 {
 public:
 
-	typedef std::vector<const feature_transform_t *> feature_transform_array_t; // TODO move to private
+	typedef skylark::sketch::sketch_transform_t<LocalMatrixType, LocalMatrixType>
+		feature_transform_t;
+	typedef std::vector<const feature_transform_t *> feature_transform_array_t; 
 
 
 	// No feature transforms (aka just linear regression).
-	BlockADMMSolver(skylark_context_t& context,
+	BlockADMMSolver(skylark::sketch::context_t& context,
 					const lossfunction* loss,
 					const regularization* regularizer,
 					double lambda, // regularization parameter
@@ -59,7 +49,7 @@ public:
 	
 	// Easy interface, aka kernel based.
 	template<typename Kernel, typename MapTypeTag>
-	BlockADMMSolver(skylark_context_t& context,
+	BlockADMMSolver(skylark::sketch::context_t& context,
 					const lossfunction* loss,
 					const regularization* regularizer,
 					double lambda, // regularization parameter
@@ -69,7 +59,7 @@ public:
 					int NumFeaturePartitions = 1);
 	
 	// Guru interface.
-	BlockADMMSolver(skylark_context_t& context,
+	BlockADMMSolver(skylark::sketch::context_t& context,
 					const lossfunction* loss,
 					const regularization* regularizer,
 					const feature_transform_array_t& featureMaps,
@@ -89,7 +79,7 @@ public:
 	double evaluate(DistTargetMatrixType& Y, DistTargetMatrixType& Yp);
 
 private:
-	skylark_context_t& context;
+	skylark::sketch::context_t& context;
 
 	feature_transform_array_t featureMaps;
 	int NumFeatures;
@@ -120,7 +110,7 @@ void BlockADMMSolver::InitializeCache() {
 }
 
 // No feature transforms (aka just linear regression).
-BlockADMMSolver::BlockADMMSolver(skylark_context_t& context,
+BlockADMMSolver::BlockADMMSolver(skylark::sketch::context_t& context,
 				const lossfunction* loss,
 				const regularization* regularizer,
 				double lambda, // regularization parameter
@@ -145,7 +135,7 @@ BlockADMMSolver::BlockADMMSolver(skylark_context_t& context,
 
 // Easy interface, aka kernel based.
 template<typename Kernel, typename MapTypeTag>
-BlockADMMSolver::BlockADMMSolver(skylark_context_t& context,
+BlockADMMSolver::BlockADMMSolver(skylark::sketch::context_t& context,
 				const lossfunction* loss,
 				const regularization* regularizer,
 				double lambda, // regularization parameter
@@ -173,7 +163,7 @@ BlockADMMSolver::BlockADMMSolver(skylark_context_t& context,
 }
 
 // Guru interface
-BlockADMMSolver::BlockADMMSolver(skylark_context_t& context,
+BlockADMMSolver::BlockADMMSolver(skylark::sketch::context_t& context,
 		const lossfunction* loss,
 		const regularization* regularizer,
 		const feature_transform_array_t &featureMaps,
@@ -573,4 +563,4 @@ double BlockADMMSolver::evaluate(DistTargetMatrixType& Yt, DistTargetMatrixType&
              return accuracy;
 }
 
-#endif /* BLOCKADMM_H_ */
+#endif /* SKYLARK_BLOCKADDM_HPP */

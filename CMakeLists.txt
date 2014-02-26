@@ -298,7 +298,12 @@ endif (USE_COMBBLAS)
 
 option (USE_PROFILER "Use Skylark profiling tools" OFF)
 if (USE_PROFILER)
-  add_definitions(-DSKYLARK_HAVE_PROFILER)
+  set (SKYLARK_HAVE_PROFILER
+       1
+       CACHE
+       STRING
+       "Enables use of profiling extensions"
+       FORCE)
 endif (USE_PROFILER)
 
 
@@ -306,7 +311,12 @@ option (USE_HYBRID "Use hybrid MPI/OpenMPI parallelization" OFF)
 if (USE_HYBRID)
   find_package(OpenMP)
     if (OPENMP_FOUND)
-      add_definitions(-DSKYLARK_HAVE_OPENMP)
+      set (SKYLARK_HAVE_OPENMP
+           1
+           CACHE
+           STRING
+           "Enables use of OpenMP extensions"
+           FORCE)
       set (CMAKE_CXX_FLAGS "${OpenMP_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
     else (OPENMP_FOUND)
       message (FATAL_ERROR "No suitable OpenMP support detected for compiler.")

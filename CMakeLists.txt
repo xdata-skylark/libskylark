@@ -221,6 +221,20 @@ if (USE_ELEMENTAL)
          STRING
          "Enables use of Elemental Libraries"
          FORCE)
+
+    # check if elemental build type is Hybrid
+    file(STRINGS "${Elemental_INCLUDE_DIR}/elemental/config.h"
+      ELEMENTAL_HYBRID_BUILD_TYPE REGEX "^[ \t]*#define[ \t]+CMAKE_BUILD_TYPE[ \t]+\"HybridRelease\"")
+
+    if(ELEMENTAL_HYBRID_BUILD_TYPE)
+      message(STATUS "Elemental was built in hybrid mode. Enabling support as well.")
+      set (USE_HYBRID
+           1
+           CACHE
+           STRING
+           "Enables use of hybrid MPI/OpenMP parallelization"
+           FORCE)
+    endif(ELEMENTAL_HYBRID_BUILD_TYPE)
   endif (Elemental_FOUND)
 
   # Elemental requires BLAS and LAPACK libraries
@@ -277,13 +291,13 @@ if (USE_PROFILER)
 endif (USE_PROFILER)
 
 
-option (USE_HYBRID "Use hybrid MPI OpenMPI parallelization" OFF)
+option (USE_HYBRID "Use hybrid MPI/OpenMPI parallelization" OFF)
 if (USE_HYBRID)
   find_package(OpenMP)
     if (OPENMP_FOUND)
       add_definitions(-DSKYLARK_OPENMP)
     else (OPENMP_FOUND)
-      message (STATUS "No suitable OpenMP support detected")
+      message (STATUS "No suitable OpenMP support detected, compiling without.")
     endif (OPENMP_FOUND)
 endif (USE_HYBRID)
 

@@ -7,18 +7,10 @@ if (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
                         ${SKYLARK_LIBS}
                         ${Boost_LIBRARIES}
                         ${HDF5_LIBRARIES}
-                        ${ZLIB_LIBRARIES}
-                        ${OpenMP_CXX_FLAGS})
+                        ${ZLIB_LIBRARIES})
   set_target_properties(hilbert_train
                         PROPERTIES COMPILE_FLAGS
-                        "-fopenmp \\
-                        -Wall \\
-                        -Wno-write-strings \\
-                        -Wno-strict-aliasing \\
-                        -Wno-format \\
-                        -Wno-deprecated \\
-                        -Wno-unused-variable \\
-                        -Wno-sign-compare")
+                        "${OpenMP_CXX_FLAGS}")
 
 endif (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
 

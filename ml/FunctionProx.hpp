@@ -12,7 +12,7 @@
 #include "options.hpp"
 #include <cstdlib>
 
-#ifdef SKYLARK_OPENMP
+#ifdef SKYLARK_HAVE_OPENMP
 #include <omp.h>
 #endif
 
@@ -89,7 +89,7 @@ double squaredloss::evaluate(LocalDenseMatrixType& O, LocalTargetMatrixType& T) 
 		int i, j, label;
 
 		if (k==1) {
-#ifdef SKYLARK_OPENMP
+#ifdef SKYLARK_HAVE_OPENMP
 			#pragma omp parallel for reduction(+:loss) private(i, x)
 #endif
 			for(i=0; i<n; i++) {
@@ -99,7 +99,7 @@ double squaredloss::evaluate(LocalDenseMatrixType& O, LocalTargetMatrixType& T) 
 		}
 
 		if (k>1) {
-#ifdef SKYLARK_OPENMP
+#ifdef SKYLARK_HAVE_OPENMP
 			#pragma omp parallel for reduction(+:loss) private(i,j, x, label)
 #endif
 			for(i=0; i<n; i++) {
@@ -130,7 +130,7 @@ void squaredloss::proxoperator(LocalDenseMatrixType& X, double lambda, LocalTarg
 		int label, i, j;
 
 		if (k==1) {
-#ifdef SKYLARK_OPENMP
+#ifdef SKYLARK_HAVE_OPENMP
             #pragma omp parallel for private(i)
 #endif
 			for(int i=0; i<n; i++)
@@ -138,7 +138,7 @@ void squaredloss::proxoperator(LocalDenseMatrixType& X, double lambda, LocalTarg
 		}
 
 		if(k>1) {
-#ifdef SKYLARK_OPENMP
+#ifdef SKYLARK_HAVE_OPENMP
             #pragma omp parallel for private(i,j, label)
 #endif
 			for(int i=0; i<n; i++) {
@@ -167,7 +167,7 @@ double hingeloss::evaluate(LocalDenseMatrixType& O, LocalTargetMatrixType& T) {
 		int noutputs = O.Width();
 
 		if(noutputs==1) {
-#ifdef SKYLARK_OPENMP
+#ifdef SKYLARK_HAVE_OPENMP
                #pragma omp parallel for reduction(+:obj) private(i, yx)
 #endif
 		       for(i=0;i<n;i++) {
@@ -180,7 +180,7 @@ double hingeloss::evaluate(LocalDenseMatrixType& O, LocalTargetMatrixType& T) {
 
 
 		if(noutputs>1) {
-#ifdef SKYLARK_OPENMP
+#ifdef SKYLARK_HAVE_OPENMP
                #pragma omp parallel for reduction(+:obj) private(i, j, label, yx)
 #endif
 		       for(i=0;i<n;i++) {
@@ -211,7 +211,7 @@ void hingeloss::proxoperator(LocalDenseMatrixType& X, double lambda, LocalTarget
     int noutputs = k;
 
 	if(noutputs==1) { // We assume cy has +1 or -1 entries for n=1 outputs
-#ifdef SKYLARK_OPENMP
+#ifdef SKYLARK_HAVE_OPENMP
                         #pragma omp parallel for private(i,yv)
 #endif
 		                for(i=0;i<m;i++) {
@@ -232,7 +232,7 @@ void hingeloss::proxoperator(LocalDenseMatrixType& X, double lambda, LocalTarget
 		        }
 
 	if (noutputs>1) {
-#ifdef SKYLARK_OPENMP
+#ifdef SKYLARK_HAVE_OPENMP
                         #pragma omp parallel for private(i,j,yv, yy, label)
 #endif
 		                for(i=0;i<m;i++) {
@@ -267,7 +267,7 @@ double logisticloss::evaluate(LocalDenseMatrixType& O, LocalTargetMatrixType& T)
 
         //double start = omp_get_wtime( );
 
-#ifdef SKYLARK_OPENMP
+#ifdef SKYLARK_HAVE_OPENMP
         #pragma omp parallel for reduction(+:obj)
 #endif
         for(int i=0;i<m;i++) {
@@ -286,7 +286,7 @@ void logisticloss::proxoperator(LocalDenseMatrixType& X, double lambda, LocalTar
     int m = X.Width();
     int n = X.Height();
 
-#ifdef SKYLARK_OPENMP
+#ifdef SKYLARK_HAVE_OPENMP
     #pragma omp parallel for
 #endif
     for(int i=0;i<m;i++) {

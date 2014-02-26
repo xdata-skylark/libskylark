@@ -1,7 +1,7 @@
-#ifndef TIMER_HPP
-#define TIMER_HPP
+#ifndef SKYLARK_TIMER_HPP
+#define SKYLARK_TIMER_HPP
 
-#ifdef SKYLARK_PROFILE
+#ifdef SKYLARK_HAVE_PROFILER
 
 #define SKYLARK_TIMER_INITIALIZE(X) \
     boost::mpi::timer X##_timer; \
@@ -52,6 +52,6 @@
                 0); \
           } \
 
-#endif //SKYLARK_PROFILE
+#endif //SKYLARK_HAVE_PROFILER
 
-#endif //TIMER_HPP
+#endif //SKYLARK_TIMER_HPP

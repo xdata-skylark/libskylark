@@ -41,7 +41,7 @@ int main (int argc, char** argv) {
 
 	 //elem::Grid grid (mpi_world);
 
-#ifdef SKYLARK_OPENMP
+#ifdef SKYLARK_HAVE_OPENMP
 	 omp_set_num_threads(options.numthreads);
 #endif
 
@@ -127,7 +127,7 @@ int main (int argc, char** argv) {
 		 				 features,
 		 				 skylark::ml::kernels::gaussian_t(X.Height(), options.kernelparam),
 		 				 skylark::ml::regular_feature_transform_tag(),
-		 				 options.numfeaturepartitions);	 
+		 				 options.numfeaturepartitions);
 
 	 		 else
 	 			 Solver = new BlockADMMSolver(
@@ -138,7 +138,7 @@ int main (int argc, char** argv) {
 	 					 features,
 	 					 skylark::ml::kernels::gaussian_t(X.Height(), options.kernelparam),
 	 					 skylark::ml::fast_feature_transform_tag(),
-	 					 options.numfeaturepartitions);	 
+	 					 options.numfeaturepartitions);
 	 	 	break;
 
 	 	 case POLYNOMIAL:
@@ -151,7 +151,7 @@ int main (int argc, char** argv) {
 	 				 features,
 	 				 skylark::ml::kernels::polynomial_t(X.Height(), options.kernelparam, options.kernelparam2, options.kernelparam3),
 		 			 skylark::ml::regular_feature_transform_tag(),
-		 			 options.numfeaturepartitions);	
+		 			 options.numfeaturepartitions);
 	 		 break;
 
 	 	 case LAPLACIAN:
@@ -164,9 +164,9 @@ int main (int argc, char** argv) {
 	 				 features,
 	 				 skylark::ml::kernels::laplacian_t(X.Height(), options.kernelparam),
 		 			 skylark::ml::regular_feature_transform_tag(),
-		 			 options.numfeaturepartitions);	
+		 			 options.numfeaturepartitions);
 	 		 break;
-	 		 
+
 	 	 case EXPSEMIGROUP:
 	 		 features = options.randomfeatures;
 	 		 Solver = new BlockADMMSolver(
@@ -177,15 +177,15 @@ int main (int argc, char** argv) {
 	 				 features,
 	 				 skylark::ml::kernels::expsemigroup_t(X.Height(), options.kernelparam),
 		 			 skylark::ml::regular_feature_transform_tag(),
-		 			 options.numfeaturepartitions);	
+		 			 options.numfeaturepartitions);
 	 		 break;
-	 		
+
 	 	 default:
 	 		// TODO!
 	 		break;
 
 	 }
-	 
+
 	 // Set parameters
 	 Solver->set_rho(options.rho);
 	 Solver->set_maxiter(options.MAXITER);

@@ -67,7 +67,7 @@ private:
         // in the final version). SO: this is a PRELIMINARY version.
         double* AA = A.Buffer();
         int j;
-#ifdef SKYLARK_OPENMP
+#ifdef SKYLARK_HAVE_OPENMP
 #pragma omp parallel for private(j)
 #endif
         for (j = 0; j < A.Width(); j++)
@@ -80,7 +80,7 @@ private:
         // in the final version). SO: this is a PRELIMINARY version.
         double* AA = A.Buffer();
         int j;
-#ifdef SKYLARK_OPENMP
+#ifdef SKYLARK_HAVE_OPENMP
 #pragma omp parallel for private(j)
 #endif
         for (j = 0; j < A.Width(); j++)
@@ -95,7 +95,7 @@ private:
         elem::Transpose(A, matrix);
         double* matrix_buffer = matrix.Buffer();
         int j;
-#ifdef SKYLARK_OPENMP
+#ifdef SKYLARK_HAVE_OPENMP
 #pragma omp parallel for private(j)
 #endif
         for (j = 0; j < matrix.Width(); j++)
@@ -112,7 +112,7 @@ private:
         elem::Transpose(A, matrix);
         double* matrix_buffer = matrix.Buffer();
         int j;
-#ifdef SKYLARK_OPENMP
+#ifdef SKYLARK_HAVE_OPENMP
 #pragma omp parallel for private(j)
 #endif
         for (j = 0; j < matrix.Width(); j++)

@@ -5,10 +5,10 @@
  *      Author: vikas
  */
 
-#ifndef PROFILER_HPP_
-#define PROFILER_HPP_
+#ifndef SKYLARK_PROFILER_HPP
+#define SKYLARK_PROFILER_HPP
 
-#ifdef SKYLARK_PROFILE
+#ifdef SKYLARK_HAVE_PROFILER
 
 #define SKYLARK_TIMER_REPORT(X) \
     if (context.rank == 0) { \
@@ -52,4 +52,4 @@
 
 #endif
 
-#endif /* TIMER_HPP_ */
+#endif // SKYLARK_PROFILER_HPP

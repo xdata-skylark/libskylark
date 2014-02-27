@@ -112,9 +112,9 @@ typedef elem::DistMatrix<double, elem::VR, elem::STAR> DistMatrixType;
 // boils down to C = sum_i A_i^T*B_i i.e. an mpi reduce operation.  Note: we
 // need to pass the context so we can call mpi::reduce with the associated
 // communicator.
-void Gemm(DistMatrixType& A, 
-          DistMatrixType& B, 
-          MatrixType& C, 
+void Gemm(DistMatrixType& A,
+          DistMatrixType& B,
+          MatrixType& C,
           skylark::sketch::context_t& context) {
 
     int mA = A.Height();
@@ -123,12 +123,12 @@ void Gemm(DistMatrixType& A,
     int nB = B.Width();
 
     MatrixType C_local(nA, nB);
-    Gemm(elem::ADJOINT, 
-         elem::NORMAL, 
-         1.0, 
-         A.LockedMatrix(), 
-         B.LockedMatrix(), 
-         0.0, 
+    Gemm(elem::ADJOINT,
+         elem::NORMAL,
+         1.0,
+         A.LockedMatrix(),
+         B.LockedMatrix(),
+         0.0,
          C_local);
     boost::mpi::reduce (context.comm,
                         C_local.LockedBuffer(),
@@ -140,22 +140,22 @@ void Gemm(DistMatrixType& A,
 
 // Takes a m x n distributed matrix A and a n x l local matrix B and computes the distributed matrix A*B by local matrix multiplication.
 void Gemm(DistMatrixType& A, MatrixType& B, DistMatrixType& C) {
-    Gemm(elem::NORMAL, 
-         elem::NORMAL, 
-         1.0, 
-         A.LockedMatrix(), 
-         B, 
-         0.0, 
+    Gemm(elem::NORMAL,
+         elem::NORMAL,
+         1.0,
+         A.LockedMatrix(),
+         B,
+         0.0,
          C.Matrix());
 }
 
 //templatize later
-void SVD(DistMatrixType& A, 
-         DistMatrixType& U, 
-         MatrixType& s,  
-         MatrixType& V, 
-         int l, 
-         int q, 
+void SVD(DistMatrixType& A,
+         DistMatrixType& U,
+         MatrixType& s,
+         MatrixType& V,
+         int l,
+         int q,
          skylark::sketch::context_t& context) {
 
     int m = A.Height();
@@ -166,7 +166,7 @@ void SVD(DistMatrixType& A,
 
     // Create space to hold the sketched result
     DistMatrixType Y(m,l);
-    //Y.ResizeTo(m,l);
+    //Y.Resize(m,l);
 
     JLT.apply (A, Y, skylark::sketch::rowwise_tag());
 

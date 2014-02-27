@@ -215,6 +215,13 @@ if (USE_ELEMENTAL)
   if (Elemental_FOUND)
     include_directories (${Elemental_INCLUDE_DIR})
     link_directories (${Elemental_LIBRARY_DIR})
+
+    #FIXME: properly identify and check flags
+    #include(FindCXXFeatures)
+    set(CXX11_COMPILER_FLAGS "-std=c++11")
+    message(STATUS "CXX11_COMPILER_FLAGS=${CXX11_COMPILER_FLAGS}")
+    set (CMAKE_CXX_FLAGS "${CXX11_COMPILER_FLAGS} ${CMAKE_CXX_FLAGS}")
+
     set (SKYLARK_HAVE_ELEMENTAL
          1
          CACHE
@@ -283,8 +290,12 @@ if (USE_COMBBLAS)
   if (CombBLAS_FOUND)
     include_directories (${CombBLAS_INCLUDE_DIR})
     link_directories (${CombBLAS_LIBRARY_DIR})
-    #FIXME: Boost only necessary if compiler is not c++11 compatible
-    add_definitions(-DCOMBBLAS_BOOST)
+
+    # use Boost fallback if we don't have c++11 capabilities
+    if(NOT CXX11_COMPILER_FLAGS)
+      add_definitions(-DCOMBBLAS_BOOST)
+    endif(NOT CXX11_COMPILER_FLAGS)
+
     add_definitions(-D__STDC_LIMIT_MACROS)
     set (SKYLARK_HAVE_COMBBLAS
          1

@@ -532,7 +532,7 @@ void BlockADMMSolver::predict(DistInputMatrixType& X, DistTargetMatrixType& Y, L
 	const feature_transform_t* featureMap;
 
 	if (featureMaps.size() == 0) {
-		Y.ResizeTo(n, k);
+		Y.Resize(n, k);
 		elem::Gemm(elem::TRANSPOSE,elem::NORMAL,1.0, X.Matrix(), W, 0.0, Y.Matrix());
 		return;
 	}

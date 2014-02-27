@@ -103,7 +103,7 @@ class hdf5(object):
         height, width = int(f['shape'][0]), int(f['shape'][1])
 
         A = constructor()
-        A.ResizeTo(height, width)
+        A.Resize(height, width)
         local_height, local_width = A.LocalHeight, A.LocalWidth
 
         indices = elemental_dense.get_indices(A)

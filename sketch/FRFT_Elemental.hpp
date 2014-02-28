@@ -100,11 +100,11 @@ private:
 
             int c, l, idx1, idx2;
             double *w;
-            matrix_type Wc;
 #ifdef SKYLARK_HAVE_OPENMP
-#pragma omp parallel for default(shared) private(c, l, w, idx1, idx2, Wc)
+#pragma omp parallel for default(shared) private(c, l, w, idx1, idx2)
 #endif
             for(c = 0; c < A.Width(); c++) {
+                matrix_type Wc;
                 elem::View(Wc, W, 0, c, W.Height(), 1);
 
                 elem::DiagonalScale(elem::LEFT, elem::NORMAL, B, Wc);

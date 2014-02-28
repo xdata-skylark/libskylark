@@ -57,6 +57,7 @@ public:
 
 class logisticloss : public lossfunction {
 public:
+    logisticloss() : epsilon(1e-4) {}
     virtual double evaluate(LocalDenseMatrixType& O, LocalTargetMatrixType& T);
     virtual void proxoperator(LocalDenseMatrixType& X, double lambda, LocalTargetMatrixType& T, LocalDenseMatrixType& Y);
 private:
@@ -65,8 +66,8 @@ private:
     double objective(int index, double* x, double* v, int n, double lambda);
     int logexp(int index, double* v, int n, double lambda, double* x, int MAXITER, double epsilon, int DISPLAY);
     static const int MAXITER = 100;
-    static const double epsilon = 1e-4;
     static const int DISPLAY = 0;
+    const double epsilon;
 };
 
 

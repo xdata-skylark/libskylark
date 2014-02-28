@@ -33,7 +33,7 @@ int main (int argc, char** argv) {
 	boost::mpi::broadcast(context.comm, m, 0);
 	boost::mpi::broadcast(context.comm, n, 0);
 	if (context.rank != 0) {
-		W.ResizeTo(m,n);
+		W.Resize(m,n);
 	}
 
 	boost::mpi::broadcast(context.comm, W.Buffer(), m*n, 0);

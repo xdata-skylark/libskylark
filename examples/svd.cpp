@@ -85,19 +85,19 @@ int main (int argc, char** argv) {
 
     //    A2.Print("Checking Matrix multiplication between [VR,*] A1 and Matrix A3");
 
-        //A3.ResizeTo(m, n);
-        //V.ResizeTo(m, k);
+        //A3.Resize(m, n);
+        //V.Resize(m, k);
 
         elem::Uniform(A11, m, k);
         elem::Uniform(A22, k, n);
-        A33.ResizeTo(m,n);
+        A33.Resize(m,n);
         Gemm(elem::NORMAL, elem::NORMAL, 1.0, A11, A22, 0.0, A33);
-        A.ResizeTo(m,n);
+        A.Resize(m,n);
         A = A33;
         elem::SVD(A33, s33, V33);
         elem::Display(s33, "True singular values");
 
-        //A.ResizeTo(m, n);
+        //A.Resize(m, n);
         //A = A3;
       //  elem::Uniform (int_params[M_INDEX], int_params[N_RHS_INDEX], B);
     }
@@ -109,7 +109,7 @@ int main (int argc, char** argv) {
 
         if (SKETCH_LEFT == int_params[SKETCH_DIRECTION_INDEX]) {
             //	A.Print("Matrix A");
-            //U.ResizeTo(m,k);
+            //U.Resize(m,k);
             // skylark::nla::SVD(A, U, s, V, int_params[S_INDEX], 1, context);
             //	U.Print("U: Left Singular Vectors");
             elem::Display(s, "Approximate singular values");

@@ -132,8 +132,8 @@ void read_hdf5_dense(skylark_context_t& context, string fName,
 //        if (min_d > 0)
  //                   d = std::max(d, min_d);
 
-        X.ResizeTo(d, n);
-        Y.ResizeTo(n,1);
+        X.Resize(d, n);
+        Y.Resize(n,1);
 
 
         for(int i=0; i<numblocks+1; i++) {
@@ -195,8 +195,8 @@ void read_hdf5_dense(skylark_context_t& context, string fName,
 #endif
 
 void read_libsvm_dense(skylark_context_t& context, string fName,
-		elem::DistMatrix<double, elem::STAR, elem::VC>& X, 
-		elem::DistMatrix<double, elem::VC, elem::STAR>& Y, 
+		elem::DistMatrix<double, elem::STAR, elem::VC>& X,
+		elem::DistMatrix<double, elem::VC, elem::STAR>& Y,
 		int min_d = 0, int blocksize = 10000) {
 	if (context.rank==0)
 			cout << "Reading from file " << fName << endl;
@@ -249,8 +249,8 @@ void read_libsvm_dense(skylark_context_t& context, string fName,
 	int leftover = n % blocksize;
 	int block = blocksize;
 
-	X.ResizeTo(d, n);
-	Y.ResizeTo(n,1);
+	X.Resize(d, n);
+	Y.Resize(n,1);
 
 	for(int i=0; i<numblocks+1; i++) {
 
@@ -336,7 +336,7 @@ void read_model_file(string fName, elem::Matrix<double>& W) {
 
 				n = atoi(token.c_str());
 				std::cout << "Read coefficients of size " << m << " x " << n << std::endl;
-				W.ResizeTo(m,n);
+				W.Resize(m,n);
 				continue;
 			}
 			else {

@@ -125,10 +125,12 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "XL")
         xlf90_r
         xlfmath
     )
-        #mpihpm
-        #bgpm
 
-    #set (CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -qsmp=omp")
+    set(BGQ_PROFILING_LIBRARIES
+        mpihpm
+        mpitrace
+        bgpm
+    )
 
 else()
     message (FATAL "Unsupported compiler!")
@@ -165,7 +167,7 @@ if (BOOST_ROOT)
 endif (BOOST_ROOT)
 
 set(BOOST_MIN_VERSION 1.53.0)
-find_package (Boost REQUIRED mpi program_options)
+find_package (Boost REQUIRED mpi program_options serialization)
 if (Boost_FOUND)
   set (SKYLARK_HAVE_BOOST
        1
@@ -238,8 +240,16 @@ if (USE_ELEMENTAL)
   endif (Elemental_FOUND)
 
   # Elemental requires BLAS and LAPACK libraries
-  find_package(BLAS REQUIRED)
-  find_package(LAPACK REQUIRED)
+  set(BLAS_LIBRARIES $ENV{BLAS_LIBRARIES})
+  set(LAPACK_LIBRARIES $ENV{LAPACK_LIBRARIES})
+  if(NOT BLAS_LIBRARIES OR NOT LAPACK_LIBRARIES)
+    find_package(BLAS)
+    find_package(LAPACK)
+  endif(NOT BLAS_LIBRARIES OR NOT LAPACK_LIBRARIES)
+
+  if(NOT BLAS_LIBRARIES OR NOT LAPACK_LIBRARIES)
+      message(FATAL_ERROR "Elemental needs BLAS and LAPACK")
+  endif(NOT BLAS_LIBRARIES OR NOT LAPACK_LIBRARIES)
   set (Elemental_LIBRARY
     ${Elemental_LIBRARY}
     ${BLAS_LIBRARIES}
@@ -318,6 +328,7 @@ if (USE_HYBRID)
            "Enables use of OpenMP extensions"
            FORCE)
       set (CMAKE_CXX_FLAGS "${OpenMP_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
+      set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_CXX_FLAGS}")
     else (OPENMP_FOUND)
       message (FATAL_ERROR "No suitable OpenMP support detected for compiler.")
     endif (OPENMP_FOUND)

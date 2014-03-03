@@ -7,105 +7,20 @@
 #include <string>
 #include <boost/mpi.hpp>
 #include <boost/program_options.hpp>
+#include "kernels.hpp"
 #include "hilbert.hpp"
+#include <omp.h>
+
 
 namespace bmpi =  boost::mpi;
 namespace po = boost::program_options;
 using namespace std;
 
-typedef skylark::sketch::context_t skylark_context_t;
-typedef elem::DistMatrix<double, elem::VC, elem::STAR> DistInputMatrixType;
-typedef elem::DistMatrix<double, elem::CIRC, elem::CIRC> DistCircMatrixType;
-
-void read_libsvm_dense(skylark_context_t& context, string fName, DistInputMatrixType& X, DistInputMatrixType& Y) {
-	if (context.rank==0)
-			cout << "Reading from file " << fName << endl;
-
-	ifstream file(fName.c_str());
-	string line;
-	string token, val, ind;
-	float label;
-	unsigned int start = 0;
-	unsigned int delim, t;
-	int n = 0;
-	int d = 0;
-	int i, j, last;
-	char c;
-
-	bmpi::timer timer;
-
-
-	// make one pass over the data to figure out dimensions - will pay in terms of preallocated storage.
-	while(!file.eof()) {
-		getline(file, line);
-		if(line.length()==0)
-			break;
-		delim = line.find_last_of(":");
-		if(delim > line.length())
-			continue;
-		n++;
-		t = delim;
-		while(line[t]!=' ') {
-			t--;
-		}
-		val = line.substr(t+1, delim - t);
-		last = atoi(val.c_str());
-		if (last>d)
-			d = last;
-	}
-
-	DistCircMatrixType x(n, d), y(n, 1);
-	x.SetRoot(0);
-	y.SetRoot(0);
-
-	if(context.rank==0) {
-		double *Xdata = x.Matrix().Buffer();
-		double *Ydata = y.Matrix().Buffer();
-
-		// second pass
-		file.clear();
-		file.seekg(0, std::ios::beg);
-		i = -1;
-		while(!file.eof()) {
-			getline(file, line);
-			if( line.length()==0) {
-				break;
-			}
-			i++;
-			istringstream tokenstream (line);
-			tokenstream >> label;
-			Ydata[i] = label;
-
-			while (tokenstream >> token)
-			 {
-				delim  = token.find(':');
-				ind = token.substr(0, delim);
-				val = token.substr(delim+1); //.substr(delim+1);
-				j = atoi(ind.c_str()) - 1;
-				Xdata[n*j + i] = atof(val.c_str());
-			 }
-		}
-	}
-
-	// The calls below should distribute the data to all the nodes.
-	if (context.rank==0)
-		cout << "Distributing Data.." << endl;
-
-	X = x;
-	Y = y;
-
-	double readtime = timer.elapsed();
-	if (context.rank==0)
-		cout << "Read Matrix with dimensions: " << n << " by " << d << " (" << readtime << "secs)" << endl;
-}
-
 int main (int argc, char** argv) {
 	/* Initialize MPI */
 
-	  hilbert_options_t options (argc, argv);
-	  if (options.exit_on_return) { return -1; }
-
-
+      int provided;
+      MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
 
 	  bmpi::environment env (argc, argv);
 
@@ -115,16 +30,41 @@ int main (int argc, char** argv) {
 
 	 skylark::sketch::context_t context (12345, world);
 
+
+
 	 elem::Initialize (argc, argv);
+
+	 hilbert_options_t options (argc, argv, context.size);
+	 if (options.exit_on_return) { return -1; }
+
 	 MPI_Comm mpi_world(world);
+
 	 //elem::Grid grid (mpi_world);
 
-	 DistInputMatrixType X, Y;
+#ifdef SKYLARK_HAVE_OPENMP
+	 omp_set_num_threads(options.numthreads);
+#endif
+
+	 DistInputMatrixType X;
+	 DistTargetMatrixType Y;
 
 	 if (context.rank==0)
 		 std::cout << options.print();
 
-	 read_libsvm_dense(context, options.trainfile, X, Y);
+	 switch(options.fileformat) {
+	     case LIBSVM:
+	         read_libsvm_dense(context, options.trainfile, X, Y);
+	         break;
+
+	     case HDF5:
+#ifdef SKYLARK_HAVE_HDF5
+	         read_hdf5_dense(context, options.trainfile, X, Y);
+#else
+	         // TODO
+#endif
+	         break;
+	 }
+	 std::cout << " Rank " << context.rank << " on " << env.processor_name() << " owns : " << X.LocalHeight() <<  " x " << X.LocalWidth() << std::endl;
 
 	 lossfunction *loss = NULL;
 	 switch(options.lossfunction) {
@@ -134,6 +74,13 @@ int main (int argc, char** argv) {
 	 	 case HINGE:
 	 		 loss = new hingeloss();
 	 		 break;
+	 	 case LOGISTIC:
+	 	     loss = new logisticloss();
+	 	     break;
+	 	 case LAD:
+	 	 default:
+	 		 // TODO
+	 		 break;
 	 }
 
 	 regularization *regularizer = NULL;
@@ -141,36 +88,171 @@ int main (int argc, char** argv) {
 	 	 case L2:
 	 		 regularizer = new l2();
 	 		 break;
-	 }
-
-	 FeatureTransform *featureMap = NULL;
-	 switch(options.kernel) {
-	 	 case LINEAR:
-	 		 featureMap = new Identity();
-	 		 options.randomfeatures = X.Width();
+	 	 case L1:
+	 	 default:
+	 		 // TODO
 	 		 break;
 	 }
 
+	 // int k = Y.Width();
+	 int k;
+	 int kmax = *std::max_element(Y.Buffer(), Y.Buffer() + Y.LocalHeight());
 
+	 boost::mpi::all_reduce(context.comm, kmax, k, boost::mpi::maximum<int>());
+	 if (k>1) // we assume 0-to-N encoding of classes. Hence N = k+1. For two classes, k=1.
+	 	k++;
 
-	 BlockADMMSolver *Solver = new BlockADMMSolver(
-			 	 	 loss,
+	 BlockADMMSolver *Solver = NULL;
+	 int features = 0;
+	 switch(options.kernel) {
+	 	 case LINEAR:
+	 		 features = X.Height();
+	 		 Solver = new BlockADMMSolver(
+	 				context,
+	 				loss,
 	 				 regularizer,
-	 				 featureMap,
 	 				 options.lambda,
-	 				 options.randomfeatures,
-	 				 options.numfeaturepartitions,
-	 				 options.numthreads,
-	 				 options.tolerance,
-	 				 options.MAXITER,
-	 				 options.rho);
+	 				 X.Height(),
+	 				 options.numfeaturepartitions);
+	 		 break;
 
-	 elem::Matrix<double> Wbar(options.randomfeatures, 1);
+	 	 case GAUSSIAN:
+	 		 features = options.randomfeatures;
+	 		 if (options.regularmap)
+		 		 Solver = new BlockADMMSolver(
+		 				 context,
+		 				 loss,
+		 				 regularizer,
+		 				 options.lambda,
+		 				 features,
+		 				 skylark::ml::kernels::gaussian_t(X.Height(), options.kernelparam),
+		 				 skylark::ml::regular_feature_transform_tag(),
+		 				 options.numfeaturepartitions);
+
+	 		 else
+	 			 Solver = new BlockADMMSolver(
+	 					 context,
+	 					 loss	,
+	 					 regularizer,
+	 					 options.lambda,
+	 					 features,
+	 					 skylark::ml::kernels::gaussian_t(X.Height(), options.kernelparam),
+	 					 skylark::ml::fast_feature_transform_tag(),
+	 					 options.numfeaturepartitions);
+	 	 	break;
+
+	 	 case POLYNOMIAL:
+	 		 features = options.randomfeatures;
+	 		 Solver = new BlockADMMSolver(
+	 				 context,
+	 				 loss,
+	 				 regularizer,
+	 				 options.lambda,
+	 				 features,
+	 				 skylark::ml::kernels::polynomial_t(X.Height(), options.kernelparam, options.kernelparam2, options.kernelparam3),
+		 			 skylark::ml::regular_feature_transform_tag(),
+		 			 options.numfeaturepartitions);
+	 		 break;
+
+	 	 case LAPLACIAN:
+	 		 features = options.randomfeatures;
+	 		 Solver = new BlockADMMSolver(
+	 				 context,
+	 				 loss,
+	 				 regularizer,
+	 				 options.lambda,
+	 				 features,
+	 				 skylark::ml::kernels::laplacian_t(X.Height(), options.kernelparam),
+		 			 skylark::ml::regular_feature_transform_tag(),
+		 			 options.numfeaturepartitions);
+	 		 break;
+
+	 	 case EXPSEMIGROUP:
+	 		 features = options.randomfeatures;
+	 		 Solver = new BlockADMMSolver(
+	 				 context,
+	 				 loss,
+	 				 regularizer,
+	 				 options.lambda,
+	 				 features,
+	 				 skylark::ml::kernels::expsemigroup_t(X.Height(), options.kernelparam),
+		 			 skylark::ml::regular_feature_transform_tag(),
+		 			 options.numfeaturepartitions);
+	 		 break;
+
+	 	 default:
+	 		// TODO!
+	 		break;
+
+	 }
+
+	 // Set parameters
+	 Solver->set_rho(options.rho);
+	 Solver->set_maxiter(options.MAXITER);
+	 Solver->set_tol(options.tolerance);
+	 Solver->set_nthreads(options.numthreads);
+
+	 elem::Matrix<double> Wbar(features, k);
 	 elem::MakeZeros(Wbar);
-	 Solver->train(context, X,Y,Wbar);
 
-	 elem::Write(Wbar, options.print(), options.modelfile);
-//	 cout << " Rank " << context.rank << " owns : " << X.LocalHeight() <<  " x " << X.LocalWidth() << endl;
+	 DistInputMatrixType Xv;
+	 DistTargetMatrixType Yv;
+
+	 if (!options.valfile.empty()) {
+	          context.comm.barrier();
+
+	          if(context.rank == 0) std::cout << "Loading validation data." << std::endl;
+
+	          switch(options.fileformat) {
+	                   case LIBSVM:
+	                       read_libsvm_dense(context, options.valfile, Xv, Yv, X.Height());
+	                       break;
+#ifdef SKYLARK_HAVE_HDF5
+	                   case HDF5:
+	                       read_hdf5_dense(context, options.valfile, Xv, Yv);
+	                       break;
+#endif
+	               }
+
+	 }
+
+	 Solver->train(X, Y, Wbar, Xv, Yv);
+
+
+	 if (context.rank==0) {
+		 std::stringstream dimensionstring;
+		 dimensionstring << "# Dimensions " << features << " " << k << "\n";
+		 elem::Write(Wbar, options.modelfile, elem::ASCII, options.print().append(dimensionstring.str()));
+	 }
+
+	 // Testing - if specified by the user.
+	 if (!options.testfile.empty()) {
+		 context.comm.barrier();
+
+		 if(context.rank == 0) std::cout << "Starting testing phase." << std::endl;
+
+		 DistInputMatrixType Xt;
+		 DistTargetMatrixType Yt;
+
+		 switch(options.fileformat) {
+		                        case LIBSVM:
+		                            read_libsvm_dense(context, options.testfile, Xt, Yt, X.Height());
+		                            break;
+#ifdef SKYLARK_HAVE_HDF5
+		                        case HDF5:
+		                            read_hdf5_dense(context, options.testfile, Xt, Yt);
+		                            break;
+#endif
+		                    }
+
+		 DistTargetMatrixType Yp(Yt.Height(), k);
+		 Solver->predict(Xt, Yp, Wbar);
+		 double accuracy = Solver->evaluate(Yt, Yp);
+
+		 if(context.rank == 0) std::cout << "Test Accuracy = " <<  accuracy << " %" << std::endl;
+	 }
+
+	context.comm.barrier();
 
 	 elem::Finalize();
 	 return 0;

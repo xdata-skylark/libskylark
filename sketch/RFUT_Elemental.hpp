@@ -95,12 +95,13 @@ private:
                            skylark::sketch::columnwise_tag) const {
         // TODO verify that A has the correct size
 
-        FUT T;
+        // TODO no need to create FUT everytime...
+        FUT T(base_data_t::N);
 
         // Scale
         const local_type& local_A = A.LockedMatrix();
         local_type& local_TA = mixed_A.Matrix();
-        value_type scale = T.scale(local_A);
+        value_type scale = T.scale(local_A, skylark::sketch::columnwise_tag());
         for (int j = 0; j < local_A.Width(); j++)
             for (int i = 0; i < base_data_t::N; i++)
                 local_TA.Set(i, j,
@@ -231,7 +232,7 @@ private:
                            skylark::sketch::rowwise_tag) const {
         // TODO verify that A has the correct size
 
-        FUT T;
+        FUT T(base_data_t::N);
 
         // Scale
         const local_type& local_A = A.LockedMatrix();
@@ -256,7 +257,7 @@ private:
         // TODO verify that A has the correct size
         // TODO A and mixed_A have to match
 
-        FUT T;
+        FUT T(base_data_t::N);
 
         // Rearrange matrix
         intermediate_type inter_A(A.Grid());
@@ -285,7 +286,7 @@ private:
                                     output_matrix_type& mixed_A,
                                     skylark::sketch::columnwise_tag) const {
 
-        FUT T;
+        FUT T(base_data_t::N);
 
         // TODO verify that A has the correct size
         // TODO A and mixed_A have to match

@@ -37,15 +37,16 @@ private:
     underlying_t;
 
 
-public:
+protected:
     /**
-     * Regular constructor
+     * Regular constructor - allow creation only by subclasses
      */
-    RFT_t (int N, int S, double sigma, skylark::sketch::context_t& context)
-        : base_data_t (N, S, sigma, context) {
+    RFT_t (int N, int S, skylark::sketch::context_t& context)
+        : base_data_t (N, S, context) {
 
     }
 
+public:
     /**
      * Copy constructor
      */
@@ -93,14 +94,14 @@ private:
         output_matrix_type& sketch_of_A,
         skylark::sketch::columnwise_tag tag) const {
 
-        underlying_t underlying(base_data_t::underlying_data);
+        underlying_t underlying(base_data_t::_underlying_data);
         underlying.apply(A, sketch_of_A, tag);
         for(int j = 0; j < A.Width(); j++)
-            for(int i = 0; i < base_data_t::S; i++) {
+            for(int i = 0; i < base_data_t::_S; i++) {
                 value_type val = sketch_of_A.Get(i, j);
                 value_type trans =
-                    base_data_t::scale * std::cos((val / base_data_t::sigma) +
-                        base_data_t::shifts[i]);
+                    base_data_t::_scale * std::cos((val * base_data_t::_val_scale) +
+                        base_data_t::_shifts[i]);
                 sketch_of_A.Set(i, j, trans);
             }
     }
@@ -114,14 +115,14 @@ private:
         skylark::sketch::rowwise_tag tag) const {
 
         // TODO verify sizes etc.
-        underlying_t underlying(base_data_t::underlying_data);
+        underlying_t underlying(base_data_t::_underlying_data);
         underlying.apply(A, sketch_of_A, tag);
-        for(int j = 0; j < base_data_t::S; j++)
+        for(int j = 0; j < base_data_t::_S; j++)
             for(int i = 0; i < A.Height(); i++) {
                 value_type val = sketch_of_A.Get(i, j);
                 value_type trans =
-                    base_data_t::scale * std::cos((val / base_data_t::sigma) +
-                        base_data_t::shifts[j]);
+                    base_data_t::_scale * std::cos((val * base_data_t::_val_scale) +
+                        base_data_t::_shifts[j]);
                 sketch_of_A.Set(i, j, trans);
             }
     }
@@ -153,15 +154,19 @@ private:
                                                 KernelDistribution>
     underlying_t;
 
+protected:
 
-public:
+    // Allow only creation by subclasses.
+
     /**
-     * Regular constructor
+     * Regular constructor -- Allow only creation by subclasses
      */
-    RFT_t (int N, int S, double sigma, skylark::sketch::context_t& context)
-        : base_data_t (N, S, sigma, context) {
+    RFT_t (int N, int S, skylark::sketch::context_t& context)
+        : base_data_t (N, S, context) {
 
     }
+
+public:
 
     /**
      * Copy constructor
@@ -220,15 +225,15 @@ private:
     void apply_impl_vdist (const matrix_type& A,
                      output_matrix_type& sketch_of_A,
                      skylark::sketch::columnwise_tag tag) const {
-        underlying_t underlying(base_data_t::underlying_data);
+        underlying_t underlying(base_data_t::_underlying_data);
         underlying.apply(A, sketch_of_A, tag);
         elem::Matrix<value_type> &Al = sketch_of_A.Matrix();
         for(int j = 0; j < Al.Width(); j++)
-            for(int i = 0; i < base_data_t::S; i++) {
+            for(int i = 0; i < base_data_t::_S; i++) {
                 value_type val = Al.Get(i, j);
                 value_type trans =
-                    base_data_t::scale * std::cos((val / base_data_t::sigma) +
-                        base_data_t::shifts[i]);
+                    base_data_t::_scale * std::cos((val * base_data_t::_val_scale) +
+                        base_data_t::_shifts[i]);
                 Al.Set(i, j, trans);
             }
     }
@@ -242,15 +247,15 @@ private:
         skylark::sketch::rowwise_tag tag) const {
 
         // TODO verify sizes etc.
-        underlying_t underlying(base_data_t::underlying_data);
+        underlying_t underlying(base_data_t::_underlying_data);
         underlying.apply(A, sketch_of_A, tag);
         elem::Matrix<value_type> &Al = sketch_of_A.Matrix();
-        for(int j = 0; j < base_data_t::S; j++)
+        for(int j = 0; j < base_data_t::_S; j++)
             for(int i = 0; i < Al.Height(); i++) {
                 value_type val = Al.Get(i, j);
                 value_type trans =
-                    base_data_t::scale * std::cos((val / base_data_t::sigma) +
-                        base_data_t::shifts[j]);
+                    base_data_t::_scale * std::cos((val * base_data_t::_val_scale) +
+                        base_data_t::_shifts[j]);
                 Al.Set(i, j, trans);
             }
     }

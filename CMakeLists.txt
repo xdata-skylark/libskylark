@@ -49,7 +49,7 @@ set (VERSION \"0.1\")
 if (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
   SET (CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING
        "Choose the type of build, options are: None Debug Release
-        RelWithDebInfo MinSizeRel."
+        RelWithDebInfo HybridRel HybridRelWithDebInfo."
         FORCE
       )
 endif (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
@@ -57,8 +57,10 @@ endif (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
 message (STATUS "Build type is: " ${CMAKE_BUILD_TYPE})
 
 
-# Select compiler dependen flags.
+# Select compiler dependent flags.
+set (CMAKE_CXX_FLAGS_HYBRIDRELWITHDEBINFO "-O3 -g -fopenmp")
 set (CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 -g")
+set (CMAKE_CXX_FLAGS_HYBRIDREL "-O3 -fopenmp")
 set (CMAKE_CXX_FLAGS_RELEASE "-O3")
 set (CMAKE_CXX_FLAGS_DEBUG  "-O0 -g")
 
@@ -123,10 +125,12 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "XL")
         xlf90_r
         xlfmath
     )
-        #mpihpm
-        #bgpm
 
-    #set (CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} -qsmp=omp")
+    set(BGQ_PROFILING_LIBRARIES
+        mpihpm
+        mpitrace
+        bgpm
+    )
 
 else()
     message (FATAL "Unsupported compiler!")
@@ -163,7 +167,7 @@ if (BOOST_ROOT)
 endif (BOOST_ROOT)
 
 set(BOOST_MIN_VERSION 1.53.0)
-find_package (Boost REQUIRED mpi)
+find_package (Boost REQUIRED mpi program_options serialization)
 if (Boost_FOUND)
   set (SKYLARK_HAVE_BOOST
        1
@@ -183,6 +187,26 @@ if (Random123_FOUND)
   include_directories (${Random123_INCLUDE_DIR})
 endif (Random123_FOUND)
 
+# 4. HDF5
+find_package(HDF5)
+if (HDF5_FOUND)
+  set (SKYLARK_HAVE_HDF5
+       1
+       CACHE
+       STRING
+       "Enables use of HDF5 Libraries"
+       FORCE)
+  include_directories (${HDF5_INCLUDE_DIR})
+  find_package(ZLIB)
+else (HDF5_FOUND)
+  set (SKYLARK_HAVE_HDF5
+       0
+       CACHE
+       STRING
+       "Enables use of HDF5 Libraries"
+       FORCE)
+endif (HDF5_FOUND)
+
 #-----------------------------------------------------------------------------
 # options
 
@@ -193,17 +217,46 @@ if (USE_ELEMENTAL)
   if (Elemental_FOUND)
     include_directories (${Elemental_INCLUDE_DIR})
     link_directories (${Elemental_LIBRARY_DIR})
+
+    #FIXME: properly identify and check flags
+    #include(FindCXXFeatures)
+    set(CXX11_COMPILER_FLAGS "-std=c++11")
+    message(STATUS "CXX11_COMPILER_FLAGS=${CXX11_COMPILER_FLAGS}")
+    set (CMAKE_CXX_FLAGS "${CXX11_COMPILER_FLAGS} ${CMAKE_CXX_FLAGS}")
+
     set (SKYLARK_HAVE_ELEMENTAL
          1
          CACHE
          STRING
          "Enables use of Elemental Libraries"
          FORCE)
+
+    # check if elemental build type is Hybrid
+    file(STRINGS "${Elemental_INCLUDE_DIR}/elemental/config.h"
+      ELEMENTAL_HYBRID_BUILD_TYPE REGEX "^[ \t]*#define[ \t]+CMAKE_BUILD_TYPE[ \t]+\"HybridRelease\"")
+
+    if(ELEMENTAL_HYBRID_BUILD_TYPE)
+      message(STATUS "Elemental was built in hybrid mode. Enabling support as well.")
+      set (USE_HYBRID
+           1
+           CACHE
+           STRING
+           "Enables use of hybrid MPI/OpenMP parallelization"
+           FORCE)
+    endif(ELEMENTAL_HYBRID_BUILD_TYPE)
   endif (Elemental_FOUND)
 
   # Elemental requires BLAS and LAPACK libraries
-  find_package(BLAS REQUIRED)
-  find_package(LAPACK REQUIRED)
+  set(BLAS_LIBRARIES $ENV{BLAS_LIBRARIES})
+  set(LAPACK_LIBRARIES $ENV{LAPACK_LIBRARIES})
+  if(NOT BLAS_LIBRARIES OR NOT LAPACK_LIBRARIES)
+    find_package(BLAS)
+    find_package(LAPACK)
+  endif(NOT BLAS_LIBRARIES OR NOT LAPACK_LIBRARIES)
+
+  if(NOT BLAS_LIBRARIES OR NOT LAPACK_LIBRARIES)
+      message(FATAL_ERROR "Elemental needs BLAS and LAPACK")
+  endif(NOT BLAS_LIBRARIES OR NOT LAPACK_LIBRARIES)
   set (Elemental_LIBRARY
     ${Elemental_LIBRARY}
     ${BLAS_LIBRARIES}
@@ -226,6 +279,17 @@ if (USE_FFTW)
          "Enables use of fftw Libraries"
          FORCE)
   endif (FFTW_FOUND)
+  find_package(FFTWF)
+  if (FFTWF_FOUND)
+    include_directories(${FFTWF_INCLUDE_DIR})
+    link_directories (${FFTWF_LIBRARY_DIR})
+    set (SKYLARK_HAVE_FFTWF
+         1
+         CACHE
+         STRING
+         "Enables use of fftw single precision Libraries"
+         FORCE)
+  endif (FFTWF_FOUND)
 endif (USE_FFTW)
 
 
@@ -236,8 +300,12 @@ if (USE_COMBBLAS)
   if (CombBLAS_FOUND)
     include_directories (${CombBLAS_INCLUDE_DIR})
     link_directories (${CombBLAS_LIBRARY_DIR})
-    #FIXME: Boost only necessary if compiler is not c++11 compatible
-    add_definitions(-DCOMBBLAS_BOOST)
+
+    # use Boost fallback if we don't have c++11 capabilities
+    if(NOT CXX11_COMPILER_FLAGS)
+      add_definitions(-DCOMBBLAS_BOOST)
+    endif(NOT CXX11_COMPILER_FLAGS)
+
     add_definitions(-D__STDC_LIMIT_MACROS)
     set (SKYLARK_HAVE_COMBBLAS
          1
@@ -247,6 +315,35 @@ if (USE_COMBBLAS)
          FORCE)
   endif (CombBLAS_FOUND)
 endif (USE_COMBBLAS)
+
+
+option (USE_PROFILER "Use Skylark profiling tools" OFF)
+if (USE_PROFILER)
+  set (SKYLARK_HAVE_PROFILER
+       1
+       CACHE
+       STRING
+       "Enables use of profiling extensions"
+       FORCE)
+endif (USE_PROFILER)
+
+
+option (USE_HYBRID "Use hybrid MPI/OpenMPI parallelization" OFF)
+if (USE_HYBRID)
+  find_package(OpenMP)
+    if (OPENMP_FOUND)
+      set (SKYLARK_HAVE_OPENMP
+           1
+           CACHE
+           STRING
+           "Enables use of OpenMP extensions"
+           FORCE)
+      set (CMAKE_CXX_FLAGS "${OpenMP_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
+      set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_CXX_FLAGS}")
+    else (OPENMP_FOUND)
+      message (FATAL_ERROR "No suitable OpenMP support detected for compiler.")
+    endif (OPENMP_FOUND)
+endif (USE_HYBRID)
 
 
 option (BUILD_PYTHON "Whether we should build the python interface" ON)
@@ -269,6 +366,11 @@ if (BUILD_PYTHON)
   add_subdirectory(sketch/capi)
   add_subdirectory(python-skylark)
 endif (BUILD_PYTHON)
+
+option (BUILD_ML "Whether we should build the machine learning solvers" ON)
+if (BUILD_ML)
+  add_subdirectory(ml)
+endif (BUILD_ML)
 
 option (BUILD_EXAMPLES "Whether we should build the examples" ON)
 if (BUILD_EXAMPLES)

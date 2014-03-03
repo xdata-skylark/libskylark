@@ -12,7 +12,7 @@
 
 namespace po = boost::program_options;
 
-#define DEFAULT_LAMBDA 0.01
+#define DEFAULT_LAMBDA 0.0
 #define DEFAULT_RHO 1.0
 #define DEFAULT_THREADS 1
 #define DEFAULT_FEATURE_PARTITIONS 1
@@ -22,6 +22,7 @@ namespace po = boost::program_options;
 #define DEFAULT_SEED 12345
 #define DEFAULT_RF 100
 #define DEFAULT_KERNEL 0
+#define DEFAULT_FILEFORMAT 0
 
 enum LossType {SQUARED = 0, LAD = 1, HINGE = 2, LOGISTIC = 3};
 std::string Losses[] = {"Squared Loss", "Least Absolute Deviations", "Hinge Loss (SVMs)", "Logistic Loss"};
@@ -32,9 +33,11 @@ std::string Regularizers[] = {"L2", "L1"};
 enum ProblemType {REGRESSION = 0, CLASSIFICATION = 1};
 std::string Problems[] = {"Regression", "Classification"};
 
-enum KernelType {LINEAR = 0, GAUSSIAN = 1};
-std::string Kernels[] = {"Linear", "Gaussian"};
+enum KernelType {LINEAR = 0, GAUSSIAN = 1, POLYNOMIAL = 2, LAPLACIAN = 3, EXPSEMIGROUP = 4};
+std::string Kernels[] = {"Linear", "Gaussian", "Polynomial", "Laplacian", "ExpSemigroup"};
 
+enum FileFormatType {LIBSVM = 0, HDF5 = 1};
+std::string FileFormats[] = {"Libsvm", "HDF5"};
 
 /**
  * A structure that is used to pass options to the ADMM solver. This structure
@@ -50,6 +53,9 @@ struct hilbert_options_t {
 
  /** Kernel parameters */
  double kernelparam;
+ double kernelparam2;
+ double kernelparam3;
+ 
  double lambda;
 
  /** Optimization options */;
@@ -60,10 +66,14 @@ struct hilbert_options_t {
  /** Randomization options */
  int seed;
  int randomfeatures;
+ bool regularmap;
 
  /* parallelization options */
  int numfeaturepartitions;
  int numthreads;
+ int nummpiprocesses;
+
+ int fileformat;
 
  /* acceleration options */
  // bool fastfood;
@@ -72,6 +82,8 @@ struct hilbert_options_t {
  /**  IO */
  std::string trainfile;
  std::string modelfile;
+ std::string testfile;
+ std::string valfile;
 
   /** A parameter indicating if we need to continue or not */
  bool exit_on_return;
@@ -79,15 +91,18 @@ struct hilbert_options_t {
 /**
    * The constructor takes in all the command line parameters and parses them.
    */
-  hilbert_options_t (int argc, char** argv) : exit_on_return(false) {
+  hilbert_options_t (int argc, char** argv, int nproc) : exit_on_return(false) {
     /** Set up the options that we want */
+      this->nummpiprocesses = nproc;
     po::options_description desc ("Usage: hilbert_train [options] trainfile modelfile");
     desc.add_options()
   ("help,h", "produce a help message")
   ("lossfunction,l", po::value<int>((int*) &lossfunction)->default_value(SQUARED), "Loss function (0:SQUARED, 1:LAD, 2:HINGE, 3:LOGISTIC")
   ("regularizer,r",    po::value<int>((int*) &regularizer)->default_value(L2), "Regularizer (0:L2, 1:L1)")
-  ("kernel,k", po::value<int>((int*) &kernel)->default_value(LINEAR), "Kernel (0:LINEAR, 1:GAUSSIAN)")
+  ("kernel,k", po::value<int>((int*) &kernel)->default_value(LINEAR), "Kernel (0:LINEAR, 1:GAUSSIAN, 2:POLYNOMIAL, 3:LAPLACIAN, 4:EXPSEMIGROUP)")
   ("kernelparam,g", po::value<double>(&kernelparam)->default_value(DEFAULT_KERNELPARAM), "Kernel Parameter")
+  ("kernelparam2,x", po::value<double>(&kernelparam2)->default_value(-1), "If Applicable - Second Kernel Parameter (Polynomial Kernel: c)")
+  ("kernelparam3,y", po::value<double>(&kernelparam3)->default_value(-1), "If Applicable - Third Kernel Parameter (Polynomial Kernel: gamma)")
   ("lambda,c", po::value<double>(&lambda)->default_value(DEFAULT_LAMBDA), "Regularization Parameter")
   ("tolerance,e", po::value<double>(&tolerance)->default_value(DEFAULT_TOL), "Tolerance")
   ("rho", po::value<double>(&rho)->default_value(DEFAULT_RHO), "ADMM rho parameter")
@@ -95,9 +110,13 @@ struct hilbert_options_t {
   ("randomfeatures,f", po::value<int>(&randomfeatures)->default_value(DEFAULT_RF), "Number of Random Features (default: 100)")
   ("numfeaturepartitions,n", po::value<int>(&numfeaturepartitions)->default_value(DEFAULT_FEATURE_PARTITIONS), "Number of Feature Partitions (default: 1)")
   ("numthreads,t", po::value<int>(&numthreads)->default_value(DEFAULT_THREADS), "Number of Threads (default: 1)")
+  ("regular", po::value<bool>(&regularmap)->default_value(false), "Default is to use 'fast' feature mapping, if available. Use this flag to force regular mapping (default: false)")
+  ("fileformat", po::value<int>(&fileformat)->default_value(DEFAULT_FILEFORMAT), "Fileformat (default: 0 (libsvm), 1 (hdf5)")
   ("MAXITER,i", po::value<int>(&MAXITER)->default_value(DEFAULT_MAXITER), "Maximum Number of Iterations (default: 100)")
   ("trainfile", po::value<std::string>(&trainfile)->required(), "Training data file")
-  ("modelfile", po::value<std::string>(&modelfile)->required(), "Model output file");
+  ("modelfile", po::value<std::string>(&modelfile)->required(), "Model output file")
+  ("valfile", po::value<std::string>(&valfile)->default_value(""), "Validation file (optional)")
+  ("testfile", po::value<std::string>(&testfile)->default_value(""), "Test file (optional)")
       ; /* end options */
 
     po::positional_options_description positionalOptions;
@@ -132,10 +151,17 @@ struct hilbert_options_t {
 	 optionstring << "# HILBERT OPTIONS:" << "\n";
 	 optionstring << "# Training File = " << trainfile << "\n";
 	 optionstring << "# Model File = " << modelfile << "\n";
+	 optionstring << "# Validation File = " << valfile << "\n";
+	 optionstring << "# Test File = " << testfile << "\n";
+	 optionstring << "# File Format = " << fileformat << "\n";
 	 optionstring << "# Loss function = " << lossfunction << " ("<< Losses[lossfunction]<< ")" << "\n";
 	 optionstring << "# Regularizer = " << regularizer << " ("<< Regularizers[regularizer]<< ")" << "\n";
 	 optionstring << "# Kernel = " << kernel << " ("<< Kernels[kernel]<< ")" << "\n";
 	 optionstring << "# Kernel Parameter = " << kernelparam << "\n";
+	 if (kernelparam2 != -1)
+		 optionstring << "# Second Kernel Parameter = " << kernelparam2 << "\n";
+	 if (kernelparam3 != -1)
+		 optionstring << "# Third Kernel Parameter = " << kernelparam3 << "\n";
 	 optionstring << "# Regularization Parameter = " << lambda << "\n";
 	 optionstring << "# Maximum Iterations = " << MAXITER << "\n";
 	 optionstring << "# Tolerance = " << tolerance << "\n";
@@ -144,6 +170,7 @@ struct hilbert_options_t {
 	 optionstring << "# Random Features = " << randomfeatures << "\n";
 	 optionstring << "# Number of feature partitions = " << numfeaturepartitions << "\n";
 	 optionstring << "# Threads = " << numthreads << "\n";
+	 optionstring <<"# Number of MPI Processes = " << nummpiprocesses << "\n";
 	 return optionstring.str();
   }
 };

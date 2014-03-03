@@ -25,8 +25,11 @@ enum transform_type_t {
     CWT,
     MMT,
     WZT,
+    PPT,
     GaussianRFT,
-    LaplacianRFT
+    LaplacianRFT,
+    FastGaussianRFT,
+    ExpSemigroupRLT
 };
 
 enum matrix_type_t {

@@ -168,6 +168,12 @@ struct context_t {
     size_t get_counter() { return _counter; }
 
 private:
+
+    /// Disable copy constructor as this is error prone for context
+    context_t(const context_t &other) {
+
+    }
+
     /// Internal counter identifying the start of next stream of random numbers
     size_t _counter;
     /// The seed used for initializing the context

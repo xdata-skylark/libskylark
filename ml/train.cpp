@@ -222,7 +222,7 @@ int main (int argc, char** argv) {
 	 if (context.rank==0) {
 		 std::stringstream dimensionstring;
 		 dimensionstring << "# Dimensions " << features << " " << k << "\n";
-		 elem::Write(Wbar, options.modelfile, elem::AUTO, options.print().append(dimensionstring.str()));
+		 elem::Write(Wbar, options.modelfile, elem::ASCII, options.print().append(dimensionstring.str()));
 	 }
 
 	 // Testing - if specified by the user.

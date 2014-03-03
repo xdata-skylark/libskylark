@@ -2,8 +2,14 @@
 #define SKYLARK_HILBERT_OPTIONS_HPP
 
 #ifndef SKYLARK_AVOID_BOOST_PO
+
 #include <boost/program_options.hpp>
 namespace po = boost::program_options;
+
+#else
+
+#include <boost/lexical_cast.hpp>
+
 #endif
 
 #define DEFAULT_LAMBDA 0.0
@@ -87,8 +93,9 @@ struct hilbert_options_t {
      */
     hilbert_options_t (int argc, char** argv, int nproc) :
         nummpiprocesses(nproc), exit_on_return(false) {
-        /** Set up the options that we want */
-        this->nummpiprocesses = nproc;
+
+#ifndef SKYLARK_AVOID_BOOST_PO
+
         po::options_description desc
             ("Usage: hilbert_train [options] trainfile modelfile");
         desc.add_options()
@@ -183,6 +190,80 @@ struct hilbert_options_t {
             exit_on_return = true;
             return;
         }
+
+#else
+        // The following is much less robust, but should work even without
+        // Boost::program_options.
+
+        lossfunction = SQUARED;
+        regularizer = L2;
+        kernel = LINEAR;
+        kernelparam = DEFAULT_KERPARAM;
+        kernelparam2 = -1;
+        kernelparam3 = -1;
+        lambda = DEFAULT_LAMBDA;
+        tolerance = DEFAULT_TOL;
+        rho = DEFAULT_RHO;
+        seed = DEFAULT_SEED;
+        randomfeatures = DEFAULT_RF;
+        numfeaturepartitions = DEFAULT_FEATURE_PARTITIONS;
+        numthreads = DEFAULT_THREADS;
+        regularmap = false;
+        fileformat = DEFAULT_FILEFORMAT;
+        MAXITER = DEFAULT_MAXITER;
+        valfile = "";
+        testfile = "";
+
+        for (int i = 1; i < argc; i += 2) {
+            std::string flag = argv[i];
+            std::string value = argv[i+1];
+
+            if (flag == "--lossfunction" || flag == "-l")
+                lossfunction =
+                    static_cast<LossType>(boost::lexical_cast<int>(value));
+            if (flag == "--regularizer" || flag == "-r")
+                regularizer =
+                    static_cast<RegularizerType>(boost::lexical_cast<int>(value));
+            if (flag == "--kernel" || flag == "-k")
+                kernel =
+                    static_cast<KernelType>(boost::lexical_cast<int>(value));
+            if (flag == "--kernelparam" || flag == "-g")
+                kernelparam = boost::lexical_cast<double>(value);
+            if (flag == "--kernelparam2" || flag == "-x")
+                kernelparam2 = boost::lexical_cast<double>(value);
+            if (flag == "--kernelparam3" || flag == "-y")
+                kernelparam3 = boost::lexical_cast<double>(value);
+            if (flag == "--lambda" || flag == "-c")
+                lambda = boost::lexical_cast<double>(value);
+            if (flag == "--tolerance" || flag == "-e")
+                tolerance = boost::lexical_cast<double>(value);
+            if (flag == "--rho")
+                rho = boost::lexical_cast<double>(value);
+            if (flag == "--seed" || flag == "-s")
+                seed = boost::lexical_cast<int>(value);
+            if (flag == "--randomfeatures" || flag == "-f")
+                randomfeatures = boost::lexical_cast<int>(value);
+            if (flag == "--numfeaturepartitions" || flag == "-n")
+                numfeaturepartitions = boost::lexical_cast<int>(value);
+            if (flag == "--numthreads" || flag == "-t")
+                numthreads = boost::lexical_cast<int>(value);
+            if (flag == "--regular")
+                regularmap = value == "on";
+            if (flag == "--fileformat")
+                fileformat =
+                    static_cast<FileFormatType>(boost::lexical_cast<int>(value));
+            if (flag == "--MAXITER" || flag == "-i")
+                MAXITER = boost::lexical_cast<int>(value);
+            if (flag == "--trainfile")
+                trainfile = value;
+            if (flag == "--modelfile")
+                modelfile = value;
+            if (flag == "--valfile")
+                valfile = value;
+            if (flag == "--testfile")
+                testfile = value;
+        }
+#endif
     }
 
     std::string print () const {

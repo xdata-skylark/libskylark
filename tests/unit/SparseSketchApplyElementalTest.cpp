@@ -58,6 +58,10 @@ int test_main(int argc, char *argv[]) {
     //[> Setup test <]
     namespace mpi = boost::mpi;
 
+#ifdef SKYLARK_HAVE_OPENMP
+    int provided;
+    MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
+#endif
     typedef elem::Matrix<double> MatrixType;
     typedef elem::DistMatrix<double, elem::VR, elem::STAR> DistMatrixType;
 

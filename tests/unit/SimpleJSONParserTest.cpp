@@ -11,6 +11,7 @@
 #include "../../utility/simple_json_parser.hpp"
 
 #include "../../sketch/context.hpp"
+#include "../../sketch/transform_data.hpp"
 #include "../../sketch/hash_transform.hpp"
 #include "../../sketch/CWT.hpp"
 #include "../../sketch/CT.hpp"
@@ -85,8 +86,14 @@ int test_main(int argc, char *argv[]) {
     out.close();
 
     //[> 3. Create a new context and sketch from the JSON file. <]
-    skylark::sketch::CWT_t<DistMatrixType, DistMatrixType>
-        Sparse_load("sketch.json", context);
+    std::ifstream file;
+    std::stringstream json;
+    file.open("sketch.json", std::ios::in);
+    std::vector<skylark::sketch::transform_data_t> data;
+    file >> data;
+
+    //skylark::sketch::CWT_t<DistMatrixType, DistMatrixType>
+        //Sparse_load("sketch.json", context);
 
     //for(size_t i = 0; i < n; ++i)
         //BOOST_ASSERT( (Sparse.rowidx(i) == Sparse_cl.rowidx(i)) &&

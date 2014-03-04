@@ -6,6 +6,7 @@
 #include "../utility/exception.hpp"
 #include "../utility/simple_json_parser.hpp"
 
+#include "boost/foreach.hpp"
 #include "boost/property_tree/ptree.hpp"
 #include "boost/property_tree/json_parser.hpp"
 
@@ -104,6 +105,27 @@ boost::property_tree::ptree& operator<<(boost::property_tree::ptree &sk,
 
     return sk;
 }
+
+std::istream& operator>>(
+        std::istream &in, std::vector<transform_data_t> &vec) {
+
+    boost::property_tree::ptree json_tree;
+    try {
+        boost::property_tree::read_json(in, json_tree);
+    } catch (std::exception const& e) {
+        std::cout << e.what() << std::endl;
+    }
+
+    BOOST_FOREACH(const boost::property_tree::ptree::value_type& child,
+                  json_tree.get_child("sketches")) {
+        std::cout << "Creating sketch "
+                  << child.second.get<std::string>("sketch.name") << "\n";
+        //TODO: create sketches
+    }
+
+    return in;
+}
+
 
 } } /** namespace skylark::sketch */
 

@@ -40,6 +40,24 @@ struct transform_data_t {
     }
 
     /**
+     *  Load an array of serialized sketches.
+     *  @param[in] filename of the JSON file.
+     */
+    static void load(const std::string &filename) {
+
+        //TODO
+    }
+
+    /**
+     *  Load an array of serialized sketches.
+     *  @param[in] sketches stream access
+     */
+    static void load(const std::istream &sketches) {
+
+        //TODO
+    }
+
+    /**
      *  Serializes a sketch to a string.
      *  @param[out] dump containing serialized JSON object
      */
@@ -65,18 +83,48 @@ struct transform_data_t {
         dump = ss.str();
     }
 
+    friend std::istream& operator>>(std::istream &in, transform_data_t &data);
+
+    friend boost::property_tree::ptree& operator<<(
+            boost::property_tree::ptree &sk, const transform_data_t &data);
+
 protected:
     int N; /**< Input dimension  */
     int S; /**< Output dimension  */
     skylark::sketch::context_t& context; /**< Context for this sketch */
 
-    std::string _name; /**< distribution name */
+    std::string _name; /**< sketch name */
 
 private:
     const std::string _version;
     size_t _stream_start; /**< Remember where the random stream started */
-
 };
+
+std::istream& operator>>(std::istream &in, transform_data_t &data) {
+
+    transform_data_t::load(in);
+    return in;
+}
+
+boost::property_tree::ptree& operator<<(boost::property_tree::ptree &sk,
+                                        const transform_data_t &data) {
+
+    sk.put("version", data._version);
+    sk.put("sketch.name", data._name);
+
+    boost::property_tree::ptree size;
+    boost::property_tree::ptree size_n, size_s;
+    size_n.put("", data.N);
+    size_s.put("", data.S);
+    size.push_back(std::make_pair("", size_n));
+    size.push_back(std::make_pair("", size_s));
+    sk.add_child("sketch.size", size);
+
+    sk.put("sketch.context.counter", data._stream_start);
+    sk << data.context;
+
+    return sk;
+}
 
 } } /** namespace skylark::sketch */
 

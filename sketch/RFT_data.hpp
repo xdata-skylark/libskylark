@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "context.hpp"
+#include "transform_data.hpp"
 #include "dense_transform_data.hpp"
 #include "../utility/randgen.hpp"
 
@@ -14,7 +15,7 @@ namespace skylark { namespace sketch {
 /**
  * Random Fourier Transform (data)
  *
- * Sketch transform into Eucledian space of fuctions in an RKHS
+ * Sketch transform into Euclidean space of functions in an RKHS
  * implicitly defined by a vector and a shift-invariant kernel.
  *
  * See:
@@ -49,6 +50,9 @@ struct RFT_data_t {
         return static_cast<const RFT_data_t&>(*this);
     }
 
+    //TODO: inherit from (dense_)transform_t or serialize here
+    //TODO: serialize distribution
+
 
 protected:
     const int _N; /**< Input dimension  */
@@ -77,9 +81,24 @@ struct GaussianRFT_data_t :
         base_t::_val_scale = 1.0 / sigma;
     }
 
+    template <typename ValueT>
+    friend boost::property_tree::ptree& operator<<(
+            boost::property_tree::ptree &sk,
+            const GaussianRFT_data_t<ValueT> &data);
+
 protected:
     const ValueType _sigma;
 };
+
+template <typename ValueType>
+boost::property_tree::ptree& operator<<(boost::property_tree::ptree &sk,
+                                        const GaussianRFT_data_t<ValueType> &data) {
+
+    sk << static_cast<const transform_data_t&>(data);
+    sk.put("sketch.sigma", data._sigma);
+    return sk;
+}
+
 
 template<typename ValueType>
 struct LaplacianRFT_data_t :
@@ -96,9 +115,23 @@ struct LaplacianRFT_data_t :
         base_t::_val_scale = 1.0 / sigma;
     }
 
+    template <typename ValueT>
+    friend boost::property_tree::ptree& operator<<(
+            boost::property_tree::ptree &sk,
+            const LaplacianRFT_data_t<ValueT> &data);
+
 protected:
     const ValueType _sigma;
 };
+
+template <typename ValueType>
+boost::property_tree::ptree& operator<<(boost::property_tree::ptree &sk,
+                                        const LaplacianRFT_data_t<ValueType> &data) {
+
+    sk << static_cast<const transform_data_t&>(data);
+    sk.put("sketch.sigma", data._sigma);
+    return sk;
+}
 
 } } /** namespace skylark::sketch */
 

@@ -34,6 +34,8 @@ struct RFUT_data_t {
         return static_cast<const RFUT_data_t&>(*this);
     }
 
+    //TODO: inherit from (dense_)transform_t or serialize here
+    //TODO: serialize distribution
 
 protected:
     const int N; /**< Input dimension  */

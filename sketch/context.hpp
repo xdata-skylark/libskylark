@@ -167,6 +167,8 @@ struct context_t {
 
     size_t get_counter() { return _counter; }
 
+    friend boost::property_tree::ptree& operator<<(
+            boost::property_tree::ptree &sk, const context_t &data);
 private:
 
     /// Disable copy constructor as this is error prone for context
@@ -179,6 +181,12 @@ private:
     /// The seed used for initializing the context
     int _seed;
 };
+
+boost::property_tree::ptree& operator<<(boost::property_tree::ptree &sk,
+                                        const context_t &data) {
+        sk.put("sketch.context.seed", data._seed);
+        return sk;
+}
 
 } } /** namespace skylark::sketch */
 

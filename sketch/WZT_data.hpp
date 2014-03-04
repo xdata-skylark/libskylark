@@ -2,6 +2,8 @@
 #define SKYLARK_WZT_DATA_HPP
 
 #include "../utility/distributions.hpp"
+
+#include "transform_data.hpp"
 #include "hash_transform_data.hpp"
 
 namespace skylark { namespace sketch {
@@ -10,8 +12,8 @@ namespace skylark { namespace sketch {
  * Woodruff-Zhang Transform (data)
  *
  * Woodruff-Zhang Transform is very similar to the Clarkson-Woodruff Transform:
- * it replaces the +1/-1 diagonal with reciprocal exponentia random enteries. 
- * It is sutiable for lp regression with 1 <= p <= 2.
+ * it replaces the +1/-1 diagonal with reciprocal exponential random entries.
+ * It is suitable for lp regression with 1 <= p <= 2.
  *
  * Reference:
  * D. Woodruff and Q. Zhang
@@ -33,7 +35,7 @@ struct WZT_data_t : public hash_transform_data_t<
         boost::random::exponential_distribution >  Base;
 
     WZT_data_t(int N, int S, double p, context_t& context)
-        : Base(N, S, context) {
+        : Base(N, S, context), _P(p) {
 
         // TODO verify that p is in the correct range.
 
@@ -50,9 +52,26 @@ struct WZT_data_t : public hash_transform_data_t<
              Base::row_value[i] =
                  pmvals[i] * pow(1.0 / Base::row_value[i], 1.0 / p);
 
-   }
+    }
 
+    template <typename IndexT, typename ValueT>
+    friend boost::property_tree::ptree& operator<<(
+            boost::property_tree::ptree &sk,
+            const WZT_data_t<IndexT, ValueT> &data);
+
+private:
+    double _P;
 };
+
+template <typename IndexType, typename ValueType>
+boost::property_tree::ptree& operator<<(
+        boost::property_tree::ptree &sk,
+        const WZT_data_t<IndexType, ValueType> &data) {
+
+    sk << static_cast<const transform_data_t&>(data);
+    sk.put("sketch.p", data._P);
+    return sk;
+}
 
 } } /** namespace skylark::sketch */
 

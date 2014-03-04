@@ -3,13 +3,16 @@
 #include <boost/mpi.hpp>
 #include <boost/test/minimal.hpp>
 
+#include "boost/property_tree/ptree.hpp"
+#include "boost/property_tree/json_parser.hpp"
+
 #include "../../utility/distributions.hpp"
 #include "../../utility/simple_json_parser.hpp"
 
 #include "../../sketch/context.hpp"
 #include "../../sketch/hash_transform.hpp"
 #include "../../sketch/CWT.hpp"
-
+#include "../../sketch/CT.hpp"
 
 template < typename InputMatrixType,
            typename OutputMatrixType = InputMatrixType >
@@ -70,6 +73,13 @@ int test_main(int argc, char *argv[]) {
     std::string json_object;
     Sparse.dump_json(json_object);
 
+    // dump to property tree
+    boost::property_tree::ptree pt;
+    pt << Sparse;
+    std::stringstream ss;
+    write_json(ss, pt);
+    std::cout << ss.str() << std::endl;
+
     //[> 2. Dump the JSON string to file <]
     std::cout << json_object << std::endl;
     std::ofstream out("sketch.json");
@@ -88,6 +98,23 @@ int test_main(int argc, char *argv[]) {
 
     //if (!static_cast<bool>(expected_A == sketch_A))
         //BOOST_FAIL("Result of colwise application not as expected");
+
+
+
+    //[> Create the sketching matrix and dump JSON <]
+    typedef elem::DistMatrix<double, elem::VR, elem::STAR> DenseDistMat_t;
+    elem::Initialize (argc, argv);
+    elem::Grid grid (world);
+
+    DenseDistMat_t A(grid);
+    elem::Uniform(A, m, n);
+
+    skylark::sketch::CT_t<DenseDistMat_t, DenseDistMat_t> Dense(n, n_s, 2.2, context);
+    boost::property_tree::ptree ptd;
+    ptd << Dense;
+    std::stringstream ssd;
+    write_json(ssd, ptd);
+    std::cout << ssd.str() << std::endl;
 
     return 0;
 }

@@ -1,6 +1,10 @@
 #ifndef SKYLARK_CT_DATA_HPP
 #define SKYLARK_CT_DATA_HPP
 
+#include "boost/property_tree/ptree.hpp"
+#include "boost/property_tree/json_parser.hpp"
+
+#include "transform_data.hpp"
 #include "dense_transform_data.hpp"
 
 namespace skylark { namespace sketch {
@@ -24,10 +28,26 @@ struct CT_data_t :
      * Most of the work is done by base. Here just write scale
      */
     CT_data_t(int N, int S, double C, skylark::sketch::context_t& context)
-        : Base(N, S, context) {
+        : Base(N, S, context), _C(C) {
         Base::scale = C / static_cast<double>(S);
     }
+
+    template <typename ValueT>
+    friend boost::property_tree::ptree& operator<<(
+            boost::property_tree::ptree &sk, const CT_data_t<ValueT> &data);
+private:
+
+    double _C;
 };
+
+template <typename ValueType>
+boost::property_tree::ptree& operator<<(boost::property_tree::ptree &sk,
+                                        const CT_data_t<ValueType> &data) {
+
+    sk << static_cast<const transform_data_t&>(data);
+    sk.put("sketch.c", data._C);
+    return sk;
+}
 
 } } /** namespace skylark::sketch */
 

@@ -7,6 +7,7 @@
 #include "boost/property_tree/json_parser.hpp"
 
 #include "../../utility/distributions.hpp"
+#include "../../utility/sketch_archive.hpp"
 #include "../../utility/simple_json_parser.hpp"
 
 #include "../../sketch/context.hpp"
@@ -70,20 +71,17 @@ int test_main(int argc, char *argv[]) {
     //[> 1. Create the sketching matrix and dump JSON <]
     skylark::sketch::CWT_t<DistMatrixType, DistMatrixType> Sparse(n, n_s, context);
 
-    std::string json_object;
-    Sparse.dump_json(json_object);
-
     // dump to property tree
+    //FIXME: improve interface (remove indirection)
     boost::property_tree::ptree pt;
     pt << Sparse;
-    std::stringstream ss;
-    write_json(ss, pt);
-    std::cout << ss.str() << std::endl;
+    skylark::utility::sketch_archive_t ar;
+    ar << pt;
+    std::cout << ar << std::endl;
 
     //[> 2. Dump the JSON string to file <]
-    std::cout << json_object << std::endl;
     std::ofstream out("sketch.json");
-    out << json_object;
+    out << ar;
     out.close();
 
     //[> 3. Create a new context and sketch from the JSON file. <]
@@ -112,9 +110,9 @@ int test_main(int argc, char *argv[]) {
     skylark::sketch::CT_t<DenseDistMat_t, DenseDistMat_t> Dense(n, n_s, 2.2, context);
     boost::property_tree::ptree ptd;
     ptd << Dense;
-    std::stringstream ssd;
-    write_json(ssd, ptd);
-    std::cout << ssd.str() << std::endl;
+    skylark::utility::sketch_archive_t ar2;
+    ar2 << ptd << pt;
+    std::cout << ar2 << std::endl;
 
     return 0;
 }

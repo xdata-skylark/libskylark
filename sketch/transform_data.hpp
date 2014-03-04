@@ -57,34 +57,12 @@ struct transform_data_t {
         //TODO
     }
 
+    friend std::istream& operator>>(std::istream &in, transform_data_t &data);
+
     /**
      *  Serializes a sketch to a string.
      *  @param[out] dump containing serialized JSON object
      */
-    void dump_json(std::string &dump) const {
-        boost::property_tree::ptree sk;
-
-        sk.put("version", _version);
-        sk.put("sketch.name", _name);
-
-        boost::property_tree::ptree size;
-        boost::property_tree::ptree size_n, size_s;
-        size_n.put("", N);
-        size_s.put("", S);
-        size.push_back(std::make_pair("", size_n));
-        size.push_back(std::make_pair("", size_s));
-        sk.add_child("sketch.size", size);
-
-        sk.put("sketch.context.counter", _stream_start);
-        context.dump_json(sk);
-
-        std::stringstream ss;
-        write_json(ss, sk);
-        dump = ss.str();
-    }
-
-    friend std::istream& operator>>(std::istream &in, transform_data_t &data);
-
     friend boost::property_tree::ptree& operator<<(
             boost::property_tree::ptree &sk, const transform_data_t &data);
 
@@ -110,6 +88,7 @@ boost::property_tree::ptree& operator<<(boost::property_tree::ptree &sk,
                                         const transform_data_t &data) {
 
     sk.put("version", data._version);
+
     sk.put("sketch.name", data._name);
 
     boost::property_tree::ptree size;

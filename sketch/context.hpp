@@ -157,16 +157,12 @@ struct context_t {
     }
 
 
+    size_t get_counter() { return _counter; }
+
     /**
      * Serializes the context to a JSON structure.
      * @param[out] JSON encoded state of the context.
      */
-    void dump_json(boost::property_tree::ptree &pt) const {
-        pt.put("sketch.context.seed", _seed);
-    }
-
-    size_t get_counter() { return _counter; }
-
     friend boost::property_tree::ptree& operator<<(
             boost::property_tree::ptree &sk, const context_t &data);
 private:

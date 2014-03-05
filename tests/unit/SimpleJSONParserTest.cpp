@@ -89,8 +89,13 @@ int test_main(int argc, char *argv[]) {
     std::ifstream file;
     std::stringstream json;
     file.open("sketch.json", std::ios::in);
-    std::vector<skylark::sketch::transform_data_t> data;
-    file >> data;
+    //std::vector<skylark::sketch::transform_data_t> data;
+    //file >> data;
+    skylark::utility::sketch_archive_t arl;
+    file >> arl;
+    skylark::sketch::CWT_t<DistMatrixType, DistMatrixType> tmp(
+            arl.get(0), context);
+
 
     //skylark::sketch::CWT_t<DistMatrixType, DistMatrixType>
         //Sparse_load("sketch.json", context);
@@ -98,11 +103,6 @@ int test_main(int argc, char *argv[]) {
     //for(size_t i = 0; i < n; ++i)
         //BOOST_ASSERT( (Sparse.rowidx(i) == Sparse_cl.rowidx(i)) &&
                       //(Sparse.rowval(i) == Sparse_cl.rowval(i)));
-
-
-
-    //if (!static_cast<bool>(expected_A == sketch_A))
-        //BOOST_FAIL("Result of colwise application not as expected");
 
 
 

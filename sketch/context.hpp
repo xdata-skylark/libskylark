@@ -48,15 +48,14 @@ struct context_t {
      * @caveat This is a global operation since all MPI ranks need to
      * participate in the duplication of the communicator.
      */
-    context_t (const std::string json_filename,
+    context_t (const boost::property_tree::ptree& json,
                const boost::mpi::communicator& orig) :
         comm(orig, boost::mpi::comm_duplicate),
         rank(comm.rank()),
         size(comm.size()) {
 
-        utility::simple_json_parser_t parser(json_filename);
-        parser.get_value("sketch.context.counter", _counter);
-        parser.get_value("sketch.context.seed", _seed);
+        _counter = json.get<size_t>("sketch.context.counter");
+        _seed = json.get<int>("sketch.context.seed");
     }
 
 

@@ -22,19 +22,24 @@ struct transform_data_t {
 
     /**
      *  Load a serialized sketch from a file.
-     *  @param[in] json_filename
+     *  @param[in] property tree for this sketch
      *  @param[in] context
      */
-    transform_data_t (const std::string& json,
+    transform_data_t (const boost::property_tree::ptree& json,
                       context_t& context) : context(context), _version("0.1") {
-
-        utility::simple_json_parser_t parser(json);
 
         // overwrite/set context to draw correct random samples
         context = context_t(json, context.comm);
 
         std::vector<int> dims;
-        parser.get_vector("sketch.size", dims);
+        BOOST_FOREACH(const boost::property_tree::ptree::value_type &v,
+                      json.get_child("sketch.size")) {
+
+            std::istringstream i(v.second.data());
+            int x;
+            if (!(i >> x)) dims.push_back(0);
+            dims.push_back(x);
+        }
         N = dims[0]; S = dims[1];
 
         _stream_start = context.get_counter();
@@ -88,9 +93,8 @@ std::istream& operator>>(std::istream &in, transform_data_t &data) {
 boost::property_tree::ptree& operator<<(boost::property_tree::ptree &sk,
                                         const transform_data_t &data) {
 
-    sk.put("version", data._version);
-
     sk.put("sketch.name", data._name);
+    sk.put("sketch.version", data._version);
 
     boost::property_tree::ptree size;
     boost::property_tree::ptree size_n, size_s;
@@ -105,27 +109,6 @@ boost::property_tree::ptree& operator<<(boost::property_tree::ptree &sk,
 
     return sk;
 }
-
-std::istream& operator>>(
-        std::istream &in, std::vector<transform_data_t> &vec) {
-
-    boost::property_tree::ptree json_tree;
-    try {
-        boost::property_tree::read_json(in, json_tree);
-    } catch (std::exception const& e) {
-        std::cout << e.what() << std::endl;
-    }
-
-    BOOST_FOREACH(const boost::property_tree::ptree::value_type& child,
-                  json_tree.get_child("sketches")) {
-        std::cout << "Creating sketch "
-                  << child.second.get<std::string>("sketch.name") << "\n";
-        //TODO: create sketches
-    }
-
-    return in;
-}
-
 
 } } /** namespace skylark::sketch */
 

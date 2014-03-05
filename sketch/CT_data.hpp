@@ -28,7 +28,7 @@ struct CT_data_t :
      * Most of the work is done by base. Here just write scale
      */
     CT_data_t(int N, int S, double C, skylark::sketch::context_t& context)
-        : Base(N, S, context), _C(C) {
+        : Base(N, S, context, "CT"), _C(C) {
         Base::scale = C / static_cast<double>(S);
     }
 

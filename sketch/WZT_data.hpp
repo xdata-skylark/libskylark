@@ -35,7 +35,7 @@ struct WZT_data_t : public hash_transform_data_t<
         boost::random::exponential_distribution >  Base;
 
     WZT_data_t(int N, int S, double p, context_t& context)
-        : Base(N, S, context), _P(p) {
+        : Base(N, S, context, "WZT"), _P(p) {
 
         // TODO verify that p is in the correct range.
 

@@ -44,9 +44,9 @@ struct hash_transform_data_t : public transform_data_t {
      *  @param[in] json_filename
      *  @param[in] context
      */
-    hash_transform_data_t (const std::string json_filename,
+    hash_transform_data_t (const boost::property_tree::ptree &json,
                            context_t& context)
-        : transform_data_t(json_filename, context) {
+        : transform_data_t(json, context) {
 
         _populate();
     }

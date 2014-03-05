@@ -25,8 +25,9 @@ struct dense_transform_data_t : public transform_data_t {
     /**
      * Regular constructor
      */
-    dense_transform_data_t (int N, int S, skylark::sketch::context_t& context)
-        : transform_data_t(N, S, context),
+    dense_transform_data_t (int N, int S, skylark::sketch::context_t& context,
+                            std::string name = "")
+        : transform_data_t(N, S, context, name),
           distribution(),
           random_samples(context.allocate_random_samples_array(N * S, distribution)) {
 

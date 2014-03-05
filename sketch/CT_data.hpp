@@ -1,8 +1,9 @@
 #ifndef SKYLARK_CT_DATA_HPP
 #define SKYLARK_CT_DATA_HPP
 
-#include "boost/property_tree/ptree.hpp"
-#include "boost/property_tree/json_parser.hpp"
+#include <boost/random.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
 
 #include "transform_data.hpp"
 #include "dense_transform_data.hpp"

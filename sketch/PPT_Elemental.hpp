@@ -84,7 +84,7 @@ fftw<float>::executebfun_t fftw<float>::executebfun = fftwf_execute_dft_c2r;
 /**
  * Specialization for local to local.
  */
-template<typename ValueType> 
+template<typename ValueType>
 struct PPT_t <
     elem::Matrix<ValueType>,
     elem::Matrix<ValueType> > :
@@ -141,8 +141,8 @@ struct PPT_t <
                 columnwise_tag dimension) const {
 
         // TODO verify sizes etc.
-        int S = base_data_t::_S;
-        int N = base_data_t::_N;
+        int S = base_data_t::S;
+        int N = base_data_t::N;
 
         matrix_type W(S, 1);
         matrix_type Av(N, 1);
@@ -193,8 +193,8 @@ struct PPT_t <
                 output_matrix_type& sketch_of_A,
                 rowwise_tag dimension) const {
         // TODO verify sizes etc.
-        int S = base_data_t::_S;
-        int N = base_data_t::_N;
+        int S = base_data_t::S;
+        int N = base_data_t::N;
 
         matrix_type W(S, 1);
         matrix_type Av(1, N), ATv(N, 1);
@@ -230,14 +230,14 @@ struct PPT_t <
                 P[j] /= (value_type)S;
 
             internal::fftw<value_type>::executebfun(_fftw_bplan,
-                reinterpret_cast<_fftw_complex_t*>(P), SATv.Buffer()); 
+                reinterpret_cast<_fftw_complex_t*>(P), SATv.Buffer());
             elem::View(ASv, sketch_of_A, i, 0, 1, sketch_of_A.Width());
             elem::Transpose(SATv, ASv);
         }
     }
 
-    int get_N() const { return base_data_t::_N; } /**< Get input dimesion. */
-    int get_S() const { return base_data_t::_S; } /**< Get output dimesion. */
+    int get_N() const { return base_data_t::N; } /**< Get input dimesion. */
+    int get_S() const { return base_data_t::S; } /**< Get output dimesion. */
 
 
 protected:
@@ -252,7 +252,7 @@ protected:
     std::list<_CWT_t> _cwts;
 
     void build_internal() {
-        int S = base_data_t::_S;
+        int S = base_data_t::S;
 
         for(typename std::list<_CWT_data_t>::iterator it =
                 base_data_t::_cwts_data.begin();

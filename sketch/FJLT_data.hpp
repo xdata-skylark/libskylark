@@ -7,6 +7,8 @@
 #include "RFUT_data.hpp"
 #include "../utility/randgen.hpp"
 
+#include "transform_data.hpp"
+
 namespace skylark { namespace sketch {
 
 /**
@@ -15,7 +17,7 @@ namespace skylark { namespace sketch {
  * and the data of the underlying transform.
  */
 template <typename ValueType>
-struct FJLT_data_t {
+struct FJLT_data_t : public transform_data_t {
     // Typedef value, distribution and data types so that we can use them
     // regularly and consistently
     typedef ValueType value_type;
@@ -25,19 +27,28 @@ struct FJLT_data_t {
     underlying_value_distribution_type;
     typedef RFUT_data_t<value_type,
                         underlying_value_distribution_type>
-    underlying_data_type;
+        underlying_data_type;
+    typedef transform_data_t base_t;
 
     /**
      * Regular constructor
      */
     FJLT_data_t (int N, int S, skylark::sketch::context_t& context)
-        : N(N), S(S), context(context),
-          samples(S),
-          underlying_data(N, context) {
-        value_distribution_type distribution(0, N-1);
-        samples = context.generate_random_samples_array(S, distribution);
+        : base_t(N, S, context, "FJLT"),
+          samples(base_t::S),
+          underlying_data(base_t::N, base_t::context) {
+
+        _populate();
     }
 
+    FJLT_data_t (boost::property_tree::ptree &json,
+                 skylark::sketch::context_t& context)
+        : base_t(json, context),
+          samples(base_t::S),
+          underlying_data(base_t::N, base_t::context) {
+
+        _populate();
+    }
 
     const FJLT_data_t& get_data() const {
         return static_cast<const FJLT_data_t&>(*this);
@@ -45,12 +56,17 @@ struct FJLT_data_t {
 
 
 protected:
-    const int N; /**< Input dimension  */
-    const int S; /**< Output dimension  */
-    skylark::sketch::context_t& context; /**< Context for this sketch */
     std::vector<int> samples; /**< Vector of samples */
     const underlying_data_type underlying_data;
     /**< Data of the underlying RFUT transformation */
+
+
+    void _populate() {
+
+        value_distribution_type distribution(0, base_t::N - 1);
+        samples = context.generate_random_samples_array(base_t::S, distribution);
+    }
+
   };
 
 } } /** namespace skylark::sketch */

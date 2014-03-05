@@ -42,7 +42,7 @@ struct WZT_data_t : public hash_transform_data_t<
         if(p < 1 || 2 < p)
             SKYLARK_THROW_EXCEPTION (
                 utility::sketch_exception()
-                    << utility::error_msg("WZT parameter p has unsupported range") );
+                    << utility::error_msg("WZT parameter p has to be in (1, 2)") );
 
 
         _populate();

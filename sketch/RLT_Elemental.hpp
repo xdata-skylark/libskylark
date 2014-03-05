@@ -97,7 +97,7 @@ private:
         underlying_t underlying(base_data_t::_underlying_data);
         underlying.apply(A, sketch_of_A, tag);
         for(int j = 0; j < A.Width(); j++)
-            for(int i = 0; i < base_data_t::_S; i++) {
+            for(int i = 0; i < base_data_t::S; i++) {
                 value_type val = sketch_of_A.Get(i, j);
                 sketch_of_A.Set(i, j,
                     base_data_t::_scale * std::exp(- val * base_data_t::_val_scale));
@@ -115,7 +115,7 @@ private:
         // TODO verify sizes etc.
         underlying_t underlying(base_data_t::_underlying_data);
         underlying.apply(A, sketch_of_A, tag);
-        for(int j = 0; j < base_data_t::_S; j++)
+        for(int j = 0; j < base_data_t::S; j++)
             for(int i = 0; i < A.Height(); i++) {
                 value_type val = sketch_of_A.Get(i, j);
                 sketch_of_A.Set(i, j,

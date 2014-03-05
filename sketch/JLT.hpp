@@ -37,6 +37,12 @@ public:
 
     }
 
+    JLT_t(boost::property_tree::ptree &json,
+          skylark::sketch::context_t& context)
+        : base_t(json, context), _transform(*this) {
+
+    }
+
     /**
      * Copy constructor
      */

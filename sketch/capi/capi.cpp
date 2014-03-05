@@ -284,18 +284,22 @@ SKYLARK_EXTERN_API int sl_load_sketch_transform(sketch::context_t *ctxt,
     SKYLARK_END_TRY()                                               \
     SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
 
-    //AUTO_LOAD_DISPATCH(sketchc::JLT, JLT_data_t);
+    AUTO_LOAD_DISPATCH(sketchc::JLT, JLT_data_t);
     AUTO_LOAD_DISPATCH(sketchc::CT,  CT_data_t);
     AUTO_LOAD_DISPATCH(sketchc::CWT, CWT_data_t);
     AUTO_LOAD_DISPATCH(sketchc::MMT, MMT_data_t);
     AUTO_LOAD_DISPATCH(sketchc::WZT, WZT_data_t);
+    AUTO_LOAD_DISPATCH(sketchc::PPT, PPT_data_t);
 
     AUTO_LOAD_DISPATCH(sketchc::GaussianRFT,  GaussianRFT_data_t);
     AUTO_LOAD_DISPATCH(sketchc::LaplacianRFT, LaplacianRFT_data_t);
 
-//#if SKYLARK_HAVE_FFTW
-    //AUTO_LOAD_DISPATCH(sketchc::FJLT, FJLT_data_t);
-//#endif
+    AUTO_LOAD_DISPATCH(sketchc::ExpSemigroupRLT, ExpSemigroupRLT_data_t);
+    AUTO_LOAD_DISPATCH(sketchc::FastGaussianRFT, FastGaussianRFT_data_t);
+
+#if SKYLARK_HAVE_FFTW
+    AUTO_LOAD_DISPATCH(sketchc::FJLT, FJLT_data_t);
+#endif
 
     return 0;
 }
@@ -319,18 +323,22 @@ SKYLARK_EXTERN_API int sl_dump_sketch_transform(sketch::context_t *ctxt,
     SKYLARK_END_TRY()                                               \
     SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
 
-    //AUTO_DUMP_DISPATCH(sketchc::JLT, JLT_data_t);
+    AUTO_DUMP_DISPATCH(sketchc::JLT, JLT_data_t);
     AUTO_DUMP_DISPATCH(sketchc::CT,  CT_data_t);
     AUTO_DUMP_DISPATCH(sketchc::CWT, CWT_data_t);
     AUTO_DUMP_DISPATCH(sketchc::MMT, MMT_data_t);
     AUTO_DUMP_DISPATCH(sketchc::WZT, WZT_data_t);
+    AUTO_DUMP_DISPATCH(sketchc::PPT, PPT_data_t);
 
     AUTO_DUMP_DISPATCH(sketchc::GaussianRFT,  GaussianRFT_data_t);
     AUTO_DUMP_DISPATCH(sketchc::LaplacianRFT, LaplacianRFT_data_t);
 
-//#if SKYLARK_HAVE_FFTW
-    //AUTO_DUMP_DISPATCH(sketchc::FJLT, FJLT_data_t);
-//#endif
+    AUTO_DUMP_DISPATCH(sketchc::ExpSemigroupRLT, ExpSemigroupRLT_data_t);
+    AUTO_DUMP_DISPATCH(sketchc::FastGaussianRFT, FastGaussianRFT_data_t);
+
+#if SKYLARK_HAVE_FFTW
+    AUTO_DUMP_DISPATCH(sketchc::FJLT, FJLT_data_t);
+#endif
 
     out.close();
     return 0;

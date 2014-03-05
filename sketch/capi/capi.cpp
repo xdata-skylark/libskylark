@@ -290,8 +290,8 @@ SKYLARK_EXTERN_API int sl_load_sketch_transform(sketch::context_t *ctxt,
     AUTO_LOAD_DISPATCH(sketchc::MMT, MMT_data_t);
     AUTO_LOAD_DISPATCH(sketchc::WZT, WZT_data_t);
 
-    //AUTO_LOAD_DISPATCH(sketchc::GaussianRFT, GaussianRFT_data_t);
-    //AUTO_LOAD_DISPATCH(sketchc::LaplacianRFT, LaplacianRFT_data_t);
+    AUTO_LOAD_DISPATCH(sketchc::GaussianRFT,  GaussianRFT_data_t);
+    AUTO_LOAD_DISPATCH(sketchc::LaplacianRFT, LaplacianRFT_data_t);
 
 //#if SKYLARK_HAVE_FFTW
     //AUTO_LOAD_DISPATCH(sketchc::FJLT, FJLT_data_t);
@@ -325,8 +325,8 @@ SKYLARK_EXTERN_API int sl_dump_sketch_transform(sketch::context_t *ctxt,
     AUTO_DUMP_DISPATCH(sketchc::MMT, MMT_data_t);
     AUTO_DUMP_DISPATCH(sketchc::WZT, WZT_data_t);
 
-    //AUTO_DUMP_DISPATCH(sketchc::GaussianRFT,  GaussianRFT_data_t);
-    //AUTO_DUMP_DISPATCH(sketchc::LaplacianRFT, LaplacianRFT_data_t);
+    AUTO_DUMP_DISPATCH(sketchc::GaussianRFT,  GaussianRFT_data_t);
+    AUTO_DUMP_DISPATCH(sketchc::LaplacianRFT, LaplacianRFT_data_t);
 
 //#if SKYLARK_HAVE_FFTW
     //AUTO_DUMP_DISPATCH(sketchc::FJLT, FJLT_data_t);

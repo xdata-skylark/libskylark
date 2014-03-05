@@ -39,12 +39,6 @@ int main (int argc, char** argv) {
 
 	 MPI_Comm mpi_world(world);
 
-	 //elem::Grid grid (mpi_world);
-
-#ifdef SKYLARK_HAVE_OPENMP
-	 omp_set_num_threads(options.numthreads);
-#endif
-
 	 DistInputMatrixType X;
 	 DistTargetMatrixType Y;
 

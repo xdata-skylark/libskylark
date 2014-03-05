@@ -79,7 +79,7 @@ private:
         skylark::sketch::columnwise_tag tag) const {
 
 #ifdef SKYLARK_HAVE_OPENMP
-#pragma omp parallel 
+        #pragma omp parallel 
 #endif
         {
         matrix_type W(A.Height(), 1);

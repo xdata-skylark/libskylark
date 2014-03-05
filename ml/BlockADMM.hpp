@@ -342,7 +342,7 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 #endif
 
 #ifdef SKYLARK_HAVE_OPENMP
-		#pragma omp parallel for private(j, start, finish, sj, featureMap)
+		#pragma omp parallel for if(NumThreads > 1) private(j, start, finish, sj, featureMap) num_threads(NumThreads)
 #endif
 		for(j = 0; j < NumFeaturePartitions; j++) {
 			start = starts[j];
@@ -447,7 +447,7 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 
 
 #ifdef SKYLARK_HAVE_OPENMP
-		#pragma omp parallel for private(j, start, finish, sj, featureMap)
+		#pragma omp parallel for if(NumThreads > 1) private(j, start, finish, sj, featureMap) num_threads(NumThreads)
 #endif
 
 		for(j = 0; j < NumFeaturePartitions; j++) {
@@ -577,7 +577,7 @@ void BlockADMMSolver::predict(DistInputMatrixType& X, DistTargetMatrixType& Y, L
 
 
 #ifdef SKYLARK_HAVE_OPENMP
-        #pragma omp parallel for private(j, start, finish, sj, featureMap)
+        #pragma omp parallel for if(NumThreads > 1) private(j, start, finish, sj, featureMap) num_threads(NumThreads)
 #endif
 
 	for(j = 0; j < NumFeaturePartitions; j++) {

@@ -129,12 +129,22 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(
 /** Load a sketch transformation.
  *  @param ctxt Sklark context
  *  @param type type of the sketch
- *  @param filename of the serialized JSON structure
+ *  @param data string of serialized JSON structure
  *  @return sketch transformation
  */
 SKYLARK_EXTERN_API int sl_load_sketch_transform(
         sketch::context_t *ctxt, char *type,
-        char *filename, sketchc::sketch_transform_t **sketch);
+        char *data, sketchc::sketch_transform_t **sketch);
+
+/** Dump a sketch transformation.
+ *  @param ctxt Sklark context
+ *  @param type type of the sketch
+ *  @param filename of the serialized JSON structure
+ *  @return sketch transformation
+ */
+SKYLARK_EXTERN_API int sl_dump_sketch_transform(
+        sketch::context_t *ctxt, char *type,
+        char *filename, sketchc::sketch_transform_t *sketch);
 
 /** Free resources hold by a sketch transformation.
  *  @param S sketch transform

@@ -34,6 +34,7 @@ def initialize(seed=-1):
       _lib.sl_context_rank.restype                = c_int
       _lib.sl_context_size.restype                = c_int
       _lib.sl_create_sketch_transform.restype     = c_int
+      _lib.sl_dump_sketch_transform.restype       = c_int
       _lib.sl_load_sketch_transform.restype       = c_int
       _lib.sl_wrap_raw_matrix.restype             = c_int
       _lib.sl_free_raw_matrix_wrap.restype        = c_int
@@ -130,15 +131,19 @@ def load_json(filename, defouttype = None):
   except ValueError:
     print "Failed to parse JSON file"
   else:
-    sketch_name = str(dict['sketch']['name'])
-    sketch_dims = dict['sketch']['size']
-    sketch_transform = c_void_p()
-    _callsl(_lib.sl_load_sketch_transform, _ctxt_obj, sketch_name, filename, \
-              byref(sketch_transform))
+    sketches = []
+    for sketch in dict['sketches']:
+      sketch_name = str(sketch['sketch']['name'])
+      sketch_dims = sketch['sketch']['size']
+      sketch_transform = c_void_p()
+      _callsl(_lib.sl_load_sketch_transform, _ctxt_obj, sketch_name, \
+              json.dumps(sketch), byref(sketch_transform))
 
-    #sketch_class = eval(sketch_name)
-    return _SketchTransform(sketch_name, int(sketch_dims[0]), \
-            int(sketch_dims[1]), defouttype, sketch_transform.value)
+      #sketch_class = eval(sketch_name)
+      sketches.append(_SketchTransform(sketch_name, int(sketch_dims[0]), \
+              int(sketch_dims[1]), defouttype, False, sketch_transform.value))
+
+    return sketches
 
 #
 # Matrix type adapters: specifies how to interact with the underlying (perhaps in C/C++)
@@ -397,6 +402,14 @@ class _SketchTransform(object):
   def __del__(self):
     if not self._ppy:
       _callsl(_lib.sl_free_sketch_transform, self._obj)
+
+  def dump(self, filename):
+    if not self._ppy:
+      _callsl(_lib.sl_dump_sketch_transform, _ctxt_obj, self._ttype, filename, \
+               self._obj)
+    else:
+        #TODO: python serialization of sketch
+        pass
 
   def apply(self, A, SA, dim=0):
     """

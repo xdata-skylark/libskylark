@@ -30,11 +30,11 @@ struct MMT_data_t : public hash_transform_data_t<
 
    }
 
-   MMT_data_t(const std::string json_filename, context_t& context)
+   MMT_data_t(const boost::property_tree::ptree &json, context_t& context)
         : hash_transform_data_t<
         IndexType, ValueType,
         boost::random::uniform_int_distribution,
-        boost::random::cauchy_distribution > (json_filename, context) {
+        boost::random::cauchy_distribution > (json, context) {
 
    }
 

@@ -1,5 +1,8 @@
+#include "boost/property_tree/ptree.hpp"
+
 #include "sketchc.hpp"
 #include "../../utility/exception.hpp"
+#include "../../utility/sketch_archive.hpp"
 
 #ifdef SKYLARK_HAVE_COMBBLAS
 #include "CombBLAS.h"
@@ -265,33 +268,71 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(sketch::context_t *ctxt,
 }
 
 SKYLARK_EXTERN_API int sl_load_sketch_transform(sketch::context_t *ctxt,
-    char *type_, char *filename, sketchc::sketch_transform_t **sketch) {
+    char *type_, char *data, sketchc::sketch_transform_t **sketch) {
 
     sketchc::transform_type_t type = str2transform_type(type_);
+
+    std::stringstream json_data(data);
+    boost::property_tree::ptree json;
+    boost::property_tree::read_json(json_data, json);
 
 # define AUTO_LOAD_DISPATCH(T, C)                                   \
     SKYLARK_BEGIN_TRY()                                             \
         if (type == T)                                              \
             *sketch = new sketchc::sketch_transform_t(type,         \
-                          new C(filename, *ctxt));                  \
+                          new C(json, *ctxt));                      \
     SKYLARK_END_TRY()                                               \
     SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
 
-    //AUTO_NEW_DISPATCH(sketchc::JLT, JLT_data_t);
-    //AUTO_NEW_DISPATCH_1P(sketchc::CT, CT_data_t);
+    //AUTO_LOAD_DISPATCH(sketchc::JLT, JLT_data_t);
+    AUTO_LOAD_DISPATCH(sketchc::CT,  CT_data_t);
     AUTO_LOAD_DISPATCH(sketchc::CWT, CWT_data_t);
     AUTO_LOAD_DISPATCH(sketchc::MMT, MMT_data_t);
-    //AUTO_NEW_DISPATCH_1P(sketchc::WZT, WZT_data_t)
+    AUTO_LOAD_DISPATCH(sketchc::WZT, WZT_data_t);
 
-    //AUTO_NEW_DISPATCH(sketchc::GaussianRFT, GaussianRFT_data_t);
-    //AUTO_NEW_DISPATCH(sketchc::LaplacianRFT, LaplacianRFT_data_t);
+    //AUTO_LOAD_DISPATCH(sketchc::GaussianRFT, GaussianRFT_data_t);
+    //AUTO_LOAD_DISPATCH(sketchc::LaplacianRFT, LaplacianRFT_data_t);
 
 //#if SKYLARK_HAVE_FFTW
-
-    //AUTO_NEW_DISPATCH(sketchc::FJLT, FJLT_data_t);
-
+    //AUTO_LOAD_DISPATCH(sketchc::FJLT, FJLT_data_t);
 //#endif
 
+    return 0;
+}
+
+SKYLARK_EXTERN_API int sl_dump_sketch_transform(sketch::context_t *ctxt,
+    char *type_, char *filename, sketchc::sketch_transform_t *sketch) {
+
+    sketchc::transform_type_t type = str2transform_type(type_);
+
+    std::ofstream out(filename);
+    boost::property_tree::ptree pt;
+    skylark::utility::sketch_archive_t ar;
+
+# define AUTO_DUMP_DISPATCH(T, C)                                   \
+    SKYLARK_BEGIN_TRY()                                             \
+        if (type == T) {                                            \
+            pt << *static_cast<C*>(sketch->transform_obj);          \
+            ar << pt;                                               \
+            out << ar;                                              \
+        }                                                           \
+    SKYLARK_END_TRY()                                               \
+    SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
+
+    //AUTO_DUMP_DISPATCH(sketchc::JLT, JLT_data_t);
+    AUTO_DUMP_DISPATCH(sketchc::CT,  CT_data_t);
+    AUTO_DUMP_DISPATCH(sketchc::CWT, CWT_data_t);
+    AUTO_DUMP_DISPATCH(sketchc::MMT, MMT_data_t);
+    AUTO_DUMP_DISPATCH(sketchc::WZT, WZT_data_t);
+
+    //AUTO_DUMP_DISPATCH(sketchc::GaussianRFT,  GaussianRFT_data_t);
+    //AUTO_DUMP_DISPATCH(sketchc::LaplacianRFT, LaplacianRFT_data_t);
+
+//#if SKYLARK_HAVE_FFTW
+    //AUTO_DUMP_DISPATCH(sketchc::FJLT, FJLT_data_t);
+//#endif
+
+    out.close();
     return 0;
 }
 

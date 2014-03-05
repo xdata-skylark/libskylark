@@ -32,6 +32,14 @@ struct CT_data_t :
         Base::scale = C / static_cast<double>(S);
     }
 
+    CT_data_t(const boost::property_tree::ptree &sketch,
+              skylark::sketch::context_t& context)
+        : Base(sketch, context),
+        _C(sketch.get<double>("sketch.c")) {
+
+        Base::scale = _C / static_cast<double>(Base::S);
+    }
+
     template <typename ValueT>
     friend boost::property_tree::ptree& operator<<(
             boost::property_tree::ptree &sk, const CT_data_t<ValueT> &data);

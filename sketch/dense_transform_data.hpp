@@ -35,9 +35,9 @@ struct dense_transform_data_t : public transform_data_t {
         scale = 1.0;
     }
 
-    dense_transform_data_t (const std::string json_filename,
+    dense_transform_data_t (const boost::property_tree::ptree json,
                             context_t& context)
-        : transform_data_t(json_filename, context),
+        : transform_data_t(json, context),
           distribution(),
           random_samples(context.allocate_random_samples_array(N * S, distribution)) {
 

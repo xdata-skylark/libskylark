@@ -41,6 +41,7 @@ struct transform_data_t {
         }
         N = dims[0]; S = dims[1];
 
+        _name = json.get<std::string>("sketch.name");
         _stream_start = context.get_counter();
     }
 

@@ -78,68 +78,83 @@ private:
         output_matrix_type& sketch_of_A,
         skylark::sketch::columnwise_tag tag) const {
 
-        // Create a work array W
-        matrix_type W(A.Height(), A.Width());
+#ifdef SKYLARK_HAVE_OPENMP
+#pragma omp parallel 
+#endif
+        {
+        matrix_type W(A.Height(), 1);
+        double *w = W.Buffer();
+
+        matrix_type Ac(A.Height(), 1);
+        double *ac = Ac.Buffer();
+
+        const double *a = A.LockedBuffer();
+        int lda = A.LDim();
+
+        double *sa = sketch_of_A.Buffer();
+        int ldsa = sketch_of_A.LDim();
+
+        value_type scal =
+            std::sqrt(base_data_t::N) * _dct.scale(W, tag);
 
         output_matrix_type B(base_data_t::N, 1), G(base_data_t::N, 1);
         output_matrix_type Sm(base_data_t::N, 1);
-        for(int i = 0; i < base_data_t::numblks; i++) {
-            int s = i * base_data_t::N;
-            int e = std::min(s + base_data_t::N, base_data_t::S);
 
-            W = A;
-
-            // Set the local values of B, G and S
-            value_type scal =
-                std::sqrt(base_data_t::N) * _dct.scale(W, tag);
-            for(int j = 0; j < base_data_t::N; j++) {
-                B.Set(j, 0, base_data_t::B[i * base_data_t::N + j]);
-                G.Set(j, 0, scal * base_data_t::G[i * base_data_t::N + j]);
-                Sm.Set(j, 0, scal * base_data_t::Sm[i * base_data_t::N + j]);
-            }
-
-            int c, l, idx1, idx2;
-            double *w;
 #ifdef SKYLARK_HAVE_OPENMP
-#pragma omp parallel for default(shared) private(c, l, w, idx1, idx2)
+#pragma omp for
 #endif
-            for(c = 0; c < A.Width(); c++) {
-                matrix_type Wc;
-                elem::View(Wc, W, 0, c, W.Height(), 1);
+        for(int c = 0; c < A.Width(); c++) {
+            for(int i = 0; i < base_data_t::N; i++)
+                ac[i] = a[c * lda + i];
 
-                elem::DiagonalScale(elem::LEFT, elem::NORMAL, B, Wc);
+            for(int i = 0; i < base_data_t::numblks; i++) {
 
-                _dct.apply(Wc, tag);
+                int s = i * base_data_t::N;
+                int e = std::min(s + base_data_t::N,  base_data_t::S);
 
-                w = Wc.Buffer();
-                for(l = 0; l < base_data_t::N - 1; l++) {
-                    idx1 = base_data_t::N - 1 - l;
-                    idx2 = base_data_t::P[i * (base_data_t::N - 1) + l];
-                    std::swap(w[idx1], w[idx2]);
+                // Set the local values of B, G and S
+                for(int j = 0; j < base_data_t::N; j++) {
+                    B.Set(j, 0, base_data_t::B[i * base_data_t::N + j]);
+                    G.Set(j, 0, scal * base_data_t::G[i * base_data_t::N + j]);
+                    Sm.Set(j, 0, scal * base_data_t::Sm[i * base_data_t::N + j]);
                 }
 
-                elem::DiagonalScale(elem::LEFT, elem::NORMAL, G, Wc);
+                W = Ac;
 
-                _dct.apply(Wc, tag);
+                elem::DiagonalScale(elem::LEFT, elem::NORMAL, B, W);
+                _dct.apply(W, tag);
+                for(int l = 0; l < base_data_t::N - 1; l++) {
+                    int idx1 = base_data_t::N - 1 - l;
+                    int idx2 = base_data_t::P[i * (base_data_t::N - 1) + l];
+                    std::swap(w[idx1], w[idx2]);
+                }
+                elem::DiagonalScale(elem::LEFT, elem::NORMAL, G, W);
+                _dct.apply(W, tag);
+                elem::DiagonalScale(elem::LEFT, elem::NORMAL, Sm, W);
 
-                elem::DiagonalScale(elem::LEFT, elem::NORMAL, Sm, Wc);
+                double *sac = sa + ldsa * c;
+                for(int l = s; l < e; l++) {
+                    value_type x = w[l - s];
+                    x += base_data_t::shifts[l];
+
+                    // Want to do x = std::cos(x), but that is slow
+                    // Instead use low-accuracy approximation
+                    if (x < -3.14159265) x += 6.28318531;
+                    else if (x >  3.14159265) x -= 6.28318531;
+                    x += 1.57079632;
+                    if (x >  3.14159265)
+                        x -= 6.28318531;
+                    x = (x < 0) ?
+                        1.27323954 * x + 0.405284735 * x * x :
+                        1.27323954 * x - 0.405284735 * x * x;
+
+                    x = base_data_t::scale * x;
+                    sac[l - s] = x;
+                }
             }
-
-            // Copy that part to the output
-            output_matrix_type view_sketch_of_A;
-            elem::View(view_sketch_of_A, sketch_of_A, s, 0, e - s, A.Width());
-            matrix_type view_W;
-            elem::View(view_W, W, 0, 0, e - s, A.Width());
-            view_sketch_of_A = view_W;
         }
 
-        for(int j = 0; j < A.Width(); j++)
-            for(int i = 0; i < base_data_t::S; i++) {
-                value_type val = sketch_of_A.Get(i, j);
-                value_type trans =
-                    base_data_t::scale * std::cos(val + base_data_t::shifts[i]);
-                sketch_of_A.Set(i, j, trans);
-            }
+        }
     }
 
     /**

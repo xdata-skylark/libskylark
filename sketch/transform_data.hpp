@@ -4,7 +4,6 @@
 #include <vector>
 #include "context.hpp"
 #include "../utility/exception.hpp"
-#include "../utility/simple_json_parser.hpp"
 
 #include "boost/foreach.hpp"
 #include "boost/property_tree/ptree.hpp"

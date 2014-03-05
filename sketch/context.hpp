@@ -3,7 +3,6 @@
 
 #include "../utility/exception.hpp"
 #include "../utility/randgen.hpp"
-#include "../utility/simple_json_parser.hpp"
 
 #include "boost/mpi.hpp"
 #include "boost/property_tree/ptree.hpp"

@@ -31,11 +31,12 @@ struct RFT_data_t : public transform_data_t {
     typedef skylark::sketch::dense_transform_data_t<value_type,
                                                     KernelDistribution>
         underlying_data_type;
+    typedef transform_data_t base_t;
 
     RFT_data_t (int N, int S, skylark::sketch::context_t& context,
                 std::string name = "")
-        : transform_data_t(N, S, context, name), _val_scale(1),
-          _underlying_data(N, S, context),
+        : base_t(N, S, context, name), _val_scale(1),
+          _underlying_data(N, S, base_t::_context),
           _scale(std::sqrt(2.0 / S)) {
 
         _populate();
@@ -43,9 +44,9 @@ struct RFT_data_t : public transform_data_t {
 
     RFT_data_t (boost::property_tree::ptree &json,
                 skylark::sketch::context_t& context)
-        : transform_data_t(json, context), _val_scale(1),
-          _underlying_data(transform_data_t::N, transform_data_t::S, context),
-          _scale(std::sqrt(2.0 / transform_data_t::S)) {
+        : base_t(json, context), _val_scale(1),
+          _underlying_data(base_t::_N, base_t::_S, base_t::_context),
+          _scale(std::sqrt(2.0 / base_t::_S)) {
 
         _populate();
     }
@@ -74,8 +75,8 @@ protected:
         const double pi = boost::math::constants::pi<value_type>();
         boost::random::uniform_real_distribution<value_type>
             distribution(0, 2 * pi);
-        _shifts = context.generate_random_samples_array(
-            transform_data_t::S, distribution);
+        _shifts = base_t::_context.generate_random_samples_array(
+            base_t::_S, distribution);
     }
 };
 

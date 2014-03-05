@@ -31,7 +31,7 @@ struct JLT_data_t :
     JLT_data_t(boost::property_tree::ptree &json,
                skylark::sketch::context_t& context)
         : base_t(json, context) {
-        base_t::scale = sqrt(1.0 / static_cast<double>(base_t::S));
+        base_t::scale = sqrt(1.0 / static_cast<double>(base_t::_S));
     }
 };
 

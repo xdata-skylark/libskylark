@@ -36,9 +36,9 @@ struct FastRFT_data_t : public transform_data_t {
     FastRFT_data_t (int N, int S, skylark::sketch::context_t& context,
                     std::string name)
         : base_t(N, S, context, name),
-          numblks(1 + ((base_t::S - 1) / base_t::N)),
-          scale(std::sqrt(2.0 / base_t::S)),
-          Sm(numblks * base_t::N)  {
+          numblks(1 + ((base_t::_S - 1) / base_t::_N)),
+          scale(std::sqrt(2.0 / base_t::_S)),
+          Sm(numblks * base_t::_N)  {
 
         _populate();
     }
@@ -46,9 +46,9 @@ struct FastRFT_data_t : public transform_data_t {
     FastRFT_data_t (boost::property_tree::ptree &json,
                     skylark::sketch::context_t& context)
         : base_t(json, context),
-          numblks(1 + ((base_t::S - 1) / base_t::N)),
-          scale(std::sqrt(2.0 / base_t::S)),
-          Sm(numblks * base_t::N)  {
+          numblks(1 + ((base_t::_S - 1) / base_t::_N)),
+          scale(std::sqrt(2.0 / base_t::_S)),
+          Sm(numblks * base_t::_N)  {
 
         _populate();
     }
@@ -67,22 +67,28 @@ protected:
     void _populate() {
         const double pi = boost::math::constants::pi<value_type>();
         bstrand::uniform_real_distribution<value_type> dist_shifts(0, 2 * pi);
-        shifts = context.generate_random_samples_array(base_t::S, dist_shifts);
+        shifts = base_t::_context.generate_random_samples_array(
+                    base_t::_S, dist_shifts);
+
         utility::rademacher_distribution_t<value_type> dist_B;
-        B = context.generate_random_samples_array(numblks * base_t::N, dist_B);
+        B = base_t::_context.generate_random_samples_array(
+                    numblks * base_t::_N, dist_B);
+
         bstrand::normal_distribution<value_type> dist_G;
-        G = context.generate_random_samples_array(numblks * base_t::N, dist_G);
+        G = base_t::_context.generate_random_samples_array(
+                numblks * base_t::_N, dist_G);
 
         // For the permutation we use Fisher-Yates (Knuth)
         // The following will generate the indexes for the swaps. However
         // the scheme here might have a small bias if N is small
         // (has to be really small).
         bstrand::uniform_int_distribution<int> dist_P(0);
-        P = context.generate_random_samples_array(numblks * (base_t::N - 1), dist_P);
+        P = base_t::_context.generate_random_samples_array(
+                numblks * (base_t::_N - 1), dist_P);
         for(int i = 0; i < numblks; i++)
-            for(int j = base_t::N - 1; j >= 1; j--)
-                P[i * (base_t::N - 1) + base_t::N - 1 - j] =
-                    P[i * (base_t::N - 1) + base_t::N - 1 - j] % (j + 1);
+            for(int j = base_t::_N - 1; j >= 1; j--)
+                P[i * (base_t::_N - 1) + base_t::_N - 1 - j] =
+                    P[i * (base_t::_N - 1) + base_t::_N - 1 - j] % (j + 1);
 
         // Fill scaling matrix with 1. Subclasses (which are adapted to concrete
         // kernels) should modify this.
@@ -106,7 +112,7 @@ struct FastGaussianRFT_data_t :
         : base_t(N, S, context, "FastGaussianRFT"), _sigma(sigma) {
 
         std::fill(base_t::Sm.begin(), base_t::Sm.end(),
-                1.0 / (_sigma * std::sqrt(base_t::N)));
+                1.0 / (_sigma * std::sqrt(base_t::_N)));
     }
 
     FastGaussianRFT_data_t(boost::property_tree::ptree &json,
@@ -115,7 +121,7 @@ struct FastGaussianRFT_data_t :
         _sigma(json.get<value_type>("sketch.sigma")) {
 
         std::fill(base_t::Sm.begin(), base_t::Sm.end(),
-                1.0 / (_sigma * std::sqrt(base_t::N)));
+                1.0 / (_sigma * std::sqrt(base_t::_N)));
     }
 
     template <typename ValueT>

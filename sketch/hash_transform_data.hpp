@@ -61,13 +61,13 @@ protected:
 private:
 
     void _populate() {
-        idx_distribution_type row_idx_distribution(0, S-1);
+        idx_distribution_type row_idx_distribution(0, _S - 1);
         value_distribution_type row_value_distribution;
 
-        row_idx   = context.generate_random_samples_array(
-                        N, row_idx_distribution);
-        row_value = context.generate_random_samples_array(
-                        N, row_value_distribution);
+        row_idx   = _context.generate_random_samples_array(
+                        _N, row_idx_distribution);
+        row_value = _context.generate_random_samples_array(
+                        _N, row_value_distribution);
     }
 };
 

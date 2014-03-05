@@ -11,11 +11,12 @@
 
 namespace skylark { namespace sketch {
 
+//FIXME: Haim wants to call this sketch_transform_data_t
 struct transform_data_t {
 
     transform_data_t (int N, int S, skylark::sketch::context_t& context,
                       const std::string name = "")
-        : N(N), S(S), context(context), _name(name), _version("0.1"),
+        : _N(N), _S(S), _context(context), _name(name), _version("0.1"),
         _stream_start(context.get_counter())
     {}
 
@@ -25,10 +26,10 @@ struct transform_data_t {
      *  @param[in] context
      */
     transform_data_t (const boost::property_tree::ptree& json,
-                      context_t& context) : context(context), _version("0.1") {
+                      context_t& context) : _context(context), _version("0.1") {
 
         // overwrite/set context to draw correct random samples
-        context = context_t(json, context.comm);
+        _context = context_t(json, context.comm);
 
         std::vector<int> dims;
         BOOST_FOREACH(const boost::property_tree::ptree::value_type &v,
@@ -39,28 +40,10 @@ struct transform_data_t {
             if (!(i >> x)) dims.push_back(0);
             dims.push_back(x);
         }
-        N = dims[0]; S = dims[1];
+        _N = dims[0]; _S = dims[1];
 
         _name = json.get<std::string>("sketch.name");
         _stream_start = context.get_counter();
-    }
-
-    /**
-     *  Load an array of serialized sketches.
-     *  @param[in] filename of the JSON file.
-     */
-    static void load(const std::string &filename) {
-
-        //TODO
-    }
-
-    /**
-     *  Load an array of serialized sketches.
-     *  @param[in] sketches stream access
-     */
-    static void load(const std::istream &sketches) {
-
-        //TODO
     }
 
     friend std::istream& operator>>(std::istream &in, transform_data_t &data);
@@ -73,9 +56,9 @@ struct transform_data_t {
             boost::property_tree::ptree &sk, const transform_data_t &data);
 
 protected:
-    int N; /**< Input dimension  */
-    int S; /**< Output dimension  */
-    skylark::sketch::context_t& context; /**< Context for this sketch */
+    int _N; /**< Input dimension  */
+    int _S; /**< Output dimension  */
+    skylark::sketch::context_t& _context; /**< Context for this sketch */
 
     std::string _name; /**< sketch name */
 
@@ -84,11 +67,6 @@ private:
     size_t _stream_start; /**< Remember where the random stream started */
 };
 
-std::istream& operator>>(std::istream &in, transform_data_t &data) {
-
-    transform_data_t::load(in);
-    return in;
-}
 
 boost::property_tree::ptree& operator<<(boost::property_tree::ptree &sk,
                                         const transform_data_t &data) {
@@ -98,14 +76,14 @@ boost::property_tree::ptree& operator<<(boost::property_tree::ptree &sk,
 
     boost::property_tree::ptree size;
     boost::property_tree::ptree size_n, size_s;
-    size_n.put("", data.N);
-    size_s.put("", data.S);
+    size_n.put("", data._N);
+    size_s.put("", data._S);
     size.push_back(std::make_pair("", size_n));
     size.push_back(std::make_pair("", size_s));
     sk.add_child("sketch.size", size);
 
     sk.put("sketch.context.counter", data._stream_start);
-    sk << data.context;
+    sk << data._context;
 
     return sk;
 }

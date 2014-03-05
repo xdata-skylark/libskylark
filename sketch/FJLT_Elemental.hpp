@@ -111,18 +111,18 @@ private:
             skylark::sketch::columnwise_tag());
 
         // Create the sampled and scaled matrix -- still in distributed mode
-        intermediate_type dist_sketch_A(base_data_t::S,
+        intermediate_type dist_sketch_A(base_data_t::_S,
             inter_A.Width(), inter_A.Grid());
-        double scale = sqrt((double)base_data_t::N / (double)base_data_t::S);
+        double scale = sqrt((double)base_data_t::_N / (double)base_data_t::_S);
         for (int j = 0; j < inter_A.LocalWidth(); j++)
-            for (int i = 0; i < base_data_t::S; i++) {
+            for (int i = 0; i < base_data_t::_S; i++) {
                 int row = base_data_t::samples[i];
                 dist_sketch_A.Matrix().Set(i, j,
                     scale * inter_A.Matrix().Get(row, j));
             }
 
-        skylark::utility::collect_dist_matrix(base_data_t::context.comm,
-            base_data_t::context.rank == 0,
+        skylark::utility::collect_dist_matrix(base_data_t::_context.comm,
+            base_data_t::_context.rank == 0,
             dist_sketch_A, sketch_A);
     }
 

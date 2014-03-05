@@ -39,16 +39,16 @@ struct RLT_data_t : public transform_data_t {
     RLT_data_t (int N, int S, skylark::sketch::context_t& context,
                 std::string name)
         : base_t(N, S, context, name), _val_scale(1),
-          _underlying_data(base_t::N, base_t::S, base_t::context),
-          _scale(std::sqrt(1.0 / base_t::S)) {
+          _underlying_data(base_t::_N, base_t::_S, base_t::_context),
+          _scale(std::sqrt(1.0 / base_t::_S)) {
 
     }
 
     RLT_data_t (boost::property_tree::ptree &json,
                 skylark::sketch::context_t& context)
         : base_t(json, context), _val_scale(1),
-          _underlying_data(base_t::N, base_t::S, base_t::context),
-          _scale(std::sqrt(1.0 / base_t::S)) {
+          _underlying_data(base_t::_N, base_t::_S, base_t::_context),
+          _scale(std::sqrt(1.0 / base_t::_S)) {
 
     }
 

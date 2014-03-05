@@ -68,13 +68,13 @@ protected:
 
         for(int i = 0; i < _q; i++)
             _cwts_data.push_back(
-                _CWT_data_t(base_t::N, base_t::S, base_t::context));
+                _CWT_data_t(base_t::_N, base_t::_S, base_t::_context));
 
-        boost::random::uniform_int_distribution<int> distidx(0, base_t::S - 1);
-        _hash_idx = base_t::context.generate_random_samples_array(_q, distidx);
+        boost::random::uniform_int_distribution<int> distidx(0, base_t::_S - 1);
+        _hash_idx = base_t::_context.generate_random_samples_array(_q, distidx);
 
         utility::rademacher_distribution_t<double> distval;
-        _hash_val = base_t::context.generate_random_samples_array(_q, distval);
+        _hash_val = base_t::_context.generate_random_samples_array(_q, distval);
     }
 };
 

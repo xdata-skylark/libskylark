@@ -33,10 +33,10 @@ struct WZT_data_t : public hash_transform_data_t<
     typedef hash_transform_data_t<
         IndexType, ValueType,
         boost::random::uniform_int_distribution,
-        boost::random::exponential_distribution >  Base;
+        boost::random::exponential_distribution >  base_t;
 
     WZT_data_t(int N, int S, double p, context_t& context)
-        : Base(N, S, context, "WZT"), _P(p) {
+        : base_t(N, S, context, "WZT"), _P(p) {
 
         // TODO verify that p is in the correct range.
         if(p < 1 || 2 < p)
@@ -50,7 +50,7 @@ struct WZT_data_t : public hash_transform_data_t<
 
     WZT_data_t(const boost::property_tree::ptree &sketch,
                skylark::sketch::context_t& context)
-        : Base(sketch, context),
+        : base_t(sketch, context),
         _P(sketch.get<double>("sketch.p")) {
 
         _populate();
@@ -74,10 +74,10 @@ private:
         // well.
         utility::rademacher_distribution_t<ValueType> pmdist;
         std::vector<ValueType> pmvals =
-            Base::context.generate_random_samples_array(Base::N, pmdist);
-        for(int i = 0; i < Base::N; i++)
-             Base::row_value[i] =
-                 pmvals[i] * pow(1.0 / Base::row_value[i], 1.0 / _P);
+            base_t::_context.generate_random_samples_array(base_t::_N, pmdist);
+        for(int i = 0; i < base_t::_N; i++)
+             base_t::row_value[i] =
+                 pmvals[i] * pow(1.0 / base_t::row_value[i], 1.0 / _P);
 
     }
 };

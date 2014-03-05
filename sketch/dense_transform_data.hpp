@@ -29,7 +29,8 @@ struct dense_transform_data_t : public transform_data_t {
                             std::string name = "")
         : transform_data_t(N, S, context, name),
           distribution(),
-          random_samples(context.allocate_random_samples_array(N * S, distribution)) {
+          random_samples(
+                  context.allocate_random_samples_array(N * S, distribution)) {
 
         // No scaling in "raw" form
         scale = 1.0;
@@ -39,7 +40,8 @@ struct dense_transform_data_t : public transform_data_t {
                             context_t& context)
         : transform_data_t(json, context),
           distribution(),
-          random_samples(context.allocate_random_samples_array(N * S, distribution)) {
+          random_samples(
+            _context.allocate_random_samples_array(_N * _S, distribution)) {
 
         // No scaling in "raw" form
         scale = 1.0;

@@ -37,7 +37,7 @@ public:
      */
     FastRFT_t(const FastRFT_t<matrix_type,
                       output_matrix_type>& other)
-        : base_data_t(other), _dct(base_data_t::N) {
+        : base_data_t(other), _dct(base_data_t::_N) {
 
     }
 
@@ -45,7 +45,7 @@ public:
      * Constructor from data
      */
     FastRFT_t(const base_data_t& other_data)
-        : base_data_t(other_data), _dct(base_data_t::N) {
+        : base_data_t(other_data), _dct(base_data_t::_N) {
 
     }
 
@@ -81,21 +81,21 @@ private:
         // Create a work array W
         matrix_type W(A.Height(), A.Width());
 
-        output_matrix_type B(base_data_t::N, 1), G(base_data_t::N, 1);
-        output_matrix_type Sm(base_data_t::N, 1);
+        output_matrix_type B(base_data_t::_N, 1), G(base_data_t::_N, 1);
+        output_matrix_type Sm(base_data_t::_N, 1);
         for(int i = 0; i < base_data_t::numblks; i++) {
-            int s = i * base_data_t::N;
-            int e = std::min(s + base_data_t::N, base_data_t::S);
+            int s = i * base_data_t::_N;
+            int e = std::min(s + base_data_t::_N, base_data_t::_S);
 
             W = A;
 
             // Set the local values of B, G and S
             value_type scal =
-                std::sqrt(base_data_t::N) * _dct.scale(W, tag);
-            for(int j = 0; j < base_data_t::N; j++) {
-                B.Set(j, 0, base_data_t::B[i * base_data_t::N + j]);
-                G.Set(j, 0, scal * base_data_t::G[i * base_data_t::N + j]);
-                Sm.Set(j, 0, scal * base_data_t::Sm[i * base_data_t::N + j]);
+                std::sqrt(base_data_t::_N) * _dct.scale(W, tag);
+            for(int j = 0; j < base_data_t::_N; j++) {
+                B.Set(j, 0, base_data_t::B[i * base_data_t::_N + j]);
+                G.Set(j, 0, scal * base_data_t::G[i * base_data_t::_N + j]);
+                Sm.Set(j, 0, scal * base_data_t::Sm[i * base_data_t::_N + j]);
             }
 
             int c, l, idx1, idx2;
@@ -112,9 +112,9 @@ private:
                 _dct.apply(Wc, tag);
 
                 w = Wc.Buffer();
-                for(l = 0; l < base_data_t::N - 1; l++) {
-                    idx1 = base_data_t::N - 1 - l;
-                    idx2 = base_data_t::P[i * (base_data_t::N - 1) + l];
+                for(l = 0; l < base_data_t::_N - 1; l++) {
+                    idx1 = base_data_t::_N - 1 - l;
+                    idx2 = base_data_t::P[i * (base_data_t::_N - 1) + l];
                     std::swap(w[idx1], w[idx2]);
                 }
 
@@ -134,7 +134,7 @@ private:
         }
 
         for(int j = 0; j < A.Width(); j++)
-            for(int i = 0; i < base_data_t::S; i++) {
+            for(int i = 0; i < base_data_t::_S; i++) {
                 value_type val = sketch_of_A.Get(i, j);
                 value_type trans =
                     base_data_t::scale * std::cos(val + base_data_t::shifts[i]);
@@ -153,21 +153,21 @@ private:
         // Create a work array W
         matrix_type W(A.Height(), A.Width());
 
-        output_matrix_type B(base_data_t::N, 1), G(base_data_t::N, 1);
-        output_matrix_type Sm(base_data_t::N, 1);
+        output_matrix_type B(base_data_t::_N, 1), G(base_data_t::_N, 1);
+        output_matrix_type Sm(base_data_t::_N, 1);
         for(int i = 0; i < base_data_t::numblks; i++) {
-            int s = i * base_data_t::N;
-            int e = std::min(s + base_data_t::N, base_data_t::S);
+            int s = i * base_data_t::_N;
+            int e = std::min(s + base_data_t::_N, base_data_t::_S);
 
             W = A;
 
             // Set the local values of B, G and S
             value_type scal =
-                std::sqrt(base_data_t::N) * _dct.scale(W, tag);
-            for(int j = 0; j < base_data_t::N; j++) {
-                B.Set(j, 0, base_data_t::B[i * base_data_t::N + j]);
-                G.Set(j, 0, scal * base_data_t::G[i * base_data_t::N + j]);
-                Sm.Set(j, 0, scal * base_data_t::Sm[i * base_data_t::N + j]);
+                std::sqrt(base_data_t::_N) * _dct.scale(W, tag);
+            for(int j = 0; j < base_data_t::_N; j++) {
+                B.Set(j, 0, base_data_t::B[i * base_data_t::_N + j]);
+                G.Set(j, 0, scal * base_data_t::G[i * base_data_t::_N + j]);
+                Sm.Set(j, 0, scal * base_data_t::Sm[i * base_data_t::_N + j]);
             }
 
             elem::DiagonalScale(elem::RIGHT, elem::NORMAL, B, W);
@@ -176,10 +176,10 @@ private:
 
             double *w = W.Buffer();
             for(int c = 0; c < W.Height(); c++)
-                for(int l = 0; l < base_data_t::N - 1; l++) {
-                    int idx1 = c + (base_data_t::N - 1 - l) * W.LDim();
+                for(int l = 0; l < base_data_t::_N - 1; l++) {
+                    int idx1 = c + (base_data_t::_N - 1 - l) * W.LDim();
                     int idx2 = c  +
-                        (base_data_t::P[i * (base_data_t::N - 1) + l]) * W.LDim();
+                        (base_data_t::P[i * (base_data_t::_N - 1) + l]) * W.LDim();
                     std::swap(w[idx1], w[idx2]);
                 }
 
@@ -197,7 +197,7 @@ private:
             view_sketch_of_A = view_W;
         }
 
-        for(int j = 0; j < base_data_t::S; j++)
+        for(int j = 0; j < base_data_t::_S; j++)
             for(int i = 0; i < A.Height(); i++) {
                 value_type val = sketch_of_A.Get(i, j);
                 value_type trans =

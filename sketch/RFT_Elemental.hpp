@@ -97,7 +97,7 @@ private:
         underlying_t underlying(base_data_t::_underlying_data);
         underlying.apply(A, sketch_of_A, tag);
         for(int j = 0; j < A.Width(); j++)
-            for(int i = 0; i < base_data_t::S; i++) {
+            for(int i = 0; i < base_data_t::_S; i++) {
                 value_type val = sketch_of_A.Get(i, j);
                 value_type trans =
                     base_data_t::_scale * std::cos((val * base_data_t::_val_scale) +
@@ -117,7 +117,7 @@ private:
         // TODO verify sizes etc.
         underlying_t underlying(base_data_t::_underlying_data);
         underlying.apply(A, sketch_of_A, tag);
-        for(int j = 0; j < base_data_t::S; j++)
+        for(int j = 0; j < base_data_t::_S; j++)
             for(int i = 0; i < A.Height(); i++) {
                 value_type val = sketch_of_A.Get(i, j);
                 value_type trans =
@@ -229,7 +229,7 @@ private:
         underlying.apply(A, sketch_of_A, tag);
         elem::Matrix<value_type> &Al = sketch_of_A.Matrix();
         for(int j = 0; j < Al.Width(); j++)
-            for(int i = 0; i < base_data_t::S; i++) {
+            for(int i = 0; i < base_data_t::_S; i++) {
                 value_type val = Al.Get(i, j);
                 value_type trans =
                     base_data_t::_scale * std::cos((val * base_data_t::_val_scale) +
@@ -250,7 +250,7 @@ private:
         underlying_t underlying(base_data_t::_underlying_data);
         underlying.apply(A, sketch_of_A, tag);
         elem::Matrix<value_type> &Al = sketch_of_A.Matrix();
-        for(int j = 0; j < base_data_t::S; j++)
+        for(int j = 0; j < base_data_t::_S; j++)
             for(int i = 0; i < Al.Height(); i++) {
                 value_type val = Al.Get(i, j);
                 value_type trans =

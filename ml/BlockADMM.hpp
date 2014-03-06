@@ -34,418 +34,441 @@ class BlockADMMSolver
 {
 public:
 
-	typedef skylark::sketch::sketch_transform_t<LocalMatrixType, LocalMatrixType>
-		feature_transform_t;
-	typedef std::vector<const feature_transform_t *> feature_transform_array_t;
+    typedef skylark::sketch::sketch_transform_t<LocalMatrixType, LocalMatrixType>
+    feature_transform_t;
+    typedef std::vector<const feature_transform_t *> feature_transform_array_t;
 
 
-	// No feature transforms (aka just linear regression).
-	BlockADMMSolver(skylark::sketch::context_t& context,
-					const lossfunction* loss,
-					const regularization* regularizer,
-					double lambda, // regularization parameter
-					int NumFeatures,
-					int NumFeaturePartitions = 1);
+    // No feature transforms (aka just linear regression).
+    BlockADMMSolver(skylark::sketch::context_t& context,
+            const lossfunction* loss,
+            const regularization* regularizer,
+            double lambda, // regularization parameter
+            int NumFeatures,
+            int NumFeaturePartitions = 1);
 
-	// Easy interface, aka kernel based.
-	template<typename Kernel, typename MapTypeTag>
-	BlockADMMSolver(skylark::sketch::context_t& context,
-					const lossfunction* loss,
-					const regularization* regularizer,
-					double lambda, // regularization parameter
-					int NumFeatures,
-					Kernel kernel,
-					MapTypeTag tag,
-					int NumFeaturePartitions = 1);
+    // Easy interface, aka kernel based.
+    template<typename Kernel, typename MapTypeTag>
+    BlockADMMSolver(skylark::sketch::context_t& context,
+            const lossfunction* loss,
+            const regularization* regularizer,
+            double lambda, // regularization parameter
+            int NumFeatures,
+            Kernel kernel,
+            MapTypeTag tag,
+            int NumFeaturePartitions = 1);
 
-	// Guru interface.
-	BlockADMMSolver(skylark::sketch::context_t& context,
-					const lossfunction* loss,
-					const regularization* regularizer,
-					const feature_transform_array_t& featureMaps,
-					double lambda, // regularization parameter
-					bool ScaleFeatureMaps = true);
+    // Guru interface.
+    BlockADMMSolver(skylark::sketch::context_t& context,
+            const lossfunction* loss,
+            const regularization* regularizer,
+            const feature_transform_array_t& featureMaps,
+            double lambda, // regularization parameter
+            bool ScaleFeatureMaps = true);
 
-	void set_nthreads(int NumThreads) { this->NumThreads = NumThreads; }
-	void set_rho(double RHO) { this->RHO = RHO; }
-	void set_maxiter(double MAXITER) { this->MAXITER = MAXITER; }
-	void set_tol(double TOL) { this->TOL = TOL; }
+    void set_nthreads(int NumThreads) { this->NumThreads = NumThreads; }
+    void set_rho(double RHO) { this->RHO = RHO; }
+    void set_maxiter(double MAXITER) { this->MAXITER = MAXITER; }
+    void set_tol(double TOL) { this->TOL = TOL; }
 
-	~BlockADMMSolver();
+    ~BlockADMMSolver();
 
-	void InitializeCache();
-	int train(DistInputMatrixType& X, DistTargetMatrixType& Y, LocalMatrixType& W, DistInputMatrixType& Xv, DistTargetMatrixType& Yv);
-	void predict(DistInputMatrixType& X, DistTargetMatrixType& Y,LocalMatrixType& W);
-	double evaluate(DistTargetMatrixType& Y, DistTargetMatrixType& Yp);
+    void InitializeCache();
+    int train(DistInputMatrixType& X, DistTargetMatrixType& Y, LocalMatrixType& W, DistInputMatrixType& Xv, DistTargetMatrixType& Yv);
+    void predict(DistInputMatrixType& X, DistTargetMatrixType& Y,LocalMatrixType& W);
+    double evaluate(DistTargetMatrixType& Y, DistTargetMatrixType& Yp);
 
 private:
-	skylark::sketch::context_t& context;
+    skylark::sketch::context_t& context;
 
-	feature_transform_array_t featureMaps;
-	int NumFeatures;
-	int NumFeaturePartitions;
-	lossfunction* loss;
-	regularization* regularizer;
-	std::vector<int> starts, finishes;
-	bool ScaleFeatureMaps;
-	bool OwnFeatureMaps;
-	LocalMatrixType **Cache;
-	int NumThreads;
+    feature_transform_array_t featureMaps;
+    int NumFeatures;
+    int NumFeaturePartitions;
+    lossfunction* loss;
+    regularization* regularizer;
+    std::vector<int> starts, finishes;
+    bool ScaleFeatureMaps;
+    bool OwnFeatureMaps;
+    LocalMatrixType **Cache;
+    int NumThreads;
 
-	double lambda;
-	double RHO;
-	int MAXITER;
-	double TOL;
+    double lambda;
+    double RHO;
+    int MAXITER;
+    double TOL;
 };
 
 
 void BlockADMMSolver::InitializeCache() {
-	Cache = new LocalMatrixType* [NumFeaturePartitions];
-	for(int j=0; j<NumFeaturePartitions; j++) {
-		int start = starts[j];
-		int finish = finishes[j];
-		int sj = finish - start  + 1;
-		Cache[j]  = new elem::Matrix<double>(sj, sj);
-	}
+    Cache = new LocalMatrixType* [NumFeaturePartitions];
+    for(int j=0; j<NumFeaturePartitions; j++) {
+        int start = starts[j];
+        int finish = finishes[j];
+        int sj = finish - start  + 1;
+        Cache[j]  = new elem::Matrix<double>(sj, sj);
+    }
 }
 
 // No feature transforms (aka just linear regression).
 BlockADMMSolver::BlockADMMSolver(skylark::sketch::context_t& context,
-				const lossfunction* loss,
-				const regularization* regularizer,
-				double lambda, // regularization parameter
-				int NumFeatures,
-				int NumFeaturePartitions) : context(context), NumFeatures(NumFeatures), NumFeaturePartitions(NumFeaturePartitions),
-					starts(NumFeaturePartitions), finishes(NumFeaturePartitions),
-					NumThreads(1), RHO(1.0), MAXITER(1000), TOL(0.1) {
+        const lossfunction* loss,
+        const regularization* regularizer,
+        double lambda, // regularization parameter
+        int NumFeatures,
+        int NumFeaturePartitions) : context(context), NumFeatures(NumFeatures), NumFeaturePartitions(NumFeaturePartitions),
+                starts(NumFeaturePartitions), finishes(NumFeaturePartitions),
+                NumThreads(1), RHO(1.0), MAXITER(1000), TOL(0.1) {
 
-		this->loss = const_cast<lossfunction *> (loss);
-		this->regularizer = const_cast<regularization *> (regularizer);
-		this->lambda = lambda;
-		this->NumFeaturePartitions = NumFeaturePartitions;
-		int blksize = int(ceil(double(NumFeatures) / NumFeaturePartitions));
-		for(int i = 0; i < NumFeaturePartitions; i++) {
-			starts[i] = i * blksize;
-			finishes[i] = std::min((i + 1) * blksize, NumFeatures) - 1;
-		}
-		this->ScaleFeatureMaps = false;
-		OwnFeatureMaps = false;
-		InitializeCache();
+    this->loss = const_cast<lossfunction *> (loss);
+    this->regularizer = const_cast<regularization *> (regularizer);
+    this->lambda = lambda;
+    this->NumFeaturePartitions = NumFeaturePartitions;
+    int blksize = int(ceil(double(NumFeatures) / NumFeaturePartitions));
+    for(int i = 0; i < NumFeaturePartitions; i++) {
+        starts[i] = i * blksize;
+        finishes[i] = std::min((i + 1) * blksize, NumFeatures) - 1;
+    }
+    this->ScaleFeatureMaps = false;
+    OwnFeatureMaps = false;
+    InitializeCache();
 }
 
 // Easy interface, aka kernel based.
 template<typename Kernel, typename MapTypeTag>
 BlockADMMSolver::BlockADMMSolver(skylark::sketch::context_t& context,
-				const lossfunction* loss,
-				const regularization* regularizer,
-				double lambda, // regularization parameter
-				int NumFeatures,
-				Kernel kernel,
-				MapTypeTag tag,
-				int NumFeaturePartitions) : context(context), featureMaps(NumFeaturePartitions),
-					NumFeatures(NumFeatures), NumFeaturePartitions(NumFeaturePartitions),
-					starts(NumFeaturePartitions), finishes(NumFeaturePartitions),
-					NumThreads(1), RHO(1.0), MAXITER(1000), TOL(0.1) {
+        const lossfunction* loss,
+        const regularization* regularizer,
+        double lambda, // regularization parameter
+        int NumFeatures,
+        Kernel kernel,
+        MapTypeTag tag,
+        int NumFeaturePartitions) : context(context), featureMaps(NumFeaturePartitions),
+        NumFeatures(NumFeatures), NumFeaturePartitions(NumFeaturePartitions),
+        starts(NumFeaturePartitions), finishes(NumFeaturePartitions),
+        NumThreads(1), RHO(1.0), MAXITER(1000), TOL(0.1) {
 
-		this->loss = const_cast<lossfunction *> (loss);
-		this->regularizer = const_cast<regularization *> (regularizer);
-		this->lambda = lambda;
-		int blksize = int(ceil(double(NumFeatures) / NumFeaturePartitions));
-		for(int i = 0; i < NumFeaturePartitions; i++) {
-			starts[i] = i * blksize;
-			finishes[i] = std::min((i + 1) * blksize, NumFeatures) - 1;
-			int sj = finishes[i] - starts[i] + 1;
-			featureMaps[i] = kernel.template create_rft< LocalMatrixType, LocalMatrixType >(sj, tag, context);
-		}
-		this->ScaleFeatureMaps = true;
-		OwnFeatureMaps = true;
-		InitializeCache();
+    this->loss = const_cast<lossfunction *> (loss);
+    this->regularizer = const_cast<regularization *> (regularizer);
+    this->lambda = lambda;
+    int blksize = int(ceil(double(NumFeatures) / NumFeaturePartitions));
+    for(int i = 0; i < NumFeaturePartitions; i++) {
+        starts[i] = i * blksize;
+        finishes[i] = std::min((i + 1) * blksize, NumFeatures) - 1;
+        int sj = finishes[i] - starts[i] + 1;
+        featureMaps[i] = kernel.template create_rft< LocalMatrixType, LocalMatrixType >(sj, tag, context);
+    }
+    this->ScaleFeatureMaps = true;
+    OwnFeatureMaps = true;
+    InitializeCache();
 }
 
 // Guru interface
 BlockADMMSolver::BlockADMMSolver(skylark::sketch::context_t& context,
-		const lossfunction* loss,
-		const regularization* regularizer,
-		const feature_transform_array_t &featureMaps,
-		double lambda,
-		bool ScaleFeatureMaps) : context(context), featureMaps(featureMaps), NumFeaturePartitions(featureMaps.size()),
-			starts(NumFeaturePartitions), finishes(NumFeaturePartitions),
-			NumThreads(1), RHO(1.0), MAXITER(1000), TOL(0.1)  {
+        const lossfunction* loss,
+        const regularization* regularizer,
+        const feature_transform_array_t &featureMaps,
+        double lambda,
+        bool ScaleFeatureMaps) : context(context), featureMaps(featureMaps), NumFeaturePartitions(featureMaps.size()),
+                starts(NumFeaturePartitions), finishes(NumFeaturePartitions),
+                NumThreads(1), RHO(1.0), MAXITER(1000), TOL(0.1)  {
 
-		this->loss = const_cast<lossfunction *> (loss);
-		this->regularizer = const_cast<regularization *> (regularizer);
-		this->lambda = lambda;
-		NumFeaturePartitions = featureMaps.size();
-		NumFeatures = 0;
-		for(int i = 0; i < NumFeaturePartitions; i++) {
-			starts[i] = NumFeatures;
-			finishes[i] = NumFeatures + featureMaps[i]->get_S() - 1;
-			NumFeatures += featureMaps[i]->get_S();
+    this->loss = const_cast<lossfunction *> (loss);
+    this->regularizer = const_cast<regularization *> (regularizer);
+    this->lambda = lambda;
+    NumFeaturePartitions = featureMaps.size();
+    NumFeatures = 0;
+    for(int i = 0; i < NumFeaturePartitions; i++) {
+        starts[i] = NumFeatures;
+        finishes[i] = NumFeatures + featureMaps[i]->get_S() - 1;
+        NumFeatures += featureMaps[i]->get_S();
 
-			std::cout << starts[i] << " " << finishes[i] << "\n";
-		}
-		this->ScaleFeatureMaps = ScaleFeatureMaps;
-		OwnFeatureMaps = false;
-		InitializeCache();
+        std::cout << starts[i] << " " << finishes[i] << "\n";
+    }
+    this->ScaleFeatureMaps = ScaleFeatureMaps;
+    OwnFeatureMaps = false;
+    InitializeCache();
 }
 
 BlockADMMSolver::~BlockADMMSolver() {
-	for(int i=0; i  < NumFeaturePartitions; i++) {
-		delete Cache[i];
-		if (OwnFeatureMaps)
-			delete featureMaps[i];
-	}
-	delete Cache;
+    for(int i=0; i  < NumFeaturePartitions; i++) {
+        delete Cache[i];
+        if (OwnFeatureMaps)
+            delete featureMaps[i];
+    }
+    delete Cache;
 }
 
 
 int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, LocalMatrixType& Wbar, DistInputMatrixType& Xv, DistTargetMatrixType& Yv) {
 
-	int P = context.size;
+    int P = context.size;
 
-	int n = X.Width();
-	int d = X.Height();
-	int k = Wbar.Width();
-	// number of classes, targets - to generalize
+    int n = X.Width();
+    int d = X.Height();
+    int k = Wbar.Width();
+    // number of classes, targets - to generalize
 
-	//(context.comm, &kmax, 1, &k, boost::mpi::maximum);
+    //(context.comm, &kmax, 1, &k, boost::mpi::maximum);
 
-	// number of random features
-	int D = NumFeatures;
+    // number of random features
+    int D = NumFeatures;
 
-	// exception: check if D = Wbar.Height();
+    // exception: check if D = Wbar.Height();
 
-	//elem::Grid grid;
-
-
-	DistMatrixTypeT O(k, n); //uses default Grid
-	elem::Zeros(O, k, n);
+    //elem::Grid grid;
 
 
-	DistMatrixTypeT Obar(k, n); //uses default Grid
-	elem::Zeros(Obar, k, n);
+    DistMatrixTypeT O(k, n); //uses default Grid
+    elem::Zeros(O, k, n);
 
 
-	DistMatrixTypeT nu(k, n); //uses default Grid
-	elem::Zeros(nu, k, n);
-
-	LocalMatrixType W, mu, Wi, mu_ij, ZtObar_ij;
-
-	if(context.rank==0) {
-		elem::Zeros(W, D, k);
-		elem::Zeros(mu, D, k);
-		}
-	elem::Zeros(Wi, D, k);
-	elem::Zeros(mu_ij, D, k);
-	elem::Zeros(ZtObar_ij, D, k);
-
-	int iter = 0;
-
-	int ni = O.LocalWidth();
-
-	elem::Matrix<double> x = X.Matrix();
-	elem::Matrix<double> y = Y.Matrix();
+    DistMatrixTypeT Obar(k, n); //uses default Grid
+    elem::Zeros(Obar, k, n);
 
 
-	double localloss = loss->evaluate(O.Matrix(), y);
-	double totalloss, accuracy, obj;
+    DistMatrixTypeT nu(k, n); //uses default Grid
+    elem::Zeros(nu, k, n);
 
-	int Dk = D*k;
-	int nik  = ni*k;
-	int start, finish, sj;
+    LocalMatrixType W, mu, Wi, mu_ij, ZtObar_ij;
 
-	boost::mpi::timer timer;
+    if(context.rank==0) {
+        elem::Zeros(W,  D, k);
+        elem::Zeros(mu, D, k);
+    }
+    elem::Zeros(Wi, D, k);
+    elem::Zeros(mu_ij, D, k);
+    elem::Zeros(ZtObar_ij, D, k);
 
-	LocalMatrixType sum_o;
-	DistTargetMatrixType Yp(Yv.Height(), k);
+    int iter = 0;
+
+    int ni = O.LocalWidth();
+
+    elem::Matrix<double> x = X.Matrix();
+    elem::Matrix<double> y = Y.Matrix();
+
+
+    double localloss = loss->evaluate(O.Matrix(), y);
+    double totalloss, accuracy, obj;
+
+    int Dk = D*k;
+    int nik  = ni*k;
+    int start, finish, sj;
+
+    boost::mpi::timer timer;
+
+    LocalMatrixType sum_o, del_o, wbar_output;
+    elem::Zeros(del_o, k, ni);
+    DistTargetMatrixType Yp(Yv.Height(), k);
 
 #ifdef SKYLARK_HAVE_PROFILER
-	 SKYLARK_TIMER_INITIALIZE(ITERATIONS_PROFILE)
-	 SKYLARK_TIMER_INITIALIZE(COMMUNICATION_PROFILE)
-	 SKYLARK_TIMER_INITIALIZE(TRANSFORM_PROFILE)
-	 SKYLARK_TIMER_INITIALIZE(ZTRANSFORM_PROFILE)
-	 SKYLARK_TIMER_INITIALIZE(ZMULT_PROFILE)
-	 SKYLARK_TIMER_INITIALIZE(PROXLOSS_PROFILE)
-	 SKYLARK_TIMER_INITIALIZE(BARRIER_PROFILE)
-	 SKYLARK_TIMER_INITIALIZE(PREDICTION_PROFILE)
+    SKYLARK_TIMER_INITIALIZE(ITERATIONS_PROFILE)
+    SKYLARK_TIMER_INITIALIZE(COMMUNICATION_PROFILE)
+    SKYLARK_TIMER_INITIALIZE(TRANSFORM_PROFILE)
+    SKYLARK_TIMER_INITIALIZE(ZTRANSFORM_PROFILE)
+    SKYLARK_TIMER_INITIALIZE(ZMULT_PROFILE)
+    SKYLARK_TIMER_INITIALIZE(PROXLOSS_PROFILE)
+    SKYLARK_TIMER_INITIALIZE(BARRIER_PROFILE)
+    SKYLARK_TIMER_INITIALIZE(PREDICTION_PROFILE)
 #endif
 
-	while(iter<MAXITER) {
+    while(iter<MAXITER) {
 
 #ifdef SKYLARK_HAVE_PROFILER
-	    SKYLARK_TIMER_RESTART(ITERATIONS_PROFILE)
+        SKYLARK_TIMER_RESTART(ITERATIONS_PROFILE)
+#endif
+		        iter++;
+
+#ifdef SKYLARK_HAVE_PROFILER
         SKYLARK_TIMER_RESTART(COMMUNICATION_PROFILE)
 #endif
-
-		iter++;
-
-		reduce(context.comm, localloss, totalloss, std::plus<double>(), 0);
-#ifdef SKYLARK_HAVE_PROFILER
-		SKYLARK_TIMER_ACCUMULATE(COMMUNICATION_PROFILE)
-#endif
-
-#ifdef SKYLARK_HAVE_PROFILER
-        SKYLARK_TIMER_RESTART(PREDICTION_PROFILE)
-#endif
-		if (Xv.Width() > 0) {
-		    elem::MakeZeros(Yp);
-		        predict(Xv, Yp, Wbar);
-		        accuracy = evaluate(Yv, Yp);
-		}
-#ifdef SKYLARK_HAVE_PROFILER
-        SKYLARK_TIMER_ACCUMULATE(PREDICTION_PROFILE)
-#endif
-
-
-
-		if(context.rank==0) {
-		        obj = totalloss + lambda*regularizer->evaluate(Wbar);
-		        if (Xv.Width()==0) {
-		                std::cout << "iteration " << iter << " objective " << obj << " time " << timer.elapsed() << " seconds" << std::endl;
-		        }
-		        else {
-		                std::cout << "iteration " << iter << " objective " << obj << " accuracy " << accuracy << " time " << timer.elapsed() << " seconds" << std::endl;
-		        }
-		}
-#ifdef SKYLARK_HAVE_PROFILER
-		SKYLARK_TIMER_RESTART(COMMUNICATION_PROFILE)
-#endif
-		broadcast(context.comm, Wbar.Buffer(), Dk, 0);
+        broadcast(context.comm, Wbar.Buffer(), Dk, 0);
 #ifdef SKYLARK_HAVE_PROFILER
         SKYLARK_TIMER_ACCUMULATE(COMMUNICATION_PROFILE)
 #endif
 
-		elem::Axpy(-1.0, Wbar, mu_ij);
+        // mu_ij = mu_ij - Wbar
+        elem::Axpy(-1.0, Wbar, mu_ij);
 
-		elem::Axpy(-1.0, nu.Matrix(), Obar.Matrix());
+        // Obar = Obar - nu
+        elem::Axpy(-1.0, nu.Matrix(), Obar.Matrix());
 
 #ifdef SKYLARK_HAVE_PROFILER
-		SKYLARK_TIMER_RESTART(PROXLOSS_PROFILE)
+        SKYLARK_TIMER_RESTART(PROXLOSS_PROFILE)
 #endif
-		loss->proxoperator(Obar.Matrix(), 1.0/RHO, y, O.Matrix());
+
+        loss->proxoperator(Obar.Matrix(), 1.0/RHO, y, O.Matrix());
+
 #ifdef SKYLARK_HAVE_PROFILER
         SKYLARK_TIMER_ACCUMULATE(PROXLOSS_PROFILE)
 #endif
 
-		if(context.rank==0) {
-			regularizer->proxoperator(Wbar, lambda/RHO, mu, W);
-		}
+        if(context.rank==0) {
+            regularizer->proxoperator(Wbar, lambda/RHO, mu, W);
+        }
 
-		elem::Zeros(sum_o, k, ni);
-		//elem::Matrix<double> o(ni, k);
+        elem::Zeros(sum_o, k, ni);
+        elem::Zeros(wbar_output, k, ni);
 
-		int j;
-		const feature_transform_t* featureMap;
+        //elem::Matrix<double> o(ni, k);
+
+        int j;
+        const feature_transform_t* featureMap;
 
 #ifdef SKYLARK_HAVE_PROFILER
         SKYLARK_TIMER_RESTART(TRANSFORM_PROFILE)
 #endif
 
 #ifdef SKYLARK_HAVE_OPENMP
-		#pragma omp parallel for if(NumThreads > 1) private(j, start, finish, sj, featureMap) num_threads(NumThreads)
+#pragma omp parallel for if(NumThreads > 1) private(j, start, finish, sj, featureMap) num_threads(NumThreads)
 #endif
-		for(j = 0; j < NumFeaturePartitions; j++) {
-			start = starts[j];
-			finish = finishes[j];
-			sj = finish - start  + 1;
+        for(j = 0; j < NumFeaturePartitions; j++) {
+            start = starts[j];
+            finish = finishes[j];
+            sj = finish - start  + 1;
 
-			elem::Matrix<double> z(sj, ni);
+            elem::Matrix<double> z(sj, ni);
 
-			if (featureMaps.size() > 0) {
-				featureMap = featureMaps[j];
+            if (featureMaps.size() > 0) {
+                featureMap = featureMaps[j];
 #ifdef SKYLARK_HAVE_PROFILER
-        SKYLARK_TIMER_RESTART(ZTRANSFORM_PROFILE)
+                SKYLARK_TIMER_RESTART(ZTRANSFORM_PROFILE)
 #endif
-				featureMap->apply(x, z, skylark::sketch::columnwise_tag());
+                featureMap->apply(x, z, skylark::sketch::columnwise_tag());
 #ifdef SKYLARK_HAVE_PROFILER
-        SKYLARK_TIMER_ACCUMULATE(ZTRANSFORM_PROFILE)
+                SKYLARK_TIMER_ACCUMULATE(ZTRANSFORM_PROFILE)
 #endif
 
-				if (ScaleFeatureMaps)
-					elem::Scal(sqrt(double(sj) / d), z);
-			} else
-				elem::View(z, x, start, 0, sj, ni);
+                if (ScaleFeatureMaps)
+                    elem::Scal(sqrt(double(sj) / d), z);
+            } else
+                elem::View(z, x, start, 0, sj, ni);
 
-			elem::Matrix<double> tmp(sj, k);
-			elem::Matrix<double> rhs(sj, k);
-			elem::Matrix<double> o(k, ni);
+            elem::Matrix<double> tmp(sj, k);
+            elem::Matrix<double> rhs(sj, k);
+            elem::Matrix<double> o(k, ni);
 
-			if(iter==1) {
+            if(iter==1) {
 
-				elem::Matrix<double> Ones;
-				elem::Ones(Ones, sj, 1);
-			//elem::Syrk(elem::UPPER, elem::TRANSPOSE, 1.0, z, 0.0, *Cache[j]);
-				elem::Gemm(elem::NORMAL, elem::TRANSPOSE, 1.0, z, z, 0.0, *Cache[j]);
-				Cache[j]->UpdateDiagonal(Ones);
-				//elem::Cholesky(elem::UPPER, *Cache[j]);
-				elem::Inverse(*Cache[j]);
-				//	Ones.Empty();
+                elem::Matrix<double> Ones;
+                elem::Ones(Ones, sj, 1);
+                //elem::Syrk(elem::UPPER, elem::TRANSPOSE, 1.0, z, 0.0, *Cache[j]);
+                elem::Gemm(elem::NORMAL, elem::TRANSPOSE, 1.0, z, z, 0.0, *Cache[j]);
+                Cache[j]->UpdateDiagonal(Ones);
+                //elem::Cholesky(elem::UPPER, *Cache[j]);
+                elem::Inverse(*Cache[j]);
+                //	Ones.Empty();
 
-			}
+            }
 
 
 
-			elem::View(tmp, Wbar, start, 0, sj, k); //tmp = Wbar[J,:]
-			rhs = tmp; //rhs = Wbar[J,:]
-			elem::View(tmp, mu_ij, start, 0, sj, k); //tmp = mu_ij[J,:]
-			elem::Axpy(-1.0, tmp, rhs); // rhs = rhs - mu_ij[J,:] = Wbar[J,:] - mu_ij[J,:]
-			elem::View(tmp, ZtObar_ij, start, 0, sj, k);
-			elem::Axpy(+1.0, tmp, rhs); // rhs = rhs + ZtObar_ij[J,:]
-#ifdef SKYLARK_HAVE_PROFILER
-        SKYLARK_TIMER_RESTART(ZMULT_PROFILE)
-#endif
-			elem::Gemm(elem::NORMAL, elem::TRANSPOSE, 1.0, z, nu.Matrix(), 1.0, rhs); // rhs = rhs + z'*nu
-#ifdef SKYLARK_HAVE_PROFILER
-        SKYLARK_TIMER_ACCUMULATE(ZMULT_PROFILE)
-#endif
-			elem::View(tmp, Wi, start, 0, sj, k);
-		    elem::Gemm(elem::NORMAL, elem::NORMAL, 1.0, *Cache[j], rhs, 0.0, tmp); // ]tmp = Wi[J,:] = Cache[j]*rhs
-
-#ifdef SKYLARK_HAVE_PROFILER
-        SKYLARK_TIMER_RESTART(ZMULT_PROFILE)
-#endif
-		 //   double st = omp_get_wtime( );
-			elem::Gemm(elem::TRANSPOSE, elem::NORMAL, 1.0, tmp, z, 0.0, o); // o = (z*tmp)' = (z*Wi[J,:])'
-#ifdef SKYLARK_HAVE_PROFILER
-        SKYLARK_TIMER_ACCUMULATE(ZMULT_PROFILE)
-#endif
-		//	double ed = omp_get_wtime( );
-
-			// std::cout << ed - st << std::endl;
-
-			// mu_ij[JJ,:] = mu_ij[JJ,:] + Wi[JJ,:];
-			elem::View(tmp, mu_ij, start, 0, sj, k); //tmp = mu_ij[J,:]
-			elem::View(rhs, Wi, start, 0, sj, k);
-			elem::Axpy(+1.0, rhs, tmp);
-
-		    //ZtObar_ij[JJ,:] = numpy.dot(Z.T, o);
-	 		elem::View(tmp, ZtObar_ij, start, 0, sj, k);
-			elem::Gemm(elem::NORMAL, elem::TRANSPOSE, 1.0, z, o, 0.0, tmp);
-
-			//  sum_o += o
+            elem::View(tmp, Wbar, start, 0, sj, k); //tmp = Wbar[J,:]
 #ifdef SKYLARK_HAVE_OPENMP
-            #pragma omp critical
+#pragma omp critical
 #endif
-			elem::Axpy(1.0, o, sum_o);
+            elem::Gemm(elem::TRANSPOSE, elem::NORMAL, 1.0, tmp, z, 1.0, wbar_output);
 
-			z.Empty();
-		}
+            rhs = tmp; //rhs = Wbar[J,:]
+            elem::View(tmp, mu_ij, start, 0, sj, k); //tmp = mu_ij[J,:]
+            elem::Axpy(-1.0, tmp, rhs); // rhs = rhs - mu_ij[J,:] = Wbar[J,:] - mu_ij[J,:]
+            elem::View(tmp, ZtObar_ij, start, 0, sj, k);
+            elem::Axpy(+1.0, tmp, rhs); // rhs = rhs + ZtObar_ij[J,:]
+#ifdef SKYLARK_HAVE_PROFILER
+            SKYLARK_TIMER_RESTART(ZMULT_PROFILE)
+#endif
+            elem::Gemm(elem::NORMAL, elem::TRANSPOSE, 1.0, z, nu.Matrix(), 1.0, rhs); // rhs = rhs + z'*nu
+            elem::Gemm(elem::NORMAL, elem::TRANSPOSE, 1.0/(NumFeaturePartitions + 1.0), z, del_o, 1.0, rhs); // rhs = rhs + z'*del_o
+
+#ifdef SKYLARK_HAVE_PROFILER
+            SKYLARK_TIMER_ACCUMULATE(ZMULT_PROFILE)
+#endif
+            elem::View(tmp, Wi, start, 0, sj, k);
+            elem::Gemm(elem::NORMAL, elem::NORMAL, 1.0, *Cache[j], rhs, 0.0, tmp); // ]tmp = Wi[J,:] = Cache[j]*rhs
+
+#ifdef SKYLARK_HAVE_PROFILER
+            SKYLARK_TIMER_RESTART(ZMULT_PROFILE)
+#endif
+            //   double st = omp_get_wtime( );
+            elem::Gemm(elem::TRANSPOSE, elem::NORMAL, 1.0, tmp, z, 0.0, o); // o = (z*tmp)' = (z*Wi[J,:])'
+#ifdef SKYLARK_HAVE_PROFILER
+            SKYLARK_TIMER_ACCUMULATE(ZMULT_PROFILE)
+#endif
+            //	double ed = omp_get_wtime( );
+
+            // std::cout << ed - st << std::endl;
+
+            // mu_ij[JJ,:] = mu_ij[JJ,:] + Wi[JJ,:];
+            elem::View(tmp, mu_ij, start, 0, sj, k); //tmp = mu_ij[J,:]
+            elem::View(rhs, Wi, start, 0, sj, k);
+            elem::Axpy(+1.0, rhs, tmp);
+
+            //ZtObar_ij[JJ,:] = numpy.dot(Z.T, o);
+            elem::View(tmp, ZtObar_ij, start, 0, sj, k);
+            elem::Gemm(elem::NORMAL, elem::TRANSPOSE, 1.0, z, o, 0.0, tmp);
+
+            //  sum_o += o
+#ifdef SKYLARK_HAVE_OPENMP
+#pragma omp critical
+#endif
+            elem::Axpy(1.0, o, sum_o);
+
+            z.Empty();
+        }
 #ifdef SKYLARK_HAVE_PROFILER
         SKYLARK_TIMER_ACCUMULATE(TRANSFORM_PROFILE)
 #endif
 
-		localloss = 0.0 ;
-	 //	elem::Zeros(o, ni, k);
-		elem::Matrix<double> o(k, ni);
-		elem::MakeZeros(o);
-		elem::Scal(-1.0, sum_o);
-		elem::Axpy(+1.0, O.Matrix(), sum_o); // sum_o = O.Matrix - sum_o
+        localloss = 0.0 ;
+        //	elem::Zeros(o, ni, k);
+        elem::Matrix<double> o(k, ni);
+        elem::MakeZeros(o);
+        elem::Scal(-1.0, sum_o);
+        elem::Axpy(+1.0, O.Matrix(), sum_o); // sum_o = O.Matrix - sum_o
+        del_o = sum_o;
 
 #ifdef SKYLARK_HAVE_PROFILER
-        SKYLARK_TIMER_RESTART(TRANSFORM_PROFILE)
+        SKYLARK_TIMER_RESTART(PREDICTION_PROFILE)
+#endif
+        if (Xv.Width() > 0) {
+            elem::MakeZeros(Yp);
+            predict(Xv, Yp, Wbar);
+            accuracy = evaluate(Yv, Yp);
+        }
+#ifdef SKYLARK_HAVE_PROFILER
+        SKYLARK_TIMER_ACCUMULATE(PREDICTION_PROFILE)
 #endif
 
+        localloss+= loss->evaluate(wbar_output, y);
 
+#ifdef SKYLARK_HAVE_PROFILER
+        SKYLARK_TIMER_RESTART(COMMUNICATION_PROFILE)
+#endif
+
+        reduce(context.comm, localloss, totalloss, std::plus<double>(), 0);
+
+#ifdef SKYLARK_HAVE_PROFILER
+        SKYLARK_TIMER_ACCUMULATE(COMMUNICATION_PROFILE)
+#endif
+
+        if(context.rank==0) {
+            obj = totalloss + lambda*regularizer->evaluate(Wbar);
+            if (Xv.Width()==0) {
+                std::cout << "iteration " << iter << " objective " << obj << " time " << timer.elapsed() << " seconds" << std::endl;
+            }
+            else {
+                std::cout << "iteration " << iter << " objective " << obj << " accuracy " << accuracy << " time " << timer.elapsed() << " seconds" << std::endl;
+            }
+        }
+
+
+
+
+// #ifdef SKYLARK_HAVE_PROFILER
+//        SKYLARK_TIMER_RESTART(TRANSFORM_PROFILE)
+// #endif
+
+
+/*
 #ifdef SKYLARK_HAVE_OPENMP
 		#pragma omp parallel for if(NumThreads > 1) private(j, start, finish, sj, featureMap) num_threads(NumThreads)
 #endif
@@ -472,11 +495,12 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 						elem::View(z, x, start, 0, sj, ni);
 
 					elem::Matrix<double> tmp(sj, k);
-					elem::View(tmp, ZtObar_ij, start, 0, sj, k);
+//					elem::View(tmp, ZtObar_ij, start, 0, sj, k);
 #ifdef SKYLARK_HAVE_PROFILER
         SKYLARK_TIMER_RESTART(ZMULT_PROFILE)
 #endif
-					elem::Gemm(elem::NORMAL, elem::TRANSPOSE, 1.0/(NumFeaturePartitions + 1.0), z, sum_o, 1.0, tmp);
+//					elem::Gemm(elem::NORMAL, elem::TRANSPOSE, 1.0/(NumFeaturePartitions + 1.0), z, sum_o, 1.0, tmp);
+
 #ifdef SKYLARK_HAVE_PROFILER
         SKYLARK_TIMER_ACCUMULATE(ZMULT_PROFILE)
 #endif
@@ -491,8 +515,9 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 #ifdef SKYLARK_HAVE_PROFILER
         SKYLARK_TIMER_ACCUMULATE(TRANSFORM_PROFILE)
 #endif
+*/
 
-		localloss+= loss->evaluate(o, y);
+
 
 		elem::Copy(O.Matrix(), Obar.Matrix());
 		elem::Scal(1.0/(NumFeaturePartitions+1.0), sum_o);

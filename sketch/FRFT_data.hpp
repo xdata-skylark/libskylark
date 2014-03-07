@@ -32,28 +32,29 @@ struct FastRFT_data_t {
      * Regular constructor
      */
     FastRFT_data_t (int N, int S, skylark::sketch::context_t& context)
-        : N(N), S(S), context(context),
-          numblks(1 + ((S - 1) / N)), scale(std::sqrt(2.0 / S)), 
-          Sm(numblks * N)  {
+        : N(N), S(S), NB(std::pow(2, std::ceil(std::log(N)/std::log(2)))),
+          context(context),
+          numblks(1 + ((S - 1) / NB)), scale(std::sqrt(2.0 / S)),
+          Sm(numblks * NB)  {
 
         const double pi = boost::math::constants::pi<value_type>();
         bstrand::uniform_real_distribution<value_type> dist_shifts(0, 2 * pi);
         shifts = context.generate_random_samples_array(S, dist_shifts);
         utility::rademacher_distribution_t<value_type> dist_B;
-        B = context.generate_random_samples_array(numblks * N, dist_B);
+        B = context.generate_random_samples_array(numblks * NB, dist_B);
         bstrand::normal_distribution<value_type> dist_G;
-        G = context.generate_random_samples_array(numblks * N, dist_G);
+        G = context.generate_random_samples_array(numblks * NB, dist_G);
 
         // For the permutation we use Fisher-Yates (Knuth)
         // The following will generate the indexes for the swaps. However
-        // the scheme here might have a small bias if N is small
+        // the scheme here might have a small bias if NB is small
         // (has to be really small).
         bstrand::uniform_int_distribution<int> dist_P(0);
-        P = context.generate_random_samples_array(numblks * (N - 1), dist_P);
+        P = context.generate_random_samples_array(numblks * (NB - 1), dist_P);
         for(int i = 0; i < numblks; i++)
-            for(int j = N - 1; j >= 1; j--)
-                P[i * (N - 1) + N - 1 - j] =
-                    P[i * (N - 1) + N - 1 - j] % (j + 1);
+            for(int j = NB - 1; j >= 1; j--)
+                P[i * (NB - 1) + NB - 1 - j] =
+                    P[i * (NB - 1) + NB - 1 - j] % (j + 1);
 
         // Fill scaling matrix with 1. Subclasses (which are adapted to concrete
         // kernels) should modify this.
@@ -66,6 +67,7 @@ protected:
     const int S; /**< Output dimension  */
     skylark::sketch::context_t& context; /**< Context for this sketch */
 
+    const int NB; /**< Block size -- closet power of two of N */
     const int numblks;
     const value_type scale; /** Scaling for trigonometric factor */
     std::vector<value_type> Sm; /** Scaling based on kernel (filled by subclass) */

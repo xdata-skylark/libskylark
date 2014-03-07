@@ -70,10 +70,13 @@ public:
     void set_rho(double RHO) { this->RHO = RHO; }
     void set_maxiter(double MAXITER) { this->MAXITER = MAXITER; }
     void set_tol(double TOL) { this->TOL = TOL; }
+    void set_cache_transform(bool CacheTransforms) {this->CacheTransforms = CacheTransforms;}
 
     ~BlockADMMSolver();
 
-    void InitializeCache();
+    void InitializeFactorizationCache();
+    void InitializeTransformCache(int n);
+
     int train(DistInputMatrixType& X, DistTargetMatrixType& Y, LocalMatrixType& W, DistInputMatrixType& Xv, DistTargetMatrixType& Yv);
     void predict(DistInputMatrixType& X, DistTargetMatrixType& Y,LocalMatrixType& W);
     double evaluate(DistTargetMatrixType& Y, DistTargetMatrixType& Yp);
@@ -90,16 +93,19 @@ private:
     bool ScaleFeatureMaps;
     bool OwnFeatureMaps;
     LocalMatrixType **Cache;
+    LocalMatrixType **TransformCache;
     int NumThreads;
 
     double lambda;
     double RHO;
     int MAXITER;
     double TOL;
+
+    bool CacheTransforms;
 };
 
 
-void BlockADMMSolver::InitializeCache() {
+void BlockADMMSolver::InitializeFactorizationCache() {
     Cache = new LocalMatrixType* [NumFeaturePartitions];
     for(int j=0; j<NumFeaturePartitions; j++) {
         int start = starts[j];
@@ -108,6 +114,19 @@ void BlockADMMSolver::InitializeCache() {
         Cache[j]  = new elem::Matrix<double>(sj, sj);
     }
 }
+
+
+
+void BlockADMMSolver::InitializeTransformCache(int n) {
+    TransformCache = new LocalMatrixType* [NumFeaturePartitions];
+    for(int j=0; j<NumFeaturePartitions; j++) {
+        int start = starts[j];
+        int finish = finishes[j];
+        int sj = finish - start  + 1;
+        TransformCache[j]  = new elem::Matrix<double>(sj, n);
+    }
+}
+
 
 // No feature transforms (aka just linear regression).
 BlockADMMSolver::BlockADMMSolver(skylark::sketch::context_t& context,
@@ -130,7 +149,8 @@ BlockADMMSolver::BlockADMMSolver(skylark::sketch::context_t& context,
     }
     this->ScaleFeatureMaps = false;
     OwnFeatureMaps = false;
-    InitializeCache();
+    InitializeFactorizationCache();
+    CacheTransforms = false;
 }
 
 // Easy interface, aka kernel based.
@@ -159,7 +179,8 @@ BlockADMMSolver::BlockADMMSolver(skylark::sketch::context_t& context,
     }
     this->ScaleFeatureMaps = true;
     OwnFeatureMaps = true;
-    InitializeCache();
+    InitializeFactorizationCache();
+    CacheTransforms = false;
 }
 
 // Guru interface
@@ -186,7 +207,8 @@ BlockADMMSolver::BlockADMMSolver(skylark::sketch::context_t& context,
     }
     this->ScaleFeatureMaps = ScaleFeatureMaps;
     OwnFeatureMaps = false;
-    InitializeCache();
+    InitializeFactorizationCache();
+    CacheTransforms = false;
 }
 
 BlockADMMSolver::~BlockADMMSolver() {
@@ -260,6 +282,9 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
     elem::Zeros(del_o, k, ni);
     DistTargetMatrixType Yp(Yv.Height(), k);
 
+    if (CacheTransforms)
+                InitializeTransformCache(ni);
+
 #ifdef SKYLARK_HAVE_PROFILER
     SKYLARK_TIMER_INITIALIZE(ITERATIONS_PROFILE)
     SKYLARK_TIMER_INITIALIZE(COMMUNICATION_PROFILE)
@@ -328,20 +353,27 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 
             elem::Matrix<double> z(sj, ni);
 
-            if (featureMaps.size() > 0) {
-                featureMap = featureMaps[j];
+            if (CacheTransforms && (iter > 1))
+            {
+                 elem::View(z,  *TransformCache[j], 0, 0, sj, ni);
+            }
+            else {
+                if (featureMaps.size() > 0) {
+                    featureMap = featureMaps[j];
 #ifdef SKYLARK_HAVE_PROFILER
-                SKYLARK_TIMER_RESTART(ZTRANSFORM_PROFILE)
+                    SKYLARK_TIMER_RESTART(ZTRANSFORM_PROFILE)
 #endif
-                featureMap->apply(x, z, skylark::sketch::columnwise_tag());
+                    featureMap->apply(x, z, skylark::sketch::columnwise_tag());
 #ifdef SKYLARK_HAVE_PROFILER
-                SKYLARK_TIMER_ACCUMULATE(ZTRANSFORM_PROFILE)
+                    SKYLARK_TIMER_ACCUMULATE(ZTRANSFORM_PROFILE)
 #endif
 
-                if (ScaleFeatureMaps)
-                    elem::Scal(sqrt(double(sj) / d), z);
-            } else
-                elem::View(z, x, start, 0, sj, ni);
+                    if (ScaleFeatureMaps)
+                        elem::Scal(sqrt(double(sj) / d), z);
+                } else
+                    elem::View(z, x, start, 0, sj, ni);
+
+            }
 
             elem::Matrix<double> tmp(sj, k);
             elem::Matrix<double> rhs(sj, k);
@@ -358,9 +390,11 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
                 elem::Inverse(*Cache[j]);
                 //	Ones.Empty();
 
+                if (CacheTransforms) {
+                    *TransformCache[j] = z;
+                }
+
             }
-
-
 
             elem::View(tmp, Wbar, start, 0, sj, k); //tmp = Wbar[J,:]
 #ifdef SKYLARK_HAVE_OPENMP

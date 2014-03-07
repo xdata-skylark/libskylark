@@ -9,6 +9,8 @@
 
 namespace skylark { namespace sketch {
 
+#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT
+
 namespace bstrand = boost::random;
 
 /**
@@ -32,7 +34,7 @@ struct FastRFT_data_t {
      * Regular constructor
      */
     FastRFT_data_t (int N, int S, skylark::sketch::context_t& context)
-        : N(N), S(S), NB(std::pow(2, std::ceil(std::log(N)/std::log(2)))),
+        : N(N), S(S), NB(block_size(N)),
           context(context),
           numblks(1 + ((S - 1) / NB)), scale(std::sqrt(2.0 / S)),
           Sm(numblks * NB)  {
@@ -65,9 +67,11 @@ struct FastRFT_data_t {
 protected:
     const int N; /**< Input dimension  */
     const int S; /**< Output dimension  */
-    skylark::sketch::context_t& context; /**< Context for this sketch */
 
     const int NB; /**< Block size -- closet power of two of N */
+
+    skylark::sketch::context_t& context; /**< Context for this sketch */
+
     const int numblks;
     const value_type scale; /** Scaling for trigonometric factor */
     std::vector<value_type> Sm; /** Scaling based on kernel (filled by subclass) */
@@ -75,6 +79,15 @@ protected:
     std::vector<value_type> G;
     std::vector<int> P;
     std::vector<value_type> shifts; /** Shifts for scaled trigonometrfic factor */
+
+    static int block_size(int N) {
+#if SKYLARK_HAVE_FFTW
+        return N;
+#elif SKYLARK_HAVE_SPIRALWHT
+        return (int)std::pow(2, std::ceil(std::log(N)/std::log(2)));
+#endif
+    }
+
 };
 
 template<typename ValueType>
@@ -100,6 +113,7 @@ protected:
 
 };
 
+#endif  // SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT
 } } /** namespace skylark::sketch */
 
 #endif /** SKYLARK_FRFT_DATA_HPP */

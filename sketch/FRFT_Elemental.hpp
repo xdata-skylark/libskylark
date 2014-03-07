@@ -13,6 +13,8 @@
 namespace skylark {
 namespace sketch {
 
+#if SKYLARK_HAVE_ELEMENTAL && (SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT)
+
 /**
  * Specialization for local input, local output
  */
@@ -37,7 +39,7 @@ public:
      */
     FastRFT_t(const FastRFT_t<matrix_type,
                       output_matrix_type>& other)
-        : base_data_t(other), _dct(base_data_t::N) {
+        : base_data_t(other), _fut(base_data_t::N) {
 
     }
 
@@ -45,7 +47,7 @@ public:
      * Constructor from data
      */
     FastRFT_t(const base_data_t& other_data)
-        : base_data_t(other_data), _dct(base_data_t::N) {
+        : base_data_t(other_data), _fut(base_data_t::N) {
 
     }
 
@@ -95,7 +97,7 @@ private:
         int ldsa = sketch_of_A.LDim();
 
         value_type scal =
-            std::sqrt(base_data_t::NB) * _dct.scale(W, tag);
+            std::sqrt(base_data_t::NB) * _fut.scale();
 
         output_matrix_type B(base_data_t::NB, 1), G(base_data_t::NB, 1);
         output_matrix_type Sm(base_data_t::NB, 1);
@@ -123,14 +125,14 @@ private:
                 W = Ac;
 
                 elem::DiagonalScale(elem::LEFT, elem::NORMAL, B, W);
-                _dct.apply(W, tag);
+                _fut.apply(W, tag);
                 for(int l = 0; l < base_data_t::NB - 1; l++) {
                     int idx1 = base_data_t::NB - 1 - l;
                     int idx2 = base_data_t::P[i * (base_data_t::NB - 1) + l];
                     std::swap(w[idx1], w[idx2]);
                 }
                 elem::DiagonalScale(elem::LEFT, elem::NORMAL, G, W);
-                _dct.apply(W, tag);
+                _fut.apply(W, tag);
                 elem::DiagonalScale(elem::LEFT, elem::NORMAL, Sm, W);
 
                 double *sac = sa + ldsa * c;
@@ -179,7 +181,7 @@ private:
 
             // Set the local values of B, G and S
             value_type scal =
-                std::sqrt(base_data_t::N) * _dct.scale(W, tag);
+                std::sqrt(base_data_t::N) * _fut.scale();
             for(int j = 0; j < base_data_t::N; j++) {
                 B.Set(j, 0, base_data_t::B[i * base_data_t::N + j]);
                 G.Set(j, 0, scal * base_data_t::G[i * base_data_t::N + j]);
@@ -188,7 +190,7 @@ private:
 
             elem::DiagonalScale(elem::RIGHT, elem::NORMAL, B, W);
 
-            _dct.apply(W, tag);
+            _fut.apply(W, tag);
 
             double *w = W.Buffer();
             for(int c = 0; c < W.Height(); c++)
@@ -201,7 +203,7 @@ private:
 
             elem::DiagonalScale(elem::RIGHT, elem::NORMAL, G, W);
 
-            _dct.apply(W, tag);
+            _fut.apply(W, tag);
 
             elem::DiagonalScale(elem::RIGHT, elem::NORMAL, Sm, W);
 
@@ -223,10 +225,16 @@ private:
     }
 
 private:
-    typename fft_futs<ValueType>::DCT_t _dct;
+
+#ifdef SKYLARK_HAVE_FFTW
+    typename fft_futs<ValueType>::DCT_t _fut;
+#elif SKYLARK_HAVE_SPIRALWHT
+    WHT_t<double> _fut;
+#endif
+
 };
 
-
+#endif // SKYLARK_HAVE_ELEMENTAL && (SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT)
 
 } } /** namespace skylark::sketch */
 

@@ -54,17 +54,14 @@ struct fftw_r2r_fut_t {
         return apply_inverse_impl (A, dimension);
     }
 
-    template <typename Dimension>
-    double scale(const elem::Matrix<ValueType>& A, Dimension dimension) const {
-        return scale_impl(A, dimension);
+    double scale() const {
+        return 1 / sqrt((double)ScaleVal * _N);
     }
 
 private:
 
     void apply_impl(elem::Matrix<ValueType>& A,
                     skylark::sketch::columnwise_tag) const {
-        // The follwing is purely sequential (may want to do something different
-        // in the final version). SO: this is a PRELIMINARY version.
         double* AA = A.Buffer();
         int j;
 #ifdef SKYLARK_HAVE_OPENMP
@@ -76,8 +73,6 @@ private:
 
     void apply_inverse_impl(elem::Matrix<ValueType>& A,
                             skylark::sketch::columnwise_tag) const {
-        // The follwing is purely sequential (may want to do something different
-        // in the final version). SO: this is a PRELIMINARY version.
         double* AA = A.Buffer();
         int j;
 #ifdef SKYLARK_HAVE_OPENMP
@@ -121,16 +116,6 @@ private:
         elem::Transpose(matrix, A);
     }
 
-    double scale_impl(const elem::Matrix<ValueType>& A,
-                      skylark::sketch::columnwise_tag) const {
-        return 1 / sqrt((double)ScaleVal * A.Height());
-    }
-
-    double scale_impl(const elem::Matrix<ValueType>& A,
-                 skylark::sketch::rowwise_tag) const {
-        return 1 / sqrt((double)ScaleVal * A.Width());
-    }
-
 private:
     const int _N;
     PlanType _plan, _plan_inverse;
@@ -168,6 +153,109 @@ struct fft_futs<float> {
 
 } } /** namespace skylark::sketch */
 
-#endif // SKYLARK_HAVE_FFTW
+#endif // SKYLARK_HAVE_FFTW && SKYLARK_HAVE_ELEMENTAL
+
+#if SKYLARK_HAVE_SPIRALWHT && SKYLARK_HAVE_ELEMENTAL
+
+#include <elemental.hpp>
+
+extern "C" {
+#include <spiral_wht.h>
+}
+
+#include "context.hpp"
+#include "transforms.hpp"
+
+namespace skylark { namespace sketch {
+
+template<typename ValueType>
+struct WHT_t {
+
+};
+
+template<>
+struct WHT_t<double> {
+
+    typedef double value_type;
+
+    WHT_t<double>(int N) : _N(N) {
+        // TODO check that N is a power of two.
+        _tree = wht_get_tree(ceil(log(N) / log(2)));
+    }
+
+    ~WHT_t<double>() {
+        delete _tree;
+    }
+
+    template <typename Dimension>
+    void apply(elem::Matrix<value_type>& A, Dimension dimension) const {
+        return apply_impl (A, dimension);
+    }
+
+    template <typename Dimension>
+    void apply_inverse(elem::Matrix<value_type>& A, Dimension dimension) const {
+        return apply_inverse_impl (A, dimension);
+    }
+
+    double scale() const {
+        return 1 / sqrt(_N);
+    }
+
+private:
+
+    void apply_impl(elem::Matrix<value_type>& A,
+                    skylark::sketch::columnwise_tag) const {
+        double* AA = A.Buffer();
+        int j;
+#ifdef SKYLARK_HAVE_OPENMP
+#pragma omp parallel for private(j)
+#endif
+        for (j = 0; j < A.Width(); j++)
+            wht_apply(_tree, 1, AA + j * A.LDim());
+    }
+
+    void apply_inverse_impl(elem::Matrix<value_type>& A,
+        skylark::sketch::columnwise_tag) const {
+        double* AA = A.Buffer();
+        int j;
+#ifdef SKYLARK_HAVE_OPENMP
+#pragma omp parallel for private(j)
+#endif
+        for (j = 0; j < A.Width(); j++)
+            wht_apply(_tree, 1, AA + j * A.LDim());
+    }
+
+    void apply_impl(elem::Matrix<value_type>& A,
+        skylark::sketch::rowwise_tag) const {
+        double* AA = A.Buffer();
+        int j;
+#ifdef SKYLARK_HAVE_OPENMP
+#pragma omp parallel for private(j)
+#endif
+        for (j = 0; j < A.Width(); j++)
+            wht_apply(_tree, A.Height(), AA + j);
+        // Not sure stride is used correctly here.
+    }
+
+    void apply_inverse_impl(elem::Matrix<value_type>& A,
+        skylark::sketch::rowwise_tag) const {
+        double* AA = A.Buffer();
+        int j;
+#ifdef SKYLARK_HAVE_OPENMP
+#pragma omp parallel for private(j)
+#endif
+        for (j = 0; j < A.Width(); j++)
+            wht_apply(_tree, A.Height(), AA + j);
+        // Not sure stride is used correctly here.
+    }
+
+
+    const int _N;
+    Wht *_tree;
+};
+
+} } /** namespace skylark::sketch */
+
+#endif // SKYLARK_HAVE_SPIRALWHT && SKYLARK_HAVE_ELEMENTAL
 
 #endif // SKYLARK_FUT_HPP

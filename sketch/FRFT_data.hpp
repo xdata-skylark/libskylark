@@ -80,6 +80,10 @@ protected:
     std::vector<int> P;
     std::vector<value_type> shifts; /** Shifts for scaled trigonometrfic factor */
 
+    // TODO there is also the issue of type of FUT, which now depends on what
+    //      is installed. For seralization we need to add an indicator on type
+    //      of the underlying FUT.
+
     static int block_size(int N) {
 #if SKYLARK_HAVE_FFTW
         return N;

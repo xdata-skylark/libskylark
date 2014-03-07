@@ -185,6 +185,7 @@ int main (int argc, char** argv) {
 	 Solver->set_maxiter(options.MAXITER);
 	 Solver->set_tol(options.tolerance);
 	 Solver->set_nthreads(options.numthreads);
+	 Solver->set_cache_transform(options.cachetransforms);
 
 	 elem::Matrix<double> Wbar(features, k);
 	 elem::MakeZeros(Wbar);

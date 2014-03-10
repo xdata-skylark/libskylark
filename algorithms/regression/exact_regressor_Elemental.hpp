@@ -58,7 +58,7 @@ public:
         // TODO error checking
         X = B;
         elem::qr::ApplyQ(elem::LEFT, elem::ADJOINT, _QR, _t, X);
-        X.ResizeTo(_n, B.Width());
+        X.Resize(_n, B.Width());
         elem::Trsm(elem::LEFT, elem::UPPER, elem::NORMAL, elem::NON_UNIT,
             1.0, _R, X, true);
     }
@@ -117,7 +117,7 @@ public:
         // TODO error checking
         X = B;
         elem::qr::ApplyQ(elem::LEFT, elem::ADJOINT, _QR, _t, X);
-        X.ResizeTo(_n, B.Width());
+        X.Resize(_n, B.Width());
         elem::Trsm(elem::LEFT, elem::UPPER, elem::NORMAL, elem::NON_UNIT,
             1.0, _R, X, true);
     }

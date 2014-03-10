@@ -12,16 +12,15 @@ namespace skylark { namespace sketch {
 
 
 /**
- * Random Features Transform (data)
+ * Random Fourier Transform (data)
  *
  * Sketch transform into Eucledian space of fuctions in an RKHS
- * implicitly defined by a vector and a kernel.
+ * implicitly defined by a vector and a shift-invariant kernel.
+ *
  * See:
  * Ali Rahimi and Benjamin Recht
  * Random Features for Large-Scale Kernel Machines
  * NIPS 2007.
- *
- * FIXME control of kernel parameter is not done correctly
  */
 template <typename ValueType,
           template <typename> class KernelDistribution>
@@ -35,15 +34,14 @@ struct RFT_data_t {
     /**
      * Regular constructor
      */
-    RFT_data_t (int N, int S, value_type sigma,
-                skylark::sketch::context_t& context)
-        : N(N), S(S), sigma(sigma), context(context),
-          underlying_data(N, S, context),
-          scale(std::sqrt(2.0 / S)) {
+    RFT_data_t (int N, int S, skylark::sketch::context_t& context)
+        : _N(N), _S(S), _val_scale(1), _context(context),
+          _underlying_data(N, S, context),
+          _scale(std::sqrt(2.0 / S)) {
         const double pi = boost::math::constants::pi<value_type>();
         boost::random::uniform_real_distribution<value_type>
             distribution(0, 2 * pi);
-        shifts = context.generate_random_samples_array(S, distribution);
+        _shifts = context.generate_random_samples_array(S, distribution);
     }
 
 
@@ -53,14 +51,14 @@ struct RFT_data_t {
 
 
 protected:
-    const int N; /**< Input dimension  */
-    const int S; /**< Output dimension  */
-    const value_type sigma; /**< Bandwidth (sigma)  */
-    skylark::sketch::context_t& context; /**< Context for this sketch */
-    const underlying_data_type underlying_data;
+    const int _N; /**< Input dimension  */
+    const int _S; /**< Output dimension  */
+    value_type _val_scale; /**< Bandwidth (sigma)  */
+    skylark::sketch::context_t& _context; /**< Context for this sketch */
+    const underlying_data_type _underlying_data;
     /**< Data of the underlying dense transformation */
-    const value_type scale; /** Scaling for trigonometric factor */
-    std::vector<value_type> shifts; /** Shifts for scaled trigonometric factor */
+    const value_type _scale; /** Scaling for trigonometric factor */
+    std::vector<value_type> _shifts; /** Shifts for scaled trigonometric factor */
 };
 
 template<typename ValueType>
@@ -75,10 +73,12 @@ struct GaussianRFT_data_t :
      */
     GaussianRFT_data_t(int N, int S, typename base_t::value_type sigma,
         skylark::sketch::context_t& context)
-        : base_t(N, S, sigma, context) {
-
+        : base_t(N, S, context), _sigma(sigma) {
+        base_t::_val_scale = 1.0 / sigma;
     }
 
+protected:
+    const ValueType _sigma;
 };
 
 template<typename ValueType>
@@ -92,10 +92,12 @@ struct LaplacianRFT_data_t :
      */
     LaplacianRFT_data_t(int N, int S, typename base_t::value_type sigma,
         skylark::sketch::context_t& context)
-        : base_t(N, S, sigma, context) {
-
+        : base_t(N, S, context), _sigma(sigma) {
+        base_t::_val_scale = 1.0 / sigma;
     }
 
+protected:
+    const ValueType _sigma;
 };
 
 } } /** namespace skylark::sketch */

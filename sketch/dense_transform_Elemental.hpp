@@ -223,7 +223,7 @@ private:
         for (int js = 0; js < A.LocalHeight(); js += slice_width) {
             int je = std::min(js + slice_width, A.LocalHeight());
             // adapt size of local portion (can be less than slice_width)
-            S_local.ResizeTo(base_data_t::S, je-js);
+            S_local.Resize(base_data_t::S, je-js);
             for(int j = js; j < je; j++) {
                 int col = A.ColShift() + A.ColStride() * j;
                 for (int i = 0; i < base_data_t::S; i++) {

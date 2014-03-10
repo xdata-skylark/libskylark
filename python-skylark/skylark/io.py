@@ -50,7 +50,6 @@ import numpy
 import h5py
 import elem
 
-
 # TODO: Add support for parallel IO along the implementation show-cased in the
 # wiki.
 class hdf5(object):
@@ -110,7 +109,7 @@ class hdf5(object):
         height, width = int(f['shape'][0]), int(f['shape'][1])
 
         A = constructor()
-        A.ResizeTo(height, width)
+        A.Resize(height, width)
         local_height, local_width = A.LocalHeight, A.LocalWidth
 
         indices = elemental_dense.get_indices(A)
@@ -632,17 +631,18 @@ class libsvm(object):
         labels, indices, features, values = vectors
         num_samples = indices[-1] + 1
         num_features = max(max(features) + 1, num_features)
-        feature_matrix = scipy.sparse.csr_matrix(
-            (values, (indices, features)),
-            shape=(num_samples, num_features))
+        feature_matrix = scipy.sparse.csr_matrix((values,
+                                  (indices, features)),
+                                 shape=(num_samples, num_features))
         label_matrix = numpy.asarray(labels)
         return feature_matrix, label_matrix
 
 
     def _parse(self, index, line):
         tokens = re.split(re.compile('[:\s]'), line.strip())
+        tokens = filter(lambda s : s is not '',  tokens)
         label = float(tokens[0])
-        features = map(int, tokens[1::2])
+        features = map(lambda x: int(x) - 1, tokens[1::2])
         values = map(float, tokens[2::2])
         indices = [index] * len(features)
         return label, indices, features, values
@@ -677,15 +677,7 @@ class txt(object):
         self.parallel = parallel
 
     def _read_numpy_dense(self):
-        # A = numpy.loadtxt(self.fpath)
-        f = open('test_matrix.txt')
-        lines = filter(lambda x: x != '',
-                       [line.strip() for line in f.readlines()])
-        f.close()
-        numbers = []
-        for line in lines:
-            numbers.append(map(float, line.split(' ')))
-        A = numpy.array(numbers)
+        A = numpy.loadtxt(self.fpath)
         return A
 
     def read(self, matrix_type='numpy-dense'):

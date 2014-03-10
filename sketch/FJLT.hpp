@@ -2,12 +2,14 @@
 #define SKYLARK_FJLT_HPP
 
 #include "../config.h"
+#include "FJLT_data.hpp"
 
 namespace skylark { namespace sketch {
 
 template < typename InputMatrixType,
            typename OutputMatrixType = InputMatrixType >
 struct FJLT_t {
+    // To be specilized and derived.
 
 };
 

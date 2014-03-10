@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import skylark.streaming, skylark.io, skylark.nla, skylark.ml.linear, skylark.ml.utils
+import skylark.streaming, skylark.io, skylark.nla.lsqr, skylark.ml.linear, skylark.ml.utils
 import scipy.sparse.linalg
 import numpy
 import sys
@@ -54,12 +54,12 @@ def train(X,Y, regparam, mode=0, tolerance=1e-14, blocksize = 10):
                 
                 y2 = numpy.concatenate((y, numpy.zeros((n, k1))), axis=0)
                 print y2.shape
-                model[:,currentblock], flag, iterations = skylark.nla.lsqr(Xoperator, y2, X=None, tol = tolerance)
+                model[:,currentblock], flag, iterations = skylark.nla.lsqr.lsqr(Xoperator, y2, X=None, tol = tolerance)
             
         else:
             m, k = Y.shape
             Y = numpy.concatenate((Y, numpy.zeros((n, k))), axis=0)
-            model, flag, iterations = skylark.nla.lsqr(Xoperator, Y, X=None, tol = tolerance)
+            model, flag, iterations = skylark.nla.lsqr.lsqr(Xoperator, Y, X=None, tol = tolerance)
         
         return model
 

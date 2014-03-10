@@ -15,9 +15,9 @@ namespace skylark { namespace nla {
  * [U_k, S_k, V_k] ~= sketched_SVD (A, k) 
  */ 
 template <typename InputMatrixType,
-          typename SketchedMatrixType,  
           typename OutputMatrixType,
-          template <typename, typename> class SketchTransformType>
+          typename SketchTransformType
+          >
 struct sketched_svd_t {};
 
 } } /** namespace skylark::nla */

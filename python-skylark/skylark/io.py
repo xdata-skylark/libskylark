@@ -217,6 +217,8 @@ class hdf5(object):
                 A = self._read_elemental_dense(distribution)
         elif matrix_type == 'numpy-dense':
             A = self._read_numpy_dense()
+        else:
+            raise SkylarkIOTypeError("Cannot read with matrix type " + matrix_type)
         return A
 
 
@@ -254,7 +256,7 @@ class hdf5(object):
         height, width = A.Height, A.Width
         A_CIRC_CIRC = elem.DistMatrix_d_CIRC_CIRC(height, width)
         elem.Copy(A, A_CIRC_CIRC)
-        if root == 0:
+        if rank == 0:
             A_numpy_dense = A_CIRC_CIRC.Matrix[:]
             self._write_numpy_dense(A_numpy_dense)
 
@@ -331,12 +333,11 @@ class mtx(object):
     def _read_scipy_sparse(self):
         A = scipy.io.mmread(self.fpath)
         rows, cols, entries, fmt, field, symm = scipy.io.mminfo(self.fpath)
-        if fmt == 'array':
-            A = scipy.sparse.csr_matrix(A)
-        return A
+        return scipy.sparse.csr_matrix(A)
 
 
     def _read_combblas_sparse(self):
+        import kdt
         if self.parallel:
             A = kdt.Mat.load(self.fpath, par_IO=True)
         else:
@@ -421,8 +422,12 @@ class mtx(object):
             self._write_numpy_dense(A)
         elif isinstance(A, scipy.sparse.csr_matrix):
             self._write_scipy_sparse(A)
-        elif isinstance(A, kdt.Mat):
-            self._write_combblas_sparse(A)
+        else:
+            import kdt
+            if isinstance(A, kdt.Mat):
+                self._write_combblas_sparse(A)
+            else:
+                raise SkylarkIOTypeError("Cannot handle write with matrix type " + str(type(A)))
 
 
 class libsvm(object):
@@ -682,12 +687,11 @@ class txt(object):
         matrix_type : string, optional
          String identifier for the matrix object that is read in. One option
           * ``'numpy-dense'`` for array objects in numpy package (default).
-          * 'asasas'
-        hello : string
-         hi
         '''
         if matrix_type == 'numpy-dense':
             A = self._read_numpy_dense()
+        else:
+            raise SkylarkIOTypeError("Cannot reader matrix of type " + matrix_type)
         return A
 
     def _write_numpy_dense(self, A):

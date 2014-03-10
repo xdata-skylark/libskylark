@@ -31,6 +31,9 @@ Matrix types are identified with string identifiers that are self-explanatory:
 
 '''
 
+import mpi4py.rc
+mpi4py.rc.finalize = False
+from mpi4py import MPI
 
 # FIXME: IOError exceptions will be raised to indicate IO problems. Currently
 # we expect the user to handle such cases which is typically the norm when
@@ -38,10 +41,6 @@ Matrix types are identified with string identifiers that are self-explanatory:
 # them as skylark-specific exception objects.
 class SkylarkIOTypeError(Exception):
     pass
-
-import mpi4py.rc
-mpi4py.rc.finalize = False
-from mpi4py import MPI
 
 import re
 import scipy.sparse
@@ -700,7 +699,8 @@ class txt(object):
         numpy.savetxt(self.fpath, A)
 
     def _write_elemental_dense(self, A):
-        elem.Write(A, '', self.fpath)
+        stripped = self.fpath.split('.txt')[0]
+        elem.Write(A, stripped, elem.ASCII, '')
         MPI.COMM_WORLD.barrier()
 
     def write(self, A):
@@ -1019,5 +1019,5 @@ def _usage_tests(usps_path='./datasets/usps.t'):
     A = store.read('numpy-dense')
     print 'txt OK'
 
-if __name__ == '__main__':
-    _usage_tests()
+#if __name__ == '__main__':
+    #_usage_tests()

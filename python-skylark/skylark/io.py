@@ -104,7 +104,7 @@ class hdf5(object):
 
         constructor = elemental_dense.get_constructor(distribution)
 
-        f = h5py.File(self.fpath, 'r', driver='mpio', comm=MPI.COMM_WORLD)
+        f = h5py.File(fpath, 'r', driver='mpio', comm=MPI.COMM_WORLD)
         height, width = int(f['shape'][0]), int(f['shape'][1])
 
         A = constructor()
@@ -217,8 +217,6 @@ class hdf5(object):
                 A = self._read_elemental_dense(distribution)
         elif matrix_type == 'numpy-dense':
             A = self._read_numpy_dense()
-        else:
-            raise SkylarkIOTypeError("Cannot read with matrix type " + matrix_type)
         return A
 
 
@@ -231,12 +229,12 @@ class hdf5(object):
 
 
     def _write_elemental_dense_parallel(self, A):
-        #distribution = elemental_dense.get_distribution(A)
+        distribution = elemental_dense.get_distribution(A)
         indices = elemental_dense.get_indices(A)
 
         height, width = A.Height, A.Width
         local_data = A.Matrix[:].ravel(order='F')
-        f = h5py.File(self.fpath, 'w', driver='mpio', comm=MPI.COMM_WORLD)
+        f = h5py.File(fpath, 'w', driver='mpio', comm=MPI.COMM_WORLD)
         if self.atomic:
             f.atomic = True
         shape = f.create_dataset('shape', (2,), 'i')
@@ -253,11 +251,10 @@ class hdf5(object):
         size = comm.Get_size()
 
         # XXX currently gathers at root
-        root = 0
         height, width = A.Height, A.Width
         A_CIRC_CIRC = elem.DistMatrix_d_CIRC_CIRC(height, width)
         elem.Copy(A, A_CIRC_CIRC)
-        if rank == root:
+        if root == 0:
             A_numpy_dense = A_CIRC_CIRC.Matrix[:]
             self._write_numpy_dense(A_numpy_dense)
 
@@ -334,11 +331,12 @@ class mtx(object):
     def _read_scipy_sparse(self):
         A = scipy.io.mmread(self.fpath)
         rows, cols, entries, fmt, field, symm = scipy.io.mminfo(self.fpath)
-        return scipy.sparse.csr_matrix(A)
+        if fmt == 'array':
+            A = scipy.sparse.csr_matrix(A)
+        return A
 
 
     def _read_combblas_sparse(self):
-        import kdt
         if self.parallel:
             A = kdt.Mat.load(self.fpath, par_IO=True)
         else:
@@ -423,12 +421,8 @@ class mtx(object):
             self._write_numpy_dense(A)
         elif isinstance(A, scipy.sparse.csr_matrix):
             self._write_scipy_sparse(A)
-        else:
-            import kdt
-            if isinstance(A, kdt.Mat):
-                self._write_combblas_sparse(A)
-            else:
-                raise SkylarkIOTypeError("Cannot handle write with matrix type " + str(type(A)))
+        elif isinstance(A, kdt.Mat):
+            self._write_combblas_sparse(A)
 
 
 class libsvm(object):
@@ -478,7 +472,7 @@ class libsvm(object):
          Ready to use object.
         '''
         self.fpath = fpath
-        self.parallel = parallel
+        self.parallel=parallel
 
 
     def read_vectors(self):
@@ -673,7 +667,7 @@ class txt(object):
          Ready to use object.
         '''
         self.fpath = fpath
-        self.parallel = parallel
+        self.parallel=parallel
 
     def _read_numpy_dense(self):
         A = numpy.loadtxt(self.fpath)
@@ -688,11 +682,12 @@ class txt(object):
         matrix_type : string, optional
          String identifier for the matrix object that is read in. One option
           * ``'numpy-dense'`` for array objects in numpy package (default).
+          * 'asasas'
+        hello : string
+         hi
         '''
         if matrix_type == 'numpy-dense':
             A = self._read_numpy_dense()
-        else:
-            raise SkylarkIOTypeError("Cannot reader matrix of type " + matrix_type)
         return A
 
     def _write_numpy_dense(self, A):
@@ -701,7 +696,7 @@ class txt(object):
     def _write_elemental_dense(self, A):
         stripped = self.fpath.split('.txt')[0]
         elem.Write(A, stripped, elem.ASCII, '')
-        MPI.COMM_WORLD.barrier()
+        #MPI.COMM_WORLD.barrier()
 
     def write(self, A):
         '''
@@ -827,12 +822,12 @@ class elemental_dense(object):
         indices = [0 for i in range(local_size)]
         for j in range(width):
             for i in range(height):
-                owner_row = (i + col_alignment) % col_stride
-                owner_col = (j + row_alignment) % row_stride
-                owner_rank = owner_row + owner_col * col_stride
+                owner_row = (i + col_alignment) % col_stride;
+                owner_col = (j + row_alignment) % row_stride;
+                owner_rank = owner_row + owner_col * col_stride;
                 if vc_rank == owner_rank:
-                    i_loc = (i - col_shift) / col_stride
-                    j_loc = (j - row_shift) / row_stride
+                    i_loc = (i - col_shift) / col_stride;
+                    j_loc = (j - row_shift) / row_stride;
                     global_index = j * height + i
                     local_index = j_loc * local_height + i_loc
                     indices[local_index] = global_index
@@ -855,7 +850,7 @@ class elemental_dense(object):
         for i in range(height):
             owner_rank = (i + col_alignment) % grid_size
             if vc_rank == owner_rank:
-                i_loc = (i - col_shift) / grid_size
+                i_loc = (i - col_shift) / grid_size;
                 for j in range(width):
                     j_loc = j
                     global_index = j * height + i
@@ -880,7 +875,7 @@ class elemental_dense(object):
         for i in range(height):
             owner_rank = (i + col_alignment) % grid_size
             if vr_rank == owner_rank:
-                i_loc = (i - col_shift) / grid_size
+                i_loc = (i - col_shift) / grid_size;
                 for j in range(width):
                     j_loc = j
                     global_index = j * height + i
@@ -905,7 +900,7 @@ class elemental_dense(object):
         for j in range(width):
                 owner_rank = (j + row_alignment) % grid_size
                 if vc_rank == owner_rank:
-                    j_loc = (j - row_shift) / grid_size
+                    j_loc = (j - row_shift) / grid_size;
                     for i in range(height):
                         i_loc = i
                         global_index = j * height + i
@@ -930,7 +925,7 @@ class elemental_dense(object):
         for j in range(width):
                 owner_rank = (j + row_alignment) % grid_size
                 if vr_rank == owner_rank:
-                    j_loc = (j - row_shift) / grid_size
+                    j_loc = (j - row_shift) / grid_size;
                     for i in range(height):
                         i_loc = i
                         global_index = j * height + i

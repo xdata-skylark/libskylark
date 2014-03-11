@@ -1,3 +1,7 @@
+#XXX: for a clean exit we need to import KDT first because it initializes MPI
+#     in any case
+import kdt
+
 import numpy
 import scipy
 import unittest
@@ -41,8 +45,6 @@ class IO_test(unittest.TestCase):
         if self.rank == 0:
             store.write(self.sp_A)
         MPI.COMM_WORLD.barrier()
-        return
-        #FIXME: importing kdt truggers double MPI_FINALIZE
         # ... all processes read back what root has written
         B = store.read('combblas-sparse')
         C = store.read('scipy-sparse')

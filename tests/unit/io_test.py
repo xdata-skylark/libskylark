@@ -62,14 +62,19 @@ class IO_test(unittest.TestCase):
         if self.rank == 0:
             self.assertTrue(((self.sp_A - C).todense() < 1e-7).all())
 
-        #KEPT FOR POSTERITY
-        #FIXME: throws exception
+        #FIXME: Storing a CombBLAS matrix throws an exception because the
+        # rowid() in kdt/CombBLAS/SpParMat.cpp:1521
+        #  csr[nzit.rowid()].push_back(make_pair(colit.colid(), nzit.value()));
+        # is > the allocate size (spSeq->getnrow()). It looks like the row/col
+        # vectors are exchanged at some point on its travel through the kdt
+        # layer: If A is m x n, rowid() takes values in the range [0, n).
         #store.write(B)
+
         #B = store.read('combblas-sparse')
         #C = store.read('scipy-sparse')
         #D = store.read('numpy-dense')
 
-        ## convert CombBLAS matrix to (coo) sparse matrix
+        # convert CombBLAS matrix to (coo) sparse matrix
         #col, row, data = B.toVec()
         #sp_cb = scipy.sparse.coo_matrix((data, (row, col)), shape=(20, 65))
         #self.assertTrue(((self.sp_A - sp_cb).todense() < 1e-7).all())

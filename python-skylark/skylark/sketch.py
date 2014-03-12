@@ -55,6 +55,7 @@ def initialize(seed=-1):
       SUPPORTED_SKETCH_TRANSFORMS = \
           csketches + [ (T, "Matrix", "Matrix") for T in pysketches]
     except:
+      raise
       # Did not find library -- must rely on Python code
       _lib = None
       _ELEM_INSTALLED = False
@@ -166,8 +167,10 @@ class _NumpyAdapter:
   def iscompatible(self, B):
     if isinstance(B, _NumpyAdapter) and self.getorder() != B.getorder():
       return "sketching numpy array to numpy array requires same element ordering", None
-    elif not isinstance(B, _NumpyAdapter) and self.getorder() == 'C':
-      return "numpy combined with other types must have fortran ordering", None
+    if isinstance(B, _ScipyAdapter) and self.getorder() != B.getorder():
+      return "sketching numpy array to scipy array requires same element ordering", None
+    elif not isinstance(B, _NumpyAdapter) and not isinstance(B, _ScipyAdapter) and self.getorder() == 'C':
+      return "numpy combined with non numpy/scipy must have fortran ordering", None
     else:
       return None, self._A.flags.c_contiguous
 
@@ -202,9 +205,18 @@ class _ScipyAdapter:
     cols = self._A.indices.ctypes.data_as(ctypes.POINTER(ctypes.c_int))
     dptr = self._A.data.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
 
-    _callsl(_lib.sl_wrap_raw_sp_matrix, \
-              iptr, cols, dptr, len(self._A.indptr), len(self._A.indices),
-              byref(data))
+    # If the matrix is kept in C ordering we are essentially wrapping the transposed
+    # matrix
+    if self.getorder() == "F":
+      _callsl(_lib.sl_wrap_raw_sp_matrix, \
+                iptr, cols, dptr, len(self._A.indptr), len(self._A.indices), \
+                self._A.shape[0], self._A.shape[1] if self._A.ndim > 1 else 1, byref(data))
+    else:
+      _callsl(_lib.sl_wrap_raw_sp_matrix, \
+                iptr, cols, dptr, len(self._A.indptr), len(self._A.indices), \
+                self._A.shape[1] if self._A.ndim > 1 else self._A.shape[0], \
+                self._A.shape[0] if self._A.ndim > 1 else 1 , \
+                byref(data))
 
     self._ptr = data.value
     return data.value
@@ -246,15 +258,17 @@ class _ScipyAdapter:
 
   def getorder(self):
     if isinstance(self._A, scipy.sparse.csr_matrix):
-      return 'R'
+      return 'C'     # C ordering -- CSR format
     else:
-      return 'C'
+      return 'F'     # Fortran ordering - CSC format
 
   def iscompatible(self, B):
     if isinstance(B, _ScipyAdapter) and self.getorder() != B.getorder():
       return "sketching scipy matrix to scipy matrix requires same format", None
-    elif isinstance(B, _NumpyAdapter) and B.getorder() != 'F':
-      return "scipy matrix combined with numpy matrix must be in C", None
+    if isinstance(B, _NumpyAdapter) and self.getorder() != B.getorder():
+      return "sketching scipy matrix to numpy matrix requires same format", None
+    elif not isinstance(B, _NumpyAdapter) and not isinstance(B, _ScipyAdapter) and self.getorder() == 'C':
+      return "scipy combined with non numpy/scipy must have fortran ordering", None
     else:
       return None, self.getorder() == 'C'
 
@@ -264,10 +278,10 @@ class _ScipyAdapter:
   @staticmethod
   def ctor(m, n, B):
     # Construct scipy matrix that is compatible with B.
-    if isinstance(B, _ScipyAdapter) and B.getorder() == 'C':
-      return scipy.sparse.csc_matrix((m, n))
-    else:
+    if (isinstance(B, _ScipyAdapter) or isinstance(B, _NumpyAdapter)) and B.getorder() == 'C':
       return scipy.sparse.csr_matrix((m, n))
+    else:
+      return scipy.sparse.csc_matrix((m, n))
 
 if _ELEM_INSTALLED:
   class _ElemAdapter:
@@ -385,7 +399,7 @@ def _adapt(obj):
   if isinstance(obj, numpy.ndarray):
     return _NumpyAdapter(obj)
 
-  elif isinstance(obj, scipy.sparse.csr_matrix):
+  elif isinstance(obj, scipy.sparse.csr_matrix) or isinstance(obj, scipy.sparse.csc_matrix):
     return _ScipyAdapter(obj)
 
   elif any(isinstance(obj, c) for c in elemcls):

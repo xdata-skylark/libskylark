@@ -1,7 +1,7 @@
 #ifndef SKYLARK_DENSE_TRANSFORM_ELEMENTAL_HPP
 #define SKYLARK_DENSE_TRANSFORM_ELEMENTAL_HPP
 
-#include <elemental.hpp>
+#include "../base/base.hpp"
 
 #include "context.hpp"
 #include "transforms.hpp"
@@ -13,19 +13,21 @@
 namespace skylark { namespace sketch {
 
 /**
- * Specialization local input, local output
+ * Specialization local input (sparse of dense), local output.
+ * Below, InputType should either be elem::Matrix, or base:spare_matrix_t.
  */
 template <typename ValueType,
+          template <typename> class InputType,
           template <typename> class ValueDistribution>
 struct dense_transform_t <
-    elem::Matrix<ValueType>,
+    InputType<ValueType>,
     elem::Matrix<ValueType>,
     ValueDistribution> :
         public dense_transform_data_t<ValueType,
                                       ValueDistribution> {
 
     typedef ValueType value_type;
-    typedef elem::Matrix<value_type> matrix_type;
+    typedef InputType<value_type> matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
     typedef ValueDistribution<value_type> value_distribution_type;
     typedef dense_transform_data_t<ValueType,
@@ -86,7 +88,7 @@ private:
             }
         }
 
-        elem::Gemm (elem::NORMAL,
+        base::Gemm (elem::NORMAL,
                     elem::NORMAL,
                     1.0,
                     S,
@@ -112,7 +114,7 @@ private:
             }
         }
 
-        elem::Gemm (elem::NORMAL,
+        base::Gemm (elem::NORMAL,
                     elem::TRANSPOSE,
                     1.0,
                     A,
@@ -238,7 +240,7 @@ private:
                 js, 0, je-js, A.Width());
 
             // Do the multiplication
-            elem::Gemm (elem::NORMAL,
+            base::Gemm (elem::NORMAL,
                 elem::NORMAL,
                 1.0,
                 S_local,
@@ -280,7 +282,7 @@ private:
         }
 
         // Apply S to the local part of A to get the local part of SA.
-        elem::Gemm(elem::NORMAL,
+        base::Gemm(elem::NORMAL,
             elem::TRANSPOSE,
             1.0,
             A.LockedMatrix(),
@@ -426,7 +428,7 @@ private:
                 S_num_rows_consumed, 0,
                 S_part_height, A_STAR_ColDist.LocalWidth());
             // Do the multiplication: S_part*A
-            elem::Gemm (elem::NORMAL,
+            base::Gemm (elem::NORMAL,
                 elem::NORMAL,
                 1.0,
                 S_part,
@@ -459,7 +461,7 @@ private:
         }
 
         // Apply S to the local part of A to get the local part of sketch_of_A.
-        elem::Gemm(elem::NORMAL,
+        base::Gemm(elem::NORMAL,
             elem::TRANSPOSE,
             1.0,
             A.LockedMatrix(),
@@ -600,7 +602,7 @@ private:
                 S_num_rows_consumed, 0,
                 S_part_height, sketch_of_A_STAR_RowDist.LocalWidth());
             // Do the multiplication: S_part*A
-            elem::Gemm (elem::NORMAL,
+            base::Gemm (elem::NORMAL,
                 elem::NORMAL,
                 1.0,
                 S_part,
@@ -653,7 +655,7 @@ private:
         }
 
         // Apply S to the local part of A to get the local part of sketch_of_A.
-        elem::Gemm(elem::NORMAL,
+        base::Gemm(elem::NORMAL,
             elem::TRANSPOSE,
             1.0,
             A_RowDist_STAR.LockedMatrix(),
@@ -797,7 +799,7 @@ private:
                 S_num_rows_consumed, 0,
                 S_part_height, sketch_of_A.LocalWidth());
             // Do the multiplication: S_part*A
-            elem::Gemm (elem::NORMAL,
+            base::Gemm (elem::NORMAL,
                 elem::NORMAL,
                 1.0,
                 S_part,
@@ -835,7 +837,7 @@ private:
         }
 
         // Apply S to the local part of A to get the local part of sketch_of_A.
-        elem::Gemm(elem::NORMAL,
+        base::Gemm(elem::NORMAL,
             elem::TRANSPOSE,
             1.0,
             A_RowDist_STAR.LockedMatrix(),
@@ -939,7 +941,7 @@ private:
             }
         }
 
-        elem::Gemm (elem::NORMAL,
+        base::Gemm (elem::NORMAL,
                     elem::NORMAL,
                     1.0,
                     S,
@@ -985,7 +987,7 @@ private:
             }
         }
 
-        elem::Gemm (elem::NORMAL,
+        base::Gemm (elem::NORMAL,
                     elem::TRANSPOSE,
                     1.0,
                     A,
@@ -1093,7 +1095,7 @@ private:
                 S.SetLocal(i_loc, j_loc, base_data_t::scale * sample);
             }
         }
-        elem::Gemm (elem::NORMAL,
+        base::Gemm (elem::NORMAL,
                     elem::NORMAL,
                     1.0,
                     S,
@@ -1122,7 +1124,7 @@ private:
                 S.SetLocal(i_loc, j_loc, base_data_t::scale * sample);
             }
         }
-        elem::Gemm (elem::NORMAL,
+        base::Gemm (elem::NORMAL,
                     elem::TRANSPOSE,
                     1.0,
                     A,

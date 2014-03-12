@@ -152,7 +152,7 @@ SKYLARK_EXTERN_API int sl_wrap_raw_matrix(double *data, int m, int n, void **A);
 SKYLARK_EXTERN_API int sl_free_raw_matrix_wrap(void *A_);
 
 SKYLARK_EXTERN_API int sl_wrap_raw_sp_matrix(int *indptr, int *ind,
-        double *data, int n_indptr, int n_ind, void **A);
+    double *data, int n_indptr, int n_ind, int n_rows, int n_cols, void **A);
 
 SKYLARK_EXTERN_API int sl_free_raw_sp_matrix_wrap(void *A_);
 

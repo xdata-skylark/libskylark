@@ -19,13 +19,13 @@
 #include "../../sketch/context.hpp"
 #include "../../sketch/hash_transform.hpp"
 
-#include "../../utility/sparse_matrix.hpp"
+#include "../../base/sparse_matrix.hpp"
 
 typedef FullyDistVec<size_t, double> mpi_vector_t;
 typedef SpDCCols<size_t, double> col_t;
 typedef SpParMat<size_t, double, col_t> DistMatrixType;
 typedef PlusTimesSRing<double, double> PTDD;
-typedef skylark::utility::sparse_matrix_t<size_t, double> LocalMatrixType;
+typedef skylark::base::sparse_matrix_t<double> LocalMatrixType;
 
 
 template < typename InputMatrixType,
@@ -146,21 +146,21 @@ int test_main(int argc, char *argv[]) {
     mpi_vector_t lrows(nnz);
     mpi_vector_t lvals(nnz);
 
-    size_t row = 0;
-    typename LocalMatrixType::const_ind_itr_range_t ritr =
-        local_sketch_A.indptr_itr();
+    size_t col = 0;
     typename LocalMatrixType::const_ind_itr_range_t citr =
+        local_sketch_A.indptr_itr();
+    typename LocalMatrixType::const_ind_itr_range_t ritr =
         local_sketch_A.indices_itr();
     typename LocalMatrixType::const_val_itr_range_t vitr =
         local_sketch_A.values_itr();
 
     size_t counter = 0;
-    for(; ritr.first + 1 != ritr.second; ritr.first++, ++row) {
-        for(size_t idx = 0; idx < (*(ritr.first + 1) - *ritr.first);
-            citr.first++, vitr.first++, ++idx) {
+    for(; citr.first + 1 != citr.second; citr.first++, ++col) {
+        for(size_t idx = 0; idx < (*(citr.first + 1) - *citr.first);
+            ritr.first++, vitr.first++, ++idx) {
 
-            lrows.SetElement(counter, row);
-            lcols.SetElement(counter, *citr.first);
+            lrows.SetElement(counter, *ritr.first);
+            lcols.SetElement(counter, col);
             lvals.SetElement(counter, *vitr.first);
             counter++;
         }

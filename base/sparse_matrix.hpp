@@ -131,6 +131,15 @@ struct sparse_matrix_t {
         return _width;
     }
 
+    int Height() const {
+        return _height;
+    }
+
+    int Width() const {
+        return _width;
+    }
+
+
     const_ind_itr_range_t indices_itr() const {
         return std::make_pair(_indices.begin(), _indices.end());
     }

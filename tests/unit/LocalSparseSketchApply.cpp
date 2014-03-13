@@ -60,7 +60,6 @@ int test_main(int argc, char *argv[]) {
     //////////////////////////////////////////////////////////////////////////
     //[> Setup test <]
 
-    // TODO this test should be updated for CSC (!)
     namespace mpi = boost::mpi;
     mpi::environment env(argc, argv);
     mpi::communicator world;
@@ -71,37 +70,35 @@ int test_main(int argc, char *argv[]) {
     double count = 1.0;
 
     const int matrix_full = n * m;
-    std::vector<int> rowsf(n + 1);
-    std::vector<int> colsf(matrix_full);
+    std::vector<int> colsf(m + 1);
+    std::vector<int> rowsf(matrix_full);
     std::vector<double> valsf(matrix_full);
 
-    for(size_t i = 0; i < n + 1; ++i)
-        rowsf[i] = i * m;
+    for(size_t i = 0; i < m + 1; ++i)
+        colsf[i] = i * n;
 
     for(size_t i = 0; i < matrix_full; ++i) {
-        colsf[i] = i % m;
+        rowsf[i] = i % n;
         valsf[i] = count;
         count++;
     }
 
     Matrix_t A;
-    A.attach(&rowsf[0], &colsf[0], &valsf[0], n + 1, matrix_full, m, n);
+    A.attach(&colsf[0], &rowsf[0], &valsf[0], m + 1, matrix_full, n, m);
 
     count = 1;
-    size_t row = 0;
-    typename Matrix_t::const_ind_itr_range_t ritr = A.indptr_itr();
-    typename Matrix_t::const_ind_itr_range_t citr = A.indices_itr();
+    typename Matrix_t::const_ind_itr_range_t citr = A.indptr_itr();
+    typename Matrix_t::const_ind_itr_range_t ritr = A.indices_itr();
     typename Matrix_t::const_val_itr_range_t vitr = A.values_itr();
 
-    for(; ritr.first + 1 != ritr.second; ritr.first++, ++row) {
-        for(int idx = 0; idx < (*(ritr.first + 1) - *ritr.first);
-            citr.first++, vitr.first++, ++idx) {
+    for(; citr.first + 1 != citr.second; citr.first++) {
+        for(int idx = 0; idx < (*(citr.first + 1) - *citr.first);
+            vitr.first++, ++idx) {
 
             BOOST_REQUIRE( *vitr.first == count );
             count++;
         }
     }
-
 
     //////////////////////////////////////////////////////////////////////////
     //[> Column wise application <]
@@ -133,30 +130,30 @@ int test_main(int argc, char *argv[]) {
     Sparse.apply(A, sketch_A, skylark::sketch::columnwise_tag());
 
     //[> 4. Build structure to compare: PI * A ?= sketch_A <]
-    row = 0;
+    size_t col = 0;
     typename Matrix_t::coords_t coords_new;
-    ritr = pi_sketch.indptr_itr();
-    citr = pi_sketch.indices_itr();
+    citr = pi_sketch.indptr_itr();
+    ritr = pi_sketch.indices_itr();
     vitr = pi_sketch.values_itr();
 
     // multiply with vector where an entry has the value:
-    //   col_idx + row_idx * m.
+    //   col_idx * n + row_idx + 1.
     // See creation of A.
-    for(; ritr.first + 1 != ritr.second; ritr.first++, ++row) {
-        for(int idx = 0; idx < (*(ritr.first + 1) - *ritr.first);
-            citr.first++, vitr.first++, ++idx) {
+    for(; citr.first + 1 != citr.second; citr.first++, ++col) {
+        for(int idx = 0; idx < (*(citr.first + 1) - *citr.first);
+            ritr.first++, vitr.first++, ++idx) {
 
-            for(int col = 0; col < m; ++col) {
+            for(int ccol = 0; ccol < m; ++ccol) {
 
-                typename Matrix_t::coord_tuple_t new_entry(row, col,
-                    *vitr.first * ((col + 1) + *citr.first * m));
+                typename Matrix_t::coord_tuple_t new_entry(*ritr.first, ccol,
+                    *vitr.first * (ccol * n + col + 1));
                 coords_new.push_back(new_entry);
             }
         }
     }
 
     Matrix_t expected_A;
-    expected_A.attach(coords_new);
+    expected_A.attach(coords_new, n_s, m);
 
     if (!static_cast<bool>(expected_A == sketch_A))
         BOOST_FAIL("Result of colwise application not as expected");

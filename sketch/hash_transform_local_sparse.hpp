@@ -109,8 +109,8 @@ struct hash_transform_t <
         }
     }
 
-    int get_N() const { return this->N; } /**< Get input dimesion. */
-    int get_S() const { return this->S; } /**< Get output dimesion. */
+    int get_N() const { return this->N; } /**< Get input dimension. */
+    int get_S() const { return this->S; } /**< Get output dimension. */
 
 private:
     /**

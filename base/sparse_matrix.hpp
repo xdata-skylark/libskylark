@@ -1,6 +1,9 @@
 #ifndef SPARSE_MATRIX_HPP
 #define SPARSE_MATRIX_HPP
 
+#include <vector>
+#include <boost/tuple/tuple.hpp>
+
 namespace skylark { namespace base {
 
 /**

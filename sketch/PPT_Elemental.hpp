@@ -145,7 +145,7 @@ struct PPT_t <
         int N = base_data_t::_N;
 
         matrix_type W(S, 1);
-        matrix_type SAv(S, 1);
+        matrix_type SAv;
         matrix_type Av;
 
         std::complex<value_type> *FW = new std::complex<value_type>[S];
@@ -198,7 +198,7 @@ struct PPT_t <
         int N = base_data_t::_N;
 
         matrix_type W(S, 1);
-        matrix_type ASv(1, S), SATv(S, 1);
+        matrix_type ASv, SATv(S, 1);
 
         matrix_type Av, ATv;
 

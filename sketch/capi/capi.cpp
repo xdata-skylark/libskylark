@@ -131,12 +131,15 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
         SKDEF(WZT, DistMatrix_STAR_VC, Matrix)
         SKDEF(PPT, Matrix, Matrix)
         SKDEF(GaussianRFT, Matrix, Matrix)
+        SKDEF(GaussianRFT, SparseMatrix, Matrix)
         SKDEF(GaussianRFT, DistMatrix_VR_STAR, DistMatrix_VR_STAR)
         SKDEF(GaussianRFT, DistMatrix_VC_STAR, DistMatrix_VC_STAR)
         SKDEF(LaplacianRFT, Matrix, Matrix)
+        SKDEF(LaplacianRFT, SparseMatrix, Matrix)
         SKDEF(LaplacianRFT, DistMatrix_VR_STAR, DistMatrix_VR_STAR)
         SKDEF(LaplacianRFT, DistMatrix_VC_STAR, DistMatrix_VC_STAR)
         SKDEF(ExpSemigroupRLT, Matrix, Matrix)
+        SKDEF(ExpSemigroupRLT, SparseMatrix, Matrix)
 
 #if SKYLARK_HAVE_FFTW
         SKDEF(FJLT, DistMatrix_VR_STAR, Matrix)
@@ -539,6 +542,11 @@ SKYLARK_EXTERN_API int
         GaussianRFT_data_t);
 
     AUTO_APPLY_DISPATCH(sketchc::GaussianRFT,
+        sketchc::SPARSE_MATRIX, sketchc::MATRIX,
+        sketch::GaussianRFT_t, SparseMatrix, Matrix,
+        GaussianRFT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::GaussianRFT,
         sketchc::DIST_MATRIX_VR_STAR, sketchc::DIST_MATRIX_VR_STAR,
         sketch::GaussianRFT_t, DistMatrix_VR_STAR, DistMatrix_VR_STAR,
         GaussianRFT_data_t);
@@ -554,6 +562,11 @@ SKYLARK_EXTERN_API int
         LaplacianRFT_data_t);
 
     AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
+        sketchc::SPARSE_MATRIX, sketchc::MATRIX,
+        sketch::LaplacianRFT_t, SparseMatrix, Matrix,
+        LaplacianRFT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
         sketchc::DIST_MATRIX_VR_STAR, sketchc::DIST_MATRIX_VR_STAR,
         sketch::LaplacianRFT_t, DistMatrix_VR_STAR, DistMatrix_VR_STAR,
         LaplacianRFT_data_t);
@@ -566,6 +579,11 @@ SKYLARK_EXTERN_API int
     AUTO_APPLY_DISPATCH(sketchc::ExpSemigroupRLT,
         sketchc::MATRIX, sketchc::MATRIX,
         sketch::ExpSemigroupRLT_t, Matrix, Matrix,
+        ExpSemigroupRLT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::ExpSemigroupRLT,
+        sketchc::SPARSE_MATRIX, sketchc::MATRIX,
+        sketch::ExpSemigroupRLT_t, SparseMatrix, Matrix,
         ExpSemigroupRLT_data_t);
 
 #if SKYLARK_HAVE_FFTW

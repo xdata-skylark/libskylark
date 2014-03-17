@@ -36,7 +36,7 @@ public:
     typedef std::vector<const feature_transform_t *> feature_transform_array_t;
 
 
-    // No feature transforms (aka just linear regression).
+    // No feature transdeforms (aka just linear regression).
     BlockADMMSolver(skylark::sketch::context_t& context,
             const lossfunction* loss,
             const regularization* regularizer,
@@ -227,15 +227,9 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
     int k = Wbar.Width();
     // number of classes, targets - to generalize
 
-    //(context.comm, &kmax, 1, &k, boost::mpi::maximum);
-
-    // number of random features
     int D = NumFeatures;
 
     // exception: check if D = Wbar.Height();
-
-    //elem::Grid grid;
-
 
     DistMatrixTypeT O(k, n); //uses default Grid
     elem::Zeros(O, k, n);
@@ -278,7 +272,11 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
     LocalMatrixType sum_o, del_o, wbar_output;
     elem::Zeros(del_o, k, ni);
     DistTargetMatrixType Yp(Yv.Height(), k);
-
+    
+    LocalMatrixType wbar_tmp;
+    if (NumThreads > 1)
+    	elem::Zeros(wbar_tmp, k, ni);
+    
     if (CacheTransforms)
                 InitializeTransformCache(ni);
 
@@ -368,12 +366,17 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
             }
 
             elem::View(tmp, Wbar, start, 0, sj, k); //tmp = Wbar[J,:]
+           
+            if (NumThreads > 1) {
+            	elem::Gemm(elem::TRANSPOSE, elem::NORMAL, 1.0, tmp, z, 0.0, wbar_tmp);
+            	
+#           	ifdef SKYLARK_HAVE_OPENMP
+#           	pragma omp critical
+#           	endif
+            	elem::Axpy(1.0, wbar_tmp, wbar_output);
+            } else 
+            	elem::Gemm(elem::TRANSPOSE, elem::NORMAL, 1.0, tmp, z, 1.0, wbar_output);
             
-#           ifdef SKYLARK_HAVE_OPENMP
-#           pragma omp critical
-#           endif
-            elem::Gemm(elem::TRANSPOSE, elem::NORMAL, 1.0, tmp, z, 1.0, wbar_output);
-
             rhs = tmp; //rhs = Wbar[J,:]
             elem::View(tmp, mu_ij, start, 0, sj, k); //tmp = mu_ij[J,:]
             elem::Axpy(-1.0, tmp, rhs); // rhs = rhs - mu_ij[J,:] = Wbar[J,:] - mu_ij[J,:]
@@ -381,8 +384,9 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
             elem::Axpy(+1.0, tmp, rhs); // rhs = rhs + ZtObar_ij[J,:]
 
             SKYLARK_TIMER_RESTART(ZMULT_PROFILE);
-            elem::Gemm(elem::NORMAL, elem::TRANSPOSE, 1.0, z, nu.Matrix(), 1.0, rhs); // rhs = rhs + z'*nu
-            elem::Gemm(elem::NORMAL, elem::TRANSPOSE, 1.0/(NumFeaturePartitions + 1.0), z, del_o, 1.0, rhs); // rhs = rhs + z'*del_o
+            elem::Matrix<double> dsum = del_o;
+            elem::Axpy(NumFeaturePartitions + 1.0, nu.Matrix(), dsum);
+            elem::Gemm(elem::NORMAL, elem::TRANSPOSE, 1.0/(NumFeaturePartitions + 1.0), z, dsum, 1.0, rhs); // rhs = rhs + z'*(1/(n+1) * del_o + nu)
             SKYLARK_TIMER_ACCUMULATE(ZMULT_PROFILE);
 
             elem::View(tmp, Wi, start, 0, sj, k);
@@ -402,10 +406,13 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
             elem::Gemm(elem::NORMAL, elem::TRANSPOSE, 1.0, z, o, 0.0, tmp);
 
             //  sum_o += o
-#           ifdef SKYLARK_HAVE_OPENMP
-#           pragma omp critical
-#           endif
-            elem::Axpy(1.0, o, sum_o);
+            if (NumThreads > 1) {
+#           	ifdef SKYLARK_HAVE_OPENMP
+#          		pragma omp critical
+#           	endif
+            	elem::Axpy(1.0, o, sum_o);
+            } else
+            	elem::Axpy(1.0, o, sum_o);
 
             z.Empty();
         }

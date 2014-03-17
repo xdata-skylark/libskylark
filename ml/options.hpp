@@ -41,8 +41,8 @@ enum KernelType {LINEAR = 0, GAUSSIAN = 1, POLYNOMIAL = 2,
 std::string Kernels[] = {"Linear", "Gaussian",
                          "Polynomial", "Laplacian", "ExpSemigroup"};
 
-enum FileFormatType {LIBSVM = 0, HDF5 = 1};
-std::string FileFormats[] = {"Libsvm", "HDF5"};
+enum FileFormatType {LIBSVM_DENSE = 0, LIBSVM_SPARSE = 1, HDF5 = 2};
+std::string FileFormats[] = {"Libsvm-dense", "libsvm-sparse", "HDF5"};
 
 /**
  * A structure that is used to pass options to the ADMM solver. This structure
@@ -211,6 +211,7 @@ struct hilbert_options_t {
         regularmap = false;
         fileformat = DEFAULT_FILEFORMAT;
         MAXITER = DEFAULT_MAXITER;
+        dataformat = false;
         valfile = "";
         testfile = "";
 
@@ -274,7 +275,7 @@ struct hilbert_options_t {
         optionstring << "# Model File = " << modelfile << std::endl;
         optionstring << "# Validation File = " << valfile << std::endl;
         optionstring << "# Test File = " << testfile << std::endl;
-        optionstring << "# File Format = " << fileformat << std::endl;
+        optionstring << "# File/Data Format = " << fileformat << std::endl;
         optionstring << "# Loss function = " << lossfunction
                      << " ("<< Losses[lossfunction]<< ")" << std::endl;
         optionstring << "# Regularizer = " << regularizer
@@ -304,5 +305,5 @@ struct hilbert_options_t {
     }
 };
 
-
 #endif /* SKYLARK_HILBERT_OPTIONS_HPP */
+

@@ -13,7 +13,6 @@
 #include "options.hpp"
 #include "io.hpp"
 #include "profiler.hpp"
-
-
+#include "run.hpp"
 
 #endif /* HILBERT_HPP_ */

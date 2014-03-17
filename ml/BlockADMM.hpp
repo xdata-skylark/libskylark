@@ -28,6 +28,7 @@ typedef elem::DistMatrix<double, elem::VC, elem::STAR> DistMatrixType;
 typedef elem::DistMatrix<double, elem::STAR, elem::VC> DistMatrixTypeT;
 
 typedef elem::Matrix<double> LocalMatrixType;
+typedef skylark::base::sparse_matrix_t<double> sparse_matrix_t;
 
 
 class BlockADMMSolver
@@ -75,6 +76,7 @@ public:
 
     void InitializeCache();
     int train(DistInputMatrixType& X, DistTargetMatrixType& Y, LocalMatrixType& W, DistInputMatrixType& Xv, DistTargetMatrixType& Yv);
+    int train(sparse_matrix_t& X, DistTargetMatrixType& Y, LocalMatrixType& Wbar, sparse_matrix_t& Xv, DistTargetMatrixType& Yv);
     void predict(DistInputMatrixType& X, DistTargetMatrixType& Y,LocalMatrixType& W);
     double evaluate(DistTargetMatrixType& Y, DistTargetMatrixType& Yp);
 
@@ -363,6 +365,7 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 
 
             elem::View(tmp, Wbar, start, 0, sj, k); //tmp = Wbar[J,:]
+
 #ifdef SKYLARK_HAVE_OPENMP
 #pragma omp critical
 #endif
@@ -577,6 +580,9 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 #endif
 
 	return 0;
+}
+
+int BlockADMMSolver::train(sparse_matrix_t& X, DistTargetMatrixType& Y, LocalMatrixType& Wbar, sparse_matrix_t& Xv, DistTargetMatrixType& Yv) {
 }
 
 void BlockADMMSolver::predict(DistInputMatrixType& X, DistTargetMatrixType& Y, LocalMatrixType& W) {

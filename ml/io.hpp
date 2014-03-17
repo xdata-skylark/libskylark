@@ -13,13 +13,14 @@
 #include <cstdlib>
 #include <string>
 #include <elemental.hpp>
-
+#include "../base/sparse_matrix.hpp"
 
 using namespace std;
 namespace bmpi =  boost::mpi;
 
 typedef skylark::sketch::context_t skylark_context_t;
 typedef elem::DistMatrix<double, elem::CIRC, elem::CIRC> DistCircMatrixType;
+typedef skylark::base::sparse_matrix_t<double> sparse_matrix_t;
 
 
 #ifdef SKYLARK_HAVE_HDF5
@@ -191,10 +192,11 @@ void read_hdf5_dense(skylark_context_t& context, string fName,
         double readtime = timer.elapsed();
         if (context.rank==0)
                 cout << "Read Matrix with dimensions: " << n << " by " << d << " (" << readtime << "secs)" << endl;
+
 }
 #endif
 
-void read_libsvm_dense(skylark_context_t& context, string fName,
+void read_libsvm(skylark_context_t& context, string fName,
 		elem::DistMatrix<double, elem::STAR, elem::VC>& X,
 		elem::DistMatrix<double, elem::VC, elem::STAR>& Y,
 		int min_d = 0, int blocksize = 10000) {
@@ -314,9 +316,180 @@ void read_libsvm_dense(skylark_context_t& context, string fName,
 	double readtime = timer.elapsed();
 	if (context.rank==0)
 		cout << "Read Matrix with dimensions: " << n << " by " << d << " (" << readtime << "secs)" << endl;
+}
+
+void read_libsvm(skylark_context_t& context, string fName, sparse_matrix_t& X,
+                        elem::Matrix<double>& Y,
+                        int min_d = 0) {
+    if (context.rank==0)
+            cout << "Reading from file " << fName << endl;
+
+    boost::mpi::communicator world;
+
+    ifstream file(fName.c_str());
+    string line;
+    string token, val, ind;
+    float label;
+    unsigned int start = 0;
+    unsigned int delim, t;
+    int n = 0;
+    int d = 0;
+    int i, j, last;
+    char c;
+    int nnz, nz;
+
+    bmpi::timer timer;
+
+    // make one pass over the data to figure out dimensions - will pay in terms of preallocated storage.
+    if (context.rank==0) {
+        while(!file.eof()) {
+            getline(file, line);
+            if(line.length()==0)
+                break;
+            delim = 0;
+            for(nz=0;nz<line.length(); nz++) {
+                if (line[nz]==':') {
+                    nnz++;
+                    delim = nz;
+                }
+            }
+
+            //delim = line.find_last_of(":");
+            if(delim > line.length())
+                continue;
+            n++;
+            t = delim;
+            while(line[t]!=' ') {
+                t--;
+            }
+            val = line.substr(t+1, delim - t);
+            last = atoi(val.c_str());
+            if (last>d)
+                d = last;
+        }
+        if (min_d > 0)
+            d = std::max(d, min_d);
+
+        // prepare for second pass
+        file.clear();
+        file.seekg(0, std::ios::beg);
+    }
+
+    // rough number of non-zeros per process - as soon as these many nnzs are read, the chunk of the rows read is sent to
+    // appropriate process
+    int nnzs_per_process = (int ) nnz / (int) context.size;
+
+    int nnz_local;
+
+    for(int r=0; r<context.size; r++) {
+        vector<int> col_ptr;
+        vector<int> rowind;
+        vector<double> values;
+        vector<double> y;
+
+        if(context.rank==0) {
+            // send sparse matrices
+            t = 0;
+            int nnz_local = 0;
+
+            while(!file.eof()) {
+                getline(file, line);
+                t++;
+                if( line.length()==0) {
+                    break;
+                }
+
+                istringstream tokenstream (line);
+                tokenstream >> label;
+                y.push_back(label);
+                col_ptr.push_back(nnz_local);
+
+                while (tokenstream >> token)
+                {
+                    delim  = token.find(':');
+                    ind = token.substr(0, delim);
+                    val = token.substr(delim+1); //.substr(delim+1);
+                    j = atoi(ind.c_str()) - 1;
+                    rowind.push_back(j);
+                    values.push_back(atof(val.c_str()));
+                    nnz_local++;
+                }
+
+                if ((nnz_local>nnzs_per_process) && (r<context.size-1)) {
+                    col_ptr.push_back(nnz_local);
+                    world.send(r, 1, t);
+                    world.send(r, 2, d);
+                    world.send(r, 3, nnz_local);
+                    world.send(r, 4, &col_ptr[0], col_ptr.size());
+                    world.send(r, 5, &rowind[0], col_ptr.size());
+                    world.send(r, 6, &values[0], col_ptr.size());
+                    world.send(r, 7, &y[0], y.size());
+                    break;
+                }
+            }
+            if ((r==context.size-1)) {
+                col_ptr.push_back(nnz_local);
+                world.send(r, 1, t);
+                world.send(r, 2, d);
+                world.send(r, 3, nnz_local);
+                world.send(r, 4, &col_ptr[0], col_ptr.size());
+                world.send(r, 5, &rowind[0], col_ptr.size());
+                world.send(r, 6, &values[0], col_ptr.size());
+                world.send(r, 7, &y[0], y.size());
+                break;
+            }
+
+        }
+        else {
+            //receive
+            world.recv(0, 1, t);
+            world.recv(0, 2, d);
+            world.recv(0, 3, nnz_local);
+            double* values = new double[nnz_local];
+            int* rowind = new int[nnz_local];
+            int* col_ptr = new int[t+1];
+
+            world.recv(0, 4, col_ptr, t+1);
+            world.recv(0, 5, rowind, nnz_local);
+            world.recv(0, 6, values, d);
+
+            X.attach(col_ptr, rowind, values, t+1, nnz_local, t, d);
+
+            double* y = new double[t];
+            world.recv(0, 7, y, t);
+            Y.Resize(t,1);
+            Y.Attach(t,1,y,0);
+
+        }
+    }
+
+
+    double readtime = timer.elapsed();
+    if (context.rank==0)
+        cout << "Read Matrix with dimensions: " << n << " by " << d << " (" << readtime << "secs)" << endl;
 
 }
 
+
+template <class InputType, class LabelType>
+void read(skylark::sketch::context_t& context, int fileformat, string filename, InputType& X, LabelType& Y, int d=0) {
+    switch(fileformat) {
+            case LIBSVM_DENSE || LIBSVM_SPARSE:
+            {
+                read_libsvm_dense(context, filename, X, Y, d);
+                break;
+            }
+            case HDF5:
+            {
+                #ifdef SKYLARK_HAVE_HDF5
+                    read_hdf5_dense(context, filename, X, Y, d);
+                #else
+                    // TODO
+                #endif
+                break;
+            }
+        }
+}
 
 void read_model_file(string fName, elem::Matrix<double>& W) {
 	ifstream file(fName.c_str());
@@ -353,5 +526,14 @@ void read_model_file(string fName, elem::Matrix<double>& W) {
 			i++;
 	}
 }
+
+void SaveModel(skylark::sketch::context_t& context, hilbert_options_t& options, elem::Matrix<double> W)  {
+    if (context.rank==0) {
+            std::stringstream dimensionstring;
+            dimensionstring << "# Dimensions " << W.Height() << " " << W.Width() << "\n";
+            elem::Write(W, options.modelfile, elem::ASCII, options.print().append(dimensionstring.str()));
+        }
+}
+
 
 #endif /* IO_HPP_ */

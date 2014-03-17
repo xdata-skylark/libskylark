@@ -71,6 +71,7 @@ struct hilbert_options_t {
     int seed;
     int randomfeatures;
     bool regularmap;
+    bool cachetransforms;
 
     /* parallelization options */
     int numfeaturepartitions;
@@ -145,6 +146,10 @@ struct hilbert_options_t {
                 po::value<bool>(&regularmap)->default_value(false),
                 "Default is to use 'fast' feature mapping, if available."
                 "Use this flag to force regular mapping (default: false)")
+            ("cachetransforms",
+                po::value<bool>(&cachetransforms)->default_value(false),
+                "Default is to not cache feature transforms per iteration, but generate on fly"
+                 "Use this flag to force transform caching if you have enough memory (default: false)")
             ("fileformat",
                 po::value<int>(&fileformat)->default_value(DEFAULT_FILEFORMAT),
                 "Fileformat (default: 0 (libsvm), 1 (hdf5)")
@@ -295,6 +300,8 @@ struct hilbert_options_t {
         optionstring << "# rho = " << rho << std::endl;
         optionstring << "# Seed = " << seed << std::endl;
         optionstring << "# Random Features = " << randomfeatures << std::endl;
+        optionstring << "# Caching Transforms = " << cachetransforms << std::endl;
+        optionstring << "# Regular/Fastfood = " << regularmap  << std::endl;
         optionstring << "# Number of feature partitions = "
                      << numfeaturepartitions << std::endl;
         optionstring << "# Threads = " << numthreads << std::endl;

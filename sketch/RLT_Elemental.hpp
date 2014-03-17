@@ -16,9 +16,10 @@ namespace sketch {
  * Specialization for local input, local output
  */
 template <typename ValueType,
+          template <typename> class InputType,
           template <typename> class KernelDistribution>
 struct RLT_t <
-    elem::Matrix<ValueType>,
+    InputType<ValueType>,
     elem::Matrix<ValueType>,
     KernelDistribution> :
         public RLT_data_t<ValueType,
@@ -26,7 +27,7 @@ struct RLT_t <
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
-    typedef elem::Matrix<value_type> matrix_type;
+    typedef InputType<value_type> matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
     typedef RLT_data_t<ValueType,
                        KernelDistribution> base_data_t;

@@ -58,25 +58,31 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
     T beta, elem::Matrix<T>& C) {
     // TODO verify sizes etc.
 
-    std::vector<int> indptr = B.locked_indptr();
-    std::vector<int> indices = B.locked_indices();
-    std::vector<T> values = B.locked_values();
+    const std::vector<int> &indptr = B.locked_indptr();
+    const std::vector<int> &indices = B.locked_indices();
+    const std::vector<T> &values = B.locked_values();
 
     elem::Scal(beta, C);
 
     int m = A.Height();
-    elem::Matrix<T> Ac;
-    elem::Matrix<T> Cc;
+    int n = B.Width();
+
+
 
     // NN
     if (oA == elem::NORMAL && oB == elem::NORMAL) {
-        int col = 0;
-        for(std::vector<int>::const_iterator indit = indptr.begin();
-            indit != indptr.end() - 1; indit++, col++) {
+
+        elem::Matrix<T> Ac;
+        elem::Matrix<T> Cc;
+
+#       if SKYLARK_HAVE_OPENMP
+#       pragma omp parallel for private(Cc, Ac)
+#       endif
+        for(int col = 0; col < n; col++) {
             elem::View(Cc, C, 0, col, m, 1);
-            for(int j = *indit; j < *(indit + 1); j++) {
-                int row = *(indices.begin() + j);
-                T val = *(values.begin() + j);
+            for (int j = indptr[col]; j < indptr[col + 1]; j++) {
+                int row = indices[j];
+                T val = values[j];
                 elem::LockedView(Ac, A, 0, row, m, 1);
                 elem::Axpy(alpha * val, Ac, Cc);
             }
@@ -85,14 +91,20 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
 
     // NT
     if (oA == elem::NORMAL && oB == elem::TRANSPOSE) {
+
+        elem::Matrix<T> Ac;
+        elem::Matrix<T> Cc;
+
         // Now, we simply think of B has being in CSR mode...
         int row = 0;
-        for(std::vector<int>::const_iterator indit = indptr.begin();
-            indit != indptr.end() - 1; indit++, row++) {
+        for(int row = 0; row < n; row++) {
             elem::LockedView(Ac, A, 0, row, m, 1);
-            for(int j = *indit; j < *(indit + 1); j++) {
-                int col = *(indices.begin() + j);
-                T val = *(values.begin() + j);
+#           if SKYLARK_HAVE_OPENMP
+#           pragma omp parallel for private(Cc)
+#           endif
+            for (int j = indptr[row]; j < indptr[row + 1]; j++) {
+                int col = indices[j];
+                T val = values[j];
                 elem::View(Cc, C, 0, col, m, 1);
                 elem::Axpy(alpha * val, Ac, Cc);
             }
@@ -106,16 +118,59 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
     T beta, elem::Matrix<T>& C) {
     // TODO verify sizes etc.
 
-    std::vector<int> indptr = A.locked_indptr();
-    std::vector<int> indices = A.locked_indices();
-    std::vector<T> values = A.locked_values();
+    const std::vector<int> &indptr = A.locked_indptr();
+    const std::vector<int> &indices = A.locked_indices();
+    const std::vector<T> &values = A.locked_values();
 
     elem::Scal(beta, C);
- 
-    int n = B.Width();
 
+    int k = A.Width();
+    int n = B.Width();
+    int m = B.Height();
+
+
+
+    // NN
     if (oA == elem::NORMAL && oB == elem::NORMAL) {
-        // TODO!
+
+        double *c = C.Buffer();
+        int ldc = C.LDim();
+
+        const double *b = B.LockedBuffer();
+        int ldb = B.LDim();
+
+#       if SKYLARK_HAVE_OPENMP
+#       pragma omp parallel for
+#       endif
+        for(int i = 0; i < n; i++)
+            for(int col = 0; col < k; col++)
+                 for (int j = indptr[col]; j < indptr[col + 1]; j++) {
+                     int row = indices[j];
+                     T val = values[j];
+                     c[i * ldc + row] += alpha * val * b[i * ldb + col];
+                 }
+    }
+
+    // NT
+    if (oA == elem::NORMAL && oB == elem::TRANSPOSE) {
+
+        elem::Matrix<T> Bc;
+        elem::Matrix<T> BTr;
+        elem::Matrix<T> Cr;
+
+        for(int col = 0; col < k; col++) {
+            elem::LockedView(Bc, B, 0, col, m, 1);
+            elem::Transpose(Bc, BTr);
+#           if SKYLARK_HAVE_OPENMP
+#           pragma omp parallel for private(Cr)
+#           endif
+            for (int j = indptr[col]; j < indptr[col + 1]; j++) {
+                int row = indices[j];
+                T val = values[j];
+                elem::View(Cr, C, row, 0, 1, m);
+                elem::Axpy(alpha * val, BTr, Cr);
+            }
+        }
     }
 }
 

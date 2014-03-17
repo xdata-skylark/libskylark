@@ -106,18 +106,24 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
         SKDEF(CT, DistMatrix_STAR_VR, DistMatrix_STAR_VR)
         SKDEF(CT, DistMatrix_STAR_VC, DistMatrix_STAR_VC)
         SKDEF(CWT, Matrix, Matrix)
+        SKDEF(CWT, SparseMatrix, Matrix)
+        SKDEF(CWT, SparseMatrix, SparseMatrix)
         SKDEF(CWT, DistMatrix, Matrix)
         SKDEF(CWT, DistMatrix_VR_STAR, Matrix)
         SKDEF(CWT, DistMatrix_VC_STAR, Matrix)
         SKDEF(CWT, DistMatrix_STAR_VR, Matrix)
         SKDEF(CWT, DistMatrix_STAR_VC, Matrix)
         SKDEF(MMT, Matrix, Matrix)
+        SKDEF(MMT, SparseMatrix, Matrix)
+        SKDEF(MMT, SparseMatrix, SparseMatrix)
         SKDEF(MMT, DistMatrix, Matrix)
         SKDEF(MMT, DistMatrix_VR_STAR, Matrix)
         SKDEF(MMT, DistMatrix_VC_STAR, Matrix)
         SKDEF(MMT, DistMatrix_STAR_VR, Matrix)
         SKDEF(MMT, DistMatrix_STAR_VC, Matrix)
         SKDEF(WZT, Matrix, Matrix)
+        SKDEF(WZT, SparseMatrix, Matrix)
+        SKDEF(WZT, SparseMatrix, SparseMatrix)
         SKDEF(WZT, DistMatrix, Matrix)
         SKDEF(WZT, DistMatrix_VR_STAR, Matrix)
         SKDEF(WZT, DistMatrix_VC_STAR, Matrix)
@@ -125,12 +131,15 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
         SKDEF(WZT, DistMatrix_STAR_VC, Matrix)
         SKDEF(PPT, Matrix, Matrix)
         SKDEF(GaussianRFT, Matrix, Matrix)
+        SKDEF(GaussianRFT, SparseMatrix, Matrix)
         SKDEF(GaussianRFT, DistMatrix_VR_STAR, DistMatrix_VR_STAR)
         SKDEF(GaussianRFT, DistMatrix_VC_STAR, DistMatrix_VC_STAR)
         SKDEF(LaplacianRFT, Matrix, Matrix)
+        SKDEF(LaplacianRFT, SparseMatrix, Matrix)
         SKDEF(LaplacianRFT, DistMatrix_VR_STAR, DistMatrix_VR_STAR)
         SKDEF(LaplacianRFT, DistMatrix_VC_STAR, DistMatrix_VC_STAR)
         SKDEF(ExpSemigroupRLT, Matrix, Matrix)
+        SKDEF(ExpSemigroupRLT, SparseMatrix, Matrix)
 
 #if SKYLARK_HAVE_FFTW
         SKDEF(FJLT, DistMatrix_VR_STAR, Matrix)
@@ -144,7 +153,7 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
         SKDEF(CWT, DistSparseMatrix, DistSparseMatrix)
         SKDEF(CWT, DistSparseMatrix, SparseMatrix)
 #endif
-        SKDEF(CWT, SparseMatrix, SparseMatrix)
+
         "";
 }
 
@@ -428,6 +437,15 @@ SKYLARK_EXTERN_API int
         sketch::CWT_t, Matrix, Matrix, CWT_data_t);
 
     AUTO_APPLY_DISPATCH(sketchc::CWT,
+        sketchc::SPARSE_MATRIX, sketchc::MATRIX,
+        sketch::CWT_t, SparseMatrix, Matrix, CWT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::CWT,
+        sketchc::SPARSE_MATRIX, sketchc::SPARSE_MATRIX,
+        sketch::CWT_t, SparseMatrix, SparseMatrix,
+        CWT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::CWT,
         sketchc::DIST_MATRIX, sketchc::MATRIX,
         sketch::CWT_t, DistMatrix, Matrix, CWT_data_t);
 
@@ -452,6 +470,15 @@ SKYLARK_EXTERN_API int
         sketch::MMT_t, Matrix, Matrix, MMT_data_t);
 
     AUTO_APPLY_DISPATCH(sketchc::MMT,
+        sketchc::SPARSE_MATRIX, sketchc::MATRIX,
+        sketch::MMT_t, SparseMatrix, Matrix, MMT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::MMT,
+        sketchc::SPARSE_MATRIX, sketchc::SPARSE_MATRIX,
+        sketch::MMT_t, SparseMatrix, SparseMatrix,
+        MMT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::MMT,
         sketchc::DIST_MATRIX, sketchc::MATRIX,
         sketch::MMT_t, DistMatrix, Matrix, MMT_data_t);
 
@@ -474,6 +501,15 @@ SKYLARK_EXTERN_API int
     AUTO_APPLY_DISPATCH(sketchc::WZT,
         sketchc::MATRIX, sketchc::MATRIX,
         sketch::WZT_t, Matrix, Matrix, WZT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::WZT,
+        sketchc::SPARSE_MATRIX, sketchc::MATRIX,
+        sketch::WZT_t, SparseMatrix, Matrix, WZT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::WZT,
+        sketchc::SPARSE_MATRIX, sketchc::SPARSE_MATRIX,
+        sketch::WZT_t, SparseMatrix, SparseMatrix,
+        WZT_data_t);
 
     AUTO_APPLY_DISPATCH(sketchc::WZT,
         sketchc::DIST_MATRIX, sketchc::MATRIX,
@@ -506,6 +542,11 @@ SKYLARK_EXTERN_API int
         GaussianRFT_data_t);
 
     AUTO_APPLY_DISPATCH(sketchc::GaussianRFT,
+        sketchc::SPARSE_MATRIX, sketchc::MATRIX,
+        sketch::GaussianRFT_t, SparseMatrix, Matrix,
+        GaussianRFT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::GaussianRFT,
         sketchc::DIST_MATRIX_VR_STAR, sketchc::DIST_MATRIX_VR_STAR,
         sketch::GaussianRFT_t, DistMatrix_VR_STAR, DistMatrix_VR_STAR,
         GaussianRFT_data_t);
@@ -521,6 +562,11 @@ SKYLARK_EXTERN_API int
         LaplacianRFT_data_t);
 
     AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
+        sketchc::SPARSE_MATRIX, sketchc::MATRIX,
+        sketch::LaplacianRFT_t, SparseMatrix, Matrix,
+        LaplacianRFT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
         sketchc::DIST_MATRIX_VR_STAR, sketchc::DIST_MATRIX_VR_STAR,
         sketch::LaplacianRFT_t, DistMatrix_VR_STAR, DistMatrix_VR_STAR,
         LaplacianRFT_data_t);
@@ -533,6 +579,11 @@ SKYLARK_EXTERN_API int
     AUTO_APPLY_DISPATCH(sketchc::ExpSemigroupRLT,
         sketchc::MATRIX, sketchc::MATRIX,
         sketch::ExpSemigroupRLT_t, Matrix, Matrix,
+        ExpSemigroupRLT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::ExpSemigroupRLT,
+        sketchc::SPARSE_MATRIX, sketchc::MATRIX,
+        sketch::ExpSemigroupRLT_t, SparseMatrix, Matrix,
         ExpSemigroupRLT_data_t);
 
 #if SKYLARK_HAVE_FFTW
@@ -572,16 +623,6 @@ SKYLARK_EXTERN_API int
 
 #endif
 #endif
-
-    AUTO_APPLY_DISPATCH(sketchc::CWT,
-        sketchc::SPARSE_MATRIX, sketchc::SPARSE_MATRIX,
-        sketch::CWT_t, SparseMatrix, SparseMatrix,
-        CWT_data_t);
-
-    //AUTO_APPLY_DISPATCH(sketchc::MMT,
-        //sketchc::SPARSE_MATRIX, sketchc::SPARSE_MATRIX,
-        //sketch::MMT_t, SparseMatrix_t, SparseMatrix_t,
-        //MMT_data_t);
 
     return 0;
 }

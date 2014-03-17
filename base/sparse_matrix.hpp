@@ -1,6 +1,9 @@
 #ifndef SPARSE_MATRIX_HPP
 #define SPARSE_MATRIX_HPP
 
+#include <vector>
+#include <boost/tuple/tuple.hpp>
+
 namespace skylark { namespace base {
 
 /**
@@ -127,6 +130,15 @@ struct sparse_matrix_t {
     int width() const {
         return _width;
     }
+
+    int Height() const {
+        return _height;
+    }
+
+    int Width() const {
+        return _width;
+    }
+
 
     const_ind_itr_range_t indices_itr() const {
         return std::make_pair(_indices.begin(), _indices.end());

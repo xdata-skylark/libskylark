@@ -145,12 +145,13 @@ struct PPT_t <
         int N = base_data_t::_N;
 
         matrix_type W(S, 1);
-        matrix_type Av(N, 1);
-        matrix_type SAv(S, 1);
+        matrix_type SAv;
+        matrix_type Av;
 
         std::complex<value_type> *FW = new std::complex<value_type>[S];
         std::complex<value_type> *P = new std::complex<value_type>[S];
 
+        // TODO OpenMP parallelization
         for(int i = 0; i < A.Width(); i++) {
             elem::LockedView(Av, A, 0, i, A.Height(), 1);
 
@@ -197,13 +198,15 @@ struct PPT_t <
         int N = base_data_t::_N;
 
         matrix_type W(S, 1);
-        matrix_type Av(1, N), ATv(N, 1);
-        matrix_type ASv(1, S), SATv(S, 1);
+        matrix_type ASv, SATv(S, 1);
+
+        matrix_type Av, ATv;
 
         std::complex<value_type> *FW = new std::complex<value_type>[S];
         std::complex<value_type> *P = new std::complex<value_type>[S];
 
-        for(int i = 0; i < A.Width(); i++) {
+        // TODO OpenMP parallelization
+        for(int i = 0; i < A.Height(); i++) {
             elem::LockedView(Av, A, i, 0, 1, A.Width());
             elem::Transpose(Av, ATv);
 

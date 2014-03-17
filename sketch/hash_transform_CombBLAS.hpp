@@ -7,7 +7,7 @@
 #include <CombBLAS.h>
 #include "../utility/external/FullyDistMultiVec.hpp"
 #include "../utility/exception.hpp"
-#include "../utility/sparse_matrix.hpp"
+#include "../base/sparse_matrix.hpp"
 
 #include "context.hpp"
 #include "transforms.hpp"
@@ -493,7 +493,7 @@ template <typename IndexType,
           template <typename> class ValueDistribution>
 struct hash_transform_t <
     SpParMat<IndexType, ValueType, SpDCCols<IndexType, ValueType> >,
-    utility::sparse_matrix_t<IndexType, ValueType>,
+    base::sparse_matrix_t<ValueType>,
     IdxDistributionType,
     ValueDistribution > :
         public hash_transform_data_t<IndexType,
@@ -505,7 +505,7 @@ struct hash_transform_t <
     typedef SpDCCols< index_type, value_type > col_t;
     typedef FullyDistVec< index_type, value_type> mpi_vector_t;
     typedef SpParMat< index_type, value_type, col_t > matrix_type;
-    typedef utility::sparse_matrix_t< index_type, value_type > output_matrix_type;
+    typedef base::sparse_matrix_t< value_type > output_matrix_type;
     typedef hash_transform_data_t<IndexType,
                                   ValueType,
                                   IdxDistributionType,

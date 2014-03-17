@@ -22,7 +22,9 @@ struct hash_transform_t <
         public hash_transform_data_t<size_t,
                                      ValueType,
                                      IdxDistributionType,
-                                     ValueDistribution> {
+                                     ValueDistribution>,
+        virtual public sketch_transform_t<base::sparse_matrix_t<ValueType>,
+                                          base::sparse_matrix_t<ValueType> >  {
     typedef size_t index_type;
     typedef ValueType value_type;
     typedef base::sparse_matrix_t<ValueType> matrix_type;
@@ -61,10 +63,12 @@ struct hash_transform_t <
                                             ValueDistribution>& other_data) :
         base_data_t(other_data.get_data()) {}
 
-    template <typename Dimension>
-    void apply (const matrix_type &A,
-                output_matrix_type &sketch_of_A,
-                Dimension dimension) const {
+    /**
+     * Apply columnwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply (const matrix_type &A, output_matrix_type &sketch_of_A,
+                columnwise_tag dimension) const {
         try {
             apply_impl (A, sketch_of_A, dimension);
         } catch(boost::mpi::exception e) {
@@ -82,6 +86,31 @@ struct hash_transform_t <
         }
     }
 
+    /**
+     * Apply rowwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply (const matrix_type &A, output_matrix_type &sketch_of_A,
+                rowwise_tag dimension) const {
+        try {
+            apply_impl (A, sketch_of_A, dimension);
+        } catch(boost::mpi::exception e) {
+            SKYLARK_THROW_EXCEPTION (
+                utility::mpi_exception()
+                    << utility::error_msg(e.what()) );
+        } catch (std::string e) {
+            SKYLARK_THROW_EXCEPTION (
+                utility::combblas_exception()
+                    << utility::error_msg(e) );
+        } catch (std::logic_error e) {
+            SKYLARK_THROW_EXCEPTION (
+                utility::combblas_exception()
+                    << utility::error_msg(e.what()) );
+        }
+    }
+
+    int get_N() const { return this->N; } /**< Get input dimension. */
+    int get_S() const { return this->S; } /**< Get output dimension. */
 
 private:
     /**

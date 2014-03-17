@@ -13,12 +13,13 @@ namespace skylark {
 namespace sketch {
 
 /**
- * Specialization for local input, local output
+ * Specialization for local input (dense or sparse), local output (dense)
  */
 template <typename ValueType,
+          template <typename> class InputType,
           template <typename> class KernelDistribution>
 struct RFT_t <
-    elem::Matrix<ValueType>,
+    InputType<ValueType>,
     elem::Matrix<ValueType>,
     KernelDistribution> :
         public RFT_data_t<ValueType,
@@ -26,7 +27,7 @@ struct RFT_t <
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
-    typedef elem::Matrix<value_type> matrix_type;
+    typedef InputType<value_type> matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
     typedef RFT_data_t<ValueType,
                        KernelDistribution> base_data_t;

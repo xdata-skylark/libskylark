@@ -179,11 +179,11 @@ class _NumpyAdapter:
 
   @staticmethod
   def ctor(m, n, B):
-    # Construct numpy array that is compatible with B. If B is a numpy array the
+    # Construct numpy array that is compatible with B. If B is a numpy or scipy array the
     # element order (Fortran or C) must match. For all others (e.g., Elemental
     # and KDT) the order must be Fortran because this is what the lower layers
     # expect.
-    if isinstance(B, _NumpyAdapter):
+    if isinstance(B, _NumpyAdapter) or isinstance(B, _ScipyAdapter):
       return numpy.empty((m,n), order=B.getorder())
     else:
       return numpy.empty((m,n), order='F')

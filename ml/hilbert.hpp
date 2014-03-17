@@ -12,7 +12,6 @@
 #include "BlockADMM.hpp"
 #include "options.hpp"
 #include "io.hpp"
-#include "profiler.hpp"
 
 
 

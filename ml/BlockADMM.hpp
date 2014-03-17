@@ -10,10 +10,7 @@
 #include <omp.h>
 #endif
 
-#ifdef SKYLARK_HAVE_PROFILER
 #include "../utility/timer.hpp"
-#include "profiler.hpp"
-#endif
 
 #include "hilbert.hpp"
 
@@ -285,31 +282,24 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
     if (CacheTransforms)
                 InitializeTransformCache(ni);
 
-#ifdef SKYLARK_HAVE_PROFILER
-    SKYLARK_TIMER_INITIALIZE(ITERATIONS_PROFILE)
-    SKYLARK_TIMER_INITIALIZE(COMMUNICATION_PROFILE)
-    SKYLARK_TIMER_INITIALIZE(TRANSFORM_PROFILE)
-    SKYLARK_TIMER_INITIALIZE(ZTRANSFORM_PROFILE)
-    SKYLARK_TIMER_INITIALIZE(ZMULT_PROFILE)
-    SKYLARK_TIMER_INITIALIZE(PROXLOSS_PROFILE)
-    SKYLARK_TIMER_INITIALIZE(BARRIER_PROFILE)
-    SKYLARK_TIMER_INITIALIZE(PREDICTION_PROFILE)
-#endif
+    SKYLARK_TIMER_INITIALIZE(ITERATIONS_PROFILE);
+    SKYLARK_TIMER_INITIALIZE(COMMUNICATION_PROFILE);
+    SKYLARK_TIMER_INITIALIZE(TRANSFORM_PROFILE);
+    SKYLARK_TIMER_INITIALIZE(ZTRANSFORM_PROFILE);
+    SKYLARK_TIMER_INITIALIZE(ZMULT_PROFILE);
+    SKYLARK_TIMER_INITIALIZE(PROXLOSS_PROFILE);
+    SKYLARK_TIMER_INITIALIZE(BARRIER_PROFILE);
+    SKYLARK_TIMER_INITIALIZE(PREDICTION_PROFILE);
 
     while(iter<MAXITER) {
 
-#ifdef SKYLARK_HAVE_PROFILER
-        SKYLARK_TIMER_RESTART(ITERATIONS_PROFILE)
-#endif
-		        iter++;
+        SKYLARK_TIMER_RESTART(ITERATIONS_PROFILE);
+		
+		iter++;	
 
-#ifdef SKYLARK_HAVE_PROFILER
-        SKYLARK_TIMER_RESTART(COMMUNICATION_PROFILE)
-#endif
-        broadcast(context.comm, Wbar.Buffer(), Dk, 0);
-#ifdef SKYLARK_HAVE_PROFILER
-        SKYLARK_TIMER_ACCUMULATE(COMMUNICATION_PROFILE)
-#endif
+        SKYLARK_TIMER_RESTART(COMMUNICATION_PROFILE);
+		broadcast(context.comm, Wbar.Buffer(), Dk, 0);
+		SKYLARK_TIMER_ACCUMULATE(COMMUNICATION_PROFILE)
 
         // mu_ij = mu_ij - Wbar
         elem::Axpy(-1.0, Wbar, mu_ij);
@@ -317,15 +307,9 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
         // Obar = Obar - nu
         elem::Axpy(-1.0, nu.Matrix(), Obar.Matrix());
 
-#ifdef SKYLARK_HAVE_PROFILER
-        SKYLARK_TIMER_RESTART(PROXLOSS_PROFILE)
-#endif
-
+        SKYLARK_TIMER_RESTART(PROXLOSS_PROFILE);
         loss->proxoperator(Obar.Matrix(), 1.0/RHO, y, O.Matrix());
-
-#ifdef SKYLARK_HAVE_PROFILER
-        SKYLARK_TIMER_ACCUMULATE(PROXLOSS_PROFILE)
-#endif
+        SKYLARK_TIMER_ACCUMULATE(PROXLOSS_PROFILE);
 
         if(context.rank==0) {
             regularizer->proxoperator(Wbar, lambda/RHO, mu, W);
@@ -334,18 +318,14 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
         elem::Zeros(sum_o, k, ni);
         elem::Zeros(wbar_output, k, ni);
 
-        //elem::Matrix<double> o(ni, k);
-
         int j;
         const feature_transform_t* featureMap;
 
-#ifdef SKYLARK_HAVE_PROFILER
-        SKYLARK_TIMER_RESTART(TRANSFORM_PROFILE)
-#endif
+        SKYLARK_TIMER_RESTART(TRANSFORM_PROFILE);
 
-#ifdef SKYLARK_HAVE_OPENMP
-#pragma omp parallel for if(NumThreads > 1) private(j, start, finish, sj, featureMap) num_threads(NumThreads)
-#endif
+#       ifdef SKYLARK_HAVE_OPENMP
+#       pragma omp parallel for if(NumThreads > 1) private(j, start, finish, sj, featureMap) num_threads(NumThreads)
+#       endif
         for(j = 0; j < NumFeaturePartitions; j++) {
             start = starts[j];
             finish = finishes[j];
@@ -360,19 +340,15 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
             else {
                 if (featureMaps.size() > 0) {
                     featureMap = featureMaps[j];
-#ifdef SKYLARK_HAVE_PROFILER
-                    SKYLARK_TIMER_RESTART(ZTRANSFORM_PROFILE)
-#endif
+
+                    SKYLARK_TIMER_RESTART(ZTRANSFORM_PROFILE);
                     featureMap->apply(x, z, skylark::sketch::columnwise_tag());
-#ifdef SKYLARK_HAVE_PROFILER
                     SKYLARK_TIMER_ACCUMULATE(ZTRANSFORM_PROFILE)
-#endif
 
                     if (ScaleFeatureMaps)
                         elem::Scal(sqrt(double(sj) / d), z);
                 } else
                     elem::View(z, x, start, 0, sj, ni);
-
             }
 
             elem::Matrix<double> tmp(sj, k);
@@ -383,23 +359,19 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 
                 elem::Matrix<double> Ones;
                 elem::Ones(Ones, sj, 1);
-                //elem::Syrk(elem::UPPER, elem::TRANSPOSE, 1.0, z, 0.0, *Cache[j]);
                 elem::Gemm(elem::NORMAL, elem::TRANSPOSE, 1.0, z, z, 0.0, *Cache[j]);
                 Cache[j]->UpdateDiagonal(Ones);
-                //elem::Cholesky(elem::UPPER, *Cache[j]);
                 elem::Inverse(*Cache[j]);
-                //	Ones.Empty();
 
-                if (CacheTransforms) {
+                if (CacheTransforms) 
                     *TransformCache[j] = z;
-                }
-
             }
 
             elem::View(tmp, Wbar, start, 0, sj, k); //tmp = Wbar[J,:]
-#ifdef SKYLARK_HAVE_OPENMP
-#pragma omp critical
-#endif
+            
+#           ifdef SKYLARK_HAVE_OPENMP
+#           pragma omp critical
+#           endif
             elem::Gemm(elem::TRANSPOSE, elem::NORMAL, 1.0, tmp, z, 1.0, wbar_output);
 
             rhs = tmp; //rhs = Wbar[J,:]
@@ -407,30 +379,19 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
             elem::Axpy(-1.0, tmp, rhs); // rhs = rhs - mu_ij[J,:] = Wbar[J,:] - mu_ij[J,:]
             elem::View(tmp, ZtObar_ij, start, 0, sj, k);
             elem::Axpy(+1.0, tmp, rhs); // rhs = rhs + ZtObar_ij[J,:]
-#ifdef SKYLARK_HAVE_PROFILER
-            SKYLARK_TIMER_RESTART(ZMULT_PROFILE)
-#endif
+
+            SKYLARK_TIMER_RESTART(ZMULT_PROFILE);
             elem::Gemm(elem::NORMAL, elem::TRANSPOSE, 1.0, z, nu.Matrix(), 1.0, rhs); // rhs = rhs + z'*nu
             elem::Gemm(elem::NORMAL, elem::TRANSPOSE, 1.0/(NumFeaturePartitions + 1.0), z, del_o, 1.0, rhs); // rhs = rhs + z'*del_o
+            SKYLARK_TIMER_ACCUMULATE(ZMULT_PROFILE);
 
-#ifdef SKYLARK_HAVE_PROFILER
-            SKYLARK_TIMER_ACCUMULATE(ZMULT_PROFILE)
-#endif
             elem::View(tmp, Wi, start, 0, sj, k);
             elem::Gemm(elem::NORMAL, elem::NORMAL, 1.0, *Cache[j], rhs, 0.0, tmp); // ]tmp = Wi[J,:] = Cache[j]*rhs
 
-#ifdef SKYLARK_HAVE_PROFILER
-            SKYLARK_TIMER_RESTART(ZMULT_PROFILE)
-#endif
-            //   double st = omp_get_wtime( );
+            SKYLARK_TIMER_RESTART(ZMULT_PROFILE);
             elem::Gemm(elem::TRANSPOSE, elem::NORMAL, 1.0, tmp, z, 0.0, o); // o = (z*tmp)' = (z*Wi[J,:])'
-#ifdef SKYLARK_HAVE_PROFILER
-            SKYLARK_TIMER_ACCUMULATE(ZMULT_PROFILE)
-#endif
-            //	double ed = omp_get_wtime( );
-
-            // std::cout << ed - st << std::endl;
-
+            SKYLARK_TIMER_ACCUMULATE(ZMULT_PROFILE);
+            
             // mu_ij[JJ,:] = mu_ij[JJ,:] + Wi[JJ,:];
             elem::View(tmp, mu_ij, start, 0, sj, k); //tmp = mu_ij[J,:]
             elem::View(rhs, Wi, start, 0, sj, k);
@@ -441,16 +402,15 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
             elem::Gemm(elem::NORMAL, elem::TRANSPOSE, 1.0, z, o, 0.0, tmp);
 
             //  sum_o += o
-#ifdef SKYLARK_HAVE_OPENMP
-#pragma omp critical
-#endif
+#           ifdef SKYLARK_HAVE_OPENMP
+#           pragma omp critical
+#           endif
             elem::Axpy(1.0, o, sum_o);
 
             z.Empty();
         }
-#ifdef SKYLARK_HAVE_PROFILER
-        SKYLARK_TIMER_ACCUMULATE(TRANSFORM_PROFILE)
-#endif
+        
+        SKYLARK_TIMER_ACCUMULATE(TRANSFORM_PROFILE);
 
         localloss = 0.0 ;
         //	elem::Zeros(o, ni, k);
@@ -460,29 +420,19 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
         elem::Axpy(+1.0, O.Matrix(), sum_o); // sum_o = O.Matrix - sum_o
         del_o = sum_o;
 
-#ifdef SKYLARK_HAVE_PROFILER
-        SKYLARK_TIMER_RESTART(PREDICTION_PROFILE)
-#endif
+        SKYLARK_TIMER_RESTART(PREDICTION_PROFILE);
         if (Xv.Width() > 0) {
             elem::MakeZeros(Yp);
             predict(Xv, Yp, Wbar);
             accuracy = evaluate(Yv, Yp);
         }
-#ifdef SKYLARK_HAVE_PROFILER
-        SKYLARK_TIMER_ACCUMULATE(PREDICTION_PROFILE)
-#endif
+        SKYLARK_TIMER_ACCUMULATE(PREDICTION_PROFILE);
 
-        localloss+= loss->evaluate(wbar_output, y);
+        localloss += loss->evaluate(wbar_output, y);
 
-#ifdef SKYLARK_HAVE_PROFILER
-        SKYLARK_TIMER_RESTART(COMMUNICATION_PROFILE)
-#endif
-
+        SKYLARK_TIMER_RESTART(COMMUNICATION_PROFILE);
         reduce(context.comm, localloss, totalloss, std::plus<double>(), 0);
-
-#ifdef SKYLARK_HAVE_PROFILER
-        SKYLARK_TIMER_ACCUMULATE(COMMUNICATION_PROFILE)
-#endif
+        SKYLARK_TIMER_ACCUMULATE(COMMUNICATION_PROFILE);
 
         if(context.rank==0) {
             obj = totalloss + lambda*regularizer->evaluate(Wbar);
@@ -494,65 +444,6 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
             }
         }
 
-
-
-
-// #ifdef SKYLARK_HAVE_PROFILER
-//        SKYLARK_TIMER_RESTART(TRANSFORM_PROFILE)
-// #endif
-
-
-/*
-#ifdef SKYLARK_HAVE_OPENMP
-		#pragma omp parallel for if(NumThreads > 1) private(j, start, finish, sj, featureMap) num_threads(NumThreads)
-#endif
-
-		for(j = 0; j < NumFeaturePartitions; j++) {
-					start = starts[j];
-					finish = finishes[j];
-					sj = finish - start  + 1;
-
-					elem::Matrix<double> z(sj, ni);
-
-					if (featureMaps.size() > 0) {
-						featureMap = featureMaps[j];
-#ifdef SKYLARK_HAVE_PROFILER
-        SKYLARK_TIMER_RESTART(ZTRANSFORM_PROFILE)
-#endif
-						featureMap->apply(x, z, skylark::sketch::columnwise_tag());
-#ifdef SKYLARK_HAVE_PROFILER
-        SKYLARK_TIMER_ACCUMULATE(ZTRANSFORM_PROFILE)
-#endif
-						if (ScaleFeatureMaps)
-							elem::Scal(sqrt(double(sj) / d), z);
-					} else
-						elem::View(z, x, start, 0, sj, ni);
-
-					elem::Matrix<double> tmp(sj, k);
-//					elem::View(tmp, ZtObar_ij, start, 0, sj, k);
-#ifdef SKYLARK_HAVE_PROFILER
-        SKYLARK_TIMER_RESTART(ZMULT_PROFILE)
-#endif
-//					elem::Gemm(elem::NORMAL, elem::TRANSPOSE, 1.0/(NumFeaturePartitions + 1.0), z, sum_o, 1.0, tmp);
-
-#ifdef SKYLARK_HAVE_PROFILER
-        SKYLARK_TIMER_ACCUMULATE(ZMULT_PROFILE)
-#endif
-					elem::View(tmp, Wbar, start, 0, sj, k);
-
-#ifdef SKYLARK_HAVE_OPENMP
-                    #pragma omp critical
-#endif
-					elem::Gemm(elem::TRANSPOSE, elem::NORMAL, 1.0, tmp, z, 1.0, o);
-		}
-
-#ifdef SKYLARK_HAVE_PROFILER
-        SKYLARK_TIMER_ACCUMULATE(TRANSFORM_PROFILE)
-#endif
-*/
-
-
-
 		elem::Copy(O.Matrix(), Obar.Matrix());
 		elem::Scal(1.0/(NumFeaturePartitions+1.0), sum_o);
 		elem::Axpy(-1.0, sum_o, Obar.Matrix());
@@ -561,18 +452,14 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 		elem::Axpy(-1.0, Obar.Matrix(), nu.Matrix());
 
 		//Wbar = comm.reduce(Wi)
-#ifdef SKYLARK_HAVE_PROFILER
-        SKYLARK_TIMER_RESTART(COMMUNICATION_PROFILE)
-#endif
+        SKYLARK_TIMER_RESTART(COMMUNICATION_PROFILE);
 		boost::mpi::reduce (context.comm,
 		                        Wi.LockedBuffer(),
 		                        Wi.MemorySize(),
 		                        Wbar.Buffer(),
 		                        std::plus<double>(),
 		                        0);
-#ifdef SKYLARK_HAVE_PROFILER
-        SKYLARK_TIMER_ACCUMULATE(COMMUNICATION_PROFILE)
-#endif
+        SKYLARK_TIMER_ACCUMULATE(COMMUNICATION_PROFILE);
 
 		if(context.rank==0) {
 			//Wbar = (Wisum + W)/(P+1)
@@ -584,31 +471,21 @@ int BlockADMMSolver::train(DistInputMatrixType& X, DistTargetMatrixType& Y, Loca
 			elem::Axpy(-1.0, Wbar, mu);
 		}
 
-		// deleteCache()
-#ifdef SKYLARK_HAVE_PROFILER
-        SKYLARK_TIMER_RESTART(BARRIER_PROFILE)
-#endif
+        SKYLARK_TIMER_RESTART(BARRIER_PROFILE);
         context.comm.barrier();
-#ifdef SKYLARK_HAVE_PROFILER
-        SKYLARK_TIMER_ACCUMULATE(BARRIER_PROFILE)
-#endif
+        SKYLARK_TIMER_ACCUMULATE(BARRIER_PROFILE);
 
-
-#ifdef SKYLARK_HAVE_PROFILER
-        SKYLARK_TIMER_ACCUMULATE(ITERATIONS_PROFILE)
-#endif
+        SKYLARK_TIMER_ACCUMULATE(ITERATIONS_PROFILE);
 	}
 
-#ifdef SKYLARK_HAVE_PROFILER
-        SKYLARK_TIMER_REPORT(ITERATIONS_PROFILE)
-        SKYLARK_TIMER_REPORT(COMMUNICATION_PROFILE)
-        SKYLARK_TIMER_REPORT(TRANSFORM_PROFILE)
-        SKYLARK_TIMER_REPORT(ZTRANSFORM_PROFILE)
-        SKYLARK_TIMER_REPORT(ZMULT_PROFILE)
-        SKYLARK_TIMER_REPORT(PROXLOSS_PROFILE)
-        SKYLARK_TIMER_REPORT(BARRIER_PROFILE)
-        SKYLARK_TIMER_REPORT(PREDICTION_PROFILE)
-#endif
+    SKYLARK_TIMER_PRINT(ITERATIONS_PROFILE);
+    SKYLARK_TIMER_PRINT(COMMUNICATION_PROFILE);
+    SKYLARK_TIMER_PRINT(TRANSFORM_PROFILE);	
+    SKYLARK_TIMER_PRINT(ZTRANSFORM_PROFILE);
+    SKYLARK_TIMER_PRINT(ZMULT_PROFILE);
+    SKYLARK_TIMER_PRINT(PROXLOSS_PROFILE);
+    SKYLARK_TIMER_PRINT(BARRIER_PROFILE);
+    SKYLARK_TIMER_PRINT(PREDICTION_PROFILE);
 
 	return 0;
 }
@@ -635,10 +512,9 @@ void BlockADMMSolver::predict(DistInputMatrixType& X, DistTargetMatrixType& Y, L
 	LocalMatrixType Wslice;
 
 
-#ifdef SKYLARK_HAVE_OPENMP
-        #pragma omp parallel for if(NumThreads > 1) private(j, start, finish, sj, featureMap) num_threads(NumThreads)
-#endif
-
+#   ifdef SKYLARK_HAVE_OPENMP
+#   pragma omp parallel for if(NumThreads > 1) private(j, start, finish, sj, featureMap) num_threads(NumThreads)
+#   endif
 	for(j = 0; j < NumFeaturePartitions; j++) {
 		start = starts[j];
 		finish = finishes[j];
@@ -652,12 +528,12 @@ void BlockADMMSolver::predict(DistInputMatrixType& X, DistTargetMatrixType& Y, L
 
 		elem::Matrix<double> o(ni, k);
 
-
 		elem::View(Wslice, W, start, 0, sj, k);
 		elem::Gemm(elem::TRANSPOSE, elem::NORMAL, 1.0, z, Wslice, 0.0, o);
-#ifdef SKYLARK_HAVE_OPENMP
-            #pragma omp critical
-#endif
+		
+#       ifdef SKYLARK_HAVE_OPENMP
+#       pragma omp critical
+#       endif
 		elem::Axpy(+1.0, o, Y.Matrix());
 	}
 }

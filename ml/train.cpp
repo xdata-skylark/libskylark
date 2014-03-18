@@ -41,7 +41,6 @@ int main (int argc, char** argv) {
     else
         flag = run<DistInputMatrixType, DistTargetMatrixType>(context, options);
 
-    std::cout << flag << std::endl;
     context.comm.barrier();
     elem::Finalize();
     return flag;

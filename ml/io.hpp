@@ -99,6 +99,13 @@ int write_elem_hdf5(string fName, elem::Matrix<double>& X,
 }
 
 void read_hdf5_dense(skylark_context_t& context, string fName,
+        sparse_matrix_t& X,
+        elem::Matrix<double>& Y, int blocksize = 10000) {
+
+    // Not Implemented.
+}
+
+void read_hdf5_dense(skylark_context_t& context, string fName,
         elem::DistMatrix<double, elem::STAR, elem::VC>& X,
         elem::DistMatrix<double, elem::VC, elem::STAR>& Y, int blocksize = 10000) {
 
@@ -322,7 +329,7 @@ void read_libsvm(skylark_context_t& context, string fName, sparse_matrix_t& X,
                         elem::Matrix<double>& Y,
                         int min_d = 0) {
     if (context.rank==0)
-            cout << "Reading from file " << fName << endl;
+            cout << "Reading sparse matrix from file " << fName << endl;
 
     boost::mpi::communicator world;
 
@@ -336,7 +343,8 @@ void read_libsvm(skylark_context_t& context, string fName, sparse_matrix_t& X,
     int d = 0;
     int i, j, last;
     char c;
-    int nnz, nz;
+    int nnz=0;
+    int nz;
 
     bmpi::timer timer;
 
@@ -377,17 +385,23 @@ void read_libsvm(skylark_context_t& context, string fName, sparse_matrix_t& X,
 
     // rough number of non-zeros per process - as soon as these many nnzs are read, the chunk of the rows read is sent to
     // appropriate process
-    int nnzs_per_process = (int ) nnz / (int) context.size;
+    int nnzs_per_process;
 
-    int nnz_local;
+    if (context.rank==0) {
+        nnzs_per_process =  nnz / context.size;
+        std::cout << "Total nnz = " << nnz <<  "; nnzs per process = " << nnzs_per_process << std::endl;
+    }
 
-    for(int r=0; r<context.size; r++) {
-        vector<int> col_ptr;
-        vector<int> rowind;
-        vector<double> values;
-        vector<double> y;
+    context.comm.barrier();
+
+    for(int r=context.size-1; r>=0; r--) {
 
         if(context.rank==0) {
+
+            vector<int> col_ptr;
+            vector<int> rowind;
+            vector<double> values;
+            vector<double> y;
             // send sparse matrices
             t = 0;
             int nnz_local = 0;
@@ -415,7 +429,8 @@ void read_libsvm(skylark_context_t& context, string fName, sparse_matrix_t& X,
                     nnz_local++;
                 }
 
-                if ((nnz_local>nnzs_per_process) && (r<context.size-1)) {
+                if ((nnz_local>nnzs_per_process) && (r>0)) {
+                    std::cout << "Sending to " << r << std::endl;
                     col_ptr.push_back(nnz_local);
                     world.send(r, 1, t);
                     world.send(r, 2, d);
@@ -427,39 +442,49 @@ void read_libsvm(skylark_context_t& context, string fName, sparse_matrix_t& X,
                     break;
                 }
             }
-            if ((r==context.size-1)) {
+
+            if (r==0) {
+                std::cout << "rank=0: Read " << t << " x " << d << " with " << nnz_local << " nonzeros" << std::endl;
                 col_ptr.push_back(nnz_local);
-                world.send(r, 1, t);
+                X.attach(&col_ptr[0], &rowind[0], &values[0], t+1, nnz_local, t, d);
+                Y.Resize(t,1);
+                Y.Attach(t,1,&y[0],0);
+                /*world.send(r, 1, t);
                 world.send(r, 2, d);
                 world.send(r, 3, nnz_local);
                 world.send(r, 4, &col_ptr[0], col_ptr.size());
                 world.send(r, 5, &rowind[0], col_ptr.size());
                 world.send(r, 6, &values[0], col_ptr.size());
-                world.send(r, 7, &y[0], y.size());
+                world.send(r, 7, &y[0], y.size());*/
                 break;
             }
 
-        }
-        else {
+        } else {
+
             //receive
-            world.recv(0, 1, t);
-            world.recv(0, 2, d);
-            world.recv(0, 3, nnz_local);
-            double* values = new double[nnz_local];
-            int* rowind = new int[nnz_local];
-            int* col_ptr = new int[t+1];
+        if (context.rank==r) {
+                int nnz_local, t, d;
+                world.recv(0, 1, t);
+                world.recv(0, 2, d);
+                world.recv(0, 3, nnz_local);
+                std::cout << r << " is receiving from 0: sparse matrix " << t << " x " << d << " " << nnz_local  << " nonzeros )" << std::endl;
+                double* values = new double[nnz_local];
+                int* rowind = new int[nnz_local];
+                int* col_ptr = new int[t+1];
 
-            world.recv(0, 4, col_ptr, t+1);
-            world.recv(0, 5, rowind, nnz_local);
-            world.recv(0, 6, values, d);
+                world.recv(0, 4, col_ptr, t+1);
+                world.recv(0, 5, rowind, nnz_local);
+                world.recv(0, 6, values, nnz_local);
 
-            X.attach(col_ptr, rowind, values, t+1, nnz_local, t, d);
+                X.attach(col_ptr, rowind, values, t+1, nnz_local, t, d);
 
-            double* y = new double[t];
-            world.recv(0, 7, y, t);
-            Y.Resize(t,1);
-            Y.Attach(t,1,y,0);
+                double* y = new double[t];
+                world.recv(0, 7, y, t);
+                Y.Resize(t,1);
+                Y.Attach(t,1,y,0);
 
+                std::cout << "Read " << t << " x " << d << " with " << nnz_local << " nonzeros" << std::endl;
+            }
         }
     }
 
@@ -474,9 +499,9 @@ void read_libsvm(skylark_context_t& context, string fName, sparse_matrix_t& X,
 template <class InputType, class LabelType>
 void read(skylark::sketch::context_t& context, int fileformat, string filename, InputType& X, LabelType& Y, int d=0) {
     switch(fileformat) {
-            case LIBSVM_DENSE || LIBSVM_SPARSE:
+            case LIBSVM_DENSE: case LIBSVM_SPARSE:
             {
-                read_libsvm_dense(context, filename, X, Y, d);
+                read_libsvm(context, filename, X, Y, d);
                 break;
             }
             case HDF5:

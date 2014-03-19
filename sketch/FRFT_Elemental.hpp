@@ -140,7 +140,10 @@ private:
                     value_type x = w[l - s];
                     x += base_data_t::shifts[l];
 
-                    // Want to do x = std::cos(x), but that is slow
+#                   ifdef SKYLARK_EXACT_COSINE
+                    x = std::cos(x);
+#                   else
+                    // x = std::cos(x) is slow
                     // Instead use low-accuracy approximation
                     if (x < -3.14159265) x += 6.28318531;
                     else if (x >  3.14159265) x -= 6.28318531;
@@ -150,6 +153,7 @@ private:
                     x = (x < 0) ?
                         1.27323954 * x + 0.405284735 * x * x :
                         1.27323954 * x - 0.405284735 * x * x;
+#                   endif
 
                     x = base_data_t::scale * x;
                     sac[l - s] = x;
@@ -167,6 +171,9 @@ private:
     void apply_impl(const matrix_type& A,
         output_matrix_type& sketch_of_A,
         skylark::sketch::rowwise_tag tag) const {
+
+        // TODO this version does not work with NB and N
+        // TODO this version is not as optimized as the columnwise version.
 
         // Create a work array W
         matrix_type W(A.Height(), A.Width());
@@ -217,10 +224,26 @@ private:
 
         for(int j = 0; j < base_data_t::S; j++)
             for(int i = 0; i < A.Height(); i++) {
-                value_type val = sketch_of_A.Get(i, j);
-                value_type trans =
-                    base_data_t::scale * std::cos(val + base_data_t::shifts[j]);
-                sketch_of_A.Set(i, j, trans);
+                value_type x = sketch_of_A.Get(i, j);
+                x += base_data_t::shifts[j];
+
+#               ifdef SKYLARK_EXACT_COSINE
+                x = std::cos(x);
+#               else
+                // x = std::cos(x) is slow
+                // Instead use low-accuracy approximation
+                if (x < -3.14159265) x += 6.28318531;
+                else if (x >  3.14159265) x -= 6.28318531;
+                x += 1.57079632;
+                if (x >  3.14159265)
+                    x -= 6.28318531;
+                x = (x < 0) ?
+                    1.27323954 * x + 0.405284735 * x * x :
+                    1.27323954 * x - 0.405284735 * x * x;
+#               endif
+
+                x = base_data_t::scale * x;
+                sketch_of_A.Set(i, j, x);
             }
     }
 

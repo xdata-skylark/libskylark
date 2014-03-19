@@ -30,7 +30,7 @@ struct fftw_r2r_fut_t {
         _plan = PlanFun(N, tmp, tmp, Kind, FFTW_UNALIGNED | FFTW_ESTIMATE);
         _plan_inverse = PlanFun(N, tmp, tmp, KindInverse,
             FFTW_UNALIGNED | FFTW_ESTIMATE);
-        delete tmp;
+        delete[] tmp;
 
         // TODO: detect failure to form plans.
     }

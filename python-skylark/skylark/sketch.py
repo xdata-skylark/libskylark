@@ -41,6 +41,7 @@ def initialize(seed=-1):
       _lib.sl_free_raw_sp_matrix_wrap.restype     = c_int
       _lib.sl_raw_sp_matrix_nnz.restype           = c_int
       _lib.sl_raw_sp_matrix_struct_updated.restype = c_int
+      _lib.sl_raw_sp_matrix_reset_update_flag.restype = c_int
       _lib.sl_raw_sp_matrix_data.restype          = c_int
       _lib.sl_strerror.restype                    = c_char_p
       _lib.sl_supported_sketch_transforms.restype = c_char_p
@@ -217,7 +218,7 @@ class _ScipyAdapter:
                 self._A.shape[1] if self._A.ndim > 1 else self._A.shape[0], \
                 self._A.shape[0] if self._A.ndim > 1 else 1 , \
                 byref(data))
-
+    _callsl(_lib.sl_raw_sp_matrix_reset_update_flag, data.value)
     self._ptr = data.value
     return data.value
 
@@ -233,7 +234,13 @@ class _ScipyAdapter:
       nnz = c_int()
       _callsl(_lib.sl_raw_sp_matrix_nnz, self._ptr, byref(nnz))
 
-      indptr  = numpy.zeros(self._A.shape[1] + 1, dtype='int32')
+
+      if isinstance(self._A, scipy.sparse.csc_matrix): 
+        indptrdim = self._A.shape[1] + 1 if self._A.ndim > 1 else 2
+      else:
+        indptrdim = self._A.shape[0] + 1 if self._A.ndim > 1 else 2
+
+      indptr  = numpy.zeros(indptrdim, dtype='int32')
       indices = numpy.zeros(nnz.value, dtype='int32')
       values  = numpy.zeros(nnz.value)
 

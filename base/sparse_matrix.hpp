@@ -33,7 +33,7 @@ struct sparse_matrix_t {
     }
 
     bool struct_updated() const { return _dirty_struct; }
-    void reset_dirty_struct() { _dirty_struct = false; }
+    void reset_update_flag()    { _dirty_struct = false; }
 
     /**
      * Copy data to external buffers.
@@ -41,7 +41,7 @@ struct sparse_matrix_t {
     template<typename IdxType, typename ValType>
     void detach(IdxType *indptr, IdxType *indices, ValType *values) const {
 
-        for(size_t i = 0; i < _width; ++i)
+        for(size_t i = 0; i <= _width; ++i)
             indptr[i] = static_cast<IdxType>(_indptr[i]);
 
         for(size_t i = 0; i < _nnz; ++i) {
@@ -101,8 +101,6 @@ struct sparse_matrix_t {
          int indptr_idx = 0;
          _indptr[indptr_idx] = 0;
          for(size_t i = 0; i < coords.size(); ++i) {
-             _nnz++;
-             _indptr[indptr_idx + 1]++;
 
             int cur_row = boost::get<0>(coords[i]);
             int cur_col = boost::get<1>(coords[i]);
@@ -110,6 +108,7 @@ struct sparse_matrix_t {
 
             for(; indptr_idx < cur_col; ++indptr_idx)
                 _indptr[indptr_idx + 1] = _nnz;
+            _nnz++;
 
             // sum duplicates
             while(i + 1 < coords.size() &&

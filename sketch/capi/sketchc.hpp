@@ -159,10 +159,12 @@ SKYLARK_EXTERN_API int sl_free_raw_sp_matrix_wrap(void *A_);
 SKYLARK_EXTERN_API int sl_raw_sp_matrix_struct_updated(void *A_,
     bool *struct_updated);
 
+SKYLARK_EXTERN_API int sl_raw_sp_matrix_reset_update_flag(void *A_);
+
 SKYLARK_EXTERN_API int sl_raw_sp_matrix_nnz(void *A_, int *nnz);
 
-SKYLARK_EXTERN_API int sl_raw_sp_matrix_data(void *A_, int32_t **indptr,
-        int32_t **indices, double **values);
+SKYLARK_EXTERN_API int sl_raw_sp_matrix_data(void *A_, int32_t *indptr,
+        int32_t *indices, double *values);
 
 } // extern "C"
 

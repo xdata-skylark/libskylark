@@ -670,13 +670,19 @@ SKYLARK_EXTERN_API int sl_raw_sp_matrix_struct_updated(void *A_,
     return 0;
 }
 
-SKYLARK_EXTERN_API int sl_raw_sp_matrix_nnz(void *A_, int *nnz) {
-    return static_cast<SparseMatrix *>(A_)->nonzeros();
+SKYLARK_EXTERN_API int sl_raw_sp_matrix_reset_update_flag(void *A_) {
+    static_cast<SparseMatrix *>(A_)->reset_update_flag();
+    return 0;
 }
 
-SKYLARK_EXTERN_API int sl_raw_sp_matrix_data(void *A_, int32_t **indptr,
-        int32_t **indices, double **values) {
-    static_cast<SparseMatrix *>(A_)->detach(*indptr, *indices, *values);
+SKYLARK_EXTERN_API int sl_raw_sp_matrix_nnz(void *A_, int *nnz) {
+    *nnz = static_cast<SparseMatrix *>(A_)->nonzeros();
+    return 0;
+}
+
+SKYLARK_EXTERN_API int sl_raw_sp_matrix_data(void *A_, int32_t *indptr,
+        int32_t *indices, double *values) {
+    static_cast<SparseMatrix *>(A_)->detach(indptr, indices, values);
     return 0;
 }
 

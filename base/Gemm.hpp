@@ -58,16 +58,14 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
     T beta, elem::Matrix<T>& C) {
     // TODO verify sizes etc.
 
-    const std::vector<int> &indptr = B.locked_indptr();
-    const std::vector<int> &indices = B.locked_indices();
-    const std::vector<T> &values = B.locked_values();
+    const int* indptr = B.indptr();
+    const int* indices = B.indices();
+    const T *values = B.locked_values();
 
     elem::Scal(beta, C);
 
     int m = A.Height();
     int n = B.Width();
-
-
 
     // NN
     if (oA == elem::NORMAL && oB == elem::NORMAL) {
@@ -118,17 +116,15 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
     T beta, elem::Matrix<T>& C) {
     // TODO verify sizes etc.
 
-    const std::vector<int> &indptr = A.locked_indptr();
-    const std::vector<int> &indices = A.locked_indices();
-    const std::vector<T> &values = A.locked_values();
+    const int* indptr = A.indptr();
+    const int* indices = A.indices();
+    const double *values = A.locked_values();
 
     elem::Scal(beta, C);
 
     int k = A.Width();
     int n = B.Width();
     int m = B.Height();
-
-
 
     // NN
     if (oA == elem::NORMAL && oB == elem::NORMAL) {

@@ -651,10 +651,10 @@ SKYLARK_EXTERN_API int sl_free_raw_matrix_wrap(void *A_) {
 
 
 SKYLARK_EXTERN_API int sl_wrap_raw_sp_matrix(int *indptr, int *ind, double *data,
-    int n_indptr, int n_ind, int n_rows, int n_cols, void **A)
+    int nnz, int n_rows, int n_cols, void **A)
 {
     SparseMatrix *tmp = new SparseMatrix();
-    tmp->attach(indptr, ind, data, n_indptr, n_ind, n_rows, n_cols);
+    tmp->attach(indptr, ind, data, nnz, n_rows, n_cols);
     *A = tmp;
     return 0;
 }
@@ -664,16 +664,14 @@ SKYLARK_EXTERN_API int sl_free_raw_sp_matrix_wrap(void *A_) {
     return 0;
 }
 
-SKYLARK_EXTERN_API int sl_raw_sp_matrix_size(void *A_,
-        int *n_indptr, int *n_indices) {
-    static_cast<SparseMatrix *>(A_)->get_size(n_indptr, n_indices);
+SKYLARK_EXTERN_API int sl_raw_sp_matrix_struct_updated(void *A_,
+        bool *struct_updated) {
+    *struct_updated = static_cast<SparseMatrix *>(A_)->struct_updated();
     return 0;
 }
 
-SKYLARK_EXTERN_API int sl_raw_sp_matrix_needs_update(void *A_,
-        bool *needs_update) {
-    *needs_update = static_cast<SparseMatrix *>(A_)->needs_update();
-    return 0;
+SKYLARK_EXTERN_API int sl_raw_sp_matrix_nnz(void *A_, int *nnz) {
+    return static_cast<SparseMatrix *>(A_)->nonzeros();
 }
 
 SKYLARK_EXTERN_API int sl_raw_sp_matrix_data(void *A_, int32_t **indptr,

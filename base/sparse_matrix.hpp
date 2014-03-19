@@ -9,87 +9,107 @@ namespace skylark { namespace base {
 /**
  *  This implements a very crude CSC sparse matrix container only intended to
  *  hold local sparse matrices.
+ *
+ *  Row indices are not sorted.
+ *  Structure is always constants, and can only be attached by Attached.
+ *  Values of non-zeros can be modified.
  */
 template<typename ValueType=double>
 struct sparse_matrix_t {
 
     typedef ValueType value_type;
 
-    typedef typename std::vector<int>::const_iterator const_ind_itr_t;
-    typedef std::pair<const_ind_itr_t, const_ind_itr_t> const_ind_itr_range_t;
-
-    typedef typename std::vector<ValueType>::const_iterator const_val_itr_t;
-    typedef std::pair<const_val_itr_t, const_val_itr_t> const_val_itr_range_t;
-
     typedef boost::tuple<int, int, value_type> coord_tuple_t;
     typedef std::vector<coord_tuple_t> coords_t;
 
     sparse_matrix_t()
-        : _dirty(false)
+        : _owndata(false), _dirty_struct(false), _height(0), _width(0), _nnz(0), 
+          _indptr(nullptr), _indices(nullptr), _values(nullptr)
     {}
 
-    ~sparse_matrix_t() {}
-
-    // expose size to allocate arrays for detach
-    void get_size(int *n_indptr, int *n_indices) const {
-
-        *n_indptr  = _indptr.size();
-        *n_indices = _indices.size();
+    ~sparse_matrix_t() {
+        if (_owndata)
+            _free_data();
     }
 
-    // expose dirty flag to CAPI
-    bool needs_update() const { return _dirty; }
+    bool struct_updated() const { return _dirty_struct; }
+    void reset_dirty_struct() { _dirty_struct = false; }
 
-    // expose to the CAPI layer assume memory has been allocated
-    void detach(int32_t *indptr, int32_t *indices, double *values) const {
+    /**
+     * Copy data to external buffers.
+     */
+    template<typename IdxType, typename ValType>
+    void detach(IdxType *indptr, IdxType *indices, ValType *values) const {
 
-        for(size_t i = 0; i < _indptr.size(); ++i)
-            indptr[i] = static_cast<int32_t>(_indptr[i]);
+        for(size_t i = 0; i < _width; ++i)
+            indptr[i] = static_cast<IdxType>(_indptr[i]);
 
-        for(size_t i = 0; i < _indices.size(); ++i)
+        for(size_t i = 0; i < _nnz; ++i) {
             indices[i] = static_cast<int32_t>(_indices[i]);
-
-        for(size_t i = 0; i < _values.size(); ++i)
-            values[i] = static_cast<double>(_values[i]);
+            values[i] = static_cast<ValType>(_values[i]);
+        }
     }
 
-    // attach data from CAPI
+    /**
+     * Attach new structure and values.
+     */
     void attach(int *indptr, int *indices, double *values,
-        int n_indptr, int n_ind, int n_rows, int n_cols) {
+        int nnz, int n_rows, int n_cols, bool _own = false) {
+        if (_owndata)
+            _free_data();
 
-        //XXX: we could use pointer for indptr array, indicies and values
-        //     array only determined later by the nnz.
-        _indptr.assign(indptr, indptr + n_indptr);
-        _indices.assign(indices, indices + n_ind);
-        _values.assign(values, values + n_ind);
-
+        _indptr = indptr;
+        _indices = indices;
+        _values = values;
+        _nnz = nnz;
         _width = n_cols;
         _height = n_rows;
 
-        //XXX: assume this is only called from the python layer
-        _dirty = false;
+        _owndata = _own;
+        _dirty_struct = true;
     }
 
 
     // attaching a coordinate structure facilitates going from distributed
     // input to local output.
-    void attach(coords_t coords, int n_rows = 0, int n_cols = 0) {
 
-        _indptr.clear();
-        _indices.clear();
-        _values.clear();
+    void set(coords_t coords, int n_rows = 0, int n_cols = 0) {
+
 
         sort(coords.begin(), coords.end(), &sparse_matrix_t::_sort_coords);
 
-        _indptr.push_back(0);
-        int indptr_idx = 0;
-        for(size_t i = 0; i < coords.size(); ++i) {
+        _width = std::max(n_cols, boost::get<1>(coords.back()) + 1);
+        _indptr = new int[_width + 1];
+
+        // Count non-zeros
+        _nnz = 0;
+         for(size_t i = 0; i < coords.size(); ++i) {
+             _nnz++;
+             int cur_row = boost::get<0>(coords[i]);
+             int cur_col = boost::get<1>(coords[i]);
+             value_type cur_val = boost::get<2>(coords[i]);
+             while(i + 1 < coords.size() &&
+                 cur_row == boost::get<0>(coords[i + 1]) &&
+                 cur_col == boost::get<1>(coords[i + 1]))
+                 i++;
+         }
+
+         _indices = new int[_nnz];
+         _values = new value_type[_nnz];
+
+         _nnz = 0;
+         int indptr_idx = 0;
+         _indptr[indptr_idx] = 0;
+         for(size_t i = 0; i < coords.size(); ++i) {
+             _nnz++;
+             _indptr[indptr_idx + 1]++;
+
             int cur_row = boost::get<0>(coords[i]);
             int cur_col = boost::get<1>(coords[i]);
             value_type cur_val = boost::get<2>(coords[i]);
 
             for(; indptr_idx < cur_col; ++indptr_idx)
-                _indptr.push_back(_indices.size());
+                _indptr[indptr_idx + 1] = _nnz;
 
             // sum duplicates
             while(i + 1 < coords.size() &&
@@ -100,27 +120,21 @@ struct sparse_matrix_t {
                 i++;
             }
 
-            _indices.push_back(cur_row);
-            _values.push_back(cur_val);
+            _indices[_nnz - 1] = cur_row;
+            _values[_nnz - 1] = cur_val;
 
             n_rows = std::max(cur_row + 1, n_rows);
-        }
+         }
 
-        // in case we specified the cols fill possible empty rows in the end.
-        if(n_cols > 0)
-            for(; indptr_idx < n_cols + 1; ++indptr_idx)
-                _indptr.push_back(_indices.size());
-        else
-            _indptr.push_back(_indices.size());
 
-        _height = n_rows;
-        _width = n_cols;
+         for(; indptr_idx < _width; ++indptr_idx)
+             _indptr[indptr_idx + 1] = _nnz;
 
-        _dirty = !_dirty;
-    }
+         _height = n_rows;
+         _width = n_cols;
 
-    const_ind_itr_range_t indptr_itr() const {
-        return std::make_pair(_indptr.begin(), _indptr.end());
+         _dirty_struct = true;
+         _owndata = true;
     }
 
     int height() const {
@@ -131,44 +145,32 @@ struct sparse_matrix_t {
         return _width;
     }
 
+    int nonzeros() const {
+        return _nnz;
+    }
+
     int Height() const {
-        return _height;
+        return height();
     }
 
     int Width() const {
-        return _width;
+        return width();
     }
 
 
-    const_ind_itr_range_t indices_itr() const {
-        return std::make_pair(_indices.begin(), _indices.end());
-    }
-
-    const_val_itr_range_t values_itr() const {
-        return std::make_pair(_values.begin(), _values.end());
-    }
-
-    std::vector<int>& indptr() {
+    const int* indptr() const {
         return _indptr;
     }
 
-    std::vector<int>& indices() {
+    const int* indices() const {
         return _indices;
     }
 
-    std::vector<value_type>& values() {
+    value_type* values() {
         return _values;
     }
 
-    const std::vector<int>& locked_indptr() const {
-        return _indptr;
-    }
-
-    const std::vector<int>& locked_indices() const {
-        return _indices;
-    }
-
-    const std::vector<value_type>& locked_values() const {
+    const value_type* locked_values() const {
         return _values;
     }
 
@@ -180,17 +182,27 @@ struct sparse_matrix_t {
     }
 
 private:
-    bool _dirty;
+    bool _owndata;
+
+    bool _dirty_struct;
 
     int _height;
     int _width;
+    int _nnz;
 
-    std::vector<int> _indptr;
-    std::vector<int> _indices;
-    std::vector<value_type> _values;
+    int* _indptr;
+    int* _indices;
+    value_type* _values;
 
+    // TODO add the following
     sparse_matrix_t(const sparse_matrix_t&);
     void operator=(const sparse_matrix_t&);
+
+    void _free_data() {
+        delete[] _indptr;
+        delete[] _indices;
+        delete[] _values;
+    }
 
     static bool _sort_coords(coord_tuple_t lhs, coord_tuple_t rhs) {
         if(boost::get<1>(lhs) != boost::get<1>(rhs))

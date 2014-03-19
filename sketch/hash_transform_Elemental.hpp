@@ -255,9 +255,9 @@ private:
         double *SA = sketch_of_A.Buffer();
         int ld = sketch_of_A.LDim();
 
-        std::vector<int> indptr = A.locked_indptr();
-        std::vector<int> indices = A.locked_indices();
-        std::vector<value_type> values = A.locked_values();
+        const int* indptr = A.indptr();
+        const int* indices = A.indices();
+        const value_type* values = A.locked_values();
 
 #       if SKYLARK_HAVE_OPENMP
 #       pragma omp parallel for
@@ -285,9 +285,9 @@ private:
         double *SA = sketch_of_A.Buffer();
         int ld = sketch_of_A.LDim();
 
-        std::vector<int> indptr = A.locked_indptr();
-        std::vector<int> indices = A.locked_indices();
-        std::vector<value_type> values = A.locked_values();
+        const int* indptr = A.indptr();
+        const int* indices = A.indices();
+        const value_type* values = A.locked_values();
 
         for(int col = 0; col < A.width(); col++) {
 #           if SKYLARK_HAVE_OPENMP

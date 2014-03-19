@@ -39,8 +39,8 @@ def initialize(seed=-1):
       _lib.sl_free_raw_matrix_wrap.restype        = c_int
       _lib.sl_wrap_raw_sp_matrix.restype          = c_int
       _lib.sl_free_raw_sp_matrix_wrap.restype     = c_int
-      _lib.sl_raw_sp_matrix_size.restype          = c_int
-      _lib.sl_raw_sp_matrix_needs_update.restype  = c_int
+      _lib.sl_raw_sp_matrix_nnz.restype           = c_int
+      _lib.sl_raw_sp_matrix_struct_updated.restype = c_int
       _lib.sl_raw_sp_matrix_data.restype          = c_int
       _lib.sl_strerror.restype                    = c_char_p
       _lib.sl_supported_sketch_transforms.restype = c_char_p
@@ -209,11 +209,11 @@ class _ScipyAdapter:
     # matrix
     if self.getorder() == "F":
       _callsl(_lib.sl_wrap_raw_sp_matrix, \
-                iptr, cols, dptr, len(self._A.indptr), len(self._A.indices), \
+                iptr, cols, dptr, len(self._A.indices), \
                 self._A.shape[0], self._A.shape[1] if self._A.ndim > 1 else 1, byref(data))
     else:
       _callsl(_lib.sl_wrap_raw_sp_matrix, \
-                iptr, cols, dptr, len(self._A.indptr), len(self._A.indices), \
+                iptr, cols, dptr, len(self._A.indices), \
                 self._A.shape[1] if self._A.ndim > 1 else self._A.shape[0], \
                 self._A.shape[0] if self._A.ndim > 1 else 1 , \
                 byref(data))
@@ -224,25 +224,23 @@ class _ScipyAdapter:
   def ptrcleaner(self):
     # before cleaning the pointer make sure to update the csr structure if
     # necessary.
-    update_csr = c_bool()
-    _callsl(_lib.sl_raw_sp_matrix_needs_update, self._ptr, \
-            byref(update_csr))
+    update_csc = c_bool()
+    _callsl(_lib.sl_raw_sp_matrix_struct_updated, self._ptr, \
+            byref(update_csc))
 
-    if(update_csr.value):
+    if(update_csc.value):
       # first we check the required size of the new structure
-      n_indptr  = c_int()
-      n_indices = c_int()
-      _callsl(_lib.sl_raw_sp_matrix_size, self._ptr, byref(n_indptr), \
-                byref(n_indices))
+      nnz = c_int()
+      _callsl(_lib.sl_raw_sp_matrix_nnz, self._ptr, byref(nnz))
 
-      indptr  = numpy.zeros(n_indptr.value, dtype='int32')
-      indices = numpy.zeros(n_indices.value, dtype='int32')
-      values  = numpy.zeros(n_indices.value)
+      indptr  = numpy.zeros(self._A.shape[1] + 1, dtype='int32')
+      indices = numpy.zeros(nnz.value, dtype='int32')
+      values  = numpy.zeros(nnz.value)
 
       _callsl(_lib.sl_raw_sp_matrix_data, self._ptr,
-              byref(indptr.ctypes.data_as(ctypes.POINTER(ctypes.c_int32))), \
-              byref(indices.ctypes.data_as(ctypes.POINTER(ctypes.c_int32))), \
-              byref(values.ctypes.data_as(ctypes.POINTER(ctypes.c_double))))
+              indptr.ctypes.data_as(ctypes.POINTER(ctypes.c_int32)), \
+              indices.ctypes.data_as(ctypes.POINTER(ctypes.c_int32)), \
+              values.ctypes.data_as(ctypes.POINTER(ctypes.c_double)))
 
       self._A.__dict__["indptr"]  = indptr
       self._A.__dict__["indices"] = indices

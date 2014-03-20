@@ -23,12 +23,16 @@ int main (int argc, char** argv) {
     MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
     bmpi::environment env (argc, argv);
     bmpi::communicator world;
-    skylark::sketch::context_t context (12345, world);
+
+
+    hilbert_options_t options (argc, argv, world.size());
+
+    skylark::sketch::context_t context (options.seed, world);
     elem::Initialize (argc, argv);
     MPI_Comm mpi_world(world);
 
     /* Load Commandline options and log them */
-    hilbert_options_t options (argc, argv, context.size);
+
     if (options.exit_on_return) { return -1; }
     if (context.rank==0)
         std::cout << options.print();
@@ -39,7 +43,7 @@ int main (int argc, char** argv) {
     if (sparse)
         flag = run<sparse_matrix_t, elem::Matrix<double>>(context, options);
     else
-        flag = run<DistInputMatrixType, DistTargetMatrixType>(context, options);
+        flag = run<LocalMatrixType, LocalMatrixType>(context, options);
 
     context.comm.barrier();
     elem::Finalize();

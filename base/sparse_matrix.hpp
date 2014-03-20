@@ -26,7 +26,7 @@ struct sparse_matrix_t {
 
     sparse_matrix_t()
         : _dirty(false)
-    {}
+    {_height=0; _width=0;}
 
     ~sparse_matrix_t() {}
 

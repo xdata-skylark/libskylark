@@ -143,7 +143,7 @@ struct hilbert_options_t {
                 po::value<int>(&numthreads)->default_value(DEFAULT_THREADS),
                 "Number of Threads (default: 1)")
             ("regular",
-                po::value<bool>(&regularmap)->default_value(false),
+                po::value<bool>(&regularmap)->default_value(true),
                 "Default is to use 'fast' feature mapping, if available."
                 "Use this flag to force regular mapping (default: false)")
             ("cachetransforms",
@@ -213,7 +213,7 @@ struct hilbert_options_t {
         randomfeatures = DEFAULT_RF;
         numfeaturepartitions = DEFAULT_FEATURE_PARTITIONS;
         numthreads = DEFAULT_THREADS;
-        regularmap = false;
+        regularmap = true;
         fileformat = DEFAULT_FILEFORMAT;
         MAXITER = DEFAULT_MAXITER;
         dataformat = false;
@@ -301,7 +301,7 @@ struct hilbert_options_t {
         optionstring << "# Seed = " << seed << std::endl;
         optionstring << "# Random Features = " << randomfeatures << std::endl;
         optionstring << "# Caching Transforms = " << cachetransforms << std::endl;
-        optionstring << "# Regular/Fastfood = " << regularmap  << std::endl;
+        optionstring << "# Slow/Fast feature mapping = " << regularmap  << std::endl;
         optionstring << "# Number of feature partitions = "
                      << numfeaturepartitions << std::endl;
         optionstring << "# Threads = " << numthreads << std::endl;

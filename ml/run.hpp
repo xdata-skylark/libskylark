@@ -11,7 +11,8 @@
 #include "options.hpp"
 #include "io.hpp"
 
-BlockADMMSolver* GetSolver(skylark::sketch::context_t& context, hilbert_options_t& options, int dimensions) {
+template <class InputType>
+BlockADMMSolver<InputType>* GetSolver(skylark::sketch::context_t& context, hilbert_options_t& options, int dimensions) {
 
     lossfunction *loss = NULL;
        switch(options.lossfunction) {
@@ -41,12 +42,12 @@ BlockADMMSolver* GetSolver(skylark::sketch::context_t& context, hilbert_options_
            break;
        }
 
-        BlockADMMSolver *Solver = NULL;
+        BlockADMMSolver<InputType> *Solver = NULL;
         int features = 0;
         switch(options.kernel) {
         case LINEAR:
             features = dimensions;
-            Solver = new BlockADMMSolver(
+            Solver = new BlockADMMSolver<InputType>(
                     context,
                     loss,
                     regularizer,
@@ -58,7 +59,7 @@ BlockADMMSolver* GetSolver(skylark::sketch::context_t& context, hilbert_options_
         case GAUSSIAN:
             features = options.randomfeatures;
             if (options.regularmap)
-                Solver = new BlockADMMSolver(
+                Solver = new BlockADMMSolver<InputType>(
                         context,
                         loss,
                         regularizer,
@@ -69,7 +70,8 @@ BlockADMMSolver* GetSolver(skylark::sketch::context_t& context, hilbert_options_
                         options.numfeaturepartitions);
 
             else
-                Solver = new BlockADMMSolver(
+                ;
+               /* Solver = new BlockADMMSolver<InputType>(
                         context,
                         loss    ,
                         regularizer,
@@ -78,11 +80,12 @@ BlockADMMSolver* GetSolver(skylark::sketch::context_t& context, hilbert_options_
                         skylark::ml::kernels::gaussian_t(dimensions, options.kernelparam),
                         skylark::ml::fast_feature_transform_tag(),
                         options.numfeaturepartitions);
+                        */
             break;
-
+/*
         case POLYNOMIAL:
             features = options.randomfeatures;
-            Solver = new BlockADMMSolver(
+            Solver = new BlockADMMSolver<InputType>(
                     context,
                     loss,
                     regularizer,
@@ -92,10 +95,10 @@ BlockADMMSolver* GetSolver(skylark::sketch::context_t& context, hilbert_options_
                     skylark::ml::regular_feature_transform_tag(),
                     options.numfeaturepartitions);
             break;
-
+*/
         case LAPLACIAN:
             features = options.randomfeatures;
-            Solver = new BlockADMMSolver(
+            Solver = new BlockADMMSolver<InputType>(
                     context,
                     loss,
                     regularizer,
@@ -108,7 +111,7 @@ BlockADMMSolver* GetSolver(skylark::sketch::context_t& context, hilbert_options_
 
         case EXPSEMIGROUP:
             features = options.randomfeatures;
-            Solver = new BlockADMMSolver(
+            Solver = new BlockADMMSolver<InputType>(
                     context,
                     loss,
                     regularizer,
@@ -136,18 +139,21 @@ BlockADMMSolver* GetSolver(skylark::sketch::context_t& context, hilbert_options_
 
 
 int max(DistTargetMatrixType& Y) {
-    int k =  *std::max_element(Y.Buffer(), Y.Buffer() + Y.LocalHeight());
+    int k =  (int) *std::max_element(Y.Buffer(), Y.Buffer() + Y.LocalHeight());
     return k;
 }
 int max(elem::Matrix<double> Y) {
-    int k =  *std::max_element(Y.Buffer(), Y.Buffer() + Y.Height());
+    int k =  (int) *std::max_element(Y.Buffer(), Y.Buffer() + Y.Height());
+    return k;
 }
 
 template<class LabelType>
 int GetNumClasses(skylark::sketch::context_t& context, LabelType& Y) {
-    int k;
+    int k = 0;
     int kmax = max(Y);
+
     boost::mpi::all_reduce(context.comm, kmax, k, boost::mpi::maximum<int>());
+
     if (k>1) // we assume 0-to-N encoding of classes. Hence N = k+1. For two classes, k=1.
        k++;
     return k;
@@ -162,17 +168,15 @@ int run(skylark::sketch::context_t& context, hilbert_options_t& options) {
     int dimensions = X.Height();
     int classes = GetNumClasses<LabelType>(context,Y);
 
-    BlockADMMSolver* Solver = GetSolver(context, options, dimensions);
+    BlockADMMSolver<InputType>* Solver = GetSolver<InputType>(context, options, dimensions);
 
     if(!options.valfile.empty()) {
         context.comm.barrier();
         if(context.rank == 0) std::cout << "Loading validation data." << std::endl;
-        read(context, options.fileformat, options.valfile, Xv, Yv);
+        read(context, options.fileformat, options.valfile, Xv, Yv, X.Height());
     }
 
-    std::cout << "Dimensions =" << dimensions << " Classes = " << classes  << std::endl;
-
-    elem::Matrix<double> Wbar(dimensions, classes);
+    elem::Matrix<double> Wbar(Solver->get_numfeatures(), classes);
     elem::MakeZeros(Wbar);
 
     Solver->train(X, Y, Wbar, Xv, Yv);
@@ -182,7 +186,7 @@ int run(skylark::sketch::context_t& context, hilbert_options_t& options) {
     if(!options.testfile.empty()) {
         context.comm.barrier();
         if(context.rank == 0) std::cout << "Starting testing phase." << std::endl;
-        read(context, options.fileformat, options.testfile, Xt, Yt);
+        read(context, options.fileformat, options.testfile, Xt, Yt, X.Height());
 
         LabelType Yp(Yt.Height(), classes);
         Solver->predict(Xt, Yp, Wbar);

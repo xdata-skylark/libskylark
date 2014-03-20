@@ -211,26 +211,6 @@ private:
     }
 };
 
-#if SKYLARK_HAVE_ELEMENTAL
-
-template<typename T>
-void DenseCopy(const sparse_matrix_t<T>& A, elem::Matrix<T>& B) {
-    if (B.Height() != A.height() || B.Width() != A.width())
-        B.Resize(A.Height(), A.Width());
-
-    elem::Zero(B);
-
-    const int *indptr = A.indptr();
-    const int *indices = A.indices();
-    const double *values = A.locked_values();
-    for(int col = 0; col < A.width(); col++)
-        for(int idx = indptr[col]; idx < indptr[col + 1]; idx++)
-            B.Set(indices[idx], col, values[idx]);
-}
-
-#endif
-
-}
-}
+} }
 
 #endif

@@ -3,7 +3,6 @@
 
 // Defines a generic Gemm function that recieves both dense and sparse matrices.
 
-
 #if SKYLARK_HAVE_ELEMENTAL
 
 namespace skylark { namespace base {
@@ -170,7 +169,7 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
     }
 }
 
-} }
+} } // namespace skylark::base
 
 #endif // SKYLARK_HAVE_ELEMENTAL
 

@@ -141,10 +141,11 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
         SKDEF(ExpSemigroupRLT, Matrix, Matrix)
         SKDEF(ExpSemigroupRLT, SparseMatrix, Matrix)
 
-#if SKYLARK_HAVE_FFTW
+#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT
         SKDEF(FJLT, DistMatrix_VR_STAR, Matrix)
         SKDEF(FJLT, DistMatrix_VC_STAR, Matrix)
         SKDEF(FastGaussianRFT, Matrix, Matrix)
+        SKDEF(FastGaussianRFT, SparseMatrix, Matrix)
 #endif
 
 #endif
@@ -586,7 +587,7 @@ SKYLARK_EXTERN_API int
         sketch::ExpSemigroupRLT_t, SparseMatrix, Matrix,
         ExpSemigroupRLT_data_t);
 
-#if SKYLARK_HAVE_FFTW
+#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT
 
     AUTO_APPLY_DISPATCH(sketchc::FJLT,
         sketchc::DIST_MATRIX_VR_STAR, sketchc::MATRIX,
@@ -603,7 +604,13 @@ SKYLARK_EXTERN_API int
         sketch::FastGaussianRFT_t, Matrix, Matrix,
         FastGaussianRFT_data_t);
 
+    AUTO_APPLY_DISPATCH(sketchc::FastGaussianRFT,
+        sketchc::SPARSE_MATRIX, sketchc::MATRIX,
+        sketch::FastGaussianRFT_t, SparseMatrix, Matrix,
+        FastGaussianRFT_data_t);
+
 #endif
+
 #ifdef SKYLARK_HAVE_COMBBLAS
 
     AUTO_APPLY_DISPATCH(sketchc::CWT,

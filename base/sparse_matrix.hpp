@@ -27,6 +27,13 @@ struct sparse_matrix_t {
           _indptr(nullptr), _indices(nullptr), _values(nullptr)
     {}
 
+    // The following relies on C++11
+    sparse_matrix_t(const sparse_matrix_t<ValueType>&& A) :
+        _owndata(A._owndata), _dirty_struct(A._dirty_struct),
+        _height(A._height), _width(A._width), _nnz(A._nnz),
+        _indptr(A._indptr), _indices(A._indices), _values(A._values)
+    {}
+
     ~sparse_matrix_t() {
         if (_owndata)
             _free_data();
@@ -53,7 +60,7 @@ struct sparse_matrix_t {
     /**
      * Attach new structure and values.
      */
-    void attach(int *indptr, int *indices, double *values,
+    void attach(const int *indptr, const int *indices, double *values,
         int nnz, int n_rows, int n_cols, bool _own = false) {
         if (_owndata)
             _free_data();
@@ -75,40 +82,38 @@ struct sparse_matrix_t {
 
     void set(coords_t coords, int n_rows = 0, int n_cols = 0) {
 
-
         sort(coords.begin(), coords.end(), &sparse_matrix_t::_sort_coords);
 
-        _width = std::max(n_cols, boost::get<1>(coords.back()) + 1);
-        _indptr = new int[_width + 1];
+        n_cols = std::max(n_cols, boost::get<1>(coords.back()) + 1);
+        int *indptr = new int[n_cols + 1];
 
         // Count non-zeros
-        _nnz = 0;
-         for(size_t i = 0; i < coords.size(); ++i) {
-             _nnz++;
-             int cur_row = boost::get<0>(coords[i]);
-             int cur_col = boost::get<1>(coords[i]);
-             value_type cur_val = boost::get<2>(coords[i]);
-             while(i + 1 < coords.size() &&
-                 cur_row == boost::get<0>(coords[i + 1]) &&
-                 cur_col == boost::get<1>(coords[i + 1]))
-                 i++;
-         }
+        int nnz = 0;
+        for(size_t i = 0; i < coords.size(); ++i) {
+            nnz++;
+            int cur_row = boost::get<0>(coords[i]);
+            int cur_col = boost::get<1>(coords[i]);
+            value_type cur_val = boost::get<2>(coords[i]);
+            while(i + 1 < coords.size() &&
+                cur_row == boost::get<0>(coords[i + 1]) &&
+                cur_col == boost::get<1>(coords[i + 1]))
+                i++;
+        }
 
-         _indices = new int[_nnz];
-         _values = new value_type[_nnz];
+        int *indices = new int[nnz];
+        value_type *values = new value_type[nnz];
 
-         _nnz = 0;
-         int indptr_idx = 0;
-         _indptr[indptr_idx] = 0;
-         for(size_t i = 0; i < coords.size(); ++i) {
-
+        nnz = 0;
+        int indptr_idx = 0;
+        indptr[indptr_idx] = 0;
+        for(size_t i = 0; i < coords.size(); ++i) {
             int cur_row = boost::get<0>(coords[i]);
             int cur_col = boost::get<1>(coords[i]);
             value_type cur_val = boost::get<2>(coords[i]);
 
             for(; indptr_idx < cur_col; ++indptr_idx)
-                _indptr[indptr_idx + 1] = _nnz;
-            _nnz++;
+                indptr[indptr_idx + 1] = nnz;
+            nnz++;
 
             // sum duplicates
             while(i + 1 < coords.size() &&
@@ -119,21 +124,16 @@ struct sparse_matrix_t {
                 i++;
             }
 
-            _indices[_nnz - 1] = cur_row;
-            _values[_nnz - 1] = cur_val;
+            indices[nnz - 1] = cur_row;
+            values[nnz - 1] = cur_val;
 
             n_rows = std::max(cur_row + 1, n_rows);
          }
 
-
          for(; indptr_idx < _width; ++indptr_idx)
-             _indptr[indptr_idx + 1] = _nnz;
+             indptr[indptr_idx + 1] = nnz;
 
-         _height = n_rows;
-         _width = n_cols;
-
-         _dirty_struct = true;
-         _owndata = true;
+         attach(indptr, indices, values, nnz, n_rows, n_cols, true);
     }
 
     int height() const {
@@ -189,8 +189,8 @@ private:
     int _width;
     int _nnz;
 
-    int* _indptr;
-    int* _indices;
+    const int* _indptr;
+    const int* _indices;
     value_type* _values;
 
     // TODO add the following
@@ -210,6 +210,25 @@ private:
             return boost::get<0>(lhs) < boost::get<0>(rhs);
     }
 };
+
+#if SKYLARK_HAVE_ELEMENTAL
+
+template<typename T>
+void DenseCopy(const sparse_matrix_t<T>& A, elem::Matrix<T>& B) {
+    if (B.Height() != A.height() || B.Width() != A.width())
+        B.Resize(A.Height(), A.Width());
+
+    elem::Zero(B);
+
+    const int *indptr = A.indptr();
+    const int *indices = A.indices();
+    const double *values = A.locked_values();
+    for(int col = 0; col < A.width(); col++)
+        for(int idx = indptr[col]; idx < indptr[col + 1]; idx++)
+            B.Set(indices[idx], col, values[idx]);
+}
+
+#endif
 
 }
 }

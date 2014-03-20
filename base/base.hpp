@@ -6,6 +6,7 @@
 #endif
 
 #include "sparse_matrix.hpp"
+#include "viewing.hpp"
 #include "Gemm.hpp"
 
 #endif // SKYLARK_BASE_HPP

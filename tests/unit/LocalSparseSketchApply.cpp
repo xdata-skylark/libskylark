@@ -84,7 +84,7 @@ int test_main(int argc, char *argv[]) {
     }
 
     Matrix_t A;
-    A.attach(&colsf[0], &rowsf[0], &valsf[0], m + 1, matrix_full, n, m);
+    A.attach(&colsf[0], &rowsf[0], &valsf[0], matrix_full, n, m, false);
 
     count = 1;
     const int* indptr = A.indptr();

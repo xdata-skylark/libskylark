@@ -23,7 +23,7 @@ struct sparse_matrix_t {
     typedef std::vector<coord_tuple_t> coords_t;
 
     sparse_matrix_t()
-        : _owndata(false), _dirty_struct(false), _height(0), _width(0), _nnz(0), 
+        : _owndata(false), _dirty_struct(false), _height(0), _width(0), _nnz(0),
           _indptr(nullptr), _indices(nullptr), _values(nullptr)
     {}
 
@@ -79,7 +79,6 @@ struct sparse_matrix_t {
 
     // attaching a coordinate structure facilitates going from distributed
     // input to local output.
-
     void set(coords_t coords, int n_rows = 0, int n_cols = 0) {
 
         sort(coords.begin(), coords.end(), &sparse_matrix_t::_sort_coords);
@@ -128,12 +127,12 @@ struct sparse_matrix_t {
             values[nnz - 1] = cur_val;
 
             n_rows = std::max(cur_row + 1, n_rows);
-         }
+        }
 
-         for(; indptr_idx < _width; ++indptr_idx)
-             indptr[indptr_idx + 1] = nnz;
+        for(; indptr_idx < n_cols; ++indptr_idx)
+            indptr[indptr_idx + 1] = nnz;
 
-         attach(indptr, indices, values, nnz, n_rows, n_cols, true);
+        attach(indptr, indices, values, nnz, n_rows, n_cols, true);
     }
 
     int height() const {

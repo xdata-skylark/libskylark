@@ -130,6 +130,7 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
         SKDEF(WZT, DistMatrix_STAR_VR, Matrix)
         SKDEF(WZT, DistMatrix_STAR_VC, Matrix)
         SKDEF(PPT, Matrix, Matrix)
+        SKDEF(PPT, SparseMatrix, Matrix)
         SKDEF(GaussianRFT, Matrix, Matrix)
         SKDEF(GaussianRFT, SparseMatrix, Matrix)
         SKDEF(GaussianRFT, DistMatrix_VR_STAR, DistMatrix_VR_STAR)
@@ -535,6 +536,11 @@ SKYLARK_EXTERN_API int
     AUTO_APPLY_DISPATCH(sketchc::PPT,
         sketchc::MATRIX, sketchc::MATRIX,
         sketch::PPT_t, Matrix, Matrix,
+        PPT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::PPT,
+        sketchc::SPARSE_MATRIX, sketchc::MATRIX,
+        sketch::PPT_t, SparseMatrix, Matrix,
         PPT_data_t);
 
     AUTO_APPLY_DISPATCH(sketchc::GaussianRFT,

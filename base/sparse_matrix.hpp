@@ -211,6 +211,48 @@ private:
     }
 };
 
+template<typename T>
+void Transpose(const sparse_matrix_t<T>& A, sparse_matrix_t<T>& B) {
+    const int* aindptr = A.indptr();
+    const int* aindices = A.indices();
+    const double* avalues = A.locked_values();
+
+    int m = A.Width();
+    int n = A.Height();
+    int nnz = A.nonzeros();
+
+    int *indptr = new int[n + 1];
+    int *indices = new int[nnz];
+    double *values = new double[nnz];
+
+    // Count nonzeros in each row
+    int *nzrow = new int[n];
+    std::fill(nzrow, nzrow + n, 0);
+    for(int col = 0; col < m; col++)
+        for(int idx = aindptr[col]; idx < aindptr[col + 1]; idx++)
+            nzrow[aindices[idx]]++;
+
+    // Set indptr
+    indptr[0] = 0;
+    for(int col = 1; col <= n; col++)
+        indptr[col] = indptr[col - 1] + nzrow[col - 1];
+
+    // Fill values
+    std::fill(nzrow, nzrow + n, 0);
+    for(int col = 0; col < m; col++)
+        for(int idx = aindptr[col]; idx < aindptr[col + 1]; idx++) {
+            int row = aindices[idx];
+            double val = avalues[idx];
+            indices[indptr[row] + nzrow[row]] = col;
+            values[indptr[row] + nzrow[row]] = val;
+            nzrow[row]++;
+        }
+
+    delete[] nzrow;
+
+    B.attach(indptr, indices, values, nnz, m, n, true);
+}
+
 } }
 
 #endif

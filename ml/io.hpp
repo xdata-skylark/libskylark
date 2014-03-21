@@ -448,17 +448,31 @@ void read_libsvm(skylark_context_t& context, string fName, sparse_matrix_t& X,
                     context.comm.send(process, 7, &y[0], y.size());
                 }
                 else { // rank == 0 - just create the sparse matrix
-                    std::cout << "rank=0: Read " << examples_local << " x " << d << " with " << nnz_local << " nonzeros" << std::endl;
+
                     col_ptr.push_back(nnz_local); //last entry of col_ptr should be total number of nonzeros
 
                     // this is making a copy
-                    X.attach(&col_ptr[0], &rowind[0], &values[0], col_ptr.size(), nnz_local, d, examples_local);
+                    double *_values = new double[values.size()];
+                    int *_rowind = new int[rowind.size()];
+                    int *_col_ptr = new int[col_ptr.size()];
+
+
+                    // DO THE ACTUAL COPY!
+                    std::copy(values.begin(), values.end(), _values);
+                    std::copy(rowind.begin(), rowind.end(), _rowind);
+                    std::copy(col_ptr.begin(), col_ptr.end(), _col_ptr);
+
+                    X.attach(_col_ptr, _rowind, _values, nnz_local, d, examples_local, true);
+
                     LocalMatrixType Y2(examples_local, 1, &y[0], 0);
+
                     //  Y.Resize(examples_local,1);
                     // but this is not!
                     //Y.Attach(examples_local,1,&y[0],0);
                     Y = Y2; // copy
 
+
+                    std::cout << "rank=0: Read " << examples_local << " x " << d << " with " << nnz_local << " nonzeros" << std::endl;
                 }
                 process++;
                 nnz_local = 0;
@@ -489,10 +503,10 @@ void read_libsvm(skylark_context_t& context, string fName, sparse_matrix_t& X,
                 context.comm.recv(0, 6, values, nnz_local);
 
                 //attach currently creates copies so we can delete the rest
-                X.attach(col_ptr, rowind, values, t+1, nnz_local, d, t);
-                delete[] col_ptr;
-                delete[] rowind;
-                delete[] values;
+                X.attach(col_ptr, rowind, values, nnz_local, d, t, true);
+               // delete[] col_ptr;
+               // delete[] rowind;
+               // delete[] values;
 
                 double* y = new double[t];
                 context.comm.recv(0, 7, y, t);
@@ -512,7 +526,7 @@ void read_libsvm(skylark_context_t& context, string fName, sparse_matrix_t& X,
     if (context.rank==0)
         cout << "Read Matrix with dimensions: " << n << " by " << d << " (" << readtime << "secs)" << endl;
 //    std::cout << context.rank << "barrier here in read " << std::endl;
-//   context.comm.barrier();
+    context.comm.barrier();
  //  std::cout << context.rank << "barrier here in read DONE" << std::endl;
 }
 

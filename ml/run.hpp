@@ -71,7 +71,7 @@ BlockADMMSolver<InputType>* GetSolver(skylark::sketch::context_t& context, hilbe
 
             else
                 ;
-               /* Solver = new BlockADMMSolver<InputType>(
+                Solver = new BlockADMMSolver<InputType>(
                         context,
                         loss    ,
                         regularizer,
@@ -80,9 +80,7 @@ BlockADMMSolver<InputType>* GetSolver(skylark::sketch::context_t& context, hilbe
                         skylark::ml::kernels::gaussian_t(dimensions, options.kernelparam),
                         skylark::ml::fast_feature_transform_tag(),
                         options.numfeaturepartitions);
-                        */
             break;
-/*
         case POLYNOMIAL:
             features = options.randomfeatures;
             Solver = new BlockADMMSolver<InputType>(
@@ -95,7 +93,6 @@ BlockADMMSolver<InputType>* GetSolver(skylark::sketch::context_t& context, hilbe
                     skylark::ml::regular_feature_transform_tag(),
                     options.numfeaturepartitions);
             break;
-*/
         case LAPLACIAN:
             features = options.randomfeatures;
             Solver = new BlockADMMSolver<InputType>(

@@ -82,9 +82,9 @@ private:
         output_matrix_type& sketch_of_A,
         skylark::sketch::columnwise_tag tag) const {
 
-#ifdef SKYLARK_HAVE_OPENMP
-        #pragma omp parallel 
-#endif
+#       ifdef SKYLARK_HAVE_OPENMP
+#       pragma omp parallel
+#       endif
         {
         output_matrix_type W(base_data_t::NB, 1);
         double *w = W.Buffer();
@@ -104,9 +104,9 @@ private:
         output_matrix_type B(base_data_t::NB, 1), G(base_data_t::NB, 1);
         output_matrix_type Sm(base_data_t::NB, 1);
 
-#ifdef SKYLARK_HAVE_OPENMP
-#pragma omp for
-#endif
+#       ifdef SKYLARK_HAVE_OPENMP
+#       pragma omp for
+#       endif
         for(int c = 0; c < A.Width(); c++) {
             const matrix_type Acs = base::ColumnView(A, c, 1);
             base::DenseCopy(Acs, Acv);

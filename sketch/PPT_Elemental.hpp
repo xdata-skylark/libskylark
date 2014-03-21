@@ -141,9 +141,13 @@ struct PPT_t <
                 columnwise_tag dimension) const {
 
         // TODO verify sizes etc.
-        int S = base_data_t::_S;
-        int N = base_data_t::_N;
+        const int S = base_data_t::_S;
+        const int N = base_data_t::_N;
 
+#       ifdef SKYLARK_HAVE_OPENMP
+#       pragma omp parallel
+#       endif
+        {
         matrix_type W(S, 1);
         matrix_type SAv;
         matrix_type Av;
@@ -151,7 +155,9 @@ struct PPT_t <
         std::complex<value_type> *FW = new std::complex<value_type>[S];
         std::complex<value_type> *P = new std::complex<value_type>[S];
 
-        // TODO OpenMP parallelization
+#       ifdef SKYLARK_HAVE_OPENMP
+#       pragma omp for
+#       endif
         for(int i = 0; i < A.Width(); i++) {
             elem::LockedView(Av, A, 0, i, A.Height(), 1);
 
@@ -184,6 +190,8 @@ struct PPT_t <
 
         delete[] FW;
         delete[] P;
+
+        }
     }
 
     /**
@@ -194,8 +202,13 @@ struct PPT_t <
                 output_matrix_type& sketch_of_A,
                 rowwise_tag dimension) const {
         // TODO verify sizes etc.
-        int S = base_data_t::_S;
-        int N = base_data_t::_N;
+        const int S = base_data_t::_S;
+        const int N = base_data_t::_N;
+
+#       ifdef SKYLARK_HAVE_OPENMP
+#       pragma omp parallel
+#       endif
+        {
 
         matrix_type W(S, 1);
         matrix_type ASv, SATv(S, 1);
@@ -205,7 +218,9 @@ struct PPT_t <
         std::complex<value_type> *FW = new std::complex<value_type>[S];
         std::complex<value_type> *P = new std::complex<value_type>[S];
 
-        // TODO OpenMP parallelization
+#       ifdef SKYLARK_HAVE_OPENMP
+#       pragma omp for
+#       endif
         for(int i = 0; i < A.Height(); i++) {
             elem::LockedView(Av, A, i, 0, 1, A.Width());
             elem::Transpose(Av, ATv);
@@ -236,6 +251,11 @@ struct PPT_t <
                 reinterpret_cast<_fftw_complex_t*>(P), SATv.Buffer()); 
             elem::View(ASv, sketch_of_A, i, 0, 1, sketch_of_A.Width());
             elem::Transpose(SATv, ASv);
+        }
+
+        delete[] FW;
+        delete[] P;
+
         }
     }
 
@@ -339,8 +359,13 @@ struct PPT_t <
         //      for sparse matrices. Maybe you want to do the CWT right on
         //      start?
 
-        int S = base_data_t::_S;
-        int N = base_data_t::_N;
+        const int S = base_data_t::_S;
+        const int N = base_data_t::_N;
+
+#       ifdef SKYLARK_HAVE_OPENMP
+#       pragma omp parallel
+#       endif
+        {
 
         output_matrix_type W(S, 1);
         output_matrix_type SAv;
@@ -348,7 +373,9 @@ struct PPT_t <
         std::complex<value_type> *FW = new std::complex<value_type>[S];
         std::complex<value_type> *P = new std::complex<value_type>[S];
 
-        // TODO OpenMP parallelization
+#       ifdef SKYLARK_HAVE_OPENMP
+#       pragma omp for
+#       endif
         for(int i = 0; i < A.Width(); i++) {
             const matrix_type Av = base::ColumnView(A, i, 1);
 
@@ -381,6 +408,8 @@ struct PPT_t <
 
         delete[] FW;
         delete[] P;
+
+        }
     }
 
     /**

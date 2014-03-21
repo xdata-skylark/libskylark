@@ -182,8 +182,8 @@ struct PPT_t <
                 reinterpret_cast<_fftw_complex_t*>(P), SAv.Buffer());
         }
 
-        delete FW;
-        delete P;
+        delete[] FW;
+        delete[] P;
     }
 
     /**
@@ -270,8 +270,8 @@ protected:
         _fftw_bplan = fftw_plan_dft_c2r_1d(S,
             reinterpret_cast<fftw_complex*>(ctmp), dtmp,
             FFTW_UNALIGNED | FFTW_ESTIMATE);
-        delete dtmp;
-        delete ctmp;
+        delete[] dtmp;
+        delete[] ctmp;
     }
 };
 

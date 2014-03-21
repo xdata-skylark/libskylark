@@ -124,21 +124,21 @@ private:
         typename output_matrix_type::coords_t coords;
 
         index_type col_idx = 0;
-        typename matrix_type::const_ind_itr_range_t citr = A.indptr_itr();
-        typename matrix_type::const_ind_itr_range_t ritr = A.indices_itr();
-        typename matrix_type::const_val_itr_range_t vitr = A.values_itr();
 
-        for(; citr.first + 1 != citr.second; citr.first++, ++col_idx) {
-            for(index_type idx = 0; idx < (*(citr.first + 1) - *citr.first);
-                ritr.first++, vitr.first++, ++idx) {
+        const int* indptr = A.indptr();
+        const int* indices = A.indices();
+        const value_type* values = A.locked_values();
 
-                index_type col     =  col_idx;
-                index_type row_idx = *ritr.first;
-                value_type value   = *vitr.first * get_value(row_idx, col_idx, dist);
+        for(index_type col = 0; col < A.width(); col++) {
+            for(index_type idx = indptr[col]; idx < indptr[col + 1]; idx++) {
 
-                final_pos(row_idx, col, dist);
+                index_type coltmp = col;
+                index_type row = indices[idx];
+                value_type value = values[idx] * get_value(row, coltmp, dist);
+
+                final_pos(row, coltmp, dist);
                 typename output_matrix_type::coord_tuple_t
-                    new_entry(row_idx,  col, value);
+                    new_entry(row,  coltmp, value);
 
                 coords.push_back(new_entry);
             }
@@ -147,7 +147,7 @@ private:
         index_type n_rows = sketch_rows(A, dist);
         index_type n_cols = sketch_cols(A, dist);
 
-        sketch_of_A.attach(coords, n_rows, n_cols);
+        sketch_of_A.set(coords, n_rows, n_cols);
     }
 
     inline void final_pos(index_type &rowid, index_type &colid,

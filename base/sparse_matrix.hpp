@@ -174,9 +174,10 @@ struct sparse_matrix_t {
 
     bool operator==(const sparse_matrix_t &rhs) const {
 
-        return (_indptr  == rhs._indptr) &&
-               (_indices == rhs._indices) &&
-               (_values  == rhs._values);
+        return
+            (std::set<int>(_indptr, _indptr+_width) == std::set<int>(rhs._indptr, rhs._indptr+rhs._width)) &&
+            (std::set<int>(_indices, _indices+_nnz) == std::set<int>(rhs._indices, rhs._indices+rhs._nnz)) &&
+            (std::set<double>(_values, _values+_nnz) == std::set<double>(rhs._values, rhs._values+rhs._nnz));
     }
 
 private:

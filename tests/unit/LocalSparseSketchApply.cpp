@@ -137,7 +137,7 @@ int test_main(int argc, char *argv[]) {
     // multiply with vector where an entry has the value:
     //   col_idx * n + row_idx + 1.
     // See creation of A.
-    for(int col = 0; col < A.width(); col++) {
+    for(int col = 0; col < pi_sketch.width(); col++) {
         for(int idx = indptr[col]; idx < indptr[col + 1]; idx++) {
             for(int ccol = 0; ccol < m; ++ccol) {
                 typename Matrix_t::coord_tuple_t new_entry(indices[idx], ccol,

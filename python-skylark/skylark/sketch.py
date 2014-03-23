@@ -39,8 +39,9 @@ def initialize(seed=-1):
       _lib.sl_free_raw_matrix_wrap.restype        = c_int
       _lib.sl_wrap_raw_sp_matrix.restype          = c_int
       _lib.sl_free_raw_sp_matrix_wrap.restype     = c_int
-      _lib.sl_raw_sp_matrix_size.restype          = c_int
-      _lib.sl_raw_sp_matrix_needs_update.restype  = c_int
+      _lib.sl_raw_sp_matrix_nnz.restype           = c_int
+      _lib.sl_raw_sp_matrix_struct_updated.restype = c_int
+      _lib.sl_raw_sp_matrix_reset_update_flag.restype = c_int
       _lib.sl_raw_sp_matrix_data.restype          = c_int
       _lib.sl_strerror.restype                    = c_char_p
       _lib.sl_supported_sketch_transforms.restype = c_char_p
@@ -55,6 +56,7 @@ def initialize(seed=-1):
       SUPPORTED_SKETCH_TRANSFORMS = \
           csketches + [ (T, "Matrix", "Matrix") for T in pysketches]
     except:
+      raise
       # Did not find library -- must rely on Python code
       _lib = None
       _ELEM_INSTALLED = False
@@ -166,8 +168,10 @@ class _NumpyAdapter:
   def iscompatible(self, B):
     if isinstance(B, _NumpyAdapter) and self.getorder() != B.getorder():
       return "sketching numpy array to numpy array requires same element ordering", None
-    elif not isinstance(B, _NumpyAdapter) and self.getorder() == 'C':
-      return "numpy combined with other types must have fortran ordering", None
+    if isinstance(B, _ScipyAdapter) and self.getorder() != B.getorder():
+      return "sketching numpy array to scipy array requires same element ordering", None
+    elif not isinstance(B, _NumpyAdapter) and not isinstance(B, _ScipyAdapter) and self.getorder() == 'C':
+      return "numpy combined with non numpy/scipy must have fortran ordering", None
     else:
       return None, self._A.flags.c_contiguous
 
@@ -176,11 +180,11 @@ class _NumpyAdapter:
 
   @staticmethod
   def ctor(m, n, B):
-    # Construct numpy array that is compatible with B. If B is a numpy array the
+    # Construct numpy array that is compatible with B. If B is a numpy or scipy array the
     # element order (Fortran or C) must match. For all others (e.g., Elemental
     # and KDT) the order must be Fortran because this is what the lower layers
     # expect.
-    if isinstance(B, _NumpyAdapter):
+    if isinstance(B, _NumpyAdapter) or isinstance(B, _ScipyAdapter):
       return numpy.empty((m,n), order=B.getorder())
     else:
       return numpy.empty((m,n), order='F')
@@ -202,35 +206,48 @@ class _ScipyAdapter:
     cols = self._A.indices.ctypes.data_as(ctypes.POINTER(ctypes.c_int))
     dptr = self._A.data.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
 
-    _callsl(_lib.sl_wrap_raw_sp_matrix, \
-              iptr, cols, dptr, len(self._A.indptr), len(self._A.indices),
-              byref(data))
-
+    # If the matrix is kept in C ordering we are essentially wrapping the transposed
+    # matrix
+    if self.getorder() == "F":
+      _callsl(_lib.sl_wrap_raw_sp_matrix, \
+                iptr, cols, dptr, len(self._A.indices), \
+                self._A.shape[0], self._A.shape[1] if self._A.ndim > 1 else 1, byref(data))
+    else:
+      _callsl(_lib.sl_wrap_raw_sp_matrix, \
+                iptr, cols, dptr, len(self._A.indices), \
+                self._A.shape[1] if self._A.ndim > 1 else self._A.shape[0], \
+                self._A.shape[0] if self._A.ndim > 1 else 1 , \
+                byref(data))
+    _callsl(_lib.sl_raw_sp_matrix_reset_update_flag, data.value)
     self._ptr = data.value
     return data.value
 
   def ptrcleaner(self):
     # before cleaning the pointer make sure to update the csr structure if
     # necessary.
-    update_csr = c_bool()
-    _callsl(_lib.sl_raw_sp_matrix_needs_update, self._ptr, \
-            byref(update_csr))
+    update_csc = c_bool()
+    _callsl(_lib.sl_raw_sp_matrix_struct_updated, self._ptr, \
+            byref(update_csc))
 
-    if(update_csr.value):
+    if(update_csc.value):
       # first we check the required size of the new structure
-      n_indptr  = c_int()
-      n_indices = c_int()
-      _callsl(_lib.sl_raw_sp_matrix_size, self._ptr, byref(n_indptr), \
-                byref(n_indices))
+      nnz = c_int()
+      _callsl(_lib.sl_raw_sp_matrix_nnz, self._ptr, byref(nnz))
 
-      indptr  = numpy.zeros(n_indptr.value, dtype='int32')
-      indices = numpy.zeros(n_indices.value, dtype='int32')
-      values  = numpy.zeros(n_indices.value)
+
+      if isinstance(self._A, scipy.sparse.csc_matrix): 
+        indptrdim = self._A.shape[1] + 1 if self._A.ndim > 1 else 2
+      else:
+        indptrdim = self._A.shape[0] + 1 if self._A.ndim > 1 else 2
+
+      indptr  = numpy.zeros(indptrdim, dtype='int32')
+      indices = numpy.zeros(nnz.value, dtype='int32')
+      values  = numpy.zeros(nnz.value)
 
       _callsl(_lib.sl_raw_sp_matrix_data, self._ptr,
-              byref(indptr.ctypes.data_as(ctypes.POINTER(ctypes.c_int32))), \
-              byref(indices.ctypes.data_as(ctypes.POINTER(ctypes.c_int32))), \
-              byref(values.ctypes.data_as(ctypes.POINTER(ctypes.c_double))))
+              indptr.ctypes.data_as(ctypes.POINTER(ctypes.c_int32)), \
+              indices.ctypes.data_as(ctypes.POINTER(ctypes.c_int32)), \
+              values.ctypes.data_as(ctypes.POINTER(ctypes.c_double)))
 
       self._A.__dict__["indptr"]  = indptr
       self._A.__dict__["indices"] = indices
@@ -246,15 +263,17 @@ class _ScipyAdapter:
 
   def getorder(self):
     if isinstance(self._A, scipy.sparse.csr_matrix):
-      return 'R'
+      return 'C'     # C ordering -- CSR format
     else:
-      return 'C'
+      return 'F'     # Fortran ordering - CSC format
 
   def iscompatible(self, B):
     if isinstance(B, _ScipyAdapter) and self.getorder() != B.getorder():
       return "sketching scipy matrix to scipy matrix requires same format", None
-    elif isinstance(B, _NumpyAdapter) and B.getorder() != 'F':
-      return "scipy matrix combined with numpy matrix must be in C", None
+    if isinstance(B, _NumpyAdapter) and self.getorder() != B.getorder():
+      return "sketching scipy matrix to numpy matrix requires same format", None
+    elif not isinstance(B, _NumpyAdapter) and not isinstance(B, _ScipyAdapter) and self.getorder() == 'C':
+      return "scipy combined with non numpy/scipy must have fortran ordering", None
     else:
       return None, self.getorder() == 'C'
 
@@ -264,10 +283,10 @@ class _ScipyAdapter:
   @staticmethod
   def ctor(m, n, B):
     # Construct scipy matrix that is compatible with B.
-    if isinstance(B, _ScipyAdapter) and B.getorder() == 'C':
-      return scipy.sparse.csc_matrix((m, n))
-    else:
+    if (isinstance(B, _ScipyAdapter) or isinstance(B, _NumpyAdapter)) and B.getorder() == 'C':
       return scipy.sparse.csr_matrix((m, n))
+    else:
+      return scipy.sparse.csc_matrix((m, n))
 
 if _ELEM_INSTALLED:
   class _ElemAdapter:
@@ -385,7 +404,7 @@ def _adapt(obj):
   if isinstance(obj, numpy.ndarray):
     return _NumpyAdapter(obj)
 
-  elif isinstance(obj, scipy.sparse.csr_matrix):
+  elif isinstance(obj, scipy.sparse.csr_matrix) or isinstance(obj, scipy.sparse.csc_matrix):
     return _ScipyAdapter(obj)
 
   elif any(isinstance(obj, c) for c in elemcls):

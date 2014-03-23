@@ -1,7 +1,7 @@
 #ifndef SKYLARK_FRFT_ELEMENTAL_HPP
 #define SKYLARK_FRFT_ELEMENTAL_HPP
 
-#include <elemental.hpp>
+#include "../base/base.hpp"
 
 #include "context.hpp"
 #include "transforms.hpp"
@@ -16,17 +16,19 @@ namespace sketch {
 #if SKYLARK_HAVE_ELEMENTAL && (SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT)
 
 /**
- * Specialization for local input, local output
+ * Specialization local input (sparse of dense), local output.
+ * InputType should either be elem::Matrix, or base:spare_matrix_t.
  */
-template <typename ValueType>
+template <typename ValueType,
+          template <typename> class InputType>
 struct FastRFT_t <
-    elem::Matrix<ValueType>,
+    InputType<ValueType>,
     elem::Matrix<ValueType> > :
         public FastRFT_data_t<ValueType> {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
-    typedef elem::Matrix<value_type> matrix_type;
+    typedef InputType<value_type> matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
     typedef FastRFT_data_t<ValueType> base_data_t;
 
@@ -80,18 +82,18 @@ private:
         output_matrix_type& sketch_of_A,
         skylark::sketch::columnwise_tag tag) const {
 
-#ifdef SKYLARK_HAVE_OPENMP
-        #pragma omp parallel 
-#endif
+#       ifdef SKYLARK_HAVE_OPENMP
+#       pragma omp parallel
+#       endif
         {
-        matrix_type W(base_data_t::NB, 1);
+        output_matrix_type W(base_data_t::NB, 1);
         double *w = W.Buffer();
 
-        matrix_type Ac(base_data_t::NB, 1);
+        output_matrix_type Ac(base_data_t::NB, 1);
         double *ac = Ac.Buffer();
 
-        const double *a = A.LockedBuffer();
-        int lda = A.LDim();
+        output_matrix_type Acv;
+        elem::View(Acv, Ac, 0, 0, base_data_t::N, 1);
 
         double *sa = sketch_of_A.Buffer();
         int ldsa = sketch_of_A.LDim();
@@ -102,12 +104,12 @@ private:
         output_matrix_type B(base_data_t::NB, 1), G(base_data_t::NB, 1);
         output_matrix_type Sm(base_data_t::NB, 1);
 
-#ifdef SKYLARK_HAVE_OPENMP
-#pragma omp for
-#endif
+#       ifdef SKYLARK_HAVE_OPENMP
+#       pragma omp for
+#       endif
         for(int c = 0; c < A.Width(); c++) {
-            for(int i = 0; i < base_data_t::N; i++)
-                ac[i] = a[c * lda + i];
+            const matrix_type Acs = base::ColumnView(A, c, 1);
+            base::DenseCopy(Acs, Acv);
             std::fill(ac + base_data_t::N, ac + base_data_t::NB, 0);
 
             for(int i = 0; i < base_data_t::numblks; i++) {
@@ -172,11 +174,13 @@ private:
         output_matrix_type& sketch_of_A,
         skylark::sketch::rowwise_tag tag) const {
 
+        // TODO this version is really bad: it completely densifies the matrix 
+        //      on the begining.
         // TODO this version does not work with NB and N
         // TODO this version is not as optimized as the columnwise version.
 
         // Create a work array W
-        matrix_type W(A.Height(), A.Width());
+        output_matrix_type W(A.Height(), A.Width());
 
         output_matrix_type B(base_data_t::N, 1), G(base_data_t::N, 1);
         output_matrix_type Sm(base_data_t::N, 1);
@@ -184,7 +188,7 @@ private:
             int s = i * base_data_t::N;
             int e = std::min(s + base_data_t::N, base_data_t::S);
 
-            W = A;
+            base::DenseCopy(A, W);
 
             // Set the local values of B, G and S
             value_type scal =
@@ -217,7 +221,7 @@ private:
             // Copy that part to the output
             output_matrix_type view_sketch_of_A;
             elem::View(view_sketch_of_A, sketch_of_A, 0, s, A.Height(), e - s);
-            matrix_type view_W;
+            output_matrix_type view_W;
             elem::View(view_W, W, 0, 0, A.Height(), e - s);
             view_sketch_of_A = view_W;
         }

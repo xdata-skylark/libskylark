@@ -2,6 +2,7 @@
 #define SKYLARK_HASH_TRANSFORM_ELEMENTAL_HPP
 
 #include <elemental.hpp>
+#include "../base/sparse_matrix.hpp"
 
 #include "context.hpp"
 #include "transforms.hpp"
@@ -24,7 +25,10 @@ struct hash_transform_t <
         public hash_transform_data_t<size_t,
                                      ValueType,
                                      IdxDistributionType,
-                                     ValueDistribution> {
+                                     ValueDistribution>,
+        virtual public sketch_transform_t<elem::Matrix<ValueType>,
+                                          elem::Matrix<ValueType> > {
+
     // Typedef matrix and distribution types so that we can use them regularly
     typedef ValueType value_type;
     typedef elem::Matrix<value_type> matrix_type;
@@ -57,11 +61,11 @@ struct hash_transform_t <
         base_data_t(other_data.get_data()) {}
 
     /**
-     * Apply the sketching transform that is described in by the sketch_of_A.
+     * Apply columnwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
      */
-    template <typename Dimension>
     void apply (const matrix_type& A, output_matrix_type& sketch_of_A,
-        Dimension dimension) const {
+        columnwise_tag dimension) const {
         try {
             apply_impl(A, sketch_of_A, dimension);
         } catch (std::logic_error e) {
@@ -75,6 +79,27 @@ struct hash_transform_t <
         }
     }
 
+    /**
+     * Apply rowwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply (const matrix_type& A, output_matrix_type& sketch_of_A,
+        rowwise_tag dimension) const {
+        try {
+            apply_impl(A, sketch_of_A, dimension);
+        } catch (std::logic_error e) {
+            SKYLARK_THROW_EXCEPTION (
+                utility::elemental_exception()
+                    << utility::error_msg(e.what()) );
+        } catch(boost::mpi::exception e) {
+            SKYLARK_THROW_EXCEPTION (
+                utility::mpi_exception()
+                    << utility::error_msg(e.what()) );
+        }
+    }
+
+    int get_N() const { return this->N; } /**< Get input dimension. */
+    int get_S() const { return this->S; } /**< Get output dimension. */
 
 private:
 
@@ -126,6 +151,160 @@ private:
 };
 
 /**
+ * Specialization sparse local input, local output
+ */
+template <typename ValueType,
+          template <typename> class IdxDistributionType,
+          template <typename> class ValueDistribution>
+struct hash_transform_t <
+    base::sparse_matrix_t<ValueType>,
+    elem::Matrix<ValueType>,
+    IdxDistributionType,
+    ValueDistribution > :
+        public hash_transform_data_t<size_t,
+                                     ValueType,
+                                     IdxDistributionType,
+                                     ValueDistribution>,
+        virtual public sketch_transform_t<base::sparse_matrix_t<ValueType>,
+                                          elem::Matrix<ValueType> > {
+
+    // Typedef matrix and distribution types so that we can use them regularly
+    typedef ValueType value_type;
+    typedef base::sparse_matrix_t<ValueType> matrix_type;
+    typedef elem::Matrix<value_type> output_matrix_type;
+    typedef IdxDistributionType<size_t> idx_distribution_type;
+    typedef ValueDistribution<value_type> value_distribution_type;
+    typedef hash_transform_data_t<size_t,
+                                  ValueType,
+                                  IdxDistributionType,
+                                  ValueDistribution> base_data_t;
+    /**
+     * Regular constructor
+     */
+    hash_transform_t (int N, int S, skylark::sketch::context_t& context) :
+        base_data_t (N, S, context) {}
+
+    /**
+     * Copy constructor
+     */
+    hash_transform_t (const hash_transform_t<matrix_type,
+                                       output_matrix_type,
+                                       IdxDistributionType,
+                                       ValueDistribution>& other) :
+        base_data_t(other) {}
+
+    /**
+     * Constructor from data
+     */
+    hash_transform_t (const base_data_t& other_data) :
+        base_data_t(other_data) {}
+
+    /**
+     * Apply columnwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply (const matrix_type& A, output_matrix_type& sketch_of_A,
+        columnwise_tag dimension) const {
+        try {
+            apply_impl(A, sketch_of_A, dimension);
+        } catch (std::logic_error e) {
+            SKYLARK_THROW_EXCEPTION (
+                utility::elemental_exception()
+                    << utility::error_msg(e.what()) );
+        } catch(boost::mpi::exception e) {
+            SKYLARK_THROW_EXCEPTION (
+                utility::mpi_exception()
+                    << utility::error_msg(e.what()) );
+        }
+    }
+
+    /**
+     * Apply rowwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply (const matrix_type& A, output_matrix_type& sketch_of_A,
+        rowwise_tag dimension) const {
+        try {
+            apply_impl(A, sketch_of_A, dimension);
+        } catch (std::logic_error e) {
+            SKYLARK_THROW_EXCEPTION (
+                utility::elemental_exception()
+                    << utility::error_msg(e.what()) );
+        } catch(boost::mpi::exception e) {
+            SKYLARK_THROW_EXCEPTION (
+                utility::mpi_exception()
+                    << utility::error_msg(e.what()) );
+        }
+    }
+
+    int get_N() const { return this->N; } /**< Get input dimension. */
+    int get_S() const { return this->S; } /**< Get output dimension. */
+
+private:
+
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     * Implementation for the column-wise direction of sketching.
+     */
+    void apply_impl (const matrix_type& A,
+        output_matrix_type& sketch_of_A,
+        skylark::sketch::columnwise_tag) const {
+
+        elem::Zero(sketch_of_A);
+
+        double *SA = sketch_of_A.Buffer();
+        int ld = sketch_of_A.LDim();
+
+        const int* indptr = A.indptr();
+        const int* indices = A.indices();
+        const value_type* values = A.locked_values();
+
+#       if SKYLARK_HAVE_OPENMP
+#       pragma omp parallel for
+#       endif
+        for(int col = 0; col < A.width(); col++) {
+            for (int j = indptr[col]; j < indptr[col + 1]; j++) {
+                int row = indices[j];
+                value_type val = values[j];
+                SA[col * ld + base_data_t::row_idx[row]] +=
+                    base_data_t::row_value[row] * val;
+            }
+        }
+    }
+
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     * Implementation for the row-wise direction of sketching.
+     */
+    void apply_impl (const matrix_type& A,
+        output_matrix_type& sketch_of_A,
+        skylark::sketch::rowwise_tag) const {
+
+        elem::Zero(sketch_of_A);
+
+        double *SA = sketch_of_A.Buffer();
+        int ld = sketch_of_A.LDim();
+
+        const int* indptr = A.indptr();
+        const int* indices = A.indices();
+        const value_type* values = A.locked_values();
+
+        for(int col = 0; col < A.width(); col++) {
+#           if SKYLARK_HAVE_OPENMP
+#           pragma omp parallel for
+#           endif
+            for (int j = indptr[col]; j < indptr[col + 1]; j++) {
+                int row = indices[j];
+                value_type val = values[j];
+                SA[base_data_t::row_idx[col] * ld + row] +=
+                    base_data_t::row_value[col] * val;
+            }
+        }
+
+    }
+};
+
+/**
  * Specialization distributed input, local output
  */
 template <typename ValueType,
@@ -141,7 +320,11 @@ struct hash_transform_t <
         public hash_transform_data_t<size_t,
                                      ValueType,
                                      IdxDistributionType,
-                                     ValueDistribution> {
+                                     ValueDistribution>,
+        virtual public sketch_transform_t<elem::DistMatrix<ValueType, ColDist,
+                                                           RowDist>,
+                                          elem::Matrix<ValueType> >  {
+
     // Typedef matrix and distribution types so that we can use them regularly
     typedef ValueType value_type;
     typedef elem::DistMatrix<value_type, ColDist, RowDist> matrix_type;
@@ -174,11 +357,11 @@ struct hash_transform_t <
         base_data_t(other_data.get_data()) {}
 
     /**
-     * Apply the sketching transform that is described in by the sketch_of_A.
+     * Apply columnwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
      */
-    template <typename Dimension>
     void apply (const matrix_type& A, output_matrix_type& sketch_of_A,
-        Dimension dimension) const {
+        columnwise_tag dimension) const {
         try {
             apply_impl(A, sketch_of_A, dimension);
         } catch (std::logic_error e) {
@@ -192,6 +375,28 @@ struct hash_transform_t <
         }
     }
 
+    /**
+     * Apply rowwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply (const matrix_type& A, output_matrix_type& sketch_of_A,
+        rowwise_tag dimension) const {
+        try {
+            apply_impl(A, sketch_of_A, dimension);
+        } catch (std::logic_error e) {
+            SKYLARK_THROW_EXCEPTION (
+                utility::elemental_exception()
+                    << utility::error_msg(e.what()) );
+        } catch(boost::mpi::exception e) {
+            SKYLARK_THROW_EXCEPTION (
+                utility::mpi_exception()
+                    << utility::error_msg(e.what()) );
+        }
+    }
+
+    int get_N() const { return this->N; } /**< Get input dimension. */
+    int get_S() const { return this->S; } /**< Get output dimension. */
+
 private:
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
@@ -201,7 +406,7 @@ private:
         output_matrix_type& sketch_of_A,
         skylark::sketch::columnwise_tag) const {
 
-        // TODO this implementation is communication efficient.
+        // TODO this implementation is not communication efficient.
         // Sketching a nxd matrix to sxd will communicate O(sdP)
         // doubles, when you can sometime communicate less:
         // For [MC,MR] or [MR,MC] you need O(sd sqrt(P)).
@@ -245,7 +450,7 @@ private:
         output_matrix_type& sketch_of_A,
         skylark::sketch::rowwise_tag) const {
 
-        // TODO this implementation is communication efficient.
+        // TODO this implementation is not communication efficient.
         // Sketching a nxd matrix to sxd will communicate O(sdP)
         // doubles, when you can sometime communicate less:
         // For [MC,MR] or [MR,MC] you need O(sd sqrt(P)).

@@ -566,6 +566,9 @@ int BlockADMMSolver<T>::classification_accuracy(LocalMatrixType& Yt, LocalMatrix
         for(int i=0; i < Yp.Height(); i++) {
             o = Yp.Get(i,0);
             pred = 0;
+            if (Yp.Width()==1)
+                    pred = (o >= 0)? +1:-1;
+
             for(int j=1; j < Yp.Width(); j++) {
                 o1 = Yp.Get(i,j);
                 if ( o1 > o) {

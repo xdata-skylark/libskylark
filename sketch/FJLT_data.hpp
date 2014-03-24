@@ -38,12 +38,6 @@ struct FJLT_data_t {
         samples = context.generate_random_samples_array(S, distribution);
     }
 
-
-    const FJLT_data_t& get_data() const {
-        return static_cast<const FJLT_data_t&>(*this);
-    }
-
-
 protected:
     const int N; /**< Input dimension  */
     const int S; /**< Output dimension  */

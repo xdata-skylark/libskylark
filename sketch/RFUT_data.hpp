@@ -29,12 +29,6 @@ struct RFUT_data_t {
         D = context.generate_random_samples_array(N, distribution);
     }
 
-
-    const RFUT_data_t& get_data() const {
-        return static_cast<const RFUT_data_t&>(*this);
-    }
-
-
 protected:
     const int N; /**< Input dimension  */
     skylark::sketch::context_t& context; /**< Context for this sketch */

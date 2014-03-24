@@ -31,11 +31,6 @@ struct dense_transform_data_t {
         scale = 1.0;
     }
 
-
-    const dense_transform_data_t& get_data() const {
-        return static_cast<const dense_transform_data_t&>(*this);
-    }
-
 protected:
     const int N; /**< Input dimension  */
     const int S; /**< Output dimension  */

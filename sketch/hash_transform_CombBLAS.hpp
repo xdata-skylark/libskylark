@@ -54,7 +54,7 @@ struct hash_transform_t <FullyDistMultiVec<IndexType, ValueType>,
                                        OutputMatrixType,
                                        IdxDistributionType,
                                        ValueDistribution>& other) :
-        base_data_t(other.get_data()) {}
+        base_data_t(other) {}
 
     /**
      * Constructor from data
@@ -63,7 +63,7 @@ struct hash_transform_t <FullyDistMultiVec<IndexType, ValueType>,
                                             value_type,
                                             IdxDistributionType,
                                             ValueDistribution>& other_data) :
-        base_data_t(other_data.get_data()) {}
+        base_data_t(other_data) {}
 
     template <typename Dimension>
     void apply (const mpi_multi_vector_t &A,
@@ -182,7 +182,7 @@ struct hash_transform_t <
                                        OutputMatrixType,
                                        IdxDistributionType,
                                        ValueDistribution>& other) :
-        base_data_t(other.get_data()) {}
+        base_data_t(other) {}
 
     /**
      * Constructor from data
@@ -191,7 +191,7 @@ struct hash_transform_t <
                                             value_type,
                                             IdxDistributionType,
                                             ValueDistribution>& other_data) :
-        base_data_t(other_data.get_data()) {}
+        base_data_t(other_data) {}
 
     template <typename Dimension>
     void apply (const matrix_type &A,
@@ -527,7 +527,7 @@ struct hash_transform_t <
                                        OutputMatrixType,
                                        IdxDistributionType,
                                        ValueDistribution>& other) :
-        base_data_t(other.get_data()) {}
+        base_data_t(other) {}
 
     /**
      * Constructor from data
@@ -536,7 +536,7 @@ struct hash_transform_t <
                                             value_type,
                                             IdxDistributionType,
                                             ValueDistribution>& other_data) :
-        base_data_t(other_data.get_data()) {}
+        base_data_t(other_data) {}
 
     template <typename Dimension>
     void apply (const matrix_type &A,

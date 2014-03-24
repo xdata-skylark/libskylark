@@ -34,11 +34,6 @@ struct hash_transform_data_t {
         row_value = context.generate_random_samples_array(N, row_value_distribution);
     }
 
-
-    const hash_transform_data_t& get_data() const {
-        return static_cast<const hash_transform_data_t&>(*this);
-    }
-
 protected:
     const int N; /**< Input dimension  */
     const int S; /**< Output dimension  */

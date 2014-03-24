@@ -52,7 +52,7 @@ struct hash_transform_t <
                                        OutputMatrixType,
                                        IdxDistributionType,
                                        ValueDistribution>& other) :
-        base_data_t(other.get_data()) {}
+        base_data_t(other) {}
 
     /**
      * Constructor from data
@@ -61,7 +61,7 @@ struct hash_transform_t <
                                             value_type,
                                             IdxDistributionType,
                                             ValueDistribution>& other_data) :
-        base_data_t(other_data.get_data()) {}
+        base_data_t(other_data) {}
 
     /**
      * Apply columnwise the sketching transform that is described by the

@@ -46,14 +46,14 @@ struct RFUT_t<
     RFUT_t (RFUT_t<matrix_type,
                    FUT,
                    value_distribution_type>& other) :
-        base_data_t(other.get_data()) {}
+        base_data_t(other) {}
 
     /**
      * Constructor from data
      */
     RFUT_t(const RFUT_data_t<value_type,
                              value_distribution_type>& other_data) :
-        base_data_t(other_data.get_data()) {}
+        base_data_t(other_data) {}
 
     /**
      * Apply the transform that is described in by the mixed_A.
@@ -151,14 +151,14 @@ struct RFUT_t<
     RFUT_t (RFUT_t<matrix_type,
                    FUT,
                    value_distribution_type>& other) :
-        base_data_t(other.get_data()) {}
+        base_data_t(other) {}
 
     /**
      * Constructor from data
      */
     RFUT_t(const RFUT_data_t<value_type,
            value_distribution_type>& other_data) :
-           base_data_t(other_data.get_data()) {}
+           base_data_t(other_data) {}
 
     /**
      * Apply the transform that is described in by the mixed_A.

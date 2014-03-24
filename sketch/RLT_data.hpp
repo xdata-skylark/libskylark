@@ -41,12 +41,6 @@ struct RLT_data_t {
 
     }
 
-
-    const RLT_data_t& get_data() const {
-        return static_cast<const RLT_data_t&>(*this);
-    }
-
-
 protected:
     const int _N; /**< Input dimension  */
     const int _S; /**< Output dimension  */

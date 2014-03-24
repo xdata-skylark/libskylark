@@ -44,12 +44,6 @@ struct RFT_data_t {
         _shifts = context.generate_random_samples_array(S, distribution);
     }
 
-
-    const RFT_data_t& get_data() const {
-        return static_cast<const RFT_data_t&>(*this);
-    }
-
-
 protected:
     const int _N; /**< Input dimension  */
     const int _S; /**< Output dimension  */

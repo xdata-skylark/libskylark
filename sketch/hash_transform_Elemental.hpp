@@ -52,13 +52,13 @@ struct hash_transform_t <
                                        output_matrix_type,
                                        IdxDistributionType,
                                        ValueDistribution>& other) :
-        base_data_t(other.get_data()) {}
+        base_data_t(other) {}
 
     /**
      * Constructor from data
      */
     hash_transform_t (const base_data_t& other_data) :
-        base_data_t(other_data.get_data()) {}
+        base_data_t(other_data) {}
 
     /**
      * Apply columnwise the sketching transform that is described by the
@@ -348,13 +348,13 @@ struct hash_transform_t <
                                        output_matrix_type,
                                        IdxDistributionType,
                                        ValueDistribution>& other) :
-        base_data_t(other.get_data()) {}
+        base_data_t(other) {}
 
     /**
      * Constructor from data
      */
     hash_transform_t (const base_data_t& other_data) :
-        base_data_t(other_data.get_data()) {}
+        base_data_t(other_data) {}
 
     /**
      * Apply columnwise the sketching transform that is described by the

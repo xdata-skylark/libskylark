@@ -45,14 +45,14 @@ struct dense_transform_t <
     dense_transform_t (const dense_transform_t<matrix_type,
                                          output_matrix_type,
                                          ValueDistribution>& other)
-        : base_data_t(other.get_data()) {}
+        : base_data_t(other) {}
 
     /**
      * Constructor from data
      */
     dense_transform_t(const dense_transform_data_t<value_type,
                                             ValueDistribution>& other_data)
-        : base_data_t(other_data.get_data()) {}
+        : base_data_t(other_data) {}
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
@@ -157,14 +157,14 @@ struct dense_transform_t <
     dense_transform_t (dense_transform_t<matrix_type,
                                          output_matrix_type,
                                          ValueDistribution>& other)
-        : base_data_t(other.get_data()) {}
+        : base_data_t(other) {}
 
     /**
      * Constructor from data
      */
     dense_transform_t(const dense_transform_data_t<value_type,
                                             ValueDistribution>& other_data)
-        : base_data_t(other_data.get_data()) {}
+        : base_data_t(other_data) {}
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
@@ -333,14 +333,14 @@ struct dense_transform_t <
     dense_transform_t (dense_transform_t<matrix_type,
                                          output_matrix_type,
                                          ValueDistribution>& other)
-        : base_data_t(other.get_data()) {}
+        : base_data_t(other) {}
 
     /**
      * Constructor from data
      */
     dense_transform_t(const dense_transform_data_t<value_type,
                                             ValueDistribution>& other_data)
-        : base_data_t(other_data.get_data()) {}
+        : base_data_t(other_data) {}
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
@@ -505,14 +505,14 @@ struct dense_transform_t <
     dense_transform_t (dense_transform_t<matrix_type,
                                          output_matrix_type,
                                          ValueDistribution>& other)
-        : base_data_t(other.get_data()) {}
+        : base_data_t(other) {}
 
     /**
      * Constructor from data
      */
     dense_transform_t(const dense_transform_data_t<value_type,
                                             ValueDistribution>& other_data)
-        : base_data_t(other_data.get_data()) {}
+        : base_data_t(other_data) {}
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
@@ -710,14 +710,14 @@ struct dense_transform_t <
     dense_transform_t (dense_transform_t<matrix_type,
                                          output_matrix_type,
                                          ValueDistribution>& other)
-        : base_data_t(other.get_data()) {}
+        : base_data_t(other) {}
 
     /**
      * Constructor from data
      */
     dense_transform_t(const dense_transform_data_t<value_type,
                                             ValueDistribution>& other_data)
-        : base_data_t(other_data.get_data()) {}
+        : base_data_t(other_data) {}
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
@@ -883,14 +883,14 @@ struct dense_transform_t <
     dense_transform_t (dense_transform_t<matrix_type,
                                          output_matrix_type,
                                          ValueDistribution>& other)
-        : base_data_t(other.get_data()) {}
+        : base_data_t(other) {}
 
     /**
      * Constructor from data
      */
     dense_transform_t(const dense_transform_data_t<value_type,
                                             ValueDistribution>& other_data)
-        : base_data_t(other_data.get_data()) {}
+        : base_data_t(other_data) {}
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
@@ -1043,7 +1043,7 @@ struct dense_transform_t <
     dense_transform_t (dense_transform_t<matrix_type,
                                          output_matrix_type,
                                          ValueDistribution>& other)
-        : base_data_t(other.get_data()) {
+        : base_data_t(other) {
 
     }
 
@@ -1051,7 +1051,7 @@ struct dense_transform_t <
      * Constructor from data
      */
     dense_transform_t(const base_data_t& other_data)
-        : base_data_t(other_data.get_data()) {
+        : base_data_t(other_data) {
 
     }
 

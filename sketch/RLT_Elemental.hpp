@@ -54,7 +54,7 @@ public:
     RLT_t(const RFT_t<matrix_type,
                       output_matrix_type,
                       KernelDistribution>& other)
-        : base_data_t(other.get_data()) {
+        : base_data_t(other) {
 
     }
 
@@ -62,7 +62,7 @@ public:
      * Constructor from data
      */
     RLT_t(const base_data_t& other_data)
-        : base_data_t(other_data.get_data()) {
+        : base_data_t(other_data) {
 
     }
 

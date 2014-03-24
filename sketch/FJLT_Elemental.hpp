@@ -57,7 +57,7 @@ public:
      * Constructor from data
      */
     FJLT_t(const base_data_t& other_data)
-        : base_data_t(other_data.get_data()) {
+        : base_data_t(other_data) {
 
     }
 

@@ -70,7 +70,6 @@ BlockADMMSolver<InputType>* GetSolver(skylark::sketch::context_t& context, hilbe
                         options.numfeaturepartitions);
 
             else
-                ;
                 Solver = new BlockADMMSolver<InputType>(
                         context,
                         loss    ,

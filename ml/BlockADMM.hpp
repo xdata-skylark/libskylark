@@ -154,7 +154,8 @@ BlockADMMSolver<T>::BlockADMMSolver(skylark::sketch::context_t& context,
 }
 
 // Easy interface, aka kernel based.
-template<class T, typename Kernel, typename MapTypeTag>
+template<class T>
+template<typename Kernel, typename MapTypeTag>
 BlockADMMSolver<T>::BlockADMMSolver(skylark::sketch::context_t& context,
         const lossfunction* loss,
         const regularization* regularizer,
@@ -350,10 +351,11 @@ int BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y, LocalMatrixType& Wbar, T
 
                        if (ScaleFeatureMaps)
                            elem::Scal(sqrt(double(sj) / d), z);
-                   } else
-                       ; // for linear case just use Z = X no slicing business.
-                       // skylark::base::ColumnView<double>(z, x, );
-                      // ;// VIEWS on SPARSE MATRICES: elem::View(z, x, start, 0, sj, ni);
+                       } else {
+                          // for linear case just use Z = X no slicing business.
+                          // skylark::base::ColumnView<double>(z, x, );
+                          // ;// VIEWS on SPARSE MATRICES: elem::View(z, x, start, 0, sj, ni);
+                       }
                }
 
                elem::Matrix<double> tmp(sj, k);

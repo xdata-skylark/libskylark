@@ -68,8 +68,8 @@ private:
 
     static const int MAXITER = 100;
     static const int DISPLAY = 0;
-    //FIXME: proper initialization, since we cant use c++11 constexpr
-    const double epsilon = 1e-4;
+
+    const double epsilon;
 };
 
 

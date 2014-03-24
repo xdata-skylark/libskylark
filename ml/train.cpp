@@ -41,7 +41,7 @@ int main (int argc, char** argv) {
     int flag = 0;
 
     if (sparse)
-        flag = run<sparse_matrix_t, elem::Matrix<double>>(context, options);
+        flag = run<sparse_matrix_t, elem::Matrix<double> >(context, options);
     else
         flag = run<LocalMatrixType, LocalMatrixType>(context, options);
 

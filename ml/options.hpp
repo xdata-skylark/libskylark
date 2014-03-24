@@ -216,7 +216,6 @@ struct hilbert_options_t {
         regularmap = true;
         fileformat = DEFAULT_FILEFORMAT;
         MAXITER = DEFAULT_MAXITER;
-        dataformat = false;
         valfile = "";
         testfile = "";
 

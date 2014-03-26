@@ -82,7 +82,7 @@ public:
     int get_numfeatures() {return NumFeatures;}
 
 private:
-    skylark::sketch::context_t& context;
+    skylark::sketch::context_t& _context;
 
     feature_transform_array_t featureMaps;
     int NumFeatures;
@@ -134,7 +134,7 @@ BlockADMMSolver<T>::BlockADMMSolver(skylark::sketch::context_t& context,
         const regularization* regularizer,
         double lambda, // regularization parameter
         int NumFeatures,
-        int NumFeaturePartitions) : context(context), NumFeatures(NumFeatures), NumFeaturePartitions(NumFeaturePartitions),
+        int NumFeaturePartitions) : _context(context), NumFeatures(NumFeatures), NumFeaturePartitions(NumFeaturePartitions),
                 starts(NumFeaturePartitions), finishes(NumFeaturePartitions),
                 NumThreads(1), RHO(1.0), MAXITER(1000), TOL(0.1) {
 
@@ -163,7 +163,7 @@ BlockADMMSolver<T>::BlockADMMSolver(skylark::sketch::context_t& context,
         int NumFeatures,
         Kernel kernel,
         MapTypeTag tag,
-        int NumFeaturePartitions) : context(context), featureMaps(NumFeaturePartitions),
+        int NumFeaturePartitions) : _context(context), featureMaps(NumFeaturePartitions),
         NumFeatures(NumFeatures), NumFeaturePartitions(NumFeaturePartitions),
         starts(NumFeaturePartitions), finishes(NumFeaturePartitions),
         NumThreads(1), RHO(1.0), MAXITER(1000), TOL(0.1) {
@@ -176,7 +176,7 @@ BlockADMMSolver<T>::BlockADMMSolver(skylark::sketch::context_t& context,
         starts[i] = i * blksize;
         finishes[i] = std::min((i + 1) * blksize, NumFeatures) - 1;
         int sj = finishes[i] - starts[i] + 1;
-        featureMaps[i] = kernel.template create_rft< T, LocalMatrixType >(sj, tag, context);
+        featureMaps[i] = kernel.template create_rft< T, LocalMatrixType >(sj, tag, _context);
     }
     this->ScaleFeatureMaps = true;
     OwnFeatureMaps = true;
@@ -191,7 +191,7 @@ BlockADMMSolver<T>::BlockADMMSolver(skylark::sketch::context_t& context,
         const regularization* regularizer,
         const feature_transform_array_t &featureMaps,
         double lambda,
-        bool ScaleFeatureMaps) : context(context), featureMaps(featureMaps), NumFeaturePartitions(featureMaps.size()),
+        bool ScaleFeatureMaps) : _context(context), featureMaps(featureMaps), NumFeaturePartitions(featureMaps.size()),
                 starts(NumFeaturePartitions), finishes(NumFeaturePartitions),
                 NumThreads(1), RHO(1.0), MAXITER(1000), TOL(0.1)  {
 
@@ -225,7 +225,7 @@ BlockADMMSolver<T>::~BlockADMMSolver() {
 
 template <class T>
 int BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y, LocalMatrixType& Wbar, T& Xv, LocalMatrixType& Yv) {
-       int P = context.size;
+       int P = _context.size;
 
        int ni = X.Width();
        int d = X.Height();
@@ -249,7 +249,7 @@ int BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y, LocalMatrixType& Wbar, T
 
        LocalMatrixType W, mu, Wi, mu_ij, ZtObar_ij;
 
-       if(context.rank==0) {
+       if(_context.rank==0) {
            elem::Zeros(W,  D, k);
            elem::Zeros(mu, D, k);
        }
@@ -301,7 +301,7 @@ int BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y, LocalMatrixType& Wbar, T
            iter++;
 
            SKYLARK_TIMER_RESTART(COMMUNICATION_PROFILE);
-           broadcast(context.comm, Wbar.Buffer(), Dk, 0);
+           broadcast(_context.comm, Wbar.Buffer(), Dk, 0);
 
            SKYLARK_TIMER_ACCUMULATE(COMMUNICATION_PROFILE)
 
@@ -315,7 +315,7 @@ int BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y, LocalMatrixType& Wbar, T
            loss->proxoperator(Obar, 1.0/RHO, Y, O);
            SKYLARK_TIMER_ACCUMULATE(PROXLOSS_PROFILE);
 
-           if(context.rank==0) {
+           if(_context.rank==0) {
                regularizer->proxoperator(Wbar, lambda/RHO, mu, W);
            }
 
@@ -447,10 +447,10 @@ int BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y, LocalMatrixType& Wbar, T
            localloss += loss->evaluate(wbar_output, Y);
 
            SKYLARK_TIMER_RESTART(COMMUNICATION_PROFILE);
-           reduce(context.comm, localloss, totalloss, std::plus<double>(), 0);
+           reduce(_context.comm, localloss, totalloss, std::plus<double>(), 0);
            SKYLARK_TIMER_ACCUMULATE(COMMUNICATION_PROFILE);
 
-           if(context.rank==0) {
+           if(_context.rank==0) {
                obj = totalloss + lambda*regularizer->evaluate(Wbar);
                if (Xv.Width() <=0) {
                    std::cout << "iteration " << iter << " objective " << obj << " time " << timer.elapsed() << " seconds" << std::endl;
@@ -471,7 +471,7 @@ int BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y, LocalMatrixType& Wbar, T
 
            //Wbar = comm.reduce(Wi)
            SKYLARK_TIMER_RESTART(COMMUNICATION_PROFILE);
-           boost::mpi::reduce (context.comm,
+           boost::mpi::reduce (_context.comm,
                                    Wi.LockedBuffer(),
                                    Wi.MemorySize(),
                                    Wbar.Buffer(),
@@ -479,7 +479,7 @@ int BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y, LocalMatrixType& Wbar, T
                                    0);
            SKYLARK_TIMER_ACCUMULATE(COMMUNICATION_PROFILE);
 
-           if(context.rank==0) {
+           if(_context.rank==0) {
                //Wbar = (Wisum + W)/(P+1)
                elem::Axpy(1.0, W, Wbar);
                elem::Scal(1.0/(P+1), Wbar);
@@ -490,7 +490,7 @@ int BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y, LocalMatrixType& Wbar, T
            }
 
            SKYLARK_TIMER_RESTART(BARRIER_PROFILE);
-           context.comm.barrier();
+           _context.comm.barrier();
            SKYLARK_TIMER_ACCUMULATE(BARRIER_PROFILE);
 
            SKYLARK_TIMER_ACCUMULATE(ITERATIONS_PROFILE);
@@ -588,11 +588,11 @@ double BlockADMMSolver<T>::evaluate(LocalMatrixType& Yt, LocalMatrixType& Yp) {
         int correct = classification_accuracy(Yt, Yp);
         double accuracy = 0.0;
         int totalcorrect;
-        boost::mpi::reduce(context.comm, correct, totalcorrect, std::plus<double>(), 0);
+        boost::mpi::reduce(_context.comm, correct, totalcorrect, std::plus<double>(), 0);
         int total;
-        boost::mpi::reduce(context.comm, Yt.Height(), total, std::plus<int>(), 0);
+        boost::mpi::reduce(_context.comm, Yt.Height(), total, std::plus<int>(), 0);
 
-        if(context.rank ==0)
+        if(_context.rank ==0)
             accuracy =  totalcorrect*100.0/total;
         return accuracy;
 }

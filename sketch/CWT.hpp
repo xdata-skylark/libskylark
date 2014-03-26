@@ -45,6 +45,11 @@ public:
 
     }
 
+    CWT_t(const boost::property_tree::ptree &json, context_t& context)
+        : base_t(json, context), _transform(*this) {
+
+    }
+
     /**
      * Copy constructor
      */

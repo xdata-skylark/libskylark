@@ -24,11 +24,19 @@ struct CWT_data_t : public hash_transform_data_t<
     utility::rademacher_distribution_t > {
 
 
-    CWT_data_t(int N, int S, context_t& context)
+   CWT_data_t(int N, int S, context_t& context)
         : hash_transform_data_t<
         IndexType, ValueType,
         boost::random::uniform_int_distribution,
-        utility::rademacher_distribution_t > (N, S, context) {
+        utility::rademacher_distribution_t > (N, S, context, "CWT") {
+
+   }
+
+   CWT_data_t(const boost::property_tree::ptree &json, context_t& context)
+        : hash_transform_data_t<
+        IndexType, ValueType,
+        boost::random::uniform_int_distribution,
+        utility::rademacher_distribution_t > (json, context) {
 
    }
 

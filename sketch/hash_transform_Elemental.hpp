@@ -98,8 +98,8 @@ struct hash_transform_t <
         }
     }
 
-    int get_N() const { return this->N; } /**< Get input dimension. */
-    int get_S() const { return this->S; } /**< Get output dimension. */
+    int get_N() const { return this->_N; } /**< Get input dimension. */
+    int get_S() const { return this->_S; } /**< Get output dimension. */
 
 private:
 
@@ -237,8 +237,8 @@ struct hash_transform_t <
         }
     }
 
-    int get_N() const { return this->N; } /**< Get input dimension. */
-    int get_S() const { return this->S; } /**< Get output dimension. */
+    int get_N() const { return this->_N; } /**< Get input dimension. */
+    int get_S() const { return this->_S; } /**< Get output dimension. */
 
 private:
 
@@ -394,8 +394,8 @@ struct hash_transform_t <
         }
     }
 
-    int get_N() const { return this->N; } /**< Get input dimension. */
-    int get_S() const { return this->S; } /**< Get output dimension. */
+    int get_N() const { return this->_N; } /**< Get input dimension. */
+    int get_S() const { return this->_S; } /**< Get output dimension. */
 
 private:
     /**
@@ -434,7 +434,7 @@ private:
         }
 
         // Pull everything to rank-0
-        boost::mpi::reduce (base_data_t::context.comm,
+        boost::mpi::reduce (base_data_t::_context.comm,
             SA_part.LockedBuffer(),
             SA_part.MemorySize(),
             sketch_of_A.Buffer(),
@@ -478,7 +478,7 @@ private:
         }
 
         // Pull everything to rank-0
-        boost::mpi::reduce (base_data_t::context.comm,
+        boost::mpi::reduce (base_data_t::_context.comm,
             SA_part.LockedBuffer(),
             SA_part.MemorySize(),
             sketch_of_A.Buffer(),

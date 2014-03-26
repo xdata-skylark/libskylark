@@ -41,7 +41,7 @@ public:
      */
     FastRFT_t(const FastRFT_t<matrix_type,
                       output_matrix_type>& other)
-        : base_data_t(other), _fut(base_data_t::N) {
+        : base_data_t(other), _fut(base_data_t::_N) {
 
     }
 
@@ -49,7 +49,7 @@ public:
      * Constructor from data
      */
     FastRFT_t(const base_data_t& other_data)
-        : base_data_t(other_data), _fut(base_data_t::N) {
+        : base_data_t(other_data), _fut(base_data_t::_N) {
 
     }
 
@@ -86,23 +86,23 @@ private:
 #       pragma omp parallel
 #       endif
         {
-        output_matrix_type W(base_data_t::NB, 1);
+        output_matrix_type W(base_data_t::_NB, 1);
         double *w = W.Buffer();
 
-        output_matrix_type Ac(base_data_t::NB, 1);
+        output_matrix_type Ac(base_data_t::_NB, 1);
         double *ac = Ac.Buffer();
 
         output_matrix_type Acv;
-        elem::View(Acv, Ac, 0, 0, base_data_t::N, 1);
+        elem::View(Acv, Ac, 0, 0, base_data_t::_N, 1);
 
         double *sa = sketch_of_A.Buffer();
         int ldsa = sketch_of_A.LDim();
 
         value_type scal =
-            std::sqrt(base_data_t::NB) * _fut.scale();
+            std::sqrt(base_data_t::_NB) * _fut.scale();
 
-        output_matrix_type B(base_data_t::NB, 1), G(base_data_t::NB, 1);
-        output_matrix_type Sm(base_data_t::NB, 1);
+        output_matrix_type B(base_data_t::_NB, 1), G(base_data_t::_NB, 1);
+        output_matrix_type Sm(base_data_t::_NB, 1);
 
 #       ifdef SKYLARK_HAVE_OPENMP
 #       pragma omp for
@@ -110,27 +110,27 @@ private:
         for(int c = 0; c < A.Width(); c++) {
             const matrix_type Acs = base::ColumnView(A, c, 1);
             base::DenseCopy(Acs, Acv);
-            std::fill(ac + base_data_t::N, ac + base_data_t::NB, 0);
+            std::fill(ac + base_data_t::_N, ac + base_data_t::_NB, 0);
 
             for(int i = 0; i < base_data_t::numblks; i++) {
 
-                int s = i * base_data_t::NB;
-                int e = std::min(s + base_data_t::NB,  base_data_t::S);
+                int s = i * base_data_t::_NB;
+                int e = std::min(s + base_data_t::_NB,  base_data_t::_S);
 
                 // Set the local values of B, G and S
-                for(int j = 0; j < base_data_t::NB; j++) {
-                    B.Set(j, 0, base_data_t::B[i * base_data_t::NB + j]);
-                    G.Set(j, 0, scal * base_data_t::G[i * base_data_t::NB + j]);
-                    Sm.Set(j, 0, scal * base_data_t::Sm[i * base_data_t::NB + j]);
+                for(int j = 0; j < base_data_t::_NB; j++) {
+                    B.Set(j, 0, base_data_t::B[i * base_data_t::_NB + j]);
+                    G.Set(j, 0, scal * base_data_t::G[i * base_data_t::_NB + j]);
+                    Sm.Set(j, 0, scal * base_data_t::Sm[i * base_data_t::_NB + j]);
                 }
 
                 W = Ac;
 
                 elem::DiagonalScale(elem::LEFT, elem::NORMAL, B, W);
                 _fut.apply(W, tag);
-                for(int l = 0; l < base_data_t::NB - 1; l++) {
-                    int idx1 = base_data_t::NB - 1 - l;
-                    int idx2 = base_data_t::P[i * (base_data_t::NB - 1) + l];
+                for(int l = 0; l < base_data_t::_NB - 1; l++) {
+                    int idx1 = base_data_t::_NB - 1 - l;
+                    int idx2 = base_data_t::P[i * (base_data_t::_NB - 1) + l];
                     std::swap(w[idx1], w[idx2]);
                 }
                 elem::DiagonalScale(elem::LEFT, elem::NORMAL, G, W);
@@ -174,29 +174,29 @@ private:
         output_matrix_type& sketch_of_A,
         skylark::sketch::rowwise_tag tag) const {
 
-        // TODO this version is really bad: it completely densifies the matrix 
+        // TODO this version is really bad: it completely densifies the matrix
         //      on the begining.
-        // TODO this version does not work with NB and N
+        // TODO this version does not work with _NB and N
         // TODO this version is not as optimized as the columnwise version.
 
         // Create a work array W
         output_matrix_type W(A.Height(), A.Width());
 
-        output_matrix_type B(base_data_t::N, 1), G(base_data_t::N, 1);
-        output_matrix_type Sm(base_data_t::N, 1);
+        output_matrix_type B(base_data_t::_N, 1), G(base_data_t::_N, 1);
+        output_matrix_type Sm(base_data_t::_N, 1);
         for(int i = 0; i < base_data_t::numblks; i++) {
-            int s = i * base_data_t::N;
-            int e = std::min(s + base_data_t::N, base_data_t::S);
+            int s = i * base_data_t::_N;
+            int e = std::min(s + base_data_t::_N, base_data_t::_S);
 
             base::DenseCopy(A, W);
 
             // Set the local values of B, G and S
             value_type scal =
-                std::sqrt(base_data_t::N) * _fut.scale();
-            for(int j = 0; j < base_data_t::N; j++) {
-                B.Set(j, 0, base_data_t::B[i * base_data_t::N + j]);
-                G.Set(j, 0, scal * base_data_t::G[i * base_data_t::N + j]);
-                Sm.Set(j, 0, scal * base_data_t::Sm[i * base_data_t::N + j]);
+                std::sqrt(base_data_t::_N) * _fut.scale();
+            for(int j = 0; j < base_data_t::_N; j++) {
+                B.Set(j, 0, base_data_t::B[i * base_data_t::_N + j]);
+                G.Set(j, 0, scal * base_data_t::G[i * base_data_t::_N + j]);
+                Sm.Set(j, 0, scal * base_data_t::Sm[i * base_data_t::_N + j]);
             }
 
             elem::DiagonalScale(elem::RIGHT, elem::NORMAL, B, W);
@@ -205,10 +205,10 @@ private:
 
             double *w = W.Buffer();
             for(int c = 0; c < W.Height(); c++)
-                for(int l = 0; l < base_data_t::N - 1; l++) {
-                    int idx1 = c + (base_data_t::N - 1 - l) * W.LDim();
+                for(int l = 0; l < base_data_t::_N - 1; l++) {
+                    int idx1 = c + (base_data_t::_N - 1 - l) * W.LDim();
                     int idx2 = c  +
-                        (base_data_t::P[i * (base_data_t::N - 1) + l]) * W.LDim();
+                        (base_data_t::P[i * (base_data_t::_N - 1) + l]) * W.LDim();
                     std::swap(w[idx1], w[idx2]);
                 }
 
@@ -226,7 +226,7 @@ private:
             view_sketch_of_A = view_W;
         }
 
-        for(int j = 0; j < base_data_t::S; j++)
+        for(int j = 0; j < base_data_t::_S; j++)
             for(int i = 0; i < A.Height(); i++) {
                 value_type x = sketch_of_A.Get(i, j);
                 x += base_data_t::shifts[j];

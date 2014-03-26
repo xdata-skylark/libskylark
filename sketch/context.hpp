@@ -3,7 +3,10 @@
 
 #include "../utility/exception.hpp"
 #include "../utility/randgen.hpp"
-#include <boost/mpi.hpp>
+
+#include "boost/mpi.hpp"
+#include "boost/property_tree/ptree.hpp"
+#include "boost/property_tree/json_parser.hpp"
 
 namespace skylark { namespace sketch {
 
@@ -34,6 +37,25 @@ struct context_t {
         size(comm.size()),
         _counter(0),
         _seed(seed) {}
+
+
+    /**
+     * Load context from a serialized JSON structure and the communicator.
+     * @param[in] filename of JSON structure encoding serialized state.
+     * @param[in] orig Communicator that is duplicated and used with SKYLARK.
+     *
+     * @caveat This is a global operation since all MPI ranks need to
+     * participate in the duplication of the communicator.
+     */
+    context_t (const boost::property_tree::ptree& json,
+               const boost::mpi::communicator& orig) :
+        comm(orig, boost::mpi::comm_duplicate),
+        rank(comm.rank()),
+        size(comm.size()) {
+
+        _counter = json.get<size_t>("sketch.context.counter");
+        _seed = json.get<int>("sketch.context.seed");
+    }
 
 
     /**
@@ -70,7 +92,7 @@ struct context_t {
     allocate_random_samples_array(size_t size, Distribution& distribution) {
         skylark::utility::random_samples_array_t<Distribution>
             random_samples_array(_counter, size, _seed, distribution);
-        _counter = _counter + size;
+        _counter += size;
         return random_samples_array;
     }
 
@@ -86,8 +108,8 @@ struct context_t {
       generate_random_samples_array(size_t size,
         Distribution& distribution) {
         skylark::utility::random_samples_array_t<Distribution>
-            allocated_random_samples_array(_counter, size,_seed, distribution);
-        _counter = _counter + size;
+            allocated_random_samples_array(_counter, size, _seed, distribution);
+        _counter += size;
         std::vector<typename Distribution::result_type> random_samples_array;
         try {
             random_samples_array.resize(size);
@@ -113,7 +135,7 @@ struct context_t {
      */
     skylark::utility::random_array_t allocate_random_array(size_t size) {
         skylark::utility::random_array_t random_array(_counter, size, _seed);
-        _counter = _counter + size;
+        _counter += size;
         return random_array;
     }
 
@@ -133,6 +155,14 @@ struct context_t {
     }
 
 
+    size_t get_counter() { return _counter; }
+
+    /**
+     * Serializes the context to a JSON structure.
+     * @param[out] JSON encoded state of the context.
+     */
+    friend boost::property_tree::ptree& operator<<(
+            boost::property_tree::ptree &sk, const context_t &data);
 private:
 
     /// Disable copy constructor as this is error prone for context
@@ -145,6 +175,12 @@ private:
     /// The seed used for initializing the context
     int _seed;
 };
+
+boost::property_tree::ptree& operator<<(boost::property_tree::ptree &sk,
+                                        const context_t &data) {
+        sk.put("sketch.context.seed", data._seed);
+        return sk;
+}
 
 } } /** namespace skylark::sketch */
 

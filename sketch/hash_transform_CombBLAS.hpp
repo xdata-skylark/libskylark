@@ -91,7 +91,7 @@ private:
     void apply_impl_single (const mpi_vector_t& a_,
                             mpi_vector_t& sketch_of_a,
                             columnwise_tag) const {
-        std::vector<value_type> sketch_term(base_data_t::S,0);
+        std::vector<value_type> sketch_term(base_data_t::_S,0);
 
         // We are essentially doing a 'const' access to a, but the neccessary,
         // 'const' option is missing from the interface.
@@ -113,13 +113,13 @@ private:
         /** FIXME: Only need to scatter ... don't need everything everywhere */
         MPI_Allreduce(MPI_IN_PLACE,
             &(sketch_term[0]),
-            base_data_t::S,
+            base_data_t::_S,
             MPIType<value_type>(),
             MPI_SUM,
             a.commGrid->GetWorld());
 
         /** Fill in .. SetElement() is dummy for non-local sets, so it's ok */
-        for (index_type i=0; i<base_data_t::S; ++i) {
+        for (index_type i=0; i<base_data_t::_S; ++i) {
             sketch_of_a.SetElement(i,sketch_term[i]);
         }
     }
@@ -130,8 +130,8 @@ private:
         columnwise_tag) const {
         const index_type num_rhs = A.size;
         if (sketch_of_A.size != num_rhs) { /** error */; return; }
-        if (A.dim != base_data_t::N) { /** error */; return; }
-        if (sketch_of_A.dim != base_data_t::S) { /** error */; return; }
+        if (A.dim != base_data_t::_N) { /** error */; return; }
+        if (sketch_of_A.dim != base_data_t::_S) { /** error */; return; }
 
         /** FIXME: Can sketch all the vectors in one shot */
         for (index_type i=0; i<num_rhs; ++i) {

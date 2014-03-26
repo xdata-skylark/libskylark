@@ -31,8 +31,8 @@ struct CT_t :
     /**
      * Regular constructor
      */
-    CT_t(int N, int S, skylark::sketch::context_t& context)
-        : base_t(N, S, context), _transform(*this) {
+    CT_t(int N, int S, double C, skylark::sketch::context_t& context)
+        : base_t(N, S, C, context), _transform(*this) {
     }
 
     /**

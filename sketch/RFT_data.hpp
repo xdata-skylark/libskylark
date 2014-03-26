@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "context.hpp"
+#include "transform_data.hpp"
 #include "dense_transform_data.hpp"
 #include "../utility/randgen.hpp"
 
@@ -14,7 +15,7 @@ namespace skylark { namespace sketch {
 /**
  * Random Fourier Transform (data)
  *
- * Sketch transform into Eucledian space of fuctions in an RKHS
+ * Sketch transform into Euclidean space of functions in an RKHS
  * implicitly defined by a vector and a shift-invariant kernel.
  *
  * See:
@@ -24,36 +25,66 @@ namespace skylark { namespace sketch {
  */
 template <typename ValueType,
           template <typename> class KernelDistribution>
-struct RFT_data_t {
+struct RFT_data_t : public transform_data_t {
 
     typedef ValueType value_type;
     typedef skylark::sketch::dense_transform_data_t<value_type,
                                                     KernelDistribution>
-    underlying_data_type;
+        underlying_data_type;
+    typedef transform_data_t base_t;
 
-    /**
-     * Regular constructor
-     */
-    RFT_data_t (int N, int S, skylark::sketch::context_t& context)
-        : _N(N), _S(S), _val_scale(1), _context(context),
-          _underlying_data(N, S, context),
+    RFT_data_t (int N, int S, skylark::sketch::context_t& context,
+                std::string name = "")
+        : base_t(N, S, context, name), _val_scale(1),
+          _underlying_data(N, S, base_t::_context),
           _scale(std::sqrt(2.0 / S)) {
-        const double pi = boost::math::constants::pi<value_type>();
-        boost::random::uniform_real_distribution<value_type>
-            distribution(0, 2 * pi);
-        _shifts = context.generate_random_samples_array(S, distribution);
+
+        _populate();
     }
 
+    RFT_data_t (boost::property_tree::ptree &json,
+                skylark::sketch::context_t& context)
+        : base_t(json, context), _val_scale(1),
+          _underlying_data(base_t::_N, base_t::_S, base_t::_context),
+          _scale(std::sqrt(2.0 / base_t::_S)) {
+
+        _populate();
+    }
+
+    template <typename ValueT,
+              template <typename> class KernelDist>
+    friend boost::property_tree::ptree& operator<<(
+        boost::property_tree::ptree &sk,
+        const RFT_data_t<ValueT, KernelDist> &data);
+
+
 protected:
-    const int _N; /**< Input dimension  */
-    const int _S; /**< Output dimension  */
     value_type _val_scale; /**< Bandwidth (sigma)  */
-    skylark::sketch::context_t& _context; /**< Context for this sketch */
     const underlying_data_type _underlying_data;
     /**< Data of the underlying dense transformation */
     const value_type _scale; /** Scaling for trigonometric factor */
     std::vector<value_type> _shifts; /** Shifts for scaled trigonometric factor */
+
+    void _populate() {
+
+        const double pi = boost::math::constants::pi<value_type>();
+        boost::random::uniform_real_distribution<value_type>
+            distribution(0, 2 * pi);
+        _shifts = base_t::_context.generate_random_samples_array(
+            base_t::_S, distribution);
+    }
 };
+
+template <typename ValueType,
+          template <typename> class KernelDistribution>
+boost::property_tree::ptree& operator<<(
+        boost::property_tree::ptree &sk,
+        const RFT_data_t<ValueType, KernelDistribution> &data) {
+
+    sk << static_cast<const transform_data_t&>(data);
+    sk.put("sketch.val_scale", data._val_scale);
+    return sk;
+}
 
 template<typename ValueType>
 struct GaussianRFT_data_t :
@@ -67,13 +98,34 @@ struct GaussianRFT_data_t :
      */
     GaussianRFT_data_t(int N, int S, typename base_t::value_type sigma,
         skylark::sketch::context_t& context)
-        : base_t(N, S, context), _sigma(sigma) {
+        : base_t(N, S, context, "GaussianRFT"), _sigma(sigma) {
         base_t::_val_scale = 1.0 / sigma;
     }
+
+    GaussianRFT_data_t(boost::property_tree::ptree &json,
+        skylark::sketch::context_t& context)
+        : base_t(json, context), _sigma(json.get<ValueType>("sketch.sigma")) {
+        base_t::_val_scale = 1.0 / _sigma;
+    }
+
+    template <typename ValueT>
+    friend boost::property_tree::ptree& operator<<(
+            boost::property_tree::ptree &sk,
+            const GaussianRFT_data_t<ValueT> &data);
 
 protected:
     const ValueType _sigma;
 };
+
+template <typename ValueType>
+boost::property_tree::ptree& operator<<(boost::property_tree::ptree &sk,
+                                        const GaussianRFT_data_t<ValueType> &data) {
+
+    sk << static_cast<const typename GaussianRFT_data_t<ValueType>::base_t&>(data);
+    sk.put("sketch.sigma", data._sigma);
+    return sk;
+}
+
 
 template<typename ValueType>
 struct LaplacianRFT_data_t :
@@ -81,18 +133,36 @@ struct LaplacianRFT_data_t :
 
     typedef RFT_data_t<ValueType, bstrand::cauchy_distribution > base_t;
 
-    /**
-     * Constructor
-     */
     LaplacianRFT_data_t(int N, int S, typename base_t::value_type sigma,
         skylark::sketch::context_t& context)
-        : base_t(N, S, context), _sigma(sigma) {
+        : base_t(N, S, context, "LaplacianRFT"), _sigma(sigma) {
         base_t::_val_scale = 1.0 / sigma;
     }
+
+    LaplacianRFT_data_t(boost::property_tree::ptree &json,
+        skylark::sketch::context_t& context)
+        : base_t(json, context), _sigma(json.get<ValueType>("sketch.sigma")) {
+        base_t::_val_scale = 1.0 / _sigma;
+    }
+
+    template <typename ValueT>
+    friend boost::property_tree::ptree& operator<<(
+            boost::property_tree::ptree &sk,
+            const LaplacianRFT_data_t<ValueT> &data);
 
 protected:
     const ValueType _sigma;
 };
+
+template <typename ValueType>
+boost::property_tree::ptree& operator<<(
+        boost::property_tree::ptree &sk,
+        const LaplacianRFT_data_t<ValueType> &data) {
+
+    sk << static_cast<const typename LaplacianRFT_data_t<ValueType>::base_t&>(data);
+    sk.put("sketch.sigma", data._sigma);
+    return sk;
+}
 
 } } /** namespace skylark::sketch */
 

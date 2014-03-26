@@ -24,14 +24,18 @@ struct RFUT_data_t {
      * Regular constructor
      */
     RFUT_data_t (int N, skylark::sketch::context_t& context)
-        : N(N), context(context) {
+        : _N(N), _context(context) {
         value_distribution_type distribution;
         D = context.generate_random_samples_array(N, distribution);
     }
 
+
+    //TODO: inherit from (dense_)transform_t or serialize here
+    //TODO: serialize distribution
+
 protected:
-    const int N; /**< Input dimension  */
-    skylark::sketch::context_t& context; /**< Context for this sketch */
+    const int _N; /**< Input dimension  */
+    skylark::sketch::context_t& _context; /**< Context for this sketch */
     std::vector<value_type> D; /**< Diagonal part */
 };
 

@@ -6,6 +6,8 @@
 #include "../utility/randgen.hpp"
 #include "../utility/exception.hpp"
 
+#include "transform_data.hpp"
+
 namespace skylark { namespace sketch {
 
 /**
@@ -17,29 +19,52 @@ template <typename IndexType,
           typename ValueType,
           template <typename> class IdxDistributionType,
           template <typename> class ValueDistribution>
-struct hash_transform_data_t {
+struct hash_transform_data_t : public transform_data_t {
     typedef IndexType index_type;
     typedef ValueType value_type;
     typedef IdxDistributionType<IndexType> idx_distribution_type;
     typedef ValueDistribution<ValueType> value_distribution_type;
 
     /**
-     * Regular constructor
+     *  Constructs the data for a hashing sketch.
+     *  @param N
+     *  @param S
+     *  @param context
      */
-    hash_transform_data_t (int N, int S, skylark::sketch::context_t& context)
-        : N(N), S(S), context(context) {
-        idx_distribution_type row_idx_distribution(0, S-1);
-        value_distribution_type row_value_distribution;
-        row_idx = context.generate_random_samples_array(N, row_idx_distribution);
-        row_value = context.generate_random_samples_array(N, row_value_distribution);
+    hash_transform_data_t (int N, int S, skylark::sketch::context_t& context,
+                           const std::string name = "")
+        : transform_data_t(N, S, context, name) {
+
+        _populate();
+    }
+
+    /**
+     *  Load a serialized sketch from a file.
+     *  @param[in] json_filename
+     *  @param[in] context
+     */
+    hash_transform_data_t (const boost::property_tree::ptree &json,
+                           context_t& context)
+        : transform_data_t(json, context) {
+
+        _populate();
     }
 
 protected:
-    const int N; /**< Input dimension  */
-    const int S; /**< Output dimension  */
-    skylark::sketch::context_t& context; /**< Context for this sketch */
     std::vector<index_type> row_idx; /**< precomputed row indices */
     std::vector<value_type> row_value; /**< precomputed scaling factors */
+
+private:
+
+    void _populate() {
+        idx_distribution_type row_idx_distribution(0, _S - 1);
+        value_distribution_type row_value_distribution;
+
+        row_idx   = _context.generate_random_samples_array(
+                        _N, row_idx_distribution);
+        row_value = _context.generate_random_samples_array(
+                        _N, row_value_distribution);
+    }
 };
 
 } } /** namespace skylark::sketch */

@@ -84,7 +84,7 @@ fftw<float>::executebfun_t fftw<float>::executebfun = fftwf_execute_dft_c2r;
 /**
  * Specialization for local to local.
  */
-template<typename ValueType> 
+template<typename ValueType>
 struct PPT_t <
     elem::Matrix<ValueType>,
     elem::Matrix<ValueType> > :
@@ -248,7 +248,7 @@ struct PPT_t <
                 P[j] /= (value_type)S;
 
             internal::fftw<value_type>::executebfun(_fftw_bplan,
-                reinterpret_cast<_fftw_complex_t*>(P), SATv.Buffer()); 
+                reinterpret_cast<_fftw_complex_t*>(P), SATv.Buffer());
             elem::View(ASv, sketch_of_A, i, 0, 1, sketch_of_A.Width());
             elem::Transpose(SATv, ASv);
         }

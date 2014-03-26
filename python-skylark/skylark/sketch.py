@@ -35,6 +35,8 @@ def initialize(seed=-1):
       _lib.sl_context_rank.restype                = c_int
       _lib.sl_context_size.restype                = c_int
       _lib.sl_create_sketch_transform.restype     = c_int
+      _lib.sl_dump_sketch_transform.restype       = c_int
+      _lib.sl_load_sketch_transform.restype       = c_int
       _lib.sl_wrap_raw_matrix.restype             = c_int
       _lib.sl_free_raw_matrix_wrap.restype        = c_int
       _lib.sl_wrap_raw_sp_matrix.restype          = c_int
@@ -121,6 +123,35 @@ def _callsl(f, *args):
   errno = f(*args)
   if errno != 0:
     raise errors.UnexpectedLowerLayerError(_lib.sl_strerror(errno))
+
+def load_json(filename, defouttype = None):
+  """
+  Load Serialized Transform
+
+  :param filename: Filename of the file holding the serialized JSON structure.
+  """
+  with open (filename, "r") as file:
+    json_data = file.read().replace('\n', '')
+
+  import json
+  try:
+    dict = json.loads(json_data)
+  except ValueError:
+    print "Failed to parse JSON file"
+  else:
+    sketches = []
+    for sketch in dict['sketches']:
+      sketch_name = str(sketch['sketch']['name'])
+      sketch_dims = sketch['sketch']['size']
+      sketch_transform = c_void_p()
+      _callsl(_lib.sl_load_sketch_transform, _ctxt_obj, sketch_name, \
+              json.dumps(sketch), byref(sketch_transform))
+
+      #sketch_class = eval(sketch_name)
+      sketches.append(_SketchTransform(sketch_name, int(sketch_dims[0]), \
+              int(sketch_dims[1]), defouttype, False, sketch_transform.value))
+
+    return sketches
 
 #
 # Matrix type adapters: specifies how to interact with the underlying (perhaps in C/C++)
@@ -235,7 +266,7 @@ class _ScipyAdapter:
       _callsl(_lib.sl_raw_sp_matrix_nnz, self._ptr, byref(nnz))
 
 
-      if isinstance(self._A, scipy.sparse.csc_matrix): 
+      if isinstance(self._A, scipy.sparse.csc_matrix):
         indptrdim = self._A.shape[1] + 1 if self._A.ndim > 1 else 2
       else:
         indptrdim = self._A.shape[0] + 1 if self._A.ndim > 1 else 2
@@ -356,7 +387,7 @@ if _KDT_INSTALLED:
     def ptrcleaner(self):
       pass
 
-    def getdim(self, A, dim):
+    def getdim(self, dim):
       if dim == 0:
         return self._A.nrow()
       if dim == 1:
@@ -394,6 +425,7 @@ def _adapt(obj):
   else:
     elemcls = []
 
+  #FIXME: check if object is KDT without loading kdt
   if _KDT_INSTALLED and sys.modules.has_key('kdt'):
     global kdt
     import kdt
@@ -446,7 +478,7 @@ class _SketchTransform(object):
   constructors. The class is not meant
   """
 
-  def __init__(self, ttype, n, s, defouttype=None, forceppy=False):
+  def __init__(self, ttype, n, s, defouttype=None, forceppy=False, sketch_transform=None):
     """
     Create the transform from n dimensional vectors to s dimensional vectors. Here we define
     the interface, but the constructor should not be called directly by the user.
@@ -458,14 +490,18 @@ class _SketchTransform(object):
     :param defouttype: Default output type when using the * and / operators.
                        If None the output will have same type as the input.
     :param forceppy: whether to force a pure python implementation
+    :param sketch_transform: Loaded sketch transform from serialized data.
     :returns: the transform object
     """
 
     self._baseinit(ttype, n, s, defouttype, forceppy)
     if not self._ppy:
-      sketch_transform = c_void_p()
-      _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, ttype, n, s, byref(sketch_transform))
-      self._obj = sketch_transform.value
+      if sketch_transform is None:
+        sketch_transform = c_void_p()
+        _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, ttype, n, s, byref(sketch_transform))
+        self._obj = sketch_transform.value
+      else:
+        self._obj = sketch_transform
 
   def _baseinit(self, ttype, n, s, defouttype, forceppy):
     if defouttype is not None and not _map_to_ctor.has_key(defouttype):
@@ -479,6 +515,14 @@ class _SketchTransform(object):
   def __del__(self):
     if not self._ppy:
       _callsl(_lib.sl_free_sketch_transform, self._obj)
+
+  def dump(self, filename):
+    if not self._ppy:
+      _callsl(_lib.sl_dump_sketch_transform, _ctxt_obj, self._ttype, filename, \
+               self._obj)
+    else:
+        #TODO: python serialization of sketch
+        pass
 
   def apply(self, A, SA, dim=0):
     """

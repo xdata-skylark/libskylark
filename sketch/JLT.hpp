@@ -37,6 +37,12 @@ public:
 
     }
 
+    JLT_t(boost::property_tree::ptree &json,
+          skylark::sketch::context_t& context)
+        : base_t(json, context), _transform(*this) {
+
+    }
+
     /**
      * Copy constructor
      */
@@ -75,8 +81,8 @@ public:
         _transform.apply(A, sketch_of_A, dimension);
     }
 
-    int get_N() const { return this->N; } /**< Get input dimesion. */
-    int get_S() const { return this->S; } /**< Get output dimesion. */
+    int get_N() const { return this->_N; } /**< Get input dimesion. */
+    int get_S() const { return this->_S; } /**< Get output dimesion. */
 
 private:
     transform_t _transform;

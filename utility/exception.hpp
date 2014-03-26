@@ -15,6 +15,7 @@ const char* const errmsg[] = {
     , "Skylark failed in sketching a matrix"
     , "Skylark failed when allocating memory in a sketch"
     , "Skylark failed in a call into the Random123 layer"
+    , "Skylark failed in I/O calls"
 };
 
 /// resolves an error_code to a human readable failure message
@@ -139,6 +140,15 @@ public:
     }
 };
 
+/// exceptions when doing I/O
+struct io_exception : virtual skylark_exception {
+public:
+    using skylark_exception::operator<<;
+
+    io_exception() {
+        *this << error_code(108);
+    }
+};
 
 /// exceptions for allocating memory in sketch layer
 struct allocation_exception : virtual sketch_exception  {

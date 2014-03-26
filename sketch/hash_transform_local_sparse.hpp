@@ -109,8 +109,8 @@ struct hash_transform_t <
         }
     }
 
-    int get_N() const { return this->N; } /**< Get input dimension. */
-    int get_S() const { return this->S; } /**< Get output dimension. */
+    int get_N() const { return this->_N; } /**< Get input dimension. */
+    int get_S() const { return this->_S; } /**< Get output dimension. */
 
 private:
     /**
@@ -171,7 +171,7 @@ private:
     }
 
     inline index_type sketch_rows(const matrix_type &A, columnwise_tag) const {
-        return base_data_t::S;
+        return base_data_t::_S;
     }
 
     inline index_type sketch_rows(const matrix_type &A, rowwise_tag) const {
@@ -183,7 +183,7 @@ private:
     }
 
     inline index_type sketch_cols(const matrix_type &A, rowwise_tag) const {
-        return base_data_t::S;
+        return base_data_t::_S;
     }
 };
 

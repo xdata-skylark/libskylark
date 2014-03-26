@@ -26,7 +26,15 @@ struct MMT_data_t : public hash_transform_data_t<
         : hash_transform_data_t<
         IndexType, ValueType,
         boost::random::uniform_int_distribution,
-        boost::random::cauchy_distribution > (N, S, context) {
+        boost::random::cauchy_distribution > (N, S, context, "MMT") {
+
+   }
+
+   MMT_data_t(const boost::property_tree::ptree &json, context_t& context)
+        : hash_transform_data_t<
+        IndexType, ValueType,
+        boost::random::uniform_int_distribution,
+        boost::random::cauchy_distribution > (json, context) {
 
    }
 

@@ -1,12 +1,15 @@
 #ifndef SKYLARK_HASH_TRANSFORM_LOCAL_SPARSE_HPP
 #define SKYLARK_HASH_TRANSFORM_LOCAL_SPARSE_HPP
 
+#include <boost/dynamic_bitset.hpp>
+
 #include "../base/sparse_matrix.hpp"
 #include "../utility/exception.hpp"
 
 #include "context.hpp"
 #include "transforms.hpp"
 #include "hash_transform_data.hpp"
+
 
 namespace skylark { namespace sketch {
 
@@ -114,14 +117,74 @@ struct hash_transform_t <
 
 private:
     /**
-     * Apply the sketching transform that is described in by the sketch_of_A.
+     * Apply the sketching transform that is described in by the sketch_of_A
+     * columnwise.
      */
-    template <typename Dimension>
     void apply_impl (const matrix_type &A,
                      output_matrix_type &sketch_of_A,
-                     Dimension dist) const {
+                     columnwise_tag) const {
 
-        typename output_matrix_type::coords_t coords;
+        index_type col_idx = 0;
+
+        const int* indptr  = A.indptr();
+        const int* indices = A.indices();
+        const value_type* values = A.locked_values();
+
+        index_type n_rows = base_data_t::_S;
+        index_type n_cols = A.width();
+
+        int nnz = 0;
+        int *indptr_new = new int[n_cols + 1];
+        std::vector<int> final_rows;
+        std::vector<value_type> final_vals;
+
+        indptr_new[0] = 0;
+
+        for(index_type col = 0; col < A.width(); col++) {
+
+            std::vector<index_type> idx_map(n_rows, -1);
+
+            for(index_type idx = indptr[col]; idx < indptr[col + 1]; idx++) {
+
+                index_type row = indices[idx];
+                value_type val = values[idx] * base_data_t::row_value[row];
+                row            = base_data_t::row_idx[row];
+
+                //XXX: I think we should get rid of the if here...
+                if(idx_map[row] == -1) {
+                    idx_map[row] = nnz;
+                    final_rows.push_back(row);
+                    final_vals.push_back(val);
+                    nnz++;
+                } else {
+                    final_vals[idx_map[row]] += val;
+                }
+            }
+
+            indptr_new[col + 1] = final_rows.size();
+        }
+
+        int *indices_new = new int[final_rows.size()];
+        std::copy(final_rows.begin(), final_rows.end(), indices_new);
+        free_vec(final_rows);
+
+        double *values_new = new double[final_vals.size()];
+        std::copy(final_vals.begin(), final_vals.end(), values_new);
+        free_vec(final_vals);
+
+        // let the sparse structure take ownership of the data
+        sketch_of_A.attach(indptr_new, indices_new, values_new,
+                           nnz, n_rows, n_cols, true);
+    }
+
+
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A
+     * rowwise.
+     */
+    void apply_impl (const matrix_type &A,
+                     output_matrix_type &sketch_of_A,
+                     rowwise_tag) const {
 
         index_type col_idx = 0;
 
@@ -129,62 +192,73 @@ private:
         const int* indices = A.indices();
         const value_type* values = A.locked_values();
 
-        for(index_type col = 0; col < A.width(); col++) {
-            for(index_type idx = indptr[col]; idx < indptr[col + 1]; idx++) {
+        // target size
+        index_type n_rows = A.height();
+        index_type n_cols = base_data_t::_S;
 
-                index_type coltmp = col;
-                index_type row = indices[idx];
-                value_type value = values[idx] * get_value(row, coltmp, dist);
+        int nnz = 0;
+        int *indptr_new = new int[n_cols + 1];
+        std::vector<int> final_rows;
+        std::vector<value_type> final_vals;
 
-                final_pos(row, coltmp, dist);
-                typename output_matrix_type::coord_tuple_t
-                    new_entry(row,  coltmp, value);
+        indptr_new[0] = 0;
 
-                coords.push_back(new_entry);
-            }
+        // we adapt transversal order for this case
+        //XXX: or transpose A
+        std::vector< std::vector<int> > inv_mapping(base_data_t::_S);
+        for(int idx = 0; idx < base_data_t::row_idx.size(); ++idx) {
+            inv_mapping[base_data_t::row_idx[idx]].push_back(idx);
         }
 
-        index_type n_rows = sketch_rows(A, dist);
-        index_type n_cols = sketch_cols(A, dist);
+        for(index_type target_col = 0; target_col < base_data_t::_S;
+            ++target_col) {
 
-        sketch_of_A.set(coords, n_rows, n_cols);
+            std::vector<index_type> idx_map(n_rows, -1);
+
+            std::vector<int>::iterator itr;
+            for(itr = inv_mapping[target_col].begin();
+                itr != inv_mapping[target_col].end(); itr++) {
+
+                int col = *itr;
+
+                for(index_type idx = indptr[col]; idx < indptr[col + 1]; idx++) {
+
+                    index_type row = indices[idx];
+                    value_type val = values[idx] * base_data_t::row_value[col];
+
+                    //XXX: I think we should get rid of the if here...
+                    if(idx_map[row] == -1) {
+                        idx_map[row] = nnz;
+                        final_rows.push_back(row);
+                        final_vals.push_back(val);
+                        nnz++;
+                    } else {
+                        final_vals[idx_map[row]] += val;
+                    }
+                }
+            }
+
+            indptr_new[target_col + 1] = final_rows.size();
+        }
+
+        int *indices_new = new int[final_rows.size()];
+        std::copy(final_rows.begin(), final_rows.end(), indices_new);
+        free_vec(final_rows);
+
+        double *values_new = new double[final_vals.size()];
+        std::copy(final_vals.begin(), final_vals.end(), values_new);
+        free_vec(final_vals);
+
+        sketch_of_A.attach(indptr_new, indices_new, values_new,
+                           nnz, n_rows, n_cols, true);
     }
 
-    inline void final_pos(index_type &rowid, index_type &colid,
-        columnwise_tag) const {
-        rowid = base_data_t::row_idx[rowid];
+    template <typename T>
+    void free_vec(std::vector<T> &vec) const {
+        std::vector<T> tmp;
+        vec.swap(tmp);
     }
 
-    inline void final_pos(index_type &rowid, index_type &colid,
-        rowwise_tag) const {
-        colid = base_data_t::row_idx[colid];
-    }
-
-    inline value_type get_value(index_type rowid, index_type colid,
-        columnwise_tag) const {
-        return base_data_t::row_value[rowid];
-    }
-
-    inline value_type get_value(index_type rowid, index_type colid,
-        rowwise_tag) const {
-        return base_data_t::row_value[colid];
-    }
-
-    inline index_type sketch_rows(const matrix_type &A, columnwise_tag) const {
-        return base_data_t::_S;
-    }
-
-    inline index_type sketch_rows(const matrix_type &A, rowwise_tag) const {
-        return A.height();
-    }
-
-    inline index_type sketch_cols(const matrix_type &A, columnwise_tag) const {
-        return A.width();
-    }
-
-    inline index_type sketch_cols(const matrix_type &A, rowwise_tag) const {
-        return base_data_t::_S;
-    }
 };
 
 } } /** namespace skylark::sketch */

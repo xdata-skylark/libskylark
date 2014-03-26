@@ -1,6 +1,7 @@
 #ifndef SPARSE_MATRIX_HPP
 #define SPARSE_MATRIX_HPP
 
+#include <set>
 #include <vector>
 #include <boost/tuple/tuple.hpp>
 

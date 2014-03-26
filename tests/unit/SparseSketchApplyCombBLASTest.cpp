@@ -136,43 +136,43 @@ int test_main(int argc, char *argv[]) {
     //////////////////////////////////////////////////////////////////////////
     //[> Column wise application DistSparseMatrix -> LocalSparseMatrix <]
 
-    Dummy_t<DistMatrixType, LocalMatrixType> LocalSparse(n, n_s, context);
-    LocalMatrixType local_sketch_A;
-    LocalSparse.apply(A, local_sketch_A, skylark::sketch::columnwise_tag());
+    //Dummy_t<DistMatrixType, LocalMatrixType> LocalSparse(n, n_s, context);
+    //LocalMatrixType local_sketch_A;
+    //LocalSparse.apply(A, local_sketch_A, skylark::sketch::columnwise_tag());
 
-    int nrowptr = 0, nnz = 0;
-    local_sketch_A.get_size(&nrowptr, &nnz);
-    mpi_vector_t lcols(nnz);
-    mpi_vector_t lrows(nnz);
-    mpi_vector_t lvals(nnz);
+    //int nrowptr = 0, nnz = 0;
+    //local_sketch_A.get_size(&nrowptr, &nnz);
+    //mpi_vector_t lcols(nnz);
+    //mpi_vector_t lrows(nnz);
+    //mpi_vector_t lvals(nnz);
 
-    size_t col = 0;
-    typename LocalMatrixType::const_ind_itr_range_t citr =
-        local_sketch_A.indptr_itr();
-    typename LocalMatrixType::const_ind_itr_range_t ritr =
-        local_sketch_A.indices_itr();
-    typename LocalMatrixType::const_val_itr_range_t vitr =
-        local_sketch_A.values_itr();
+    //size_t col = 0;
+    //typename LocalMatrixType::const_ind_itr_range_t citr =
+        //local_sketch_A.indptr_itr();
+    //typename LocalMatrixType::const_ind_itr_range_t ritr =
+        //local_sketch_A.indices_itr();
+    //typename LocalMatrixType::const_val_itr_range_t vitr =
+        //local_sketch_A.values_itr();
 
-    size_t counter = 0;
-    for(; citr.first + 1 != citr.second; citr.first++, ++col) {
-        for(size_t idx = 0; idx < (*(citr.first + 1) - *citr.first);
-            ritr.first++, vitr.first++, ++idx) {
+    //size_t counter = 0;
+    //for(; citr.first + 1 != citr.second; citr.first++, ++col) {
+        //for(size_t idx = 0; idx < (*(citr.first + 1) - *citr.first);
+            //ritr.first++, vitr.first++, ++idx) {
 
-            lrows.SetElement(counter, *ritr.first);
-            lcols.SetElement(counter, col);
-            lvals.SetElement(counter, *vitr.first);
-            counter++;
-        }
-    }
+            //lrows.SetElement(counter, *ritr.first);
+            //lcols.SetElement(counter, col);
+            //lvals.SetElement(counter, *vitr.first);
+            //counter++;
+        //}
+    //}
 
-    DistMatrixType local_sketch_result(n_s, m, lrows, lcols, lvals);
+    //DistMatrixType local_sketch_result(n_s, m, lrows, lcols, lvals);
 
-    DistMatrixType pi_sketch_l(n_s, n, zero, zero, zero);
-    compute_sketch_matrix(LocalSparse, A, pi_sketch_l);
-    DistMatrixType expected_A_l = Mult_AnXBn_Synch<PTDD, double, col_t>(pi_sketch_l, A, false, false);
-    if (!static_cast<bool>(expected_A_l == local_sketch_result))
-        BOOST_FAIL("Result of colwise (dist -> local) application not as expected");
+    //DistMatrixType pi_sketch_l(n_s, n, zero, zero, zero);
+    //compute_sketch_matrix(LocalSparse, A, pi_sketch_l);
+    //DistMatrixType expected_A_l = Mult_AnXBn_Synch<PTDD, double, col_t>(pi_sketch_l, A, false, false);
+    //if (!static_cast<bool>(expected_A_l == local_sketch_result))
+        //BOOST_FAIL("Result of colwise (dist -> local) application not as expected");
 
     //////////////////////////////////////////////////////////////////////////
     //[> Row wise application DistSparseMatrix -> DistSparseMatrix <]

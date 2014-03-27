@@ -139,10 +139,10 @@ private:
         std::vector<value_type> final_vals(A.nonzeros());
 
         indptr_new[0] = 0;
+        std::vector<index_type> idx_map(n_rows, -1);
 
         for(index_type col = 0; col < A.width(); col++) {
 
-            std::vector<index_type> idx_map(n_rows, -1);
 
             for(index_type idx = indptr[col]; idx < indptr[col + 1]; idx++) {
 
@@ -162,6 +162,10 @@ private:
             }
 
             indptr_new[col + 1] = nnz;
+
+            // reset idx_map
+            for(int i = indptr_new[col]; i < nnz; ++i)
+                idx_map[final_rows[i]] = -1;
         }
 
         int *indices_new = new int[nnz];
@@ -210,10 +214,10 @@ private:
             inv_mapping[base_data_t::row_idx[idx]].push_back(idx);
         }
 
+        std::vector<index_type> idx_map(n_rows, -1);
+
         for(index_type target_col = 0; target_col < base_data_t::_S;
             ++target_col) {
-
-            std::vector<index_type> idx_map(n_rows, -1);
 
             std::vector<int>::iterator itr;
             for(itr = inv_mapping[target_col].begin();
@@ -239,6 +243,10 @@ private:
             }
 
             indptr_new[target_col + 1] = nnz;
+
+            // reset idx_map
+            for(int i = indptr_new[target_col]; i < nnz; ++i)
+                idx_map[final_rows[i]] = -1;
         }
 
         int *indices_new = new int[nnz];

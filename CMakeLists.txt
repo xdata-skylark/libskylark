@@ -218,12 +218,17 @@ if (USE_ELEMENTAL)
     include_directories (${Elemental_INCLUDE_DIR})
     link_directories (${Elemental_LIBRARY_DIR})
 
+    #FIXME: only enable C++11 if elem >= 0.83?
     #FIXME: properly identify and check flags
     #include(FindCXXFeatures)
-    set(CXX11_COMPILER_FLAGS "-std=c++11")
+    if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "XL")
+      set(CXX11_COMPILER_FLAGS "-qlanglvl=extended0x")
+    else ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "XL")
+      set(CXX11_COMPILER_FLAGS "-std=c++11")
+    endif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "XL")
     message(STATUS "CXX11_COMPILER_FLAGS=${CXX11_COMPILER_FLAGS}")
     set (CMAKE_CXX_FLAGS "${CXX11_COMPILER_FLAGS} ${CMAKE_CXX_FLAGS}")
-    
+
     set (SKYLARK_HAVE_ELEMENTAL
          1
          CACHE
@@ -259,8 +264,8 @@ if (USE_ELEMENTAL)
   endif(NOT BLAS_LIBRARIES OR NOT LAPACK_LIBRARIES)
   set (Elemental_LIBRARY
     ${Elemental_LIBRARY}
-    ${BLAS_LIBRARIES}
     ${LAPACK_LIBRARIES}
+    ${BLAS_LIBRARIES}
   )
 endif (USE_ELEMENTAL)
 

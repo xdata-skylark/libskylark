@@ -135,8 +135,8 @@ private:
 
         int nnz = 0;
         int *indptr_new = new int[n_cols + 1];
-        std::vector<int> final_rows;
-        std::vector<value_type> final_vals;
+        std::vector<int> final_rows(A.nonzeros());
+        std::vector<value_type> final_vals(A.nonzeros());
 
         indptr_new[0] = 0;
 
@@ -153,23 +153,23 @@ private:
                 //XXX: I think we should get rid of the if here...
                 if(idx_map[row] == -1) {
                     idx_map[row] = nnz;
-                    final_rows.push_back(row);
-                    final_vals.push_back(val);
+                    final_rows[nnz] = row;
+                    final_vals[nnz] = val;
                     nnz++;
                 } else {
                     final_vals[idx_map[row]] += val;
                 }
             }
 
-            indptr_new[col + 1] = final_rows.size();
+            indptr_new[col + 1] = nnz;
         }
 
-        int *indices_new = new int[final_rows.size()];
-        std::copy(final_rows.begin(), final_rows.end(), indices_new);
+        int *indices_new = new int[nnz];
+        std::copy(final_rows.begin(), final_rows.begin() + nnz, indices_new);
         free_vec(final_rows);
 
-        double *values_new = new double[final_vals.size()];
-        std::copy(final_vals.begin(), final_vals.end(), values_new);
+        double *values_new = new double[nnz];
+        std::copy(final_vals.begin(), final_vals.begin() + nnz, values_new);
         free_vec(final_vals);
 
         // let the sparse structure take ownership of the data
@@ -198,8 +198,8 @@ private:
 
         int nnz = 0;
         int *indptr_new = new int[n_cols + 1];
-        std::vector<int> final_rows;
-        std::vector<value_type> final_vals;
+        std::vector<int> final_rows(A.nonzeros());
+        std::vector<value_type> final_vals(A.nonzeros());
 
         indptr_new[0] = 0;
 
@@ -229,8 +229,8 @@ private:
                     //XXX: I think we should get rid of the if here...
                     if(idx_map[row] == -1) {
                         idx_map[row] = nnz;
-                        final_rows.push_back(row);
-                        final_vals.push_back(val);
+                        final_rows[nnz] = row;
+                        final_vals[nnz] = val;
                         nnz++;
                     } else {
                         final_vals[idx_map[row]] += val;
@@ -238,15 +238,15 @@ private:
                 }
             }
 
-            indptr_new[target_col + 1] = final_rows.size();
+            indptr_new[target_col + 1] = nnz;
         }
 
-        int *indices_new = new int[final_rows.size()];
-        std::copy(final_rows.begin(), final_rows.end(), indices_new);
+        int *indices_new = new int[nnz];
+        std::copy(final_rows.begin(), final_rows.begin() + nnz, indices_new);
         free_vec(final_rows);
 
-        double *values_new = new double[final_vals.size()];
-        std::copy(final_vals.begin(), final_vals.end(), values_new);
+        double *values_new = new double[nnz];
+        std::copy(final_vals.begin(), final_vals.begin() + nnz, values_new);
         free_vec(final_vals);
 
         sketch_of_A.attach(indptr_new, indices_new, values_new,

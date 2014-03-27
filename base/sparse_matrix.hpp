@@ -93,10 +93,9 @@ struct sparse_matrix_t {
             nnz++;
             int cur_row = boost::get<0>(coords[i]);
             int cur_col = boost::get<1>(coords[i]);
-            value_type cur_val = boost::get<2>(coords[i]);
             while(i + 1 < coords.size() &&
-                cur_row == boost::get<0>(coords[i + 1]) &&
-                cur_col == boost::get<1>(coords[i + 1]))
+                  cur_row == boost::get<0>(coords[i + 1]) &&
+                  cur_col == boost::get<1>(coords[i + 1]))
                 i++;
         }
 

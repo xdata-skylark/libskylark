@@ -571,72 +571,71 @@ private:
 
         // We are essentially doing a 'const' access to A, but the necessary,
         // 'const' option is missing from the interface
-        //matrix_type &A = const_cast<matrix_type&>(A_);
+        matrix_type &A = const_cast<matrix_type&>(A_);
 
-        //const size_t rank = A.getcommgrid()->GetRank();
+        const size_t rank = A.getcommgrid()->GetRank();
 
-        //// extract columns of matrix
-        //col_t &data = A.seq();
+        // extract columns of matrix
+        col_t &data = A.seq();
 
-        ////FIXME: use comm_grid
-        //const size_t my_row_offset =
-            //static_cast<int>((static_cast<double>(A.getnrow()) /
-                    //A.getcommgrid()->GetGridRows())) *
-                    //A.getcommgrid()->GetRankInProcCol(rank);
+        //FIXME: use comm_grid
+        const size_t my_row_offset =
+            static_cast<int>((static_cast<double>(A.getnrow()) /
+                    A.getcommgrid()->GetGridRows())) *
+                    A.getcommgrid()->GetRankInProcCol(rank);
 
-        //const size_t my_col_offset =
-            //static_cast<int>((static_cast<double>(A.getncol()) /
-                    //A.getcommgrid()->GetGridCols())) *
-                    //A.getcommgrid()->GetRankInProcRow(rank);
+        const size_t my_col_offset =
+            static_cast<int>((static_cast<double>(A.getncol()) /
+                    A.getcommgrid()->GetGridCols())) *
+                    A.getcommgrid()->GetRankInProcRow(rank);
 
-        //// Apply sketch for all local values. Subsequently, all values are
-        //// gathered on processor 0 and the local matrix is populated.
-        //std::map< std::pair< index_type, index_type>, value_type > coords;
-        //for(typename col_t::SpColIter col = data.begcol();
-            //col != data.endcol(); col++) {
-            //for(typename col_t::SpColIter::NzIter nz = data.begnz(col);
-                //nz != data.endnz(col); nz++) {
+        // Apply sketch for all local values. Subsequently, all values are
+        // gathered on processor 0 and the local matrix is populated.
+        std::map< std::pair< index_type, index_type>, value_type > coords;
+        for(typename col_t::SpColIter col = data.begcol();
+            col != data.endcol(); col++) {
+            for(typename col_t::SpColIter::NzIter nz = data.begnz(col);
+                nz != data.endnz(col); nz++) {
 
-                //index_type rowid = nz.rowid()  + my_row_offset;
-                //index_type colid = col.colid() + my_col_offset;
+                index_type rowid = nz.rowid()  + my_row_offset;
+                index_type colid = col.colid() + my_col_offset;
 
-                //const value_type value =
-                    //nz.value() * getValue(rowid, colid, dist);
+                const value_type value =
+                    nz.value() * getValue(rowid, colid, dist);
 
-                //finalPos(rowid, colid, dist);
-                //std::pair<index_type, index_type> pos =
-                    //std::make_pair(rowid, colid);
+                finalPos(rowid, colid, dist);
+                std::pair<index_type, index_type> pos =
+                    std::make_pair(rowid, colid);
 
-                //if(coords.count(pos) != 0)
-                    //coords[pos] += value;
-                //else
-                    //coords.insert(std::make_pair(pos, value));
-            //}
-        //}
+                if(coords.count(pos) != 0)
+                    coords[pos] += value;
+                else
+                    coords.insert(std::make_pair(pos, value));
+            }
+        }
 
-        //boost::mpi::communicator world(A.getcommgrid()->GetWorld(),
-                                       //boost::mpi::comm_duplicate);
+        boost::mpi::communicator world(A.getcommgrid()->GetWorld(),
+                                       boost::mpi::comm_duplicate);
 
-        //std::vector< std::map<std::pair<index_type, index_type>, value_type> >
-            //result;
-        //boost::mpi::gather(world, coords, result, 0);
+        std::vector< std::map<std::pair<index_type, index_type>, value_type> >
+            result;
+        boost::mpi::gather(world, coords, result, 0);
 
-        //// unpack
-        //typedef typename output_matrix_type::coords_t coords_t;
-        //coords_t coord_matrix;
-        //for(size_t i = 0; i < result.size(); ++i) {
-            //typename std::map<
-                //std::pair<index_type, index_type>, value_type>::iterator itr;
-            //for(itr = result[i].begin(); itr != result[i].end(); itr++) {
+        typedef typename output_matrix_type::coords_t coords_t;
+        coords_t coord_matrix;
+        for(size_t i = 0; i < result.size(); ++i) {
+            typename std::map<
+                std::pair<index_type, index_type>, value_type>::iterator itr;
+            for(itr = result[i].begin(); itr != result[i].end(); itr++) {
 
-                //typename output_matrix_type::coord_tuple_t new_entry(
-                         //itr->first.first, itr->first.second, itr->second);
+                typename output_matrix_type::coord_tuple_t new_entry(
+                         itr->first.first, itr->first.second, itr->second);
 
-                //coord_matrix.push_back(new_entry);
-            //}
-        //}
+                coord_matrix.push_back(new_entry);
+            }
+        }
 
-        //sketch_of_A.attach(coord_matrix);
+        sketch_of_A.set(coord_matrix);
     }
 
     inline void finalPos(index_type &rowid, index_type &colid, columnwise_tag) const {

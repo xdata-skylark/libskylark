@@ -3,7 +3,7 @@
 
 #include "../base/base.hpp"
 
-#include "context.hpp"
+#include "../base/context.hpp"
 #include "transforms.hpp"
 #include "dense_transform_data.hpp"
 #include "../utility/comm.hpp"
@@ -36,7 +36,7 @@ struct dense_transform_t <
     /**
      * Regular constructor
      */
-    dense_transform_t (int N, int S, skylark::sketch::context_t& context)
+    dense_transform_t (int N, int S, skylark::base::context_t& context)
         : base_data_t (N, S, context) {}
 
     /**
@@ -148,7 +148,7 @@ struct dense_transform_t <
     /**
      * Regular constructor
      */
-    dense_transform_t (int N, int S, skylark::sketch::context_t& context)
+    dense_transform_t (int N, int S, skylark::base::context_t& context)
         : base_data_t (N, S, context) {}
 
     /**
@@ -324,7 +324,7 @@ struct dense_transform_t <
     /**
      * Regular Constructor
      */
-    dense_transform_t (int N, int S, skylark::sketch::context_t& context)
+    dense_transform_t (int N, int S, skylark::base::context_t& context)
         : base_data_t (N, S, context) {}
 
     /**
@@ -496,7 +496,7 @@ struct dense_transform_t <
     /**
      * Regular constructor
      */
-    dense_transform_t (int N, int S, skylark::sketch::context_t& context)
+    dense_transform_t (int N, int S, skylark::base::context_t& context)
         : base_data_t (N, S, context) {}
 
     /**
@@ -701,7 +701,7 @@ struct dense_transform_t <
     /**
      * Regular Constructor
      */
-    dense_transform_t (int N, int S, skylark::sketch::context_t& context)
+    dense_transform_t (int N, int S, skylark::base::context_t& context)
         : base_data_t (N, S, context) {}
 
     /**
@@ -874,7 +874,7 @@ struct dense_transform_t <
     /**
      * Regular constructor
      */
-    dense_transform_t (int N, int S, skylark::sketch::context_t& context)
+    dense_transform_t (int N, int S, skylark::base::context_t& context)
         : base_data_t (N, S, context) {}
 
     /**
@@ -1032,7 +1032,7 @@ struct dense_transform_t <
     /**
      * Regular constructor
      */
-    dense_transform_t (int N, int S, skylark::sketch::context_t& context)
+    dense_transform_t (int N, int S, skylark::base::context_t& context)
         : base_data_t (N, S, context) {
 
     }

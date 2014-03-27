@@ -37,12 +37,12 @@ public:
     /**
      * Regular constructor
      */
-    MMT_t(int N, int S, context_t& context)
+    MMT_t(int N, int S, skylark::base::context_t& context)
         : base_t(N, S, context), _transform(*this) {
 
     }
 
-    MMT_t(const std::string json_filename, context_t& context)
+    MMT_t(const std::string json_filename, skylark::base::context_t& context)
         : base_t(json_filename, context), _transform(*this) {
 
     }

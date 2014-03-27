@@ -42,7 +42,7 @@ public:
     /**
      * Regular constructor
      */
-    WZT_t(int N, int S, double p, context_t& context)
+    WZT_t(int N, int S, double p, skylark::base::context_t& context)
         : base_t(N, S, p, context), _transform(*this) {
 
     }

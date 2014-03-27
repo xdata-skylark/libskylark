@@ -8,7 +8,7 @@
 #include <elemental.hpp>
 #include <fftw3.h>
 
-#include "context.hpp"
+#include "../base/context.hpp"
 #include "transforms.hpp"
 
 namespace skylark { namespace sketch {
@@ -163,7 +163,7 @@ extern "C" {
 #include <spiral_wht.h>
 }
 
-#include "context.hpp"
+#include "../base/context.hpp"
 #include "transforms.hpp"
 
 namespace skylark { namespace sketch {

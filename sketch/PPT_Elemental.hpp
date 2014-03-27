@@ -8,7 +8,7 @@
 #include <elemental.hpp>
 #include <fftw3.h>
 
-#include "context.hpp"
+#include "../base/context.hpp"
 #include "transforms.hpp"
 #include "PPT_data.hpp"
 #include "../utility/exception.hpp"
@@ -101,7 +101,7 @@ struct PPT_t <
      * Regular constructor
      */
     PPT_t(int N, int S, int q, double c, double gamma,
-        skylark::sketch::context_t& context)
+        skylark::base::context_t& context)
         : base_data_t (N, S, q, c, gamma, context)  {
 
         build_internal();
@@ -315,7 +315,7 @@ struct PPT_t <
      * Regular constructor
      */
     PPT_t(int N, int S, int q, double c, double gamma,
-        skylark::sketch::context_t& context)
+        skylark::base::context_t& context)
         : base_data_t (N, S, q, c, gamma, context)  {
 
         build_internal();

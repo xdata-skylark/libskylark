@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "context.hpp"
+#include "../base/context.hpp"
 #include "../utility/randgen.hpp"
 
 #include "transform_data.hpp"
@@ -25,7 +25,7 @@ struct dense_transform_data_t : public transform_data_t {
     /**
      * Regular constructor
      */
-    dense_transform_data_t (int N, int S, skylark::sketch::context_t& context,
+    dense_transform_data_t (int N, int S, skylark::base::context_t& context,
                             std::string name = "")
         : transform_data_t(N, S, context, name),
           distribution(),
@@ -37,7 +37,7 @@ struct dense_transform_data_t : public transform_data_t {
     }
 
     dense_transform_data_t (const boost::property_tree::ptree json,
-                            context_t& context)
+                            skylark::base::context_t& context)
         : transform_data_t(json, context),
           distribution(),
           random_samples(

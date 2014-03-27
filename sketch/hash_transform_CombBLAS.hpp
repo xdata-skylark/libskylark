@@ -9,7 +9,7 @@
 #include "../utility/exception.hpp"
 #include "../base/sparse_matrix.hpp"
 
-#include "context.hpp"
+#include "../base/context.hpp"
 #include "transforms.hpp"
 #include "hash_transform_data.hpp"
 
@@ -42,7 +42,7 @@ struct hash_transform_t <FullyDistMultiVec<IndexType, ValueType>,
     /**
      * Regular constructor
      */
-    hash_transform_t (int N, int S, skylark::sketch::context_t& context) :
+    hash_transform_t (int N, int S, skylark::base::context_t& context) :
         base_data_t (N, S, context) {}
 
     /**
@@ -170,7 +170,7 @@ struct hash_transform_t <
     /**
      * Regular constructor
      */
-    hash_transform_t (int N, int S, skylark::sketch::context_t& context) :
+    hash_transform_t (int N, int S, skylark::base::context_t& context) :
         base_data_t(N, S, context) {}
 
     /**
@@ -515,7 +515,7 @@ struct hash_transform_t <
     /**
      * Regular constructor
      */
-    hash_transform_t (int N, int S, skylark::sketch::context_t& context) :
+    hash_transform_t (int N, int S, skylark::base::context_t& context) :
         base_data_t(N, S, context) {}
 
     /**

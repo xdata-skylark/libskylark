@@ -32,13 +32,13 @@ public:
     /**
      * Regular constructor
      */
-    JLT_t(int N, int S, skylark::sketch::context_t& context)
+    JLT_t(int N, int S, skylark::base::context_t& context)
         : base_t(N, S, context), _transform(*this) {
 
     }
 
     JLT_t(boost::property_tree::ptree &json,
-          skylark::sketch::context_t& context)
+          skylark::base::context_t& context)
         : base_t(json, context), _transform(*this) {
 
     }

@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "context.hpp"
+#include "../base/context.hpp"
 #include "transform_data.hpp"
 #include "dense_transform_data.hpp"
 #include "../utility/randgen.hpp"
@@ -33,7 +33,7 @@ struct RFT_data_t : public transform_data_t {
         underlying_data_type;
     typedef transform_data_t base_t;
 
-    RFT_data_t (int N, int S, skylark::sketch::context_t& context,
+    RFT_data_t (int N, int S, skylark::base::context_t& context,
                 std::string name = "")
         : base_t(N, S, context, name), _val_scale(1),
           _underlying_data(N, S, base_t::_context),
@@ -43,7 +43,7 @@ struct RFT_data_t : public transform_data_t {
     }
 
     RFT_data_t (boost::property_tree::ptree &json,
-                skylark::sketch::context_t& context)
+                skylark::base::context_t& context)
         : base_t(json, context), _val_scale(1),
           _underlying_data(base_t::_N, base_t::_S, base_t::_context),
           _scale(std::sqrt(2.0 / base_t::_S)) {
@@ -97,13 +97,13 @@ struct GaussianRFT_data_t :
      * Most of the work is done by base. Here just write scale
      */
     GaussianRFT_data_t(int N, int S, typename base_t::value_type sigma,
-        skylark::sketch::context_t& context)
+        skylark::base::context_t& context)
         : base_t(N, S, context, "GaussianRFT"), _sigma(sigma) {
         base_t::_val_scale = 1.0 / sigma;
     }
 
     GaussianRFT_data_t(boost::property_tree::ptree &json,
-        skylark::sketch::context_t& context)
+        skylark::base::context_t& context)
         : base_t(json, context), _sigma(json.get<ValueType>("sketch.sigma")) {
         base_t::_val_scale = 1.0 / _sigma;
     }
@@ -134,13 +134,13 @@ struct LaplacianRFT_data_t :
     typedef RFT_data_t<ValueType, bstrand::cauchy_distribution > base_t;
 
     LaplacianRFT_data_t(int N, int S, typename base_t::value_type sigma,
-        skylark::sketch::context_t& context)
+        skylark::base::context_t& context)
         : base_t(N, S, context, "LaplacianRFT"), _sigma(sigma) {
         base_t::_val_scale = 1.0 / sigma;
     }
 
     LaplacianRFT_data_t(boost::property_tree::ptree &json,
-        skylark::sketch::context_t& context)
+        skylark::base::context_t& context)
         : base_t(json, context), _sigma(json.get<ValueType>("sketch.sigma")) {
         base_t::_val_scale = 1.0 / _sigma;
     }

@@ -3,7 +3,7 @@
 
 #include <elemental.hpp>
 
-#include "context.hpp"
+#include "../base/context.hpp"
 #include "transforms.hpp"
 #include "FJLT_data.hpp"
 #include "../utility/exception.hpp"
@@ -38,7 +38,7 @@ public:
     /**
      * Regular constructor
      */
-    FJLT_t(int N, int S, skylark::sketch::context_t& context)
+    FJLT_t(int N, int S, skylark::base::context_t& context)
         : base_data_t (N, S, context) {
 
     }

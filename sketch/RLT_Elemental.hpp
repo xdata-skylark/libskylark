@@ -3,7 +3,7 @@
 
 #include <elemental.hpp>
 
-#include "context.hpp"
+#include "../base/context.hpp"
 #include "transforms.hpp"
 #include "RLT_data.hpp"
 #include "../utility/exception.hpp"
@@ -42,7 +42,7 @@ protected:
     /**
      * Regular constructor - allow creation only by subclasses
      */
-    RLT_t (int N, int S, skylark::sketch::context_t& context)
+    RLT_t (int N, int S, skylark::base::context_t& context)
         : base_data_t (N, S, context) {
 
     }

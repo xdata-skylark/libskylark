@@ -106,13 +106,16 @@ void read_hdf5_dense(skylark_context_t& context, string fName,
 }
 
 void read_hdf5_dense(skylark_context_t& context, string fName,
-        elem::DistMatrix<double, elem::STAR, elem::VC>& X,
-        elem::DistMatrix<double, elem::VC, elem::STAR>& Y, int blocksize = 10000) {
+        LocalMatrixType& Xlocal,
+        LocalMatrixType& Ylocal, int blocksize = 10000) {
 
         bmpi::timer timer;
         if (context.rank==0)
                     cout << "Reading from file " << fName << endl;
 
+
+        elem::DistMatrix<double, elem::STAR, elem::VC> X;
+        elem::DistMatrix<double, elem::VC, elem::STAR> Y;
 
        H5::H5File file( fName, H5F_ACC_RDONLY );
        H5::DataSet datasetX = file.openDataSet( "X" );
@@ -143,6 +146,11 @@ void read_hdf5_dense(skylark_context_t& context, string fName,
         X.Resize(d, n);
         Y.Resize(n,1);
 
+        elem::Zeros(Xlocal, X.LocalHeight(), X.LocalWidth());
+        elem::Zeros(Ylocal, Y.LocalHeight(), 1);
+
+        X.Attach(d,n,0,0,Xlocal,elem::DefaultGrid());
+        Y.Attach(n,1,0,0,Ylocal,elem::DefaultGrid());
 
         for(int i=0; i<numblocks+1; i++) {
 
@@ -543,7 +551,7 @@ void read(skylark::sketch::context_t& context, int fileformat, string filename, 
             case HDF5:
             {
                 #ifdef SKYLARK_HAVE_HDF5
-             //       read_hdf5_dense(context, filename, X, Y, d);
+                read_hdf5_dense(context, filename, X, Y);
                 #else
                     // TODO
                 #endif

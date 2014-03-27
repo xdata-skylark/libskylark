@@ -152,7 +152,7 @@ struct hilbert_options_t {
                  "Use this flag to force transform caching if you have enough memory (default: false)")
             ("fileformat",
                 po::value<int>(&fileformat)->default_value(DEFAULT_FILEFORMAT),
-                "Fileformat (default: 0 (libsvm), 1 (hdf5)")
+                "Fileformat (default: 0 (libsvm->dense), 1 (libsvm->sparse), 2 (hdf5->dense), 3 (hdf5->sparse)")
             ("MAXITER,i",
                 po::value<int>(&MAXITER)->default_value(DEFAULT_MAXITER),
                 "Maximum Number of Iterations (default: 100)")

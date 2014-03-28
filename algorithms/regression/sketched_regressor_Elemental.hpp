@@ -11,17 +11,19 @@ namespace skylark {
 namespace algorithms {
 
 /**
- * Sketched l2 regressor using sketch-and-solve when sketch fits into a
+ * Sketched generic regressor using sketch-and-solve when sketch fits into a
  * single node.
  *
  * This implementation assumes RhsType is the same as MatrixType since
  * we apply the same sketch to both the Matrix and Rhs.
  */
-template <typename ValueType,
-          typename MatrixType,
-          template <typename, typename> class TransformType,
-          typename ExactAlgTag>
-class sketched_regressor_t<l2_tag,
+template <
+    typename RegressionType,
+    typename ValueType,
+    typename MatrixType,
+    template <typename, typename> class TransformType,
+    typename ExactAlgTag>
+class sketched_regressor_t<RegressionType,
                            MatrixType,
                            MatrixType,
                            elem::Matrix<ValueType>,
@@ -29,12 +31,16 @@ class sketched_regressor_t<l2_tag,
                            ExactAlgTag,
                            sketch_and_solve_tag> {
 
+    typedef elem::Matrix<ValueType> matrix_type;
     typedef elem::Matrix<ValueType> sketch_type;
 
-    typedef regression_problem_t<l2_tag, MatrixType> problem_type;
-    typedef regression_problem_t<l2_tag, sketch_type> sketched_problem_type;
+    typedef RegressionType regression_type;
 
-    typedef exact_regressor_t<l2_tag,
+    typedef regression_problem_t<regression_type, MatrixType> problem_type;
+    typedef regression_problem_t<regression_type,
+                                 sketch_type> sketched_problem_type;
+
+    typedef exact_regressor_t<regression_type,
                               sketch_type,
                               sketch_type,
                               ExactAlgTag> underlying_regressor_type;
@@ -83,7 +89,7 @@ public:
 };
 
 /**
- * Sketched l2 regressor using sketch-and-solve when both input and
+ * Sketched generic regressor using sketch-and-solve when both input and
  * output are distributed.
  *
  * This implementation assumes RhsType is the same as MatrixType since
@@ -91,11 +97,13 @@ public:
  * make the simplifying assumption that sketch distribution
  * is the same.
  */
-template <typename VT,
-          elem::Distribution CD, elem::Distribution RD,
-          template <typename, typename> class TransformType,
-          typename ExactAlgTag>
-class sketched_regressor_t<l2_tag,
+template <
+    typename RegressionType,
+    typename VT,
+    elem::Distribution CD, elem::Distribution RD,
+    template <typename, typename> class TransformType,
+    typename ExactAlgTag>
+class sketched_regressor_t<RegressionType,
                            elem::DistMatrix<VT, CD, RD>,
                            elem::DistMatrix<VT, CD, RD>,
                            elem::DistMatrix<VT, CD, RD>,
@@ -106,10 +114,13 @@ class sketched_regressor_t<l2_tag,
     typedef elem::DistMatrix<VT, CD, RD> matrix_type;
     typedef elem::DistMatrix<VT, CD, RD> sketch_type;
 
-    typedef regression_problem_t<l2_tag, matrix_type> problem_type;
-    typedef regression_problem_t<l2_tag, sketch_type> sketched_problem_type;
+    typedef RegressionType regression_type;
 
-    typedef exact_regressor_t<l2_tag,
+    typedef regression_problem_t<regression_type, matrix_type> problem_type;
+    typedef regression_problem_t<regression_type,
+                                 sketch_type> sketched_problem_type;
+
+    typedef exact_regressor_t<regression_type,
                               sketch_type,
                               sketch_type,
                               ExactAlgTag> underlying_regressor_type;

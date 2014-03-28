@@ -61,13 +61,14 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
     const int* indices = B.indices();
     const T *values = B.locked_values();
 
-    elem::Scal(beta, C);
-
-    int m = A.Height();
+    int k = A.Width();
     int n = B.Width();
+    int m = A.Height();
 
     // NN
     if (oA == elem::NORMAL && oB == elem::NORMAL) {
+
+        elem::Scal(beta, C);
 
         elem::Matrix<T> Ac;
         elem::Matrix<T> Cc;
@@ -89,6 +90,8 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
     // NT
     if (oA == elem::NORMAL && oB == elem::TRANSPOSE) {
 
+        elem::Scal(beta, C);
+
         elem::Matrix<T> Ac;
         elem::Matrix<T> Cc;
 
@@ -107,6 +110,50 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
             }
         }
     }
+
+
+    // TN - TODO: Not tested!
+    if (oA == elem::TRANSPOSE && oB == elem::NORMAL) {
+        double *c = C.Buffer();
+        int ldc = C.LDim();
+
+        const double *a = A.LockedBuffer();
+        int lda = A.LDim();
+
+#       if SKYLARK_HAVE_OPENMP
+#       pragma omp parallel for collapse(2)
+#       endif
+        for (int j = 0; j < n; j++)
+            for(int row = 0; row < k; row++) {
+                c[j * ldc + row] *= beta;
+                 for (int l = indptr[j]; l < indptr[j + 1]; l++) {
+                     int rr = indices[l];
+                     T val = values[l];
+                     c[j * ldc + row] += val * a[j * lda + rr];
+                 }
+            }
+    }
+
+    // TT - TODO: Not tested!
+    if (oA == elem::TRANSPOSE && oB == elem::TRANSPOSE) {
+        elem::Scal(beta, C);
+
+        double *c = C.Buffer();
+        int ldc = C.LDim();
+
+        const double *a = A.LockedBuffer();
+        int lda = A.LDim();
+
+#       if SKYLARK_HAVE_OPENMP
+#       pragma omp parallel for
+#       endif
+        for(int row = 0; row < k; row++)
+            for(int rb = 0; rb < n; rb++)
+                for (int l = indptr[rb]; l < indptr[rb + 1]; l++) {
+                    int col = indices[l];
+                    c[col * ldc + row] += values[l] * a[row * lda + rb];
+                }
+    }
 }
 
 template<typename T>
@@ -119,14 +166,14 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
     const int* indices = A.indices();
     const double *values = A.locked_values();
 
-    elem::Scal(beta, C);
-
     int k = A.Width();
     int n = B.Width();
     int m = B.Height();
 
     // NN
     if (oA == elem::NORMAL && oB == elem::NORMAL) {
+
+        elem::Scal(beta, C);
 
         double *c = C.Buffer();
         int ldc = C.LDim();
@@ -149,6 +196,8 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
     // NT
     if (oA == elem::NORMAL && oB == elem::TRANSPOSE) {
 
+        elem::Scal(beta, C);
+
         elem::Matrix<T> Bc;
         elem::Matrix<T> BTr;
         elem::Matrix<T> Cr;
@@ -163,6 +212,52 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
                 int row = indices[j];
                 T val = values[j];
                 elem::View(Cr, C, row, 0, 1, m);
+                elem::Axpy(alpha * val, BTr, Cr);
+            }
+        }
+    }
+
+    // TN - TODO: Not tested!
+    if (oA == elem::TRANSPOSE && oB == elem::NORMAL) {
+        double *c = C.Buffer();
+        int ldc = C.LDim();
+
+        const double *b = B.LockedBuffer();
+        int ldb = B.LDim();
+
+#       if SKYLARK_HAVE_OPENMP
+#       pragma omp parallel for collapse(2)
+#       endif
+        for (int j = 0; j < n; j++)
+            for(int row = 0; row < k; row++) {
+                c[j * ldc + row] *= beta;
+                 for (int l = indptr[row]; l < indptr[row + 1]; l++) {
+                     int col = indices[l];
+                     T val = values[l];
+                     c[j * ldc + row] += val * b[j * ldb + col];
+                 }
+            }
+    }
+
+    // TT - TODO: Not tested!
+    if (oA == elem::TRANSPOSE && oB == elem::TRANSPOSE) {
+
+        elem::Scal(beta, C);
+
+        elem::Matrix<T> Bc;
+        elem::Matrix<T> BTr;
+        elem::Matrix<T> Cr;
+
+#       if SKYLARK_HAVE_OPENMP
+#       pragma omp parallel for private(Cr, Bc, BTr)
+#       endif
+        for(int row = 0; row < k; row++) {
+            elem::View(Cr, C, row, 0, 1, m);
+            for (int l = indptr[row]; l < indptr[row + 1]; l++) {
+                int col = indices[l];
+                T val = values[l];
+                elem::LockedView(Bc, B, 0, col, m, 1);
+                elem::Transpose(Bc, BTr);
                 elem::Axpy(alpha * val, BTr, Cr);
             }
         }

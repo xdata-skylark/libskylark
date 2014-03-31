@@ -2,7 +2,7 @@
 #define SKYLARK_HASH_TRANSFORM_COMBBLAS_HPP
 
 #include <map>
-#include "boost/serialization/map.hpp"
+#include <boost/serialization/map.hpp>
 
 #include <CombBLAS.h>
 #include "../utility/external/FullyDistMultiVec.hpp"
@@ -589,9 +589,18 @@ private:
                     A.getcommgrid()->GetGridCols())) *
                     A.getcommgrid()->GetRankInProcRow(rank);
 
+
+        int n_res_cols = A.getncol();
+        int n_res_rows = A.getnrow();
+        get_res_size(n_res_rows, n_res_cols, dist);
+
         // Apply sketch for all local values. Subsequently, all values are
         // gathered on processor 0 and the local matrix is populated.
-        std::map< std::pair< index_type, index_type>, value_type > coords;
+        // XXX: For now sort on each processor to ease the creation of the
+        // gathered local matrix. Most likely possible can be avoided by
+        // traversing the matrix in the correct order.
+        typedef std::map<index_type, value_type> col_values_t;
+        col_values_t col_values;
         for(typename col_t::SpColIter col = data.begcol();
             col != data.endcol(); col++) {
             for(typename col_t::SpColIter::NzIter nz = data.begnz(col);
@@ -602,40 +611,25 @@ private:
 
                 const value_type value =
                     nz.value() * getValue(rowid, colid, dist);
-
                 finalPos(rowid, colid, dist);
-                std::pair<index_type, index_type> pos =
-                    std::make_pair(rowid, colid);
-
-                if(coords.count(pos) != 0)
-                    coords[pos] += value;
-                else
-                    coords.insert(std::make_pair(pos, value));
+                col_values[colid * n_res_rows + rowid] += value;
             }
         }
 
         boost::mpi::communicator world(A.getcommgrid()->GetWorld(),
                                        boost::mpi::comm_duplicate);
 
-        std::vector< std::map<std::pair<index_type, index_type>, value_type> >
+        std::vector< std::map<index_type, value_type > >
             result;
-        boost::mpi::gather(world, coords, result, 0);
+        boost::mpi::gather(world, col_values, result, 0);
 
-        typedef typename output_matrix_type::coords_t coords_t;
-        coords_t coord_matrix;
-        for(size_t i = 0; i < result.size(); ++i) {
-            typename std::map<
-                std::pair<index_type, index_type>, value_type>::iterator itr;
-            for(itr = result[i].begin(); itr != result[i].end(); itr++) {
-
-                typename output_matrix_type::coord_tuple_t new_entry(
-                         itr->first.first, itr->first.second, itr->second);
-
-                coord_matrix.push_back(new_entry);
-            }
+        // unpack into temp structure
+        //FIXME:
+        int size_estimate = A.getnnz();
+        if(rank == 0) {
+            create_local_sp_mat(result, n_res_rows, n_res_cols, size_estimate,
+                                sketch_of_A);
         }
-
-        sketch_of_A.set(coord_matrix);
     }
 
     inline void finalPos(index_type &rowid, index_type &colid, columnwise_tag) const {
@@ -654,6 +648,77 @@ private:
     inline value_type getValue(index_type rowid, index_type colid,
                                rowwise_tag) const {
         return base_data_t::row_value[colid];
+    }
+
+    inline void get_res_size(int &rows, int &cols, columnwise_tag) const {
+        rows = base_data_t::_S;
+    }
+
+    inline void get_res_size(int &rows, int &cols, rowwise_tag) const {
+        cols = base_data_t::_S;
+    }
+
+
+    void create_local_sp_mat(std::vector< std::map<index_type, value_type > > &result,
+                             int n_res_rows, int n_res_cols, int size_estimate,
+                             output_matrix_type &sketch_of_A) const {
+
+        int nnz = 0;
+        int *indptr_new = new int[n_res_cols + 1];
+        std::vector<int> final_rows(size_estimate);
+        std::vector<value_type> final_vals(size_estimate);
+
+        indptr_new[0] = 0;
+
+        typedef typename std::map<index_type, value_type>::iterator itr_t;
+        std::vector<itr_t> proc_iters(result.size());
+        for(size_t i = 0; i < result.size(); ++i)
+            proc_iters[i] = result[i].begin();
+
+        std::vector<index_type> idx_map(n_res_rows, -1);
+
+        for(int col = 0; col < n_res_cols; ++col) {
+
+            // collect all values for column 'col' of all procs
+            for(size_t i = 0; i < result.size(); ++i) {
+
+                itr_t cur_itr = proc_iters[i];
+
+                for(; cur_itr != result[i].end() &&
+                        static_cast<int>(cur_itr->first / n_res_rows) == col;
+                        cur_itr++) {
+
+                    int row    = cur_itr->first % n_res_rows;
+                    double val = cur_itr->second;
+
+                    if(idx_map[row] == -1) {
+                        idx_map[row] = nnz;
+                        final_rows[nnz] = row;
+                        final_vals[nnz] = val;
+                        nnz++;
+                    } else {
+                        final_vals[idx_map[row]] += val;
+                    }
+                }
+
+                proc_iters[i] = cur_itr;
+            }
+
+            indptr_new[col + 1] = nnz;
+
+            // reset idx_map
+            for(int i = indptr_new[col]; i < nnz; ++i)
+                idx_map[final_rows[i]] = -1;
+        }
+
+        int *indices_new = new int[nnz];
+        std::copy(final_rows.begin(), final_rows.begin() + nnz, indices_new);
+
+        double *values_new = new double[nnz];
+        std::copy(final_vals.begin(), final_vals.begin() + nnz, values_new);
+
+        sketch_of_A.attach(indptr_new, indices_new, values_new,
+                nnz, n_res_rows, n_res_cols, true);
     }
 };
 

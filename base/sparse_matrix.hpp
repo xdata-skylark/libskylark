@@ -4,6 +4,7 @@
 #include <set>
 #include <vector>
 #include <boost/tuple/tuple.hpp>
+#include <boost/unordered_map.hpp>
 
 namespace skylark { namespace base {
 
@@ -174,10 +175,33 @@ struct sparse_matrix_t {
 
     bool operator==(const sparse_matrix_t &rhs) const {
 
-        return
-            (std::set<int>(_indptr, _indptr+_width) == std::set<int>(rhs._indptr, rhs._indptr+rhs._width)) &&
-            (std::set<int>(_indices, _indices+_nnz) == std::set<int>(rhs._indices, rhs._indices+rhs._nnz)) &&
-            (std::set<double>(_values, _values+_nnz) == std::set<double>(rhs._values, rhs._values+rhs._nnz));
+        // column pointer arrays have to be exactly the same
+        if (std::vector<int>(_indptr, _indptr+_width) !=
+            std::vector<int>(rhs._indptr, rhs._indptr + rhs._width))
+            return false;
+
+        // check more carefully for unordered row indices
+        const int* indptr  = _indptr;
+        const int* indices = _indices;
+        const double* values = _values;
+
+        const int* indices_rhs   = rhs.indices();
+        const double* values_rhs = rhs.locked_values();
+
+        for(int col = 0; col < width(); col++) {
+
+            boost::unordered_map<int, double> col_values;
+
+            for(int idx = indptr[col]; idx < indptr[col + 1]; idx++)
+                col_values.insert(std::make_pair(indices[idx], values[idx]));
+
+            for(int idx = indptr[col]; idx < indptr[col + 1]; idx++) {
+                if(col_values[indices_rhs[idx]] != values_rhs[idx])
+                    return false;
+            }
+        }
+
+        return true;
     }
 
 private:

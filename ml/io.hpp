@@ -14,6 +14,7 @@
 #include <string>
 #include <elemental.hpp>
 #include "../base/sparse_matrix.hpp"
+#include "options.hpp"
 
 using namespace std;
 namespace bmpi =  boost::mpi;
@@ -21,12 +22,12 @@ namespace bmpi =  boost::mpi;
 typedef skylark::sketch::context_t skylark_context_t;
 typedef elem::DistMatrix<double, elem::CIRC, elem::CIRC> DistCircMatrixType;
 typedef skylark::base::sparse_matrix_t<double> sparse_matrix_t;
-
+typedef elem::Matrix<double> LocalMatrixType;
 
 #ifdef SKYLARK_HAVE_HDF5
 #include <H5Cpp.h>
 
-int write_elem_hdf5(string fName, elem::Matrix<double>& X,
+int write_hdf5(string fName, elem::Matrix<double>& X,
         elem::Matrix<double>& Y) {
 
     try {
@@ -69,6 +70,7 @@ int write_elem_hdf5(string fName, elem::Matrix<double>& X,
        cout << "Writing Y" << endl;
        dataset2.write( Y.Buffer(), H5::PredType::NATIVE_DOUBLE );
 
+       file.close();
 
     }
    // catch failure caused by the H5File operations
@@ -98,15 +100,321 @@ int write_elem_hdf5(string fName, elem::Matrix<double>& X,
   return 0; // successfully terminated
 }
 
-void read_hdf5_dense(skylark_context_t& context, string fName,
+int write_hdf5(string fName, sparse_matrix_t& X,
+        elem::Matrix<double>& Y) {
+
+    try {
+
+        cout << "Writing to file " << fName << endl;
+
+        int* dimensions = new int[3];
+        dimensions[0] = X.Height();
+        dimensions[1] = X.Width();
+        dimensions[2] = X.nonzeros();
+
+        H5::Exception::dontPrint();
+
+        H5::H5File file( fName, H5F_ACC_TRUNC );
+
+        // write dimensions
+        {
+        	hsize_t dim[1]; // dataset dimensions
+        	dim[0] = 3;
+        	H5::DataSpace dataspace( 1, dim );
+        	H5::FloatType datatype( H5::PredType::NATIVE_INT );
+        	H5::DataSet dataset = file.createDataSet( "dimensions", datatype, dataspace );
+        	dataset.write(dimensions, H5::PredType::NATIVE_INT);
+        }
+
+        // write col_ptr
+        {
+        	cout << "Writing col_ptr" << endl;
+        	hsize_t dim[1]; // dataset dimensions
+        	dim[0] = dimensions[1]+1;
+        	H5::DataSpace dataspace( 1, dim );
+        	H5::FloatType datatype( H5::PredType::NATIVE_INT );
+        	H5::DataSet dataset = file.createDataSet( "indptr", datatype, dataspace );
+        	dataset.write(X.indptr(), H5::PredType::NATIVE_INT);
+        }
+
+        // write row_ind
+        {
+        	cout << "Writing row indices" << endl;
+        	hsize_t dim[1]; // dataset dimensions
+        	dim[0] = dimensions[2];
+        	H5::DataSpace dataspace( 1, dim );
+        	H5::FloatType datatype( H5::PredType::NATIVE_INT );
+        	H5::DataSet dataset = file.createDataSet( "indices", datatype, dataspace );
+        	dataset.write(X.indices(), H5::PredType::NATIVE_INT);
+        }
+        // write row_ind
+        {
+        	cout << "Writing values" << endl;
+        	hsize_t dim[1]; // dataset dimensions
+        	dim[0] = dimensions[2];
+        	H5::DataSpace dataspace( 1, dim );
+        	H5::FloatType datatype( H5::PredType::NATIVE_DOUBLE );
+        	H5::DataSet dataset = file.createDataSet( "values", datatype, dataspace );
+        	dataset.write(X.values(), H5::PredType::NATIVE_DOUBLE);
+        }
+
+
+        // write values
+        {
+        	cout << "Writing targets" << endl;
+        	hsize_t dim[1]; // dataset dimensions
+        	dim[0] = dimensions[1];
+        	H5::DataSpace dataspace( 1, dim );
+        	H5::FloatType datatype( H5::PredType::NATIVE_DOUBLE );
+        	H5::DataSet dataset = file.createDataSet( "Y", datatype, dataspace );
+        	dataset.write(Y.Buffer(), H5::PredType::NATIVE_DOUBLE);
+        }
+
+
+      file.close();
+
+    }
+   // catch failure caused by the H5File operations
+      catch( H5::FileIException error )
+      {
+      error.printError();
+      return -1;
+      }
+      // catch failure caused by the DataSet operations
+      catch( H5::DataSetIException error )
+      {
+      error.printError();
+      return -1;
+      }
+      // catch failure caused by the DataSpace operations
+      catch( H5::DataSpaceIException error )
+      {
+      error.printError();
+      return -1;
+      }
+      // catch failure caused by the DataSpace operations
+      catch( H5::DataTypeIException error )
+      {
+      error.printError();
+      return -1;
+      }
+  return 0; // successfully terminated
+}
+
+
+
+void read_hdf5(skylark_context_t& context, string fName,
         sparse_matrix_t& X,
         elem::Matrix<double>& Y, int blocksize = 10000) {
 
-    // Not Implemented.
+}
+/*
+	if (context.rank==0)
+	            cout << "Reading sparse matrix from file " << fName << endl;
+
+
+	 	 H5::H5File file( fName, H5F_ACC_RDONLY );
+	 	 H5::DataSet datasetX = file.openDataSet( "col_ptr" );
+	 	 H5::DataSpace filespaceX = datasetX.getSpace();
+	 	 int rank = filespaceX.getSimpleExtentNdims();
+	 	 hsize_t dimsX[2]; // dataset dimensions
+	 	 rank = filespaceX.getSimpleExtentDims( dimsX );
+	 	 hsize_t n = dimsX[0];
+	 	 hsize_t d = dimsX[1];
+
+	 	 H5::DataSet datasetY = file.openDataSet( "Y" );
+	 	 H5::DataSpace filespaceY = datasetY.getSpace();
+	 	 hsize_t dimsY[1]; // dataset dimensions
+	 	 rank = filespaceX.getSimpleExtentDims( dimsY );
+
+	 	 hsize_t countX[2];
+	 	 hsize_t countY[1];
+
+	 	 int numblocks = ((int) n/ (int) blocksize); // of size blocksize
+	 	 int leftover = n % blocksize;
+	 	 int block = blocksize;
+
+	 	 hsize_t offsetX[2], offsetY[1];
+
+	    bmpi::timer timer;
+
+	    // make one pass over the data to figure out dimensions - will pay in terms of preallocated storage.
+	        if (context.rank==0) {
+	            while(!file.eof()) {
+	                getline(file, line);
+	                if(line.length()==0)
+	                    break;
+	                delim = line.find_last_of(":");
+	                if(delim > line.length())
+	                    continue;
+	                n++;
+	                t = delim;
+	                while(line[t]!=' ') {
+	                    t--;
+	                }
+	                val = line.substr(t+1, delim - t);
+	                last = atoi(val.c_str());
+	                if (last>d)
+	                    d = last;
+	            }
+	            if (min_d > 0)
+	                d = std::max(d, min_d);
+
+	            // prepare for second pass
+	            file.clear();
+	            file.seekg(0, std::ios::beg);
+	        }
+
+
+	   boost::mpi::broadcast(context.comm, n, 0);
+	   boost::mpi::broadcast(context.comm, d, 0);
+
+	    // Number of examples per process
+	    int* examples_allocation = new int[context.size];
+	    int chunksize = (int) n / context.size;
+	    int leftover = n % context.size;
+	    for(int i=0;i<context.size;i++)
+	        examples_allocation[i] = chunksize;
+	    for(int i=0;i<leftover;i++)
+	        examples_allocation[i]++;
+
+	    context.comm.barrier();
+
+	    // read chunks on rank = 0 and send
+	    if(context.rank==0) {
+
+	        vector<int> col_ptr;
+	        vector<int> rowind;
+	        vector<double> values;
+	        vector<double> y;
+
+	        int process = 0;
+	        int nnz_local = 0;
+	        int examples_local = 0;
+
+	        while(!file.eof()) {
+	            getline(file, line);
+	            examples_local++;
+	            if( line.length()==0) {
+	                break;
+	            }
+
+	            istringstream tokenstream (line);
+	            tokenstream >> label;
+	            y.push_back(label);
+	            col_ptr.push_back(nnz_local);
+
+	            while (tokenstream >> token)
+	            {
+	                delim  = token.find(':');
+	                ind = token.substr(0, delim);
+	                val = token.substr(delim+1); //.substr(delim+1);
+	                j = atoi(ind.c_str()) - 1;
+	                rowind.push_back(j);
+	                values.push_back(atof(val.c_str()));
+	                nnz_local++;
+
+	            }
+
+	            if (examples_local == examples_allocation[process]) {
+	                if (process>0) { //send data from rank 0
+	                    std::cout << "Sending to " << process << std::endl;
+	                    col_ptr.push_back(nnz_local);
+	                    context.comm.send(process, 1, examples_local);
+	                    context.comm.send(process, 2, d);
+	                    context.comm.send(process, 3, nnz_local);
+	                    context.comm.send(process, 4, &col_ptr[0], col_ptr.size());
+	                    context.comm.send(process, 5, &rowind[0], rowind.size());
+	                    context.comm.send(process, 6, &values[0], values.size());
+	                    context.comm.send(process, 7, &y[0], y.size());
+	                }
+	                else { // rank == 0 - just create the sparse matrix
+
+	                    col_ptr.push_back(nnz_local); //last entry of col_ptr should be total number of nonzeros
+
+	                    // this is making a copy
+	                    double *_values = new double[values.size()];
+	                    int *_rowind = new int[rowind.size()];
+	                    int *_col_ptr = new int[col_ptr.size()];
+
+
+	                    // DO THE ACTUAL COPY!
+	                    std::copy(values.begin(), values.end(), _values);
+	                    std::copy(rowind.begin(), rowind.end(), _rowind);
+	                    std::copy(col_ptr.begin(), col_ptr.end(), _col_ptr);
+
+	                    X.attach(_col_ptr, _rowind, _values, nnz_local, d, examples_local, true);
+
+	                    LocalMatrixType Y2(examples_local, 1, &y[0], 0);
+
+	                    //  Y.Resize(examples_local,1);
+	                    // but this is not!
+	                    //Y.Attach(examples_local,1,&y[0],0);
+	                    Y = Y2; // copy
+
+
+	                    std::cout << "rank=0: Read " << examples_local << " x " << d << " with " << nnz_local << " nonzeros" << std::endl;
+	                }
+	                process++;
+	                nnz_local = 0;
+	                examples_local = 0;
+	                col_ptr.clear();
+	                rowind.clear();
+	                values.clear();
+	                y.clear();
+	            }
+	        }
+
+
+	    } else {
+
+	        for(int r=1; r<context.size; r++) {
+	            if ((context.rank==r) && examples_allocation[r]>0) {
+	                int nnz_local, t, d;
+	                context.comm.recv(0, 1, t);
+	                context.comm.recv(0, 2, d);
+	                context.comm.recv(0, 3, nnz_local);
+
+	                double* values = new double[nnz_local];
+	                int* rowind = new int[nnz_local];
+	                int* col_ptr = new int[t+1];
+
+	                context.comm.recv(0, 4, col_ptr, t+1);
+	                context.comm.recv(0, 5, rowind, nnz_local);
+	                context.comm.recv(0, 6, values, nnz_local);
+
+	                //attach currently creates copies so we can delete the rest
+	                X.attach(col_ptr, rowind, values, nnz_local, d, t, true);
+	               // delete[] col_ptr;
+	               // delete[] rowind;
+	               // delete[] values;
+
+	                double* y = new double[t];
+	                context.comm.recv(0, 7, y, t);
+	                LocalMatrixType Y2(t, 1, y, 0);
+	                Y = Y2; // copy
+
+	                //Y.Resize(t,1);
+	                //Y.Attach(t,1,y,0);
+
+	                std::cout << "rank=" << r << ": Received and read " << t << " x " << d << " with " << nnz_local << " nonzeros" << std::endl;
+	            }
+	        }
+	    }
+	    //}
+
+	    double readtime = timer.elapsed();
+	    if (context.rank==0)
+	        cout << "Read Matrix with dimensions: " << n << " by " << d << " (" << readtime << "secs)" << endl;
+	//    std::cout << context.rank << "barrier here in read " << std::endl;
+	    context.comm.barrier();
+	 //  std::cout << context.rank << "barrier here in read DONE" << std::endl;
 }
 
-void read_hdf5_dense(skylark_context_t& context, string fName,
-        LocalMatrixType& Xlocal,
+*/
+
+void read_hdf5(skylark_context_t& context, string fName,
+		LocalMatrixType&  Xlocal,
         LocalMatrixType& Ylocal, int blocksize = 10000) {
 
         bmpi::timer timer;
@@ -548,10 +856,10 @@ void read(skylark::sketch::context_t& context, int fileformat, string filename, 
                 read_libsvm(context, filename, X, Y, d);
                 break;
             }
-            case HDF5:
+            case HDF5_DENSE: case HDF5_SPARSE:
             {
                 #ifdef SKYLARK_HAVE_HDF5
-                read_hdf5_dense(context, filename, X, Y);
+                read_hdf5(context, filename, X, Y);
                 #else
                     // TODO
                 #endif

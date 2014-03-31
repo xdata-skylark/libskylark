@@ -41,8 +41,8 @@ enum KernelType {LINEAR = 0, GAUSSIAN = 1, POLYNOMIAL = 2,
 std::string Kernels[] = {"Linear", "Gaussian",
                          "Polynomial", "Laplacian", "ExpSemigroup"};
 
-enum FileFormatType {LIBSVM_DENSE = 0, LIBSVM_SPARSE = 1, HDF5 = 2};
-std::string FileFormats[] = {"Libsvm-dense", "libsvm-sparse", "HDF5"};
+enum FileFormatType {LIBSVM_DENSE = 0, LIBSVM_SPARSE = 1, HDF5_DENSE = 2, HDF5_SPARSE = 3};
+std::string FileFormats[] = {"libsvm-dense", "libsvm-sparse", "hdf5_dense", "hdf5_sparse"};
 
 /**
  * A structure that is used to pass options to the ADMM solver. This structure

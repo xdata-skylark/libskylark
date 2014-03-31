@@ -170,11 +170,9 @@ private:
 
         int *indices_new = new int[nnz];
         std::copy(final_rows.begin(), final_rows.begin() + nnz, indices_new);
-        free_vec(final_rows);
 
         double *values_new = new double[nnz];
         std::copy(final_vals.begin(), final_vals.begin() + nnz, values_new);
-        free_vec(final_vals);
 
         // let the sparse structure take ownership of the data
         sketch_of_A.attach(indptr_new, indices_new, values_new,
@@ -208,7 +206,7 @@ private:
         indptr_new[0] = 0;
 
         // we adapt transversal order for this case
-        //XXX: or transpose A
+        //XXX: or transpose A (maybe better for cache)
         std::vector< std::vector<int> > inv_mapping(base_data_t::_S);
         for(int idx = 0; idx < base_data_t::row_idx.size(); ++idx) {
             inv_mapping[base_data_t::row_idx[idx]].push_back(idx);
@@ -251,22 +249,13 @@ private:
 
         int *indices_new = new int[nnz];
         std::copy(final_rows.begin(), final_rows.begin() + nnz, indices_new);
-        free_vec(final_rows);
 
         double *values_new = new double[nnz];
         std::copy(final_vals.begin(), final_vals.begin() + nnz, values_new);
-        free_vec(final_vals);
 
         sketch_of_A.attach(indptr_new, indices_new, values_new,
                            nnz, n_rows, n_cols, true);
     }
-
-    template <typename T>
-    void free_vec(std::vector<T> &vec) const {
-        std::vector<T> tmp;
-        vec.swap(tmp);
-    }
-
 };
 
 } } /** namespace skylark::sketch */

@@ -10,9 +10,10 @@
 #include "BlockADMM.hpp"
 #include "options.hpp"
 #include "io.hpp"
+#include "../base/context.hpp"
 
 template <class InputType>
-BlockADMMSolver<InputType>* GetSolver(skylark::sketch::context_t& context, hilbert_options_t& options, int dimensions) {
+BlockADMMSolver<InputType>* GetSolver(skylark::base::context_t& context, hilbert_options_t& options, int dimensions) {
 
     lossfunction *loss = NULL;
        switch(options.lossfunction) {
@@ -144,11 +145,14 @@ int max(elem::Matrix<double> Y) {
 }
 
 template<class LabelType>
-int GetNumClasses(skylark::sketch::context_t& context, LabelType& Y) {
+int GetNumClasses(skylark::base::context_t& context, LabelType& Y) {
     int k = 0;
     int kmax = max(Y);
 
-    boost::mpi::all_reduce(context.comm, kmax, k, boost::mpi::maximum<int>());
+    // get communicator
+    boost::mpi::communicator comm;
+
+    boost::mpi::all_reduce(comm, kmax, k, boost::mpi::maximum<int>());
 
     if (k>1) // we assume 0-to-N encoding of classes. Hence N = k+1. For two classes, k=1.
        k++;
@@ -156,7 +160,12 @@ int GetNumClasses(skylark::sketch::context_t& context, LabelType& Y) {
 }
 
 template <class InputType, class LabelType>
-int run(skylark::sketch::context_t& context, hilbert_options_t& options) {
+int run(skylark::base::context_t& context, hilbert_options_t& options) {
+
+    // get communicator
+    boost::mpi::communicator comm;
+    int rank = comm.rank();
+
     InputType X, Xv, Xt;
     LabelType Y, Yv, Yt;
 
@@ -167,8 +176,8 @@ int run(skylark::sketch::context_t& context, hilbert_options_t& options) {
     BlockADMMSolver<InputType>* Solver = GetSolver<InputType>(context, options, dimensions);
 
     if(!options.valfile.empty()) {
-        context.comm.barrier();
-        if(context.rank == 0) std::cout << "Loading validation data." << std::endl;
+        comm.barrier();
+        if(rank == 0) std::cout << "Loading validation data." << std::endl;
         read(context, options.fileformat, options.valfile, Xv, Yv, X.Height());
     }
 
@@ -180,14 +189,14 @@ int run(skylark::sketch::context_t& context, hilbert_options_t& options) {
     SaveModel(context, options, Wbar);
 
     if(!options.testfile.empty()) {
-        context.comm.barrier();
-        if(context.rank == 0) std::cout << "Starting testing phase." << std::endl;
+        comm.barrier();
+        if(rank == 0) std::cout << "Starting testing phase." << std::endl;
         read(context, options.fileformat, options.testfile, Xt, Yt, X.Height());
 
         LabelType Yp(Yt.Height(), classes);
         Solver->predict(Xt, Yp, Wbar);
         double accuracy = Solver->evaluate(Yt, Yp);
-        if(context.rank == 0) std::cout << "Test Accuracy = " <<  accuracy << " %" << std::endl;
+        if(rank == 0) std::cout << "Test Accuracy = " <<  accuracy << " %" << std::endl;
     }
 
     return 0;

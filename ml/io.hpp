@@ -14,11 +14,14 @@
 #include <string>
 #include <elemental.hpp>
 #include "../base/sparse_matrix.hpp"
+#include "../base/context.hpp"
+#include "../utility/external/get_communicator.hpp"
+
 
 using namespace std;
 namespace bmpi =  boost::mpi;
 
-typedef skylark::sketch::context_t skylark_context_t;
+typedef skylark::base::context_t skylark_context_t;
 typedef elem::DistMatrix<double, elem::CIRC, elem::CIRC> DistCircMatrixType;
 typedef skylark::base::sparse_matrix_t<double> sparse_matrix_t;
 
@@ -110,16 +113,21 @@ void read_hdf5_dense(skylark_context_t& context, string fName,
         elem::DistMatrix<double, elem::VC, elem::STAR>& Y, int blocksize = 10000) {
 
         bmpi::timer timer;
-        if (context.rank==0)
+
+        // get communicator from matrix
+        boost::mpi::communicator comm = skylark::utility::get_communicator(X);
+        int rank = comm.rank();
+
+        if (rank==0)
                     cout << "Reading from file " << fName << endl;
 
 
        H5::H5File file( fName, H5F_ACC_RDONLY );
        H5::DataSet datasetX = file.openDataSet( "X" );
        H5::DataSpace filespaceX = datasetX.getSpace();
-       int rank = filespaceX.getSimpleExtentNdims();
+       int ndims = filespaceX.getSimpleExtentNdims();
        hsize_t dimsX[2]; // dataset dimensions
-       rank = filespaceX.getSimpleExtentDims( dimsX );
+       ndims = filespaceX.getSimpleExtentDims( dimsX );
        hsize_t n = dimsX[0];
        hsize_t d = dimsX[1];
 
@@ -168,7 +176,7 @@ void read_hdf5_dense(skylark_context_t& context, string fName,
             filespaceX.selectHyperslab( H5S_SELECT_SET, countX, offsetX );
             filespaceY.selectHyperslab( H5S_SELECT_SET, countY, offsetY );
 
-            if(context.rank==0) {
+            if(rank==0) {
                 cout << "Reading and distributing chunk " << i*blocksize << " to " << i*blocksize + block - 1 << " ("<< block << " elements )" << endl;
 
                 double *Xdata = x.Matrix().Buffer();
@@ -197,20 +205,26 @@ void read_hdf5_dense(skylark_context_t& context, string fName,
         }
 
         double readtime = timer.elapsed();
-        if (context.rank==0)
+        if (rank==0)
                 cout << "Read Matrix with dimensions: " << n << " by " << d << " (" << readtime << "secs)" << endl;
 
 }
 #endif
 
+
 void read_libsvm(skylark_context_t& context, string fName,
 		LocalMatrixType& Xlocal, LocalMatrixType& Ylocal,
 		int min_d = 0, int blocksize = 10000) {
-	if (context.rank==0)
-			cout << "Reading from file " << fName << endl;
 
 	elem::DistMatrix<double, elem::STAR, elem::VC> X;
 	elem::DistMatrix<double, elem::VC, elem::STAR> Y;
+
+        // get communicator from matrix
+        boost::mpi::communicator comm = skylark::utility::get_communicator(X);
+        int rank = comm.rank();
+
+	if (rank==0)
+			cout << "Reading from file " << fName << endl;
 
 	ifstream file(fName.c_str());
 	string line;
@@ -227,7 +241,7 @@ void read_libsvm(skylark_context_t& context, string fName,
 
 
 	// make one pass over the data to figure out dimensions - will pay in terms of preallocated storage.
-	if (context.rank==0) {
+	if (rank==0) {
 	    while(!file.eof()) {
 	        getline(file, line);
 	        if(line.length()==0)
@@ -253,8 +267,8 @@ void read_libsvm(skylark_context_t& context, string fName,
 	    file.seekg(0, std::ios::beg);
 	}
 
-	boost::mpi::broadcast(context.comm, n, 0);
-	boost::mpi::broadcast(context.comm, d, 0);
+	boost::mpi::broadcast(comm, n, 0);
+	boost::mpi::broadcast(comm, d, 0);
 
 	int numblocks = ((int) n/ (int) blocksize); // of size blocksize
 	int leftover = n % blocksize;
@@ -282,7 +296,7 @@ void read_libsvm(skylark_context_t& context, string fName,
 	            y.SetRoot(0);
 	            elem::MakeZeros(x);
 
-                if(context.rank==0) {
+                if(rank==0) {
 
                     cout << "Reading and distributing chunk " << i*blocksize << " to " << i*blocksize + block - 1 << " ("<< block << " elements )" << endl;
                     double *Xdata = x.Matrix().Buffer();
@@ -313,7 +327,7 @@ void read_libsvm(skylark_context_t& context, string fName,
                  }
 
                 // The calls below should distribute the data to all the nodes.
-               // if (context.rank==0)
+               // if (rank==0)
                 //    cout << "Distributing Data.." << endl;
 
                 elem::DistMatrix<double, elem::STAR, elem::VC> viewX;
@@ -330,16 +344,22 @@ void read_libsvm(skylark_context_t& context, string fName,
 	}
 
 	double readtime = timer.elapsed();
-	if (context.rank==0) {
+	if (rank==0) {
 		cout << "Read Matrix with dimensions: " << n << " by " << d << " (" << readtime << "secs)" << endl;
 		// elem::Print(X,"X",cout);
 	}
 }
 
+
 void read_libsvm(skylark_context_t& context, string fName, sparse_matrix_t& X,
                         elem::Matrix<double>& Y,
                         int min_d = 0) {
-    if (context.rank==0)
+    // get communicator
+    boost::mpi::communicator comm;
+    int rank = comm.rank();
+    int size = comm.size();
+
+    if (rank==0)
             cout << "Reading sparse matrix from file " << fName << endl;
 
     ifstream file(fName.c_str());
@@ -358,7 +378,7 @@ void read_libsvm(skylark_context_t& context, string fName, sparse_matrix_t& X,
     bmpi::timer timer;
 
     // make one pass over the data to figure out dimensions - will pay in terms of preallocated storage.
-        if (context.rank==0) {
+        if (rank==0) {
             while(!file.eof()) {
                 getline(file, line);
                 if(line.length()==0)
@@ -385,22 +405,22 @@ void read_libsvm(skylark_context_t& context, string fName, sparse_matrix_t& X,
         }
 
 
-   boost::mpi::broadcast(context.comm, n, 0);
-   boost::mpi::broadcast(context.comm, d, 0);
+   boost::mpi::broadcast(comm, n, 0);
+   boost::mpi::broadcast(comm, d, 0);
 
     // Number of examples per process
-    int* examples_allocation = new int[context.size];
-    int chunksize = (int) n / context.size;
-    int leftover = n % context.size;
-    for(int i=0;i<context.size;i++)
+    int* examples_allocation = new int[size];
+    int chunksize = (int) n / size;
+    int leftover = n % size;
+    for(int i=0;i<size;i++)
         examples_allocation[i] = chunksize;
     for(int i=0;i<leftover;i++)
         examples_allocation[i]++;
 
-    context.comm.barrier();
+    comm.barrier();
 
     // read chunks on rank = 0 and send
-    if(context.rank==0) {
+    if(rank==0) {
 
         vector<int> col_ptr;
         vector<int> rowind;
@@ -439,13 +459,13 @@ void read_libsvm(skylark_context_t& context, string fName, sparse_matrix_t& X,
                 if (process>0) { //send data from rank 0
                     std::cout << "Sending to " << process << std::endl;
                     col_ptr.push_back(nnz_local);
-                    context.comm.send(process, 1, examples_local);
-                    context.comm.send(process, 2, d);
-                    context.comm.send(process, 3, nnz_local);
-                    context.comm.send(process, 4, &col_ptr[0], col_ptr.size());
-                    context.comm.send(process, 5, &rowind[0], rowind.size());
-                    context.comm.send(process, 6, &values[0], values.size());
-                    context.comm.send(process, 7, &y[0], y.size());
+                    comm.send(process, 1, examples_local);
+                    comm.send(process, 2, d);
+                    comm.send(process, 3, nnz_local);
+                    comm.send(process, 4, &col_ptr[0], col_ptr.size());
+                    comm.send(process, 5, &rowind[0], rowind.size());
+                    comm.send(process, 6, &values[0], values.size());
+                    comm.send(process, 7, &y[0], y.size());
                 }
                 else { // rank == 0 - just create the sparse matrix
 
@@ -487,20 +507,20 @@ void read_libsvm(skylark_context_t& context, string fName, sparse_matrix_t& X,
 
     } else {
 
-        for(int r=1; r<context.size; r++) {
-            if ((context.rank==r) && examples_allocation[r]>0) {
+        for(int r=1; r<size; r++) {
+            if ((rank==r) && examples_allocation[r]>0) {
                 int nnz_local, t, d;
-                context.comm.recv(0, 1, t);
-                context.comm.recv(0, 2, d);
-                context.comm.recv(0, 3, nnz_local);
+                comm.recv(0, 1, t);
+                comm.recv(0, 2, d);
+                comm.recv(0, 3, nnz_local);
 
                 double* values = new double[nnz_local];
                 int* rowind = new int[nnz_local];
                 int* col_ptr = new int[t+1];
 
-                context.comm.recv(0, 4, col_ptr, t+1);
-                context.comm.recv(0, 5, rowind, nnz_local);
-                context.comm.recv(0, 6, values, nnz_local);
+                comm.recv(0, 4, col_ptr, t+1);
+                comm.recv(0, 5, rowind, nnz_local);
+                comm.recv(0, 6, values, nnz_local);
 
                 //attach currently creates copies so we can delete the rest
                 X.attach(col_ptr, rowind, values, nnz_local, d, t, true);
@@ -509,7 +529,7 @@ void read_libsvm(skylark_context_t& context, string fName, sparse_matrix_t& X,
                // delete[] values;
 
                 double* y = new double[t];
-                context.comm.recv(0, 7, y, t);
+                comm.recv(0, 7, y, t);
                 LocalMatrixType Y2(t, 1, y, 0);
                 Y = Y2; // copy
 
@@ -523,16 +543,16 @@ void read_libsvm(skylark_context_t& context, string fName, sparse_matrix_t& X,
     //}
 
     double readtime = timer.elapsed();
-    if (context.rank==0)
+    if (rank==0)
         cout << "Read Matrix with dimensions: " << n << " by " << d << " (" << readtime << "secs)" << endl;
-//    std::cout << context.rank << "barrier here in read " << std::endl;
-    context.comm.barrier();
- //  std::cout << context.rank << "barrier here in read DONE" << std::endl;
+//    std::cout << rank << "barrier here in read " << std::endl;
+    comm.barrier();
+ //  std::cout << rank << "barrier here in read DONE" << std::endl;
 }
 
 
 template <class InputType, class LabelType>
-void read(skylark::sketch::context_t& context, int fileformat, string filename, InputType& X, LabelType& Y, int d=0) {
+void read(skylark::base::context_t& context, int fileformat, string filename, InputType& X, LabelType& Y, int d=0) {
 
     switch(fileformat) {
             case LIBSVM_DENSE: case LIBSVM_SPARSE:
@@ -589,8 +609,13 @@ void read_model_file(string fName, elem::Matrix<double>& W) {
 	}
 }
 
-void SaveModel(skylark::sketch::context_t& context, hilbert_options_t& options, elem::Matrix<double> W)  {
-    if (context.rank==0) {
+void SaveModel(skylark::base::context_t& context, hilbert_options_t& options, elem::Matrix<double> W)  {
+
+    // get communicator
+    boost::mpi::communicator comm;
+    int rank = comm.rank();
+
+    if (rank==0) {
             std::stringstream dimensionstring;
             dimensionstring << "# Dimensions " << W.Height() << " " << W.Width() << "\n";
             elem::Write(W, options.modelfile, elem::ASCII, options.print().append(dimensionstring.str()));

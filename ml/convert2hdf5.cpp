@@ -12,6 +12,8 @@
 #include <elemental.hpp>
 #include <cstdlib>
 #include "io.hpp"
+#include "../base/context.hpp"
+
 
 typedef elem::DistMatrix<double, elem::STAR, elem::VC> DistInputMatrixType;
 
@@ -30,10 +32,13 @@ int main (int argc, char** argv) {
     std::cout << inputfile << " " << hdf5file << std::endl;
     boost::mpi::environment env (argc, argv);
 
-    boost::mpi::communicator world;
+    // get communicator
+    boost::mpi::communicator comm;
+    int rank = comm.rank();
+
     elem::Initialize (argc, argv);
 
-    skylark::sketch::context_t context (12345, world);
+    skylark::base::context_t context (12345);
 
     DistInputMatrixType X;
     DistTargetMatrixType Y;
@@ -45,7 +50,7 @@ int main (int argc, char** argv) {
     elem::Matrix<double> x = X.Matrix();
     elem::Matrix<double> y = Y.Matrix();
 
-    if(context.rank==0) {
+    if(rank==0) {
         write_elem_hdf5(hdf5file, x,y);
     }
 

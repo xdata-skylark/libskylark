@@ -17,7 +17,7 @@
 
 #include "../../utility/distributions.hpp"
 #include "../../base/sparse_matrix.hpp"
-#include "../../sketch/context.hpp"
+#include "../../base/context.hpp"
 #include "../../sketch/hash_transform.hpp"
 
 
@@ -34,7 +34,7 @@ struct Dummy_t : public skylark::sketch::hash_transform_t<
         skylark::utility::rademacher_distribution_t >
             hash_t;
 
-    Dummy_t(int N, int S, skylark::sketch::context_t& context)
+    Dummy_t(int N, int S, skylark::base::context_t& context)
         : skylark::sketch::hash_transform_t<InputMatrixType, OutputMatrixType,
           boost::random::uniform_int_distribution,
           skylark::utility::rademacher_distribution_t>(N, S, context)
@@ -65,7 +65,7 @@ int test_main(int argc, char *argv[]) {
     mpi::communicator world;
     const size_t rank = world.rank();
 
-    skylark::sketch::context_t context (0, world);
+    skylark::base::context_t context (0, world);
 
     double count = 1.0;
 

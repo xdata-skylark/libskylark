@@ -3,11 +3,11 @@
 
 #include "../base/base.hpp"
 
-#include "../base/context.hpp"
 #include "transforms.hpp"
 #include "dense_transform_data.hpp"
 #include "../utility/comm.hpp"
 #include "../utility/exception.hpp"
+#include "../utility/external/get_communicator.hpp"
 
 
 namespace skylark { namespace sketch {
@@ -249,9 +249,11 @@ private:
                 SA_part);
         }
 
+        // get communicator from matrix
+        boost::mpi::communicator comm = skylark::utility::get_communicator(A);
 
         // Pull everything to rank-0
-        boost::mpi::reduce (base_data_t::_context.comm,
+        boost::mpi::reduce (comm,
                             SA_part.LockedBuffer(),
                             SA_part.MemorySize(),
                             sketch_of_A.Buffer(),
@@ -290,10 +292,14 @@ private:
             0.0,
             SA_dist.Matrix());
 
+        // get communicator from matrix
+        boost::mpi::communicator comm = skylark::utility::get_communicator(A);
+        int rank = comm.rank();
+
         // Collect at rank 0.
         // TODO Grid rank 0 or context rank 0?
-        skylark::utility::collect_dist_matrix(base_data_t::_context.comm,
-            base_data_t::_context.rank == 0,
+        skylark::utility::collect_dist_matrix(comm,
+            rank == 0,
             SA_dist, sketch_of_A);
     }
 

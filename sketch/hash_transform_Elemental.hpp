@@ -8,6 +8,7 @@
 #include "transforms.hpp"
 #include "hash_transform_data.hpp"
 #include "../utility/exception.hpp"
+#include "../utility/external/get_communicator.hpp"
 
 namespace skylark { namespace sketch {
 
@@ -433,8 +434,11 @@ private:
             }
         }
 
+        // get communicator from matrix
+        boost::mpi::communicator comm = skylark::utility::get_communicator(A);
+
         // Pull everything to rank-0
-        boost::mpi::reduce (base_data_t::_context.comm,
+        boost::mpi::reduce (comm,
             SA_part.LockedBuffer(),
             SA_part.MemorySize(),
             sketch_of_A.Buffer(),
@@ -477,8 +481,11 @@ private:
             }
         }
 
+        // get communicator from matrix
+        boost::mpi::communicator comm = skylark::utility::get_communicator(A);
+
         // Pull everything to rank-0
-        boost::mpi::reduce (base_data_t::_context.comm,
+        boost::mpi::reduce (comm,
             SA_part.LockedBuffer(),
             SA_part.MemorySize(),
             sketch_of_A.Buffer(),

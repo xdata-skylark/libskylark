@@ -7,7 +7,7 @@
 
 #include "../../sketch/CT.hpp"
 #include "../../sketch/CWT.hpp"
-#include "../../sketch/context.hpp"
+#include "../../base/context.hpp"
 #include "../../utility/sketch_archive.hpp"
 
 int test_main(int argc, char *argv[]) {
@@ -29,7 +29,7 @@ int test_main(int argc, char *argv[]) {
     mpi::environment env(argc, argv);
     mpi::communicator world;
     const size_t rank = world.rank();
-    skylark::sketch::context_t context (seed, world);
+    skylark::base::context_t context (seed);
 
     double count = 1.0;
 

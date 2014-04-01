@@ -121,8 +121,13 @@ private:
                     scale * inter_A.Matrix().Get(row, j));
             }
 
-        skylark::utility::collect_dist_matrix(base_data_t::_context.comm,
-            base_data_t::_context.rank == 0,
+        // get communicator from matrix
+        boost::mpi::communicator comm = skylark::utility::get_communicator(A);
+        int rank = comm.rank();
+
+
+        skylark::utility::collect_dist_matrix(comm,
+            rank == 0,
             dist_sketch_A, sketch_A);
     }
 

@@ -1,10 +1,11 @@
 #ifndef SKETCHED_REGRESSOR_ELEMENTAL_HPP
 #define SKETCHED_REGRESSOR_ELEMENTAL_HPP
 
+#include <boost/mpi.hpp>
 #include <elemental.hpp>
 
 #include "regression_problem.hpp"
-#include "../../sketch/sketch.hpp"
+#include "../../base/sketch.hpp"
 
 
 namespace skylark {
@@ -49,8 +50,8 @@ private:
 
 public:
     sketched_regressor_t(const problem_type &problem, int sketch_size,
-        sketch::context_t& context) :
-        _my_rank(context.rank), _sketch_size(sketch_size)  {
+        base::context_t& context) :
+        _my_rank(mpi::boost::communicator().rank()), _sketch_size(sketch_size) {
         // TODO m < n
         _sketch_transform =
             new sketch_transform_type(problem.m, sketch_size, context);
@@ -124,8 +125,8 @@ private:
 
 public:
     sketched_regressor_t(const problem_type &problem, int sketch_size,
-        sketch::context_t& context) :
-        _my_rank(context.rank), _sketch_size(sketch_size)  {
+        base::context_t& context) :
+        _my_rank(mpi::boost::communicator().rank()), _sketch_size(sketch_size) {
         // TODO m < n
         _sketch_transform =
             new sketch_transform_type(problem.m, sketch_size, context);

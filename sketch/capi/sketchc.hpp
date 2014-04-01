@@ -6,6 +6,7 @@
 #include "../../utility/distributions.hpp"
 
 #include "../sketch.hpp"
+#include "../base/context.hpp"
 
 // Some tools require special API declaration. Customizing the
 // SKYLARK_EXTERN_API allows this. The default is simply nothing.
@@ -56,6 +57,7 @@ struct sketch_transform_t {
 } // namespace sketch
 } // namespace skylark
 
+namespace base    = skylark::base
 namespace sketch  = skylark::sketch;
 namespace sketchc = skylark::sketch::c;
 
@@ -81,14 +83,14 @@ SKYLARK_EXTERN_API bool sl_has_elemental();
 SKYLARK_EXTERN_API bool sl_has_combblas();
 
 
-// Support for skylark::sketch::context_t.
+// Support for skylark::base::context_t.
 
 /** Creating a default Skylark context required for applying sketches.
  *  @param seed for the rng generator
  *  @return a Skylark context
  */
 SKYLARK_EXTERN_API int sl_create_default_context(int seed,
-                                                 sketch::context_t **ctxt);
+                                                 base::context_t **ctxt);
 
 /** Creating a Skylark context required for applying sketches.
  *  @param seed for the rng generator
@@ -96,24 +98,24 @@ SKYLARK_EXTERN_API int sl_create_default_context(int seed,
  *  @return a Skylark context
  */
 SKYLARK_EXTERN_API int sl_create_context(int seed, MPI_Comm cm,
-                                         sketch::context_t **ctxt);
+                                         base::context_t **ctxt);
 
 /** Free resources hold by a Skylark context.
  *  @param ctxt Skylark context
  */
-SKYLARK_EXTERN_API int sl_free_context(sketch::context_t *ctxt);
+SKYLARK_EXTERN_API int sl_free_context(base::context_t *ctxt);
 
 /** Get rank.
  *  @param ctxt Skylark context
  *  @return MPI rank
  */
-SKYLARK_EXTERN_API int sl_context_rank(sketch::context_t *ctxt, int *rank);
+SKYLARK_EXTERN_API int sl_context_rank(base::context_t *ctxt, int *rank);
 
 /** Get total number of processor.
  *  @param ctxt Skylark context
  *  @return number of processors in the context
  */
-SKYLARK_EXTERN_API int sl_context_size(sketch::context_t *ctxt, int *size);
+SKYLARK_EXTERN_API int sl_context_size(base::context_t *ctxt, int *size);
 
 /** Creating a sketch transformation.
  *  @param ctxt Sklark context
@@ -123,7 +125,7 @@ SKYLARK_EXTERN_API int sl_context_size(sketch::context_t *ctxt, int *size);
  *  @return sketch transformation
  */
 SKYLARK_EXTERN_API int sl_create_sketch_transform(
-        sketch::context_t *ctxt, char *type,
+        base::context_t *ctxt, char *type,
         int n, int s, sketchc::sketch_transform_t **sketch, ...);
 
 /** Load a sketch transformation.
@@ -133,7 +135,7 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(
  *  @return sketch transformation
  */
 SKYLARK_EXTERN_API int sl_load_sketch_transform(
-        sketch::context_t *ctxt, char *type,
+        base::context_t *ctxt, char *type,
         char *data, sketchc::sketch_transform_t **sketch);
 
 /** Dump a sketch transformation.
@@ -143,7 +145,7 @@ SKYLARK_EXTERN_API int sl_load_sketch_transform(
  *  @return sketch transformation
  */
 SKYLARK_EXTERN_API int sl_dump_sketch_transform(
-        sketch::context_t *ctxt, char *type,
+        base::context_t *ctxt, char *type,
         char *filename, sketchc::sketch_transform_t *sketch);
 
 /** Free resources hold by a sketch transformation.

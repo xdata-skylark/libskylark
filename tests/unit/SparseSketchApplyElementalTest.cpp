@@ -33,7 +33,7 @@ struct Dummy_t : public skylark::sketch::hash_transform_t<
         skylark::utility::rademacher_distribution_t >
             hash_t;
 
-    Dummy_t(int N, int S, skylark::sketch::context_t& context)
+    Dummy_t(int N, int S, skylark::base::context_t& context)
         : skylark::sketch::hash_transform_t<InputMatrixType, OutputMatrixType,
           boost::random::uniform_int_distribution,
           skylark::utility::rademacher_distribution_t>(N, S, context)
@@ -72,7 +72,7 @@ int test_main(int argc, char *argv[]) {
     MPI_Comm mpi_world(world);
     elem::Grid grid(mpi_world);
 
-    skylark::sketch::context_t context (0, world);
+    skylark::base::context_t context (0, world);
 
     double count = 1.0;
     elem::DistMatrix<double, elem::VR, elem::STAR> A(grid);

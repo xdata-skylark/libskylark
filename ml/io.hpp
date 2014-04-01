@@ -264,8 +264,9 @@ void read_hdf5(skylark_context_t& context, string fName,
 		 for(int i=0;i<context.size;i++) {
 			 if (i==0) {
 				 examples_local = examples_allocation[i];
-				 examples_local_cumulative += examples_local;
-				 nnz_end = indptr[examples_local_cumulative];
+
+				 nnz_start = indptr[examples_local_cumulative];
+				 nnz_end = indptr[examples_local_cumulative + examples_local];
 				 nnz_local = nnz_end - nnz_start;
 
 				 double *_values = new double[nnz_local];
@@ -273,11 +274,12 @@ void read_hdf5(skylark_context_t& context, string fName,
 				 int *_col_ptr = new int[examples_local+1];
 				 double *y = new double[examples_local];
 
-				 read_hdf5_dataset(file, "values", _values, 0, nnz_local);
-				 read_hdf5_dataset(file, "indices", _rowind, 0, nnz_local);
-				 read_hdf5_dataset(file, "Y", y, 0, examples_local);
+				 read_hdf5_dataset(file, "values", _values, nnz_start, nnz_local);
+				 read_hdf5_dataset(file, "indices", _rowind, nnz_start, nnz_local);
+				 read_hdf5_dataset(file, "Y", y, examples_local_cumulative, examples_local);
 				 _col_ptr[examples_local] = nnz_local;
-				 std::copy(indptr, indptr + examples_local, _col_ptr);
+				 std::copy(indptr + examples_local_cumulative, indptr + examples_local_cumulative + examples_local, _col_ptr);
+				 examples_local_cumulative += examples_local;
 
 				 X.attach(_col_ptr, _rowind, _values, nnz_local, d, examples_local, true);
 

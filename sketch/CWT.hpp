@@ -35,18 +35,18 @@ public:
     typedef _SL_HTBASE transform_t;
 
     typedef CWT_data_t<typename _SL_HTBASE::index_type,
-                       typename _SL_HTBASE::value_type> base_t;
+                       typename _SL_HTBASE::value_type> data_type;
 
     /**
      * Regular constructor
      */
     CWT_t(int N, int S, context_t& context)
-        : base_t(N, S, context), _transform(*this) {
+        : data_type(N, S, context), _transform(*this) {
 
     }
 
     CWT_t(const boost::property_tree::ptree &json, context_t& context)
-        : base_t(json, context), _transform(*this) {
+        : data_type(json, context), _transform(*this) {
 
     }
 
@@ -56,15 +56,15 @@ public:
     template <typename OtherInputMatrixType,
               typename OtherOutputMatrixType>
     CWT_t(const CWT_t<OtherInputMatrixType,OtherOutputMatrixType>& other)
-        : base_t(other), _transform(*this) {
+        : data_type(other), _transform(*this) {
 
     }
 
     /**
      * Constructor from data
      */
-    CWT_t(const base_t& other)
-        : base_t(other), _transform(*this) {
+    CWT_t(const data_type& other)
+        : data_type(other), _transform(*this) {
 
     }
 

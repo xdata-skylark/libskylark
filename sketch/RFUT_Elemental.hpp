@@ -32,13 +32,13 @@ struct RFUT_t<
                              elem::STAR, RowDist> output_matrix_type;
     typedef ValueDistributionType value_distribution_type;
     typedef RFUT_data_t<ValueType,
-                        ValueDistributionType> base_data_t;
+                        ValueDistributionType> data_type;
 
     /**
      * Regular constructor
      */
     RFUT_t(int N, skylark::sketch::context_t& context)
-        : base_data_t (N, context) {}
+        : data_type (N, context) {}
 
     /**
      * Copy constructor
@@ -46,14 +46,14 @@ struct RFUT_t<
     RFUT_t (RFUT_t<matrix_type,
                    FUT,
                    value_distribution_type>& other) :
-        base_data_t(other) {}
+        data_type(other) {}
 
     /**
      * Constructor from data
      */
     RFUT_t(const RFUT_data_t<value_type,
                              value_distribution_type>& other_data) :
-        base_data_t(other_data) {}
+        data_type(other_data) {}
 
     /**
      * Apply the transform that is described in by the mixed_A.
@@ -96,16 +96,16 @@ private:
         // TODO verify that A has the correct size
 
         // TODO no need to create FUT everytime...
-        FUT T(base_data_t::_N);
+        FUT T(data_type::_N);
 
         // Scale
         const local_type& local_A = A.LockedMatrix();
         local_type& local_TA = mixed_A.Matrix();
         value_type scale = T.scale();
         for (int j = 0; j < local_A.Width(); j++)
-            for (int i = 0; i < base_data_t::_N; i++)
+            for (int i = 0; i < data_type::_N; i++)
                 local_TA.Set(i, j,
-                    scale * base_data_t::D[i] * local_A.Get(i, j));
+                    scale * data_type::D[i] * local_A.Get(i, j));
 
         // Apply underlying transform
         T.apply(local_TA, skylark::sketch::columnwise_tag());
@@ -137,13 +137,13 @@ struct RFUT_t<
     /**< Intermediate type for columnwise applications */
     typedef ValueDistributionType value_distribution_type;
     typedef RFUT_data_t<ValueType,
-                        ValueDistributionType> base_data_t;
+                        ValueDistributionType> data_type;
 
     /**
      * Regular constructor
      */
     RFUT_t(int N, skylark::sketch::context_t& context)
-        : base_data_t (N, context) {}
+        : data_type (N, context) {}
 
     /**
      * Copy constructor
@@ -151,14 +151,14 @@ struct RFUT_t<
     RFUT_t (RFUT_t<matrix_type,
                    FUT,
                    value_distribution_type>& other) :
-        base_data_t(other) {}
+        data_type(other) {}
 
     /**
      * Constructor from data
      */
     RFUT_t(const RFUT_data_t<value_type,
            value_distribution_type>& other_data) :
-           base_data_t(other_data) {}
+           data_type(other_data) {}
 
     /**
      * Apply the transform that is described in by the mixed_A.
@@ -232,16 +232,16 @@ private:
                            skylark::sketch::rowwise_tag) const {
         // TODO verify that A has the correct size
 
-        FUT T(base_data_t::_N);
+        FUT T(data_type::_N);
 
         // Scale
         const local_type& local_A = A.LockedMatrix();
         local_type& local_TA = mixed_A.Matrix();
         value_type scale = T.scale(local_A);
-        for (int j = 0; j < base_data_t::_N; j++)
+        for (int j = 0; j < data_type::_N; j++)
             for (int i = 0; i < local_A.Height(); i++)
                 local_TA.Set(i, j,
-                    scale * base_data_t::D[j] * local_A.Get(i, j));
+                    scale * data_type::D[j] * local_A.Get(i, j));
 
         // Apply underlying transform
         T.apply(local_TA, skylark::sketch::rowwise_tag());
@@ -257,7 +257,7 @@ private:
         // TODO verify that A has the correct size
         // TODO A and mixed_A have to match
 
-        FUT T(base_data_t::_N);
+        FUT T(data_type::_N);
 
         // Rearrange matrix
         intermediate_type inter_A(A.Grid());
@@ -267,9 +267,9 @@ private:
         local_type& local_A = inter_A.Matrix();
         value_type scale = T.scale(local_A);
         for (int j = 0; j < local_A.Width(); j++)
-            for (int i = 0; i < base_data_t::_N; i++)
+            for (int i = 0; i < data_type::_N; i++)
                 local_A.Set(i, j,
-                    scale * base_data_t::D[i] * local_A.Get(i, j));
+                    scale * data_type::D[i] * local_A.Get(i, j));
 
         // Apply underlying transform
         T.apply(local_A, skylark::sketch::columnwise_tag());
@@ -286,7 +286,7 @@ private:
                                     output_matrix_type& mixed_A,
                                     skylark::sketch::columnwise_tag) const {
 
-        FUT T(base_data_t::_N);
+        FUT T(data_type::_N);
 
         // TODO verify that A has the correct size
         // TODO A and mixed_A have to match
@@ -302,9 +302,9 @@ private:
         // Scale
         value_type scale = T.scale(local_A);
         for (int j = 0; j < local_A.Width(); j++)
-            for (int i = 0; i < base_data_t::_N; i++)
+            for (int i = 0; i < data_type::_N; i++)
                 local_A.Set(i, j,
-                    scale * base_data_t::D[i] * local_A.Get(i, j));
+                    scale * data_type::D[i] * local_A.Get(i, j));
 
         // Rearrange back
         mixed_A = inter_A;

@@ -54,7 +54,7 @@ public:
      * @param B Right-hand sides.
      * @param X Output (overwritten).
      */
-    void solve(const rhs_type &B, rhs_type &X) {
+    void solve(const rhs_type &B, rhs_type &X) const {
         // TODO error checking
         X = B;
         elem::qr::ApplyQ(elem::LEFT, elem::ADJOINT, _QR, _t, X);
@@ -113,7 +113,7 @@ public:
      * @param B Right-hand sides.
      * @param X Output (overwritten).
      */
-    void solve (const rhs_type &B, rhs_type &X) {
+    void solve (const rhs_type &B, rhs_type &X) const {
         // TODO error checking
         X = B;
         elem::qr::ApplyQ(elem::LEFT, elem::ADJOINT, _QR, _t, X);

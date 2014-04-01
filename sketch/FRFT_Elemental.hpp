@@ -30,7 +30,7 @@ struct FastRFT_t <
     typedef ValueType value_type;
     typedef InputType<value_type> matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
-    typedef FastRFT_data_t<ValueType> base_data_t;
+    typedef FastRFT_data_t<ValueType> data_type;
 
 public:
 
@@ -41,15 +41,15 @@ public:
      */
     FastRFT_t(const FastRFT_t<matrix_type,
                       output_matrix_type>& other)
-        : base_data_t(other), _fut(base_data_t::_N) {
+        : data_type(other), _fut(data_type::_N) {
 
     }
 
     /**
      * Constructor from data
      */
-    FastRFT_t(const base_data_t& other_data)
-        : base_data_t(other_data), _fut(base_data_t::_N) {
+    FastRFT_t(const data_type& other_data)
+        : data_type(other_data), _fut(data_type::_N) {
 
     }
 
@@ -86,23 +86,23 @@ private:
 #       pragma omp parallel
 #       endif
         {
-        output_matrix_type W(base_data_t::_NB, 1);
+        output_matrix_type W(data_type::_NB, 1);
         double *w = W.Buffer();
 
-        output_matrix_type Ac(base_data_t::_NB, 1);
+        output_matrix_type Ac(data_type::_NB, 1);
         double *ac = Ac.Buffer();
 
         output_matrix_type Acv;
-        elem::View(Acv, Ac, 0, 0, base_data_t::_N, 1);
+        elem::View(Acv, Ac, 0, 0, data_type::_N, 1);
 
         double *sa = sketch_of_A.Buffer();
         int ldsa = sketch_of_A.LDim();
 
         value_type scal =
-            std::sqrt(base_data_t::_NB) * _fut.scale();
+            std::sqrt(data_type::_NB) * _fut.scale();
 
-        output_matrix_type B(base_data_t::_NB, 1), G(base_data_t::_NB, 1);
-        output_matrix_type Sm(base_data_t::_NB, 1);
+        output_matrix_type B(data_type::_NB, 1), G(data_type::_NB, 1);
+        output_matrix_type Sm(data_type::_NB, 1);
 
 #       ifdef SKYLARK_HAVE_OPENMP
 #       pragma omp for
@@ -110,27 +110,27 @@ private:
         for(int c = 0; c < A.Width(); c++) {
             const matrix_type Acs = base::ColumnView(A, c, 1);
             base::DenseCopy(Acs, Acv);
-            std::fill(ac + base_data_t::_N, ac + base_data_t::_NB, 0);
+            std::fill(ac + data_type::_N, ac + data_type::_NB, 0);
 
-            for(int i = 0; i < base_data_t::numblks; i++) {
+            for(int i = 0; i < data_type::numblks; i++) {
 
-                int s = i * base_data_t::_NB;
-                int e = std::min(s + base_data_t::_NB,  base_data_t::_S);
+                int s = i * data_type::_NB;
+                int e = std::min(s + data_type::_NB,  data_type::_S);
 
                 // Set the local values of B, G and S
-                for(int j = 0; j < base_data_t::_NB; j++) {
-                    B.Set(j, 0, base_data_t::B[i * base_data_t::_NB + j]);
-                    G.Set(j, 0, scal * base_data_t::G[i * base_data_t::_NB + j]);
-                    Sm.Set(j, 0, scal * base_data_t::Sm[i * base_data_t::_NB + j]);
+                for(int j = 0; j < data_type::_NB; j++) {
+                    B.Set(j, 0, data_type::B[i * data_type::_NB + j]);
+                    G.Set(j, 0, scal * data_type::G[i * data_type::_NB + j]);
+                    Sm.Set(j, 0, scal * data_type::Sm[i * data_type::_NB + j]);
                 }
 
                 W = Ac;
 
                 elem::DiagonalScale(elem::LEFT, elem::NORMAL, B, W);
                 _fut.apply(W, tag);
-                for(int l = 0; l < base_data_t::_NB - 1; l++) {
-                    int idx1 = base_data_t::_NB - 1 - l;
-                    int idx2 = base_data_t::P[i * (base_data_t::_NB - 1) + l];
+                for(int l = 0; l < data_type::_NB - 1; l++) {
+                    int idx1 = data_type::_NB - 1 - l;
+                    int idx2 = data_type::P[i * (data_type::_NB - 1) + l];
                     std::swap(w[idx1], w[idx2]);
                 }
                 elem::DiagonalScale(elem::LEFT, elem::NORMAL, G, W);
@@ -140,7 +140,7 @@ private:
                 double *sac = sa + ldsa * c;
                 for(int l = s; l < e; l++) {
                     value_type x = w[l - s];
-                    x += base_data_t::shifts[l];
+                    x += data_type::shifts[l];
 
 #                   ifdef SKYLARK_EXACT_COSINE
                     x = std::cos(x);
@@ -157,7 +157,7 @@ private:
                         1.27323954 * x - 0.405284735 * x * x;
 #                   endif
 
-                    x = base_data_t::scale * x;
+                    x = data_type::scale * x;
                     sac[l - s] = x;
                 }
             }
@@ -182,21 +182,21 @@ private:
         // Create a work array W
         output_matrix_type W(A.Height(), A.Width());
 
-        output_matrix_type B(base_data_t::_N, 1), G(base_data_t::_N, 1);
-        output_matrix_type Sm(base_data_t::_N, 1);
-        for(int i = 0; i < base_data_t::numblks; i++) {
-            int s = i * base_data_t::_N;
-            int e = std::min(s + base_data_t::_N, base_data_t::_S);
+        output_matrix_type B(data_type::_N, 1), G(data_type::_N, 1);
+        output_matrix_type Sm(data_type::_N, 1);
+        for(int i = 0; i < data_type::numblks; i++) {
+            int s = i * data_type::_N;
+            int e = std::min(s + data_type::_N, data_type::_S);
 
             base::DenseCopy(A, W);
 
             // Set the local values of B, G and S
             value_type scal =
-                std::sqrt(base_data_t::_N) * _fut.scale();
-            for(int j = 0; j < base_data_t::_N; j++) {
-                B.Set(j, 0, base_data_t::B[i * base_data_t::_N + j]);
-                G.Set(j, 0, scal * base_data_t::G[i * base_data_t::_N + j]);
-                Sm.Set(j, 0, scal * base_data_t::Sm[i * base_data_t::_N + j]);
+                std::sqrt(data_type::_N) * _fut.scale();
+            for(int j = 0; j < data_type::_N; j++) {
+                B.Set(j, 0, data_type::B[i * data_type::_N + j]);
+                G.Set(j, 0, scal * data_type::G[i * data_type::_N + j]);
+                Sm.Set(j, 0, scal * data_type::Sm[i * data_type::_N + j]);
             }
 
             elem::DiagonalScale(elem::RIGHT, elem::NORMAL, B, W);
@@ -205,10 +205,10 @@ private:
 
             double *w = W.Buffer();
             for(int c = 0; c < W.Height(); c++)
-                for(int l = 0; l < base_data_t::_N - 1; l++) {
-                    int idx1 = c + (base_data_t::_N - 1 - l) * W.LDim();
+                for(int l = 0; l < data_type::_N - 1; l++) {
+                    int idx1 = c + (data_type::_N - 1 - l) * W.LDim();
                     int idx2 = c  +
-                        (base_data_t::P[i * (base_data_t::_N - 1) + l]) * W.LDim();
+                        (data_type::P[i * (data_type::_N - 1) + l]) * W.LDim();
                     std::swap(w[idx1], w[idx2]);
                 }
 
@@ -226,10 +226,10 @@ private:
             view_sketch_of_A = view_W;
         }
 
-        for(int j = 0; j < base_data_t::_S; j++)
+        for(int j = 0; j < data_type::_S; j++)
             for(int i = 0; i < A.Height(); i++) {
                 value_type x = sketch_of_A.Get(i, j);
-                x += base_data_t::shifts[j];
+                x += data_type::shifts[j];
 
 #               ifdef SKYLARK_EXACT_COSINE
                 x = std::cos(x);
@@ -246,7 +246,7 @@ private:
                     1.27323954 * x - 0.405284735 * x * x;
 #               endif
 
-                x = base_data_t::scale * x;
+                x = data_type::scale * x;
                 sketch_of_A.Set(i, j, x);
             }
     }

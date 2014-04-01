@@ -38,14 +38,14 @@ struct FastGaussianRFT_t :
     typedef FastRFT_t<InputMatrixType, OutputMatrixType > transform_t;
 
     typedef FastGaussianRFT_data_t<typename
-      FastRFT_t<InputMatrixType, OutputMatrixType >::value_type > base_t;
+      FastRFT_t<InputMatrixType, OutputMatrixType >::value_type > data_type;
 
     /**
      * Regular constructor
      */
     FastGaussianRFT_t(int N, int S, double sigma,
         skylark::sketch::context_t& context)
-        : base_t(N, S, sigma, context), _transform(*this) {
+        : data_type(N, S, sigma, context), _transform(*this) {
 
     }
 
@@ -56,7 +56,7 @@ struct FastGaussianRFT_t :
               typename OtherOutputMatrixType>
     FastGaussianRFT_t(
         const FastGaussianRFT_t<OtherInputMatrixType, OtherOutputMatrixType> & other)
-        : base_t(other), _transform(*this) {
+        : data_type(other), _transform(*this) {
 
     }
 
@@ -64,8 +64,8 @@ struct FastGaussianRFT_t :
     /**
      * Constructor from data
      */
-    FastGaussianRFT_t (const base_t& other)
-        : base_t(other), _transform(*this) {
+    FastGaussianRFT_t (const data_type& other)
+        : data_type(other), _transform(*this) {
 
     }
 

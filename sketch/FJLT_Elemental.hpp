@@ -29,7 +29,7 @@ struct FJLT_t <
     underlying_value_distribution_type;
 
 protected:
-    typedef FJLT_data_t<value_type> base_data_t;
+    typedef FJLT_data_t<value_type> data_type;
     typedef RFUT_t<intermediate_type,
                    transform_type,
                    underlying_value_distribution_type> underlying_type;
@@ -39,7 +39,7 @@ public:
      * Regular constructor
      */
     FJLT_t(int N, int S, skylark::sketch::context_t& context)
-        : base_data_t (N, S, context) {
+        : data_type (N, S, context) {
 
     }
 
@@ -49,15 +49,15 @@ public:
     template <typename OtherInputMatrixType,
               typename OtherOutputMatrixType>
     FJLT_t(const FJLT_t<OtherInputMatrixType, OtherOutputMatrixType>& other)
-        : base_data_t(other) {
+        : data_type(other) {
 
     }
 
     /**
      * Constructor from data
      */
-    FJLT_t(const base_data_t& other_data)
-        : base_data_t(other_data) {
+    FJLT_t(const data_type& other_data)
+        : data_type(other_data) {
 
     }
 
@@ -106,23 +106,23 @@ private:
         inter_A = A;
 
         // Apply the underlying transform
-        underlying_type underlying(base_data_t::underlying_data);
+        underlying_type underlying(data_type::underlying_data);
         underlying.apply(inter_A, inter_A,
             skylark::sketch::columnwise_tag());
 
         // Create the sampled and scaled matrix -- still in distributed mode
-        intermediate_type dist_sketch_A(base_data_t::_S,
+        intermediate_type dist_sketch_A(data_type::_S,
             inter_A.Width(), inter_A.Grid());
-        double scale = sqrt((double)base_data_t::_N / (double)base_data_t::_S);
+        double scale = sqrt((double)data_type::_N / (double)data_type::_S);
         for (int j = 0; j < inter_A.LocalWidth(); j++)
-            for (int i = 0; i < base_data_t::_S; i++) {
-                int row = base_data_t::samples[i];
+            for (int i = 0; i < data_type::_S; i++) {
+                int row = data_type::samples[i];
                 dist_sketch_A.Matrix().Set(i, j,
                     scale * inter_A.Matrix().Get(row, j));
             }
 
-        skylark::utility::collect_dist_matrix(base_data_t::_context.comm,
-            base_data_t::_context.rank == 0,
+        skylark::utility::collect_dist_matrix(data_type::_context.comm,
+            data_type::_context.rank == 0,
             dist_sketch_A, sketch_A);
     }
 

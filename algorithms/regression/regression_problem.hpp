@@ -33,8 +33,8 @@ struct regression_problem_t {
     const int n;                          ///< Number of variables.
     const InputMatrixType &input_matrix;  ///< Input matrix.
 
-    // TODO add regularization option
-    // TODO add additive model option
+    // TODO add regularization option(s) ?
+    // TODO add additive model option ?
     // TODO regularizers, specialized parameters (based on RegressionType)
 };
 

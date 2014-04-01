@@ -30,7 +30,7 @@ struct RFT_t <
     typedef InputType<value_type> matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
     typedef RFT_data_t<ValueType,
-                       KernelDistribution> base_data_t;
+                       KernelDistribution> data_type;
 private:
     typedef skylark::sketch::dense_transform_t <matrix_type,
                                                 output_matrix_type,
@@ -43,7 +43,7 @@ protected:
      * Regular constructor - allow creation only by subclasses
      */
     RFT_t (int N, int S, skylark::sketch::context_t& context)
-        : base_data_t (N, S, context) {
+        : data_type (N, S, context) {
 
     }
 
@@ -54,15 +54,15 @@ public:
     RFT_t(const RFT_t<matrix_type,
                       output_matrix_type,
                       KernelDistribution>& other)
-        : base_data_t(other) {
+        : data_type(other) {
 
     }
 
     /**
      * Constructor from data
      */
-    RFT_t(const base_data_t& other_data)
-        : base_data_t(other_data) {
+    RFT_t(const data_type& other_data)
+        : data_type(other_data) {
 
     }
 
@@ -96,17 +96,17 @@ private:
         skylark::sketch::columnwise_tag tag) const {
 
         // TODO verify sizes etc.
-        underlying_t underlying(base_data_t::_underlying_data);
+        underlying_t underlying(data_type::_underlying_data);
         underlying.apply(A, sketch_of_A, tag);
 
 #       if SKYLARK_HAVE_OPENMP
 #       pragma omp parallel for collapse(2)
 #       endif
         for(int j = 0; j < A.Width(); j++)
-            for(int i = 0; i < base_data_t::_S; i++) {
+            for(int i = 0; i < data_type::_S; i++) {
                 value_type x = sketch_of_A.Get(i, j);
-                x *= base_data_t::_val_scale;
-                x += base_data_t::_shifts[i];
+                x *= data_type::_val_scale;
+                x += data_type::_shifts[i];
 
 #               ifdef SKYLARK_EXACT_COSINE
                 x = std::cos(x);
@@ -123,7 +123,7 @@ private:
                     1.27323954 * x - 0.405284735 * x * x;
 #               endif
 
-                x = base_data_t::_scale * x;
+                x = data_type::_scale * x;
                 sketch_of_A.Set(i, j, x);
             }
     }
@@ -137,17 +137,17 @@ private:
         skylark::sketch::rowwise_tag tag) const {
 
         // TODO verify sizes etc.
-        underlying_t underlying(base_data_t::_underlying_data);
+        underlying_t underlying(data_type::_underlying_data);
         underlying.apply(A, sketch_of_A, tag);
 
 #       if SKYLARK_HAVE_OPENMP
 #       pragma omp parallel for collapse(2)
 #       endif
-        for(int j = 0; j < base_data_t::_S; j++)
+        for(int j = 0; j < data_type::_S; j++)
             for(int i = 0; i < A.Height(); i++) {
                 value_type x = sketch_of_A.Get(i, j);
-                x *= base_data_t::_val_scale;
-                x += base_data_t::_shifts[j];
+                x *= data_type::_val_scale;
+                x += data_type::_shifts[j];
 
 #               ifdef SKYLARK_EXACT_COSINE
                 x = std::cos(x);
@@ -164,7 +164,7 @@ private:
                     1.27323954 * x - 0.405284735 * x * x;
 #               endif
 
-                x = base_data_t::_scale * x;
+                x = data_type::_scale * x;
                 sketch_of_A.Set(i, j, x);
             }
     }
@@ -189,7 +189,7 @@ struct RFT_t <
     typedef elem::DistMatrix<value_type,
                              ColDist, elem::STAR> output_matrix_type;
     typedef RFT_data_t<ValueType,
-                       KernelDistribution> base_data_t;
+                       KernelDistribution> data_type;
 private:
     typedef skylark::sketch::dense_transform_t <matrix_type,
                                                 output_matrix_type,
@@ -204,7 +204,7 @@ protected:
      * Regular constructor -- Allow only creation by subclasses
      */
     RFT_t (int N, int S, skylark::sketch::context_t& context)
-        : base_data_t (N, S, context) {
+        : data_type (N, S, context) {
 
     }
 
@@ -216,15 +216,15 @@ public:
     RFT_t(const RFT_t<matrix_type,
                       output_matrix_type,
                       KernelDistribution>& other)
-        : base_data_t(other) {
+        : data_type(other) {
 
     }
 
     /**
      * Constructor from data
      */
-    RFT_t(const base_data_t& other_data)
-        : base_data_t(other_data) {
+    RFT_t(const data_type& other_data)
+        : data_type(other_data) {
 
     }
 
@@ -267,15 +267,15 @@ private:
     void apply_impl_vdist (const matrix_type& A,
                      output_matrix_type& sketch_of_A,
                      skylark::sketch::columnwise_tag tag) const {
-        underlying_t underlying(base_data_t::_underlying_data);
+        underlying_t underlying(data_type::_underlying_data);
         underlying.apply(A, sketch_of_A, tag);
         elem::Matrix<value_type> &Al = sketch_of_A.Matrix();
         for(int j = 0; j < Al.Width(); j++)
-            for(int i = 0; i < base_data_t::_S; i++) {
+            for(int i = 0; i < data_type::_S; i++) {
                 value_type val = Al.Get(i, j);
                 value_type trans =
-                    base_data_t::_scale * std::cos((val * base_data_t::_val_scale) +
-                        base_data_t::_shifts[i]);
+                    data_type::_scale * std::cos((val * data_type::_val_scale) +
+                        data_type::_shifts[i]);
                 Al.Set(i, j, trans);
             }
     }
@@ -289,15 +289,15 @@ private:
         skylark::sketch::rowwise_tag tag) const {
 
         // TODO verify sizes etc.
-        underlying_t underlying(base_data_t::_underlying_data);
+        underlying_t underlying(data_type::_underlying_data);
         underlying.apply(A, sketch_of_A, tag);
         elem::Matrix<value_type> &Al = sketch_of_A.Matrix();
-        for(int j = 0; j < base_data_t::_S; j++)
+        for(int j = 0; j < data_type::_S; j++)
             for(int i = 0; i < Al.Height(); i++) {
                 value_type val = Al.Get(i, j);
                 value_type trans =
-                    base_data_t::_scale * std::cos((val * base_data_t::_val_scale) +
-                        base_data_t::_shifts[j]);
+                    data_type::_scale * std::cos((val * data_type::_val_scale) +
+                        data_type::_shifts[j]);
                 Al.Set(i, j, trans);
             }
     }

@@ -95,14 +95,14 @@ struct PPT_t <
     typedef ValueType value_type;
     typedef elem::Matrix<value_type> matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
-    typedef PPT_data_t<ValueType> base_data_t;
+    typedef PPT_data_t<ValueType> data_type;
 
     /**
      * Regular constructor
      */
     PPT_t(int N, int S, int q, double c, double gamma,
         skylark::sketch::context_t& context)
-        : base_data_t (N, S, q, c, gamma, context)  {
+        : data_type (N, S, q, c, gamma, context)  {
 
         build_internal();
     }
@@ -118,7 +118,7 @@ struct PPT_t <
     template <typename OtherInputMatrixType,
               typename OtherOutputMatrixType>
     PPT_t(const PPT_t<OtherInputMatrixType, OtherOutputMatrixType>& other)
-        : base_data_t(other) {
+        : data_type(other) {
 
         build_internal();
     }
@@ -126,8 +126,8 @@ struct PPT_t <
     /**
      * Constructor from data
      */
-    PPT_t(const base_data_t& other_data)
-        : base_data_t(other_data) {
+    PPT_t(const data_type& other_data)
+        : data_type(other_data) {
 
         build_internal();
     }
@@ -141,8 +141,8 @@ struct PPT_t <
                 columnwise_tag dimension) const {
 
         // TODO verify sizes etc.
-        const int S = base_data_t::_S;
-        const int N = base_data_t::_N;
+        const int S = data_type::_S;
+        const int N = data_type::_N;
 
 #       ifdef SKYLARK_HAVE_OPENMP
 #       pragma omp parallel
@@ -169,9 +169,9 @@ struct PPT_t <
             for(it = _cwts.begin(); it != _cwts.end(); it++, qc++) {
                 const _CWT_t &C = *it;
                 C.apply(Av, W, columnwise_tag());
-                elem::Scal(std::sqrt(base_data_t::_gamma), W);
-                W.Update(base_data_t::_hash_idx[qc], 0,
-                    std::sqrt(base_data_t::_c) * base_data_t::_hash_val[qc]);
+                elem::Scal(std::sqrt(data_type::_gamma), W);
+                W.Update(data_type::_hash_idx[qc], 0,
+                    std::sqrt(data_type::_c) * data_type::_hash_val[qc]);
                 internal::fftw<value_type>::executeffun(_fftw_fplan, W.Buffer(),
                     reinterpret_cast<_fftw_complex_t*>(FW));
                 for(int j = 0; j < S; j++)
@@ -202,8 +202,8 @@ struct PPT_t <
                 output_matrix_type& sketch_of_A,
                 rowwise_tag dimension) const {
         // TODO verify sizes etc.
-        const int S = base_data_t::_S;
-        const int N = base_data_t::_N;
+        const int S = data_type::_S;
+        const int N = data_type::_N;
 
 #       ifdef SKYLARK_HAVE_OPENMP
 #       pragma omp parallel
@@ -233,9 +233,9 @@ struct PPT_t <
             for(it = _cwts.begin(); it != _cwts.end(); it++, qc++) {
                 const _CWT_t &C = *it;
                 C.apply(ATv, W, columnwise_tag());
-                elem::Scal(std::sqrt(base_data_t::_gamma), W);
-                W.Update(base_data_t::_hash_idx[qc], 0,
-                    std::sqrt(base_data_t::_c) * base_data_t::_hash_val[qc]);
+                elem::Scal(std::sqrt(data_type::_gamma), W);
+                W.Update(data_type::_hash_idx[qc], 0,
+                    std::sqrt(data_type::_c) * data_type::_hash_val[qc]);
                 internal::fftw<value_type>::executeffun(_fftw_fplan, W.Buffer(),
                     reinterpret_cast<_fftw_complex_t*>(FW));
                 for(int j = 0; j < S; j++)
@@ -259,13 +259,13 @@ struct PPT_t <
         }
     }
 
-    int get_N() const { return base_data_t::_N; } /**< Get input dimesion. */
-    int get_S() const { return base_data_t::_S; } /**< Get output dimesion. */
+    int get_N() const { return data_type::_N; } /**< Get input dimesion. */
+    int get_S() const { return data_type::_S; } /**< Get output dimesion. */
 
 
 protected:
 
-    typedef typename base_data_t::_CWT_data_t _CWT_data_t;
+    typedef typename data_type::_CWT_data_t _CWT_data_t;
     typedef CWT_t<matrix_type, output_matrix_type> _CWT_t;
 
     typedef typename internal::fftw<value_type>::complex_t _fftw_complex_t;
@@ -275,11 +275,11 @@ protected:
     std::list<_CWT_t> _cwts;
 
     void build_internal() {
-        int S = base_data_t::_S;
+        int S = data_type::_S;
 
         for(typename std::list<_CWT_data_t>::iterator it =
-                base_data_t::_cwts_data.begin();
-            it != base_data_t::_cwts_data.end(); it++)
+                data_type::_cwts_data.begin();
+            it != data_type::_cwts_data.end(); it++)
             _cwts.push_back(_CWT_t(*it));
 
         double *dtmp = new double[S];
@@ -309,14 +309,14 @@ struct PPT_t <
     typedef ValueType value_type;
     typedef base::sparse_matrix_t<value_type> matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
-    typedef PPT_data_t<ValueType> base_data_t;
+    typedef PPT_data_t<ValueType> data_type;
 
     /**
      * Regular constructor
      */
     PPT_t(int N, int S, int q, double c, double gamma,
         skylark::sketch::context_t& context)
-        : base_data_t (N, S, q, c, gamma, context)  {
+        : data_type (N, S, q, c, gamma, context)  {
 
         build_internal();
     }
@@ -332,7 +332,7 @@ struct PPT_t <
     template <typename OtherInputMatrixType,
               typename OtherOutputMatrixType>
     PPT_t(const PPT_t<OtherInputMatrixType, OtherOutputMatrixType>& other)
-        : base_data_t(other) {
+        : data_type(other) {
 
         build_internal();
     }
@@ -340,8 +340,8 @@ struct PPT_t <
     /**
      * Constructor from data
      */
-    PPT_t(const base_data_t& other_data)
-        : base_data_t(other_data) {
+    PPT_t(const data_type& other_data)
+        : data_type(other_data) {
 
         build_internal();
     }
@@ -359,8 +359,8 @@ struct PPT_t <
         //      for sparse matrices. Maybe you want to do the CWT right on
         //      start?
 
-        const int S = base_data_t::_S;
-        const int N = base_data_t::_N;
+        const int S = data_type::_S;
+        const int N = data_type::_N;
 
 #       ifdef SKYLARK_HAVE_OPENMP
 #       pragma omp parallel
@@ -387,9 +387,9 @@ struct PPT_t <
             for(it = _cwts.begin(); it != _cwts.end(); it++, qc++) {
                 const _CWT_t &C = *it;
                 C.apply(Av, W, columnwise_tag());
-                elem::Scal(std::sqrt(base_data_t::_gamma), W);
-                W.Update(base_data_t::_hash_idx[qc], 0,
-                    std::sqrt(base_data_t::_c) * base_data_t::_hash_val[qc]);
+                elem::Scal(std::sqrt(data_type::_gamma), W);
+                W.Update(data_type::_hash_idx[qc], 0,
+                    std::sqrt(data_type::_c) * data_type::_hash_val[qc]);
                 internal::fftw<value_type>::executeffun(_fftw_fplan, W.Buffer(),
                     reinterpret_cast<_fftw_complex_t*>(FW));
                 for(int j = 0; j < S; j++)
@@ -427,13 +427,13 @@ struct PPT_t <
         elem::Transpose(SAT, sketch_of_A);
     }
 
-    int get_N() const { return base_data_t::_N; } /**< Get input dimesion. */
-    int get_S() const { return base_data_t::_S; } /**< Get output dimesion. */
+    int get_N() const { return data_type::_N; } /**< Get input dimesion. */
+    int get_S() const { return data_type::_S; } /**< Get output dimesion. */
 
 
 protected:
 
-    typedef typename base_data_t::_CWT_data_t _CWT_data_t;
+    typedef typename data_type::_CWT_data_t _CWT_data_t;
     typedef CWT_t<matrix_type, output_matrix_type> _CWT_t;
 
     typedef typename internal::fftw<value_type>::complex_t _fftw_complex_t;
@@ -443,11 +443,11 @@ protected:
     std::list<_CWT_t> _cwts;
 
     void build_internal() {
-        int S = base_data_t::_S;
+        int S = data_type::_S;
 
         for(typename std::list<_CWT_data_t>::iterator it =
-                base_data_t::_cwts_data.begin();
-            it != base_data_t::_cwts_data.end(); it++)
+                data_type::_cwts_data.begin();
+            it != data_type::_cwts_data.end(); it++)
             _cwts.push_back(_CWT_t(*it));
 
         double *dtmp = new double[S];

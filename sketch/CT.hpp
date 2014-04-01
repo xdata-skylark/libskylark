@@ -25,14 +25,14 @@ struct CT_t :
     typedef dense_transform_t<InputMatrixType, OutputMatrixType,
                                bstrand::cauchy_distribution > transform_t;
 
-    typedef CT_data_t<typename transform_t::value_type> base_t;
+    typedef CT_data_t<typename transform_t::value_type> data_type;
 
 
     /**
      * Regular constructor
      */
     CT_t(int N, int S, double C, skylark::sketch::context_t& context)
-        : base_t(N, S, C, context), _transform(*this) {
+        : data_type(N, S, C, context), _transform(*this) {
     }
 
     /**
@@ -41,15 +41,15 @@ struct CT_t :
     template <typename OtherInputMatrixType,
               typename OtherOutputMatrixType>
     CT_t (const CT_t<OtherInputMatrixType, OtherOutputMatrixType>& other)
-        : base_t(other), _transform(*this) {
+        : data_type(other), _transform(*this) {
 
     }
 
     /**
      * Constructor from data
      */
-    CT_t (const base_t& other)
-        : base_t(other), _transform(*this) {
+    CT_t (const data_type& other)
+        : data_type(other), _transform(*this) {
 
     }
 

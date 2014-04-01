@@ -27,19 +27,19 @@ public:
     typedef dense_transform_t<InputMatrixType, OutputMatrixType,
                                bstrand::normal_distribution > transform_t;
 
-    typedef JLT_data_t<typename transform_t::value_type> base_t;
+    typedef JLT_data_t<typename transform_t::value_type> data_type;
 
     /**
      * Regular constructor
      */
     JLT_t(int N, int S, skylark::sketch::context_t& context)
-        : base_t(N, S, context), _transform(*this) {
+        : data_type(N, S, context), _transform(*this) {
 
     }
 
     JLT_t(boost::property_tree::ptree &json,
           skylark::sketch::context_t& context)
-        : base_t(json, context), _transform(*this) {
+        : data_type(json, context), _transform(*this) {
 
     }
 
@@ -49,15 +49,15 @@ public:
     template <typename OtherInputMatrixType,
               typename OtherOutputMatrixType>
     JLT_t (const JLT_t<OtherInputMatrixType, OtherOutputMatrixType>& other)
-        : base_t(other), _transform(*this) {
+        : data_type(other), _transform(*this) {
 
     }
 
     /**
      * Constructor from data
      */
-    JLT_t (const base_t& other)
-        : base_t(other), _transform(*this) {
+    JLT_t (const data_type& other)
+        : data_type(other), _transform(*this) {
 
     }
 

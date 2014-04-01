@@ -38,12 +38,12 @@ struct hash_transform_t <
     typedef hash_transform_data_t<size_t,
                                   ValueType,
                                   IdxDistributionType,
-                                  ValueDistribution> base_data_t;
+                                  ValueDistribution> data_type;
     /**
      * Regular constructor
      */
     hash_transform_t (int N, int S, skylark::sketch::context_t& context) :
-        base_data_t (N, S, context) {}
+        data_type (N, S, context) {}
 
     /**
      * Copy constructor
@@ -52,13 +52,13 @@ struct hash_transform_t <
                                        output_matrix_type,
                                        IdxDistributionType,
                                        ValueDistribution>& other) :
-        base_data_t(other) {}
+        data_type(other) {}
 
     /**
      * Constructor from data
      */
-    hash_transform_t (const base_data_t& other_data) :
-        base_data_t(other_data) {}
+    hash_transform_t (const data_type& other_data) :
+        data_type(other_data) {}
 
     /**
      * Apply columnwise the sketching transform that is described by the
@@ -116,8 +116,8 @@ private:
         // Construct Pi * A (directly on the fly)
         for (size_t row_idx = 0; row_idx < A.Height(); row_idx++) {
 
-            size_t new_row_idx      = base_data_t::row_idx[row_idx];
-            value_type scale_factor = base_data_t::row_value[row_idx];
+            size_t new_row_idx      = data_type::row_idx[row_idx];
+            value_type scale_factor = data_type::row_value[row_idx];
 
             for(size_t col_idx = 0; col_idx < A.Width(); col_idx++) {
                 value_type value = scale_factor * A.Get(row_idx, col_idx);
@@ -139,8 +139,8 @@ private:
         // Construct Pi * A (directly on the fly)
         for (size_t col_idx = 0; col_idx < A.Width(); col_idx++) {
 
-            size_t new_col_idx      = base_data_t::row_idx[col_idx];
-            value_type scale_factor = base_data_t::row_value[col_idx];
+            size_t new_col_idx      = data_type::row_idx[col_idx];
+            value_type scale_factor = data_type::row_value[col_idx];
 
             for(size_t row_idx = 0; row_idx < A.Height(); row_idx++) {
                 value_type value = scale_factor * A.Get(row_idx, col_idx);
@@ -177,12 +177,12 @@ struct hash_transform_t <
     typedef hash_transform_data_t<size_t,
                                   ValueType,
                                   IdxDistributionType,
-                                  ValueDistribution> base_data_t;
+                                  ValueDistribution> data_type;
     /**
      * Regular constructor
      */
     hash_transform_t (int N, int S, skylark::sketch::context_t& context) :
-        base_data_t (N, S, context) {}
+        data_type (N, S, context) {}
 
     /**
      * Copy constructor
@@ -191,13 +191,13 @@ struct hash_transform_t <
                                        output_matrix_type,
                                        IdxDistributionType,
                                        ValueDistribution>& other) :
-        base_data_t(other) {}
+        data_type(other) {}
 
     /**
      * Constructor from data
      */
-    hash_transform_t (const base_data_t& other_data) :
-        base_data_t(other_data) {}
+    hash_transform_t (const data_type& other_data) :
+        data_type(other_data) {}
 
     /**
      * Apply columnwise the sketching transform that is described by the
@@ -266,8 +266,8 @@ private:
             for (int j = indptr[col]; j < indptr[col + 1]; j++) {
                 int row = indices[j];
                 value_type val = values[j];
-                SA[col * ld + base_data_t::row_idx[row]] +=
-                    base_data_t::row_value[row] * val;
+                SA[col * ld + data_type::row_idx[row]] +=
+                    data_type::row_value[row] * val;
             }
         }
     }
@@ -296,8 +296,8 @@ private:
             for (int j = indptr[col]; j < indptr[col + 1]; j++) {
                 int row = indices[j];
                 value_type val = values[j];
-                SA[base_data_t::row_idx[col] * ld + row] +=
-                    base_data_t::row_value[col] * val;
+                SA[data_type::row_idx[col] * ld + row] +=
+                    data_type::row_value[col] * val;
             }
         }
 
@@ -334,12 +334,12 @@ struct hash_transform_t <
     typedef hash_transform_data_t<size_t,
                                   ValueType,
                                   IdxDistributionType,
-                                  ValueDistribution> base_data_t;
+                                  ValueDistribution> data_type;
     /**
      * Regular constructor
      */
     hash_transform_t (int N, int S, skylark::sketch::context_t& context) :
-        base_data_t (N, S, context) {}
+        data_type (N, S, context) {}
 
     /**
      * Copy constructor
@@ -348,13 +348,13 @@ struct hash_transform_t <
                                        output_matrix_type,
                                        IdxDistributionType,
                                        ValueDistribution>& other) :
-        base_data_t(other) {}
+        data_type(other) {}
 
     /**
      * Constructor from data
      */
-    hash_transform_t (const base_data_t& other_data) :
-        base_data_t(other_data) {}
+    hash_transform_t (const data_type& other_data) :
+        data_type(other_data) {}
 
     /**
      * Apply columnwise the sketching transform that is described by the
@@ -423,8 +423,8 @@ private:
         for (size_t j = 0; j < A.LocalHeight(); j++) {
 
             size_t row_idx = A.ColShift() + A.ColStride() * j;
-            size_t new_row_idx      = base_data_t::row_idx[row_idx];
-            value_type scale_factor = base_data_t::row_value[row_idx];
+            size_t new_row_idx      = data_type::row_idx[row_idx];
+            value_type scale_factor = data_type::row_value[row_idx];
 
             for(size_t i = 0; i < A.LocalWidth(); i++) {
                 size_t col_idx = A.RowShift() + A.RowStride() * i;
@@ -434,7 +434,7 @@ private:
         }
 
         // Pull everything to rank-0
-        boost::mpi::reduce (base_data_t::_context.comm,
+        boost::mpi::reduce (data_type::_context.comm,
             SA_part.LockedBuffer(),
             SA_part.MemorySize(),
             sketch_of_A.Buffer(),
@@ -467,8 +467,8 @@ private:
         for (size_t j = 0; j < A.LocalWidth(); ++j) {
 
             size_t col_idx = A.RowShift() + A.RowStride() * j;
-            size_t new_col_idx = base_data_t::row_idx[col_idx];
-            value_type scale_factor = base_data_t::row_value[col_idx];
+            size_t new_col_idx = data_type::row_idx[col_idx];
+            value_type scale_factor = data_type::row_value[col_idx];
 
             for(size_t i = 0; i < A.LocalHeight(); ++i) {
                 size_t row_idx   = A.ColShift() + A.ColStride() * i;
@@ -478,7 +478,7 @@ private:
         }
 
         // Pull everything to rank-0
-        boost::mpi::reduce (base_data_t::_context.comm,
+        boost::mpi::reduce (data_type::_context.comm,
             SA_part.LockedBuffer(),
             SA_part.MemorySize(),
             sketch_of_A.Buffer(),

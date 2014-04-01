@@ -44,14 +44,14 @@ struct ExpSemigroupRLT_t :
 
     typedef ExpSemigroupRLT_data_t<typename
       RLT_t<InputMatrixType, OutputMatrixType,
-            utility::standard_levy_distribution_t >::value_type > base_t;
+            utility::standard_levy_distribution_t >::value_type > data_type;
 
     /**
      * Regular constructor
      */
     ExpSemigroupRLT_t(int N, int S, double beta,
         skylark::sketch::context_t& context)
-        : base_t(N, S, beta, context), _transform(*this) {
+        : data_type(N, S, beta, context), _transform(*this) {
 
     }
 
@@ -62,15 +62,15 @@ struct ExpSemigroupRLT_t :
               typename OtherOutputMatrixType>
     ExpSemigroupRLT_t(
         const ExpSemigroupRLT_t<OtherInputMatrixType, OtherOutputMatrixType>& other)
-        : base_t(other), _transform(*this) {
+        : data_type(other), _transform(*this) {
 
     }
 
     /**
      * Constructor from data
      */
-    ExpSemigroupRLT_t (const base_t& other)
-        : base_t(other), _transform(*this) {
+    ExpSemigroupRLT_t (const data_type& other)
+        : data_type(other), _transform(*this) {
 
     }
 

@@ -170,7 +170,7 @@ int write_hdf5(string fName, sparse_matrix_t& X,
         	dataset.write(Y.Buffer(), H5::PredType::NATIVE_DOUBLE);
         }
 
-
+      delete[] dimensions;
       file.close();
 
     }
@@ -202,10 +202,136 @@ int write_hdf5(string fName, sparse_matrix_t& X,
 }
 
 
+void read_hdf5_dataset(H5::H5File& file, string name, int* buf, int offset, int count) {
+			H5::DataSet dataset = file.openDataSet(name);
+			H5::DataSpace filespace = dataset.getSpace();
+			hsize_t dims[1];
+			dims[0] = n;
+			H5::DataSpace mspace(1,dims);
+			filespace.selectHyperslab( H5S_SELECT_SET, count, offset );
+			dataset.read(buf, H5::PredType::NATIVE_INT, mspace, filespace);
+}
+
+void read_hdf5_dataset(H5::H5File& file, string name, double* buf, int offset, int count) {
+			H5::DataSet dataset = file.openDataSet(name);
+			H5::DataSpace filespace = dataset.getSpace();
+			hsize_t dims[1];
+			dims[0] = n;
+			H5::DataSpace mspace(1,dims);
+			filespace.selectHyperslab( H5S_SELECT_SET, count, offset );
+			dataset.read(buf, H5::PredType::NATIVE_DOUBLE, mspace, filespace);
+}
+
 
 void read_hdf5(skylark_context_t& context, string fName,
         sparse_matrix_t& X,
         elem::Matrix<double>& Y, int blocksize = 10000) {
+
+	if (context.rank==0)
+		            cout << "Reading sparse matrix from file " << fName << endl;
+
+	H5::H5File file( fName, H5F_ACC_RDONLY );
+
+	int* dimensions = new int[3];
+	read_hdf5_dataset(file, "dimensions", dimensions, 0, 3);
+
+	int n = dimensions[0];
+	int d = dimensions[1];
+	int nnz = dimensions[3];
+
+	int* indptr = new int[n+1];
+	read_hdf5_dataset(file, "indptr", indptr, 0, n+1);
+
+	boost::mpi::broadcast(context.comm, n, 0);
+	boost::mpi::broadcast(context.comm, d, 0);
+
+	 // Number of examples per process
+	int* examples_allocation = new int[context.size];
+	int chunksize = (int) n / context.size;
+	int leftover = n % context.size;
+	for(int i=0;i<context.size;i++)
+		examples_allocation[i] = chunksize;
+	for(int i=0;i<leftover;i++)
+		examples_allocation[i]++;
+
+	context.comm.barrier();
+
+	 // read chunks on rank = 0 and send
+	 if(context.rank==0) {
+		 int examples_local, nnz_start = 0, nnz_end = 0, nnz_local;
+		 int examples_local_cumulative = 0;
+		 	 // loop and splice out chunk from the hdf5 file and then send to other processes
+		 for(int i=0;i<context.size;i++) {
+			 if (i==0) {
+				 examples_local = examples_allocation[i];
+				 examples_local_cumulative += examples_local;
+				 nnz_end = indptr[examples_local_cumulative];
+				 nnz_local = nnz_end - nnz_start;
+
+				 double *_values = new double[nnz_local];
+				 int *_rowind = new int[nnz_local];
+				 int *_col_ptr = new int[examples_local+1];
+				 double *y = new double[examples_local];
+
+				 read_hdf5_dataset(file, "values", _values, 0, nnz_local);
+				 read_hdf5_dataset(file, "indices", _rowind, 0, nnz_local);
+				 read_hdf5_dataset(file, "Y", y, 0, examples_local);
+				 _col_ptr[examples_local] = nnz_local;
+				 std::copy(indptr, indptr + examples_local, _col_ptr);
+
+				 X.attach(_col_ptr, _rowind, _values, nnz_local, d, examples_local, true);
+
+				 LocalMatrixType Y2(examples_local, 1, y, 0);
+				 Y = Y2;
+				 std::cout << "rank=0: Read " << examples_local << " x " << d << " with " << nnz_local << " nonzeros" << std::endl;
+
+			 } else {
+
+
+			 }
+
+		 }
+
+
+
+	    	} else {
+
+	    		for(int r=1; r<context.size; r++) {
+	                if ((context.rank==r) && examples_allocation[r]>0) {
+	                    int nnz_local, t, d;
+	                    context.comm.recv(0, 1, t);
+	                    context.comm.recv(0, 2, d);
+	                    context.comm.recv(0, 3, nnz_local);
+
+	                    double* values = new double[nnz_local];
+	                    int* rowind = new int[nnz_local];
+	                    int* col_ptr = new int[t+1];
+
+	                    context.comm.recv(0, 4, col_ptr, t+1);
+	                    context.comm.recv(0, 5, rowind, nnz_local);
+	                    context.comm.recv(0, 6, values, nnz_local);
+
+	                    //attach currently creates copies so we can delete the rest
+	                    X.attach(col_ptr, rowind, values, nnz_local, d, t, true);
+	                   // delete[] col_ptr;
+	                   // delete[] rowind;
+	                   // delete[] values;
+
+	                    double* y = new double[t];
+	                    context.comm.recv(0, 7, y, t);
+	                    LocalMatrixType Y2(t, 1, y, 0);
+	                    Y = Y2; // copy
+
+	                    //Y.Resize(t,1);
+	                    //Y.Attach(t,1,y,0);
+
+	                    std::cout << "rank=" << r << ": Received and read " << t << " x " << d << " with " << nnz_local << " nonzeros" << std::endl;
+	                }
+	            }
+	    	}
+
+	delete[] dimensions;
+	file.close();
 
 }
 /*

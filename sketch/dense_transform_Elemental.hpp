@@ -31,13 +31,13 @@ struct dense_transform_t <
     typedef elem::Matrix<value_type> output_matrix_type;
     typedef ValueDistribution<value_type> value_distribution_type;
     typedef dense_transform_data_t<ValueType,
-                                  ValueDistribution> base_data_t;
+                                  ValueDistribution> data_type;
 
     /**
      * Regular constructor
      */
     dense_transform_t (int N, int S, skylark::sketch::context_t& context)
-        : base_data_t (N, S, context) {}
+        : data_type (N, S, context) {}
 
     /**
      * Copy constructor
@@ -45,14 +45,14 @@ struct dense_transform_t <
     dense_transform_t (const dense_transform_t<matrix_type,
                                          output_matrix_type,
                                          ValueDistribution>& other)
-        : base_data_t(other) {}
+        : data_type(other) {}
 
     /**
      * Constructor from data
      */
     dense_transform_t(const dense_transform_data_t<value_type,
                                             ValueDistribution>& other_data)
-        : base_data_t(other_data) {}
+        : data_type(other_data) {}
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
@@ -79,12 +79,12 @@ private:
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::columnwise_tag) const {
 
-        elem::Matrix<value_type> S(base_data_t::_S, base_data_t::_N);
-        for(int j = 0; j < base_data_t::_N; j++) {
-            for (int i = 0; i < base_data_t::_S; i++) {
+        elem::Matrix<value_type> S(data_type::_S, data_type::_N);
+        for(int j = 0; j < data_type::_N; j++) {
+            for (int i = 0; i < data_type::_S; i++) {
                 value_type sample =
-                    base_data_t::random_samples[j * base_data_t::_S + i];
-                S.Set(i, j, base_data_t::scale * sample);
+                    data_type::random_samples[j * data_type::_S + i];
+                S.Set(i, j, data_type::scale * sample);
             }
         }
 
@@ -105,12 +105,12 @@ private:
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::rowwise_tag) const {
 
-        elem::Matrix<value_type> S(base_data_t::_S, base_data_t::_N);
-        for(int j = 0; j < base_data_t::_N; j++) {
-            for (int i = 0; i < base_data_t::_S; i++) {
+        elem::Matrix<value_type> S(data_type::_S, data_type::_N);
+        for(int j = 0; j < data_type::_N; j++) {
+            for (int i = 0; i < data_type::_S; i++) {
                 value_type sample =
-                    base_data_t::random_samples[j * base_data_t::_S + i];
-                S.Set(i, j, base_data_t::scale * sample);
+                    data_type::random_samples[j * data_type::_S + i];
+                S.Set(i, j, data_type::scale * sample);
             }
         }
 
@@ -143,13 +143,13 @@ struct dense_transform_t <
     typedef elem::Matrix<value_type> output_matrix_type;
     typedef ValueDistribution<value_type> value_distribution_type;
     typedef dense_transform_data_t<ValueType,
-                                  ValueDistribution> base_data_t;
+                                  ValueDistribution> data_type;
 
     /**
      * Regular constructor
      */
     dense_transform_t (int N, int S, skylark::sketch::context_t& context)
-        : base_data_t (N, S, context) {}
+        : data_type (N, S, context) {}
 
     /**
      * Copy constructor
@@ -157,14 +157,14 @@ struct dense_transform_t <
     dense_transform_t (dense_transform_t<matrix_type,
                                          output_matrix_type,
                                          ValueDistribution>& other)
-        : base_data_t(other) {}
+        : data_type(other) {}
 
     /**
      * Constructor from data
      */
     dense_transform_t(const dense_transform_data_t<value_type,
                                             ValueDistribution>& other_data)
-        : base_data_t(other_data) {}
+        : data_type(other_data) {}
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
@@ -221,17 +221,17 @@ private:
         int slice_width = A.Width();
 
 
-        elem::Matrix<value_type> S_local(base_data_t::_S, slice_width);
+        elem::Matrix<value_type> S_local(data_type::_S, slice_width);
         for (int js = 0; js < A.LocalHeight(); js += slice_width) {
             int je = std::min(js + slice_width, A.LocalHeight());
             // adapt size of local portion (can be less than slice_width)
-            S_local.Resize(base_data_t::_S, je-js);
+            S_local.Resize(data_type::_S, je-js);
             for(int j = js; j < je; j++) {
                 int col = A.ColShift() + A.ColStride() * j;
-                for (int i = 0; i < base_data_t::_S; i++) {
+                for (int i = 0; i < data_type::_S; i++) {
                     value_type sample =
-                        base_data_t::random_samples[col * base_data_t::_S + i];
-                    S_local.Set(i, j-js, base_data_t::scale * sample);
+                        data_type::random_samples[col * data_type::_S + i];
+                    S_local.Set(i, j-js, data_type::scale * sample);
                 }
             }
 
@@ -251,7 +251,7 @@ private:
 
 
         // Pull everything to rank-0
-        boost::mpi::reduce (base_data_t::_context.comm,
+        boost::mpi::reduce (data_type::_context.comm,
                             SA_part.LockedBuffer(),
                             SA_part.MemorySize(),
                             sketch_of_A.Buffer(),
@@ -269,15 +269,15 @@ private:
 
         // Create a distributed matrix to hold the output.
         //  We later gather to a dense matrix.
-        matrix_type SA_dist(A.Height(), base_data_t::_S, A.Grid());
+        matrix_type SA_dist(A.Height(), data_type::_S, A.Grid());
 
         // Create S. Since it is rowwise, we assume it can be held in memory.
-        elem::Matrix<value_type> S_local(base_data_t::_S, base_data_t::_N);
-        for (int j = 0; j < base_data_t::_N; j++) {
-            for (int i = 0; i < base_data_t::_S; i++) {
+        elem::Matrix<value_type> S_local(data_type::_S, data_type::_N);
+        for (int j = 0; j < data_type::_N; j++) {
+            for (int i = 0; i < data_type::_S; i++) {
                 value_type sample =
-                    base_data_t::random_samples[j * base_data_t::_S + i];
-                S_local.Set(i, j, base_data_t::scale * sample);
+                    data_type::random_samples[j * data_type::_S + i];
+                S_local.Set(i, j, data_type::scale * sample);
             }
         }
 
@@ -292,8 +292,8 @@ private:
 
         // Collect at rank 0.
         // TODO Grid rank 0 or context rank 0?
-        skylark::utility::collect_dist_matrix(base_data_t::_context.comm,
-            base_data_t::_context.rank == 0,
+        skylark::utility::collect_dist_matrix(data_type::_context.comm,
+            data_type::_context.rank == 0,
             SA_dist, sketch_of_A);
     }
 
@@ -319,13 +319,13 @@ struct dense_transform_t <
     output_matrix_type;
     typedef ValueDistribution<value_type> value_distribution_type;
     typedef dense_transform_data_t<ValueType,
-                                   ValueDistribution> base_data_t;
+                                   ValueDistribution> data_type;
 
     /**
      * Regular Constructor
      */
     dense_transform_t (int N, int S, skylark::sketch::context_t& context)
-        : base_data_t (N, S, context) {}
+        : data_type (N, S, context) {}
 
     /**
      * Copy constructor
@@ -333,14 +333,14 @@ struct dense_transform_t <
     dense_transform_t (dense_transform_t<matrix_type,
                                          output_matrix_type,
                                          ValueDistribution>& other)
-        : base_data_t(other) {}
+        : data_type(other) {}
 
     /**
      * Constructor from data
      */
     dense_transform_t(const dense_transform_data_t<value_type,
                                             ValueDistribution>& other_data)
-        : base_data_t(other_data) {}
+        : data_type(other_data) {}
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
@@ -398,8 +398,8 @@ private:
         // TODO: Can we optimize this const for the GEMM that follows?
         const int S_PART_MAX_MEMORY = 100000000;
 
-        int S_height = base_data_t::_S;
-        int S_width = base_data_t::_N;
+        int S_height = data_type::_S;
+        int S_width = data_type::_N;
         int S_row_num_bytes = S_width * sizeof(value_type);
 
         // TODO: Guard against the case of S_PART_MAX_MEMORY  < S_row_num_bytes
@@ -418,8 +418,8 @@ private:
                 int i = S_num_rows_consumed + i_loc;
                 for(int j = 0; j < S_width; ++j) {
                     value_type sample =
-                        base_data_t::random_samples[j * base_data_t::_S + i];
-                    S_part.Set(i_loc, j, base_data_t::scale * sample);
+                        data_type::random_samples[j * data_type::_S + i];
+                    S_part.Set(i_loc, j, data_type::scale * sample);
                 }
             }
             // Setup a view in sketch_of_A to land the result of S_part*A
@@ -451,12 +451,12 @@ private:
 
 
         // Create S. Since it is rowwise, we assume it can be held in memory.
-        elem::Matrix<value_type> S_local(base_data_t::_S, base_data_t::_N);
-        for (int j = 0; j < base_data_t::_N; j++) {
-            for (int i = 0; i < base_data_t::_S; i++) {
+        elem::Matrix<value_type> S_local(data_type::_S, data_type::_N);
+        for (int j = 0; j < data_type::_N; j++) {
+            for (int i = 0; i < data_type::_S; i++) {
                 value_type sample =
-                    base_data_t::random_samples[j * base_data_t::_S + i];
-                S_local.Set(i, j, base_data_t::scale * sample);
+                    data_type::random_samples[j * data_type::_S + i];
+                S_local.Set(i, j, data_type::scale * sample);
             }
         }
 
@@ -491,13 +491,13 @@ struct dense_transform_t <
     typedef elem::Matrix<value_type> output_matrix_type;
     typedef ValueDistribution<value_type> value_distribution_type;
     typedef dense_transform_data_t<ValueType,
-                                  ValueDistribution> base_data_t;
+                                  ValueDistribution> data_type;
 
     /**
      * Regular constructor
      */
     dense_transform_t (int N, int S, skylark::sketch::context_t& context)
-        : base_data_t (N, S, context) {}
+        : data_type (N, S, context) {}
 
     /**
      * Copy constructor
@@ -505,14 +505,14 @@ struct dense_transform_t <
     dense_transform_t (dense_transform_t<matrix_type,
                                          output_matrix_type,
                                          ValueDistribution>& other)
-        : base_data_t(other) {}
+        : data_type(other) {}
 
     /**
      * Constructor from data
      */
     dense_transform_t(const dense_transform_data_t<value_type,
                                             ValueDistribution>& other_data)
-        : base_data_t(other_data) {}
+        : data_type(other_data) {}
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
@@ -561,8 +561,8 @@ private:
 
         elem::DistMatrix<value_type,
                          elem::CIRC,
-                         elem::CIRC> sketch_of_A_CIRC_CIRC(base_data_t::_S,
-                             base_data_t::_N);
+                         elem::CIRC> sketch_of_A_CIRC_CIRC(data_type::_S,
+                             data_type::_N);
 
         // Matrix S carries the random samples in the sketching operation S*A.
         // We realize S in parts and compute in a number of local rounds.
@@ -572,8 +572,8 @@ private:
         // TODO: Can we optimize this const for the GEMM that follows?
         const int S_PART_MAX_MEMORY = 100000000;
 
-        int S_height = base_data_t::_S;
-        int S_width = base_data_t::_N;
+        int S_height = data_type::_S;
+        int S_width = data_type::_N;
         int S_row_num_bytes = S_width * sizeof(value_type);
 
         // TODO: Guard against the case of S_PART_MAX_MEMORY  < S_row_num_bytes
@@ -592,8 +592,8 @@ private:
                 int i = S_num_rows_consumed + i_loc;
                 for(int j = 0; j < S_width; ++j) {
                     value_type sample =
-                        base_data_t::random_samples[j * base_data_t::_S + i];
-                    S_part.Set(i_loc, j, base_data_t::scale * sample);
+                        data_type::random_samples[j * data_type::_S + i];
+                    S_part.Set(i_loc, j, data_type::scale * sample);
                 }
             }
             // Setup a view in sketch_of_A to land the result of S_part*A
@@ -642,15 +642,15 @@ private:
 
         elem::DistMatrix<value_type,
                          elem::CIRC,
-                         elem::CIRC> sketch_of_A_CIRC_CIRC(base_data_t::_S,
-                             base_data_t::_N);
+                         elem::CIRC> sketch_of_A_CIRC_CIRC(data_type::_S,
+                             data_type::_N);
 
-        elem::Matrix<value_type> S_local(base_data_t::_S, base_data_t::_N);
-        for (int j = 0; j < base_data_t::_N; j++) {
-            for (int i = 0; i < base_data_t::_S; i++) {
+        elem::Matrix<value_type> S_local(data_type::_S, data_type::_N);
+        for (int j = 0; j < data_type::_N; j++) {
+            for (int i = 0; i < data_type::_S; i++) {
                 value_type sample =
-                    base_data_t::random_samples[j * base_data_t::_S + i];
-                S_local.Set(i, j, base_data_t::scale * sample);
+                    data_type::random_samples[j * data_type::_S + i];
+                S_local.Set(i, j, data_type::scale * sample);
             }
         }
 
@@ -696,13 +696,13 @@ struct dense_transform_t <
     output_matrix_type;
     typedef ValueDistribution<value_type> value_distribution_type;
     typedef dense_transform_data_t<ValueType,
-                                   ValueDistribution> base_data_t;
+                                   ValueDistribution> data_type;
 
     /**
      * Regular Constructor
      */
     dense_transform_t (int N, int S, skylark::sketch::context_t& context)
-        : base_data_t (N, S, context) {}
+        : data_type (N, S, context) {}
 
     /**
      * Copy constructor
@@ -710,14 +710,14 @@ struct dense_transform_t <
     dense_transform_t (dense_transform_t<matrix_type,
                                          output_matrix_type,
                                          ValueDistribution>& other)
-        : base_data_t(other) {}
+        : data_type(other) {}
 
     /**
      * Constructor from data
      */
     dense_transform_t(const dense_transform_data_t<value_type,
                                             ValueDistribution>& other_data)
-        : base_data_t(other_data) {}
+        : data_type(other_data) {}
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
@@ -769,8 +769,8 @@ private:
         // TODO: Can we optimize this const for the GEMM that follows?
         const int S_PART_MAX_MEMORY = 100000000;
 
-        int S_height = base_data_t::_S;
-        int S_width = base_data_t::_N;
+        int S_height = data_type::_S;
+        int S_width = data_type::_N;
         int S_row_num_bytes = S_width * sizeof(value_type);
 
         // TODO: Guard against the case of S_PART_MAX_MEMORY  < S_row_num_bytes
@@ -789,8 +789,8 @@ private:
                 int i = S_num_rows_consumed + i_loc;
                 for(int j = 0; j < S_width; ++j) {
                     value_type sample =
-                        base_data_t::random_samples[j * base_data_t::_S + i];
-                    S_part.Set(i_loc, j, base_data_t::scale * sample);
+                        data_type::random_samples[j * data_type::_S + i];
+                    S_part.Set(i_loc, j, data_type::scale * sample);
                 }
             }
             // Setup a view in sketch_of_A to land the result of S_part*A
@@ -827,12 +827,12 @@ private:
             sketch_of_A_RowDist_STAR(sketch_of_A.Height(), sketch_of_A.Width());
         elem::Zero(sketch_of_A_RowDist_STAR);
 
-        elem::Matrix<value_type> S_local(base_data_t::_S, base_data_t::_N);
-        for (int j = 0; j < base_data_t::_N; j++) {
-            for (int i = 0; i < base_data_t::_S; i++) {
+        elem::Matrix<value_type> S_local(data_type::_S, data_type::_N);
+        for (int j = 0; j < data_type::_N; j++) {
+            for (int i = 0; i < data_type::_S; i++) {
                 value_type sample =
-                    base_data_t::random_samples[j * base_data_t::_S + i];
-                S_local.Set(i, j, base_data_t::scale * sample);
+                    data_type::random_samples[j * data_type::_S + i];
+                S_local.Set(i, j, data_type::scale * sample);
             }
         }
 
@@ -869,13 +869,13 @@ struct dense_transform_t <
     typedef elem::Matrix<value_type> output_matrix_type;
     typedef ValueDistribution<value_type> value_distribution_type;
     typedef dense_transform_data_t<ValueType,
-                                   ValueDistribution> base_data_t;
+                                   ValueDistribution> data_type;
 
     /**
      * Regular constructor
      */
     dense_transform_t (int N, int S, skylark::sketch::context_t& context)
-        : base_data_t (N, S, context) {}
+        : data_type (N, S, context) {}
 
     /**
      * Copy constructor
@@ -883,14 +883,14 @@ struct dense_transform_t <
     dense_transform_t (dense_transform_t<matrix_type,
                                          output_matrix_type,
                                          ValueDistribution>& other)
-        : base_data_t(other) {}
+        : data_type(other) {}
 
     /**
      * Constructor from data
      */
     dense_transform_t(const dense_transform_data_t<value_type,
                                             ValueDistribution>& other_data)
-        : base_data_t(other_data) {}
+        : data_type(other_data) {}
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
@@ -921,23 +921,23 @@ private:
     void apply_impl_dist (const matrix_type& A,
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::columnwise_tag) const {
-        elem::DistMatrix<value_type> S(base_data_t::_S, base_data_t::_N);
+        elem::DistMatrix<value_type> S(data_type::_S, data_type::_N);
         elem::DistMatrix<value_type,
                          elem::MC,
-                         elem::MR> sketch_of_A_MC_MR(base_data_t::_S,
-                             base_data_t::_N);
+                         elem::MR> sketch_of_A_MC_MR(data_type::_S,
+                             data_type::_N);
         elem::DistMatrix<value_type,
                          elem::CIRC,
-                         elem::CIRC> sketch_of_A_CIRC_CIRC(base_data_t::_S,
-                             base_data_t::_N);
+                         elem::CIRC> sketch_of_A_CIRC_CIRC(data_type::_S,
+                             data_type::_N);
 
         for(int j_loc = 0; j_loc < S.LocalWidth(); ++j_loc) {
             int j = S.RowShift() + S.RowStride() * j_loc;
             for (int i_loc = 0; i_loc < S.LocalHeight(); ++i_loc) {
                 int i = S.ColShift() + S.ColStride() * i_loc;
                 value_type sample =
-                    base_data_t::random_samples[j * base_data_t::_S + i];
-                S.SetLocal(i_loc, j_loc, base_data_t::scale * sample);
+                    data_type::random_samples[j * data_type::_S + i];
+                S.SetLocal(i_loc, j_loc, data_type::scale * sample);
             }
         }
 
@@ -967,23 +967,23 @@ private:
     void apply_impl_dist(const matrix_type& A,
                          output_matrix_type& sketch_of_A,
                          skylark::sketch::rowwise_tag) const {
-        elem::DistMatrix<value_type> S(base_data_t::_S, base_data_t::_N);
+        elem::DistMatrix<value_type> S(data_type::_S, data_type::_N);
         elem::DistMatrix<value_type,
                          elem::MC,
-                         elem::MR> sketch_of_A_MC_MR(base_data_t::_S,
-                             base_data_t::_N);
+                         elem::MR> sketch_of_A_MC_MR(data_type::_S,
+                             data_type::_N);
         elem::DistMatrix<value_type,
                          elem::CIRC,
-                         elem::CIRC> sketch_of_A_CIRC_CIRC(base_data_t::_S,
-                             base_data_t::_N);
+                         elem::CIRC> sketch_of_A_CIRC_CIRC(data_type::_S,
+                             data_type::_N);
 
         for(int j_loc = 0; j_loc < S.LocalWidth(); ++j_loc) {
             int j = S.RowShift() + S.RowStride() * j_loc;
             for (int i_loc = 0; i_loc < S.LocalHeight(); ++i_loc) {
                 int i = S.ColShift() + S.ColStride() * i_loc;
                 value_type sample =
-                    base_data_t::random_samples[j * base_data_t::_S + i];
-                S.SetLocal(i_loc, j_loc, base_data_t::scale * sample);
+                    data_type::random_samples[j * data_type::_S + i];
+                S.SetLocal(i_loc, j_loc, data_type::scale * sample);
             }
         }
 
@@ -1027,13 +1027,13 @@ struct dense_transform_t <
     typedef elem::DistMatrix<value_type> output_matrix_type;
     typedef ValueDistribution<value_type> value_distribution_type;
     typedef dense_transform_data_t<ValueType,
-                                   ValueDistribution> base_data_t;
+                                   ValueDistribution> data_type;
 
     /**
      * Regular constructor
      */
     dense_transform_t (int N, int S, skylark::sketch::context_t& context)
-        : base_data_t (N, S, context) {
+        : data_type (N, S, context) {
 
     }
 
@@ -1043,15 +1043,15 @@ struct dense_transform_t <
     dense_transform_t (dense_transform_t<matrix_type,
                                          output_matrix_type,
                                          ValueDistribution>& other)
-        : base_data_t(other) {
+        : data_type(other) {
 
     }
 
     /**
      * Constructor from data
      */
-    dense_transform_t(const base_data_t& other_data)
-        : base_data_t(other_data) {
+    dense_transform_t(const data_type& other_data)
+        : data_type(other_data) {
 
     }
 
@@ -1084,15 +1084,15 @@ private:
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::columnwise_tag) const {
 
-        elem::DistMatrix<value_type> S(base_data_t::_S, base_data_t::_N);
+        elem::DistMatrix<value_type> S(data_type::_S, data_type::_N);
 
         for(int j_loc = 0; j_loc < S.LocalWidth(); ++j_loc) {
             int j = S.RowShift() + S.RowStride() * j_loc;
             for (int i_loc = 0; i_loc < S.LocalHeight(); ++i_loc) {
                 int i = S.ColShift() + S.ColStride() * i_loc;
                 value_type sample =
-                    base_data_t::random_samples[j * base_data_t::_S + i];
-                S.SetLocal(i_loc, j_loc, base_data_t::scale * sample);
+                    data_type::random_samples[j * data_type::_S + i];
+                S.SetLocal(i_loc, j_loc, data_type::scale * sample);
             }
         }
         base::Gemm (elem::NORMAL,
@@ -1113,15 +1113,15 @@ private:
                          output_matrix_type& sketch_of_A,
                          skylark::sketch::rowwise_tag) const {
 
-        elem::DistMatrix<value_type> S(base_data_t::_S, base_data_t::_N);
+        elem::DistMatrix<value_type> S(data_type::_S, data_type::_N);
 
         for(int j_loc = 0; j_loc < S.LocalWidth(); ++j_loc) {
             int j = S.RowShift() + S.RowStride() * j_loc;
             for (int i_loc = 0; i_loc < S.LocalHeight(); ++i_loc) {
                 int i = S.ColShift() + S.ColStride() * i_loc;
                 value_type sample =
-                    base_data_t::random_samples[j * base_data_t::_S + i];
-                S.SetLocal(i_loc, j_loc, base_data_t::scale * sample);
+                    data_type::random_samples[j * data_type::_S + i];
+                S.SetLocal(i_loc, j_loc, data_type::scale * sample);
             }
         }
         base::Gemm (elem::NORMAL,

@@ -44,14 +44,14 @@ struct GaussianRFT_t :
 
     typedef GaussianRFT_data_t<typename
       RFT_t<InputMatrixType, OutputMatrixType,
-            bstrand::normal_distribution >::value_type > base_t;
+            bstrand::normal_distribution >::value_type > data_type;
 
     /**
      * Regular constructor
      */
     GaussianRFT_t(int N, int S, double sigma,
         skylark::sketch::context_t& context)
-        : base_t(N, S, sigma, context), _transform(*this) {
+        : data_type(N, S, sigma, context), _transform(*this) {
 
     }
 
@@ -62,15 +62,15 @@ struct GaussianRFT_t :
               typename OtherOutputMatrixType>
     GaussianRFT_t(
         const GaussianRFT_t<OtherInputMatrixType, OtherOutputMatrixType>& other)
-        : base_t(other), _transform(*this) {
+        : data_type(other), _transform(*this) {
 
     }
 
     /**
      * Constructor from data
      */
-    GaussianRFT_t (const base_t& other)
-        : base_t(other), _transform(*this) {
+    GaussianRFT_t (const data_type& other)
+        : data_type(other), _transform(*this) {
 
     }
 
@@ -120,14 +120,14 @@ struct LaplacianRFT_t :
 
     typedef LaplacianRFT_data_t<typename
       RFT_t<InputMatrixType, OutputMatrixType,
-            bstrand::cauchy_distribution >::value_type > base_t;
+            bstrand::cauchy_distribution >::value_type > data_type;
 
     /**
      * Regular constructor
      */
     LaplacianRFT_t(int N, int S, double sigma,
         skylark::sketch::context_t& context)
-        : base_t(N, S, sigma, context), _transform(*this) {
+        : data_type(N, S, sigma, context), _transform(*this) {
 
     }
 
@@ -138,15 +138,15 @@ struct LaplacianRFT_t :
               typename OtherOutputMatrixType>
     LaplacianRFT_t(
         const LaplacianRFT_t<OtherInputMatrixType, OtherOutputMatrixType>& other)
-        : base_t(other), _transform(*this) {
+        : data_type(other), _transform(*this) {
 
     }
 
     /**
      * Constructor from data
      */
-    LaplacianRFT_t (const base_t& other)
-        : base_t(other), _transform(*this) {
+    LaplacianRFT_t (const data_type& other)
+        : data_type(other), _transform(*this) {
 
     }
 

@@ -32,18 +32,18 @@ public:
     typedef _SL_HTBASE transform_t;
 
     typedef MMT_data_t< typename _SL_HTBASE::index_type,
-                        typename _SL_HTBASE::value_type > base_t;
+                        typename _SL_HTBASE::value_type > data_type;
 
     /**
      * Regular constructor
      */
     MMT_t(int N, int S, context_t& context)
-        : base_t(N, S, context), _transform(*this) {
+        : data_type(N, S, context), _transform(*this) {
 
     }
 
     MMT_t(const std::string json_filename, context_t& context)
-        : base_t(json_filename, context), _transform(*this) {
+        : data_type(json_filename, context), _transform(*this) {
 
     }
 
@@ -53,15 +53,15 @@ public:
     template< typename OtherInputMatrixType,
               typename OtherOutputMatrixType >
     MMT_t(const MMT_t<OtherInputMatrixType,OtherOutputMatrixType>& other)
-        : base_t(other), _transform(*this) {
+        : data_type(other), _transform(*this) {
 
     }
 
     /**
      * Constructor from data
      */
-    MMT_t(const base_t& other)
-        : base_t(other), _transform(*this) {
+    MMT_t(const data_type& other)
+        : data_type(other), _transform(*this) {
 
     }
 

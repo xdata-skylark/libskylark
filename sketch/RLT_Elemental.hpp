@@ -30,7 +30,7 @@ struct RLT_t <
     typedef InputType<value_type> matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
     typedef RLT_data_t<ValueType,
-                       KernelDistribution> base_data_t;
+                       KernelDistribution> data_type;
 private:
     typedef skylark::sketch::dense_transform_t <matrix_type,
                                                 output_matrix_type,
@@ -43,7 +43,7 @@ protected:
      * Regular constructor - allow creation only by subclasses
      */
     RLT_t (int N, int S, skylark::sketch::context_t& context)
-        : base_data_t (N, S, context) {
+        : data_type (N, S, context) {
 
     }
 
@@ -54,15 +54,15 @@ public:
     RLT_t(const RFT_t<matrix_type,
                       output_matrix_type,
                       KernelDistribution>& other)
-        : base_data_t(other) {
+        : data_type(other) {
 
     }
 
     /**
      * Constructor from data
      */
-    RLT_t(const base_data_t& other_data)
-        : base_data_t(other_data) {
+    RLT_t(const data_type& other_data)
+        : data_type(other_data) {
 
     }
 
@@ -95,13 +95,13 @@ private:
         output_matrix_type& sketch_of_A,
         skylark::sketch::columnwise_tag tag) const {
 
-        underlying_t underlying(base_data_t::_underlying_data);
+        underlying_t underlying(data_type::_underlying_data);
         underlying.apply(A, sketch_of_A, tag);
         for(int j = 0; j < A.Width(); j++)
-            for(int i = 0; i < base_data_t::_S; i++) {
+            for(int i = 0; i < data_type::_S; i++) {
                 value_type val = sketch_of_A.Get(i, j);
                 sketch_of_A.Set(i, j,
-                    base_data_t::_scale * std::exp(- val * base_data_t::_val_scale));
+                    data_type::_scale * std::exp(- val * data_type::_val_scale));
             }
     }
 
@@ -114,13 +114,13 @@ private:
         skylark::sketch::rowwise_tag tag) const {
 
         // TODO verify sizes etc.
-        underlying_t underlying(base_data_t::_underlying_data);
+        underlying_t underlying(data_type::_underlying_data);
         underlying.apply(A, sketch_of_A, tag);
-        for(int j = 0; j < base_data_t::_S; j++)
+        for(int j = 0; j < data_type::_S; j++)
             for(int i = 0; i < A.Height(); i++) {
                 value_type val = sketch_of_A.Get(i, j);
                 sketch_of_A.Set(i, j,
-                    base_data_t::_scale * std::exp(- val * base_data_t::_val_scale));
+                    data_type::_scale * std::exp(- val * data_type::_val_scale));
 
             }
     }

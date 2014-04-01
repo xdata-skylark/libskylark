@@ -37,13 +37,13 @@ struct hash_transform_t <FullyDistMultiVec<IndexType, ValueType>,
     typedef hash_transform_data_t<IndexType,
                                   ValueType,
                                   IdxDistributionType,
-                                  ValueDistribution> base_data_t;
+                                  ValueDistribution> data_type;
 
     /**
      * Regular constructor
      */
     hash_transform_t (int N, int S, skylark::sketch::context_t& context) :
-        base_data_t (N, S, context) {}
+        data_type (N, S, context) {}
 
     /**
      * Copy constructor
@@ -54,7 +54,7 @@ struct hash_transform_t <FullyDistMultiVec<IndexType, ValueType>,
                                        OutputMatrixType,
                                        IdxDistributionType,
                                        ValueDistribution>& other) :
-        base_data_t(other) {}
+        data_type(other) {}
 
     /**
      * Constructor from data
@@ -63,7 +63,7 @@ struct hash_transform_t <FullyDistMultiVec<IndexType, ValueType>,
                                             value_type,
                                             IdxDistributionType,
                                             ValueDistribution>& other_data) :
-        base_data_t(other_data) {}
+        data_type(other_data) {}
 
     template <typename Dimension>
     void apply (const mpi_multi_vector_t &A,
@@ -91,7 +91,7 @@ private:
     void apply_impl_single (const mpi_vector_t& a_,
                             mpi_vector_t& sketch_of_a,
                             columnwise_tag) const {
-        std::vector<value_type> sketch_term(base_data_t::_S,0);
+        std::vector<value_type> sketch_term(data_type::_S,0);
 
         // We are essentially doing a 'const' access to a, but the neccessary,
         // 'const' option is missing from the interface.
@@ -103,9 +103,9 @@ private:
         while(local_iter.HasNext()) {
             index_type idx = local_iter.GetLocIndex();
             index_type global_idx = local_iter.LocalToGlobal(idx);
-            index_type global_sketch_idx = base_data_t::row_idx[global_idx];
+            index_type global_sketch_idx = data_type::row_idx[global_idx];
             sketch_term[global_sketch_idx] +=
-                (local_iter.GetValue()*base_data_t::row_value[global_idx]);
+                (local_iter.GetValue()*data_type::row_value[global_idx]);
             local_iter.Next();
         }
 
@@ -113,13 +113,13 @@ private:
         /** FIXME: Only need to scatter ... don't need everything everywhere */
         MPI_Allreduce(MPI_IN_PLACE,
             &(sketch_term[0]),
-            base_data_t::_S,
+            data_type::_S,
             MPIType<value_type>(),
             MPI_SUM,
             a.commGrid->GetWorld());
 
         /** Fill in .. SetElement() is dummy for non-local sets, so it's ok */
-        for (index_type i=0; i<base_data_t::_S; ++i) {
+        for (index_type i=0; i<data_type::_S; ++i) {
             sketch_of_a.SetElement(i,sketch_term[i]);
         }
     }
@@ -130,8 +130,8 @@ private:
         columnwise_tag) const {
         const index_type num_rhs = A.size;
         if (sketch_of_A.size != num_rhs) { /** error */; return; }
-        if (A.dim != base_data_t::_N) { /** error */; return; }
-        if (sketch_of_A.dim != base_data_t::_S) { /** error */; return; }
+        if (A.dim != data_type::_N) { /** error */; return; }
+        if (sketch_of_A.dim != data_type::_S) { /** error */; return; }
 
         /** FIXME: Can sketch all the vectors in one shot */
         for (index_type i=0; i<num_rhs; ++i) {
@@ -164,14 +164,14 @@ struct hash_transform_t <
     typedef hash_transform_data_t<IndexType,
                                   ValueType,
                                   IdxDistributionType,
-                                  ValueDistribution> base_data_t;
+                                  ValueDistribution> data_type;
 
 
     /**
      * Regular constructor
      */
     hash_transform_t (int N, int S, skylark::sketch::context_t& context) :
-        base_data_t(N, S, context) {}
+        data_type(N, S, context) {}
 
     /**
      * Copy constructor
@@ -182,7 +182,7 @@ struct hash_transform_t <
                                        OutputMatrixType,
                                        IdxDistributionType,
                                        ValueDistribution>& other) :
-        base_data_t(other) {}
+        data_type(other) {}
 
     /**
      * Constructor from data
@@ -191,7 +191,7 @@ struct hash_transform_t <
                                             value_type,
                                             IdxDistributionType,
                                             ValueDistribution>& other_data) :
-        base_data_t(other_data) {}
+        data_type(other_data) {}
 
     template <typename Dimension>
     void apply (const matrix_type &A,
@@ -466,22 +466,22 @@ private:
 
     inline index_type getPos(index_type rowid, index_type colid, size_t ncols,
         columnwise_tag) const {
-        return colid + ncols * base_data_t::row_idx[rowid];
+        return colid + ncols * data_type::row_idx[rowid];
     }
 
     inline index_type getPos(index_type rowid, index_type colid, size_t ncols,
         rowwise_tag) const {
-        return rowid * ncols + base_data_t::row_idx[colid];
+        return rowid * ncols + data_type::row_idx[colid];
     }
 
     inline value_type getRowValue(index_type rowid, index_type colid,
         columnwise_tag) const {
-        return base_data_t::row_value[rowid];
+        return data_type::row_value[rowid];
     }
 
     inline value_type getRowValue(index_type rowid, index_type colid,
         rowwise_tag) const {
-        return base_data_t::row_value[colid];
+        return data_type::row_value[colid];
     }
 };
 
@@ -509,14 +509,14 @@ struct hash_transform_t <
     typedef hash_transform_data_t<IndexType,
                                   ValueType,
                                   IdxDistributionType,
-                                  ValueDistribution> base_data_t;
+                                  ValueDistribution> data_type;
 
 
     /**
      * Regular constructor
      */
     hash_transform_t (int N, int S, skylark::sketch::context_t& context) :
-        base_data_t(N, S, context) {}
+        data_type(N, S, context) {}
 
     /**
      * Copy constructor
@@ -527,7 +527,7 @@ struct hash_transform_t <
                                        OutputMatrixType,
                                        IdxDistributionType,
                                        ValueDistribution>& other) :
-        base_data_t(other) {}
+        data_type(other) {}
 
     /**
      * Constructor from data
@@ -536,7 +536,7 @@ struct hash_transform_t <
                                             value_type,
                                             IdxDistributionType,
                                             ValueDistribution>& other_data) :
-        base_data_t(other_data) {}
+        data_type(other_data) {}
 
     template <typename Dimension>
     void apply (const matrix_type &A,
@@ -639,21 +639,21 @@ private:
     }
 
     inline void finalPos(index_type &rowid, index_type &colid, columnwise_tag) const {
-        rowid = base_data_t::row_idx[rowid];
+        rowid = data_type::row_idx[rowid];
     }
 
     inline void finalPos(index_type &rowid, index_type &colid, rowwise_tag) const {
-        colid = base_data_t::row_idx[colid];
+        colid = data_type::row_idx[colid];
     }
 
     inline value_type getValue(index_type rowid, index_type colid,
                                columnwise_tag) const {
-        return base_data_t::row_value[rowid];
+        return data_type::row_value[rowid];
     }
 
     inline value_type getValue(index_type rowid, index_type colid,
                                rowwise_tag) const {
-        return base_data_t::row_value[colid];
+        return data_type::row_value[colid];
     }
 };
 

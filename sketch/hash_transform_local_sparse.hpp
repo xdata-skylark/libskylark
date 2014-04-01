@@ -34,14 +34,14 @@ struct hash_transform_t <
     typedef hash_transform_data_t<index_type,
                                   value_type,
                                   IdxDistributionType,
-                                  ValueDistribution> base_data_t;
+                                  ValueDistribution> data_type;
 
 
     /**
      * Regular constructor
      */
     hash_transform_t (int N, int S, skylark::sketch::context_t& context) :
-        base_data_t(N, S, context) {}
+        data_type(N, S, context) {}
 
     /**
      * Copy constructor
@@ -52,7 +52,7 @@ struct hash_transform_t <
                                        OutputMatrixType,
                                        IdxDistributionType,
                                        ValueDistribution>& other) :
-        base_data_t(other) {}
+        data_type(other) {}
 
     /**
      * Constructor from data
@@ -61,7 +61,7 @@ struct hash_transform_t <
                                             value_type,
                                             IdxDistributionType,
                                             ValueDistribution>& other_data) :
-        base_data_t(other_data) {}
+        data_type(other_data) {}
 
     /**
      * Apply columnwise the sketching transform that is described by the
@@ -152,26 +152,26 @@ private:
 
     inline void final_pos(index_type &rowid, index_type &colid,
         columnwise_tag) const {
-        rowid = base_data_t::row_idx[rowid];
+        rowid = data_type::row_idx[rowid];
     }
 
     inline void final_pos(index_type &rowid, index_type &colid,
         rowwise_tag) const {
-        colid = base_data_t::row_idx[colid];
+        colid = data_type::row_idx[colid];
     }
 
     inline value_type get_value(index_type rowid, index_type colid,
         columnwise_tag) const {
-        return base_data_t::row_value[rowid];
+        return data_type::row_value[rowid];
     }
 
     inline value_type get_value(index_type rowid, index_type colid,
         rowwise_tag) const {
-        return base_data_t::row_value[colid];
+        return data_type::row_value[colid];
     }
 
     inline index_type sketch_rows(const matrix_type &A, columnwise_tag) const {
-        return base_data_t::_S;
+        return data_type::_S;
     }
 
     inline index_type sketch_rows(const matrix_type &A, rowwise_tag) const {
@@ -183,7 +183,7 @@ private:
     }
 
     inline index_type sketch_cols(const matrix_type &A, rowwise_tag) const {
-        return base_data_t::_S;
+        return data_type::_S;
     }
 };
 

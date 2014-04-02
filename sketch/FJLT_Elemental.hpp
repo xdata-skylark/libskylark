@@ -7,6 +7,7 @@
 #include "transforms.hpp"
 #include "FJLT_data.hpp"
 #include "../utility/exception.hpp"
+#include "../utility/external/get_communicator.hpp"
 
 namespace skylark { namespace sketch {
 /**

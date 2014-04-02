@@ -94,7 +94,7 @@ int test_main(int argc, char *argv[]) {
     mpi::communicator world;
     const size_t rank = world.rank();
 
-    skylark::base::context_t context (0, world);
+    skylark::base::context_t context (0);
 
     double count = 1.0;
 

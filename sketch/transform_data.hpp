@@ -30,7 +30,7 @@ struct transform_data_t {
         : _context(context), _version("0.1") {
 
         // overwrite/set context to draw correct random samples
-        _context = context_t(json);
+        _context = skylark::base::context_t(json);
 
         std::vector<int> dims;
         BOOST_FOREACH(const boost::property_tree::ptree::value_type &v,

@@ -16,6 +16,7 @@
 
 #include "../../utility/distributions.hpp"
 #include "../../sketch/hash_transform.hpp"
+#include "../../base/context.hpp"
 
 #include <boost/mpi.hpp>
 #include <boost/test/minimal.hpp>
@@ -72,7 +73,7 @@ int test_main(int argc, char *argv[]) {
     MPI_Comm mpi_world(world);
     elem::Grid grid(mpi_world);
 
-    skylark::base::context_t context (0, world);
+    skylark::base::context_t context (0);
 
     double count = 1.0;
     elem::DistMatrix<double, elem::VR, elem::STAR> A(grid);

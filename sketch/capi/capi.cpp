@@ -186,7 +186,7 @@ SKYLARK_EXTERN_API bool sl_has_combblas() {
 SKYLARK_EXTERN_API int sl_create_default_context(int seed,
         base::context_t **ctxt) {
     SKYLARK_BEGIN_TRY()
-        *ctxt = new base::context_t(seed, boost::mpi::communicator());
+        *ctxt = new base::context_t(seed);
     SKYLARK_END_TRY()
     SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
     return 0;
@@ -195,8 +195,7 @@ SKYLARK_EXTERN_API int sl_create_default_context(int seed,
 SKYLARK_EXTERN_API int sl_create_context(int seed,
         MPI_Comm comm, base::context_t **ctxt) {
     SKYLARK_BEGIN_TRY()
-        *ctxt = new base::context_t(seed,
-            boost::mpi::communicator(comm, boost::mpi::comm_duplicate));
+        *ctxt = new base::context_t(seed);
     SKYLARK_END_TRY()
     SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
     return 0;
@@ -212,7 +211,7 @@ SKYLARK_EXTERN_API int sl_free_context(base::context_t *ctxt) {
 
 SKYLARK_EXTERN_API int sl_context_rank(base::context_t *ctxt, int *rank) {
     SKYLARK_BEGIN_TRY()
-        *rank = ctxt->rank;
+        //*rank = ctxt->rank;
     SKYLARK_END_TRY()
     SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
     return 0;
@@ -220,7 +219,7 @@ SKYLARK_EXTERN_API int sl_context_rank(base::context_t *ctxt, int *rank) {
 
 SKYLARK_EXTERN_API int sl_context_size(base::context_t *ctxt, int *size) {
     SKYLARK_BEGIN_TRY()
-        *size = ctxt->size;
+        //*size = ctxt->size;
     SKYLARK_END_TRY()
     SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
     return 0;

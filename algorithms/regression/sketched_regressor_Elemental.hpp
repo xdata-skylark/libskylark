@@ -5,7 +5,7 @@
 #include <elemental.hpp>
 
 #include "regression_problem.hpp"
-#include "../../base/sketch.hpp"
+#include "../../base/context.hpp"
 
 
 namespace skylark {
@@ -50,8 +50,8 @@ private:
 
 public:
     sketched_regressor_t(const problem_type &problem, int sketch_size,
-        base::context_t& context) :
-        _my_rank(mpi::boost::communicator().rank()), _sketch_size(sketch_size) {
+        skylark::base::context_t& context) :
+        _my_rank(boost::mpi::communicator().rank()), _sketch_size(sketch_size) {
         // TODO m < n
         _sketch_transform =
             new sketch_transform_type(problem.m, sketch_size, context);
@@ -125,8 +125,8 @@ private:
 
 public:
     sketched_regressor_t(const problem_type &problem, int sketch_size,
-        base::context_t& context) :
-        _my_rank(mpi::boost::communicator().rank()), _sketch_size(sketch_size) {
+        skylark::base::context_t& context) :
+        _my_rank(boost::mpi::communicator().rank()), _sketch_size(sketch_size) {
         // TODO m < n
         _sketch_transform =
             new sketch_transform_type(problem.m, sketch_size, context);

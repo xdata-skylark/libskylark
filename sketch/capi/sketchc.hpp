@@ -6,7 +6,8 @@
 #include "../../utility/distributions.hpp"
 
 #include "../sketch.hpp"
-#include "../base/context.hpp"
+#include "../../base/context.hpp"
+
 
 // Some tools require special API declaration. Customizing the
 // SKYLARK_EXTERN_API allows this. The default is simply nothing.
@@ -57,7 +58,7 @@ struct sketch_transform_t {
 } // namespace sketch
 } // namespace skylark
 
-namespace base    = skylark::base
+namespace base    = skylark::base;
 namespace sketch  = skylark::sketch;
 namespace sketchc = skylark::sketch::c;
 

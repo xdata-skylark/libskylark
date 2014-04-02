@@ -10,9 +10,11 @@
 #include <CombBLAS.h>
 #endif
 
+
 #if SKYLARK_HAVE_ELEMENTAL
 #include <elemental.hpp>
 #endif
+
 
 #if SKYLARK_HAVE_BOOST
 #include <boost/mpi.hpp>
@@ -68,6 +70,15 @@ TYPE_MAPPER(dist_VR_STAR_dense_matrix_t, elemental_distributed_matrix_type_tag)
 TYPE_MAPPER(dist_STAR_VC_dense_matrix_t, elemental_distributed_matrix_type_tag)
 TYPE_MAPPER(dist_STAR_VR_dense_matrix_t, elemental_distributed_matrix_type_tag)
 
+/** Type mapping template specializations */
+TYPE_MAPPER(const dense_matrix_t,              elemental_matrix_type_tag)
+TYPE_MAPPER(const dist_dense_matrix_t,         elemental_distributed_matrix_type_tag)
+TYPE_MAPPER(const dist_VC_STAR_dense_matrix_t, elemental_distributed_matrix_type_tag)
+TYPE_MAPPER(const dist_VR_STAR_dense_matrix_t, elemental_distributed_matrix_type_tag)
+TYPE_MAPPER(const dist_STAR_VC_dense_matrix_t, elemental_distributed_matrix_type_tag)
+TYPE_MAPPER(const dist_STAR_VR_dense_matrix_t, elemental_distributed_matrix_type_tag)
+
+
 #endif // SKYLARK_HAVE_ELEMENTAL
 
 
@@ -83,6 +94,8 @@ typedef SpParMat<size_t, double, col_t> dist_sparse_matrix_t;
 
 /** Type mapping template specializations */
 TYPE_MAPPER(dist_sparse_matrix_t,        combblas_distributed_matrix_type_tag)
+TYPE_MAPPER(const dist_sparse_matrix_t,        combblas_distributed_matrix_type_tag)
+
 
 #endif // SKYLARK_HAVE_COMBBLAS
 

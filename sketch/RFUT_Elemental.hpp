@@ -1,6 +1,7 @@
 #ifndef SKYLARK_RFUT_ELEMENTAL_HPP
 #define SKYLARK_RFUT_ELEMENTAL_HPP
 
+#include <boost/mpi.hpp>
 #include <elemental.hpp>
 
 #include "../base/context.hpp"

@@ -15,7 +15,7 @@
 #include <elemental.hpp>
 #include "../base/sparse_matrix.hpp"
 #include "../base/context.hpp"
-#include "../utility/external/get_communicator.hpp"
+#include "../utility/get_communicator.hpp"
 
 
 using namespace std;

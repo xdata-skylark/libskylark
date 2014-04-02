@@ -4,7 +4,7 @@
 // TODO: Replace with Skylark specific exceptions.
 #include <exception>
 
-#include "../../config.h"
+#include "../config.h"
 
 #if SKYLARK_HAVE_COMBBLAS
 #include <CombBLAS.h>
@@ -23,18 +23,22 @@
 
 namespace skylark { namespace utility {
 
+#if SKYLARK_HAVE_BOOST
+
 // namespace alias
 namespace mpi = boost::mpi;
+
+#endif // SKYLARK_HAVE_BOOST
 
 
 #if SKYLARK_HAVE_ELEMENTAL && SKYLARK_HAVE_BOOST
 
 template<typename T>
-mpi::commmunicator get_communicator(const elem::Matrix<T>& A) {
+mpi::communicator get_communicator(const elem::Matrix<T>& A) {
     return mpi::communicator(MPI_COMM_SELF, mpi::comm_duplicate);
 }
 
-template<typename T, typename U, typename >
+template<typename T, elem::Distribution U, elem::Distribution V>
 mpi::communicator get_communicator(const elem::DistMatrix<T, U, V>& A) {
     return mpi::communicator(A.DistComm(), mpi::comm_duplicate);
 }
@@ -51,6 +55,8 @@ mpi::communicator get_communicator(const SpParMat<IT, T, SpDCCols<IT, T> >& A) {
 
 #endif // SKYLARK_HAVE_COMBBLAS and SKYLARK_HAVE_BOOST
 
+
+#if SKYLARK_HAVE_BOOST
 
 /**
  * Utility routine checking if the argument boost MPI communicators are either

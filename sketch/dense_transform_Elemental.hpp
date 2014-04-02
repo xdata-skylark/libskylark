@@ -7,7 +7,7 @@
 #include "dense_transform_data.hpp"
 #include "../utility/comm.hpp"
 #include "../utility/exception.hpp"
-#include "../utility/external/get_communicator.hpp"
+#include "../utility/get_communicator.hpp"
 
 
 namespace skylark { namespace sketch {

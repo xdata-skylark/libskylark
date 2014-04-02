@@ -4,7 +4,7 @@
 #include <elemental.hpp>
 #include "../base/context.hpp"
 #include "../utility/exception.hpp"
-#include "../utility/external/get_communicator.hpp"
+#include "../utility/get_communicator.hpp"
 
 namespace skylark { namespace nla {
 #if 0

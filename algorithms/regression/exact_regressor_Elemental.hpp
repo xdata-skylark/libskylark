@@ -1,5 +1,5 @@
-#ifndef EXACT_REGRESSOR_ELEMENTAL_HPP
-#define EXACT_REGRESSOR_ELEMENTAL_HPP
+#ifndef SKYlARK_EXACT_REGRESSOR_ELEMENTAL_HPP
+#define SKYLARK_EXACT_REGRESSOR_ELEMENTAL_HPP
 
 #include <elemental.hpp>
 
@@ -10,7 +10,8 @@ namespace skylark {
 namespace algorithms {
 
 /**
- * Exact regressor (solves the problem exactly) for a dense local matrix.
+ * Exact regressor (solves the problem exactly) for L2 linear regression
+ * on a a dense local matrix.
  *
  * A regressor accepts a right-hand side and output a solution
  * the the regression problem.
@@ -19,13 +20,19 @@ namespace algorithms {
  * constructing the regressoion.
  */
 template <typename ValueType>
-class exact_regressor_t<l2_tag,
-                        elem::Matrix<ValueType>,
+class exact_regressor_t<regression_problem_t<linear_tag, l2_tag,
+                                             elem::Matrix<ValueType> >,
                         elem::Matrix<ValueType>,
                         qr_l2_solver_tag> {
 
+public:
+
     typedef elem::Matrix<ValueType> matrix_type;
     typedef elem::Matrix<ValueType> rhs_type;
+    typedef elem::Matrix<ValueType> sol_type;
+
+    typedef regression_problem_t<linear_tag, l2_tag, elem::Matrix<ValueType> >
+    problem_type;
 
 private:
     const int _m;
@@ -40,7 +47,7 @@ public:
      *
      * @param problem Problem to solve given right-hand side.
      */
-    exact_regressor_t(const regression_problem_t<l2_tag, matrix_type> &problem) :
+    exact_regressor_t(const problem_type& problem) :
         _m(problem.m), _n(problem.n) {
         // TODO n < m
         _QR = problem.input_matrix;
@@ -54,7 +61,7 @@ public:
      * @param B Right-hand sides.
      * @param X Output (overwritten).
      */
-    void solve(const rhs_type &B, rhs_type &X) const {
+    void solve(const rhs_type& B, rhs_type& X) const {
         // TODO error checking
         X = B;
         elem::qr::ApplyQ(elem::LEFT, elem::ADJOINT, _QR, _t, X);
@@ -65,7 +72,8 @@ public:
 };
 
 /**
- * Exact regressor (solves the problem exactly) for a dense distributed matrix.
+ * Exact regressor (solves the problem exactly) for L2 linear regrssion
+ * on a dense distributed matrix.
  *
  * A regressor accepts a right-hand side and output a solution
  * the the regression problem.
@@ -75,14 +83,22 @@ public:
  */
 template <typename ValueType,
           elem::Distribution CD,
-          elem::Distribution RW>
-class exact_regressor_t<l2_tag,
-                        elem::DistMatrix<ValueType, CD, RW>,
-                        elem::DistMatrix<ValueType, CD, RW>,
-                        qr_l2_solver_tag> {
+          elem::Distribution RD>
+class exact_regressor_t<
+    regression_problem_t<linear_tag, l2_tag,
+                         elem::DistMatrix<ValueType, CD, RD> >,
+    elem::DistMatrix<ValueType, CD, RD>,
+    qr_l2_solver_tag> {
 
-    typedef elem::DistMatrix<ValueType, CD, RW> matrix_type;
-    typedef elem::DistMatrix<ValueType, CD, RW> rhs_type;
+public:
+
+    typedef elem::DistMatrix<ValueType, CD, RD> matrix_type;
+    typedef elem::DistMatrix<ValueType, CD, RD> rhs_type;
+    typedef elem::DistMatrix<ValueType, CD, RD> sol_type;
+
+    typedef regression_problem_t<linear_tag,
+                                 l2_tag,  elem::DistMatrix<ValueType, CD, RD> >
+    problem_type;
 
 private:
     const int _m;
@@ -97,7 +113,7 @@ public:
      *
      * @param problem Problem to solve given right-hand side.
      */
-    exact_regressor_t(const regression_problem_t<l2_tag, matrix_type> &problem) :
+    exact_regressor_t(const problem_type& problem) :
         _m(problem.m), _n(problem.n),
         _QR(problem.input_matrix.Grid()), _R(problem.input_matrix.Grid()),
         _t(problem.input_matrix.Grid()) {
@@ -113,7 +129,7 @@ public:
      * @param B Right-hand sides.
      * @param X Output (overwritten).
      */
-    void solve (const rhs_type &B, rhs_type &X) const {
+    void solve (const rhs_type& B, sol_type& X) const {
         // TODO error checking
         X = B;
         elem::qr::ApplyQ(elem::LEFT, elem::ADJOINT, _QR, _t, X);
@@ -125,4 +141,4 @@ public:
 
 } } /** namespace skylark::algorithms */
 
-#endif // EXACT_REGRESSOR_ELEMENTAL_HPP
+#endif // SKYLARK_EXACT_REGRESSOR_ELEMENTAL_HPP

@@ -1,25 +1,26 @@
-#ifndef EXACT_REGRESSOR_HPP
-#define EXACT_REGRESSOR_HPP
+#ifndef SKYLARK_EXACT_REGRESSOR_HPP
+#define SKYLARK_EXACT_REGRESSOR_HPP
 
 #include "../../config.h"
 
 namespace skylark {
 namespace algorithms {
 
-/// Base class for tags specifying strategies for solving L2 regression problems.
+/// Base class for tags specifying strategies for solving L2 
+/// linear regression problems.
 struct l2_solver_tag {};
 
-/// Tag for using QR to solve L2 regression problems.
+/// Tag for using QR to solve L2 linear regression problems.
 struct qr_l2_solver_tag : l2_solver_tag {};
 
-/// Tag for using normal equations to solve L2 regression problems.
+/// Tag for using normal equations to solve L2 linear regression problems.
 struct ne_l2_solver_tag : l2_solver_tag {};
 
-/// Tag for using SVD to solve L2 regression problems.
+/// Tag for using SVD to solve L2 linear regression problems.
 struct svd_l2_solver_tag : l2_solver_tag {};
 
 /**
- * Tag for using an iterative method to solve L2 regression.
+ * Tag for using an iterative method to solve L2 linear regression.
  *
  * @tparam KrylovMethod The underlying Krylov method used.
  */
@@ -42,20 +43,19 @@ struct lsqr_tag: public krylov_tag {};
  * constructing the regressor. The top class is empty: real logic is in
  * specializations.
  *
- * @tparam RegressionType Tag specificying regression type, e.g. l2_tag.
- * @tparam MatrixType Input matrix type.
+ * @tparam RegressionProblemType Type of regression problem solved.
  * @tparam RhsType Right-hand side matrix type.
- * @tparam AlgTag Tag specifyin the algorithm used.
+ * @tparam AlgTag Tag specifying the algorithm used.
  */
-template <typename RegressionType,
-          typename MatrixType,
+template <typename RegressionProblemType,
           typename RhsType,
-          typename AlgTag = qr_l2_solver_tag>
+          typename AlgTag>
 class exact_regressor_t {
+
 };
 
 
-} // namespace sketch
+} // namespace algorithms
 } // namespace skylark
 
 #if SKYLARK_HAVE_ELEMENTAL
@@ -64,4 +64,4 @@ class exact_regressor_t {
 
 #include "exact_regressor_Krylov.hpp"
 
-#endif // EXACT_REGRESSOR_HPP
+#endif // SKYLARK_EXACT_REGRESSOR_HPP

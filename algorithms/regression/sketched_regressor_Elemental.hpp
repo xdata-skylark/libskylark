@@ -18,36 +18,45 @@ namespace algorithms {
  */
 template <
     typename RegressionType,
+    typename PenaltyType,
     typename InputType,
     typename RhsType,
+    typename SketchedRegressionType,
     template <typename, typename> class TransformType,
     typename ExactAlgTag>
-class sketched_regressor_t<RegressionType,
-                           InputType,
+class sketched_regressor_t<regression_problem_t<RegressionType, PenaltyType, 
+                                                InputType>,
                            RhsType,
+                           SketchedRegressionType,
                            elem::Matrix<
                                typename utility::typer_t<InputType>::value_type >,
                            TransformType,
                            ExactAlgTag,
                            sketch_and_solve_tag> {
 
+public:
+
     typedef typename utility::typer_t<InputType>::value_type value_type;
 
+    typedef elem::Matrix<value_type> sketch_type;
     typedef InputType matrix_type;
     typedef RhsType rhs_type;
-    typedef elem::Matrix<value_type> sketch_type;
 
     typedef RegressionType regression_type;
+    typedef PenaltyType penalty_type;
+    typedef SketchedRegressionType sketched_regression_type;
 
-    typedef regression_problem_t<regression_type,
+    typedef regression_problem_t<regression_type, penalty_type,
                                  matrix_type> problem_type;
-    typedef regression_problem_t<regression_type,
+    typedef regression_problem_t<sketched_regression_type, penalty_type,
                                  sketch_type> sketched_problem_type;
 
-    typedef exact_regressor_t<regression_type,
-                              sketch_type,
+
+    typedef exact_regressor_t<sketched_problem_type,
                               sketch_type,
                               ExactAlgTag> underlying_regressor_type;
+
+    typedef typename underlying_regressor_type::sol_type sol_type;
 
 private:
     typedef typename TransformType<matrix_type, sketch_type>::data_type
@@ -78,7 +87,7 @@ public:
         delete _underlying_regressor;
     }
 
-    void solve(const matrix_type& b, sketch_type& x) {
+    void solve(const rhs_type& b, sol_type& x) {
         TransformType<rhs_type, sketch_type> S(_sketch);
         sketch_type Sb(_sketch_size, 1);
         S.apply(b, Sb, sketch::columnwise_tag());
@@ -86,7 +95,7 @@ public:
             _underlying_regressor->solve(Sb, x);
     }
 
-    void solve_mulitple(const matrix_type& B, sketch_type& X) {
+    void solve_mulitple(const rhs_type& B, sol_type& X) {
         TransformType<rhs_type, sketch_type> S(_sketch);
         sketch_type SB(_sketch_size, B.Width());
         S.apply(SB, SB, sketch::columnwise_tag());
@@ -100,14 +109,17 @@ public:
  */
 template <
     typename RegressionType,
+    typename PenaltyType,
     typename InputType,
     typename RhsType,
+    typename SketchedRegressionType,
     elem::Distribution CD, elem::Distribution RD,
     template <typename, typename> class TransformType,
     typename ExactAlgTag>
-class sketched_regressor_t<RegressionType,
-                           InputType,
+class sketched_regressor_t<regression_problem_t<RegressionType, PenaltyType, 
+                                                InputType>,
                            RhsType,
+                           SketchedRegressionType,
                            elem::DistMatrix<
                                typename utility::typer_t<InputType>::value_type,
                                CD, RD >,
@@ -115,24 +127,28 @@ class sketched_regressor_t<RegressionType,
                            ExactAlgTag,
                            sketch_and_solve_tag> {
 
+public:
+
     typedef typename utility::typer_t<InputType>::value_type value_type;
 
+    typedef elem::DistMatrix<value_type, CD, RD> sketch_type;
     typedef InputType matrix_type;
     typedef RhsType rhs_type;
-    typedef elem::DistMatrix<value_type, CD, RD> sketch_type;
 
     typedef RegressionType regression_type;
+    typedef PenaltyType penalty_type;
+    typedef SketchedRegressionType sketched_regression_type;
 
-    typedef regression_problem_t<regression_type,
+    typedef regression_problem_t<regression_type, penalty_type,
                                  matrix_type> problem_type;
-    typedef regression_problem_t<regression_type,
+    typedef regression_problem_t<sketched_regression_type, penalty_type,
                                  sketch_type> sketched_problem_type;
 
-    typedef exact_regressor_t<regression_type,
-                              sketch_type,
+    typedef exact_regressor_t<sketched_problem_type,
                               sketch_type,
                               ExactAlgTag> underlying_regressor_type;
 
+    typedef typename underlying_regressor_type::sol_type sol_type;
 private:
     typedef typename TransformType<matrix_type, sketch_type>::data_type
     transform_data_type;
@@ -160,7 +176,7 @@ public:
         delete _underlying_regressor;
     }
 
-    void solve(const matrix_type& b, sketch_type& x) {
+    void solve(const rhs_type& b, sol_type& x) {
         // TODO For DistMatrix this will allocate on DefaultGrid
         //      MIGHT BE VERY WRONG (grid is different).
         TransformType<rhs_type, sketch_type> S(_sketch);
@@ -169,7 +185,7 @@ public:
         _underlying_regressor->solve(Sb, x);
     }
 
-    void solve_mulitple(const matrix_type& B, sketch_type& X) {
+    void solve_mulitple(const rhs_type& B, sol_type& X) {
         // TODO For DistMatrix this will allocate on DefaultGrid...
         //      MIGHT BE VERY WRONG (grid is different).
         TransformType<rhs_type, sketch_type> S(_sketch);

@@ -1,8 +1,8 @@
-#ifndef REGRESSION_HPP
-#define REGRESSION_HPP
+#ifndef SKYLARK_REGRESSION_HPP
+#define SKYLARK_REGRESSION_HPP
 
 #include "regression_problem.hpp"
 #include "exact_regressor.hpp"
 #include "sketched_regressor.hpp"
 
-#endif // REGRESSION_HPP
+#endif // SKYLARK_REGRESSION_HPP

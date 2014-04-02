@@ -15,11 +15,30 @@ typedef elem::DistMatrix<double> MatrixType1;
 typedef elem::DistMatrix<double, elem::VC, elem::STAR> MatrixType;
 typedef elem::Matrix<double> SketchType;
 
+typedef skyalg::regression_problem_t<
+    skyalg::linear_tag, skyalg::l2_tag, MatrixType> RegressionProblemType;
+
+typedef skyalg::regression_problem_t<
+    skyalg::linear_tag, skyalg::l2_tag, MatrixType1> RegressionProblemType1;
+
+typedef skyalg::exact_regressor_t<
+    RegressionProblemType1,
+    MatrixType1,
+    skyalg::qr_l2_solver_tag> ExactRegressorType;
+
+typedef skyalg::sketched_regressor_t<
+    RegressionProblemType, MatrixType,
+    skyalg::linear_tag,
+    SketchType,
+    skysk::CWT_t,
+    skyalg::qr_l2_solver_tag,
+    skyalg::sketch_and_solve_tag> SketchedRegressorType;
+
 const int m = 2000;
 const int n = 10;
 const int t = 500;
 
-// TODO move to NLA layer
+// TODO move to base layer.
 template<typename T, elem::Distribution U, elem::Distribution V>
 inline T Nrm2(const elem::DistMatrix<T, U, V>& x)
 {
@@ -28,7 +47,8 @@ inline T Nrm2(const elem::DistMatrix<T, U, V>& x)
 
 template<typename MatrixType>
 void check_solution(
-    skyalg::regression_problem_t<skyalg::l2_tag, MatrixType> pr,
+    const skyalg::regression_problem_t<
+    skyalg::linear_tag, skyalg::l2_tag, MatrixType> &pr,
     const MatrixType &b, const MatrixType &x,
     int rank) {
     MatrixType r(b.Grid());
@@ -59,31 +79,24 @@ int main(int argc, char** argv) {
     // Setup problem and righthand side
     MatrixType A(m, n);
     elem::MakeUniform(A);
-    skyalg::regression_problem_t<skyalg::l2_tag, MatrixType> problem(m, n, A);
+    RegressionProblemType problem(m, n, A);
 
     MatrixType b(m, 1);
     elem::MakeUniform(b);
 
     // Using exact regressor
     MatrixType1 b1(m, 1);
-    MatrixType1 x1(n, 1);
+    ExactRegressorType::sol_type x1(n, 1);
     MatrixType1 A1(m, n);
     A1 = A; b1 = b;
-    skyalg::regression_problem_t<skyalg::l2_tag, MatrixType1> problem1(m, n, A1);
-    skyalg::exact_regressor_t<skyalg::l2_tag,
-                              MatrixType1, MatrixType1,
-                              skyalg::qr_l2_solver_tag> exact_regr(problem1);
+    RegressionProblemType1 problem1(m, n, A1);
+    ExactRegressorType exact_regr(problem1);
     exact_regr.solve(b1, x1);
     check_solution(problem1, b1, x1, rank);
 
     // Using sketch-and-solve
-    SketchType x2(n, 1);
-    skyalg::sketched_regressor_t<
-        skyalg::l2_tag,
-        MatrixType, MatrixType, SketchType,
-        skysk::CWT_t,
-        skyalg::qr_l2_solver_tag,
-        skyalg::sketch_and_solve_tag> sketched_regr(problem, t, context);
+    SketchedRegressorType sketched_regr(problem, t, context);
+    SketchedRegressorType::sol_type x2(n, 1);
     sketched_regr.solve(b, x2);
     MatrixType r(b.Grid());
     r = b;

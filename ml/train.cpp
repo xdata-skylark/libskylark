@@ -23,32 +23,27 @@ int main (int argc, char** argv) {
     int provided;
     MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
     bmpi::environment env (argc, argv);
-
-    // get communicator
     boost::mpi::communicator comm;
-    int rank = comm.rank();
-    int size = comm.size();
 
-    hilbert_options_t options (argc, argv, size);
+    hilbert_options_t options (argc, argv, comm.rank());
 
     skylark::base::context_t context (options.seed);
 
     elem::Initialize (argc, argv);
-    MPI_Comm mpi_world(comm);
 
     /* Load Commandline options and log them */
 
     if (options.exit_on_return) { return -1; }
-    if (rank==0)
+    if (comm.rank() == 0)
         std::cout << options.print();
 
     bool sparse = (options.fileformat == LIBSVM_SPARSE);
     int flag = 0;
 
     if (sparse)
-        flag = run<sparse_matrix_t, elem::Matrix<double> >(context, options);
+        flag = run<sparse_matrix_t, elem::Matrix<double> >(comm, context, options);
     else
-        flag = run<LocalMatrixType, LocalMatrixType>(context, options);
+        flag = run<LocalMatrixType, LocalMatrixType>(comm, context, options);
 
     comm.barrier();
     elem::Finalize();

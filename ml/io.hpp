@@ -14,17 +14,13 @@
 #include <string>
 #include <elemental.hpp>
 #include "../base/sparse_matrix.hpp"
-#include "../base/context.hpp"
 #include "../utility/get_communicator.hpp"
 
 
 using namespace std;
 namespace bmpi =  boost::mpi;
 
-typedef skylark::base::context_t skylark_context_t;
 typedef elem::DistMatrix<double, elem::CIRC, elem::CIRC> DistCircMatrixType;
-typedef skylark::base::sparse_matrix_t<double> sparse_matrix_t;
-
 
 #ifdef SKYLARK_HAVE_HDF5
 #include <H5Cpp.h>
@@ -101,14 +97,14 @@ int write_elem_hdf5(string fName, elem::Matrix<double>& X,
   return 0; // successfully terminated
 }
 
-void read_hdf5_dense(skylark_context_t& context, string fName,
-        sparse_matrix_t& X,
-        elem::Matrix<double>& Y, int blocksize = 10000) {
+void read_hdf5_dense(string fName,
+    skylark::base::sparse_matrix_t<double>& X,
+    elem::Matrix<double>& Y, int blocksize = 10000) {
 
     // Not Implemented.
 }
 
-void read_hdf5_dense(skylark_context_t& context, string fName,
+void read_hdf5_dense(string fName,
         elem::DistMatrix<double, elem::STAR, elem::VC>& X,
         elem::DistMatrix<double, elem::VC, elem::STAR>& Y, int blocksize = 10000) {
 
@@ -211,13 +207,13 @@ void read_hdf5_dense(skylark_context_t& context, string fName,
 }
 #endif
 
-
-void read_libsvm(skylark_context_t& context, string fName,
-		LocalMatrixType& Xlocal, LocalMatrixType& Ylocal,
+template<typename T>
+void read_libsvm(string fName,
+		elem::Matrix<T>& Xlocal, elem::Matrix<T>& Ylocal,
 		int min_d = 0, int blocksize = 10000) {
 
-	elem::DistMatrix<double, elem::STAR, elem::VC> X;
-	elem::DistMatrix<double, elem::VC, elem::STAR> Y;
+	elem::DistMatrix<T, elem::STAR, elem::VC> X;
+	elem::DistMatrix<T, elem::VC, elem::STAR> Y;
 
         // get communicator from matrix
         boost::mpi::communicator comm = skylark::utility::get_communicator(X);
@@ -299,8 +295,8 @@ void read_libsvm(skylark_context_t& context, string fName,
                 if(rank==0) {
 
                     cout << "Reading and distributing chunk " << i*blocksize << " to " << i*blocksize + block - 1 << " ("<< block << " elements )" << endl;
-                    double *Xdata = x.Matrix().Buffer();
-                    double *Ydata = y.Matrix().Buffer();
+                    T *Xdata = x.Matrix().Buffer();
+                    T *Ydata = y.Matrix().Buffer();
 
                     t = 0;
                     while(!file.eof() && t<block) {
@@ -330,8 +326,8 @@ void read_libsvm(skylark_context_t& context, string fName,
                // if (rank==0)
                 //    cout << "Distributing Data.." << endl;
 
-                elem::DistMatrix<double, elem::STAR, elem::VC> viewX;
-                elem::DistMatrix<double, elem::VC, elem::STAR> viewY;
+                elem::DistMatrix<T, elem::STAR, elem::VC> viewX;
+                elem::DistMatrix<T, elem::VC, elem::STAR> viewY;
 
                 elem::View(viewX, X, 0, i*blocksize, x.Height(), x.Width());
                 elem::View(viewY, Y, i*blocksize, 0, x.Width(), 1);
@@ -350,10 +346,9 @@ void read_libsvm(skylark_context_t& context, string fName,
 	}
 }
 
-
-void read_libsvm(skylark_context_t& context, string fName, sparse_matrix_t& X,
-                        elem::Matrix<double>& Y,
-                        int min_d = 0) {
+template<typename T>
+void read_libsvm(string fName, 
+    skylark::base::sparse_matrix_t<T>& X, elem::Matrix<T>& Y, int min_d = 0) {
     // get communicator
     boost::mpi::communicator comm;
     int rank = comm.rank();
@@ -484,7 +479,7 @@ void read_libsvm(skylark_context_t& context, string fName, sparse_matrix_t& X,
 
                     X.attach(_col_ptr, _rowind, _values, nnz_local, d, examples_local, true);
 
-                    LocalMatrixType Y2(examples_local, 1, &y[0], 0);
+                    elem::Matrix<T> Y2(examples_local, 1, &y[0], 0);
 
                     //  Y.Resize(examples_local,1);
                     // but this is not!
@@ -530,7 +525,7 @@ void read_libsvm(skylark_context_t& context, string fName, sparse_matrix_t& X,
 
                 double* y = new double[t];
                 comm.recv(0, 7, y, t);
-                LocalMatrixType Y2(t, 1, y, 0);
+                elem::Matrix<T> Y2(t, 1, y, 0);
                 Y = Y2; // copy
 
                 //Y.Resize(t,1);
@@ -545,25 +540,24 @@ void read_libsvm(skylark_context_t& context, string fName, sparse_matrix_t& X,
     double readtime = timer.elapsed();
     if (rank==0)
         cout << "Read Matrix with dimensions: " << n << " by " << d << " (" << readtime << "secs)" << endl;
-//    std::cout << rank << "barrier here in read " << std::endl;
+
     comm.barrier();
- //  std::cout << rank << "barrier here in read DONE" << std::endl;
 }
 
 
 template <class InputType, class LabelType>
-void read(skylark::base::context_t& context, int fileformat, string filename, InputType& X, LabelType& Y, int d=0) {
+void read(int fileformat, string filename, InputType& X, LabelType& Y, int d=0) {
 
     switch(fileformat) {
             case LIBSVM_DENSE: case LIBSVM_SPARSE:
             {
-                read_libsvm(context, filename, X, Y, d);
+                read_libsvm(filename, X, Y, d);
                 break;
             }
             case HDF5:
             {
                 #ifdef SKYLARK_HAVE_HDF5
-             //       read_hdf5_dense(context, filename, X, Y, d);
+             //       read_hdf5_dense(filename, X, Y, d);
                 #else
                     // TODO
                 #endif
@@ -609,7 +603,7 @@ void read_model_file(string fName, elem::Matrix<double>& W) {
 	}
 }
 
-void SaveModel(skylark::base::context_t& context, hilbert_options_t& options, elem::Matrix<double> W)  {
+void SaveModel(hilbert_options_t& options, elem::Matrix<double> W)  {
 
     // get communicator
     boost::mpi::communicator comm;

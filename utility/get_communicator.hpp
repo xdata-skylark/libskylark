@@ -5,6 +5,7 @@
 #include <exception>
 
 #include "../config.h"
+#include "../base/base.hpp"
 
 #if SKYLARK_HAVE_COMBBLAS
 #include <CombBLAS.h>
@@ -28,10 +29,14 @@ namespace skylark { namespace utility {
 // namespace alias
 namespace mpi = boost::mpi;
 
-#endif // SKYLARK_HAVE_BOOST
 
 
-#if SKYLARK_HAVE_ELEMENTAL && SKYLARK_HAVE_BOOST
+template<typename T>
+mpi::communicator get_communicator(const base::sparse_matrix_t<T>& A) {
+    return mpi::communicator(MPI_COMM_SELF, mpi::comm_duplicate);
+}
+
+#if SKYLARK_HAVE_ELEMENTAL
 
 template<typename T>
 mpi::communicator get_communicator(const elem::Matrix<T>& A) {
@@ -43,20 +48,18 @@ mpi::communicator get_communicator(const elem::DistMatrix<T, U, V>& A) {
     return mpi::communicator(A.DistComm(), mpi::comm_duplicate);
 }
 
-#endif // SKYLARK_HAVE_ELEMENTAL and SKYLARK_HAVE_BOOST
+#endif // SKYLARK_HAVE_ELEMENTAL
 
 
-#if SKYLARK_HAVE_COMBBLAS && SKYLARK_HAVE_BOOST
+#if SKYLARK_HAVE_COMBBLAS
 
-template<typename IT, typename T>
-mpi::communicator get_communicator(const SpParMat<IT, T, SpDCCols<IT, T> >& A) {
+template<typename IT, typename T, typename S>
+mpi::communicator get_communicator(const SpParMat<IT, T, S>& A) {
     return mpi::communicator(A.getcommgrid()->GetWorld(), mpi::comm_duplicate);
 }
 
-#endif // SKYLARK_HAVE_COMBBLAS and SKYLARK_HAVE_BOOST
+#endif // SKYLARK_HAVE_COMBBLAS
 
-
-#if SKYLARK_HAVE_BOOST
 
 /**
  * Utility routine checking if the argument boost MPI communicators are either

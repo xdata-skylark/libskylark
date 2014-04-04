@@ -15,7 +15,7 @@ struct typer_t {
 #include <elemental.hpp>
 
 template<typename F>
-struct typer_t<elem::Matrix<F>> {
+struct typer_t<elem::Matrix<F> > {
     typedef F value_type;
     typedef int index_type;
 };

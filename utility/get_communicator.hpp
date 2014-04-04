@@ -30,22 +30,24 @@ namespace skylark { namespace utility {
 namespace mpi = boost::mpi;
 
 
-
 template<typename T>
-mpi::communicator get_communicator(const base::sparse_matrix_t<T>& A) {
-    return mpi::communicator(MPI_COMM_SELF, mpi::comm_duplicate);
+mpi::communicator get_communicator(const base::sparse_matrix_t<T>& A,
+    mpi::comm_create_kind kind = mpi::comm_attach) {
+    return mpi::communicator(MPI_COMM_SELF, kind);
 }
 
 #if SKYLARK_HAVE_ELEMENTAL
 
 template<typename T>
-mpi::communicator get_communicator(const elem::Matrix<T>& A) {
-    return mpi::communicator(MPI_COMM_SELF, mpi::comm_duplicate);
+mpi::communicator get_communicator(const elem::Matrix<T>& A,
+    mpi::comm_create_kind kind = mpi::comm_attach) {
+    return mpi::communicator(MPI_COMM_SELF, kind);
 }
 
 template<typename T, elem::Distribution U, elem::Distribution V>
-mpi::communicator get_communicator(const elem::DistMatrix<T, U, V>& A) {
-    return mpi::communicator(A.DistComm(), mpi::comm_duplicate);
+mpi::communicator get_communicator(const elem::DistMatrix<T, U, V>& A,
+    mpi::comm_create_kind kind = mpi::comm_attach) {
+    return mpi::communicator(A.DistComm(), kind);
 }
 
 #endif // SKYLARK_HAVE_ELEMENTAL
@@ -54,8 +56,9 @@ mpi::communicator get_communicator(const elem::DistMatrix<T, U, V>& A) {
 #if SKYLARK_HAVE_COMBBLAS
 
 template<typename IT, typename T, typename S>
-mpi::communicator get_communicator(const SpParMat<IT, T, S>& A) {
-    return mpi::communicator(A.getcommgrid()->GetWorld(), mpi::comm_duplicate);
+mpi::communicator get_communicator(const SpParMat<IT, T, S>& A,
+    mpi::comm_create_kind kind = mpi::comm_attach) {
+    return mpi::communicator(A.getcommgrid()->GetWorld(), kind);
 }
 
 #endif // SKYLARK_HAVE_COMBBLAS

@@ -707,6 +707,9 @@ void read_hdf5(skylark_context_t& context, string fName,
         if (context.rank==0)
                 cout << "Read Matrix with dimensions: " << n << " by " << d << " (" << readtime << "secs)" << endl;
 
+
+        //elem::Display(Xlocal);
+
 }
 #endif
 

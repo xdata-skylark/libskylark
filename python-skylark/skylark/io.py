@@ -512,7 +512,7 @@ class libsvm(object):
         return labels, indices, features, values
 
 
-    def stream_vectors(self, block_size=1000):
+    def stream_vectors(self, block_size=1000, type=1):
         '''
         Stream the labels, indices, features and values from a libsvm file as a
         tuple of vectors.
@@ -521,6 +521,9 @@ class libsvm(object):
         ----------
         block_size : int, optional
          Number of lines to parse in each iteration.
+	type : int, optional
+	 1 (default): "i-j-v" triplets 
+	 0: indices are actually pointers into feature/values array as used in CRS/CSC
 
         Returns
         -------
@@ -538,10 +541,15 @@ class libsvm(object):
             values = []
             index = 0
             block_complete = False
+	    nz = 0	
             for line in f:
                 _l, _i, _f, _v = self._parse(index, line)
                 labels.append(_l)
-                indices.extend(_i)
+		if type:
+	                indices.extend(_i)
+		else:
+			indices.append(nz)
+		nz = nz + len(_f)
                 features.extend(_f)
                 values.extend(_v)
                 index += 1
@@ -552,7 +560,6 @@ class libsvm(object):
                 has_lines = False
             yield labels, indices, features, values
         f.close()
-
 
     def read(self):
         '''

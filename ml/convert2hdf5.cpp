@@ -12,6 +12,8 @@
 #include <elemental.hpp>
 #include <cstdlib>
 #include "io.hpp"
+#include "../base/context.hpp"
+
 
 
 int main (int argc, char** argv) {
@@ -32,23 +34,26 @@ int main (int argc, char** argv) {
     std::cout << "input: " << inputfile << " hdf5file:" << hdf5file << " mode:" <<  mode << " min_d:" << min_d << std::endl;
     boost::mpi::environment env (argc, argv);
 
-    boost::mpi::communicator world;
+    // get communicator
+    boost::mpi::communicator comm;
+    int rank = comm.rank();
+
     elem::Initialize (argc, argv);
 
-    skylark::sketch::context_t context (12345, world);
+    skylark::base::context_t context (12345);
 
     if (mode==0) { // dense
     	LocalMatrixType X;
     	LocalMatrixType Y;
     	read_libsvm(context, inputfile, X, Y, min_d);
-    	if(context.rank==0) {
+    	if(rank==0) {
     	        write_hdf5(hdf5file, X,Y);
     		}
     } else {
     	sparse_matrix_t X;
     	LocalMatrixType Y;
     	read_libsvm(context, inputfile, X, Y, min_d);
-    	if(context.rank==0) {
+    	if(rank==0) {
     		write_hdf5(hdf5file, X,Y);
     	}
     }

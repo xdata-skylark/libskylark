@@ -1,9 +1,10 @@
 #ifndef SKYLARK_RFUT_ELEMENTAL_HPP
 #define SKYLARK_RFUT_ELEMENTAL_HPP
 
+#include <boost/mpi.hpp>
 #include <elemental.hpp>
 
-#include "context.hpp"
+#include "../base/context.hpp"
 #include "transforms.hpp"
 #include "RFUT_data.hpp"
 #include "../utility/randgen.hpp"
@@ -37,7 +38,7 @@ struct RFUT_t<
     /**
      * Regular constructor
      */
-    RFUT_t(int N, skylark::sketch::context_t& context)
+    RFUT_t(int N, skylark::base::context_t& context)
         : data_type (N, context) {}
 
     /**
@@ -142,7 +143,7 @@ struct RFUT_t<
     /**
      * Regular constructor
      */
-    RFUT_t(int N, skylark::sketch::context_t& context)
+    RFUT_t(int N, skylark::base::context_t& context)
         : data_type (N, context) {}
 
     /**

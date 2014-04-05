@@ -9,5 +9,6 @@
 #include "viewing.hpp"
 #include "copy.hpp"
 #include "Gemm.hpp"
+#include "context.hpp"
 
 #endif // SKYLARK_BASE_HPP

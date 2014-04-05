@@ -3,11 +3,11 @@
 
 #include "../base/base.hpp"
 
-#include "context.hpp"
 #include "transforms.hpp"
 #include "dense_transform_data.hpp"
 #include "../utility/comm.hpp"
 #include "../utility/exception.hpp"
+#include "../utility/get_communicator.hpp"
 
 
 namespace skylark { namespace sketch {
@@ -36,7 +36,7 @@ struct dense_transform_t <
     /**
      * Regular constructor
      */
-    dense_transform_t (int N, int S, skylark::sketch::context_t& context)
+    dense_transform_t (int N, int S, skylark::base::context_t& context)
         : data_type (N, S, context) {}
 
     /**
@@ -148,7 +148,7 @@ struct dense_transform_t <
     /**
      * Regular constructor
      */
-    dense_transform_t (int N, int S, skylark::sketch::context_t& context)
+    dense_transform_t (int N, int S, skylark::base::context_t& context)
         : data_type (N, S, context) {}
 
     /**
@@ -249,9 +249,11 @@ private:
                 SA_part);
         }
 
+        // get communicator from matrix
+        boost::mpi::communicator comm = skylark::utility::get_communicator(A);
 
         // Pull everything to rank-0
-        boost::mpi::reduce (data_type::_context.comm,
+        boost::mpi::reduce (comm,
                             SA_part.LockedBuffer(),
                             SA_part.MemorySize(),
                             sketch_of_A.Buffer(),
@@ -290,10 +292,14 @@ private:
             0.0,
             SA_dist.Matrix());
 
+        // get communicator from matrix
+        boost::mpi::communicator comm = skylark::utility::get_communicator(A);
+        int rank = comm.rank();
+
         // Collect at rank 0.
         // TODO Grid rank 0 or context rank 0?
-        skylark::utility::collect_dist_matrix(data_type::_context.comm,
-            data_type::_context.rank == 0,
+        skylark::utility::collect_dist_matrix(comm,
+            rank == 0,
             SA_dist, sketch_of_A);
     }
 
@@ -324,7 +330,7 @@ struct dense_transform_t <
     /**
      * Regular Constructor
      */
-    dense_transform_t (int N, int S, skylark::sketch::context_t& context)
+    dense_transform_t (int N, int S, skylark::base::context_t& context)
         : data_type (N, S, context) {}
 
     /**
@@ -496,7 +502,7 @@ struct dense_transform_t <
     /**
      * Regular constructor
      */
-    dense_transform_t (int N, int S, skylark::sketch::context_t& context)
+    dense_transform_t (int N, int S, skylark::base::context_t& context)
         : data_type (N, S, context) {}
 
     /**
@@ -701,7 +707,7 @@ struct dense_transform_t <
     /**
      * Regular Constructor
      */
-    dense_transform_t (int N, int S, skylark::sketch::context_t& context)
+    dense_transform_t (int N, int S, skylark::base::context_t& context)
         : data_type (N, S, context) {}
 
     /**
@@ -874,7 +880,7 @@ struct dense_transform_t <
     /**
      * Regular constructor
      */
-    dense_transform_t (int N, int S, skylark::sketch::context_t& context)
+    dense_transform_t (int N, int S, skylark::base::context_t& context)
         : data_type (N, S, context) {}
 
     /**
@@ -1032,7 +1038,7 @@ struct dense_transform_t <
     /**
      * Regular constructor
      */
-    dense_transform_t (int N, int S, skylark::sketch::context_t& context)
+    dense_transform_t (int N, int S, skylark::base::context_t& context)
         : data_type (N, S, context) {
 
     }

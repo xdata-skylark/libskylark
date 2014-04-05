@@ -4,8 +4,12 @@
  *  Created on: Feb 7, 2014
  *      Author: vikas
  */
+
 #include "hilbert.hpp"
 #include <boost/mpi.hpp>
+#include "../base/context.hpp"
+
+
 #define DEBUG std::cout << "error " << std::endl;
 
 int main (int argc, char** argv) {
@@ -15,28 +19,33 @@ int main (int argc, char** argv) {
 
 	std::string testfile = argv[1];
 	std::string modelfile = argv[2];
-	bmpi::environment env (argc, argv);
-    bmpi::communicator world;
-    skylark::sketch::context_t context (12345, world);
+	boost::mpi::environment env (argc, argv);
+
+        // get communicator
+        boost::mpi::communicator comm;
+        int rank = comm.rank();
+
+        skylark::base::context_t context (12345);
 	elem::Initialize (argc, argv);
-	MPI_Comm mpi_world(world);
+	MPI_Comm mpi_world(comm);
 	DistInputMatrixType X, Y;
 	int m,n;
 	elem::Matrix<double> W;
 
-	if (context.rank == 0) {
+
+	if (rank == 0) {
 
 		read_model_file(modelfile, W);
 		m = W.Height();
 		n = W.Width();
 	}
-	boost::mpi::broadcast(context.comm, m, 0);
-	boost::mpi::broadcast(context.comm, n, 0);
-	if (context.rank != 0) {
+	boost::mpi::broadcast(comm, m, 0);
+	boost::mpi::broadcast(comm, n, 0);
+	if (rank != 0) {
 		W.Resize(m,n);
 	}
 
-	boost::mpi::broadcast(context.comm, W.Buffer(), m*n, 0);
+	boost::mpi::broadcast(comm, W.Buffer(), m*n, 0);
 
 	read_libsvm_dense(context, testfile, X, Y);
 
@@ -62,12 +71,12 @@ int main (int argc, char** argv) {
 			correct++;
 	}
 
-	context.comm.barrier();
+	comm.barrier();
 
-	//if(context.rank ==0) {
+	//if(rank ==0) {
 	int totalcorrect;
-	boost::mpi::reduce(context.comm, correct, totalcorrect, std::plus<double>(), 0);
-	if(context.rank ==0)
+	boost::mpi::reduce(comm, correct, totalcorrect, std::plus<double>(), 0);
+	if(rank ==0)
 	    std::cout << "Accuracy = " << totalcorrect*100.0/X.Height() << " %" << std::endl;
 	//}
 }

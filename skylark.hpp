@@ -51,6 +51,9 @@
 /** Include all the utility functions */
 #include "utility/utility.hpp"
 
+/** Include the base of the library */
+#include "base/base.hpp"
+
 /** Include all the sketching primitives */
 #include "sketch/sketch.hpp"
 

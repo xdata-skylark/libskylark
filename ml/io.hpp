@@ -244,7 +244,6 @@ void read_hdf5(skylark_context_t& context, string fName,
 	if (context.rank==0)
 		            cout << "Reading sparse matrix from HDF5 file " << fName << endl;
 
-	cout << "here....!!!" << endl;
 	H5::H5File file( fName, H5F_ACC_RDONLY );
 
 	int* dimensions = new int[3];

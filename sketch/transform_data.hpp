@@ -2,7 +2,7 @@
 #define SKYLARK_TRANSFORM_DATA_HPP
 
 #include <vector>
-#include "../base/context.hpp"
+#include "context.hpp"
 #include "../utility/exception.hpp"
 
 #include "boost/foreach.hpp"
@@ -14,7 +14,7 @@ namespace skylark { namespace sketch {
 //FIXME: Haim wants to call this sketch_transform_data_t
 struct transform_data_t {
 
-    transform_data_t (int N, int S, skylark::base::context_t& context,
+    transform_data_t (int N, int S, skylark::sketch::context_t& context,
                       const std::string name = "")
         : _N(N), _S(S), _context(context), _name(name), _version("0.1"),
         _stream_start(context.get_counter())
@@ -26,11 +26,10 @@ struct transform_data_t {
      *  @param[in] context
      */
     transform_data_t (const boost::property_tree::ptree& json,
-                      skylark::base::context_t& context)
-        : _context(context), _version("0.1") {
+                      context_t& context) : _context(context), _version("0.1") {
 
         // overwrite/set context to draw correct random samples
-        _context = skylark::base::context_t(json);
+        _context = context_t(json, context.comm);
 
         std::vector<int> dims;
         BOOST_FOREACH(const boost::property_tree::ptree::value_type &v,
@@ -59,7 +58,7 @@ struct transform_data_t {
 protected:
     int _N; /**< Input dimension  */
     int _S; /**< Output dimension  */
-    skylark::base::context_t& _context; /**< Context for this sketch */
+    skylark::sketch::context_t& _context; /**< Context for this sketch */
 
     std::string _name; /**< sketch name */
 

@@ -7,7 +7,6 @@
 /*******************************************/
 namespace bmpi =  boost::mpi;
 namespace skysk =  skylark::sketch;
-namespace skyb  =  skylark::base;
 namespace skyalg = skylark::algorithms;
 /*******************************************/
 
@@ -54,7 +53,7 @@ int main(int argc, char** argv) {
     elem::Grid grid(mpi_world);
     int rank = world.rank();
 
-    skyb::context_t context(23234);
+    skysk::context_t context(23234, world);
 
     // Setup problem and righthand side
     MatrixType A(m, n);

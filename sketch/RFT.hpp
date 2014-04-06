@@ -50,8 +50,8 @@ struct GaussianRFT_t :
      * Regular constructor
      */
     GaussianRFT_t(int N, int S, double sigma,
-        skylark::base::context_t& context)
-        : data_type (N, S, sigma, context), _transform(*this) {
+        skylark::sketch::context_t& context)
+        : data_type(N, S, sigma, context), _transform(*this) {
 
     }
 
@@ -126,8 +126,8 @@ struct LaplacianRFT_t :
      * Regular constructor
      */
     LaplacianRFT_t(int N, int S, double sigma,
-        skylark::base::context_t& context)
-        : data_type (N, S, sigma, context), _transform(*this) {
+        skylark::sketch::context_t& context)
+        : data_type(N, S, sigma, context), _transform(*this) {
 
     }
 

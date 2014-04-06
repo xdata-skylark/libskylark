@@ -3,11 +3,10 @@
 
 #include <elemental.hpp>
 
-#include "../base/context.hpp"
+#include "context.hpp"
 #include "transforms.hpp"
 #include "FJLT_data.hpp"
 #include "../utility/exception.hpp"
-#include "../utility/get_communicator.hpp"
 
 namespace skylark { namespace sketch {
 /**
@@ -39,7 +38,7 @@ public:
     /**
      * Regular constructor
      */
-    FJLT_t(int N, int S, skylark::base::context_t& context)
+    FJLT_t(int N, int S, skylark::sketch::context_t& context)
         : data_type (N, S, context) {
 
     }
@@ -122,13 +121,8 @@ private:
                     scale * inter_A.Matrix().Get(row, j));
             }
 
-        // get communicator from matrix
-        boost::mpi::communicator comm = skylark::utility::get_communicator(A);
-        int rank = comm.rank();
-
-
-        skylark::utility::collect_dist_matrix(comm,
-            rank == 0,
+        skylark::utility::collect_dist_matrix(data_type::_context.comm,
+            data_type::_context.rank == 0,
             dist_sketch_A, sketch_A);
     }
 

@@ -4,30 +4,55 @@
 #include "../utility/exception.hpp"
 #include "../utility/randgen.hpp"
 
+#include "boost/mpi.hpp"
 #include "boost/property_tree/ptree.hpp"
 #include "boost/property_tree/json_parser.hpp"
 
-namespace skylark { namespace base {
+namespace skylark { namespace sketch {
 
 /**
- * A structure that holds basic information about the state of the
- * random number stream.
+ * A structure that holds basic information about the MPI world and what the
+ * user wants to implement.
  */
 struct context_t {
+    /// Communicator to use for MPI
+    boost::mpi::communicator comm;
+    /// Rank of the current process
+    int rank;
+    /// Number of processes in the group
+    int size;
+
     /**
-     * Initialize context with a seed.
+     * Initialize context with a seed and the communicator.
      * @param[in] seed Random seed to be used for all computations.
+     * @param[in] orig Communicator that is duplicated and used with SKYLARK.
+     *
+     * @caveat This is a global operation since all MPI ranks need to
+     * participate in the duplication of the communicator.
      */
-    context_t (int seed) :
+    context_t (int seed,
+               const boost::mpi::communicator& orig) :
+        comm(orig, boost::mpi::comm_duplicate),
+        rank(comm.rank()),
+        size(comm.size()),
         _counter(0),
         _seed(seed) {}
 
 
     /**
-     * Load context from a serialized JSON structure.
+     * Load context from a serialized JSON structure and the communicator.
      * @param[in] filename of JSON structure encoding serialized state.
+     * @param[in] orig Communicator that is duplicated and used with SKYLARK.
+     *
+     * @caveat This is a global operation since all MPI ranks need to
+     * participate in the duplication of the communicator.
      */
-    context_t (const boost::property_tree::ptree& json) {
+    context_t (const boost::property_tree::ptree& json,
+               const boost::mpi::communicator& orig) :
+        comm(orig, boost::mpi::comm_duplicate),
+        rank(comm.rank()),
+        size(comm.size()) {
+
         _counter = json.get<size_t>("sketch.context.counter");
         _seed = json.get<int>("sketch.context.seed");
     }
@@ -157,6 +182,6 @@ boost::property_tree::ptree& operator<<(boost::property_tree::ptree &sk,
         return sk;
 }
 
-} } /** namespace skylark::base */
+} } /** namespace skylark::sketch */
 
 #endif // SKYLARK_CONTEXT_HPP

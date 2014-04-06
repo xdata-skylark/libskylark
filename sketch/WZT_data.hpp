@@ -35,7 +35,7 @@ struct WZT_data_t : public hash_transform_data_t<
         boost::random::uniform_int_distribution,
         boost::random::exponential_distribution >  base_t;
 
-    WZT_data_t(int N, int S, double p, skylark::base::context_t& context)
+    WZT_data_t(int N, int S, double p, context_t& context)
         : base_t(N, S, context, "WZT"), _P(p) {
 
         // TODO verify that p is in the correct range.
@@ -49,7 +49,7 @@ struct WZT_data_t : public hash_transform_data_t<
     }
 
     WZT_data_t(const boost::property_tree::ptree &sketch,
-               skylark::base::context_t& context)
+               skylark::sketch::context_t& context)
         : base_t(sketch, context),
         _P(sketch.get<double>("sketch.p")) {
 

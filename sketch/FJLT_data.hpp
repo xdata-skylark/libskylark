@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "../base/context.hpp"
+#include "context.hpp"
 #include "RFUT_data.hpp"
 #include "../utility/randgen.hpp"
 
@@ -33,7 +33,7 @@ struct FJLT_data_t : public transform_data_t {
     /**
      * Regular constructor
      */
-    FJLT_data_t (int N, int S, skylark::base::context_t& context)
+    FJLT_data_t (int N, int S, skylark::sketch::context_t& context)
         : base_t(N, S, context, "FJLT"),
           samples(base_t::_S),
           underlying_data(base_t::_N, base_t::_context) {
@@ -42,7 +42,7 @@ struct FJLT_data_t : public transform_data_t {
     }
 
     FJLT_data_t (boost::property_tree::ptree &json,
-                 skylark::base::context_t& context)
+                 skylark::sketch::context_t& context)
         : base_t(json, context),
           samples(base_t::_S),
           underlying_data(base_t::_N, base_t::_context) {

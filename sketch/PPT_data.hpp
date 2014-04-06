@@ -5,7 +5,7 @@
 
 #include "../utility/distributions.hpp"
 
-#include "../base/context.hpp"
+#include "context.hpp"
 #include "CWT_data.hpp"
 #include "transform_data.hpp"
 
@@ -30,14 +30,14 @@ struct PPT_data_t : public transform_data_t {
      * Regular constructor
      */
     PPT_data_t (int N, int S, int q, double c, double gamma,
-                skylark::base::context_t& context)
+                skylark::sketch::context_t& context)
         : base_t(N, S, context, "PPT"), _q(q), _c(c), _gamma(gamma) {
 
         _populate();
     }
 
     PPT_data_t (boost::property_tree::ptree &json,
-                skylark::base::context_t& context)
+                skylark::sketch::context_t& context)
         : base_t(json, context),
         _q(json.get<int>("sketch.q")),
         _c(json.get<double>("sketch.c")),

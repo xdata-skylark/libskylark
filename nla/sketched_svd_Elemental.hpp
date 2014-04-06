@@ -2,9 +2,8 @@
 #define SKYLARK_SKETCHED_SVD_ELEMENTAL_HPP
 
 #include <elemental.hpp>
-#include "../base/context.hpp"
+#include "../sketch/context.hpp"
 #include "../utility/exception.hpp"
-#include "../utility/get_communicator.hpp"
 
 namespace skylark { namespace nla {
 #if 0
@@ -39,7 +38,7 @@ struct sketch_svd_t <elem::DistMatrix<ValueType, elem::MC, elem::MR>,
                        output_matrix_type& U,
                        output_matrix_type& S,
                        output_matrix_type& V,
-                       skylark::base::context_t& context) {
+                       skylark::sketch::context_t& context) {
 
         int height = A.Height();
         int width = A.Width();
@@ -116,7 +115,7 @@ typedef elem::DistMatrix<double, elem::VR, elem::STAR> DistMatrixType;
 void Gemm(DistMatrixType& A,
           DistMatrixType& B,
           MatrixType& C,
-          skylark::base::context_t& context) {
+          skylark::sketch::context_t& context) {
 
     int mA = A.Height();
     int nA = A.Width();
@@ -131,11 +130,7 @@ void Gemm(DistMatrixType& A,
          B.LockedMatrix(),
          0.0,
          C_local);
-
-    // get communicator from matrix
-    boost::mpi::communicator comm = skylark::utility::get_communicator(A);
-
-    boost::mpi::reduce (comm,
+    boost::mpi::reduce (context.comm,
                         C_local.LockedBuffer(),
                         C_local.MemorySize(),
                         C.Buffer(),
@@ -161,7 +156,7 @@ void SVD(DistMatrixType& A,
          MatrixType& V,
          int l,
          int q,
-         skylark::base::context_t& context) {
+         skylark::sketch::context_t& context) {
 
     int m = A.Height();
     int n = A.Width();

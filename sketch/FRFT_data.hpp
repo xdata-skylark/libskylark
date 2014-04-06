@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "../base/context.hpp"
+#include "context.hpp"
 #include "transform_data.hpp"
 #include "dense_transform_data.hpp"
 #include "../utility/randgen.hpp"
@@ -35,7 +35,7 @@ struct FastRFT_data_t : public transform_data_t {
     /**
      * Regular constructor
      */
-    FastRFT_data_t (int N, int S, skylark::base::context_t& context,
+    FastRFT_data_t (int N, int S, skylark::sketch::context_t& context,
                     std::string name)
         : base_t(N, S, context, name), _NB(N),
           numblks(1 + ((base_t::_S - 1) / _NB)),
@@ -46,7 +46,7 @@ struct FastRFT_data_t : public transform_data_t {
     }
 
     FastRFT_data_t (boost::property_tree::ptree &json,
-                    skylark::base::context_t& context)
+                    skylark::sketch::context_t& context)
         : base_t(json, context), _NB(base_t::_N),
           numblks(1 + ((base_t::_S - 1) / _NB)),
           scale(std::sqrt(2.0 / base_t::_S)),
@@ -122,7 +122,7 @@ struct FastGaussianRFT_data_t :
      * Most of the work is done by base. Here just write scale
      */
     FastGaussianRFT_data_t(int N, int S, value_type sigma,
-        skylark::base::context_t& context)
+        skylark::sketch::context_t& context)
         : base_t(N, S, context, "FastGaussianRFT"), _sigma(sigma) {
 
         std::fill(base_t::Sm.begin(), base_t::Sm.end(),
@@ -130,7 +130,7 @@ struct FastGaussianRFT_data_t :
     }
 
     FastGaussianRFT_data_t(boost::property_tree::ptree &json,
-                           skylark::base::context_t& context)
+                           skylark::sketch::context_t& context)
         : base_t(json, context),
         _sigma(json.get<value_type>("sketch.sigma")) {
 

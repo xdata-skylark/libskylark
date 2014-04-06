@@ -22,7 +22,7 @@
 #include "WZT.hpp"
 #include "PPT.hpp"
 
-/** skylark::base::context_t also happens to be a powerful utility for RNG*/
-#include "../base/context.hpp"
+/** skylark::sketch::context_t also happens to be a powerful utility for RNG*/
+#include "context.hpp"
 
 #endif // SKYLARK_SKETCH_HPP

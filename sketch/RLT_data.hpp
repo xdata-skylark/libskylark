@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "../base/context.hpp"
+#include "context.hpp"
 #include "transform_data.hpp"
 #include "dense_transform_data.hpp"
 #include "../utility/randgen.hpp"
@@ -36,7 +36,7 @@ struct RLT_data_t : public transform_data_t {
     /**
      * Regular constructor
      */
-    RLT_data_t (int N, int S, skylark::base::context_t& context,
+    RLT_data_t (int N, int S, skylark::sketch::context_t& context,
                 std::string name)
         : base_t(N, S, context, name), _val_scale(1),
           _underlying_data(base_t::_N, base_t::_S, base_t::_context),
@@ -45,7 +45,7 @@ struct RLT_data_t : public transform_data_t {
     }
 
     RLT_data_t (boost::property_tree::ptree &json,
-                skylark::base::context_t& context)
+                skylark::sketch::context_t& context)
         : base_t(json, context), _val_scale(1),
           _underlying_data(base_t::_N, base_t::_S, base_t::_context),
           _scale(std::sqrt(1.0 / base_t::_S)) {
@@ -72,13 +72,13 @@ struct ExpSemigroupRLT_data_t :
      * Constructor
      */
     ExpSemigroupRLT_data_t(int N, int S, typename base_t::value_type beta,
-        skylark::base::context_t& context)
+        skylark::sketch::context_t& context)
         : base_t(N, S, context, "ExpSemigroupRLT"), _beta(beta) {
         base_t::_val_scale = beta * beta / 2;
     }
 
     ExpSemigroupRLT_data_t(boost::property_tree::ptree &json,
-                           skylark::base::context_t& context)
+                           skylark::sketch::context_t& context)
         : base_t(json, context),
         _beta(json.get<ValueType>("sketch.beta")) {
 

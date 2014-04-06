@@ -6,6 +6,8 @@
 
 namespace skylark { namespace ml { namespace kernels {
 
+namespace skysk = skylark::sketch;
+
 struct gaussian_t {
 
     gaussian_t(int N, double sigma) : _N(N), _sigma(sigma) {
@@ -13,17 +15,17 @@ struct gaussian_t {
     }
 
     template<typename IT, typename OT>
-    sketch::sketch_transform_t<IT, OT> *create_rft(int S,
-        regular_feature_transform_tag, base::context_t& context) const {
+    skysk::sketch_transform_t<IT, OT> *create_rft(int S,
+        regular_feature_transform_tag, skysk::context_t& context) const {
         return
-            new sketch::GaussianRFT_t<IT, OT>(_N, S, _sigma, context);
+            new skysk::GaussianRFT_t<IT, OT>(_N, S, _sigma, context);
     }
 
     template<typename IT, typename OT>
-    sketch::sketch_transform_t<IT, OT> *create_rft(int S,
-        fast_feature_transform_tag, base::context_t& context) const {
+    skysk::sketch_transform_t<IT, OT> *create_rft(int S,
+        fast_feature_transform_tag, skysk::context_t& context) const {
         return
-            new sketch::FastGaussianRFT_t<IT, OT>(_N, S, _sigma, context);
+            new skysk::FastGaussianRFT_t<IT, OT>(_N, S, _sigma, context);
     }
 
     // TODO method for gram matrix ?
@@ -42,10 +44,10 @@ struct polynomial_t {
     }
 
     template<typename IT, typename OT>
-    sketch::sketch_transform_t<IT, OT> *create_rft(int S,
-        regular_feature_transform_tag, base::context_t& context) const {
+    skysk::sketch_transform_t<IT, OT> *create_rft(int S,
+        regular_feature_transform_tag, skysk::context_t& context) const {
         return
-            new sketch::PPT_t<IT, OT>(_N, S, _q, _c, _gamma, context);
+            new skysk::PPT_t<IT, OT>(_N, S, _q, _c, _gamma, context);
     }
 
     // TODO method for gram matrix ?
@@ -65,10 +67,10 @@ struct laplacian_t {
     }
 
     template<typename IT, typename OT>
-    sketch::sketch_transform_t<IT, OT> *create_rft(int S,
-        regular_feature_transform_tag, base::context_t& context) const {
+    skysk::sketch_transform_t<IT, OT> *create_rft(int S,
+        regular_feature_transform_tag, skysk::context_t& context) const {
         return
-            new sketch::LaplacianRFT_t<IT, OT>(_N, S, _sigma, context);
+            new skysk::LaplacianRFT_t<IT, OT>(_N, S, _sigma, context);
     }
 
     // TODO method for gram matrix ?
@@ -86,10 +88,10 @@ struct expsemigroup_t {
     }
 
     template<typename IT, typename OT>
-    sketch::sketch_transform_t<IT, OT> *create_rft(int S,
-        regular_feature_transform_tag, base::context_t& context) const {
+    skysk::sketch_transform_t<IT, OT> *create_rft(int S,
+        regular_feature_transform_tag, skysk::context_t& context) const {
         return
-            new sketch::ExpSemigroupRLT_t<IT, OT>(_N, S, _beta, context);
+            new skysk::ExpSemigroupRLT_t<IT, OT>(_N, S, _beta, context);
     }
 
     // TODO method for gram matrix ?

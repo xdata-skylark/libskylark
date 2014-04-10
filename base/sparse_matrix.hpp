@@ -25,20 +25,21 @@ struct sparse_matrix_t {
     typedef std::vector<coord_tuple_t> coords_t;
 
     sparse_matrix_t()
-        : _owndata(false), _dirty_struct(false), _height(0), _width(0), _nnz(0),
+        : _ownindptr(false), _ownindices(false), _ownvalues(false),
+          _dirty_struct(false), _height(0), _width(0), _nnz(0),
           _indptr(nullptr), _indices(nullptr), _values(nullptr)
     {}
 
     // The following relies on C++11
     sparse_matrix_t(const sparse_matrix_t<ValueType>&& A) :
-        _owndata(A._owndata), _dirty_struct(A._dirty_struct),
+        _ownindptr(A._ownindptr), _ownindices(A._ownindices),
+        _ownvalues(A._ownvalues), _dirty_struct(A._dirty_struct),
         _height(A._height), _width(A._width), _nnz(A._nnz),
         _indptr(A._indptr), _indices(A._indices), _values(A._values)
     {}
 
     ~sparse_matrix_t() {
-        if (_owndata)
-            _free_data();
+        _free_data();
     }
 
     bool struct_updated() const { return _dirty_struct; }
@@ -64,8 +65,16 @@ struct sparse_matrix_t {
      */
     void attach(const index_type *indptr, const index_type *indices, double *values,
         int nnz, int n_rows, int n_cols, bool _own = false) {
-        if (_owndata)
-            _free_data();
+        attach(indptr, indices, values, nnz, n_rows, n_cols, _own, _own, _own);
+    }
+
+    /**
+     * Attach new structure and values.
+     */
+    void attach(const index_type *indptr, const index_type *indices, double *values,
+        int nnz, int n_rows, int n_cols, 
+        bool ownindptr, bool ownindices, bool ownvalues) {
+        _free_data();
 
         _indptr = indptr;
         _indices = indices;
@@ -74,7 +83,10 @@ struct sparse_matrix_t {
         _width = n_cols;
         _height = n_rows;
 
-        _owndata = _own;
+        _ownindptr = ownindptr;
+        _ownindices = ownindices;
+        _ownvalues = ownvalues;
+
         _dirty_struct = true;
     }
 
@@ -185,7 +197,9 @@ struct sparse_matrix_t {
     }
 
 private:
-    bool _owndata;
+    bool _ownindptr;
+    bool _ownindices;
+    bool _ownvalues;
 
     bool _dirty_struct;
 
@@ -202,9 +216,12 @@ private:
     void operator=(const sparse_matrix_t&);
 
     void _free_data() {
-        delete[] _indptr;
-        delete[] _indices;
-        delete[] _values;
+        if (_ownindptr)
+            delete[] _indptr;
+        if (_ownindices)
+            delete[] _indices;
+        if (_ownvalues)
+            delete[] _values;
     }
 
     static bool _sort_coords(coord_tuple_t lhs, coord_tuple_t rhs) {

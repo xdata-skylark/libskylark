@@ -220,7 +220,7 @@ BlockADMMSolver<T>::~BlockADMMSolver() {
         if (OwnFeatureMaps)
             delete featureMaps[i];
     }
-    delete Cache;
+    delete[] Cache;
 }
 
 template <class T>

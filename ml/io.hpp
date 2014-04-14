@@ -1017,10 +1017,12 @@ void read_libsvm(skylark_context_t& context, string fName, sparse_matrix_t& X,
                // delete[] rowind;
                // delete[] values;
 
+                // TODO why not resize Y, and then just recive into buffer?
                 double* y = new double[t];
                 context.comm.recv(0, 7, y, t);
                 LocalMatrixType Y2(t, 1, y, 0);
                 Y = Y2; // copy
+                delete[] y;
 
                 //Y.Resize(t,1);
                 //Y.Attach(t,1,y,0);
@@ -1030,6 +1032,8 @@ void read_libsvm(skylark_context_t& context, string fName, sparse_matrix_t& X,
         }
     }
     //}
+
+    delete[] examples_allocation;
 
     double readtime = timer.elapsed();
     if (context.rank==0)

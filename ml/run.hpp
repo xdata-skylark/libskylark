@@ -190,6 +190,8 @@ int run(skylark::sketch::context_t& context, hilbert_options_t& options) {
         if(context.rank == 0) std::cout << "Test Accuracy = " <<  accuracy << " %" << std::endl;
     }
 
+    delete Solver;
+
     return 0;
 }
 

@@ -53,6 +53,8 @@ template <typename InputMatrixType,
           typename PenaltyType>
 struct regression_problem_t<InputMatrixType, linear_tag, PenaltyType> {
 
+    typedef InputMatrixType input_type;
+
     regression_problem_t(int m, int n, const InputMatrixType &input_matrix) :
         m(m), n(n), input_matrix(input_matrix) {
         // TODO verify size of input_matrix

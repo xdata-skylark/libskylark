@@ -4,7 +4,7 @@
 namespace skylark {
 namespace algorithms {
 
-// Tags for regression types
+///////////// Tags for regression types
 
 /// Tag for specifying a linear regression.
 struct linear_tag {};
@@ -17,7 +17,7 @@ struct kernel_tag {};
 
 // TODO more
 
-// Tags for penalty functions
+///////////// Tags for penalty functions
 
 /// Tag for specifying a L2 norm.
 struct l2_tag {};
@@ -35,10 +35,13 @@ struct lp_tag {};
  * template tags
  *
  * @tparam RegressionType Tag specificying regression type, like linear_tag.
- * @tparam RegressionType Tag specificying the penalty function, like l2_tag.
+ * @tparam PenaltyType Tag specificying the penalty function, like l2_tag.
  * @tparam InputMatrixType Specifies input matrix type.
  */
-template<typename RegressionType, typename PenaltyType, typename InputMatrixType>
+template<
+    typename InputMatrixType,
+    typename RegressionType,
+    typename PenaltyType>
 struct regression_problem_t {
 
 };
@@ -46,8 +49,9 @@ struct regression_problem_t {
 /**
  * Specialization for linear regression.
  */
-template <typename PenaltyType, typename InputMatrixType>
-struct regression_problem_t<linear_tag, PenaltyType, InputMatrixType> {
+template <typename InputMatrixType,
+          typename PenaltyType>
+struct regression_problem_t<InputMatrixType, linear_tag, PenaltyType> {
 
     regression_problem_t(int m, int n, const InputMatrixType &input_matrix) :
         m(m), n(n), input_matrix(input_matrix) {

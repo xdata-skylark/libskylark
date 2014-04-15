@@ -16,17 +16,17 @@ namespace skylark { namespace algorithms {
 template <typename MatrixType,
           typename MultiVectorType,
           typename KrylovMethod>
-struct exact_regressor_t<regression_problem_t<linear_tag, l2_tag,
-                                              MatrixType>,
-                         MultiVectorType,
-                         iterative_l2_solver_tag<KrylovMethod> > {
+struct exact_regressor_t<
+    regression_problem_t<MatrixType, linear_tag, l2_tag>,
+    MultiVectorType,
+    iterative_l2_solver_tag<KrylovMethod> > {
 
     typedef MatrixType matrix_type;
     typedef MultiVectorType rhs_type;
     typedef MultiVectorType multivec_type;
     typedef skylark::nla::iter_solver_op_t<matrix_type, multivec_type> iter_ops_t;
     typedef typename iter_ops_t::value_type value_type;
-    typedef regression_problem_t<linear_tag, l2_tag, matrix_type> problem_type;
+    typedef regression_problem_t<matrix_type, linear_tag, l2_tag> problem_type;
 
     const int m;
     const int n;

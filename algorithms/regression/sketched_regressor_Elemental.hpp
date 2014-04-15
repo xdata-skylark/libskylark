@@ -24,15 +24,15 @@ template <
     typename SketchedRegressionType,
     template <typename, typename> class TransformType,
     typename ExactAlgTag>
-class sketched_regressor_t<regression_problem_t<RegressionType, PenaltyType, 
-                                                InputType>,
-                           RhsType,
-                           SketchedRegressionType,
-                           elem::Matrix<
-                               typename utility::typer_t<InputType>::value_type >,
-                           TransformType,
-                           ExactAlgTag,
-                           sketch_and_solve_tag> {
+class sketched_regressor_t<
+    regression_problem_t<InputType, RegressionType, PenaltyType>,
+    RhsType,
+    SketchedRegressionType,
+    elem::Matrix<
+        typename utility::typer_t<InputType>::value_type >,
+    TransformType,
+    ExactAlgTag,
+    sketch_and_solve_tag> {
 
 public:
 
@@ -46,10 +46,12 @@ public:
     typedef PenaltyType penalty_type;
     typedef SketchedRegressionType sketched_regression_type;
 
-    typedef regression_problem_t<regression_type, penalty_type,
-                                 matrix_type> problem_type;
-    typedef regression_problem_t<sketched_regression_type, penalty_type,
-                                 sketch_type> sketched_problem_type;
+    typedef regression_problem_t<matrix_type,
+                                 regression_type,
+                                 penalty_type> problem_type;
+    typedef regression_problem_t<sketch_type,
+                                 sketched_regression_type,
+                                 penalty_type> sketched_problem_type;
 
 
     typedef exact_regressor_t<sketched_problem_type,
@@ -116,16 +118,16 @@ template <
     elem::Distribution CD, elem::Distribution RD,
     template <typename, typename> class TransformType,
     typename ExactAlgTag>
-class sketched_regressor_t<regression_problem_t<RegressionType, PenaltyType, 
-                                                InputType>,
-                           RhsType,
-                           SketchedRegressionType,
-                           elem::DistMatrix<
-                               typename utility::typer_t<InputType>::value_type,
-                               CD, RD >,
-                           TransformType,
-                           ExactAlgTag,
-                           sketch_and_solve_tag> {
+class sketched_regressor_t<
+    regression_problem_t<InputType, RegressionType, PenaltyType>,
+    RhsType,
+    SketchedRegressionType,
+    elem::DistMatrix<
+        typename utility::typer_t<InputType>::value_type,
+        CD, RD >,
+    TransformType,
+    ExactAlgTag,
+    sketch_and_solve_tag> {
 
 public:
 

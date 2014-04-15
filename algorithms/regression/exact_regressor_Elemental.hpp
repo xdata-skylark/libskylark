@@ -20,10 +20,10 @@ namespace algorithms {
  * constructing the regressoion.
  */
 template <typename ValueType>
-class exact_regressor_t<regression_problem_t<linear_tag, l2_tag,
-                                             elem::Matrix<ValueType> >,
-                        elem::Matrix<ValueType>,
-                        qr_l2_solver_tag> {
+class exact_regressor_t<
+    regression_problem_t<elem::Matrix<ValueType>, linear_tag, l2_tag>,
+    elem::Matrix<ValueType>,
+    qr_l2_solver_tag> {
 
 public:
 
@@ -31,8 +31,8 @@ public:
     typedef elem::Matrix<ValueType> rhs_type;
     typedef elem::Matrix<ValueType> sol_type;
 
-    typedef regression_problem_t<linear_tag, l2_tag, elem::Matrix<ValueType> >
-    problem_type;
+    typedef regression_problem_t<
+        elem::Matrix<ValueType>, linear_tag, l2_tag> problem_type;
 
 private:
     const int _m;
@@ -85,8 +85,8 @@ template <typename ValueType,
           elem::Distribution CD,
           elem::Distribution RD>
 class exact_regressor_t<
-    regression_problem_t<linear_tag, l2_tag,
-                         elem::DistMatrix<ValueType, CD, RD> >,
+    regression_problem_t<elem::DistMatrix<ValueType, CD, RD>,
+                         linear_tag, l2_tag>,
     elem::DistMatrix<ValueType, CD, RD>,
     qr_l2_solver_tag> {
 
@@ -96,9 +96,9 @@ public:
     typedef elem::DistMatrix<ValueType, CD, RD> rhs_type;
     typedef elem::DistMatrix<ValueType, CD, RD> sol_type;
 
-    typedef regression_problem_t<linear_tag,
-                                 l2_tag,  elem::DistMatrix<ValueType, CD, RD> >
-    problem_type;
+    typedef regression_problem_t<
+        elem::DistMatrix<ValueType, CD, RD>,
+        linear_tag, l2_tag> problem_type;
 
 private:
     const int _m;

@@ -37,12 +37,12 @@ public:
     /**
      * Regular constructor
      */
-    MMT_t(int N, int S, context_t& context)
+    MMT_t(int N, int S, base::context_t& context)
         : data_type(N, S, context), _transform(*this) {
 
     }
 
-    MMT_t(const std::string json_filename, context_t& context)
+    MMT_t(const std::string json_filename, base::context_t& context)
         : data_type(json_filename, context), _transform(*this) {
 
     }

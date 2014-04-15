@@ -3,7 +3,7 @@
 
 #include <elemental.hpp>
 
-#include "context.hpp"
+#include "../base/context.hpp"
 #include "transforms.hpp"
 #include "RFT_data.hpp"
 #include "../utility/exception.hpp"
@@ -40,9 +40,9 @@ private:
 
 protected:
     /**
-     * Regular constructor - allow creation only by subclasses
+     * Regular constructor - Allow creation only by subclasses
      */
-    RFT_t (int N, int S, skylark::sketch::context_t& context)
+    RFT_t (int N, int S, base::context_t& context)
         : data_type (N, S, context) {
 
     }
@@ -203,7 +203,7 @@ protected:
     /**
      * Regular constructor -- Allow only creation by subclasses
      */
-    RFT_t (int N, int S, skylark::sketch::context_t& context)
+    RFT_t (int N, int S, base::context_t& context)
         : data_type (N, S, context) {
 
     }

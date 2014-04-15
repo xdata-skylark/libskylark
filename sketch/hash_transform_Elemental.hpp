@@ -4,10 +4,11 @@
 #include <elemental.hpp>
 #include "../base/sparse_matrix.hpp"
 
-#include "context.hpp"
+#include "../base/context.hpp"
 #include "transforms.hpp"
 #include "hash_transform_data.hpp"
 #include "../utility/exception.hpp"
+#include "../utility/get_communicator.hpp"
 
 namespace skylark { namespace sketch {
 
@@ -42,8 +43,10 @@ struct hash_transform_t <
     /**
      * Regular constructor
      */
-    hash_transform_t (int N, int S, skylark::sketch::context_t& context) :
-        data_type (N, S, context) {}
+    hash_transform_t (int N, int S, base::context_t& context) :
+        data_type (N, S, context) {
+
+    }
 
     /**
      * Copy constructor
@@ -181,8 +184,10 @@ struct hash_transform_t <
     /**
      * Regular constructor
      */
-    hash_transform_t (int N, int S, skylark::sketch::context_t& context) :
-        data_type (N, S, context) {}
+    hash_transform_t (int N, int S, base::context_t& context) :
+        data_type (N, S, context) {
+
+    }
 
     /**
      * Copy constructor
@@ -338,8 +343,10 @@ struct hash_transform_t <
     /**
      * Regular constructor
      */
-    hash_transform_t (int N, int S, skylark::sketch::context_t& context) :
-        data_type (N, S, context) {}
+    hash_transform_t (int N, int S, base::context_t& context) :
+        data_type (N, S, context) {
+
+    }
 
     /**
      * Copy constructor
@@ -434,7 +441,7 @@ private:
         }
 
         // Pull everything to rank-0
-        boost::mpi::reduce (data_type::_context.comm,
+        boost::mpi::reduce (utility::get_communicator(A),
             SA_part.LockedBuffer(),
             SA_part.MemorySize(),
             sketch_of_A.Buffer(),
@@ -478,7 +485,7 @@ private:
         }
 
         // Pull everything to rank-0
-        boost::mpi::reduce (data_type::_context.comm,
+        boost::mpi::reduce (skylark::utility::get_communicator(A),
             SA_part.LockedBuffer(),
             SA_part.MemorySize(),
             sketch_of_A.Buffer(),

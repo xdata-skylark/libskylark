@@ -3,11 +3,11 @@
 
 #include "../base/base.hpp"
 
-#include "context.hpp"
 #include "transforms.hpp"
 #include "dense_transform_data.hpp"
 #include "../utility/comm.hpp"
 #include "../utility/exception.hpp"
+#include "../utility/get_communicator.hpp"
 
 
 namespace skylark { namespace sketch {
@@ -36,8 +36,10 @@ struct dense_transform_t <
     /**
      * Regular constructor
      */
-    dense_transform_t (int N, int S, skylark::sketch::context_t& context)
-        : data_type (N, S, context) {}
+    dense_transform_t (int N, int S, base::context_t& context)
+        : data_type (N, S, context) {
+
+    }
 
     /**
      * Copy constructor
@@ -77,7 +79,7 @@ private:
      */
     void apply_impl_local(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
-                          skylark::sketch::columnwise_tag) const {
+                          columnwise_tag) const {
 
         elem::Matrix<value_type> S(data_type::_S, data_type::_N);
         for(int j = 0; j < data_type::_N; j++) {
@@ -103,7 +105,7 @@ private:
      */
     void apply_impl_local(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
-                          skylark::sketch::rowwise_tag) const {
+                          rowwise_tag) const {
 
         elem::Matrix<value_type> S(data_type::_S, data_type::_N);
         for(int j = 0; j < data_type::_N; j++) {
@@ -148,8 +150,10 @@ struct dense_transform_t <
     /**
      * Regular constructor
      */
-    dense_transform_t (int N, int S, skylark::sketch::context_t& context)
-        : data_type (N, S, context) {}
+    dense_transform_t (int N, int S, base::context_t& context)
+        : data_type (N, S, context) {
+
+    }
 
     /**
      * Copy constructor
@@ -204,7 +208,7 @@ private:
      */
     void apply_impl_vdist (const matrix_type& A,
                            output_matrix_type& sketch_of_A,
-                           skylark::sketch::columnwise_tag) const {
+                           columnwise_tag) const {
 
         // Create space to hold partial SA --- for 1D, we need SA space
         elem::Matrix<value_type> SA_part (sketch_of_A.Height(),
@@ -249,9 +253,8 @@ private:
                 SA_part);
         }
 
-
         // Pull everything to rank-0
-        boost::mpi::reduce (data_type::_context.comm,
+        boost::mpi::reduce (utility::get_communicator(A),
                             SA_part.LockedBuffer(),
                             SA_part.MemorySize(),
                             sketch_of_A.Buffer(),
@@ -265,7 +268,7 @@ private:
       */
     void apply_impl_vdist(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
-                          skylark::sketch::rowwise_tag) const {
+                          rowwise_tag) const {
 
         // Create a distributed matrix to hold the output.
         //  We later gather to a dense matrix.
@@ -291,9 +294,8 @@ private:
             SA_dist.Matrix());
 
         // Collect at rank 0.
-        // TODO Grid rank 0 or context rank 0?
-        skylark::utility::collect_dist_matrix(data_type::_context.comm,
-            data_type::_context.rank == 0,
+        boost::mpi::communicator comm = utility::get_communicator(A);
+        utility::collect_dist_matrix(comm, comm.rank() == 0,
             SA_dist, sketch_of_A);
     }
 
@@ -324,8 +326,10 @@ struct dense_transform_t <
     /**
      * Regular Constructor
      */
-    dense_transform_t (int N, int S, skylark::sketch::context_t& context)
-        : data_type (N, S, context) {}
+    dense_transform_t (int N, int S, base::context_t& context)
+        : data_type (N, S, context) {
+
+    }
 
     /**
      * Copy constructor
@@ -380,7 +384,7 @@ private:
      */
     void apply_impl_vdist (const matrix_type& A,
                            output_matrix_type& sketch_of_A,
-                           skylark::sketch::columnwise_tag) const {
+                           columnwise_tag) const {
 
         // Redistribute matrix A: [VC/VR, STAR] -> [STAR, VC/VR]
         elem::DistMatrix<value_type, elem::STAR, ColDist> A_STAR_ColDist(A);
@@ -447,7 +451,7 @@ private:
       */
     void apply_impl_vdist(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
-                          skylark::sketch::rowwise_tag) const {
+                          rowwise_tag) const {
 
 
         // Create S. Since it is rowwise, we assume it can be held in memory.
@@ -496,8 +500,10 @@ struct dense_transform_t <
     /**
      * Regular constructor
      */
-    dense_transform_t (int N, int S, skylark::sketch::context_t& context)
-        : data_type (N, S, context) {}
+    dense_transform_t (int N, int S, base::context_t& context)
+        : data_type (N, S, context) {
+
+    }
 
     /**
      * Copy constructor
@@ -552,7 +558,7 @@ private:
      */
     void apply_impl_vdist (const matrix_type& A,
                            output_matrix_type& sketch_of_A,
-                           skylark::sketch::columnwise_tag) const {
+                           columnwise_tag) const {
 
         elem::DistMatrix<value_type,
                          elem::STAR, RowDist>
@@ -629,7 +635,7 @@ private:
       */
     void apply_impl_vdist(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
-                          skylark::sketch::rowwise_tag) const {
+                          rowwise_tag) const {
 
         // Redistribute matrix A: [STAR, VC/VR] -> [VC/VR, STAR]
         elem::DistMatrix<value_type, RowDist, elem::STAR> A_RowDist_STAR(A);
@@ -701,8 +707,10 @@ struct dense_transform_t <
     /**
      * Regular Constructor
      */
-    dense_transform_t (int N, int S, skylark::sketch::context_t& context)
-        : data_type (N, S, context) {}
+    dense_transform_t (int N, int S, base::context_t& context)
+        : data_type (N, S, context) {
+
+    }
 
     /**
      * Copy constructor
@@ -757,7 +765,7 @@ private:
      */
     void apply_impl_vdist (const matrix_type& A,
                            output_matrix_type& sketch_of_A,
-                           skylark::sketch::columnwise_tag) const {
+                           columnwise_tag) const {
 
         elem::Zero(sketch_of_A);
 
@@ -816,7 +824,7 @@ private:
       */
     void apply_impl_vdist(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
-                          skylark::sketch::rowwise_tag) const {
+                          rowwise_tag) const {
 
         // Redistribute matrix A: [STAR, VC/VR] -> [VC/VR, STAR]
         elem::DistMatrix<value_type, RowDist, elem::STAR> A_RowDist_STAR(A);
@@ -874,8 +882,10 @@ struct dense_transform_t <
     /**
      * Regular constructor
      */
-    dense_transform_t (int N, int S, skylark::sketch::context_t& context)
-        : data_type (N, S, context) {}
+    dense_transform_t (int N, int S, base::context_t& context)
+        : data_type (N, S, context) {
+
+    }
 
     /**
      * Copy constructor
@@ -920,7 +930,7 @@ private:
      */
     void apply_impl_dist (const matrix_type& A,
                           output_matrix_type& sketch_of_A,
-                          skylark::sketch::columnwise_tag) const {
+                          columnwise_tag) const {
         elem::DistMatrix<value_type> S(data_type::_S, data_type::_N);
         elem::DistMatrix<value_type,
                          elem::MC,
@@ -966,7 +976,7 @@ private:
      */
     void apply_impl_dist(const matrix_type& A,
                          output_matrix_type& sketch_of_A,
-                         skylark::sketch::rowwise_tag) const {
+                         rowwise_tag) const {
         elem::DistMatrix<value_type> S(data_type::_S, data_type::_N);
         elem::DistMatrix<value_type,
                          elem::MC,
@@ -1032,7 +1042,7 @@ struct dense_transform_t <
     /**
      * Regular constructor
      */
-    dense_transform_t (int N, int S, skylark::sketch::context_t& context)
+    dense_transform_t (int N, int S, base::context_t& context)
         : data_type (N, S, context) {
 
     }
@@ -1082,7 +1092,7 @@ private:
      */
     void apply_impl_dist (const matrix_type& A,
                           output_matrix_type& sketch_of_A,
-                          skylark::sketch::columnwise_tag) const {
+                          columnwise_tag) const {
 
         elem::DistMatrix<value_type> S(data_type::_S, data_type::_N);
 
@@ -1111,7 +1121,7 @@ private:
      */
     void apply_impl_dist(const matrix_type& A,
                          output_matrix_type& sketch_of_A,
-                         skylark::sketch::rowwise_tag) const {
+                         rowwise_tag) const {
 
         elem::DistMatrix<value_type> S(data_type::_S, data_type::_N);
 

@@ -4,7 +4,7 @@
 #include "../base/sparse_matrix.hpp"
 #include "../utility/exception.hpp"
 
-#include "context.hpp"
+#include "../base/context.hpp"
 #include "transforms.hpp"
 #include "hash_transform_data.hpp"
 
@@ -40,8 +40,10 @@ struct hash_transform_t <
     /**
      * Regular constructor
      */
-    hash_transform_t (int N, int S, skylark::sketch::context_t& context) :
-        data_type(N, S, context) {}
+    hash_transform_t (int N, int S, base::context_t& context) :
+        data_type(N, S, context) {
+
+    }
 
     /**
      * Copy constructor

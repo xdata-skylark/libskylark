@@ -15,6 +15,7 @@
 /*******************************************/
 namespace bmpi =  boost::mpi;
 namespace skys =  skylark::sketch;
+namespace skyb =  skylark::base;
 /*******************************************/
 
 /* These were declared as extern in utilities.hpp --- defining it here */
@@ -43,7 +44,7 @@ int main (int argc, char** argv) {
     elem::Grid grid (mpi_world);
 
     /* Initialize skylark */
-    skys::context_t context (int_params[RAND_SEED_INDEX], world);
+    skyb::context_t context (int_params[RAND_SEED_INDEX]);
 
     /* Create matrices A and B */
     elem::DistMatrix<double, elem::VR, elem::STAR> A(grid);

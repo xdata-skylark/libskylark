@@ -20,6 +20,7 @@
 /*******************************************/
 namespace bmpi =  boost::mpi;
 namespace skys =  skylark::sketch;
+namespace skyb =  skylark::base;
 namespace skyalg = skylark::algorithms;
 namespace skynla = skylark::nla;
 namespace skyutil = skylark::utility;
@@ -65,7 +66,7 @@ int main (int argc, char** argv) {
   parse_parameters (argc,argv);
 
   /* Initialize skylark */
-  skys::context_t context (int_params[RAND_SEED_INDEX], world);
+  skyb::context_t context (int_params[RAND_SEED_INDEX]);
 
   /** Only left sketch is supported for now */
   if (SKETCH_LEFT != int_params[SKETCH_DIRECTION_INDEX]) {

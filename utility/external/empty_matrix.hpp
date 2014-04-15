@@ -2,7 +2,6 @@
 #define SKYLARK_EMPTY_MATRIX_HPP
 
 #include "../../config.h"
-#include "../../sketch/context.hpp"
 
 #if SKYLARK_HAVE_COMBBLAS
 #include <CombBLAS.h>

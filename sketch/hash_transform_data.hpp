@@ -2,7 +2,7 @@
 #define SKYLARK_HASH_TRANSFORM_DATA_HPP
 
 #include <vector>
-#include "context.hpp"
+#include "../base/context.hpp"
 #include "../utility/randgen.hpp"
 #include "../utility/exception.hpp"
 
@@ -31,7 +31,7 @@ struct hash_transform_data_t : public transform_data_t {
      *  @param S
      *  @param context
      */
-    hash_transform_data_t (int N, int S, skylark::sketch::context_t& context,
+    hash_transform_data_t (int N, int S, skylark::base::context_t& context,
                            const std::string name = "")
         : transform_data_t(N, S, context, name) {
 
@@ -44,7 +44,7 @@ struct hash_transform_data_t : public transform_data_t {
      *  @param[in] context
      */
     hash_transform_data_t (const boost::property_tree::ptree &json,
-                           context_t& context)
+                           skylark::base::context_t& context)
         : transform_data_t(json, context) {
 
         _populate();

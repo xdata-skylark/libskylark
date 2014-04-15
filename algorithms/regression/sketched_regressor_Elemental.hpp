@@ -1,8 +1,10 @@
 #ifndef SKYLARK_SKETCHED_REGRESSOR_ELEMENTAL_HPP
 #define SKYLARK_SKETCHED_REGRESSOR_ELEMENTAL_HPP
 
+#include <boost/mpi.hpp>
 #include <elemental.hpp>
 
+#include "../../base/context.hpp"
 #include "regression_problem.hpp"
 #include "../../sketch/sketch.hpp"
 #include "utility/typer.hpp"
@@ -58,9 +60,11 @@ private:
 
 public:
     sketched_regressor_t(const problem_type& problem, int sketch_size,
-        sketch::context_t& context) :
-        _my_rank(context.rank), _sketch_size(sketch_size),
+        base::context_t& context) :
+        _my_rank(utility::get_communicator(problem.input_matrix)),
+        _sketch_size(sketch_size),
         _sketch(sketch_size, problem.n, context) {
+
         // TODO m < n
         TransformType<matrix_type, sketch_type> S(_sketch);
         // TODO For DistMatrix this will allocate on DefaultGrid...
@@ -139,9 +143,10 @@ private:
 
 public:
     sketched_regressor_t(const problem_type& problem, int sketch_size,
-        sketch::context_t& context) :
+        base::context_t& context) :
         _sketch_size(sketch_size),
         _sketch(sketch_size, problem.n, context) {
+
         // TODO m < n
         TransformType<matrix_type, sketch_type> S(_sketch);
         // TODO For DistMatrix this will allocate on DefaultGrid...

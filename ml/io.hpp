@@ -26,77 +26,110 @@ typedef elem::Matrix<double> LocalMatrixType;
 #ifdef SKYLARK_HAVE_HDF5
 #include <H5Cpp.h>
 
-int write_hdf5(string fName, elem::Matrix<double>& X,
-        elem::Matrix<double>& Y) {
+int write_hdf5(const boost::mpi::communicator &comm, 
+    string fName, elem::Matrix<double>& X,
+    elem::Matrix<double>& Y) {
 
-    try {
-
-        cout << "Writing to file " << fName << endl;
-
-        H5::Exception::dontPrint();
-
-        H5::H5File file( fName, H5F_ACC_TRUNC );
-        hsize_t dimsf[2]; // dataset dimensions
-        dimsf[0] = X.Width();
-        dimsf[1] = X.Height();
-        H5::DataSpace dataspace( 2, dimsf );
-
-       H5::FloatType datatype( H5::PredType::NATIVE_DOUBLE );
-       datatype.setOrder( H5T_ORDER_LE );
-       /*
-       * Create a new dataset within the file using defined dataspace and
-       * datatype and default dataset creation properties.
-       */
-       H5::DataSet dataset = file.createDataSet( "X", datatype, dataspace );
-       /*
-       * Write the data to the dataset using default memory space, file
-       * space, and transfer properties.
-       */
-       cout << "Writing X" << endl;
-       dataset.write( X.Buffer(), H5::PredType::NATIVE_DOUBLE );
+    int n, d;
+    boost::mpi::reduce(comm, X.Width(), n, std::plus<int>(), 0);
+    d = X.Height();
 
 
-       hsize_t dimsf2[1]; // dataset dimensions
-       dimsf2[0] = Y.Height();
-       H5::DataSpace dataspace2( 1, dimsf2 );
+    if (comm.rank() == 0) {
+        try {
+            cout << "Writing to file " << fName << " " << n << "x" << d << endl;
 
+            H5::Exception::dontPrint();
 
-       H5::DataSet dataset2 = file.createDataSet( "Y", datatype, dataspace2 );
-              /*
-              * Write the data to the dataset using default memory space, file
-              * space, and transfer properties.
-              */
-       cout << "Writing Y" << endl;
-       dataset2.write( Y.Buffer(), H5::PredType::NATIVE_DOUBLE );
+            H5::H5File file( fName, H5F_ACC_TRUNC );
+            H5::FloatType datatype( H5::PredType::NATIVE_DOUBLE );
+            datatype.setOrder( H5T_ORDER_LE );
 
-       file.close();
+            hsize_t dimsf[2]; // dataset dimensions
+            dimsf[0] = n;
+            dimsf[1] = d;
+            H5::DataSpace dataspaceX(2, dimsf);
+            H5::DataSet datasetX = file.createDataSet("X", datatype, dataspaceX);
 
+            dimsf[0] = n;
+            H5::DataSpace dataspaceY(1, dimsf);
+            H5::DataSet datasetY = file.createDataSet("Y", datatype, dataspaceY);
+
+            hsize_t stride[2]; // Stride of hyperslab
+            hsize_t block[2];  // Block sizes
+            hsize_t mstart[2];
+            stride[0] = 1; stride[1] = 1;
+            block[0] = 1; block[1] = 1;
+            mstart[0] = 0; mstart[0] = 0;
+
+            int sumn = 0;
+            for(int p = 0; p < comm.size(); p++) {
+                elem::Matrix<double> XX, YY;
+                if (p == 0) {
+                    XX = X;
+                    YY = Y;
+                } else {
+                    int nn;
+                    comm.recv(p, 1, nn);
+                    XX.Resize(d, nn);
+                    YY.Resize(nn, 1);
+                    comm.recv(p, 2, XX.Buffer(), nn * d);
+                    comm.recv(p, 3, YY.Buffer(), nn);
+
+                }
+
+                hsize_t start[2]; // Start of hyperslab
+                hsize_t count[2];  // Block count
+
+                start[0] = sumn; start[1] = 0;
+                count[0] = XX.Width(); count[1] = d;
+                dataspaceX.selectHyperslab(H5S_SELECT_SET, count, start, stride, block);
+                H5::DataSpace memspaceX(2, count);
+                memspaceX.selectHyperslab(H5S_SELECT_SET, count, mstart, stride, block);
+                datasetX.write(XX.Buffer(), H5::PredType::NATIVE_DOUBLE,
+                    memspaceX, dataspaceX);
+                dataspaceX.selectNone();
+                dataspaceY.selectHyperslab(H5S_SELECT_SET, count, start, stride, block);
+                H5::DataSpace memspaceY(1, count);
+                memspaceX.selectHyperslab(H5S_SELECT_SET, count, mstart, stride, block);
+                datasetY.write(YY.Buffer(), H5::PredType::NATIVE_DOUBLE,
+                    memspaceY, dataspaceY);
+                dataspaceY.selectNone();
+                file.flush(H5F_SCOPE_GLOBAL);
+                sumn += XX.Width();
+            }
+
+            file.close();
+        }
+        // catch failure caused by the H5File operations
+        catch( H5::FileIException error ) {
+            error.printError();
+            return -1;
+        }
+        // catch failure caused by the DataSet operations
+        catch( H5::DataSetIException error ) {
+            error.printError();
+            return -1;
+        }
+        // catch failure caused by the DataSpace operations
+        catch( H5::DataSpaceIException error ) {
+            error.printError();
+            return -1;
+        }
+        // catch failure caused by the DataSpace operations
+        catch( H5::DataTypeIException error ) {
+            error.printError();
+            return -1;
+        }
+    } else {
+        comm.send(0, 1, X.Width());
+        comm.send(0, 2, X.Buffer(), X.Width() * X.Height());
+        comm.send(0, 3, Y.Buffer(), Y.Height());
     }
-   // catch failure caused by the H5File operations
-      catch( H5::FileIException error )
-      {
-      error.printError();
-      return -1;
-      }
-      // catch failure caused by the DataSet operations
-      catch( H5::DataSetIException error )
-      {
-      error.printError();
-      return -1;
-      }
-      // catch failure caused by the DataSpace operations
-      catch( H5::DataSpaceIException error )
-      {
-      error.printError();
-      return -1;
-      }
-      // catch failure caused by the DataSpace operations
-      catch( H5::DataTypeIException error )
-      {
-      error.printError();
-      return -1;
-      }
-  return 0; // successfully terminated
+
+    comm.barrier();
+
+    return 0; // successfully terminated
 }
 
 int write_hdf5(string fName, sparse_matrix_t& X,
@@ -422,7 +455,6 @@ void read_hdf5(const boost::mpi::communicator &comm, string fName,
        H5::DataSet datasetY = file.openDataSet( "Y" );
        H5::DataSpace filespaceY = datasetY.getSpace();
        hsize_t dimsY[1]; // dataset dimensions
-       rank = filespaceX.getSimpleExtentDims( dimsY );
 
        hsize_t countX[2];
        hsize_t countY[1];
@@ -500,10 +532,6 @@ void read_hdf5(const boost::mpi::communicator &comm, string fName,
         double readtime = timer.elapsed();
         if (rank==0)
                 cout << "Read Matrix with dimensions: " << n << " by " << d << " (" << readtime << "secs)" << endl;
-
-
-        //elem::Display(Xlocal);
-
 }
 #endif
 

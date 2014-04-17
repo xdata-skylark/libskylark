@@ -31,7 +31,6 @@ int main (int argc, char** argv) {
     int mode = atoi(argv[3]);
     int min_d  = atoi(argv[4]);
 
-    std::cout << "input: " << inputfile << " hdf5file:" << hdf5file << " mode:" <<  mode << " min_d:" << min_d << std::endl;
     boost::mpi::environment env (argc, argv);
 
     // get communicator
@@ -41,12 +40,14 @@ int main (int argc, char** argv) {
     elem::Initialize (argc, argv);
 
 
+    if (rank == 0)
+        std::cout << "input: " << inputfile << " hdf5file:" << hdf5file << " mode:" <<  mode << " min_d:" << min_d << std::endl;
+
     if (mode==0) { // dense
     	LocalMatrixType X;
     	LocalMatrixType Y;
     	read_libsvm(comm, inputfile, X, Y, min_d);
-    	if(rank==0)
-    	        write_hdf5(hdf5file, X,Y);
+        write_hdf5(comm, hdf5file, X,Y);
     } else {
     	sparse_matrix_t X;
     	LocalMatrixType Y;

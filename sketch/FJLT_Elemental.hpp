@@ -29,8 +29,9 @@ struct FJLT_t <
     typedef utility::rademacher_distribution_t<value_type>
     underlying_value_distribution_type;
 
-protected:
     typedef FJLT_data_t<value_type> data_type;
+
+protected:
     typedef RFUT_t<intermediate_type,
                    transform_type,
                    underlying_value_distribution_type> underlying_type;

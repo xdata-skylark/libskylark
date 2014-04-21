@@ -11,6 +11,12 @@ namespace skyb  =  skylark::base;
 namespace skyalg = skylark::algorithms;
 /*******************************************/
 
+// Parameters
+const int m = 2000;
+const int n = 10;
+const int t = 500;
+#define SKETCH_TYPE skysk::FJLT_t
+
 typedef elem::DistMatrix<double> MatrixType1;
 typedef elem::DistMatrix<double, elem::VC, elem::STAR> MatrixType;
 typedef elem::Matrix<double> SketchType;
@@ -34,13 +40,9 @@ typedef skyalg::sketched_regressor_t<
     RegressionProblemType, MatrixType,
     skyalg::linear_tag,
     SketchType,
-    skysk::CWT_t,
+    SKETCH_TYPE,
     skyalg::qr_l2_solver_tag,
     skyalg::sketch_and_solve_tag> SketchedRegressorType;
-
-const int m = 2000;
-const int n = 10;
-const int t = 500;
 
 // TODO move to base layer.
 template<typename T, elem::Distribution U, elem::Distribution V>
@@ -49,20 +51,17 @@ inline T Nrm2(const elem::DistMatrix<T, U, V>& x)
     return elem::FrobeniusNorm(x);
 }
 
-template<typename MatrixType>
-void check_solution(
-    const skyalg::regression_problem_t<
-        MatrixType, skyalg::linear_tag, skyalg::l2_tag, skyalg::no_reg_tag> &pr,
-    const MatrixType &b, const MatrixType &x,
+template<typename ProblemType, typename RhsType, typename SolType>
+void check_solution(const ProblemType &pr, const RhsType &b, const SolType &x,
     int rank) {
-    MatrixType r(b.Grid());
+    RhsType r(b);
     r = b;
     elem::Gemv(elem::NORMAL, -1.0, pr.input_matrix, x, 1.0, r);
     double res = elem::Nrm2(r);
     if (rank == 0)
         std::cout << "Residual for exact solve is " << res << std::endl;
 
-    MatrixType Atr(x.Height(), x.Width(), x.Grid());
+    RhsType Atr(x.Height(), x.Width(), x.Grid());
     elem::Gemv(elem::TRANSPOSE, 1.0, pr.input_matrix, r, 0.0, Atr);
     double resAtr = elem::Nrm2(Atr);
     if (rank == 0)
@@ -97,7 +96,7 @@ int main(int argc, char** argv) {
     ExactRegressorType exact_regr(problem1);
     exact_regr.solve(b1, x1);
     check_solution(problem1, b1, x1, rank);
-
+   
     // Using sketch-and-solve
     SketchedRegressorType sketched_regr(problem, t, context);
     SketchedRegressorType::sol_type x2(n, 1);

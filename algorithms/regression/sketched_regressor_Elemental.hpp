@@ -77,7 +77,7 @@ public:
         base::context_t& context) :
         _my_rank(utility::get_communicator(problem.input_matrix)),
         _sketch_size(sketch_size),
-        _sketch(sketch_size, problem.n, context) {
+        _sketch(problem.m, sketch_size, context) {
 
         // TODO m < n
         TransformType<matrix_type, sketch_type> S(_sketch);
@@ -171,7 +171,7 @@ public:
     sketched_regressor_t(const problem_type& problem, int sketch_size,
         base::context_t& context) :
         _sketch_size(sketch_size),
-        _sketch(sketch_size, problem.n, context) {
+        _sketch(problem.m, sketch_size, context) {
 
         // TODO m < n
         TransformType<matrix_type, sketch_type> S(_sketch);

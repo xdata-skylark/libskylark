@@ -25,23 +25,23 @@ struct dense_transform_data_t : public transform_data_t {
     /**
      * Regular constructor
      */
-    dense_transform_data_t (int N, int S, skylark::base::context_t& context,
-                            std::string name = "")
-        : transform_data_t(N, S, context, name),
+    dense_transform_data_t (int N, int S, skylark::base::context_t* context,
+                            std::string type = "")
+        : transform_data_t(N, S, context, type),
           distribution(),
           random_samples(
-                  context.allocate_random_samples_array(N * S, distribution)) {
+                  context->allocate_random_samples_array(N * S, distribution)) {
 
         // No scaling in "raw" form
         scale = 1.0;
     }
 
-    dense_transform_data_t (const boost::property_tree::ptree json,
-                            skylark::base::context_t& context)
-        : transform_data_t(json, context),
+    dense_transform_data_t (const boost::property_tree::ptree json)
+        : transform_data_t(json),
           distribution(),
           random_samples(
-            _context.allocate_random_samples_array(_N * _S, distribution)) {
+            _creation_context->allocate_random_samples_array(
+                _N * _S, distribution)) {
 
         // No scaling in "raw" form
         scale = 1.0;

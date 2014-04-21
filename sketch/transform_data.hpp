@@ -13,23 +13,24 @@ namespace skylark { namespace sketch {
 //FIXME: Haim wants to call this sketch_transform_data_t
 struct transform_data_t {
 
-    transform_data_t (int N, int S, base::context_t& context,
-                      const std::string name = "")
-        : _N(N), _S(S), _context(context), _name(name), _version("0.1"),
-        _stream_start(context.get_counter())
+    transform_data_t (int N, int S, base::context_t* context,
+                      const std::string type = "")
+        : _N(N), _S(S), _creation_context(context), _type(type),
+        _owns_data(false), _version("0.1"),
+        _stream_start(context->get_counter())
     {}
 
     /**
      *  Load a serialized sketch from a file.
      *  @param[in] property tree for this sketch
-     *  @param[in] context
      */
-    transform_data_t (const boost::property_tree::ptree& json,
-        base::context_t& context)
-        : _context(context), _version("0.1") {
+    transform_data_t (const boost::property_tree::ptree& json)
+        : _owns_data(true), _version("0.1") {
 
-        // overwrite/set context to draw correct random samples
-        _context = base::context_t(json);
+        std::cout << "HERE2" << std::endl;
+        // create a fresh context for this sketch
+        _creation_context = new base::context_t(json);
+        _stream_start     = _creation_context->get_counter();
 
         std::vector<int> dims;
         BOOST_FOREACH(const boost::property_tree::ptree::value_type &v,
@@ -42,8 +43,15 @@ struct transform_data_t {
         }
         _N = dims[0]; _S = dims[1];
 
-        _name = json.get<std::string>("sketch.name");
-        _stream_start = context.get_counter();
+        _type = json.get<std::string>("sketch.type");
+    }
+
+    ~transform_data_t() {
+        std::cout << "HERE3: " << _type << std::endl;
+        if(_owns_data) {
+            std::cout << "HERE: " << _type << std::endl;
+            delete _creation_context;
+        }
     }
 
     friend std::istream& operator>>(std::istream &in, transform_data_t &data);
@@ -58,11 +66,12 @@ struct transform_data_t {
 protected:
     int _N; /**< Input dimension  */
     int _S; /**< Output dimension  */
-    base::context_t& _context; /**< Context for this sketch */
+    base::context_t* _creation_context; /**< Context for this sketch */
 
-    std::string _name; /**< sketch name */
+    std::string _type; /**< sketch type */
 
 private:
+    bool _owns_data;
     const std::string _version;
     size_t _stream_start; /**< Remember where the random stream started */
 };
@@ -71,7 +80,7 @@ private:
 boost::property_tree::ptree& operator<<(boost::property_tree::ptree &sk,
                                         const transform_data_t &data) {
 
-    sk.put("sketch.name", data._name);
+    sk.put("sketch.type", data._type);
     sk.put("sketch.version", data._version);
 
     boost::property_tree::ptree size;
@@ -83,7 +92,7 @@ boost::property_tree::ptree& operator<<(boost::property_tree::ptree &sk,
     sk.add_child("sketch.size", size);
 
     sk.put("sketch.context.counter", data._stream_start);
-    sk << data._context;
+    sk << *(data._creation_context);
 
     return sk;
 }

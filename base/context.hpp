@@ -22,6 +22,9 @@ struct context_t {
         _counter(0),
         _seed(seed) {}
 
+    //context_t (context_t&& ctxt) :
+        //_counter(std::move(ctxt._counter)), _seed(std::move(ctxt._seed))
+    //{}
 
     /**
      * Load context from a serialized JSON structure.
@@ -141,9 +144,9 @@ struct context_t {
 private:
 
     /// Disable copy constructor as this is error prone for context
-    context_t(const context_t &other) {
-
-    }
+    context_t(const context_t&);
+    /// Disable assignment operator as this is error prone for context
+    context_t& operator=(const context_t&);
 
     /// Internal counter identifying the start of next stream of random numbers
     size_t _counter;

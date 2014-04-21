@@ -48,9 +48,8 @@ struct WZT_data_t : public hash_transform_data_t<
         _populate();
     }
 
-    WZT_data_t(const boost::property_tree::ptree &sketch,
-               skylark::base::context_t& context)
-        : base_t(sketch, context),
+    WZT_data_t(const boost::property_tree::ptree &sketch)
+        : base_t(sketch),
         _P(sketch.get<double>("sketch.p")) {
 
         _populate();
@@ -74,7 +73,7 @@ private:
         // well.
         utility::rademacher_distribution_t<ValueType> pmdist;
         std::vector<ValueType> pmvals =
-            base_t::_context.generate_random_samples_array(base_t::_N, pmdist);
+            base_t::_creation_context->generate_random_samples_array(base_t::_N, pmdist);
         for(int i = 0; i < base_t::_N; i++)
              base_t::row_value[i] =
                  pmvals[i] * pow(1.0 / base_t::row_value[i], 1.0 / _P);

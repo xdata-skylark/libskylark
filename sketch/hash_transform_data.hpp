@@ -31,9 +31,9 @@ struct hash_transform_data_t : public transform_data_t {
      *  @param S
      *  @param context
      */
-    hash_transform_data_t (int N, int S, skylark::base::context_t& context,
-                           const std::string name = "")
-        : transform_data_t(N, S, context, name) {
+    hash_transform_data_t (int N, int S, skylark::base::context_t* context,
+                           const std::string type = "")
+        : transform_data_t(N, S, context, type) {
 
         _populate();
     }
@@ -41,11 +41,9 @@ struct hash_transform_data_t : public transform_data_t {
     /**
      *  Load a serialized sketch from a file.
      *  @param[in] json_filename
-     *  @param[in] context
      */
-    hash_transform_data_t (const boost::property_tree::ptree &json,
-                           skylark::base::context_t& context)
-        : transform_data_t(json, context) {
+    hash_transform_data_t (const boost::property_tree::ptree &json)
+        : transform_data_t(json) {
 
         _populate();
     }
@@ -60,9 +58,9 @@ private:
         idx_distribution_type row_idx_distribution(0, _S - 1);
         value_distribution_type row_value_distribution;
 
-        row_idx   = _context.generate_random_samples_array(
+        row_idx   = _creation_context->generate_random_samples_array(
                         _N, row_idx_distribution);
-        row_value = _context.generate_random_samples_array(
+        row_value = _creation_context->generate_random_samples_array(
                         _N, row_value_distribution);
     }
 };

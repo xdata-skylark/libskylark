@@ -13,6 +13,8 @@ namespace skylark { namespace utility {
 
 /**
  *  Simple archive for sketches using a Boost property tree.
+ *
+ *  Storage container for json sketch descriptions.
  */
 struct sketch_archive_t {
 
@@ -74,7 +76,7 @@ std::istream& operator>>(std::istream &in, sketch_archive_t &ar) {
 
         boost::property_tree::ptree sketch = child.second;
         ar._serialized_sketches.push_back(sketch);
-        ar._sketch_types.push_back(sketch.get<std::string>("sketch.name"));
+        ar._sketch_types.push_back(sketch.get<std::string>("sketch.type"));
     }
 
     return in;

@@ -298,7 +298,7 @@ SKYLARK_EXTERN_API int sl_load_sketch_transform(base::context_t *ctxt,
     SKYLARK_BEGIN_TRY()                                             \
         if (type == T)                                              \
             *sketch = new sketchc::sketch_transform_t(type,         \
-                          new C(json, *ctxt));                      \
+                          new C(json));                             \
     SKYLARK_END_TRY()                                               \
     SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
 

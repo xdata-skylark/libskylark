@@ -36,16 +36,15 @@ struct FJLT_data_t : public transform_data_t {
     FJLT_data_t (int N, int S, skylark::base::context_t& context)
         : base_t(N, S, context, "FJLT"),
           samples(base_t::_S),
-          underlying_data(base_t::_N, base_t::_context) {
+          underlying_data(base_t::_N, base_t::_creation_context) {
 
         _populate();
     }
 
-    FJLT_data_t (boost::property_tree::ptree &json,
-                 skylark::base::context_t& context)
-        : base_t(json, context),
+    FJLT_data_t (boost::property_tree::ptree &json)
+        : base_t(json),
           samples(base_t::_S),
-          underlying_data(base_t::_N, base_t::_context) {
+          underlying_data(base_t::_N, base_t::_creation_context) {
 
         _populate();
     }
@@ -59,7 +58,8 @@ protected:
     void _populate() {
 
         value_distribution_type distribution(0, base_t::_N - 1);
-        samples = _context.generate_random_samples_array(base_t::_S, distribution);
+        samples = base_t::_creation_context->generate_random_samples_array(
+                base_t::_S, distribution);
     }
 
   };

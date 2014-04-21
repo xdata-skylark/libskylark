@@ -45,9 +45,8 @@ struct FastRFT_data_t : public transform_data_t {
         _populate();
     }
 
-    FastRFT_data_t (boost::property_tree::ptree &json,
-                    skylark::base::context_t& context)
-        : base_t(json, context), _NB(base_t::_N),
+    FastRFT_data_t (boost::property_tree::ptree &json)
+        : base_t(json), _NB(base_t::_N),
           numblks(1 + ((base_t::_S - 1) / _NB)),
           scale(std::sqrt(2.0 / base_t::_S)),
           Sm(numblks * _NB)  {
@@ -70,13 +69,13 @@ protected:
     void _populate() {
         const double pi = boost::math::constants::pi<value_type>();
         bstrand::uniform_real_distribution<value_type> dist_shifts(0, 2 * pi);
-        shifts = base_t::_context.generate_random_samples_array(
+        shifts = base_t::_creation_context->generate_random_samples_array(
                     base_t::_S, dist_shifts);
         utility::rademacher_distribution_t<value_type> dist_B;
 
-        B = base_t::_context.generate_random_samples_array(numblks * _NB, dist_B);
+        B = base_t::_creation_context->generate_random_samples_array(numblks * _NB, dist_B);
         bstrand::normal_distribution<value_type> dist_G;
-        G = base_t::_context.generate_random_samples_array(numblks * _NB, dist_G);
+        G = base_t::_creation_context->generate_random_samples_array(numblks * _NB, dist_G);
 
 
         // For the permutation we use Fisher-Yates (Knuth)
@@ -84,7 +83,7 @@ protected:
         // the scheme here might have a small bias if NB is small
         // (has to be really small).
         bstrand::uniform_int_distribution<int> dist_P(0);
-        P = base_t::_context.generate_random_samples_array(
+        P = base_t::_creation_context->generate_random_samples_array(
                 numblks * (_NB - 1), dist_P);
         for(int i = 0; i < numblks; i++)
             for(int j = _NB - 1; j >= 1; j--)
@@ -129,9 +128,8 @@ struct FastGaussianRFT_data_t :
                 1.0 / (_sigma * std::sqrt(base_t::_N)));
     }
 
-    FastGaussianRFT_data_t(boost::property_tree::ptree &json,
-                           skylark::base::context_t& context)
-        : base_t(json, context),
+    FastGaussianRFT_data_t(boost::property_tree::ptree &json)
+        : base_t(json),
         _sigma(json.get<value_type>("sketch.sigma")) {
 
         std::fill(base_t::Sm.begin(), base_t::Sm.end(),

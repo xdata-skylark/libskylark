@@ -37,17 +37,16 @@ struct RLT_data_t : public transform_data_t {
      * Regular constructor
      */
     RLT_data_t (int N, int S, skylark::base::context_t& context,
-                std::string name)
-        : base_t(N, S, context, name), _val_scale(1),
-          _underlying_data(base_t::_N, base_t::_S, base_t::_context),
+                std::string type)
+        : base_t(N, S, context, type), _val_scale(1),
+          _underlying_data(base_t::_N, base_t::_S, base_t::_creation_context),
           _scale(std::sqrt(1.0 / base_t::_S)) {
 
     }
 
-    RLT_data_t (boost::property_tree::ptree &json,
-                skylark::base::context_t& context)
-        : base_t(json, context), _val_scale(1),
-          _underlying_data(base_t::_N, base_t::_S, base_t::_context),
+    RLT_data_t (boost::property_tree::ptree &json)
+        : base_t(json), _val_scale(1),
+          _underlying_data(base_t::_N, base_t::_S, base_t::_creation_context),
           _scale(std::sqrt(1.0 / base_t::_S)) {
 
     }
@@ -77,9 +76,8 @@ struct ExpSemigroupRLT_data_t :
         base_t::_val_scale = beta * beta / 2;
     }
 
-    ExpSemigroupRLT_data_t(boost::property_tree::ptree &json,
-                           skylark::base::context_t& context)
-        : base_t(json, context),
+    ExpSemigroupRLT_data_t(boost::property_tree::ptree &json)
+        : base_t(json),
         _beta(json.get<ValueType>("sketch.beta")) {
 
         base_t::_val_scale = _beta * _beta / 2;

@@ -15,11 +15,15 @@ typedef elem::DistMatrix<double> MatrixType1;
 typedef elem::DistMatrix<double, elem::VC, elem::STAR> MatrixType;
 typedef elem::Matrix<double> SketchType;
 
-typedef skyalg::regression_problem_t<
-    MatrixType, skyalg::linear_tag, skyalg::l2_tag> RegressionProblemType;
+typedef skyalg::regression_problem_t<MatrixType,
+                                     skyalg::linear_tag,
+                                     skyalg::l2_tag,
+                                     skyalg::no_reg_tag> RegressionProblemType;
 
-typedef skyalg::regression_problem_t<
-    MatrixType1, skyalg::linear_tag, skyalg::l2_tag> RegressionProblemType1;
+typedef skyalg::regression_problem_t<MatrixType1,
+                                     skyalg::linear_tag,
+                                     skyalg::l2_tag,
+                                     skyalg::no_reg_tag> RegressionProblemType1;
 
 typedef skyalg::exact_regressor_t<
     RegressionProblemType1,
@@ -48,7 +52,7 @@ inline T Nrm2(const elem::DistMatrix<T, U, V>& x)
 template<typename MatrixType>
 void check_solution(
     const skyalg::regression_problem_t<
-        MatrixType, skyalg::linear_tag, skyalg::l2_tag> &pr,
+        MatrixType, skyalg::linear_tag, skyalg::l2_tag, skyalg::no_reg_tag> &pr,
     const MatrixType &b, const MatrixType &x,
     int rank) {
     MatrixType r(b.Grid());

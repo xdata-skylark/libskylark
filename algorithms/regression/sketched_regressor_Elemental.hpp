@@ -19,13 +19,15 @@ namespace algorithms {
 template <
     typename RegressionType,
     typename PenaltyType,
+    typename RegularizationType,
     typename InputType,
     typename RhsType,
     typename SketchedRegressionType,
     template <typename, typename> class TransformType,
     typename ExactAlgTag>
 class sketched_regressor_t<
-    regression_problem_t<InputType, RegressionType, PenaltyType>,
+    regression_problem_t<InputType,
+                         RegressionType, PenaltyType, RegularizationType>,
     RhsType,
     SketchedRegressionType,
     elem::Matrix<
@@ -44,14 +46,15 @@ public:
 
     typedef RegressionType regression_type;
     typedef PenaltyType penalty_type;
+    typedef RegularizationType regularization_type;
     typedef SketchedRegressionType sketched_regression_type;
 
     typedef regression_problem_t<matrix_type,
-                                 regression_type,
-                                 penalty_type> problem_type;
+                                 regression_type, penalty_type,
+                                 regularization_type> problem_type;
     typedef regression_problem_t<sketch_type,
-                                 sketched_regression_type,
-                                 penalty_type> sketched_problem_type;
+                                 sketched_regression_type, penalty_type,
+                                 regularization_type> sketched_problem_type;
 
 
     typedef exact_regressor_t<sketched_problem_type,
@@ -112,6 +115,7 @@ public:
 template <
     typename RegressionType,
     typename PenaltyType,
+    typename RegularizationType,
     typename InputType,
     typename RhsType,
     typename SketchedRegressionType,
@@ -119,7 +123,8 @@ template <
     template <typename, typename> class TransformType,
     typename ExactAlgTag>
 class sketched_regressor_t<
-    regression_problem_t<InputType, RegressionType, PenaltyType>,
+    regression_problem_t<InputType,
+                         RegressionType, PenaltyType, RegularizationType>,
     RhsType,
     SketchedRegressionType,
     elem::DistMatrix<
@@ -139,12 +144,15 @@ public:
 
     typedef RegressionType regression_type;
     typedef PenaltyType penalty_type;
+    typedef RegularizationType regularization_type;
     typedef SketchedRegressionType sketched_regression_type;
 
-    typedef regression_problem_t<regression_type, penalty_type,
-                                 matrix_type> problem_type;
-    typedef regression_problem_t<sketched_regression_type, penalty_type,
-                                 sketch_type> sketched_problem_type;
+    typedef regression_problem_t<matrix_type,
+                                 regression_type, penalty_type,
+                                 regularization_type> problem_type;
+    typedef regression_problem_t<sketch_type,
+                                 sketched_regression_type, penalty_type,
+                                 regularization_type> sketched_problem_type;
 
     typedef exact_regressor_t<sketched_problem_type,
                               sketch_type,

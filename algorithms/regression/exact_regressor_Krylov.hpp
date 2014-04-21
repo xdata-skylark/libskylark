@@ -17,7 +17,7 @@ template <typename MatrixType,
           typename MultiVectorType,
           typename KrylovMethod>
 struct exact_regressor_t<
-    regression_problem_t<MatrixType, linear_tag, l2_tag>,
+    regression_problem_t<MatrixType, linear_tag, l2_tag, no_reg_tag>,
     MultiVectorType,
     iterative_l2_solver_tag<KrylovMethod> > {
 
@@ -26,7 +26,8 @@ struct exact_regressor_t<
     typedef MultiVectorType multivec_type;
     typedef skylark::nla::iter_solver_op_t<matrix_type, multivec_type> iter_ops_t;
     typedef typename iter_ops_t::value_type value_type;
-    typedef regression_problem_t<matrix_type, linear_tag, l2_tag> problem_type;
+    typedef regression_problem_t<matrix_type,
+                                 linear_tag, l2_tag, no_reg_tag> problem_type;
 
     const int m;
     const int n;

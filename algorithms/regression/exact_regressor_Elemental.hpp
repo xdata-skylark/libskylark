@@ -5,13 +5,12 @@
 
 #include "regression_problem.hpp"
 
-
 namespace skylark {
 namespace algorithms {
 
 /**
  * Exact regressor (solves the problem exactly) for L2 linear regression
- * on a a dense local matrix.
+ * on a dense local matrix.
  *
  * A regressor accepts a right-hand side and output a solution
  * the the regression problem.
@@ -21,7 +20,8 @@ namespace algorithms {
  */
 template <typename ValueType>
 class exact_regressor_t<
-    regression_problem_t<elem::Matrix<ValueType>, linear_tag, l2_tag>,
+    regression_problem_t<elem::Matrix<ValueType>,
+                         linear_tag, l2_tag, no_reg_tag>,
     elem::Matrix<ValueType>,
     qr_l2_solver_tag> {
 
@@ -32,7 +32,7 @@ public:
     typedef elem::Matrix<ValueType> sol_type;
 
     typedef regression_problem_t<
-        elem::Matrix<ValueType>, linear_tag, l2_tag> problem_type;
+        elem::Matrix<ValueType>, linear_tag, l2_tag, no_reg_tag> problem_type;
 
 private:
     const int _m;
@@ -86,7 +86,7 @@ template <typename ValueType,
           elem::Distribution RD>
 class exact_regressor_t<
     regression_problem_t<elem::DistMatrix<ValueType, CD, RD>,
-                         linear_tag, l2_tag>,
+                         linear_tag, l2_tag, no_reg_tag>,
     elem::DistMatrix<ValueType, CD, RD>,
     qr_l2_solver_tag> {
 
@@ -98,7 +98,7 @@ public:
 
     typedef regression_problem_t<
         elem::DistMatrix<ValueType, CD, RD>,
-        linear_tag, l2_tag> problem_type;
+        linear_tag, l2_tag, no_reg_tag> problem_type;
 
 private:
     const int _m;

@@ -22,6 +22,7 @@ template <
     typename RegularizationType,
     typename InputType,
     typename RhsType,
+    typename SolType,
     typename SketchedRegressionType,
     template <typename, typename> class TransformType,
     typename ExactAlgTag>
@@ -29,7 +30,10 @@ class sketched_regressor_t<
     regression_problem_t<InputType,
                          RegressionType, PenaltyType, RegularizationType>,
     RhsType,
+    SolType,
     SketchedRegressionType,
+    elem::Matrix<
+        typename utility::typer_t<InputType>::value_type >,
     elem::Matrix<
         typename utility::typer_t<InputType>::value_type >,
     TransformType,
@@ -41,8 +45,10 @@ public:
     typedef typename utility::typer_t<InputType>::value_type value_type;
 
     typedef elem::Matrix<value_type> sketch_type;
+    typedef elem::Matrix<value_type> sketch_rhs_type;
     typedef InputType matrix_type;
     typedef RhsType rhs_type;
+    typedef SolType sol_type;
 
     typedef RegressionType regression_type;
     typedef PenaltyType penalty_type;
@@ -58,10 +64,9 @@ public:
 
 
     typedef exact_regressor_t<sketched_problem_type,
-                              sketch_type,
+                              sketch_rhs_type,
+                              sol_type,
                               ExactAlgTag> underlying_regressor_type;
-
-    typedef typename underlying_regressor_type::sol_type sol_type;
 
 private:
     typedef typename TransformType<matrix_type, sketch_type>::data_type
@@ -118,6 +123,7 @@ template <
     typename RegularizationType,
     typename InputType,
     typename RhsType,
+    typename SolType,
     typename SketchedRegressionType,
     elem::Distribution CD, elem::Distribution RD,
     template <typename, typename> class TransformType,
@@ -126,8 +132,12 @@ class sketched_regressor_t<
     regression_problem_t<InputType,
                          RegressionType, PenaltyType, RegularizationType>,
     RhsType,
+    SolType,
     SketchedRegressionType,
     elem::DistMatrix<
+        typename utility::typer_t<InputType>::value_type,
+        CD, RD >,
+   elem::DistMatrix<
         typename utility::typer_t<InputType>::value_type,
         CD, RD >,
     TransformType,
@@ -139,8 +149,10 @@ public:
     typedef typename utility::typer_t<InputType>::value_type value_type;
 
     typedef elem::DistMatrix<value_type, CD, RD> sketch_type;
+    typedef elem::DistMatrix<value_type, CD, RD> sketch_rhs_type;
     typedef InputType matrix_type;
     typedef RhsType rhs_type;
+    typedef SolType sol_type;
 
     typedef RegressionType regression_type;
     typedef PenaltyType penalty_type;
@@ -155,10 +167,10 @@ public:
                                  regularization_type> sketched_problem_type;
 
     typedef exact_regressor_t<sketched_problem_type,
-                              sketch_type,
+                              sketch_rhs_type,
+                              sol_type,
                               ExactAlgTag> underlying_regressor_type;
 
-    typedef typename underlying_regressor_type::sol_type sol_type;
 private:
     typedef typename TransformType<matrix_type, sketch_type>::data_type
     transform_data_type;

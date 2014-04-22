@@ -23,6 +23,7 @@ class exact_regressor_t<
     regression_problem_t<elem::Matrix<ValueType>,
                          linear_tag, l2_tag, no_reg_tag>,
     elem::Matrix<ValueType>,
+    elem::Matrix<ValueType>,
     qr_l2_solver_tag> {
 
 public:
@@ -73,7 +74,7 @@ public:
 
 /**
  * Exact regressor (solves the problem exactly) for L2 linear regrssion
- * on a dense distributed matrix.
+ * on a dense distributed MC,MR matrix.
  *
  * A regressor accepts a right-hand side and output a solution
  * the the regression problem.
@@ -81,24 +82,22 @@ public:
  * The regression problem is fixed, so it is a parameter of the function
  * constructing the regressoion.
  */
-template <typename ValueType,
-          elem::Distribution CD,
-          elem::Distribution RD>
+template <typename ValueType>
 class exact_regressor_t<
-    regression_problem_t<elem::DistMatrix<ValueType, CD, RD>,
+    regression_problem_t<elem::DistMatrix<ValueType>,
                          linear_tag, l2_tag, no_reg_tag>,
-    elem::DistMatrix<ValueType, CD, RD>,
+    elem::DistMatrix<ValueType>,
+    elem::DistMatrix<ValueType>,
     qr_l2_solver_tag> {
 
 public:
 
-    typedef elem::DistMatrix<ValueType, CD, RD> matrix_type;
-    typedef elem::DistMatrix<ValueType, CD, RD> rhs_type;
-    typedef elem::DistMatrix<ValueType, CD, RD> sol_type;
+    typedef elem::DistMatrix<ValueType> matrix_type;
+    typedef elem::DistMatrix<ValueType> rhs_type;
+    typedef elem::DistMatrix<ValueType> sol_type;
 
-    typedef regression_problem_t<
-        elem::DistMatrix<ValueType, CD, RD>,
-        linear_tag, l2_tag, no_reg_tag> problem_type;
+    typedef regression_problem_t<matrix_type,
+                                 linear_tag, l2_tag, no_reg_tag> problem_type;
 
 private:
     const int _m;

@@ -45,10 +45,12 @@ struct lsqr_tag: public krylov_tag {};
  *
  * @tparam RegressionProblemType Type of regression problem solved.
  * @tparam RhsType Right-hand side matrix type.
+ * @tparam SolType Solution matrix type.
  * @tparam AlgTag Tag specifying the algorithm used.
  */
 template <typename RegressionProblemType,
           typename RhsType,
+          typename SolType,
           typename AlgTag>
 class exact_regressor_t {
 

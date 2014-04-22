@@ -19,10 +19,12 @@ template <typename MatrixType,
 struct exact_regressor_t<
     regression_problem_t<MatrixType, linear_tag, l2_tag, no_reg_tag>,
     MultiVectorType,
+    MultiVectorType,
     iterative_l2_solver_tag<KrylovMethod> > {
 
     typedef MatrixType matrix_type;
     typedef MultiVectorType rhs_type;
+    typedef MultiVectorType sol_type;
     typedef MultiVectorType multivec_type;
     typedef skylark::nla::iter_solver_op_t<matrix_type, multivec_type> iter_ops_t;
     typedef typename iter_ops_t::value_type value_type;
@@ -39,7 +41,7 @@ struct exact_regressor_t<
 
     /** * A solve implementation that uses LSQR */
     void solve_impl (const rhs_type& b,
-        rhs_type& x,
+        sol_type& x,
         skylark::nla::iter_params_t params,
         lsqr_tag) {
         /** Call the LSQR solver */
@@ -47,7 +49,7 @@ struct exact_regressor_t<
     }
 
     void solve(const rhs_type& b,
-        rhs_type& x,
+        sol_type& x,
         skylark::nla::iter_params_t params) {
         int b_m, b_n, x_m, x_n;
         iter_ops_t::get_dim (b, b_m, b_n);

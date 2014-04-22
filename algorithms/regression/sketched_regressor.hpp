@@ -8,8 +8,10 @@ namespace algorithms {
 
 template <typename RegressionProblemType,
           typename RhsType,
+          typename SolType,
           typename SketchedRegressionType,
           typename SketchType,
+          typename SketchRhsType,
           template <typename, typename> class SketchTransformType,
           typename ExactAlgTag,
           typename UseTag = sketch_and_solve_tag>

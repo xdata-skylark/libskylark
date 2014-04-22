@@ -34,11 +34,13 @@ typedef skyalg::regression_problem_t<MatrixType1,
 typedef skyalg::exact_regressor_t<
     RegressionProblemType1,
     MatrixType1,
+    MatrixType1,
     skyalg::qr_l2_solver_tag> ExactRegressorType;
 
 typedef skyalg::sketched_regressor_t<
-    RegressionProblemType, MatrixType,
+    RegressionProblemType, MatrixType, SketchType,
     skyalg::linear_tag,
+    SketchType,
     SketchType,
     SKETCH_TYPE,
     skyalg::qr_l2_solver_tag,

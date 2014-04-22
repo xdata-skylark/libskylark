@@ -339,9 +339,9 @@ class mtx(object):
     def _read_combblas_sparse(self):
         import kdt
         if self.parallel:
-            A = kdt.Mat.load(self.fpath, par_IO=True)
+            A = kdt.Mat.load(self.fpath, True, True)
         else:
-            A = kdt.Mat.load(self.fpath)
+            A = kdt.Mat.load(self.fpath, False, False)
         return A
 
 
@@ -402,7 +402,7 @@ class mtx(object):
 
     def _write_combblas_sparse(self, A):
         if self.layout == 'coordinate':
-            A.save(self.fpath)
+            A.save(self.fpath, False)
 
 
     def write(self, A):

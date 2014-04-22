@@ -42,3 +42,14 @@ target_link_libraries( local_sparse_apply
                        ${Boost_LIBRARIES} )
 add_test( local_sparse_apply_test local_sparse_apply )
 
+if (SKYLARK_HAVE_ELEMENTAL)
+
+  add_executable(svd_elemental_test SVDElementalTest.cpp)
+  target_link_libraries(svd_elemental_test
+                        ${SKYLARK_LIBS}
+                        ${Elemental_LIBRARY}
+                        ${Pmrrr_LIBRARY}
+                        ${Boost_LIBRARIES})
+  add_test( svd_elemental_test svd_elemental_test )
+
+endif (SKYLARK_HAVE_ELEMENTAL)

@@ -49,18 +49,19 @@ inline void Gemv(elem::Orientation oA,
     const elem::DistMatrix<T, elem::VC, elem::STAR>& x,
     T beta, elem::DistMatrix<T, elem::STAR, elem::STAR>& y) {
     // TODO verify sizes etc.
+    // TODO verify matching grids.
 
     if (oA == elem::TRANSPOSE) {
-        elem::Matrix<T> ylocal(y.Height(), y.Width(), y.Matrix().LDim());
+        boost::mpi::communicator comm(y.Grid().Comm(), boost::mpi::comm_attach);
+        elem::Matrix<T> ylocal(y.Matrix());
         elem::Gemv(elem::TRANSPOSE,
             alpha, A.LockedMatrix(), x.LockedMatrix(),
-            beta, ylocal);
-        boost::mpi::communicator comm(y.DistComm(), boost::mpi::comm_attach);
+            beta / T(comm.size()), ylocal);
         boost::mpi::all_reduce(comm,
             ylocal.Buffer(), ylocal.MemorySize(), y.Buffer(),
             std::plus<T>());
     } else {
-        // Not supported!  TODO exception checking!
+        SKYLARK_THROW_EXCEPTION(base::unsupported_base_operation());
     }
 }
 

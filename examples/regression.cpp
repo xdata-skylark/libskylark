@@ -8,21 +8,22 @@
 namespace bmpi =  boost::mpi;
 namespace skybase = skylark::base;
 namespace skysk =  skylark::sketch;
-namespace skyb  =  skylark::base;
 namespace skyalg = skylark::algorithms;
+namespace skyutil = skylark::utility;
 /*******************************************/
 
 // Parameters
 const int m = 2000;
 const int n = 10;
 const int t = 500;
-#define SKETCH_TYPE skysk::FJLT_t
+
+#define SKETCH_TYPE skysk::JLT_t
 
 typedef elem::DistMatrix<double> MatrixType1;
 typedef elem::DistMatrix<double, elem::VC, elem::STAR> MatrixType;
 typedef elem::DistMatrix<double, elem::VC, elem::STAR> RhsType;
 typedef elem::DistMatrix<double, elem::STAR, elem::STAR> SolType;
-typedef elem::Matrix<double> SketchType;
+typedef elem::DistMatrix<double, elem::STAR, elem::STAR> SketchType;
 
 typedef skyalg::regression_problem_t<MatrixType,
                                      skyalg::linear_tag,
@@ -36,7 +37,7 @@ typedef skyalg::exact_regressor_t<
     skyalg::qr_l2_solver_tag> ExactRegressorType;
 
 typedef skyalg::sketched_regressor_t<
-    RegressionProblemType, MatrixType, SketchType,
+    RegressionProblemType, MatrixType, SolType,
     skyalg::linear_tag,
     SketchType,
     SketchType,
@@ -44,30 +45,21 @@ typedef skyalg::sketched_regressor_t<
     skyalg::qr_l2_solver_tag,
     skyalg::sketch_and_solve_tag> SketchedRegressorType;
 
-// TODO move to base layer.
-template<typename T, elem::Distribution U, elem::Distribution V>
-inline T Nrm2(const elem::DistMatrix<T, U, V>& x)
-{
-    return elem::FrobeniusNorm(x);
-}
-
 template<typename ProblemType, typename RhsType, typename SolType>
 void check_solution(const ProblemType &pr, const RhsType &b, const SolType &x,
-    int rank) {
+    double &res, double &resAtr) {
     RhsType r(b);
     skybase::Gemv(elem::NORMAL, -1.0, pr.input_matrix, x, 1.0, r);
-    double res = skybase::Nrm2(r);
-    if (rank == 0)
-        std::cout << "Residual for exact solve is " << res << std::endl;
+    res = skybase::Nrm2(r);
 
     SolType Atr(x.Height(), x.Width(), x.Grid());
     skybase::Gemv(elem::TRANSPOSE, 1.0, pr.input_matrix, r, 0.0, Atr);
-    double resAtr = skybase::Nrm2(Atr);
-    if (rank == 0)
-        std::cout << "For exact solve: ||A' * r||_2 = " << resAtr << std::endl;
+    resAtr = skybase::Nrm2(Atr);
 }
 
 int main(int argc, char** argv) {
+    double res, resAtr;
+
     bmpi::environment env(argc, argv);
     bmpi::communicator world;
 
@@ -76,56 +68,39 @@ int main(int argc, char** argv) {
     elem::Grid grid(mpi_world);
     int rank = world.rank();
 
-    skyb::context_t context(23234);
+    skybase::context_t context(23234);
 
     // Setup problem and righthand side
-    MatrixType A(m, n);
-    elem::MakeUniform(A);
-    RegressionProblemType problem(m, n, A);
+    // Using Skylark's uniform generator (as opposed to Elemental's)
+    // will insure the same A and b are generated regardless of the number
+    // of processors.
+    MatrixType A =
+        skyutil::uniform_matrix_t<MatrixType>::generate(m,
+            n, elem::DefaultGrid(), context);
+    MatrixType b =
+        skyutil::uniform_matrix_t<MatrixType>::generate(m,
+            1, elem::DefaultGrid(), context);
 
-    MatrixType b(m, 1);
-    elem::MakeUniform(b);
+    RegressionProblemType problem(m, n, A);
 
     // Using exact regressor
     SolType x(n,1);
     ExactRegressorType exact_regr(problem);
     exact_regr.solve(b, x);
-    check_solution(problem, b, x, rank);
-
-    // Using sketch-and-solve
-    SketchedRegressorType sketched_regr(problem, t, context);
-    SketchedRegressorType::sol_type x2(n, 1);
-    sketched_regr.solve(b, x2);
-    MatrixType r(b.Grid());
-    r = b;
-    // TODO part to be moved to NLA
-    elem::DistMatrix<double, elem::STAR, elem::STAR> xx(n, 1);
-    if (rank == 0)
-        xx.Matrix() = x2;
-    boost::mpi::broadcast(world, xx.Buffer(), n, 0);
-    elem::Gemv(elem::NORMAL,
-        -1.0, problem.input_matrix.LockedMatrix(),
-        xx.LockedMatrix(), 1.0,
-        r.Matrix());
-    double res = Nrm2(r);
-    if (rank == 0)
-        std::cout << "Sketched residual is " << res << std::endl;
-
-    elem::Matrix<double> Atr_local(n, 1), Atr(n, 1);
-    // TODO parts to be moved to NLA
-    elem::Gemv(elem::TRANSPOSE,
-        1.0, problem.input_matrix.LockedMatrix(),
-        r.LockedMatrix(), 0.0, Atr_local);
-    boost::mpi::reduce(world,
-        Atr_local.LockedBuffer(),
-        n,
-        Atr.Buffer(),
-        std::plus<double>(),
-        0);
+    check_solution(problem, b, x, res, resAtr);
     if (rank == 0) {
-        double resAtr = elem::Nrm2(Atr);
-        std::cout << "Sketched ||A' * r||_2 = " << resAtr << std::endl;
+        std::cout << "Residual for exact solve is " << res << std::endl;
+        std::cout << "For exact solve: ||A' * r||_2 = " << resAtr << std::endl;
     }
 
+    // Using sketch-and-solve
+    SolType xx(n, 1);
+    SketchedRegressorType sketched_regr(problem, t, context);
+    sketched_regr.solve(b, xx);
+    check_solution(problem, b, xx, res, resAtr);
+    if (rank == 0) {
+        std::cout << "Residual for sketched solve is " << res << std::endl;
+        std::cout << "For sketched solve: ||A' * r||_2 = " << resAtr << std::endl;
+    }
     return 0;
 }

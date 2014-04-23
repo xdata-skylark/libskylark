@@ -55,13 +55,13 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
     // TODO verify sizes etc.
 
     if ((oA == elem::TRANSPOSE || oA == elem::ADJOINT) && oB == elem::NORMAL) {
-        elem::Matrix<T> Clocal(C.Height(), C.Width(), C.Matrix().LDim());
+        boost::mpi::communicator comm(C.Grid().Comm(), boost::mpi::comm_attach);
+        elem::Matrix<T> Clocal(C.Matrix());
         elem::Gemm(oA, elem::NORMAL,
             alpha, A.LockedMatrix(), B.LockedMatrix(),
-            beta, Clocal);
-        boost::mpi::communicator comm(C.DistComm(), boost::mpi::comm_attach);
+            beta / T(comm.size()), Clocal);
         boost::mpi::all_reduce(comm,
-            Clocal.Buffer(), Clocal.MemorySize(), C.Buffer(),
+            Clocal.Buffer(), Clocal.MemorySize(), C.Matrix().Buffer(),
             std::plus<T>());
     } else {
         SKYLARK_THROW_EXCEPTION(base::unsupported_base_operation());

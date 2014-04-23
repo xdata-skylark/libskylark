@@ -338,10 +338,11 @@ class mtx(object):
 
     def _read_combblas_sparse(self):
         import kdt
+        #FIXME depending on patched kdt version:
         if self.parallel:
-            A = kdt.Mat.load(self.fpath, True, True)
+            A = kdt.Mat.load(self.fpath, par_IO=True)#, True)
         else:
-            A = kdt.Mat.load(self.fpath, False, False)
+            A = kdt.Mat.load(self.fpath)#, False, False)
         return A
 
 
@@ -402,7 +403,8 @@ class mtx(object):
 
     def _write_combblas_sparse(self, A):
         if self.layout == 'coordinate':
-            A.save(self.fpath, False)
+            #FIXME depending on patched kdt version:
+            A.save(self.fpath)#, False)
 
 
     def write(self, A):
@@ -529,7 +531,7 @@ class libsvm(object):
         block_size : int, optional
          Number of lines to parse in each iteration.
 	type : int, optional
-	 1 (default): "i-j-v" triplets 
+	 1 (default): "i-j-v" triplets
 	 0: indices are actually pointers into feature/values array as used in CRS/CSC
 
         Returns
@@ -548,15 +550,15 @@ class libsvm(object):
             values = []
             index = 0
             block_complete = False
-	    nz = 0	
+            nz = 0
             for line in f:
                 _l, _i, _f, _v = self._parse(index, line)
                 labels.append(_l)
-		if type:
-	                indices.extend(_i)
-		else:
-			indices.append(nz)
-		nz = nz + len(_f)
+            if type:
+                indices.extend(_i)
+            else:
+                indices.append(nz)
+                nz = nz + len(_f)
                 features.extend(_f)
                 values.extend(_v)
                 index += 1

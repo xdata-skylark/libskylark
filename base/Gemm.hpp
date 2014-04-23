@@ -2,6 +2,7 @@
 #define SKYLARK_GEMM_HPP
 
 #include <boost/mpi.hpp>
+#include "../utility/exception.hpp"
 
 // Defines a generic Gemm function that recieves both dense and sparse matrices.
 
@@ -47,7 +48,7 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
  */
 template<typename T>
 inline void Gemm(elem::Orientation oA, elem::Orientation oB,
-    T alpha, const elem::DistMatrix<T, elem::VC, elem::STAR>& A, 
+    T alpha, const elem::DistMatrix<T, elem::VC, elem::STAR>& A,
     const elem::DistMatrix<T, elem::VC, elem::STAR>& B,
     T beta, elem::DistMatrix<T, elem::STAR, elem::STAR>& C) {
     // TODO verify sizes etc.
@@ -62,13 +63,13 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
             Clocal.Buffer(), Clocal.MemorySize(), C.Buffer(),
             std::plus<T>());
     } else {
-        // Not supported!  TODO exception checking!
+        SKYLARK_THROW_EXCEPTION(utility::unsupported_base_operation());
     }
 }
 
 template<typename T>
 inline void Gemm(elem::Orientation oA, elem::Orientation oB,
-    T alpha, const elem::DistMatrix<T, elem::VC, elem::STAR>& A, 
+    T alpha, const elem::DistMatrix<T, elem::VC, elem::STAR>& A,
     const elem::DistMatrix<T, elem::VC, elem::STAR>& B,
     elem::DistMatrix<T, elem::STAR, elem::STAR>& C) {
 

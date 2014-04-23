@@ -2,6 +2,7 @@
 #define SKYLARK_GEMV_HPP
 
 #include <boost/mpi.hpp>
+#include "../utility/exception.hpp"
 
 // Defines a generic Gemv function that recieves a wider set of matrices
 
@@ -86,7 +87,7 @@ inline void Gemv(elem::Orientation oA,
             alpha, A.LockedMatrix(), x.LockedMatrix(),
             beta, y.Matrix());
     } else {
-        // Not supported!  TODO exception checking!
+        SKYLARK_THROW_EXCEPTION(utility::unsupported_base_operation());
     }
 }
 

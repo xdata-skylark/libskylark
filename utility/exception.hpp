@@ -1,5 +1,5 @@
-#ifndef EXCEPTION_HPP
-#define EXCEPTION_HPP
+#ifndef SKYLARK_EXCEPTION_HPP
+#define SKYLARK_EXCEPTION_HPP
 
 #include <string>
 #include <exception>
@@ -16,6 +16,7 @@ const char* const errmsg[] = {
     , "Skylark failed when allocating memory in a sketch"
     , "Skylark failed in a call into the Random123 layer"
     , "Skylark failed in I/O calls"
+    , "Skylark failed due to a unsupported base operation"
 };
 
 /// resolves an error_code to a human readable failure message
@@ -166,6 +167,16 @@ public:
     using elemental_exception::operator<<;
 
     unsupported_matrix_distribution() {
+        *this << error_code(103);
+    }
+};
+
+/// exceptions for unsupported base operation
+struct unsupported_base_operation : virtual elemental_exception {
+public:
+    using skylark_exception::operator<<;
+
+    unsupported_base_operation() {
         *this << error_code(103);
     }
 };

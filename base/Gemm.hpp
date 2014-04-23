@@ -43,9 +43,10 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
 }
 
 /**
- * The following combination is not offered by Elemental, but is useful for us.
+ * The following combinations is not offered by Elemental, but is useful for us.
  * We implement it partially.
  */
+
 template<typename T>
 inline void Gemm(elem::Orientation oA, elem::Orientation oB,
     T alpha, const elem::DistMatrix<T, elem::VC, elem::STAR>& A,
@@ -72,6 +73,34 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
     T alpha, const elem::DistMatrix<T, elem::VC, elem::STAR>& A,
     const elem::DistMatrix<T, elem::VC, elem::STAR>& B,
     elem::DistMatrix<T, elem::STAR, elem::STAR>& C) {
+
+    int C_height = (oA == elem::NORMAL ? A.Height() : A.Width());
+    int C_width = (oB == elem::NORMAL ? B.Width() : B.Height());
+    elem::Zeros(C, C_height, C_width);
+    base::Gemm(oA, oB, alpha, A, B, T(0), C);
+}
+
+template<typename T>
+inline void Gemm(elem::Orientation oA, elem::Orientation oB,
+    T alpha, const elem::DistMatrix<T, elem::VC, elem::STAR>& A,
+    const elem::DistMatrix<T, elem::STAR, elem::STAR>& B,
+    T beta, elem::DistMatrix<T, elem::VC, elem::STAR>& C) {
+    // TODO verify sizes etc.
+
+    if (oA == elem::NORMAL && oB == elem::NORMAL) {
+        elem::Gemm(elem::NORMAL, elem::NORMAL,
+            alpha, A.LockedMatrix(), B.LockedMatrix(),
+            beta, C.Matrix());
+    } else {
+        SKYLARK_THROW_EXCEPTION(base::unsupported_base_operation());
+    }
+}
+
+template<typename T>
+inline void Gemm(elem::Orientation oA, elem::Orientation oB,
+    T alpha, const elem::DistMatrix<T, elem::VC, elem::STAR>& A,
+    const elem::DistMatrix<T, elem::STAR, elem::STAR>& B,
+    elem::DistMatrix<T, elem::VC, elem::STAR>& C) {
 
     int C_height = (oA == elem::NORMAL ? A.Height() : A.Width());
     int C_width = (oB == elem::NORMAL ? B.Width() : B.Height());

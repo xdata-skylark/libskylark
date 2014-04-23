@@ -42,6 +42,8 @@ target_link_libraries( local_sparse_apply
                        ${Boost_LIBRARIES} )
 add_test( local_sparse_apply_test local_sparse_apply )
 
+find_package(PythonInterp REQUIRED)
+message (STATUS "Using Python interpreter to run tests: {PYTHON_EXECUTABLE}")
 #FIXME: Because of mpi4py/kdt MPI initialization issue we cannot run the test
 #       in hybrid mode when we need to call MPI.Init_thread().
 if(!USE_HYBRID)
@@ -51,8 +53,6 @@ if(!USE_HYBRID)
 endif(!USE_HYBRID)
 
 # run all python tests
-#find_package(PythonInterp REQUIRED)
-#message (STATUS "Using Python interpreter to run tests: {PYTHON_EXECUTABLE}")
 #file (GLOB PY_TEST_LIST RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.py )
 #foreach (TEST ${PY_TEST_LIST})
     #string (REGEX REPLACE "([a-zA-Z]+).py" "\\1" NAME ${TEST})

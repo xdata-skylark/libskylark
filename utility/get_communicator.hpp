@@ -16,19 +16,13 @@
 #include <elemental.hpp>
 #endif
 
-
-#if SKYLARK_HAVE_BOOST
 #include <boost/mpi.hpp>
-#endif
 
 
 namespace skylark { namespace utility {
 
-#if SKYLARK_HAVE_BOOST
-
 // namespace alias
 namespace mpi = boost::mpi;
-
 
 template<typename T>
 mpi::communicator get_communicator(const base::sparse_matrix_t<T>& A,
@@ -82,8 +76,6 @@ bool compatible(const mpi::communicator& comm_A,
     }
     return false;
 }
-
-#endif // SKYLARK_HAVE_BOOST
 
 } } /** namespace skylark::utility */
 

@@ -1,6 +1,8 @@
 #ifndef SKYLARK_GEMM_HPP
 #define SKYLARK_GEMM_HPP
 
+#include <boost/mpi.hpp>
+
 // Defines a generic Gemm function that recieves both dense and sparse matrices.
 
 #if SKYLARK_HAVE_ELEMENTAL
@@ -25,26 +27,55 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
     elem::Gemm(oA, oB, alpha, A, B, C);
 }
 
-template<typename T,
-         elem::Dist AC, elem::Dist AR,
-         elem::Dist BC, elem::Dist BR,
-         elem::Dist CC, elem::Dist CR>
+template<typename T>
 inline void Gemm(elem::Orientation oA, elem::Orientation oB,
-    T alpha, const elem::DistMatrix<T, AC, AR>& A,
-    const elem::DistMatrix<T, BC, BR>& B,
-    T beta, elem::DistMatrix<T, CC, CR>& C) {
+    T alpha, const elem::DistMatrix<T>& A, const elem::DistMatrix<T>& B,
+    T beta, elem::DistMatrix<T>& C) {
     elem::Gemm(oA, oB, alpha, A, B, beta, C);
 }
 
-template<typename T,
-         elem::Dist AC, elem::Dist AR,
-         elem::Dist BC, elem::Dist BR,
-         elem::Dist CC, elem::Dist CR>
+template<typename T>
 inline void Gemm(elem::Orientation oA, elem::Orientation oB,
-    T alpha, const elem::DistMatrix<T, AC, AR>& A,
-    const elem::DistMatrix<T, BC, BR>& B,
-    elem::DistMatrix<T, CC, CR>& C) {
+    T alpha, const elem::DistMatrix<T>& A, const elem::DistMatrix<T>& B,
+    elem::DistMatrix<T>& C) {
     elem::Gemm(oA, oB, alpha, A, B, C);
+}
+
+/**
+ * The following combination is not offered by Elemental, but is useful for us.
+ * We implement it partially.
+ */
+template<typename T>
+inline void Gemm(elem::Orientation oA, elem::Orientation oB,
+    T alpha, const elem::DistMatrix<T, elem::VC, elem::STAR>& A, 
+    const elem::DistMatrix<T, elem::VC, elem::STAR>& B,
+    T beta, elem::DistMatrix<T, elem::STAR, elem::STAR>& C) {
+    // TODO verify sizes etc.
+
+    if ((oA == elem::TRANSPOSE || oA == elem::ADJOINT) && oB == elem::NORMAL) {
+        elem::Matrix<T> Clocal(C.Height(), C.Width(), C.Matrix().LDim());
+        elem::Gemm(oA, elem::NORMAL,
+            alpha, A.LockedMatrix(), B.LockedMatrix(),
+            beta, Clocal);
+        boost::mpi::communicator comm(C.DistComm(), boost::mpi::comm_attach);
+        boost::mpi::all_reduce(comm,
+            Clocal.Buffer(), Clocal.MemorySize(), C.Buffer(),
+            std::plus<T>());
+    } else {
+        // Not supported!  TODO exception checking!
+    }
+}
+
+template<typename T>
+inline void Gemm(elem::Orientation oA, elem::Orientation oB,
+    T alpha, const elem::DistMatrix<T, elem::VC, elem::STAR>& A, 
+    const elem::DistMatrix<T, elem::VC, elem::STAR>& B,
+    elem::DistMatrix<T, elem::STAR, elem::STAR>& C) {
+
+    int C_height = (oA == elem::NORMAL ? A.Height() : A.Width());
+    int C_width = (oB == elem::NORMAL ? B.Width() : B.Height());
+    elem::Zeros(C, C_height, C_width);
+    base::Gemm(oA, oB, alpha, A, B, T(0), C);
 }
 
 /**

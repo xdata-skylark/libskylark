@@ -4,11 +4,6 @@
 #include "../../config.h"
 #include "../../base/context.hpp"
 
-
-#if SKYLARK_HAVE_BOOST
-#include "../exception.hpp"
-#endif
-
 #if SKYLARK_HAVE_COMBBLAS
 #include <CombBLAS.h>
 #endif

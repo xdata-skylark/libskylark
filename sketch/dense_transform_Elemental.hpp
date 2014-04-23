@@ -6,7 +6,6 @@
 #include "transforms.hpp"
 #include "dense_transform_data.hpp"
 #include "../utility/comm.hpp"
-#include "../utility/exception.hpp"
 #include "../utility/get_communicator.hpp"
 
 
@@ -67,8 +66,8 @@ struct dense_transform_t <
             apply_impl_local(A, sketch_of_A, dimension);
         } catch (std::logic_error e) {
             SKYLARK_THROW_EXCEPTION (
-                utility::elemental_exception()
-                    << utility::error_msg(e.what()) );
+                base::elemental_exception()
+                    << base::error_msg(e.what()) );
         }
     }
 
@@ -185,19 +184,19 @@ struct dense_transform_t <
                 apply_impl_vdist (A, sketch_of_A, dimension);
             } catch (std::logic_error e) {
                 SKYLARK_THROW_EXCEPTION (
-                    utility::elemental_exception()
-                        << utility::error_msg(e.what()) );
+                    base::elemental_exception()
+                        << base::error_msg(e.what()) );
             } catch(boost::mpi::exception e) {
                 SKYLARK_THROW_EXCEPTION (
-                    utility::mpi_exception()
-                        << utility::error_msg(e.what()) );
+                    base::mpi_exception()
+                        << base::error_msg(e.what()) );
             }
 
             break;
 
         default:
             SKYLARK_THROW_EXCEPTION (
-                utility::unsupported_matrix_distribution() );
+               base::unsupported_matrix_distribution() );
         }
     }
 
@@ -361,19 +360,19 @@ struct dense_transform_t <
                 apply_impl_vdist (A, sketch_of_A, dimension);
             } catch (std::logic_error e) {
                 SKYLARK_THROW_EXCEPTION (
-                    utility::elemental_exception()
-                        << utility::error_msg(e.what()) );
+                    base::elemental_exception()
+                        << base::error_msg(e.what()) );
             } catch(boost::mpi::exception e) {
                 SKYLARK_THROW_EXCEPTION (
-                    utility::mpi_exception()
-                        << utility::error_msg(e.what()) );
+                    base::mpi_exception()
+                        << base::error_msg(e.what()) );
             }
 
             break;
 
         default:
             SKYLARK_THROW_EXCEPTION (
-                utility::unsupported_matrix_distribution() );
+                base::unsupported_matrix_distribution() );
         }
     }
 
@@ -535,19 +534,19 @@ struct dense_transform_t <
                 apply_impl_vdist (A, sketch_of_A, dimension);
             } catch (std::logic_error e) {
                 SKYLARK_THROW_EXCEPTION (
-                    utility::elemental_exception()
-                        << utility::error_msg(e.what()) );
+                    base::elemental_exception()
+                        << base::error_msg(e.what()) );
             } catch(boost::mpi::exception e) {
                 SKYLARK_THROW_EXCEPTION (
-                    utility::mpi_exception()
-                        << utility::error_msg(e.what()) );
+                    base::mpi_exception()
+                        << base::error_msg(e.what()) );
             }
 
             break;
 
         default:
             SKYLARK_THROW_EXCEPTION (
-                utility::unsupported_matrix_distribution() );
+                base::unsupported_matrix_distribution() );
         }
     }
 
@@ -742,19 +741,19 @@ struct dense_transform_t <
                 apply_impl_vdist (A, sketch_of_A, dimension);
             } catch (std::logic_error e) {
                 SKYLARK_THROW_EXCEPTION (
-                    utility::elemental_exception()
-                        << utility::error_msg(e.what()) );
+                    base::elemental_exception()
+                        << base::error_msg(e.what()) );
             } catch(boost::mpi::exception e) {
                 SKYLARK_THROW_EXCEPTION (
-                    utility::mpi_exception()
-                        << utility::error_msg(e.what()) );
+                    base::mpi_exception()
+                        << base::error_msg(e.what()) );
             }
 
             break;
 
         default:
             SKYLARK_THROW_EXCEPTION (
-                utility::unsupported_matrix_distribution() );
+                base::unsupported_matrix_distribution() );
         }
     }
 
@@ -913,12 +912,12 @@ struct dense_transform_t <
             apply_impl_dist(A, sketch_of_A, dimension);
         } catch (std::logic_error e) {
             SKYLARK_THROW_EXCEPTION (
-                utility::elemental_exception()
-                    << utility::error_msg(e.what()) );
+                base::elemental_exception()
+                    << base::error_msg(e.what()) );
         } catch(boost::mpi::exception e) {
                 SKYLARK_THROW_EXCEPTION (
-                    utility::mpi_exception()
-                        << utility::error_msg(e.what()) );
+                    base::mpi_exception()
+                        << base::error_msg(e.what()) );
         }
     }
 
@@ -1076,12 +1075,12 @@ struct dense_transform_t <
             apply_impl_dist(A, sketch_of_A, dimension);
         } catch (std::logic_error e) {
             SKYLARK_THROW_EXCEPTION (
-                utility::elemental_exception()
-                    << utility::error_msg(e.what()) );
+                base::elemental_exception()
+                    << base::error_msg(e.what()) );
         } catch(boost::mpi::exception e) {
                 SKYLARK_THROW_EXCEPTION (
-                    utility::mpi_exception()
-                        << utility::error_msg(e.what()) );
+                    base::mpi_exception()
+                        << base::error_msg(e.what()) );
         }
     }
 

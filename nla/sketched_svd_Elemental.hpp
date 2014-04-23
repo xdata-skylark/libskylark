@@ -3,7 +3,7 @@
 
 #include <elemental.hpp>
 #include "../base/context.hpp"
-#include "../utility/exception.hpp"
+#include "../base/exception.hpp"
 #include "../utility/get_communicator.hpp"
 
 namespace skylark { namespace nla {
@@ -55,8 +55,8 @@ struct sketch_svd_t <elem::DistMatrix<ValueType, elem::MC, elem::MR>,
             (sketch_size > width) ||
                 (sketch_size < k) {
                 SKYLARK_THROW_EXCEPTION(
-                    utility::elemental_exception()
-                        << utility::error_msg(e.what()) );
+                    base::elemental_exception()
+                        << base::error_msg(e.what()) );
           }
 
          /** Apply the sketching transformation rowwise:

@@ -7,11 +7,10 @@
 
 #include <elemental.hpp>
 #include <fftw3.h>
+#include "../base/base.hpp"
 
-#include "../base/context.hpp"
 #include "transforms.hpp"
 #include "PPT_data.hpp"
-#include "../utility/exception.hpp"
 
 namespace skylark { namespace sketch {
 

@@ -1,7 +1,7 @@
 #ifndef SKYLARK_CONTEXT_HPP
 #define SKYLARK_CONTEXT_HPP
 
-#include "../utility/exception.hpp"
+#include "exception.hpp"
 #include "../utility/randgen.hpp"
 
 #include "boost/property_tree/ptree.hpp"
@@ -90,8 +90,8 @@ struct context_t {
             random_samples_array.resize(size);
         } catch (std::bad_alloc ba) {
             SKYLARK_THROW_EXCEPTION (
-                utility::allocation_exception()
-                    << utility::error_msg(ba.what()) );
+                base::allocation_exception()
+                    << base::error_msg(ba.what()) );
         }
         for(size_t i = 0; i < size; i++) {
             random_samples_array[i] = allocated_random_samples_array[i];

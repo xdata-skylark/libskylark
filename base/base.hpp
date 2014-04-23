@@ -5,6 +5,7 @@
 #include <elemental.hpp>
 #endif
 
+#include "exception.hpp"
 #include "sparse_matrix.hpp"
 #include "viewing.hpp"
 #include "copy.hpp"

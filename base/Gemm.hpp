@@ -2,7 +2,7 @@
 #define SKYLARK_GEMM_HPP
 
 #include <boost/mpi.hpp>
-#include "../utility/exception.hpp"
+#include "exception.hpp"
 
 // Defines a generic Gemm function that recieves both dense and sparse matrices.
 
@@ -63,7 +63,7 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
             Clocal.Buffer(), Clocal.MemorySize(), C.Buffer(),
             std::plus<T>());
     } else {
-        SKYLARK_THROW_EXCEPTION(utility::unsupported_base_operation());
+        SKYLARK_THROW_EXCEPTION(base::unsupported_base_operation());
     }
 }
 

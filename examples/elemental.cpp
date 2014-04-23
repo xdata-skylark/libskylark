@@ -76,10 +76,10 @@ int main (int argc, char** argv) {
             /* 3. Apply the transform */
             try {
                 JLT.apply (A, sketch_A, skys::columnwise_tag());
-            } catch (skylark::utility::skylark_exception ex) {
+            } catch (skylark::base::skylark_exception ex) {
                 SKYLARK_PRINT_EXCEPTION_DETAILS(ex);
                 SKYLARK_PRINT_EXCEPTION_TRACE(ex);
-                errno = *(boost::get_error_info<skylark::utility::error_code>(ex));
+                errno = *(boost::get_error_info<skylark::base::error_code>(ex));
                 std::cout << "Caught exception, exiting with error " << errno << std::endl;
                 std::cout << skylark_strerror(errno) << std::endl;
                 return errno;

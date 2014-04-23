@@ -3,7 +3,6 @@
 
 #include <vector>
 #include "../base/context.hpp"
-#include "../utility/exception.hpp"
 
 #include "boost/foreach.hpp"
 #include "boost/property_tree/ptree.hpp"

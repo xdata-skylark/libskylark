@@ -2,12 +2,10 @@
 #define SKYLARK_HASH_TRANSFORM_ELEMENTAL_HPP
 
 #include <elemental.hpp>
-#include "../base/sparse_matrix.hpp"
+#include "../base/base.hpp"
 
-#include "../base/context.hpp"
 #include "transforms.hpp"
 #include "hash_transform_data.hpp"
-#include "../utility/exception.hpp"
 #include "../utility/get_communicator.hpp"
 
 namespace skylark { namespace sketch {
@@ -73,12 +71,12 @@ struct hash_transform_t <
             apply_impl(A, sketch_of_A, dimension);
         } catch (std::logic_error e) {
             SKYLARK_THROW_EXCEPTION (
-                utility::elemental_exception()
-                    << utility::error_msg(e.what()) );
+                base::elemental_exception()
+                    << base::error_msg(e.what()) );
         } catch(boost::mpi::exception e) {
             SKYLARK_THROW_EXCEPTION (
-                utility::mpi_exception()
-                    << utility::error_msg(e.what()) );
+                base::mpi_exception()
+                    << base::error_msg(e.what()) );
         }
     }
 
@@ -92,12 +90,12 @@ struct hash_transform_t <
             apply_impl(A, sketch_of_A, dimension);
         } catch (std::logic_error e) {
             SKYLARK_THROW_EXCEPTION (
-                utility::elemental_exception()
-                    << utility::error_msg(e.what()) );
+                base::elemental_exception()
+                    << base::error_msg(e.what()) );
         } catch(boost::mpi::exception e) {
             SKYLARK_THROW_EXCEPTION (
-                utility::mpi_exception()
-                    << utility::error_msg(e.what()) );
+                base::mpi_exception()
+                    << base::error_msg(e.what()) );
         }
     }
 
@@ -214,12 +212,12 @@ struct hash_transform_t <
             apply_impl(A, sketch_of_A, dimension);
         } catch (std::logic_error e) {
             SKYLARK_THROW_EXCEPTION (
-                utility::elemental_exception()
-                    << utility::error_msg(e.what()) );
+                base::elemental_exception()
+                    << base::error_msg(e.what()) );
         } catch(boost::mpi::exception e) {
             SKYLARK_THROW_EXCEPTION (
-                utility::mpi_exception()
-                    << utility::error_msg(e.what()) );
+                base::mpi_exception()
+                    << base::error_msg(e.what()) );
         }
     }
 
@@ -233,12 +231,12 @@ struct hash_transform_t <
             apply_impl(A, sketch_of_A, dimension);
         } catch (std::logic_error e) {
             SKYLARK_THROW_EXCEPTION (
-                utility::elemental_exception()
-                    << utility::error_msg(e.what()) );
+                base::elemental_exception()
+                    << base::error_msg(e.what()) );
         } catch(boost::mpi::exception e) {
             SKYLARK_THROW_EXCEPTION (
-                utility::mpi_exception()
-                    << utility::error_msg(e.what()) );
+                base::mpi_exception()
+                    << base::error_msg(e.what()) );
         }
     }
 
@@ -373,12 +371,12 @@ struct hash_transform_t <
             apply_impl(A, sketch_of_A, dimension);
         } catch (std::logic_error e) {
             SKYLARK_THROW_EXCEPTION (
-                utility::elemental_exception()
-                    << utility::error_msg(e.what()) );
+                base::elemental_exception()
+                    << base::error_msg(e.what()) );
         } catch(boost::mpi::exception e) {
             SKYLARK_THROW_EXCEPTION (
-                utility::mpi_exception()
-                    << utility::error_msg(e.what()) );
+                base::mpi_exception()
+                    << base::error_msg(e.what()) );
         }
     }
 
@@ -392,12 +390,12 @@ struct hash_transform_t <
             apply_impl(A, sketch_of_A, dimension);
         } catch (std::logic_error e) {
             SKYLARK_THROW_EXCEPTION (
-                utility::elemental_exception()
-                    << utility::error_msg(e.what()) );
+                base::elemental_exception()
+                    << base::error_msg(e.what()) );
         } catch(boost::mpi::exception e) {
             SKYLARK_THROW_EXCEPTION (
-                utility::mpi_exception()
-                    << utility::error_msg(e.what()) );
+                base::mpi_exception()
+                    << base::error_msg(e.what()) );
         }
     }
 

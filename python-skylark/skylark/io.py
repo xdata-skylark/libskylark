@@ -31,10 +31,16 @@ Matrix types are identified with string identifiers that are self-explanatory:
 
 '''
 
+import mpi4py.rc
+mpi4py.rc.finalize = False
+from mpi4py import MPI
+
 # FIXME: IOError exceptions will be raised to indicate IO problems. Currently
 # we expect the user to handle such cases which is typically the norm when
 # issuing IO calls. Alternatively, we could catch them at this layer and throw
 # them as skylark-specific exception objects.
+class SkylarkIOTypeError(Exception):
+    pass
 
 import re
 import scipy.sparse
@@ -42,7 +48,6 @@ import scipy.io
 import numpy
 import h5py
 import elem
-from mpi4py import MPI
 
 # TODO: Add support for parallel IO along the implementation show-cased in the
 # wiki.
@@ -212,6 +217,8 @@ class hdf5(object):
                 A = self._read_elemental_dense(distribution)
         elif matrix_type == 'numpy-dense':
             A = self._read_numpy_dense()
+        else:
+            raise SkylarkIOTypeError("Cannot read with matrix type " + matrix_type)
         return A
 
 
@@ -249,7 +256,7 @@ class hdf5(object):
         height, width = A.Height, A.Width
         A_CIRC_CIRC = elem.DistMatrix_d_CIRC_CIRC(height, width)
         elem.Copy(A, A_CIRC_CIRC)
-        if root == 0:
+        if rank == 0:
             A_numpy_dense = A_CIRC_CIRC.Matrix[:]
             self._write_numpy_dense(A_numpy_dense)
 
@@ -326,17 +333,15 @@ class mtx(object):
     def _read_scipy_sparse(self):
         A = scipy.io.mmread(self.fpath)
         rows, cols, entries, fmt, field, symm = scipy.io.mminfo(self.fpath)
-        if fmt == 'array':
-            A = scipy.sparse.csr_matrix(A)
-        return A
+        return scipy.sparse.csr_matrix(A)
 
 
     def _read_combblas_sparse(self):
         import kdt
         if self.parallel:
-            A = kdt.Mat.load(self.fpath, par_IO=True)
+            A = kdt.Mat.load(self.fpath, True, True)
         else:
-            A = kdt.Mat.load(self.fpath)
+            A = kdt.Mat.load(self.fpath, False, False)
         return A
 
 
@@ -397,7 +402,7 @@ class mtx(object):
 
     def _write_combblas_sparse(self, A):
         if self.layout == 'coordinate':
-            A.save(self.fpath)
+            A.save(self.fpath, False)
 
 
     def write(self, A):
@@ -421,6 +426,8 @@ class mtx(object):
             import kdt
             if isinstance(A, kdt.Mat):
                 self._write_combblas_sparse(A)
+            else:
+                raise SkylarkIOTypeError("Cannot handle write with matrix type " + str(type(A)))
 
 
 class libsvm(object):
@@ -687,19 +694,20 @@ class txt(object):
         matrix_type : string, optional
          String identifier for the matrix object that is read in. One option
           * ``'numpy-dense'`` for array objects in numpy package (default).
-          * 'asasas'
-        hello : string
-         hi
         '''
         if matrix_type == 'numpy-dense':
             A = self._read_numpy_dense()
+        else:
+            raise SkylarkIOTypeError("Cannot reader matrix of type " + matrix_type)
         return A
 
     def _write_numpy_dense(self, A):
         numpy.savetxt(self.fpath, A)
 
     def _write_elemental_dense(self, A):
-        elem.Write(A, '', self.fpath)
+        stripped = self.fpath.split('.txt')[0]
+        elem.Write(A, stripped, elem.ASCII, '')
+        #MPI.COMM_WORLD.barrier()
 
     def write(self, A):
         '''
@@ -1017,5 +1025,5 @@ def _usage_tests(usps_path='./datasets/usps.t'):
     A = store.read('numpy-dense')
     print 'txt OK'
 
-if __name__ == '__main__':
-    _usage_tests()
+#if __name__ == '__main__':
+    #_usage_tests()

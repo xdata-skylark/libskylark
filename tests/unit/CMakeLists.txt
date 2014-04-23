@@ -61,3 +61,15 @@ endif(!USE_HYBRID)
         #COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/${TEST} ${CMAKE_SOURCE_DIR}
     #)
 #endforeach (TEST)
+
+if (SKYLARK_HAVE_ELEMENTAL)
+
+  add_executable(svd_elemental_test SVDElementalTest.cpp)
+  target_link_libraries(svd_elemental_test
+                        ${SKYLARK_LIBS}
+                        ${Elemental_LIBRARY}
+                        ${Pmrrr_LIBRARY}
+                        ${Boost_LIBRARIES})
+  add_test( svd_elemental_test svd_elemental_test )
+
+endif (SKYLARK_HAVE_ELEMENTAL)

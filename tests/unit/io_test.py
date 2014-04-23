@@ -71,7 +71,7 @@ class IO_test(unittest.TestCase):
         # at kdt/pyCombBLAS/../../CombBLAS/SpParMat.cpp:1521
         # 1521 csr[nzit.rowid()].push_back( make_pair(colit.colid(),
         # nzit.value()) ); )
-        store.write(B)
+        #store.write(B)
 
         #B = store.read('combblas-sparse')
         #C = store.read('scipy-sparse')
@@ -143,7 +143,7 @@ class IO_test(unittest.TestCase):
             store.read('scipy-sparse')
 
     def test_libsvm(self):
-        fpath = '../../python-skylark/skylark/datasets/usps.t'
+        fpath = base_dir + '/python-skylark/skylark/datasets/usps.t'
         store = io.libsvm(fpath)
         features_matrix, labels_matrix = store.read()
         matrix_info = features_matrix.shape, features_matrix.nnz, labels_matrix.shape
@@ -154,5 +154,9 @@ class IO_test(unittest.TestCase):
 
 
 if __name__ == '__main__':
+    import sys
+    #XXX: hack to get argument to libsvm test
+    global base_dir
+    base_dir = sys.argv[1]
+    del(sys.argv[1])
     unittest.main(verbosity=2)
-

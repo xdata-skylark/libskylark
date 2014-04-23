@@ -42,6 +42,6 @@ foreach (TEST ${PY_TEST_LIST})
     string (REGEX REPLACE "([a-zA-Z]+).py" "\\1" NAME ${TEST})
 
     add_test(NAME ${NAME}
-        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/${TEST}
+        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/${TEST} ${CMAKE_SOURCE_DIR}
     )
 endforeach (TEST)

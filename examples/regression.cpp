@@ -116,7 +116,23 @@ int main(int argc, char** argv) {
     sketched_solver_type<skysk::JLT_t>(problem, t, context).solve(b, x);
     check_solution(problem, b, x, res, resAtr);
     if (rank == 0)
-        std::cout << "Sketch-and-Solve (QR): ||r||_2 =  " << boost::format("%.2f") % res
+        std::cout << "Sketch-and-Solve (JLT): ||r||_2 =  " << boost::format("%.2f") % res
+                  << " (x " << boost::format("%.5f") % (res / res_opt) << ")"
+                  << " ||A' * r||_2 = " << boost::format("%.2e") % resAtr
+                  << std::endl;
+
+    sketched_solver_type<skysk::CWT_t>(problem, t, context).solve(b, x);
+    check_solution(problem, b, x, res, resAtr);
+    if (rank == 0)
+        std::cout << "Sketch-and-Solve (CWT): ||r||_2 =  " << boost::format("%.2f") % res
+                  << " (x " << boost::format("%.5f") % (res / res_opt) << ")"
+                  << " ||A' * r||_2 = " << boost::format("%.2e") % resAtr
+                  << std::endl;
+
+    sketched_solver_type<skysk::FJLT_t>(problem, t, context).solve(b, x);
+    check_solution(problem, b, x, res, resAtr);
+    if (rank == 0)
+        std::cout << "Sketch-and-Solve (FJLT): ||r||_2 =  " << boost::format("%.2f") % res
                   << " (x " << boost::format("%.5f") % (res / res_opt) << ")"
                   << " ||A' * r||_2 = " << boost::format("%.2e") % resAtr
                   << std::endl;

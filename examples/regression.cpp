@@ -28,11 +28,19 @@ typedef skyalg::regression_problem_t<matrix_type,
                                      skyalg::l2_tag,
                                      skyalg::no_reg_tag> regression_problem_type;
 
-typedef skyalg::exact_regressor_t<
-    regression_problem_type,
-    rhs_type,
-    sol_type,
-    skyalg::qr_l2_solver_tag> exact_solver_type;
+template<typename AlgTag>
+struct exact_solver_type :
+    public skyalg::exact_regressor_t<
+    regression_problem_type, rhs_type, sol_type, AlgTag> {
+
+    typedef skyalg::exact_regressor_t<
+        regression_problem_type, rhs_type, sol_type, AlgTag> base_type;
+
+    exact_solver_type(const regression_problem_type& problem) :
+        base_type(problem) {
+
+    }
+};
 
 template<template <typename, typename> class TransformType >
 struct sketched_solver_type :
@@ -103,7 +111,7 @@ int main(int argc, char** argv) {
 
     // Using exact regressor
     sol_type x(n,1);
-    exact_solver_type exact_solver(problem);
+    exact_solver_type<skyalg::qr_l2_solver_tag> exact_solver(problem);
     exact_solver.solve(b, x);
     check_solution(problem, b, x, res, resAtr);
     if (rank == 0)

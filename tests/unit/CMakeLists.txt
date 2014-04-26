@@ -35,6 +35,18 @@ if (SKYLARK_HAVE_COMBBLAS)
 
 endif (SKYLARK_HAVE_COMBBLAS)
 
+if (SKYLARK_HAVE_COMBBLAS AND SKYLARK_HAVE_ELEMENTAL)
+  add_executable(sparse_mixed_apply SparseSketchApplyMixedTest.cpp)
+  target_link_libraries(sparse_mixed_apply
+                        ${SKYLARK_LIBS}
+                        ${Elemental_LIBRARY}
+                        ${FFTW_LIBRARY}
+                        ${Pmrrr_LIBRARY}
+                        ${CombBLAS_LIBRARIES}
+                        ${Boost_LIBRARIES})
+  add_test( sparse_mixed_apply_test sparse_mixed_apply )
+endif (SKYLARK_HAVE_COMBBLAS AND SKYLARK_HAVE_ELEMENTAL)
+
 add_executable(local_sparse_apply LocalSparseSketchApply.cpp)
 target_link_libraries( local_sparse_apply
                        ${SKYLARK_LIBS}

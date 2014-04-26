@@ -28,9 +28,10 @@ struct CT_data_t :
      * Constructor
      * Most of the work is done by base. Here just write scale
      */
-    CT_data_t(int N, int S, double C, skylark::base::context_t* context)
+    CT_data_t(int N, int S, double C, skylark::base::context_t context)
         : base_t(N, S, context, "CT"), _C(C) {
         base_t::scale = C / static_cast<double>(S);
+        base_t::build();
     }
 
     CT_data_t(const boost::property_tree::ptree &sketch)
@@ -38,6 +39,7 @@ struct CT_data_t :
         _C(sketch.get<double>("sketch.c")) {
 
         base_t::scale = _C / static_cast<double>(base_t::_S);
+        base_t::build();
     }
 
     template <typename ValueT>

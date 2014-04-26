@@ -4,6 +4,7 @@
 #include "exception.hpp"
 #include "../utility/randgen.hpp"
 
+#include "boost/smart_ptr.hpp"
 #include "boost/property_tree/ptree.hpp"
 #include "boost/property_tree/json_parser.hpp"
 
@@ -18,13 +19,25 @@ struct context_t {
      * Initialize context with a seed.
      * @param[in] seed Random seed to be used for all computations.
      */
-    context_t (int seed) :
-        _counter(0),
+    context_t (int seed, int counter=0) :
+        _counter(counter),
         _seed(seed) {}
 
     //context_t (context_t&& ctxt) :
         //_counter(std::move(ctxt._counter)), _seed(std::move(ctxt._seed))
     //{}
+
+    //context_t(const context_t& other) {
+        //_seed    = other._seed;
+        //_counter = other._counter;
+    //}
+
+    //context_t& operator=(const context_t& other) {
+        //_seed    = other._seed;
+        //_counter = other._counter;
+        //return *this;
+    //}
+
 
     /**
      * Load context from a serialized JSON structure.
@@ -66,12 +79,13 @@ struct context_t {
      * the internal state of the context synchronized.
      */
     template <typename Distribution>
-    skylark::utility::random_samples_array_t<Distribution>
+    boost::shared_ptr< utility::random_samples_array_t<Distribution> >
     allocate_random_samples_array(size_t size, Distribution& distribution) {
-        skylark::utility::random_samples_array_t<Distribution>
-            random_samples_array(_counter, size, _seed, distribution);
+        boost::shared_ptr< utility::random_samples_array_t<Distribution> > tmp(
+            new skylark::utility::random_samples_array_t<Distribution>
+                (_counter, size, _seed, distribution));
         _counter += size;
-        return random_samples_array;
+        return tmp;
     }
 
 
@@ -144,9 +158,9 @@ struct context_t {
 private:
 
     /// Disable copy constructor as this is error prone for context
-    context_t(const context_t&);
+    //context_t(const context_t&);
     /// Disable assignment operator as this is error prone for context
-    context_t& operator=(const context_t&);
+    //context_t& operator=(const context_t&);
 
     /// Internal counter identifying the start of next stream of random numbers
     size_t _counter;
@@ -157,6 +171,7 @@ private:
 boost::property_tree::ptree& operator<<(boost::property_tree::ptree &sk,
                                         const context_t &data) {
         sk.put("sketch.context.seed", data._seed);
+        sk.put("sketch.context.counter", data._counter);
         return sk;
 }
 

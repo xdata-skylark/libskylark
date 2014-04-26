@@ -52,7 +52,7 @@ int test_main(int argc, char *argv[]) {
 
     //[> 1. Create the sketching matrix and dump JSON <]
     skylark::sketch::CWT_t<DistMatrixType, DistMatrixType>
-        Sparse(n, n_s, &context);
+        Sparse(n, n_s, context);
 
     // dump to property tree
     //FIXME: improve interface (remove indirection)
@@ -93,7 +93,8 @@ int test_main(int argc, char *argv[]) {
     //DenseDistMat_t A(grid);
     //elem::Uniform(A, m, n);
 
-    skylark::sketch::CT_t<DenseDistMat_t, DenseDistMat_t> Dense(n, n_s, 2.2, &context);
+    skylark::sketch::CT_t<DenseDistMat_t, DenseDistMat_t>
+        Dense(n, n_s, 2.2, context);
     boost::property_tree::ptree ptd;
     ptd << Dense;
 

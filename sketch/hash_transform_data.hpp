@@ -31,11 +31,10 @@ struct hash_transform_data_t : public transform_data_t {
      *  @param S
      *  @param context
      */
-    hash_transform_data_t (int N, int S, skylark::base::context_t* context,
+    hash_transform_data_t (int N, int S, base::context_t context,
                            const std::string type = "")
         : transform_data_t(N, S, context, type) {
 
-        _populate();
     }
 
     /**
@@ -45,23 +44,24 @@ struct hash_transform_data_t : public transform_data_t {
     hash_transform_data_t (const boost::property_tree::ptree &json)
         : transform_data_t(json) {
 
-        _populate();
     }
 
 protected:
     std::vector<index_type> row_idx; /**< precomputed row indices */
     std::vector<value_type> row_value; /**< precomputed scaling factors */
 
-private:
+    base::context_t build() {
+        base::context_t tmp = transform_data_t::build();
 
-    void _populate() {
         idx_distribution_type row_idx_distribution(0, _S - 1);
         value_distribution_type row_value_distribution;
 
-        row_idx   = _creation_context->generate_random_samples_array(
+        row_idx   = tmp.generate_random_samples_array(
                         _N, row_idx_distribution);
-        row_value = _creation_context->generate_random_samples_array(
+        row_value = tmp.generate_random_samples_array(
                         _N, row_value_distribution);
+
+        return tmp;
     }
 };
 

@@ -23,22 +23,22 @@ struct CWT_data_t : public hash_transform_data_t<
     boost::random::uniform_int_distribution,
     utility::rademacher_distribution_t > {
 
-
-   CWT_data_t(int N, int S, skylark::base::context_t* context)
-        : hash_transform_data_t<
+    typedef hash_transform_data_t<
         IndexType, ValueType,
         boost::random::uniform_int_distribution,
-        utility::rademacher_distribution_t > (N, S, context, "CWT") {
+        utility::rademacher_distribution_t > base_t;
 
-   }
+    CWT_data_t(int N, int S, base::context_t context)
+        : base_t(N, S, context, "CWT") {
 
-   CWT_data_t(const boost::property_tree::ptree &json)
-        : hash_transform_data_t<
-        IndexType, ValueType,
-        boost::random::uniform_int_distribution,
-        utility::rademacher_distribution_t > (json) {
+        base_t::build();
+    }
 
-   }
+    CWT_data_t(const boost::property_tree::ptree &json)
+        : base_t(json) {
+
+        base_t::build();
+    }
 
 };
 

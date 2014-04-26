@@ -8,6 +8,8 @@
 
 #include "transform_data.hpp"
 
+#include "boost/smart_ptr.hpp"
+
 namespace skylark { namespace sketch {
 
 /**
@@ -25,12 +27,10 @@ struct dense_transform_data_t : public transform_data_t {
     /**
      * Regular constructor
      */
-    dense_transform_data_t (int N, int S, skylark::base::context_t* context,
+    dense_transform_data_t (int N, int S, base::context_t context,
                             std::string type = "")
         : transform_data_t(N, S, context, type),
-          distribution(),
-          random_samples(
-                  context->allocate_random_samples_array(N * S, distribution)) {
+          distribution() {
 
         // No scaling in "raw" form
         scale = 1.0;
@@ -38,21 +38,25 @@ struct dense_transform_data_t : public transform_data_t {
 
     dense_transform_data_t (const boost::property_tree::ptree json)
         : transform_data_t(json),
-          distribution(),
-          random_samples(
-            _creation_context->allocate_random_samples_array(
-                _N * _S, distribution)) {
+          distribution() {
 
         // No scaling in "raw" form
         scale = 1.0;
     }
 
+
 protected:
     value_distribution_type distribution; /**< Distribution for samples */
-    skylark::utility::random_samples_array_t < value_distribution_type>
+    boost::shared_ptr<skylark::utility::random_samples_array_t <value_distribution_type> >
         random_samples;
     /**< Array of samples, to be lazily computed */
     double scale; /**< Scaling factor for the samples */
+
+    base::context_t build() {
+        base::context_t tmp = transform_data_t::build();
+        random_samples = tmp.allocate_random_samples_array(_N * _S, distribution);
+        return tmp;
+    }
 };
 
 } } /** namespace skylark::sketch */

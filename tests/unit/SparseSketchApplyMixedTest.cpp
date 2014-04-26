@@ -323,7 +323,7 @@ int test_main(int argc, char *argv[]) {
             for(int row = 0; row < expected_A_r.Height(); row++) {
                 if(local_sketch_A_r.Get(row, col) !=
                         expected_A_r.Get(row, col))
-                    BOOST_FAIL("Result of local colwise application not as expected");
+                    BOOST_FAIL("Result of local rowwise application not as expected");
             }
         }
     }

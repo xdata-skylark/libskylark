@@ -7,9 +7,11 @@
 #include <CombBLAS.h>
 #include <elemental.hpp>
 
-#include "../utility/exception.hpp"
-
+#include "../base/exception.hpp"
 #include "../base/context.hpp"
+
+#include "../utility/external/combblas_comm_grid.hpp"
+
 #include "transforms.hpp"
 #include "hash_transform_data.hpp"
 
@@ -78,9 +80,8 @@ struct hash_transform_t <
         data_type(other_data) {}
 
     template <typename Dimension>
-    void apply (const matrix_type &A,
-        output_matrix_type &sketch_of_A,
-        Dimension dimension) const {
+    void apply (const matrix_type &A, output_matrix_type &sketch_of_A,
+                Dimension dimension) const {
         try {
             apply_impl (A, sketch_of_A, dimension);
         } catch(boost::mpi::exception e) {
@@ -120,16 +121,8 @@ private:
         const size_t ncols = sketch_of_A.Width();
         const size_t nrows = sketch_of_A.Height();
 
-        //FIXME: use comm_grid
-        const size_t my_row_offset =
-            static_cast<int>((static_cast<double>(A.getnrow()) /
-                    A.getcommgrid()->GetGridRows())) *
-                    A.getcommgrid()->GetRankInProcCol(rank);
-
-        const size_t my_col_offset =
-            static_cast<int>((static_cast<double>(A.getncol()) /
-                    A.getcommgrid()->GetGridCols())) *
-                    A.getcommgrid()->GetRankInProcRow(rank);
+        const size_t my_row_offset = utility::cb_my_row_offset(A);
+        const size_t my_col_offset = utility::cb_my_col_offset(A);
 
         size_t comm_size = A.getcommgrid()->GetSize();
         std::vector< std::set<size_t> > proc_set(comm_size);
@@ -363,9 +356,8 @@ struct hash_transform_t <
         data_type(other_data) {}
 
     template <typename Dimension>
-    void apply (const matrix_type &A,
-        output_matrix_type &sketch_of_A,
-        Dimension dimension) const {
+    void apply (const matrix_type &A, output_matrix_type &sketch_of_A,
+                Dimension dimension) const {
         try {
             apply_impl (A, sketch_of_A, dimension);
         } catch(boost::mpi::exception e) {
@@ -402,17 +394,8 @@ private:
         // extract columns of matrix
         col_t &data = A.seq();
 
-        //FIXME: use comm_grid
-        const size_t my_row_offset =
-            static_cast<int>((static_cast<double>(A.getnrow()) /
-                    A.getcommgrid()->GetGridRows())) *
-                    A.getcommgrid()->GetRankInProcCol(rank);
-
-        const size_t my_col_offset =
-            static_cast<int>((static_cast<double>(A.getncol()) /
-                    A.getcommgrid()->GetGridCols())) *
-                    A.getcommgrid()->GetRankInProcRow(rank);
-
+        const size_t my_row_offset = utility::cb_my_row_offset(A);
+        const size_t my_col_offset = utility::cb_my_col_offset(A);
 
         int n_res_cols = A.getncol();
         int n_res_rows = A.getnrow();
@@ -420,10 +403,7 @@ private:
 
         // Apply sketch for all local values. Subsequently, all values are
         // gathered on processor 0 and the local matrix is populated.
-        // XXX: For now sort on each processor to ease the creation of the
-        // gathered local matrix. Most likely possible can be avoided by
-        // traversing the matrix in the correct order.
-        //FIXME: here we dont need to sort
+        //FIXME: don't use a map here, we don't need sorted values.
         typedef std::map<index_type, value_type> col_values_t;
         col_values_t col_values;
         for(typename col_t::SpColIter col = data.begcol();

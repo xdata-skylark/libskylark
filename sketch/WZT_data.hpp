@@ -1,7 +1,7 @@
 #ifndef SKYLARK_WZT_DATA_HPP
 #define SKYLARK_WZT_DATA_HPP
 
-#include "../utility/exception.hpp"
+#include "../base/base.hpp"
 #include "../utility/distributions.hpp"
 
 #include "transform_data.hpp"
@@ -41,8 +41,8 @@ struct WZT_data_t : public hash_transform_data_t<
         // TODO verify that p is in the correct range.
         if(p < 1 || 2 < p)
             SKYLARK_THROW_EXCEPTION (
-                utility::sketch_exception()
-                    << utility::error_msg("WZT parameter p has to be in (1, 2)") );
+                base::sketch_exception()
+                    << base::error_msg("WZT parameter p has to be in (1, 2)") );
 
 
         _populate();

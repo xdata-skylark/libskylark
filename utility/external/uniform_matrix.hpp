@@ -4,11 +4,6 @@
 #include "../../config.h"
 #include "../../base/context.hpp"
 
-
-#if SKYLARK_HAVE_BOOST
-#include "../exception.hpp"
-#endif
-
 #if SKYLARK_HAVE_COMBBLAS
 #include <CombBLAS.h>
 #endif
@@ -170,7 +165,7 @@ struct uniform_matrix_t <elem::DistMatrix<ValueType, CD, RD> > {
 
     static mpi_matrix_t generate (index_t M,
         index_t N,
-        elem::Grid& grid,
+        const elem::Grid& grid,
         skylark::base::context_t& context) {
 
         mpi_matrix_t A(M, N, grid);

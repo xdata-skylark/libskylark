@@ -3,11 +3,11 @@
 
 #include <vector>
 
+#include "../base/exception.hpp"
+
 #include "boost/foreach.hpp"
 #include "boost/property_tree/ptree.hpp"
 #include "boost/property_tree/json_parser.hpp"
-
-#include "exception.hpp"
 
 namespace skylark { namespace utility {
 
@@ -65,8 +65,8 @@ std::istream& operator>>(std::istream &in, sketch_archive_t &ar) {
         boost::property_tree::read_json(in, json_tree);
     } catch (std::exception const& e) {
         SKYLARK_THROW_EXCEPTION (
-            utility::io_exception()
-                << utility::error_msg(e.what()) );
+            base::io_exception()
+                << base::error_msg(e.what()) );
     }
 
     BOOST_FOREACH(const boost::property_tree::ptree::value_type& child,

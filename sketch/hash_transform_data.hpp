@@ -2,9 +2,9 @@
 #define SKYLARK_HASH_TRANSFORM_DATA_HPP
 
 #include <vector>
-#include "../base/context.hpp"
+
+#include "../base/base.hpp"
 #include "../utility/randgen.hpp"
-#include "../utility/exception.hpp"
 
 #include "transform_data.hpp"
 

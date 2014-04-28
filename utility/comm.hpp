@@ -3,7 +3,7 @@
 
 #include <elemental.hpp>
 
-#include "exception.hpp"
+#include "../base/exception.hpp"
 
 namespace skylark {
 namespace utility {
@@ -26,8 +26,8 @@ void collect_dist_matrix(boost::mpi::communicator& comm, bool here,
         }
         interface.Detach();
     } catch (std::logic_error e) {
-        SKYLARK_THROW_EXCEPTION (
-            elemental_exception() << error_msg(e.what()) );
+        SKYLARK_THROW_EXCEPTION (base::elemental_exception()
+            << base::error_msg(e.what()) );
     }
 }
 
@@ -57,15 +57,15 @@ void collect_dist_matrix(boost::mpi::communicator& comm, bool here,
                 0);
 
         } catch (std::logic_error e) {
-            SKYLARK_THROW_EXCEPTION (
-                elemental_exception() << error_msg(e.what()) );
+            SKYLARK_THROW_EXCEPTION( base::elemental_exception()
+                << base::error_msg(e.what()) );
         } catch(boost::mpi::exception e) {
-            SKYLARK_THROW_EXCEPTION (
-                mpi_exception() << error_msg(e.what()) );
+            SKYLARK_THROW_EXCEPTION(base::mpi_exception()
+                << base::error_msg(e.what()) );
         }
 
     } else {
-        SKYLARK_THROW_EXCEPTION ( unsupported_matrix_distribution() );
+        SKYLARK_THROW_EXCEPTION ( base::unsupported_matrix_distribution() );
     }
 }
 
@@ -95,15 +95,15 @@ void collect_dist_matrix(boost::mpi::communicator& comm, bool here,
                 0);
 
         } catch (std::logic_error e) {
-            SKYLARK_THROW_EXCEPTION (
-                elemental_exception() << error_msg(e.what()) );
+            SKYLARK_THROW_EXCEPTION (base::elemental_exception()
+                << base::error_msg(e.what()) );
         } catch(boost::mpi::exception e) {
-            SKYLARK_THROW_EXCEPTION (
-                mpi_exception() << error_msg(e.what()) );
+            SKYLARK_THROW_EXCEPTION (base::mpi_exception()
+                << base::error_msg(e.what()) );
         }
 
     } else {
-        SKYLARK_THROW_EXCEPTION ( unsupported_matrix_distribution() );
+        SKYLARK_THROW_EXCEPTION ( base::unsupported_matrix_distribution() );
     }
 }
 

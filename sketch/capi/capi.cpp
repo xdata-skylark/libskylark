@@ -1,7 +1,7 @@
 #include "boost/property_tree/ptree.hpp"
 
 #include "sketchc.hpp"
-#include "../../utility/exception.hpp"
+#include "../../base/exception.hpp"
 #include "../../utility/sketch_archive.hpp"
 
 #include "../../base/sparse_matrix.hpp"

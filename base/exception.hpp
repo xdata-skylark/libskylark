@@ -1,12 +1,12 @@
-#ifndef EXCEPTION_HPP
-#define EXCEPTION_HPP
+#ifndef SKYLARK_EXCEPTION_HPP
+#define SKYLARK_EXCEPTION_HPP
 
 #include <string>
 #include <exception>
 
 #include <boost/exception/all.hpp>
 
-const char* const errmsg[] = {
+const char* const skylark_errmsg[] = {
       "Skylark failure"
     , "Skylark failed while communicating (MPI)"
     , "Skylark failed in a call to Elemental"
@@ -16,11 +16,12 @@ const char* const errmsg[] = {
     , "Skylark failed when allocating memory in a sketch"
     , "Skylark failed in a call into the Random123 layer"
     , "Skylark failed in I/O calls"
+    , "Skylark failed due to a unsupported base operation"
 };
 
 /// resolves an error_code to a human readable failure message
 const char* skylark_strerror(int error_code) {
-    return errmsg[error_code - 100];
+    return skylark_errmsg[error_code - 100];
 }
 
 
@@ -40,16 +41,16 @@ const char* skylark_strerror(int error_code) {
 /// print the exception trace (if available) to stderr
 #define SKYLARK_PRINT_EXCEPTION_TRACE(ex) \
     if (const std::string *trace = \
-            boost::get_error_info<skylark::utility::stack_trace>(ex)) { \
+            boost::get_error_info<skylark::base::stack_trace>(ex)) { \
         std::cerr << *trace << std::endl; \
     }
 
 /// catch a Skylark exceptions and returns an error code
 //XXX: only get top-most exception?
 #define SKYLARK_CATCH_AND_RETURN_ERROR_CODE() \
-    catch (const skylark::utility::skylark_exception& ex) { \
+    catch (const skylark::base::skylark_exception& ex) { \
         if (int const *c = \
-                boost::get_error_info<skylark::utility::error_code>(ex)) { \
+                boost::get_error_info<skylark::base::error_code>(ex)) { \
             return *c; \
         } \
     }
@@ -57,7 +58,7 @@ const char* skylark_strerror(int error_code) {
 
 
 namespace skylark {
-namespace utility {
+namespace base {
 
 /// predefined structure for error code
 typedef boost::error_info<struct tag_error_code, int>         error_code;
@@ -170,8 +171,18 @@ public:
     }
 };
 
+/// exceptions for unsupported base operation
+struct unsupported_base_operation : virtual elemental_exception {
+public:
+    using skylark_exception::operator<<;
 
-} // namespace utility
+    unsupported_base_operation() {
+        *this << error_code(103);
+    }
+};
+
+
+} // namespace base
 } // namespace skylark
 
 #endif

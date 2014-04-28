@@ -44,7 +44,7 @@ if (SKYLARK_HAVE_COMBBLAS AND SKYLARK_HAVE_ELEMENTAL)
                         ${Pmrrr_LIBRARY}
                         ${CombBLAS_LIBRARIES}
                         ${Boost_LIBRARIES})
-  add_test( sparse_mixed_apply_test sparse_mixed_apply )
+  add_test( sparse_mixed_apply_test mpirun -np 4 sparse_mixed_apply )
 endif (SKYLARK_HAVE_COMBBLAS AND SKYLARK_HAVE_ELEMENTAL)
 
 add_executable(local_sparse_apply LocalSparseSketchApply.cpp)

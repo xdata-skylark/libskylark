@@ -124,15 +124,16 @@ def _callsl(f, *args):
   if errno != 0:
     raise errors.UnexpectedLowerLayerError(_lib.sl_strerror(errno))
 
-def load_json(filename, defouttype = None):
+def load_json(json_data, defouttype = None):
   """
   Load Serialized Transform
 
-  :param filename: Filename of the file holding the serialized JSON structure.
+  :param json_data: string holding the serialized JSON structure.
   """
-  with open (filename, "r") as file:
-    json_data = file.read().replace('\n', '')
 
+  #FIXME: and DONT load to detect type.
+  #       why? the python interface anyway needs to iterate through collection
+  #       of sketches, unless we move this functionality to the CAPI.
   import json
   try:
     dict = json.loads(json_data)

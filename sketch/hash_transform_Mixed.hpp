@@ -15,6 +15,12 @@
 
 namespace skylark { namespace sketch {
 
+//FIXME:
+//  - Benchmark one-sided vs. col/row comm (or midpoint scheme)
+//  - Most likely the scheme depends on the output Elemental distribution,
+//    here we use the same comm-scheme for all of them.
+
+
 /* Specialization: SpParMat for input, Elemental for output */
 template <typename IndexType,
           typename ValueType,

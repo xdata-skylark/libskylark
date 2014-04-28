@@ -8,7 +8,7 @@
 #include "../utility/comm.hpp"
 #include "../utility/get_communicator.hpp"
 
-
+//FIXME: why do we need copy constructor??
 namespace skylark { namespace sketch {
 
 /**

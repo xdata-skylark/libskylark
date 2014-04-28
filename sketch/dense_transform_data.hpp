@@ -12,6 +12,8 @@
 
 namespace skylark { namespace sketch {
 
+//FIXME: WHY DO WE NEED TO ALLOW COPY CONSTRUCTOR HERE (or more precisely in
+//       dense_transform_Elemental)?
 /**
  * This is the base data class for dense transforms. Essentially, it
  * holds the input and sketched matrix sizes and the array of samples

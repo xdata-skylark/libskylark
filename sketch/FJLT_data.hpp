@@ -38,7 +38,7 @@ struct FJLT_data_t : public transform_data_t {
           samples(base_t::_S),
           underlying_data(base_t::_N, base_t::_creation_context) {
 
-        _populate();
+        build();
     }
 
     FJLT_data_t (boost::property_tree::ptree &json)
@@ -46,7 +46,7 @@ struct FJLT_data_t : public transform_data_t {
           samples(base_t::_S),
           underlying_data(base_t::_N, base_t::_creation_context) {
 
-        _populate();
+        build();
     }
 
 protected:
@@ -54,14 +54,12 @@ protected:
     const underlying_data_type underlying_data;
     /**< Data of the underlying RFUT transformation */
 
-
-    void _populate() {
-
+    context_t build() {
+        context_t ctx = base_t::build();
         value_distribution_type distribution(0, base_t::_N - 1);
-        samples = base_t::_creation_context->generate_random_samples_array(
-                base_t::_S, distribution);
+        samples = ctx.generate_random_samples_array(base_t::_S, distribution);
+        return ctx;
     }
-
   };
 
 } } /** namespace skylark::sketch */

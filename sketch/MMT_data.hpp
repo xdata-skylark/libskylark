@@ -21,21 +21,21 @@ struct MMT_data_t : public hash_transform_data_t<
     boost::random::uniform_int_distribution,
     boost::random::cauchy_distribution > {
 
-
-    MMT_data_t(int N, int S, skylark::base::context_t& context)
-        : hash_transform_data_t<
+    typedef hash_transform_data_t<
         IndexType, ValueType,
         boost::random::uniform_int_distribution,
-        boost::random::cauchy_distribution > (N, S, context, "MMT") {
+        boost::random::cauchy_distribution > base_t;
 
+    MMT_data_t(int N, int S, skylark::base::context_t& context)
+        : base_t(N, S, context, "MMT") {
+
+        base_t::build();
    }
 
    MMT_data_t(const boost::property_tree::ptree &json)
-        : hash_transform_data_t<
-        IndexType, ValueType,
-        boost::random::uniform_int_distribution,
-        boost::random::cauchy_distribution > (json) {
+        : base_t(json) {
 
+        base_t::build();
    }
 
 };

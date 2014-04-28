@@ -85,16 +85,16 @@ struct hash_transform_t <
             apply_impl (A, sketch_of_A, dimension);
         } catch(boost::mpi::exception e) {
             SKYLARK_THROW_EXCEPTION (
-                utility::mpi_exception()
-                    << utility::error_msg(e.what()) );
+                base::mpi_exception()
+                    << base::error_msg(e.what()) );
         } catch (std::string e) {
             SKYLARK_THROW_EXCEPTION (
-                utility::combblas_exception()
-                    << utility::error_msg(e) );
+                base::combblas_exception()
+                    << base::error_msg(e) );
         } catch (std::logic_error e) {
             SKYLARK_THROW_EXCEPTION (
-                utility::combblas_exception()
-                    << utility::error_msg(e.what()) );
+                base::combblas_exception()
+                    << base::error_msg(e.what()) );
         }
     }
 
@@ -370,16 +370,16 @@ struct hash_transform_t <
             apply_impl (A, sketch_of_A, dimension);
         } catch(boost::mpi::exception e) {
             SKYLARK_THROW_EXCEPTION (
-                utility::mpi_exception()
-                    << utility::error_msg(e.what()) );
+                base::mpi_exception()
+                    << base::error_msg(e.what()) );
         } catch (std::string e) {
             SKYLARK_THROW_EXCEPTION (
-                utility::combblas_exception()
-                    << utility::error_msg(e) );
+                base::combblas_exception()
+                    << base::error_msg(e) );
         } catch (std::logic_error e) {
             SKYLARK_THROW_EXCEPTION (
-                utility::combblas_exception()
-                    << utility::error_msg(e.what()) );
+                base::combblas_exception()
+                    << base::error_msg(e.what()) );
         }
     }
 

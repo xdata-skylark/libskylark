@@ -706,7 +706,6 @@ SKYLARK_EXTERN_API int
         FastGaussianRFT_data_t);
 
 #endif
-#endif
 
 #ifdef SKYLARK_HAVE_COMBBLAS
 

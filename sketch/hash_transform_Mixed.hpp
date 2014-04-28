@@ -192,22 +192,19 @@ private:
 
         // Creating windows for all relevant arrays
         ///FIXME: MPI-3 stuff?
+        boost::mpi::communicator comm = utility::get_communicator(A);
         MPI_Win proc_win, start_offset_win, idx_win, val_win;
         MPI_Win_create(&proc_size[0], sizeof(size_t) * comm_size,
-                       sizeof(size_t), MPI_INFO_NULL,
-                       A.getcommgrid()->GetWorld(), &proc_win);
+                       sizeof(size_t), MPI_INFO_NULL, comm, &proc_win);
 
         MPI_Win_create(&proc_start_idx[0], sizeof(size_t) * comm_size,
-                       sizeof(size_t), MPI_INFO_NULL,
-                       A.getcommgrid()->GetWorld(), &start_offset_win);
+                       sizeof(size_t), MPI_INFO_NULL, comm, &start_offset_win);
 
         MPI_Win_create(&indicies[0], sizeof(index_type) * indicies.size(),
-                       sizeof(index_type), MPI_INFO_NULL,
-                       A.getcommgrid()->GetWorld(), &idx_win);
+                       sizeof(index_type), MPI_INFO_NULL, comm, &idx_win);
 
         MPI_Win_create(&values[0], sizeof(value_type) * values.size(),
-                       sizeof(value_type), MPI_INFO_NULL,
-                       A.getcommgrid()->GetWorld(), &val_win);
+                       sizeof(value_type), MPI_INFO_NULL, comm, &val_win);
 
         MPI_Win_fence(0, proc_win);
         MPI_Win_fence(0, start_offset_win);
@@ -403,7 +400,6 @@ private:
 
         // Apply sketch for all local values. Subsequently, all values are
         // gathered on processor 0 and the local matrix is populated.
-        //FIXME: don't use a map here, we don't need sorted values.
         typedef std::map<index_type, value_type> col_values_t;
         col_values_t col_values;
         for(typename col_t::SpColIter col = data.begcol();
@@ -421,12 +417,9 @@ private:
             }
         }
 
-        boost::mpi::communicator world(A.getcommgrid()->GetWorld(),
-                                       boost::mpi::comm_duplicate);
-
         std::vector< std::map<index_type, value_type > >
             result;
-        boost::mpi::gather(world, col_values, result, 0);
+        boost::mpi::gather(utility::get_communicator(A), col_values, result, 0);
 
         if(rank == 0) {
             typedef typename std::map<index_type, value_type>::iterator itr_t;

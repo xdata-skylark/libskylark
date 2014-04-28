@@ -24,9 +24,7 @@ struct hash_transform_t <
         public hash_transform_data_t<size_t,
                                      ValueType,
                                      IdxDistributionType,
-                                     ValueDistribution>,
-        virtual public sketch_transform_t<elem::Matrix<ValueType>,
-                                          elem::Matrix<ValueType> > {
+                                     ValueDistribution> {
 
     // Typedef matrix and distribution types so that we can use them regularly
     typedef ValueType value_type;
@@ -62,11 +60,11 @@ struct hash_transform_t <
         data_type(other_data) {}
 
     /**
-     * Apply columnwise the sketching transform that is described by the
-     * the transform with output sketch_of_A.
+     * Apply the sketching transform that is described in by the sketch_of_A.
      */
+    template <typename Dimension>
     void apply (const matrix_type& A, output_matrix_type& sketch_of_A,
-        columnwise_tag dimension) const {
+        Dimension dimension) const {
         try {
             apply_impl(A, sketch_of_A, dimension);
         } catch (std::logic_error e) {
@@ -79,28 +77,6 @@ struct hash_transform_t <
                     << base::error_msg(e.what()) );
         }
     }
-
-    /**
-     * Apply rowwise the sketching transform that is described by the
-     * the transform with output sketch_of_A.
-     */
-    void apply (const matrix_type& A, output_matrix_type& sketch_of_A,
-        rowwise_tag dimension) const {
-        try {
-            apply_impl(A, sketch_of_A, dimension);
-        } catch (std::logic_error e) {
-            SKYLARK_THROW_EXCEPTION (
-                base::elemental_exception()
-                    << base::error_msg(e.what()) );
-        } catch(boost::mpi::exception e) {
-            SKYLARK_THROW_EXCEPTION (
-                base::mpi_exception()
-                    << base::error_msg(e.what()) );
-        }
-    }
-
-    int get_N() const { return this->_N; } /**< Get input dimension. */
-    int get_S() const { return this->_S; } /**< Get output dimension. */
 
 private:
 
@@ -165,9 +141,7 @@ struct hash_transform_t <
         public hash_transform_data_t<size_t,
                                      ValueType,
                                      IdxDistributionType,
-                                     ValueDistribution>,
-        virtual public sketch_transform_t<base::sparse_matrix_t<ValueType>,
-                                          elem::Matrix<ValueType> > {
+                                     ValueDistribution> {
 
     // Typedef matrix and distribution types so that we can use them regularly
     typedef ValueType value_type;
@@ -203,11 +177,11 @@ struct hash_transform_t <
         data_type(other_data) {}
 
     /**
-     * Apply columnwise the sketching transform that is described by the
-     * the transform with output sketch_of_A.
+     * Apply the sketching transform that is described in by the sketch_of_A.
      */
+    template <typename Dimension>
     void apply (const matrix_type& A, output_matrix_type& sketch_of_A,
-        columnwise_tag dimension) const {
+        Dimension dimension) const {
         try {
             apply_impl(A, sketch_of_A, dimension);
         } catch (std::logic_error e) {
@@ -220,28 +194,6 @@ struct hash_transform_t <
                     << base::error_msg(e.what()) );
         }
     }
-
-    /**
-     * Apply rowwise the sketching transform that is described by the
-     * the transform with output sketch_of_A.
-     */
-    void apply (const matrix_type& A, output_matrix_type& sketch_of_A,
-        rowwise_tag dimension) const {
-        try {
-            apply_impl(A, sketch_of_A, dimension);
-        } catch (std::logic_error e) {
-            SKYLARK_THROW_EXCEPTION (
-                base::elemental_exception()
-                    << base::error_msg(e.what()) );
-        } catch(boost::mpi::exception e) {
-            SKYLARK_THROW_EXCEPTION (
-                base::mpi_exception()
-                    << base::error_msg(e.what()) );
-        }
-    }
-
-    int get_N() const { return this->_N; } /**< Get input dimension. */
-    int get_S() const { return this->_S; } /**< Get output dimension. */
 
 private:
 
@@ -323,10 +275,7 @@ struct hash_transform_t <
         public hash_transform_data_t<size_t,
                                      ValueType,
                                      IdxDistributionType,
-                                     ValueDistribution>,
-        virtual public sketch_transform_t<elem::DistMatrix<ValueType, ColDist,
-                                                           RowDist>,
-                                          elem::Matrix<ValueType> >  {
+                                     ValueDistribution> {
 
     // Typedef matrix and distribution types so that we can use them regularly
     typedef ValueType value_type;
@@ -362,11 +311,11 @@ struct hash_transform_t <
         data_type(other_data) {}
 
     /**
-     * Apply columnwise the sketching transform that is described by the
-     * the transform with output sketch_of_A.
+     * Apply the sketching transform that is described in by the sketch_of_A.
      */
+    template <typename Dimension>
     void apply (const matrix_type& A, output_matrix_type& sketch_of_A,
-        columnwise_tag dimension) const {
+        Dimension dimension) const {
         try {
             apply_impl(A, sketch_of_A, dimension);
         } catch (std::logic_error e) {
@@ -379,28 +328,6 @@ struct hash_transform_t <
                     << base::error_msg(e.what()) );
         }
     }
-
-    /**
-     * Apply rowwise the sketching transform that is described by the
-     * the transform with output sketch_of_A.
-     */
-    void apply (const matrix_type& A, output_matrix_type& sketch_of_A,
-        rowwise_tag dimension) const {
-        try {
-            apply_impl(A, sketch_of_A, dimension);
-        } catch (std::logic_error e) {
-            SKYLARK_THROW_EXCEPTION (
-                base::elemental_exception()
-                    << base::error_msg(e.what()) );
-        } catch(boost::mpi::exception e) {
-            SKYLARK_THROW_EXCEPTION (
-                base::mpi_exception()
-                    << base::error_msg(e.what()) );
-        }
-    }
-
-    int get_N() const { return this->_N; } /**< Get input dimension. */
-    int get_S() const { return this->_S; } /**< Get output dimension. */
 
 private:
     /**

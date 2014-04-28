@@ -307,6 +307,7 @@ void read_hdf5(skylark_context_t& context, string fName,
 					 X.attach(_col_ptr, _rowind, _values, nnz_local, d, examples_local, true);
 					 LocalMatrixType Y2(examples_local, 1, y, 0);
 					 Y = Y2;
+					 delete[] y;
 					 std::cout << "rank=0: Read " << examples_local << " x " << d << " with " << nnz_local << " nonzeros" << std::endl;
 
 				 } else {
@@ -353,7 +354,7 @@ void read_hdf5(skylark_context_t& context, string fName,
 	                    context.comm.recv(0, 7, y, t);
 	                    LocalMatrixType Y2(t, 1, y, 0);
 	                    Y = Y2; // copy
-
+	                    delete[] y;
 	                    //Y.Resize(t,1);
 	                    //Y.Attach(t,1,y,0);
 

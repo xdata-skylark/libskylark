@@ -695,6 +695,7 @@ SKYLARK_EXTERN_API int
         FastGaussianRFT_data_t);
 
 #endif
+#endif
 
 #ifdef SKYLARK_HAVE_COMBBLAS
 
@@ -713,7 +714,6 @@ SKYLARK_EXTERN_API int
         sketch::MMT_t, DistSparseMatrix, DistSparseMatrix,
         MMT_data_t);
 
-#endif
 #endif
 
     return 0;

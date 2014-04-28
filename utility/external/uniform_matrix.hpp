@@ -2,12 +2,7 @@
 #define SKYLARK_UNIFORM_MATRIX_HPP
 
 #include "../../config.h"
-#include "../../sketch/context.hpp"
-
-
-#if SKYLARK_HAVE_BOOST
-#include "../exception.hpp"
-#endif
+#include "../../base/context.hpp"
 
 #if SKYLARK_HAVE_COMBBLAS
 #include <CombBLAS.h>
@@ -41,7 +36,7 @@ struct uniform_matrix_t <FullyDistVec<IndexType, ValueType> > {
     typedef uniform_distribution_t<ValueType> distribution_t;
 
     static mpi_vector_t generate (index_t& M,
-        skylark::sketch::context_t& context) {
+        skylark::base::context_t& context) {
 
         /* Create a dummy vector */
         mpi_vector_t x(M, 0);
@@ -71,7 +66,7 @@ struct uniform_matrix_t <FullyDistMultiVec<IndexType, ValueType> > {
 
     static mpi_multi_vector_t generate (index_t M,
         index_t N,
-        skylark::sketch::context_t& context) {
+        skylark::base::context_t& context) {
         /* Create an empty multi-vector */
         mpi_multi_vector_t X(M/*dimension*/, N/*number of vectors*/);
 
@@ -99,7 +94,7 @@ struct uniform_matrix_t <SpParMat<IndexType,
     static mpi_matrix_t generate(index_t M,
         index_t N,
         index_t NNZ,
-        skylark::sketch::context_t& context) {
+        skylark::base::context_t& context) {
         /* Create three FullyDistVec for colid, rowid, and values */
         mpi_value_vector_t values =
             uniform_matrix_t<mpi_value_vector_t>::generate(NNZ, context);
@@ -141,7 +136,7 @@ struct uniform_matrix_t <elem::Matrix<ValueType> > {
 
     static matrix_t generate (index_t M,
         index_t N,
-        skylark::sketch::context_t& context) {
+        skylark::base::context_t& context) {
 
         matrix_t A(M, N);
         distribution_t distribution;
@@ -170,8 +165,8 @@ struct uniform_matrix_t <elem::DistMatrix<ValueType, CD, RD> > {
 
     static mpi_matrix_t generate (index_t M,
         index_t N,
-        elem::Grid& grid,
-        skylark::sketch::context_t& context) {
+        const elem::Grid& grid,
+        skylark::base::context_t& context) {
 
         mpi_matrix_t A(M, N, grid);
         distribution_t distribution;

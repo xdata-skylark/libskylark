@@ -1,7 +1,7 @@
 #include "boost/property_tree/ptree.hpp"
 
 #include "sketchc.hpp"
-#include "../../utility/exception.hpp"
+#include "../../base/exception.hpp"
 #include "../../utility/sketch_archive.hpp"
 
 #include "../../base/sparse_matrix.hpp"
@@ -68,7 +68,7 @@ typedef elem::DistMatrix<double, elem::VC, elem::STAR> DistMatrix_VC_STAR;
 typedef elem::DistMatrix<double, elem::STAR, elem::VR> DistMatrix_STAR_VR;
 typedef elem::DistMatrix<double, elem::STAR, elem::VC> DistMatrix_STAR_VC;
 #endif
-typedef skylark::base::sparse_matrix_t<double> SparseMatrix;
+typedef base::sparse_matrix_t<double> SparseMatrix;
 #ifdef SKYLARK_HAVE_COMBBLAS
 typedef SpDCCols< size_t, double > col_t;
 typedef SpParMat< size_t, double, col_t > DistSparseMatrix;
@@ -182,27 +182,26 @@ SKYLARK_EXTERN_API bool sl_has_combblas() {
 #endif
 }
 
-/** Support for skylark::sketch::context_t. */
+/** Support for skylark::base::context_t. */
 SKYLARK_EXTERN_API int sl_create_default_context(int seed,
-        sketch::context_t **ctxt) {
+        base::context_t **ctxt) {
     SKYLARK_BEGIN_TRY()
-        *ctxt = new sketch::context_t(seed, boost::mpi::communicator());
+        *ctxt = new base::context_t(seed);
     SKYLARK_END_TRY()
     SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
     return 0;
 }
 
 SKYLARK_EXTERN_API int sl_create_context(int seed,
-        MPI_Comm comm, sketch::context_t **ctxt) {
+        MPI_Comm comm, base::context_t **ctxt) {
     SKYLARK_BEGIN_TRY()
-        *ctxt = new sketch::context_t(seed,
-            boost::mpi::communicator(comm, boost::mpi::comm_duplicate));
+        *ctxt = new base::context_t(seed);
     SKYLARK_END_TRY()
     SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
     return 0;
 }
 
-SKYLARK_EXTERN_API int sl_free_context(sketch::context_t *ctxt) {
+SKYLARK_EXTERN_API int sl_free_context(base::context_t *ctxt) {
     SKYLARK_BEGIN_TRY()
         delete ctxt;
     SKYLARK_END_TRY()
@@ -210,24 +209,24 @@ SKYLARK_EXTERN_API int sl_free_context(sketch::context_t *ctxt) {
     return 0;
 }
 
-SKYLARK_EXTERN_API int sl_context_rank(sketch::context_t *ctxt, int *rank) {
+SKYLARK_EXTERN_API int sl_context_rank(base::context_t *ctxt, int *rank) {
     SKYLARK_BEGIN_TRY()
-        *rank = ctxt->rank;
+        //*rank = ctxt->rank;
     SKYLARK_END_TRY()
     SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
     return 0;
 }
 
-SKYLARK_EXTERN_API int sl_context_size(sketch::context_t *ctxt, int *size) {
+SKYLARK_EXTERN_API int sl_context_size(base::context_t *ctxt, int *size) {
     SKYLARK_BEGIN_TRY()
-        *size = ctxt->size;
+        //*size = ctxt->size;
     SKYLARK_END_TRY()
     SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
     return 0;
 }
 
 /** Transforms */
-SKYLARK_EXTERN_API int sl_create_sketch_transform(sketch::context_t *ctxt,
+SKYLARK_EXTERN_API int sl_create_sketch_transform(base::context_t *ctxt,
     char *type_, int n, int s,
     sketchc::sketch_transform_t **sketch, ...) {
 
@@ -286,7 +285,7 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(sketch::context_t *ctxt,
     return 0;
 }
 
-SKYLARK_EXTERN_API int sl_load_sketch_transform(sketch::context_t *ctxt,
+SKYLARK_EXTERN_API int sl_load_sketch_transform(base::context_t *ctxt,
     char *type_, char *data, sketchc::sketch_transform_t **sketch) {
 
     sketchc::transform_type_t type = str2transform_type(type_);
@@ -323,7 +322,7 @@ SKYLARK_EXTERN_API int sl_load_sketch_transform(sketch::context_t *ctxt,
     return 0;
 }
 
-SKYLARK_EXTERN_API int sl_dump_sketch_transform(sketch::context_t *ctxt,
+SKYLARK_EXTERN_API int sl_dump_sketch_transform(base::context_t *ctxt,
     char *type_, char *filename, sketchc::sketch_transform_t *sketch) {
 
     sketchc::transform_type_t type = str2transform_type(type_);
@@ -696,6 +695,7 @@ SKYLARK_EXTERN_API int
         FastGaussianRFT_data_t);
 
 #endif
+#endif
 
 #ifdef SKYLARK_HAVE_COMBBLAS
 
@@ -714,7 +714,6 @@ SKYLARK_EXTERN_API int
         sketch::MMT_t, DistSparseMatrix, DistSparseMatrix,
         MMT_data_t);
 
-#endif
 #endif
 
     return 0;

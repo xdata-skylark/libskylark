@@ -50,7 +50,7 @@ struct ExpSemigroupRLT_t :
      * Regular constructor
      */
     ExpSemigroupRLT_t(int N, int S, double beta,
-        skylark::sketch::context_t& context)
+        base::context_t& context)
         : data_type(N, S, beta, context), _transform(*this) {
 
     }

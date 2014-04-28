@@ -1,9 +1,10 @@
 #ifndef SKYLARK_RFUT_ELEMENTAL_HPP
 #define SKYLARK_RFUT_ELEMENTAL_HPP
 
+#include <boost/mpi.hpp>
 #include <elemental.hpp>
 
-#include "context.hpp"
+#include "../base/base.hpp"
 #include "transforms.hpp"
 #include "RFUT_data.hpp"
 #include "../utility/randgen.hpp"
@@ -37,8 +38,10 @@ struct RFUT_t<
     /**
      * Regular constructor
      */
-    RFUT_t(int N, skylark::sketch::context_t& context)
-        : data_type (N, context) {}
+    RFUT_t(int N, base::context_t& context)
+        : data_type (N, context) {
+
+    }
 
     /**
      * Copy constructor
@@ -70,18 +73,18 @@ struct RFUT_t<
                 apply_impl_vdist(A, mixed_A, dimension);
             } catch (std::logic_error e) {
                 SKYLARK_THROW_EXCEPTION (
-                    utility::elemental_exception()
-                        << utility::error_msg(e.what()) );
+                    base::elemental_exception()
+                        << base::error_msg(e.what()) );
             } catch(boost::mpi::exception e) {
                 SKYLARK_THROW_EXCEPTION (
-                     utility::mpi_exception()
-                         << utility::error_msg(e.what()) );
+                     base::mpi_exception()
+                         << base::error_msg(e.what()) );
                 }
             break;
 
         default:
             SKYLARK_THROW_EXCEPTION (
-                utility::unsupported_matrix_distribution() );
+                base::unsupported_matrix_distribution() );
         }
     }
 
@@ -142,8 +145,10 @@ struct RFUT_t<
     /**
      * Regular constructor
      */
-    RFUT_t(int N, skylark::sketch::context_t& context)
-        : data_type (N, context) {}
+    RFUT_t(int N, base::context_t& context)
+        : data_type (N, context) {
+
+    }
 
     /**
      * Copy constructor
@@ -175,19 +180,19 @@ struct RFUT_t<
                     apply_impl_vdist(A, mixed_A, dimension);
                 } catch (std::logic_error e) {
                     SKYLARK_THROW_EXCEPTION (
-                        utility::elemental_exception()
-                            << utility::error_msg(e.what()) );
+                        base::elemental_exception()
+                            << base::error_msg(e.what()) );
                 } catch(boost::mpi::exception e) {
                     SKYLARK_THROW_EXCEPTION (
-                        utility::mpi_exception()
-                            << utility::error_msg(e.what()) );
+                        base::mpi_exception()
+                            << base::error_msg(e.what()) );
                 }
 
                 break;
 
             default:
                 SKYLARK_THROW_EXCEPTION (
-                    utility::unsupported_matrix_distribution() );
+                    base::unsupported_matrix_distribution() );
 
         }
     }
@@ -204,19 +209,19 @@ struct RFUT_t<
                     apply_inverse_impl_vdist(A, mixed_A, dimension);
                 } catch (std::logic_error e) {
                     SKYLARK_THROW_EXCEPTION (
-                        utility::elemental_exception()
-                            << utility::error_msg(e.what()) );
+                        base::elemental_exception()
+                            << base::error_msg(e.what()) );
                 } catch(boost::mpi::exception e) {
                     SKYLARK_THROW_EXCEPTION (
-                        utility::mpi_exception()
-                            << utility::error_msg(e.what()) );
+                        base::mpi_exception()
+                            << base::error_msg(e.what()) );
                 }
 
                 break;
 
         default:
             SKYLARK_THROW_EXCEPTION (
-                utility::unsupported_matrix_distribution() );
+                base::unsupported_matrix_distribution() );
 
         }
     }

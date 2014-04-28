@@ -29,6 +29,7 @@ endif(FALSE)
 
 endif (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
 
+if(FALSE)
 if (SKYLARK_HAVE_COMBBLAS AND SKYLARK_HAVE_ELEMENTAL)
   add_executable(lsqr lsqr.cpp)
   target_link_libraries(lsqr
@@ -39,3 +40,4 @@ if (SKYLARK_HAVE_COMBBLAS AND SKYLARK_HAVE_ELEMENTAL)
                         ${SKYLARK_LIBS}
                         ${Boost_LIBRARIES})
 endif (SKYLARK_HAVE_COMBBLAS AND SKYLARK_HAVE_ELEMENTAL)
+endif(FALSE)

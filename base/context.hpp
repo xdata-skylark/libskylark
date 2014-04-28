@@ -1,58 +1,33 @@
 #ifndef SKYLARK_CONTEXT_HPP
 #define SKYLARK_CONTEXT_HPP
 
-#include "../utility/exception.hpp"
+#include "exception.hpp"
 #include "../utility/randgen.hpp"
 
-#include "boost/mpi.hpp"
 #include "boost/property_tree/ptree.hpp"
 #include "boost/property_tree/json_parser.hpp"
 
-namespace skylark { namespace sketch {
+namespace skylark { namespace base {
 
 /**
- * A structure that holds basic information about the MPI world and what the
- * user wants to implement.
+ * A structure that holds basic information about the state of the
+ * random number stream.
  */
 struct context_t {
-    /// Communicator to use for MPI
-    boost::mpi::communicator comm;
-    /// Rank of the current process
-    int rank;
-    /// Number of processes in the group
-    int size;
-
     /**
-     * Initialize context with a seed and the communicator.
+     * Initialize context with a seed.
      * @param[in] seed Random seed to be used for all computations.
-     * @param[in] orig Communicator that is duplicated and used with SKYLARK.
-     *
-     * @caveat This is a global operation since all MPI ranks need to
-     * participate in the duplication of the communicator.
      */
-    context_t (int seed,
-               const boost::mpi::communicator& orig) :
-        comm(orig, boost::mpi::comm_duplicate),
-        rank(comm.rank()),
-        size(comm.size()),
+    context_t (int seed) :
         _counter(0),
         _seed(seed) {}
 
 
     /**
-     * Load context from a serialized JSON structure and the communicator.
+     * Load context from a serialized JSON structure.
      * @param[in] filename of JSON structure encoding serialized state.
-     * @param[in] orig Communicator that is duplicated and used with SKYLARK.
-     *
-     * @caveat This is a global operation since all MPI ranks need to
-     * participate in the duplication of the communicator.
      */
-    context_t (const boost::property_tree::ptree& json,
-               const boost::mpi::communicator& orig) :
-        comm(orig, boost::mpi::comm_duplicate),
-        rank(comm.rank()),
-        size(comm.size()) {
-
+    context_t (const boost::property_tree::ptree& json) {
         _counter = json.get<size_t>("sketch.context.counter");
         _seed = json.get<int>("sketch.context.seed");
     }
@@ -115,8 +90,8 @@ struct context_t {
             random_samples_array.resize(size);
         } catch (std::bad_alloc ba) {
             SKYLARK_THROW_EXCEPTION (
-                utility::allocation_exception()
-                    << utility::error_msg(ba.what()) );
+                base::allocation_exception()
+                    << base::error_msg(ba.what()) );
         }
         for(size_t i = 0; i < size; i++) {
             random_samples_array[i] = allocated_random_samples_array[i];
@@ -182,6 +157,6 @@ boost::property_tree::ptree& operator<<(boost::property_tree::ptree &sk,
         return sk;
 }
 
-} } /** namespace skylark::sketch */
+} } /** namespace skylark::base */
 
 #endif // SKYLARK_CONTEXT_HPP

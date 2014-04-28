@@ -4,6 +4,7 @@
 #include <set>
 #include <vector>
 #include <boost/tuple/tuple.hpp>
+#include <boost/unordered_map.hpp>
 
 namespace skylark { namespace base {
 
@@ -25,20 +26,21 @@ struct sparse_matrix_t {
     typedef std::vector<coord_tuple_t> coords_t;
 
     sparse_matrix_t()
-        : _owndata(false), _dirty_struct(false), _height(0), _width(0), _nnz(0),
+        : _ownindptr(false), _ownindices(false), _ownvalues(false),
+          _dirty_struct(false), _height(0), _width(0), _nnz(0),
           _indptr(nullptr), _indices(nullptr), _values(nullptr)
     {}
 
     // The following relies on C++11
     sparse_matrix_t(const sparse_matrix_t<ValueType>&& A) :
-        _owndata(A._owndata), _dirty_struct(A._dirty_struct),
+        _ownindptr(A._ownindptr), _ownindices(A._ownindices),
+        _ownvalues(A._ownvalues), _dirty_struct(A._dirty_struct),
         _height(A._height), _width(A._width), _nnz(A._nnz),
         _indptr(A._indptr), _indices(A._indices), _values(A._values)
     {}
 
     ~sparse_matrix_t() {
-        if (_owndata)
-            _free_data();
+        _free_data();
     }
 
     bool struct_updated() const { return _dirty_struct; }
@@ -64,8 +66,16 @@ struct sparse_matrix_t {
      */
     void attach(const index_type *indptr, const index_type *indices, double *values,
         int nnz, int n_rows, int n_cols, bool _own = false) {
-        if (_owndata)
-            _free_data();
+        attach(indptr, indices, values, nnz, n_rows, n_cols, _own, _own, _own);
+    }
+
+    /**
+     * Attach new structure and values.
+     */
+    void attach(const index_type *indptr, const index_type *indices, double *values,
+        int nnz, int n_rows, int n_cols,
+        bool ownindptr, bool ownindices, bool ownvalues) {
+        _free_data();
 
         _indptr = indptr;
         _indices = indices;
@@ -74,7 +84,10 @@ struct sparse_matrix_t {
         _width = n_cols;
         _height = n_rows;
 
-        _owndata = _own;
+        _ownindptr = ownindptr;
+        _ownindices = ownindices;
+        _ownvalues = ownvalues;
+
         _dirty_struct = true;
     }
 
@@ -175,17 +188,39 @@ struct sparse_matrix_t {
 
     bool operator==(const sparse_matrix_t &rhs) const {
 
-        return
-            (std::set<index_type>(_indptr, _indptr+_width) ==
-                std::set<index_type>(rhs._indptr, rhs._indptr+rhs._width)) &&
-            (std::set<index_type>(_indices, _indices+_nnz) ==
-                std::set<index_type>(rhs._indices, rhs._indices+rhs._nnz)) &&
-            (std::set<double>(_values, _values+_nnz) ==
-                std::set<double>(rhs._values, rhs._values+rhs._nnz));
+        // column pointer arrays have to be exactly the same
+        if (std::vector<int>(_indptr, _indptr+_width) !=
+            std::vector<int>(rhs._indptr, rhs._indptr + rhs._width))
+            return false;
+
+        // check more carefully for unordered row indices
+        const int* indptr  = _indptr;
+        const int* indices = _indices;
+        const double* values = _values;
+
+        const int* indices_rhs   = rhs.indices();
+        const double* values_rhs = rhs.locked_values();
+
+        for(int col = 0; col < width(); col++) {
+
+            boost::unordered_map<int, double> col_values;
+
+            for(int idx = indptr[col]; idx < indptr[col + 1]; idx++)
+                col_values.insert(std::make_pair(indices[idx], values[idx]));
+
+            for(int idx = indptr[col]; idx < indptr[col + 1]; idx++) {
+                if(col_values[indices_rhs[idx]] != values_rhs[idx])
+                    return false;
+            }
+        }
+
+        return true;
     }
 
 private:
-    bool _owndata;
+    bool _ownindptr;
+    bool _ownindices;
+    bool _ownvalues;
 
     bool _dirty_struct;
 
@@ -202,9 +237,12 @@ private:
     void operator=(const sparse_matrix_t&);
 
     void _free_data() {
-        delete[] _indptr;
-        delete[] _indices;
-        delete[] _values;
+        if (_ownindptr)
+            delete[] _indptr;
+        if (_ownindices)
+            delete[] _indices;
+        if (_ownvalues)
+            delete[] _values;
     }
 
     static bool _sort_coords(coord_tuple_t lhs, coord_tuple_t rhs) {

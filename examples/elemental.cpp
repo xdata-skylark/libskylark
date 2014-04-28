@@ -15,6 +15,7 @@
 /*******************************************/
 namespace bmpi =  boost::mpi;
 namespace skys =  skylark::sketch;
+namespace skyb =  skylark::base;
 /*******************************************/
 
 /* These were declared as extern in utilities.hpp --- defining it here */
@@ -43,7 +44,7 @@ int main (int argc, char** argv) {
     elem::Grid grid (mpi_world);
 
     /* Initialize skylark */
-    skys::context_t context (int_params[RAND_SEED_INDEX], world);
+    skyb::context_t context (int_params[RAND_SEED_INDEX]);
 
     /* Create matrices A and B */
     elem::DistMatrix<double, elem::VR, elem::STAR> A(grid);
@@ -75,10 +76,10 @@ int main (int argc, char** argv) {
             /* 3. Apply the transform */
             try {
                 JLT.apply (A, sketch_A, skys::columnwise_tag());
-            } catch (skylark::utility::skylark_exception ex) {
+            } catch (skylark::base::skylark_exception ex) {
                 SKYLARK_PRINT_EXCEPTION_DETAILS(ex);
                 SKYLARK_PRINT_EXCEPTION_TRACE(ex);
-                errno = *(boost::get_error_info<skylark::utility::error_code>(ex));
+                errno = *(boost::get_error_info<skylark::base::error_code>(ex));
                 std::cout << "Caught exception, exiting with error " << errno << std::endl;
                 std::cout << skylark_strerror(errno) << std::endl;
                 return errno;

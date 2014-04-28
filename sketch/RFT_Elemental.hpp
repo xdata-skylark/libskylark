@@ -2,12 +2,10 @@
 #define SKYLARK_RFT_ELEMENTAL_HPP
 
 #include <elemental.hpp>
+#include "../base/base.hpp"
 
-#include "context.hpp"
 #include "transforms.hpp"
 #include "RFT_data.hpp"
-#include "../utility/exception.hpp"
-
 
 namespace skylark {
 namespace sketch {
@@ -40,9 +38,9 @@ private:
 
 protected:
     /**
-     * Regular constructor - allow creation only by subclasses
+     * Regular constructor - Allow creation only by subclasses
      */
-    RFT_t (int N, int S, skylark::sketch::context_t& context)
+    RFT_t (int N, int S, base::context_t& context)
         : data_type (N, S, context) {
 
     }
@@ -77,12 +75,12 @@ public:
             apply_impl(A, sketch_of_A, dimension);
         } catch (std::logic_error e) {
             SKYLARK_THROW_EXCEPTION (
-                utility::elemental_exception()
-                    << utility::error_msg(e.what()) );
+                base::elemental_exception()
+                    << base::error_msg(e.what()) );
         } catch(boost::mpi::exception e) {
             SKYLARK_THROW_EXCEPTION (
-                utility::mpi_exception()
-                    << utility::error_msg(e.what()) );
+                base::mpi_exception()
+                    << base::error_msg(e.what()) );
         }
     }
 
@@ -203,7 +201,7 @@ protected:
     /**
      * Regular constructor -- Allow only creation by subclasses
      */
-    RFT_t (int N, int S, skylark::sketch::context_t& context)
+    RFT_t (int N, int S, base::context_t& context)
         : data_type (N, S, context) {
 
     }
@@ -243,19 +241,19 @@ public:
             apply_impl_vdist (A, sketch_of_A, dimension);
             } catch (std::logic_error e) {
                 SKYLARK_THROW_EXCEPTION (
-                    utility::elemental_exception()
-                        << utility::error_msg(e.what()) );
+                    base::elemental_exception()
+                        << base::error_msg(e.what()) );
             } catch(boost::mpi::exception e) {
                 SKYLARK_THROW_EXCEPTION (
-                    utility::mpi_exception()
-                        << utility::error_msg(e.what()) );
+                    base::mpi_exception()
+                        << base::error_msg(e.what()) );
             }
 
             break;
 
         default:
             SKYLARK_THROW_EXCEPTION (
-                utility::unsupported_matrix_distribution() );
+                base::unsupported_matrix_distribution() );
         }
     }
 

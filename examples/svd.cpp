@@ -14,7 +14,7 @@
 
 /*******************************************/
 namespace bmpi =  boost::mpi;
-namespace skys =  skylark::sketch;
+namespace skyb =  skylark::base;
 /*******************************************/
 
 /* These were declared as extern in utilities.hpp --- defining it here */
@@ -31,8 +31,9 @@ int main (int argc, char** argv) {
     /* Initialize MPI */
     bmpi::environment env (argc, argv);
 
-    /* Create a global communicator */
-    bmpi::communicator world;
+    // get communicator
+    boost::mpi::communicator comm;
+    int rank = comm.rank();
 
     /* MPI sends argc and argv everywhere --- parse everywhere */
     parse_parameters (argc,argv);
@@ -43,7 +44,7 @@ int main (int argc, char** argv) {
     elem::Grid grid (mpi_world);
 
     /* Initialize skylark */
-    skys::context_t context (int_params[RAND_SEED_INDEX], world);
+    skyb::context_t context (int_params[RAND_SEED_INDEX], comm);
 
     int m = int_params[M_INDEX];
     int n = int_params[N_INDEX];
@@ -74,7 +75,7 @@ int main (int argc, char** argv) {
       //  A2.Print("A2");
 
         skylark::nla::Gemm(A1,A2,A3,context);
-        if (context.rank == 0) {
+        if (rank == 0) {
   //      		A3.Print("Checking Matrix multiplication [VR,*]-times-[VR,*] A1'A2 = A3");
         }
 

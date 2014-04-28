@@ -23,13 +23,13 @@ struct JLT_data_t :
      * Constructor
      * Most of the work is done by base. Here just write scale
      */
-    JLT_data_t(int N, int S, skylark::sketch::context_t& context)
+    JLT_data_t(int N, int S, skylark::base::context_t& context)
         : base_t(N, S, context, "JLT") {
         base_t::scale = sqrt(1.0 / static_cast<double>(S));
     }
 
     JLT_data_t(boost::property_tree::ptree &json,
-               skylark::sketch::context_t& context)
+               skylark::base::context_t& context)
         : base_t(json, context) {
         base_t::scale = sqrt(1.0 / static_cast<double>(base_t::_S));
     }

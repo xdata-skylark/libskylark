@@ -2,13 +2,9 @@
 #define SKYLARK_FRFT_ELEMENTAL_HPP
 
 #include "../base/base.hpp"
-
-#include "context.hpp"
 #include "transforms.hpp"
 #include "FUT.hpp"
 #include "FRFT_data.hpp"
-#include "../utility/exception.hpp"
-
 
 namespace skylark {
 namespace sketch {
@@ -64,12 +60,12 @@ public:
             apply_impl(A, sketch_of_A, dimension);
         } catch (std::logic_error e) {
             SKYLARK_THROW_EXCEPTION (
-                utility::elemental_exception()
-                    << utility::error_msg(e.what()) );
+                base::elemental_exception()
+                    << base::error_msg(e.what()) );
         } catch(boost::mpi::exception e) {
             SKYLARK_THROW_EXCEPTION (
-                utility::mpi_exception()
-                    << utility::error_msg(e.what()) );
+                base::mpi_exception()
+                    << base::error_msg(e.what()) );
         }
     }
 

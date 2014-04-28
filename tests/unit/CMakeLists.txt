@@ -42,3 +42,34 @@ target_link_libraries( local_sparse_apply
                        ${Boost_LIBRARIES} )
 add_test( local_sparse_apply_test local_sparse_apply )
 
+find_package(PythonInterp REQUIRED)
+message (STATUS "Using Python interpreter to run tests: {PYTHON_EXECUTABLE}")
+#FIXME: Because of mpi4py/kdt MPI initialization issue we cannot run the test
+#       in hybrid mode when we need to call MPI.Init_thread().
+if(!USE_HYBRID)
+    add_test(NAME ${NAME}
+        COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/io_test.py ${CMAKE_SOURCE_DIR}
+    )
+endif(!USE_HYBRID)
+
+# run all python tests
+#file (GLOB PY_TEST_LIST RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.py )
+#foreach (TEST ${PY_TEST_LIST})
+    #string (REGEX REPLACE "([a-zA-Z]+).py" "\\1" NAME ${TEST})
+
+    #add_test(NAME ${NAME}
+        #COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/${TEST} ${CMAKE_SOURCE_DIR}
+    #)
+#endforeach (TEST)
+
+if (SKYLARK_HAVE_ELEMENTAL)
+
+  add_executable(svd_elemental_test SVDElementalTest.cpp)
+  target_link_libraries(svd_elemental_test
+                        ${SKYLARK_LIBS}
+                        ${Elemental_LIBRARY}
+                        ${Pmrrr_LIBRARY}
+                        ${Boost_LIBRARIES})
+  add_test( svd_elemental_test svd_elemental_test )
+
+endif (SKYLARK_HAVE_ELEMENTAL)

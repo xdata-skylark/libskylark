@@ -43,8 +43,7 @@ struct FastGaussianRFT_t :
     /**
      * Regular constructor
      */
-    FastGaussianRFT_t(int N, int S, double sigma,
-        skylark::sketch::context_t& context)
+    FastGaussianRFT_t(int N, int S, double sigma, base::context_t& context)
         : data_type(N, S, sigma, context), _transform(*this) {
 
     }

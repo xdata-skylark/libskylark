@@ -1,139 +1,138 @@
-/*
- * run.hpp
- *
- *  Created on: Mar 17, 2014
- *      Author: vikas
- */
+#ifndef SKYLARK_HILBERT_RUN_HPP
+#define SKYLARK_HILBERT_RUN_HPP
 
-#ifndef RUN_HPP_
-#define RUN_HPP_
 #include "BlockADMM.hpp"
 #include "options.hpp"
 #include "io.hpp"
+#include "../base/context.hpp"
 
 template <class InputType>
-BlockADMMSolver<InputType>* GetSolver(skylark::sketch::context_t& context, hilbert_options_t& options, int dimensions) {
+BlockADMMSolver<InputType>* GetSolver(skylark::base::context_t& context,
+    const hilbert_options_t& options, int dimensions) {
 
     lossfunction *loss = NULL;
-       switch(options.lossfunction) {
-       case SQUARED:
-           loss = new squaredloss();
-           break;
-       case HINGE:
-           loss = new hingeloss();
-           break;
-       case LOGISTIC:
-           loss = new logisticloss();
-           break;
-       case LAD:
-       default:
-           // TODO
-           break;
-       }
+    switch(options.lossfunction) {
+    case SQUARED:
+        loss = new squaredloss();
+        break;
+    case HINGE:
+        loss = new hingeloss();
+        break;
+    case LOGISTIC:
+        loss = new logisticloss();
+        break;
+    case LAD:
+    default:
+        // TODO
+        break;
+    }
 
-       regularization *regularizer = NULL;
-       switch(options.regularizer) {
-       case L2:
-           regularizer = new l2();
-           break;
-       case L1:
-       default:
-           // TODO
-           break;
-       }
+    regularization *regularizer = NULL;
+    switch(options.regularizer) {
+    case L2:
+        regularizer = new l2();
+        break;
+    case L1:
+    default:
+        // TODO
+        break;
+    }
 
-        BlockADMMSolver<InputType> *Solver = NULL;
-        int features = 0;
-        switch(options.kernel) {
-        case LINEAR:
-            features = dimensions;
-            Solver = new BlockADMMSolver<InputType>(
-                    context,
-                    loss,
-                    regularizer,
-                    options.lambda,
-                    dimensions,
-                    options.numfeaturepartitions);
-            break;
+    BlockADMMSolver<InputType> *Solver = NULL;
+    int features = 0;
+    switch(options.kernel) {
+    case LINEAR:
+        features = dimensions;
+        Solver =
+            new BlockADMMSolver<InputType>(loss,
+                regularizer,
+                options.lambda,
+                dimensions,
+                options.numfeaturepartitions);
+        break;
 
-        case GAUSSIAN:
-            features = options.randomfeatures;
-            if (options.regularmap)
-                Solver = new BlockADMMSolver<InputType>(
-                        context,
-                        loss,
-                        regularizer,
-                        options.lambda,
-                        features,
-                        skylark::ml::kernels::gaussian_t(dimensions, options.kernelparam),
-                        skylark::ml::regular_feature_transform_tag(),
-                        options.numfeaturepartitions);
-
-            else
-                Solver = new BlockADMMSolver<InputType>(
-                        context,
-                        loss    ,
-                        regularizer,
-                        options.lambda,
-                        features,
-                        skylark::ml::kernels::gaussian_t(dimensions, options.kernelparam),
-                        skylark::ml::fast_feature_transform_tag(),
-                        options.numfeaturepartitions);
-            break;
-        case POLYNOMIAL:
-            features = options.randomfeatures;
-            Solver = new BlockADMMSolver<InputType>(
-                    context,
+    case GAUSSIAN:
+        features = options.randomfeatures;
+        if (options.regularmap)
+            Solver =
+                new BlockADMMSolver<InputType>(context,
                     loss,
                     regularizer,
                     options.lambda,
                     features,
-                    skylark::ml::kernels::polynomial_t(dimensions, options.kernelparam, options.kernelparam2, options.kernelparam3),
+                    skylark::ml::kernels::gaussian_t(dimensions,
+                        options.kernelparam),
                     skylark::ml::regular_feature_transform_tag(),
                     options.numfeaturepartitions);
-            break;
-        case LAPLACIAN:
-            features = options.randomfeatures;
-            Solver = new BlockADMMSolver<InputType>(
-                    context,
+        else
+            Solver =
+                new BlockADMMSolver<InputType>(context,
                     loss,
                     regularizer,
                     options.lambda,
                     features,
-                    skylark::ml::kernels::laplacian_t(dimensions, options.kernelparam),
-                    skylark::ml::regular_feature_transform_tag(),
+                    skylark::ml::kernels::gaussian_t(dimensions,
+                        options.kernelparam),
+                    skylark::ml::fast_feature_transform_tag(),
                     options.numfeaturepartitions);
-            break;
+        break;
 
-        case EXPSEMIGROUP:
-            features = options.randomfeatures;
-            Solver = new BlockADMMSolver<InputType>(
-                    context,
-                    loss,
-                    regularizer,
-                    options.lambda,
-                    features,
-                    skylark::ml::kernels::expsemigroup_t(dimensions, options.kernelparam),
-                    skylark::ml::regular_feature_transform_tag(),
-                    options.numfeaturepartitions);
-            break;
+    case POLYNOMIAL:
+        features = options.randomfeatures;
+        Solver = 
+            new BlockADMMSolver<InputType>(context,
+                loss,
+                regularizer,
+                options.lambda,
+                features,
+                skylark::ml::kernels::polynomial_t(dimensions,
+                    options.kernelparam, options.kernelparam2, options.kernelparam3),
+                skylark::ml::regular_feature_transform_tag(),
+                options.numfeaturepartitions);
+        break;
 
-        default:
-            // TODO!
-            break;
+    case LAPLACIAN:
+        features = options.randomfeatures;
+        Solver = 
+            new BlockADMMSolver<InputType>(context,
+                loss,
+                regularizer,
+                options.lambda,
+                features,
+                skylark::ml::kernels::laplacian_t(dimensions, options.kernelparam),
+                skylark::ml::regular_feature_transform_tag(),
+                options.numfeaturepartitions);
+        break;
 
-        }
+    case EXPSEMIGROUP:
+        features = options.randomfeatures;
+        Solver =
+            new BlockADMMSolver<InputType>(context,
+                loss,
+                regularizer,
+                options.lambda,
+                features,
+                skylark::ml::kernels::expsemigroup_t(dimensions, options.kernelparam),
+                skylark::ml::regular_feature_transform_tag(),
+                options.numfeaturepartitions);
+        break;
 
-        // Set parameters
-        Solver->set_rho(options.rho);
-        Solver->set_maxiter(options.MAXITER);
-        Solver->set_tol(options.tolerance);
-        Solver->set_nthreads(options.numthreads);
+    default:
+        // TODO!
+        break;
 
-        return Solver;
+    }
+
+    // Set parameters
+    Solver->set_rho(options.rho);
+    Solver->set_maxiter(options.MAXITER);
+    Solver->set_tol(options.tolerance);
+    Solver->set_nthreads(options.numthreads);
+
+    return Solver;
 }
 
-
+/* TODO move to utility */
 int max(DistTargetMatrixType& Y) {
     int k =  (int) *std::max_element(Y.Buffer(), Y.Buffer() + Y.LocalHeight());
     return k;
@@ -144,55 +143,65 @@ int max(elem::Matrix<double> Y) {
 }
 
 template<class LabelType>
-int GetNumClasses(skylark::sketch::context_t& context, LabelType& Y) {
+int GetNumClasses(const boost::mpi::communicator &comm, LabelType& Y) {
     int k = 0;
     int kmax = max(Y);
+    boost::mpi::all_reduce(comm, kmax, k, boost::mpi::maximum<int>());
 
-    boost::mpi::all_reduce(context.comm, kmax, k, boost::mpi::maximum<int>());
-
-    if (k>1) // we assume 0-to-N encoding of classes. Hence N = k+1. For two classes, k=1.
-       k++;
-    return k;
+    // we assume 0-to-N encoding of classes. Hence N = k+1.
+    // For two classes, k=1.
+    if (k>1)
+        return k+1;
+    else
+        return 1;
 }
 
 template <class InputType, class LabelType>
-int run(skylark::sketch::context_t& context, hilbert_options_t& options) {
+int run(const boost::mpi::communicator& comm, skylark::base::context_t& context,
+    hilbert_options_t& options) {
+
+    int rank = comm.rank();
+
     InputType X, Xv, Xt;
     LabelType Y, Yv, Yt;
 
-    read(context, options.fileformat, options.trainfile, X, Y);
+    read(comm, options.fileformat, options.trainfile, X, Y);
     int dimensions = X.Height();
-    int classes = GetNumClasses<LabelType>(context,Y);
+    int classes = GetNumClasses<LabelType>(comm, Y);
 
-    BlockADMMSolver<InputType>* Solver = GetSolver<InputType>(context, options, dimensions);
+    BlockADMMSolver<InputType>* Solver =
+        GetSolver<InputType>(context, options, dimensions);
 
     if(!options.valfile.empty()) {
-        context.comm.barrier();
-        if(context.rank == 0) std::cout << "Loading validation data." << std::endl;
-        read(context, options.fileformat, options.valfile, Xv, Yv, X.Height());
+        comm.barrier();
+        if(rank == 0) std::cout << "Loading validation data." << std::endl;
+        read(comm, options.fileformat, options.valfile, Xv, Yv, X.Height());
     }
 
     elem::Matrix<double> Wbar(Solver->get_numfeatures(), classes);
     elem::MakeZeros(Wbar);
 
-    Solver->train(X, Y, Wbar, Xv, Yv);
+    Solver->train(X, Y, Wbar, Xv, Yv, comm);
 
-    SaveModel(context, options, Wbar);
+    SaveModel(options, Wbar);
 
     if(!options.testfile.empty()) {
-        context.comm.barrier();
-        if(context.rank == 0) std::cout << "Starting testing phase." << std::endl;
-        read(context, options.fileformat, options.testfile, Xt, Yt, X.Height());
+        comm.barrier();
+        if(rank == 0) std::cout << "Starting testing phase." << std::endl;
+        read(comm, options.fileformat, options.testfile, Xt, Yt, X.Height());
 
         LabelType Yp(Yt.Height(), classes);
         Solver->predict(Xt, Yp, Wbar);
-        double accuracy = Solver->evaluate(Yt, Yp);
-        if(context.rank == 0) std::cout << "Test Accuracy = " <<  accuracy << " %" << std::endl;
+        double accuracy = Solver->evaluate(Yt, Yp, comm);
+        if(rank == 0)
+            std::cout << "Test Accuracy = " <<  accuracy << " %" << std::endl;
     }
+
+    delete Solver;
 
     return 0;
 }
 
 
 
-#endif /* RUN_HPP_ */
+#endif /* SKYLARK_HILBERT_RUN_HPP */

@@ -11,6 +11,7 @@
 #include "kernels.hpp"
 #include "hilbert.hpp"
 #include <omp.h>
+#include "../base/context.hpp"
 
 
 namespace bmpi =  boost::mpi;
@@ -25,27 +26,26 @@ int main (int argc, char** argv) {
     int provided;
     MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
     bmpi::environment env (argc, argv);
-    bmpi::communicator world;
+    boost::mpi::communicator comm;
 
-    hilbert_options_t options (argc, argv, world.size());
+    hilbert_options_t options (argc, argv, comm.rank());
+    skylark::base::context_t context (options.seed);
 
-    skylark::sketch::context_t context (options.seed, world);
     elem::Initialize (argc, argv);
-    MPI_Comm mpi_world(world);
 
     if (options.exit_on_return) { return -1; }
-    if (context.rank==0)
+    if (comm.rank() == 0)
         std::cout << options.print();
 
     bool sparse = (options.fileformat == LIBSVM_SPARSE) || (options.fileformat == HDF5_SPARSE);
     int flag = 0;
 
     if (sparse)
-        flag = run<sparse_matrix_t, elem::Matrix<double> >(context, options);
+        flag = run<sparse_matrix_t, elem::Matrix<double> >(comm, context, options);
     else
-        flag = run<LocalMatrixType, LocalMatrixType>(context, options);
+        flag = run<LocalMatrixType, LocalMatrixType>(comm, context, options);
 
-    context.comm.barrier();
+    comm.barrier();
     elem::Finalize();
     return flag;
 }

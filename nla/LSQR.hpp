@@ -19,7 +19,7 @@ namespace skylark { namespace nla {
  * X should be allocated, but we zero it on start. (not set as X_0).
  */
 template<typename MatrixType, typename RhsType, typename SolType>
-void LSQR(const MatrixType& A, const RhsType& B, SolType& X,
+int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
     iter_params_t params = iter_params_t()) {
 
     typedef typename utility::typer_t<MatrixType>::value_type value_t;
@@ -75,10 +75,8 @@ void LSQR(const MatrixType& A, const RhsType& B, SolType& X,
 
     /** Return from here */
     for (index_t i=0; i<k; ++i)
-        if (nrm_ar_0[i]==0) {
-            params.return_code=0;
-            return;
-        }
+        if (nrm_ar_0[i]==0) 
+            return 0;
 
     scalar_cont_type nrm_x(k, 1), sq_x(k, 1), z(k, 1), cs2(k, 1), sn2(k, 1);
     elem::Zero(nrm_x); elem::Zero(sq_x); elem::Zero(z); elem::Zero(sn2);
@@ -162,14 +160,11 @@ void LSQR(const MatrixType& A, const RhsType& B, SolType& X,
             nrm_ar[i] = phibar[i]*alpha[i]*std::abs(cs[i]);
 
             /** 8. check convergence */
-            if (nrm_ar[i]<(params.tolerance*nrm_ar_0[i])) {
-                params.return_code = -2;
-                return;
-            }
-            if (nrm_ar[i]<(eps*nrm_a[i]*nrm_r[i])) {
-                params.return_code = -3;
-                return;
-            }
+            if (nrm_ar[i]<(params.tolerance*nrm_ar_0[i]))
+                return -2;
+
+            if (nrm_ar[i]<(eps*nrm_a[i]*nrm_r[i]))
+                return -3;
         }
 
         /** 9. estimate of cond(A) */
@@ -180,7 +175,8 @@ void LSQR(const MatrixType& A, const RhsType& B, SolType& X,
             cnd_a[i] = nrm_a[i]*sqrt(sq_d[i]);
 
             /** 10. check condition number */
-            if (cnd_a[i]>(1.0/eps)) { params.return_code = -4; return; }
+            if (cnd_a[i]>(1.0/eps))
+                return -4;
         }
 
         /** 11. check stagnation */
@@ -190,10 +186,8 @@ void LSQR(const MatrixType& A, const RhsType& B, SolType& X,
             else
                 stag[i] = 0;
 
-            if (stag[i] >= max_n_stag) {
-                params.return_code = -5;
-                return;
-            }
+            if (stag[i] >= max_n_stag) 
+                return -5;
         }
 
         /** 12. estimate of norm(X) */
@@ -210,7 +204,7 @@ void LSQR(const MatrixType& A, const RhsType& B, SolType& X,
             sq_x[i] += z[i]*z[i];
         }
     }
-    params.return_code = -6;
+    return -6;
 }
 
 #endif

@@ -40,31 +40,31 @@ struct exact_regressor_t<
     { /* Check if m<n? */ }
 
     /** * A solve implementation that uses LSQR */
-    void solve_impl (const rhs_type& b,
+    int solve_impl (const rhs_type& b,
         sol_type& x,
-        skylark::nla::iter_params_t params,
+        skylark::nla::iter_params_t &params,
         lsqr_tag) {
 
-        LSQR(A, b, x, params);
+        return LSQR(A, b, x, params);
     }
 
-    void solve(const rhs_type& b,
+    int solve(const rhs_type& b,
         sol_type& x,
         skylark::nla::iter_params_t params = skylark::nla::iter_params_t()) {
 
 
-        if (m != base::Height(b)) { /* error */ return; }
-        if (n != base::Height(x)) { /* error */ return; }
-        if (base::Width(b) != base::Width(x)) { /* error */ return; }
+        if (m != base::Height(b)) { /* error */ return -1; }
+        if (n != base::Height(x)) { /* error */ return -1; }
+        if (base::Width(b) != base::Width(x)) { /* error */ return -1; }
 
         /**
-         * Solve using the right iterative solver that is specified for us. 
+         * Solve using the right iterative solver that is specified for us.
          * The reason we are using tag-based dispatching to different solve
          * implementations is because different iterative solvers might have
          * different initialization requirements. This technique gives us an
          * opportunity to handle each iterative algorithm in a different func.
          */
-        solve_impl (b, x, params, KrylovMethod());
+        return solve_impl (b, x, params, KrylovMethod());
     }
 };
 

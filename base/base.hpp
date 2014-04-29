@@ -7,6 +7,8 @@
 
 #include "exception.hpp"
 #include "sparse_matrix.hpp"
+#include "basic.hpp"
+#include "query.hpp"
 #include "viewing.hpp"
 #include "copy.hpp"
 #include "Trsm.hpp"

@@ -120,6 +120,17 @@ int main(int argc, char** argv) {
                   << std::endl;
     double res_opt = res;
 
+    elem::Zero(x);
+    exact_solver_type<
+        skyalg::iterative_l2_solver_tag<
+            skyalg::lsqr_tag > >(problem)
+        .solve(b, x);
+    check_solution(problem, b, x, res, resAtr);
+    if (rank == 0)
+        std::cout << "Exact (LSQR): ||r||_2 =  " << boost::format("%.2f") % res
+                  << " ||A' * r||_2 = " << boost::format("%.2e") % resAtr
+                  << std::endl;
+
     // Using sketch-and-solve
     sketched_solver_type<skysk::JLT_t>(problem, t, context).solve(b, x);
     check_solution(problem, b, x, res, resAtr);

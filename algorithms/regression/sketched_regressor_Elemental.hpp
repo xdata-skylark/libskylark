@@ -7,7 +7,7 @@
 #include "../../base/context.hpp"
 #include "regression_problem.hpp"
 #include "../../sketch/sketch.hpp"
-#include "utility/typer.hpp"
+#include "../../utility/typer.hpp"
 
 namespace skylark {
 namespace algorithms {

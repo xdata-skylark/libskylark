@@ -1,33 +1,33 @@
-#ifndef EXACT_REGRESSOR_KRYLOV_HPP
-#define EXACT_REGRESSOR_KRYLOV_HPP
+#ifndef SKYlARK_EXACT_REGRESSOR_KRYLOV_HPP
+#define SKYLARK_EXACT_REGRESSOR_KRYLOV_HPP
 
-#include "../../nla/lsqr.hpp"
+#include "../../base/query.hpp"
+#include "../../utility/typer.hpp"
+#include "../../nla/LSQR.hpp"
 
 namespace skylark { namespace algorithms {
 
 /**
  * Exact l2 linear regressor. We have not specialized this for any type of matrix
- * because it accepts any matrix type and only functions if iter_ops_t has
- * been specialized for that particular matrix type and that particular
- * multi-vector type. Currently, the accepted ones include:
- * (1) <DistMatrix<NT, CDT, RDT>, DistMatrix<NT, CDT, RDT> >
- * (2) <SpParMat<IT, NT, SpDCCols<IT,NT> >, FullyDistMultiVec>
+ * because it accepts any matrix type and only works if the required base
+ * functions have been implemented.
  */
 template <typename MatrixType,
-          typename MultiVectorType,
+          typename RhsType,
+          typename SolType,
           typename KrylovMethod>
 struct exact_regressor_t<
     regression_problem_t<MatrixType, linear_tag, l2_tag, no_reg_tag>,
-    MultiVectorType,
-    MultiVectorType,
+    RhsType,
+    SolType,
     iterative_l2_solver_tag<KrylovMethod> > {
 
+    typedef typename utility::typer_t<MatrixType>::value_type value_type;
+
     typedef MatrixType matrix_type;
-    typedef MultiVectorType rhs_type;
-    typedef MultiVectorType sol_type;
-    typedef MultiVectorType multivec_type;
-    typedef skylark::nla::iter_solver_op_t<matrix_type, multivec_type> iter_ops_t;
-    typedef typename iter_ops_t::value_type value_type;
+    typedef RhsType rhs_type;
+    typedef SolType sol_type;
+
     typedef regression_problem_t<matrix_type,
                                  linear_tag, l2_tag, no_reg_tag> problem_type;
 
@@ -44,20 +44,18 @@ struct exact_regressor_t<
         sol_type& x,
         skylark::nla::iter_params_t params,
         lsqr_tag) {
-        /** Call the LSQR solver */
-        skylark::nla::lsqr_t<matrix_type, rhs_type>::apply (A, b, x, params);
+
+        LSQR(A, b, x, params);
     }
 
     void solve(const rhs_type& b,
         sol_type& x,
-        skylark::nla::iter_params_t params) {
-        int b_m, b_n, x_m, x_n;
-        iter_ops_t::get_dim (b, b_m, b_n);
-        iter_ops_t::get_dim (x, x_m, x_n);
+        skylark::nla::iter_params_t params = skylark::nla::iter_params_t()) {
 
-        if (m != b_m) { /* error */ return; }
-        if (n != x_m) { /* error */ return; }
-        if (b_n != x_n) { /* error */ return; }
+
+        if (m != base::Height(b)) { /* error */ return; }
+        if (n != base::Height(x)) { /* error */ return; }
+        if (base::Width(b) != base::Width(x)) { /* error */ return; }
 
         /**
          * Solve using the right iterative solver that is specified for us. 
@@ -72,4 +70,4 @@ struct exact_regressor_t<
 
 } } // namespace skylark::algorithms
 
-#endif // EXACT_REGRESSOR_KRYLOV_HPP
+#endif // SKYLARK_EXACT_REGRESSOR_KRYLOV_HPP

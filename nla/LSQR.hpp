@@ -48,8 +48,10 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
     else {} /* nothing */
 
     /** Initialize everything */
+    // We set the grid and rank for beta, and all other scalar containers
+    // just copy from him to get that to be set right (not for the values).
     rhs_type U(B);
-    scalar_cont_type beta(k, 1), i_beta(k, 1);  // TODO: correct grid!
+    scalar_cont_type beta(k, 1, A.Grid(), A.Root()), i_beta(beta);  
     base::ColumnNrm2(U, beta);
     for (index_t i=0; i<k; ++i)
         i_beta[i] = 1 / beta[i];
@@ -58,7 +60,7 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
 
     sol_type V(X);     // No need to really copy, just want sizes&comm correct.
     base::Gemm(elem::ADJOINT, elem::NORMAL, 1.0, A, U, V);
-    scalar_cont_type alpha (k, 1), i_alpha(k, 1);
+    scalar_cont_type alpha(beta), i_alpha(beta);
     base::ColumnNrm2(V, alpha);
     for (index_t i=0; i<k; ++i)
         i_alpha[i] = 1 / alpha[i];
@@ -68,8 +70,9 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
     /* Create W=V and X=0 */
     base::Zero(X);
     sol_type W(V);
-    scalar_cont_type phibar(beta), rhobar(alpha), nrm_r(beta);
-    scalar_cont_type nrm_a(k, 1), cnd_a(k, 1), sq_d(k, 1), nrm_ar_0(k, 1);
+    scalar_cont_type phibar(beta), rhobar(alpha), nrm_r(beta); 
+        // /!\ Actually copied for init
+    scalar_cont_type nrm_a(beta), cnd_a(beta), sq_d(beta), nrm_ar_0(beta);
     base::Zero(nrm_a); base::Zero(cnd_a); base::Zero(sq_d);
     elem::Hadamard(alpha, beta, nrm_ar_0);
 
@@ -78,7 +81,7 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
         if (nrm_ar_0[i]==0) 
             return 0;
 
-    scalar_cont_type nrm_x(k, 1), sq_x(k, 1), z(k, 1), cs2(k, 1), sn2(k, 1);
+    scalar_cont_type nrm_x(beta), sq_x(beta), z(beta), cs2(beta), sn2(beta);
     elem::Zero(nrm_x); elem::Zero(sq_x); elem::Zero(z); elem::Zero(sn2);
     for (index_t i=0; i<k; ++i)
         cs2[i] = -1.0;
@@ -92,12 +95,11 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
     /* More varaibles */
     rhs_type AV(B);
     sol_type AU(X);
-    scalar_cont_type minus_beta(k, 1);
-    scalar_cont_type rho(k,1);
-    scalar_cont_type cs(k, 1), sn(k, 1), theta(k, 1), phi(k, 1);
-    scalar_cont_type phi_by_rho(k, 1), minus_theta_by_rho(k, 1), nrm_ar(k, 1);
-    scalar_cont_type nrm_w(k, 1), sq_w(k, 1), gamma(k, 1);
-    scalar_cont_type delta(k, 1), gambar(k, 1), rhs(k, 1), zbar(k, 1);
+    scalar_cont_type minus_beta(beta), rho(beta);
+    scalar_cont_type cs(beta), sn(beta), theta(beta), phi(beta);
+    scalar_cont_type phi_by_rho(beta), minus_theta_by_rho(beta), nrm_ar(beta);
+    scalar_cont_type nrm_w(beta), sq_w(beta), gamma(beta);
+    scalar_cont_type delta(beta), gambar(beta), rhs(beta), zbar(beta);
 
     /** Main iteration loop */
     for (index_t itn=0; itn<params.iter_lim; ++itn) {

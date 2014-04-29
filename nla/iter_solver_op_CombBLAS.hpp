@@ -1,6 +1,12 @@
 #ifndef SKYLARK_ITER_SOLVER_OP_COMBBLAS_HPP
 #define SKYLARK_ITER_SOLVER_OP_COMBBLAS_HPP
 
+/*****
+ *****    NOTE: THIS CLASS IS NOT USED ANYMORE!
+ *****    It is kept until the useful code can be transfered
+ *****    as functions in namespace base.
+ *****/
+
 #include <functional>
 #include <algorithm>
 #include <CombBLAS.h>

@@ -2,39 +2,16 @@
 #define SKYLARK_LSQR_HPP
 
 #include "../base/base.hpp"
+#include "../utility/elem_extender.hpp"
 #include "../utility/typer.hpp"
 #include "../utility/external/print.hpp"
 
-
-namespace skylark { namespace utility {
-
-template<typename ET>
-struct elem_extender_t : public ET {
-
-    // Once we have c'tor inheritance (e.g. gcc-4.8) we can simply
-    // use the following line:
-    // using ET::ET;
-    // For now, I am just implementing the most basic c'tors. More
-    // will be added as neccessary.
-    elem_extender_t(int m, int n) : ET(m, n) { }
-
-private:
-    typedef typename utility::typer_t<ET>::value_type value_type;
-
-public:
-    value_type &operator[](int i) {
-        return *(ET::Buffer() + i);
-    }
-
-    const value_type &operator[](int i) const {
-        return *(ET::Buffer() + i);
-    }
-};
-
-} }
 namespace skylark { namespace nla {
 
-
+// We can have a version that is indpendent of Elemental. But that will
+// be tedious (convert between [STAR,STAR] and vector<T>, and really 
+// elemental is a very fudmanetal to Skylark.
+#if SKYLARK_HAVE_ELEMENTAL
 
 /**
  * LSQR method.
@@ -51,6 +28,9 @@ void LSQR(const MatrixType& A, const RhsType& B, SolType& X,
     typedef MatrixType matrix_type;
     typedef RhsType rhs_type;        // Also serves as "long" vector type.
     typedef SolType sol_type;        // Also serves as "short" vector type.
+
+    typedef utility::print_t<rhs_type> rhs_print_t;
+    typedef utility::print_t<sol_type> sol_print_t;
 
     typedef utility::elem_extender_t<
         elem::DistMatrix<value_t, elem::STAR, elem::STAR> >
@@ -74,7 +54,7 @@ void LSQR(const MatrixType& A, const RhsType& B, SolType& X,
     for (index_t i=0; i<k; ++i)
         i_beta[i] = 1 / beta[i];
     base::DiagonalScale(elem::RIGHT, elem::NORMAL, i_beta, U);
-    //print_vec_t::apply(U,"U Init", params.am_i_printing, params.debug_level); // TODO
+    rhs_print_t::apply(U, "U Init", params.am_i_printing, params.debug_level);
 
     sol_type V(X);     // No need to really copy, just want sizes&comm correct.
     base::Gemm(elem::ADJOINT, elem::NORMAL, 1.0, A, U, V);
@@ -83,7 +63,7 @@ void LSQR(const MatrixType& A, const RhsType& B, SolType& X,
     for (index_t i=0; i<k; ++i)
         i_alpha[i] = 1 / alpha[i];
     base::DiagonalScale(elem::RIGHT, elem::NORMAL, i_alpha, V);
-    //print_vec_t::apply(U,"V Init", params.am_i_printing, params.debug_level); // TODO
+    sol_print_t::apply(V, "V Init", params.am_i_printing, params.debug_level);
 
     /* Create W=V and X=0 */
     base::Zero(X);
@@ -94,14 +74,15 @@ void LSQR(const MatrixType& A, const RhsType& B, SolType& X,
     elem::Hadamard(alpha, beta, nrm_ar_0);
 
     /** Return from here */
-    for (index_t i=0; i<k; ++i) if (nrm_ar_0[i]==0) {
+    for (index_t i=0; i<k; ++i)
+        if (nrm_ar_0[i]==0) {
             params.return_code=0;
             return;
         }
 
     scalar_cont_type nrm_x(k, 1), sq_x(k, 1), z(k, 1), cs2(k, 1), sn2(k, 1);
     elem::Zero(nrm_x); elem::Zero(sq_x); elem::Zero(z); elem::Zero(sn2);
-    for (index_t i=0; i<k; ++i) 
+    for (index_t i=0; i<k; ++i)
         cs2[i] = -1.0;
 
     int max_n_stag = 3;
@@ -165,13 +146,13 @@ void LSQR(const MatrixType& A, const RhsType& B, SolType& X,
         for (index_t i=0; i<k; ++i)
             phi_by_rho[i] = phi[i]/rho[i];
         base::Axpy(phi_by_rho, W, X);
-        //print_vec_t::apply(X, "X", params.am_i_printing, params.debug_level);
+        sol_print_t::apply(X, "X", params.am_i_printing, params.debug_level);
 
         for (index_t i=0; i<k; ++i)
             minus_theta_by_rho[i] = -theta[i]/rho[i];
         base::DiagonalScale(elem::RIGHT, elem::NORMAL, minus_theta_by_rho, W);
         base::Axpy(1.0, V, W);
-        //print_vec_t::apply(W, "W", params.am_i_printing, params.debug_level);
+        sol_print_t::apply(W, "W", params.am_i_printing, params.debug_level);
 
         /** 6. Estimate norm(r) */
         nrm_r = phibar;
@@ -192,7 +173,7 @@ void LSQR(const MatrixType& A, const RhsType& B, SolType& X,
         }
 
         /** 9. estimate of cond(A) */
-        base::ColumnNrm2(W, nrm_w); 
+        base::ColumnNrm2(W, nrm_w);
         for (index_t i=0; i<k; ++i) {
             sq_w[i] = nrm_w[i]*nrm_w[i];
             sq_d[i] += sq_w[i]/(rho[i]*rho[i]);
@@ -231,6 +212,8 @@ void LSQR(const MatrixType& A, const RhsType& B, SolType& X,
     }
     params.return_code = -6;
 }
+
+#endif
 
 } } /** namespace skylark::nla */
 

@@ -12,6 +12,8 @@
 #include "distributions.hpp"
 #include "randgen.hpp"
 #include "get_communicator.hpp"
+#include "typer.hpp"
+#include "elem_extender.hpp"
 
 /**
  * This file contains all the functions that we wrote to support external 

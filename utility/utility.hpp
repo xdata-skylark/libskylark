@@ -1,5 +1,5 @@
-#ifndef UTILITY_HPP
-#define UTILITY_HPP
+#ifndef SKYLARK_UTILITY_HPP
+#define SKYLARK_UTILITY_HPP
 
 /**
  * In general, please only include files that you actually want. However, the
@@ -8,10 +8,6 @@
  * directory.
  */
 
-#include "matrix.hpp"
-#include "mapper.hpp"
-#include "partitioner.hpp"
-#include "reader.hpp"
 #include "comm.hpp"
 #include "distributions.hpp"
 #include "randgen.hpp"

@@ -1,5 +1,5 @@
-#ifndef COMM_HPP
-#define COMM_HPP
+#ifndef SKYLARK_COMM_HPP
+#define SKYLARK_COMM_HPP
 
 #include <elemental.hpp>
 

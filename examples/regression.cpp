@@ -79,8 +79,7 @@ struct sketched_solver_type :
     sketch_type,
     sketch_type,
     TransformType,
-    skyalg::qr_l2_solver_tag,
-    skyalg::sketch_and_solve_tag> {
+    skyalg::qr_l2_solver_tag> {
 
     typedef skyalg::sketched_regressor_t<
         regression_problem_type, matrix_type, sol_type,
@@ -88,8 +87,7 @@ struct sketched_solver_type :
         sketch_type,
         sketch_type,
         TransformType,
-        skyalg::qr_l2_solver_tag,
-        skyalg::sketch_and_solve_tag> base_type;
+        skyalg::qr_l2_solver_tag> base_type;
 
     sketched_solver_type(const regression_problem_type& problem,
         int sketch_size,

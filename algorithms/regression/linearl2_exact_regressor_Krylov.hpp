@@ -1,5 +1,5 @@
-#ifndef SKYlARK_EXACT_REGRESSOR_KRYLOV_HPP
-#define SKYLARK_EXACT_REGRESSOR_KRYLOV_HPP
+#ifndef SKYlARK_LINEARL2_EXACT_REGRESSOR_KRYLOV_HPP
+#define SKYLARK_LINEARL2_EXACT_REGRESSOR_KRYLOV_HPP
 
 #include "../../base/query.hpp"
 #include "../../utility/typer.hpp"
@@ -82,4 +82,4 @@ private:
 
 } } // namespace skylark::algorithms
 
-#endif // SKYLARK_EXACT_REGRESSOR_KRYLOV_HPP
+#endif // SKYLARK_LINEARL2_EXACT_REGRESSOR_KRYLOV_HPP

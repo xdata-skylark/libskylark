@@ -37,8 +37,7 @@ class sketched_regressor_t<
     elem::Matrix<
         typename utility::typer_t<InputType>::value_type >,
     TransformType,
-    ExactAlgTag,
-    sketch_and_solve_tag> {
+    ExactAlgTag> {
 
 public:
 
@@ -141,8 +140,7 @@ class sketched_regressor_t<
         typename utility::typer_t<InputType>::value_type,
         CD, RD >,
     TransformType,
-    ExactAlgTag,
-    sketch_and_solve_tag> {
+    ExactAlgTag> {
 
 public:
 

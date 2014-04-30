@@ -6,6 +6,9 @@
 namespace skylark {
 namespace algorithms {
 
+/**
+ * Generic class for the sketch-and-solve strategy.
+ */
 template <typename RegressionProblemType,
           typename RhsType,
           typename SolType,
@@ -13,8 +16,7 @@ template <typename RegressionProblemType,
           typename SketchType,
           typename SketchRhsType,
           template <typename, typename> class SketchTransformType,
-          typename ExactAlgTag,
-          typename UseTag = sketch_and_solve_tag>
+          typename ExactAlgTag>
 class sketched_regressor_t {
 
 };

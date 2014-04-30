@@ -136,7 +136,7 @@ int main(int argc, char** argv) {
 
     regression_problem_type problem(m, n, A);
 
-    // Using exact regressor
+    // Using QR
     sol_type x(n,1);
     exact_solver_type<skyalg::qr_l2_solver_tag> exact_solver(problem);
     exact_solver.solve(b, x);
@@ -147,11 +147,15 @@ int main(int argc, char** argv) {
                   << std::endl;
     double res_opt = res;
 
+    // Using LSQR
+    skynla::iter_params_t lsqrparams;
+    lsqrparams.am_i_printing = rank == 0;
+    lsqrparams.log_level = 0;
     elem::Zero(x);
     exact_solver_type<
         skyalg::iterative_l2_solver_tag<
             skyalg::lsqr_tag > >(problem)
-        .solve(b, x);
+        .solve(b, x, lsqrparams);
     check_solution(problem, b, x, res, resAtr);
     if (rank == 0)
         std::cout << "Exact (LSQR): ||r||_2 =  "
@@ -200,7 +204,7 @@ int main(int argc, char** argv) {
     exact_solver_type<
         skyalg::iterative_l2_solver_tag<
             skyalg::lsqr_tag > >(problem, PR)
-        .solve(b, x);
+        .solve(b, x, lsqrparams);
     check_solution(problem, b, x, res, resAtr);
     if (rank == 0)
         std::cout << "Accelerate-using-sketching (FJLT, LSQR): ||r||_2 =  "

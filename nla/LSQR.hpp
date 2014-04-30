@@ -38,6 +38,9 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
         elem::DistMatrix<value_t, elem::STAR, elem::STAR> >
         scalar_cont_type;
 
+    bool log_lev1 = params.am_i_printing && params.log_level >= 1;
+    bool log_lev2 = params.am_i_printing && params.log_level >= 2;
+
     /** Throughout, we will use m, n, k to denote the problem dimensions */
     index_t m = base::Height(A);
     index_t n = base::Width(A);
@@ -53,7 +56,7 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
     // We set the grid and rank for beta, and all other scalar containers
     // just copy from him to get that to be set right (not for the values).
     rhs_type U(B);
-    scalar_cont_type beta(k, 1, A.Grid(), A.Root()), i_beta(beta);  
+    scalar_cont_type beta(k, 1, A.Grid(), A.Root()), i_beta(beta);
     base::ColumnNrm2(U, beta);
     for (index_t i=0; i<k; ++i)
         i_beta[i] = 1 / beta[i];
@@ -166,14 +169,23 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
         for (index_t i=0; i<k; ++i) {
             nrm_ar[i] = std::abs(phibar[i]*alpha[i]*cs[i]);
 
-            //std::cout << itn << " : " << nrm_ar[i] << std::endl;
+            if (log_lev2)
+                params.log_stream << "LSQR: Iteration " << i << "/" << itn 
+                                  << ": " << nrm_ar[i]
+                                  << std::endl;
 
             /** 8. check convergence */
-            if (nrm_ar[i]<(params.tolerance*nrm_ar_0[i]))
+            if (nrm_ar[i]<(params.tolerance*nrm_ar_0[i])) {
+                if (log_lev1)
+                    params.log_stream << "LSQR: Convergence (S1)!" << std::endl;
                 return -2;
+            }
 
-            if (nrm_ar[i]<(eps*nrm_a[i]*nrm_r[i]))
+            if (nrm_ar[i]<(eps*nrm_a[i]*nrm_r[i])) {
+                if (log_lev1)
+                    params.log_stream << "LSQR: Convergence (S2)!" << std::endl;
                 return -3;
+            }
         }
 
         /** 9. estimate of cond(A) */
@@ -184,8 +196,11 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
             cnd_a[i] = nrm_a[i]*sqrt(sq_d[i]);
 
             /** 10. check condition number */
-            if (cnd_a[i]>(1.0/eps))
+            if (cnd_a[i]>(1.0/eps)) {
+                if (log_lev1)
+                    params.log_stream << "LSQR: Stopping (S3)!" << std::endl;
                 return -4;
+            }
         }
 
         /** 11. check stagnation */
@@ -195,8 +210,11 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
             else
                 stag[i] = 0;
 
-            if (stag[i] >= max_n_stag) 
+            if (stag[i] >= max_n_stag) {
+                if (log_lev1)
+                    params.log_stream << "LSQR: Stagnation." << std::endl;
                 return -5;
+            }
         }
 
         /** 12. estimate of norm(X) */
@@ -213,6 +231,10 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
             sq_x[i] += z[i]*z[i];
         }
     }
+    if (log_lev1)
+        params.log_stream << "LSQR: No convergence within iteration limit."
+                          << std::endl;
+
     return -6;
 }
 

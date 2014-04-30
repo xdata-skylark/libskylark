@@ -39,29 +39,24 @@ public:
     const int n;
     const matrix_type& A;
     const nla::precond_t<sol_type>& R;
+    const nla::iter_params_t iter_params;
 
-    exact_regressor_t (const problem_type& problem) :
+    exact_regressor_t (const problem_type& problem,
+        nla::iter_params_t iter_params = nla::iter_params_t()) :
         m(problem.m), n(problem.n), A(problem.input_matrix),
-        R(_id_precond_obj)
+        R(_id_precond_obj), iter_params(iter_params)
     { /* Check if m<n? */ }
 
     exact_regressor_t (const problem_type& problem,
-        const nla::precond_t<sol_type>& R) :
-        m(problem.m), n(problem.n), A(problem.input_matrix), R(R)
+        const nla::precond_t<sol_type>& R,
+        nla::iter_params_t iter_params = nla::iter_params_t()) :
+        m(problem.m), n(problem.n), A(problem.input_matrix), R(R),
+        iter_params(iter_params)
     { /* Check if m<n? */ }
 
-    /** * A solve implementation that uses LSQR */
-    int solve_impl (const rhs_type& b,
-        sol_type& x,
-        nla::iter_params_t &params,
-        lsqr_tag) {
 
-        return LSQR(A, b, x, params, R);
-    }
 
-    int solve(const rhs_type& b,
-        sol_type& x,
-        nla::iter_params_t params = skylark::nla::iter_params_t()) {
+    int solve(const rhs_type& b, sol_type& x) {
 
         if (m != base::Height(b)) { /* error */ return -1; }
         if (n != base::Height(x)) { /* error */ return -1; }
@@ -74,7 +69,14 @@ public:
          * different initialization requirements. This technique gives us an
          * opportunity to handle each iterative algorithm in a different func.
          */
-        return solve_impl (b, x, params, KrylovMethod());
+        return solve_impl (b, x, KrylovMethod());
+    }
+
+private:
+    /** * A solve implementation that uses LSQR */
+    int solve_impl (const rhs_type& b, sol_type& x, lsqr_tag) {
+
+        return LSQR(A, b, x, iter_params, R);
     }
 };
 

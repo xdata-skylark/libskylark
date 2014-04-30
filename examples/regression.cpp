@@ -48,21 +48,23 @@ template<>
 template<typename KT>
 struct exact_solver_type< skyalg::iterative_l2_solver_tag<KT> >:
     public skyalg::exact_regressor_t<
-    regression_problem_type, rhs_type, sol_type, 
+    regression_problem_type, rhs_type, sol_type,
     skyalg::iterative_l2_solver_tag<KT> > {
 
     typedef skyalg::exact_regressor_t<
-        regression_problem_type, rhs_type, sol_type, 
+        regression_problem_type, rhs_type, sol_type,
         skyalg::iterative_l2_solver_tag<KT> > base_type;
 
-    exact_solver_type(const regression_problem_type& problem) :
-        base_type(problem) {
+    exact_solver_type(const regression_problem_type& problem,
+        skynla::iter_params_t iter_params) :
+        base_type(problem, iter_params) {
 
     }
 
     exact_solver_type(const regression_problem_type& problem,
-                      const skynla::precond_t<sol_type>& R) :
-        base_type(problem, R) {
+        const skynla::precond_t<sol_type>& R,
+        skynla::iter_params_t iter_params) :
+        base_type(problem, R, iter_params) {
 
     }
 
@@ -154,8 +156,8 @@ int main(int argc, char** argv) {
     elem::Zero(x);
     exact_solver_type<
         skyalg::iterative_l2_solver_tag<
-            skyalg::lsqr_tag > >(problem)
-        .solve(b, x, lsqrparams);
+            skyalg::lsqr_tag > >(problem, lsqrparams)
+        .solve(b, x);
     check_solution(problem, b, x, res, resAtr);
     if (rank == 0)
         std::cout << "Exact (LSQR): ||r||_2 =  "
@@ -203,8 +205,8 @@ int main(int argc, char** argv) {
                                   elem::UPPER, elem::NON_UNIT> PR(R);
     exact_solver_type<
         skyalg::iterative_l2_solver_tag<
-            skyalg::lsqr_tag > >(problem, PR)
-        .solve(b, x, lsqrparams);
+            skyalg::lsqr_tag > >(problem, PR, lsqrparams)
+        .solve(b, x);
     check_solution(problem, b, x, res, resAtr);
     if (rank == 0)
         std::cout << "Accelerate-using-sketching (FJLT, LSQR): ||r||_2 =  "

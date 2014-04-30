@@ -61,10 +61,11 @@ inline void ColumnNrm2(const elem::DistMatrix<T, elem::VC, elem::STAR>& A,
     std::vector<T> n(A.Width(), 1);
     const elem::Matrix<T> &Al = A.LockedMatrix();
     const double *a = Al.LockedBuffer();
-    for(int j = 0; j < Al.Width(); j++)
+    for(int j = 0; j < Al.Width(); j++) {
+        n[j] = 0.0;
         for(int i = 0; i < Al.Height(); i++)
             n[j] += a[j * Al.LDim() + i] * a[j * Al.LDim() + i];
-
+    }
     N.Resize(A.Width(), 1);
     elem::Zero(N);
     boost::mpi::communicator comm(N.Grid().Comm(), boost::mpi::comm_attach);

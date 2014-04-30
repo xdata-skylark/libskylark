@@ -31,27 +31,37 @@ struct exact_regressor_t<
     typedef regression_problem_t<matrix_type,
                                  linear_tag, l2_tag, no_reg_tag> problem_type;
 
+private:
+    const nla::id_precond_t<sol_type> _id_precond_obj;
+
+public:
     const int m;
     const int n;
     const matrix_type& A;
+    const nla::precond_t<sol_type>& R;
 
     exact_regressor_t (const problem_type& problem) :
-        m(problem.m), n(problem.n), A(problem.input_matrix)
+        m(problem.m), n(problem.n), A(problem.input_matrix),
+        R(_id_precond_obj)
+    { /* Check if m<n? */ }
+
+    exact_regressor_t (const problem_type& problem,
+        const nla::precond_t<sol_type>& R) :
+        m(problem.m), n(problem.n), A(problem.input_matrix), R(R)
     { /* Check if m<n? */ }
 
     /** * A solve implementation that uses LSQR */
     int solve_impl (const rhs_type& b,
         sol_type& x,
-        skylark::nla::iter_params_t &params,
+        nla::iter_params_t &params,
         lsqr_tag) {
 
-        return LSQR(A, b, x, params);
+        return LSQR(A, b, x, params, R);
     }
 
     int solve(const rhs_type& b,
         sol_type& x,
-        skylark::nla::iter_params_t params = skylark::nla::iter_params_t()) {
-
+        nla::iter_params_t params = skylark::nla::iter_params_t()) {
 
         if (m != base::Height(b)) { /* error */ return -1; }
         if (n != base::Height(x)) { /* error */ return -1; }

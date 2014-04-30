@@ -9,6 +9,7 @@
 namespace bmpi =  boost::mpi;
 namespace skybase = skylark::base;
 namespace skysk =  skylark::sketch;
+namespace skynla = skylark::nla;
 namespace skyalg = skylark::algorithms;
 namespace skyutil = skylark::utility;
 /*******************************************/
@@ -22,6 +23,7 @@ typedef elem::DistMatrix<double, elem::VC, elem::STAR> matrix_type;
 typedef elem::DistMatrix<double, elem::VC, elem::STAR> rhs_type;
 typedef elem::DistMatrix<double, elem::STAR, elem::STAR> sol_type;
 typedef elem::DistMatrix<double, elem::STAR, elem::STAR> sketch_type;
+typedef elem::DistMatrix<double, elem::STAR, elem::STAR> precond_type;
 
 typedef skyalg::regression_problem_t<matrix_type,
                                      skyalg::linear_tag,
@@ -40,6 +42,31 @@ struct exact_solver_type :
         base_type(problem) {
 
     }
+};
+
+template<>
+template<typename KT>
+struct exact_solver_type< skyalg::iterative_l2_solver_tag<KT> >:
+    public skyalg::exact_regressor_t<
+    regression_problem_type, rhs_type, sol_type, 
+    skyalg::iterative_l2_solver_tag<KT> > {
+
+    typedef skyalg::exact_regressor_t<
+        regression_problem_type, rhs_type, sol_type, 
+        skyalg::iterative_l2_solver_tag<KT> > base_type;
+
+    exact_solver_type(const regression_problem_type& problem) :
+        base_type(problem) {
+
+    }
+
+    exact_solver_type(const regression_problem_type& problem,
+                      const skynla::precond_t<sol_type>& R) :
+        base_type(problem, R) {
+
+    }
+
+
 };
 
 template<template <typename, typename> class TransformType >
@@ -127,7 +154,8 @@ int main(int argc, char** argv) {
         .solve(b, x);
     check_solution(problem, b, x, res, resAtr);
     if (rank == 0)
-        std::cout << "Exact (LSQR): ||r||_2 =  " << boost::format("%.2f") % res
+        std::cout << "Exact (LSQR): ||r||_2 =  "
+                  << boost::format("%.2f") % res
                   << " ||A' * r||_2 = " << boost::format("%.2e") % resAtr
                   << std::endl;
 
@@ -135,7 +163,8 @@ int main(int argc, char** argv) {
     sketched_solver_type<skysk::JLT_t>(problem, t, context).solve(b, x);
     check_solution(problem, b, x, res, resAtr);
     if (rank == 0)
-        std::cout << "Sketch-and-Solve (JLT): ||r||_2 =  " << boost::format("%.2f") % res
+        std::cout << "Sketch-and-Solve (JLT): ||r||_2 =  " 
+                  << boost::format("%.2f") % res
                   << " (x " << boost::format("%.5f") % (res / res_opt) << ")"
                   << " ||A' * r||_2 = " << boost::format("%.2e") % resAtr
                   << std::endl;
@@ -143,7 +172,8 @@ int main(int argc, char** argv) {
     sketched_solver_type<skysk::CWT_t>(problem, t, context).solve(b, x);
     check_solution(problem, b, x, res, resAtr);
     if (rank == 0)
-        std::cout << "Sketch-and-Solve (CWT): ||r||_2 =  " << boost::format("%.2f") % res
+        std::cout << "Sketch-and-Solve (CWT): ||r||_2 =  "
+                  << boost::format("%.2f") % res
                   << " (x " << boost::format("%.5f") % (res / res_opt) << ")"
                   << " ||A' * r||_2 = " << boost::format("%.2e") % resAtr
                   << std::endl;
@@ -151,10 +181,31 @@ int main(int argc, char** argv) {
     sketched_solver_type<skysk::FJLT_t>(problem, t, context).solve(b, x);
     check_solution(problem, b, x, res, resAtr);
     if (rank == 0)
-        std::cout << "Sketch-and-Solve (FJLT): ||r||_2 =  " << boost::format("%.2f") % res
+        std::cout << "Sketch-and-Solve (FJLT): ||r||_2 =  "
+                  << boost::format("%.2f") % res
                   << " (x " << boost::format("%.5f") % (res / res_opt) << ")"
                   << " ||A' * r||_2 = " << boost::format("%.2e") % resAtr
                   << std::endl;
 
+    // Accelerate-using-sketching
+    skysk::FJLT_t<matrix_type, sketch_type> S(m, t, context);
+    sketch_type SA(t, n);
+    S.apply(A, SA, skysk::columnwise_tag());
+    precond_type R(n, n);
+    elem::qr::Explicit(SA.Matrix(), R.Matrix());
+
+    elem::Zero(x);
+    skynla::tri_inverse_precond_t<sol_type, precond_type,
+                                  elem::UPPER, elem::NON_UNIT> PR(R);
+    exact_solver_type<
+        skyalg::iterative_l2_solver_tag<
+            skyalg::lsqr_tag > >(problem, PR)
+        .solve(b, x);
+    check_solution(problem, b, x, res, resAtr);
+    if (rank == 0)
+        std::cout << "Accelerate-using-sketching (FJLT, LSQR): ||r||_2 =  "
+                  << boost::format("%.2f") % res
+                  << " ||A' * r||_2 = " << boost::format("%.2e") % resAtr
+                  << std::endl;
     return 0;
 }

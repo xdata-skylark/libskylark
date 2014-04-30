@@ -5,11 +5,12 @@
 #include "../utility/elem_extender.hpp"
 #include "../utility/typer.hpp"
 #include "../utility/external/print.hpp"
+#include "precond.hpp"
 
 namespace skylark { namespace nla {
 
 // We can have a version that is indpendent of Elemental. But that will
-// be tedious (convert between [STAR,STAR] and vector<T>, and really 
+// be tedious (convert between [STAR,STAR] and vector<T>, and really
 // elemental is a very fudmanetal to Skylark.
 #if SKYLARK_HAVE_ELEMENTAL
 
@@ -20,7 +21,8 @@ namespace skylark { namespace nla {
  */
 template<typename MatrixType, typename RhsType, typename SolType>
 int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
-    iter_params_t params = iter_params_t()) {
+    iter_params_t params = iter_params_t(),
+    const precond_t<SolType>& R = id_precond_t<SolType>()) {
 
     typedef typename utility::typer_t<MatrixType>::value_type value_t;
     typedef typename utility::typer_t<MatrixType>::index_type index_t;
@@ -60,17 +62,20 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
 
     sol_type V(X);     // No need to really copy, just want sizes&comm correct.
     base::Gemm(elem::ADJOINT, elem::NORMAL, 1.0, A, U, V);
+    R.apply_adjoint(V);
     scalar_cont_type alpha(beta), i_alpha(beta);
     base::ColumnNrm2(V, alpha);
     for (index_t i=0; i<k; ++i)
         i_alpha[i] = 1 / alpha[i];
     base::DiagonalScale(elem::RIGHT, elem::NORMAL, i_alpha, V);
+    sol_type Z(V);
+    R.apply(Z);
     sol_print_t::apply(V, "V Init", params.am_i_printing, params.debug_level);
 
-    /* Create W=V and X=0 */
+    /* Create W=Z and X=0 */
     base::Zero(X);
-    sol_type W(V);
-    scalar_cont_type phibar(beta), rhobar(alpha), nrm_r(beta); 
+    sol_type W(Z);
+    scalar_cont_type phibar(beta), rhobar(alpha), nrm_r(beta);
         // /!\ Actually copied for init
     scalar_cont_type nrm_a(beta), cnd_a(beta), sq_d(beta), nrm_ar_0(beta);
     base::Zero(nrm_a); base::Zero(cnd_a); base::Zero(sq_d);
@@ -78,7 +83,7 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
 
     /** Return from here */
     for (index_t i=0; i<k; ++i)
-        if (nrm_ar_0[i]==0) 
+        if (nrm_ar_0[i]==0)
             return 0;
 
     scalar_cont_type nrm_x(beta), sq_x(beta), z(beta), cs2(beta), sn2(beta);
@@ -93,7 +98,6 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
     if (0>params.iter_lim) params.iter_lim = std::max(20, 2*std::min(m,n));
 
     /* More varaibles */
-    rhs_type AV(B);
     sol_type AU(X);
     scalar_cont_type minus_beta(beta), rho(beta);
     scalar_cont_type cs(beta), sn(beta), theta(beta), phi(beta);
@@ -105,10 +109,9 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
     for (index_t itn=0; itn<params.iter_lim; ++itn) {
 
         /** 1. Update u and beta */
-        base::Gemm(elem::NORMAL, elem::NORMAL, 1.0, A, V, AV);
         elem::Scal(-1.0, alpha);   // Can safely overwrite based on subseq ops.
         base::DiagonalScale(elem::RIGHT, elem::NORMAL, alpha, U);
-        base::Axpy(1.0, AV, U);
+        base::Gemm(elem::NORMAL, elem::NORMAL, 1.0, A, Z, 1.0, U);
         base::ColumnNrm2(U, beta);
         for (index_t i=0; i<k; ++i)
             i_beta[i] = 1 / beta[i];
@@ -121,21 +124,23 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
         }
 
         /** 3. Update v */
-        base::Gemm(elem::ADJOINT, elem::NORMAL, 1.0, A, U, AU);
         for (index_t i=0; i<k; ++i)
             minus_beta[i] = -beta[i];
         base::DiagonalScale(elem::RIGHT, elem::NORMAL, minus_beta, V);
+        base::Gemm(elem::ADJOINT, elem::NORMAL, 1.0, A, U, AU);
+        R.apply_adjoint(AU);
         base::Axpy(1.0, AU, V);
         base::ColumnNrm2(V, alpha);
         for (index_t i=0; i<k; ++i)
             i_alpha[i] = 1 / alpha[i];
         base::DiagonalScale(elem::RIGHT, elem::NORMAL, i_alpha, V);
+        Z = V; R.apply(Z);
 
-        /** 4. Define some variables */
+       /** 4. Define some variables */
         for (index_t i=0; i<k; ++i) {
             rho[i] = sqrt((rhobar[i]*rhobar[i]) + (beta[i]*beta[i]));
             cs[i] = rhobar[i]/rho[i];
-            sn[i] =  beta[i]/rho[i];
+            sn[i] =  beta[i]/rho[i];  
             theta[i] = sn[i]*alpha[i];
             rhobar[i] = -cs[i]*alpha[i];
             phi[i] = cs[i]*phibar[i];
@@ -151,7 +156,7 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
         for (index_t i=0; i<k; ++i)
             minus_theta_by_rho[i] = -theta[i]/rho[i];
         base::DiagonalScale(elem::RIGHT, elem::NORMAL, minus_theta_by_rho, W);
-        base::Axpy(1.0, V, W);
+        base::Axpy(1.0, Z, W);
         sol_print_t::apply(W, "W", params.am_i_printing, params.debug_level);
 
         /** 6. Estimate norm(r) */
@@ -159,7 +164,9 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
 
         /** 7. estimate of norm(A'*r) */
         for (index_t i=0; i<k; ++i) {
-            nrm_ar[i] = phibar[i]*alpha[i]*std::abs(cs[i]);
+            nrm_ar[i] = std::abs(phibar[i]*alpha[i]*cs[i]);
+
+            //std::cout << itn << " : " << nrm_ar[i] << std::endl;
 
             /** 8. check convergence */
             if (nrm_ar[i]<(params.tolerance*nrm_ar_0[i]))

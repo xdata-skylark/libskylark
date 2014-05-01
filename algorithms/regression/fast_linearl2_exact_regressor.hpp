@@ -6,6 +6,19 @@
 namespace skylark {
 namespace algorithms {
 
+// Base class for linear L2 fast algorithms.
+struct linearl2_reg_fast_alg_tag { };
+
+// Simplified Blendenpik just does a single sketch and uses the
+// sketched matrix as a preconditioner.
+template<template <typename, typename> class TransformType>
+struct simplified_blendenpik_tag : public linearl2_reg_fast_alg_tag { };
+
+// The algorithm described in the Blendenpik paper
+struct blendenpik_tag : public linearl2_reg_fast_alg_tag { };
+
+// The algorithm described in the LSRN paper
+struct lsrn_tag : public linearl2_reg_fast_alg_tag { };
 
 } }
 

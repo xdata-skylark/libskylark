@@ -15,8 +15,7 @@ class fast_exact_regressor_t<
                          linear_tag, l2_tag, no_reg_tag>,
     elem::DistMatrix<ValueType, VD, elem::STAR>,
     elem::DistMatrix<ValueType, elem::STAR, elem::STAR>,
-    qr_l2_solver_tag,   // TODO!
-    TransformType > {
+    simplified_blendenpik_tag<TransformType> > {
 
 public:
 

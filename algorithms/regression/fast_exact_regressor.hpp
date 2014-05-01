@@ -20,13 +20,13 @@ namespace algorithms {
  * @tparam RegressionProblemType Type of regression problem solved.
  * @tparam RhsType Right-hand side matrix type.
  * @tparam SolType Solution matrix type.
- * @tparam AlgTag Tag specifying the algorithm used (tags differ based on problem).
+ * @tparam AlgTag Tag specifying the algorithm used (tags differ based on
+ *                problem).
  */
 template <typename RegressionProblemType,
           typename RhsType,
           typename SolType,
-          typename AlgTag,
-          template <typename, typename> class TransformType>
+          typename AlgTag>
 class fast_exact_regressor_t {
 
 };

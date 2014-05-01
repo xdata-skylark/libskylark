@@ -47,12 +47,12 @@ struct exact_solver_type :
 template<template <typename, typename> class TransformType >
 struct fast_exact_solver_type :
     public skyalg::fast_exact_regressor_t<
-    regression_problem_type, rhs_type, sol_type, skyalg::qr_l2_solver_tag, 
-    TransformType> {
+    regression_problem_type, rhs_type, sol_type,
+    skyalg::simplified_blendenpik_tag<TransformType> > {
 
-    typedef skyalg::fast_exact_regressor_t<
+    typedef  skyalg::fast_exact_regressor_t<
         regression_problem_type, rhs_type, sol_type,
-        skyalg::qr_l2_solver_tag, TransformType> base_type;
+        skyalg::simplified_blendenpik_tag<TransformType> > base_type;
 
     fast_exact_solver_type(const regression_problem_type& problem, 
         skybase::context_t& context) :
@@ -211,7 +211,7 @@ int main(int argc, char** argv) {
     fast_exact_solver_type<skysk::JLT_t>(problem, context).solve(b, x);
     check_solution(problem, b, x, res, resAtr);
     if (rank == 0)
-        std::cout << "Accelerate-using-sketching (JLT, LSQR): ||r||_2 =  " 
+        std::cout << "Simplified Blendenpik (JLT): ||r||_2 =  "
                   << boost::format("%.2f") % res
                   << " (x " << boost::format("%.5f") % (res / res_opt) << ")"
                   << " ||A' * r||_2 = " << boost::format("%.2e") % resAtr
@@ -220,7 +220,7 @@ int main(int argc, char** argv) {
     fast_exact_solver_type<skysk::FJLT_t>(problem, context).solve(b, x);
     check_solution(problem, b, x, res, resAtr);
     if (rank == 0)
-        std::cout << "Accelerate-using-sketching (FJLT, LSQR): ||r||_2 =  " 
+        std::cout << "Simplified Blendenpik (FJLT): ||r||_2 =  "
                   << boost::format("%.2f") % res
                   << " (x " << boost::format("%.5f") % (res / res_opt) << ")"
                   << " ||A' * r||_2 = " << boost::format("%.2e") % resAtr
@@ -229,7 +229,7 @@ int main(int argc, char** argv) {
     fast_exact_solver_type<skysk::CWT_t>(problem, context).solve(b, x);
     check_solution(problem, b, x, res, resAtr);
     if (rank == 0)
-        std::cout << "Accelerate-using-sketching (CWT, LSQR): ||r||_2 =  " 
+        std::cout << "Simplified Blendenpik (CWT): ||r||_2 =  "
                   << boost::format("%.2f") % res
                   << " (x " << boost::format("%.5f") % (res / res_opt) << ")"
                   << " ||A' * r||_2 = " << boost::format("%.2e") % resAtr

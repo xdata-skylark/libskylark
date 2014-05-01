@@ -32,6 +32,22 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
 
 template<typename T>
 inline void Gemm(elem::Orientation oA, elem::Orientation oB,
+    T alpha, const elem::DistMatrix<T, elem::STAR, elem::STAR>& A, 
+    const elem::DistMatrix<T, elem::STAR, elem::STAR>& B,
+    T beta, elem::DistMatrix<T, elem::STAR, elem::STAR>& C) {
+    elem::Gemm(oA, oB, alpha, A.LockedMatrix(), B.LockedMatrix(), beta, C.Matrix());
+}
+
+template<typename T>
+inline void Gemm(elem::Orientation oA, elem::Orientation oB,
+    T alpha, const elem::DistMatrix<T, elem::STAR, elem::STAR>& A,
+    const elem::DistMatrix<T, elem::STAR, elem::STAR>& B,
+    elem::DistMatrix<T, elem::STAR, elem::STAR>& C) {
+    elem::Gemm(oA, oB, alpha, A.LockedMatrix(), B.LockedMatrix(), C.Matrix());
+}
+
+template<typename T>
+inline void Gemm(elem::Orientation oA, elem::Orientation oB,
     T alpha, const elem::DistMatrix<T>& A, const elem::DistMatrix<T>& B,
     T beta, elem::DistMatrix<T>& C) {
     elem::Gemm(oA, oB, alpha, A, B, beta, C);

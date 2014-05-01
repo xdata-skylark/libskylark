@@ -15,9 +15,15 @@ namespace skyutil = skylark::utility;
 /*******************************************/
 
 // Parameters
+#if 0
 const int m = 2000;
 const int n = 10;
 const int t = 500;
+#else
+const int m = 30000;
+const int n = 500;
+const int t = 2000;
+#endif
 
 typedef elem::DistMatrix<double, elem::VC, elem::STAR> matrix_type;
 typedef elem::DistMatrix<double, elem::VC, elem::STAR> rhs_type;
@@ -48,13 +54,15 @@ template<template <typename, typename> class TransformType >
 struct fast_exact_solver_type :
     public skyalg::fast_exact_regressor_t<
     regression_problem_type, rhs_type, sol_type,
-    skyalg::simplified_blendenpik_tag<TransformType> > {
+    skyalg::simplified_blendenpik_tag<TransformType,
+                                      skyalg::qr_precond_tag> > {
 
     typedef  skyalg::fast_exact_regressor_t<
         regression_problem_type, rhs_type, sol_type,
-        skyalg::simplified_blendenpik_tag<TransformType> > base_type;
+        skyalg::simplified_blendenpik_tag<TransformType,
+                                          skyalg::qr_precond_tag > > base_type;
 
-    fast_exact_solver_type(const regression_problem_type& problem, 
+    fast_exact_solver_type(const regression_problem_type& problem,
         skybase::context_t& context) :
         base_type(problem, context) {
 
@@ -153,14 +161,22 @@ int main(int argc, char** argv) {
 
     regression_problem_type problem(m, n, A);
 
-    // Using QR
+    boost::mpi::timer timer;
+    double telp;
+
     sol_type x(n,1);
+
+    // Using QR
+    timer.restart();
     exact_solver_type<skyalg::qr_l2_solver_tag> exact_solver(problem);
     exact_solver.solve(b, x);
+    telp = timer.elapsed();
     check_solution(problem, b, x, res, resAtr);
     if (rank == 0)
-        std::cout << "Exact (QR): ||r||_2 =  " << boost::format("%.2f") % res
-                  << " ||A' * r||_2 = " << boost::format("%.2e") % resAtr
+        std::cout << "Exact (QR):\t\t\t||r||_2 =  "
+                  << boost::format("%.2f") % res
+                  << "\t\t||A' * r||_2 = " << boost::format("%.2e") % resAtr
+                  << "\t\tTime: " << boost::format("%.2e") % telp << " sec"
                   << std::endl;
     double res_opt = res;
 
@@ -168,71 +184,95 @@ int main(int argc, char** argv) {
     skynla::iter_params_t lsqrparams;
     lsqrparams.am_i_printing = rank == 0;
     lsqrparams.log_level = 0;
+    timer.restart();
     exact_solver_type<
         skyalg::iterative_l2_solver_tag<
             skyalg::lsqr_tag > >(problem, lsqrparams)
         .solve(b, x);
+    telp = timer.elapsed();
     check_solution(problem, b, x, res, resAtr);
     if (rank == 0)
-        std::cout << "Exact (LSQR): ||r||_2 =  "
+        std::cout << "Exact (LSQR):\t\t\t||r||_2 =  "
                   << boost::format("%.2f") % res
-                  << " ||A' * r||_2 = " << boost::format("%.2e") % resAtr
+                  << "\t\t||A' * r||_2 = " << boost::format("%.2e") % resAtr
+                  << "\t\tTime: " << boost::format("%.2e") % telp << " sec"
                   << std::endl;
 
     // Using sketch-and-solve
+
+#if 0 
+    timer.restart();
     sketched_solver_type<skysk::JLT_t>(problem, t, context).solve(b, x);
+    telp = timer.elapsed();
     check_solution(problem, b, x, res, resAtr);
     if (rank == 0)
-        std::cout << "Sketch-and-Solve (JLT): ||r||_2 =  " 
+        std::cout << "Sketch-and-Solve (JLT):\t\t||r||_2 =  "
                   << boost::format("%.2f") % res
                   << " (x " << boost::format("%.5f") % (res / res_opt) << ")"
-                  << " ||A' * r||_2 = " << boost::format("%.2e") % resAtr
+                  << "\t||A' * r||_2 = " << boost::format("%.2e") % resAtr
+                  << "\t\tTime: " << boost::format("%.2e") % telp << " sec"
                   << std::endl;
+#endif
 
+    timer.restart();
     sketched_solver_type<skysk::CWT_t>(problem, t, context).solve(b, x);
+    telp = timer.elapsed();
     check_solution(problem, b, x, res, resAtr);
     if (rank == 0)
-        std::cout << "Sketch-and-Solve (CWT): ||r||_2 =  "
+        std::cout << "Sketch-and-Solve (CWT):\t\t||r||_2 =  "
                   << boost::format("%.2f") % res
                   << " (x " << boost::format("%.5f") % (res / res_opt) << ")"
-                  << " ||A' * r||_2 = " << boost::format("%.2e") % resAtr
+                  << "\t||A' * r||_2 = " << boost::format("%.2e") % resAtr
+                  << "\t\tTime: " << boost::format("%.2e") % telp << " sec"
                   << std::endl;
 
+    timer.restart();
     sketched_solver_type<skysk::FJLT_t>(problem, t, context).solve(b, x);
+    telp = timer.elapsed();
     check_solution(problem, b, x, res, resAtr);
     if (rank == 0)
-        std::cout << "Sketch-and-Solve (FJLT): ||r||_2 =  "
+        std::cout << "Sketch-and-Solve (FJLT):\t||r||_2 =  "
                   << boost::format("%.2f") % res
                   << " (x " << boost::format("%.5f") % (res / res_opt) << ")"
-                  << " ||A' * r||_2 = " << boost::format("%.2e") % resAtr
+                  << "\t||A' * r||_2 = " << boost::format("%.2e") % resAtr
+                  << "\t\tTime: " << boost::format("%.2e") % telp << " sec"
                   << std::endl;
 
     // Accelerate-using-sketching
+    timer.restart();
     fast_exact_solver_type<skysk::JLT_t>(problem, context).solve(b, x);
+    telp = timer.elapsed();
     check_solution(problem, b, x, res, resAtr);
     if (rank == 0)
-        std::cout << "Simplified Blendenpik (JLT): ||r||_2 =  "
+        std::cout << "Simplified Blendenpik (JLT):\t||r||_2 =  "
                   << boost::format("%.2f") % res
                   << " (x " << boost::format("%.5f") % (res / res_opt) << ")"
-                  << " ||A' * r||_2 = " << boost::format("%.2e") % resAtr
+                  << "\t||A' * r||_2 = " << boost::format("%.2e") % resAtr
+                  << "\t\tTime: " << boost::format("%.2e") % telp << " sec"
                   << std::endl;
 
+    timer.restart();
     fast_exact_solver_type<skysk::FJLT_t>(problem, context).solve(b, x);
+    telp = timer.elapsed();
     check_solution(problem, b, x, res, resAtr);
     if (rank == 0)
-        std::cout << "Simplified Blendenpik (FJLT): ||r||_2 =  "
+        std::cout << "Simplified Blendenpik (FJLT):\t||r||_2 =  "
                   << boost::format("%.2f") % res
                   << " (x " << boost::format("%.5f") % (res / res_opt) << ")"
-                  << " ||A' * r||_2 = " << boost::format("%.2e") % resAtr
+                  << "\t||A' * r||_2 = " << boost::format("%.2e") % resAtr
+                  << "\t\tTime: " << boost::format("%.2e") % telp << " sec"
                   << std::endl;
 
+    timer.restart();
     fast_exact_solver_type<skysk::CWT_t>(problem, context).solve(b, x);
+    telp = timer.elapsed();
     check_solution(problem, b, x, res, resAtr);
     if (rank == 0)
-        std::cout << "Simplified Blendenpik (CWT): ||r||_2 =  "
+        std::cout << "Simplified Blendenpik (CWT):\t||r||_2 =  "
                   << boost::format("%.2f") % res
                   << " (x " << boost::format("%.5f") % (res / res_opt) << ")"
-                  << " ||A' * r||_2 = " << boost::format("%.2e") % resAtr
+                  << "\t||A' * r||_2 = " << boost::format("%.2e") % resAtr
+                  << "\t\tTime: " << boost::format("%.2e") % telp << " sec"
                   << std::endl;
 
     return 0;

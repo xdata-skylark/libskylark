@@ -17,6 +17,8 @@ struct precond_t {
     virtual void apply(T& X) const = 0;
 
     virtual void apply_adjoint(T& X) const = 0;
+
+    virtual ~precond_t() { }
 };
 
 #ifdef SKYLARK_HAVE_ELEMENTAL
@@ -29,6 +31,26 @@ struct id_precond_t : public precond_t<T> {
     void apply(T& X) const { }
 
     void apply_adjoint(T& X) const { }
+};
+
+/**
+ * A preconditioner that is explicitly given as a matrix.
+ */
+template<typename XType, typename NType>
+struct mat_precond_t : public precond_t<XType> {
+    const NType& N;
+
+    mat_precond_t(const NType& N) : N(N) { }
+
+    void apply(XType& X) const {
+        XType Xin(X);
+        base::Gemm(elem::NORMAL, elem::NORMAL, 1.0, N, Xin, X);
+    }
+
+    void apply_adjoint(XType& X) const {
+        XType Xin(X);
+        base::Gemm(elem::ADJOINT, elem::NORMAL, 1.0, N, Xin, X);
+    }
 };
 
 /**

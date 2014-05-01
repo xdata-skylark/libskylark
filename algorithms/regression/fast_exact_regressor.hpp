@@ -1,5 +1,5 @@
-#ifndef SKYLARK_EXACT_REGRESSOR_HPP
-#define SKYLARK_EXACT_REGRESSOR_HPP
+#ifndef SKYLARK_FAST_EXACT_REGRESSOR_HPP
+#define SKYLARK_FAST_EXACT_REGRESSOR_HPP
 
 #include "../../config.h"
 
@@ -7,7 +7,8 @@ namespace skylark {
 namespace algorithms {
 
 /**
- * Classical regressors that solves the original problem. 
+ * Regressors on the original problem that have been accelerated using
+ * sketching.
  *
  * A regressor accepts a right-hand side and output a solution
  * the the regression problem.
@@ -24,8 +25,9 @@ namespace algorithms {
 template <typename RegressionProblemType,
           typename RhsType,
           typename SolType,
-          typename AlgTag>
-class exact_regressor_t {
+          typename AlgTag,
+          template <typename, typename> class TransformType>
+class fast_exact_regressor_t {
 
 };
 
@@ -34,6 +36,6 @@ class exact_regressor_t {
 } // namespace skylark
 
 
-#include "linearl2_exact_regressor.hpp"
+#include "fast_linearl2_exact_regressor.hpp"
 
-#endif // SKYLARK_EXACT_REGRESSOR_HPP
+#endif // SKYLARK_FAST_EXACT_REGRESSOR_HPP

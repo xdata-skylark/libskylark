@@ -44,6 +44,23 @@ struct exact_solver_type :
     }
 };
 
+template<template <typename, typename> class TransformType >
+struct fast_exact_solver_type :
+    public skyalg::fast_exact_regressor_t<
+    regression_problem_type, rhs_type, sol_type, skyalg::qr_l2_solver_tag, 
+    TransformType> {
+
+    typedef skyalg::fast_exact_regressor_t<
+        regression_problem_type, rhs_type, sol_type,
+        skyalg::qr_l2_solver_tag, TransformType> base_type;
+
+    fast_exact_solver_type(const regression_problem_type& problem, 
+        skybase::context_t& context) :
+        base_type(problem, context) {
+
+    }
+};
+
 template<>
 template<typename KT>
 struct exact_solver_type< skyalg::iterative_l2_solver_tag<KT> >:
@@ -151,7 +168,6 @@ int main(int argc, char** argv) {
     skynla::iter_params_t lsqrparams;
     lsqrparams.am_i_printing = rank == 0;
     lsqrparams.log_level = 0;
-    elem::Zero(x);
     exact_solver_type<
         skyalg::iterative_l2_solver_tag<
             skyalg::lsqr_tag > >(problem, lsqrparams)
@@ -192,24 +208,32 @@ int main(int argc, char** argv) {
                   << std::endl;
 
     // Accelerate-using-sketching
-    skysk::FJLT_t<matrix_type, sketch_type> S(m, t, context);
-    sketch_type SA(t, n);
-    S.apply(A, SA, skysk::columnwise_tag());
-    precond_type R(n, n);
-    elem::qr::Explicit(SA.Matrix(), R.Matrix());
-
-    elem::Zero(x);
-    skynla::tri_inverse_precond_t<sol_type, precond_type,
-                                  elem::UPPER, elem::NON_UNIT> PR(R);
-    exact_solver_type<
-        skyalg::iterative_l2_solver_tag<
-            skyalg::lsqr_tag > >(problem, PR, lsqrparams)
-        .solve(b, x);
+    fast_exact_solver_type<skysk::JLT_t>(problem, context).solve(b, x);
     check_solution(problem, b, x, res, resAtr);
     if (rank == 0)
-        std::cout << "Accelerate-using-sketching (FJLT, LSQR): ||r||_2 =  "
+        std::cout << "Accelerate-using-sketching (JLT, LSQR): ||r||_2 =  " 
                   << boost::format("%.2f") % res
+                  << " (x " << boost::format("%.5f") % (res / res_opt) << ")"
                   << " ||A' * r||_2 = " << boost::format("%.2e") % resAtr
                   << std::endl;
+
+    fast_exact_solver_type<skysk::FJLT_t>(problem, context).solve(b, x);
+    check_solution(problem, b, x, res, resAtr);
+    if (rank == 0)
+        std::cout << "Accelerate-using-sketching (FJLT, LSQR): ||r||_2 =  " 
+                  << boost::format("%.2f") % res
+                  << " (x " << boost::format("%.5f") % (res / res_opt) << ")"
+                  << " ||A' * r||_2 = " << boost::format("%.2e") % resAtr
+                  << std::endl;
+
+    fast_exact_solver_type<skysk::CWT_t>(problem, context).solve(b, x);
+    check_solution(problem, b, x, res, resAtr);
+    if (rank == 0)
+        std::cout << "Accelerate-using-sketching (CWT, LSQR): ||r||_2 =  " 
+                  << boost::format("%.2f") % res
+                  << " (x " << boost::format("%.5f") % (res / res_opt) << ")"
+                  << " ||A' * r||_2 = " << boost::format("%.2e") % resAtr
+                  << std::endl;
+
     return 0;
 }

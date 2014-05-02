@@ -39,6 +39,7 @@ int Width(const elem::DistMatrix<T, U, V>& A) {
 
 #endif // SKYLARK_HAVE_ELEMENTAL
 
+#if 0
 #if SKYLARK_HAVE_COMBBLAS
 
 template<typename IT, typename VT>
@@ -62,6 +63,9 @@ IT Width(const FullyDistMultiVec<IT, VT>& A) {
 }
 
 #endif // SKYLARK_HAVE_COMBBLAS
+
+#endif
+
 } } // namespace skylark::base
 
 #endif // SKYLARK_QUERY_HPP

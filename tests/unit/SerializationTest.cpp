@@ -7,8 +7,8 @@
 
 #include "../../sketch/CT.hpp"
 #include "../../sketch/CWT.hpp"
+#include "../../sketch/sketch_archive.hpp"
 #include "../../base/context.hpp"
-#include "../../utility/sketch_archive.hpp"
 
 int test_main(int argc, char *argv[]) {
 

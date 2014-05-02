@@ -49,6 +49,11 @@ int test_main(int argc, char *argv[]) {
 
     namespace mpi = boost::mpi;
 
+#ifdef SKYLARK_HAVE_OPENMP
+    int provided;
+    MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
+#endif
+
     mpi::environment env (argc, argv);
     mpi::communicator world;
 

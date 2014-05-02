@@ -4,11 +4,13 @@
 #include <boost/mpi.hpp>
 #include "exception.hpp"
 
-// Defines a generic Gemm function that recieves both dense and sparse matrices.
+#include "Gemm_detail.hpp"
 
-#if SKYLARK_HAVE_ELEMENTAL
+// Defines a generic Gemm function that receives both dense and sparse matrices.
 
 namespace skylark { namespace base {
+
+#if SKYLARK_HAVE_ELEMENTAL
 
 /**
  * Rename the elemental Gemm function, so that we have unified access.
@@ -325,8 +327,81 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
     }
 }
 
-} } // namespace skylark::base
 
+#if SKYLARK_HAVE_COMBBLAS
+/**
+ * Mixed GEMM for Elemental and CombBLAS matrices. For a distributed Elemental
+ * input matrix, the output has the same distribution.
+ */
+
+/// Gemm for distCombBLAS x distElemental(* / *) -> distElemental (SOMETHING / *)
+template<typename index_type, typename value_type, elem::Distribution col_d>
+void Gemm(elem::Orientation oA, elem::Orientation oB, double alpha,
+          const SpParMat<index_type, value_type, SpDCCols<index_type, value_type> > &A,
+          const elem::DistMatrix<value_type, elem::STAR, elem::STAR> &B,
+          double beta,
+          elem::DistMatrix<value_type, col_d, elem::STAR> &C) {
+
+    if(oA == elem::NORMAL && oB == elem::NORMAL) {
+
+        if(A.getnol() != B.Height())
+            SKYLARK_THROW_EXCEPTION (
+                base::combblas_exception()
+                    << base::error_msg("Gemm: Dimensions do not agree"));
+
+        if(A.getnrow() != C.Height())
+            SKYLARK_THROW_EXCEPTION (
+                base::combblas_exception()
+                    << base::error_msg("Gemm: Dimensions do not agree"));
+
+        if(B.Width() != C.Width())
+            SKYLARK_THROW_EXCEPTION (
+                base::combblas_exception()
+                    << base::error_msg("Gemm: Dimensions do not agree"));
+
+        //XXX: simple heuristic to decide what to communicate (improve!)
+        //     or just if A.getncol() < B.Width..
+        if(A.getnnz() < B.Height() * B.Width())
+            detail::outer_panel_mixed_gemm_impl_nn(alpha, A, B, beta, C);
+        else
+            detail::inner_panel_mixed_gemm_impl_nn(alpha, A, B, beta, C);
+    }
+}
+
+/// Gemm for distCombBLAS x distElemental(SOMETHING / *) -> distElemental (* / *)
+template<typename index_type, typename value_type, elem::Distribution col_d>
+void Gemm(elem::Orientation oA, elem::Orientation oB, double alpha,
+          const SpParMat<index_type, value_type, SpDCCols<index_type, value_type> > &A,
+          const elem::DistMatrix<value_type, col_d, elem::STAR> &B,
+          double beta,
+          elem::DistMatrix<value_type, elem::STAR, elem::STAR> &C) {
+
+    if(oA == elem::TRANSPOSE && oB == elem::NORMAL) {
+
+        if(A.getrow() != B.Height())
+            SKYLARK_THROW_EXCEPTION (
+                base::combblas_exception()
+                    << base::error_msg("Gemm: Dimensions do not agree"));
+
+        if(A.getncol() != C.Height())
+            SKYLARK_THROW_EXCEPTION (
+                    base::combblas_exception()
+                    << base::error_msg("Gemm: Dimensions do not agree"));
+
+        if(B.Width() != C.Width())
+            SKYLARK_THROW_EXCEPTION (
+                base::combblas_exception()
+                    << base::error_msg("Gemm: Dimensions do not agree"));
+
+        detail::outer_panel_mixed_gemm_impl_tn(alpha, A, B, beta, C);
+    }
+
+}
+
+#endif // SKYLARK_HAVE_COMBBLAS
 #endif // SKYLARK_HAVE_ELEMENTAL
+
+
+} } // namespace skylark::base
 
 #endif // SKYLARK_GEMM_HPP

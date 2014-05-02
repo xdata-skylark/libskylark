@@ -15,6 +15,21 @@ if (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
 
 endif (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
 
+if (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_COMBBLAS)
+
+  add_executable(mixed_gemm MixedGemmTest.cpp)
+  target_link_libraries(mixed_gemm
+                        ${SKYLARK_LIBS}
+                        ${Elemental_LIBRARY}
+                        ${FFTW_LIBRARY}
+                        ${Pmrrr_LIBRARY}
+                        ${DEP_LIBRARIES}
+                        ${CombBLAS_LIBRARIES}
+                        ${Boost_LIBRARIES})
+  add_test( mixed_gemm_test mpirun -np 4 mixed_gemm )
+
+endif (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_COMBBLAS)
+
 if (SKYLARK_HAVE_COMBBLAS)
 
   add_executable(sparse_cb_apply SparseSketchApplyCombBLASTest.cpp)

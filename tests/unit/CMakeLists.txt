@@ -26,7 +26,7 @@ if (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_COMBBLAS)
                         ${DEP_LIBRARIES}
                         ${CombBLAS_LIBRARIES}
                         ${Boost_LIBRARIES})
-  add_test( mixed_gemm_test mpirun -np 4 mixed_gemm )
+  add_test( mixed_gemm_test mpirun -np 4 ./mixed_gemm )
 
 endif (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_COMBBLAS)
 

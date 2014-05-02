@@ -25,6 +25,8 @@ struct FJLT_data_t : public transform_data_t {
     value_distribution_type;
     typedef utility::rademacher_distribution_t<ValueType>
     underlying_value_distribution_type;
+
+    //FIXME: serialization of RFUT
     typedef RFUT_data_t<value_type,
                         underlying_value_distribution_type>
         underlying_data_type;
@@ -33,20 +35,22 @@ struct FJLT_data_t : public transform_data_t {
     /**
      * Regular constructor
      */
-    FJLT_data_t (int N, int S, skylark::base::context_t& context)
+    FJLT_data_t (int N, int S, skylark::base::context_t& context,
+                 bool init = true)
         : base_t(N, S, context, "FJLT"),
           samples(base_t::_S),
-          underlying_data(base_t::_N, base_t::_creation_context) {
+          underlying_data(base_t::_N, context) {
 
-        build();
+        if(init) build();
     }
 
-    FJLT_data_t (boost::property_tree::ptree &json)
+    //FIXME
+    FJLT_data_t (boost::property_tree::ptree &json, bool init = true)
         : base_t(json),
           samples(base_t::_S),
-          underlying_data(base_t::_N, base_t::_creation_context) {
+          underlying_data(json) {
 
-        build();
+        //if(init) build();
     }
 
 protected:
@@ -54,8 +58,8 @@ protected:
     const underlying_data_type underlying_data;
     /**< Data of the underlying RFUT transformation */
 
-    context_t build() {
-        context_t ctx = base_t::build();
+    base::context_t build() {
+        base::context_t ctx = base_t::build();
         value_distribution_type distribution(0, base_t::_N - 1);
         samples = ctx.generate_random_samples_array(base_t::_S, distribution);
         return ctx;

@@ -23,6 +23,7 @@ namespace skylark { namespace sketch {
  * Random Laplace Feature Maps for Semigroup Kernels on Histograms
  *
  */
+//FIXME: WHY is this not derived from dense_transform_t??
 template <typename ValueType,
           template <typename> class KernelDistribution>
 struct RLT_data_t : public transform_data_t {
@@ -38,21 +39,20 @@ struct RLT_data_t : public transform_data_t {
      */
     RLT_data_t (int N, int S, skylark::base::context_t& context,
                 std::string type)
-        : base_t(N, S, context, type), _val_scale(1),
-          _underlying_data(base_t::_N, base_t::_S, base_t::_creation_context),
+        : base_t(N, S, context, type), _val_scale(1), _ctx(base_t::build()),
+          _underlying_data(base_t::_N, base_t::_S, _ctx),
           _scale(std::sqrt(1.0 / base_t::_S)) {
-
     }
 
     RLT_data_t (boost::property_tree::ptree &json)
-        : base_t(json), _val_scale(1),
-          _underlying_data(base_t::_N, base_t::_S, base_t::_creation_context),
+        : base_t(json), _val_scale(1), _ctx(base_t::build()),
+          _underlying_data(base_t::_N, base_t::_S, _ctx),
           _scale(std::sqrt(1.0 / base_t::_S)) {
-
     }
 
 protected:
     value_type _val_scale; /**< Bandwidth (sigma)  */
+    const base::context_t _ctx;
     const underlying_data_type _underlying_data;
     /**< Data of the underlying dense transformation */
     const value_type _scale; /** Scaling for trigonometric factor */
@@ -73,7 +73,9 @@ struct ExpSemigroupRLT_data_t :
     ExpSemigroupRLT_data_t(int N, int S, typename base_t::value_type beta,
         skylark::base::context_t& context)
         : base_t(N, S, context, "ExpSemigroupRLT"), _beta(beta) {
+
         base_t::_val_scale = beta * beta / 2;
+        base_t::build();
     }
 
     ExpSemigroupRLT_data_t(boost::property_tree::ptree &json)
@@ -81,6 +83,7 @@ struct ExpSemigroupRLT_data_t :
         _beta(json.get<ValueType>("sketch.beta")) {
 
         base_t::_val_scale = _beta * _beta / 2;
+        base_t::build();
     }
 
     template <typename ValueT>

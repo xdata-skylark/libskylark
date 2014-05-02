@@ -30,19 +30,19 @@ struct PPT_data_t : public transform_data_t {
      * Regular constructor
      */
     PPT_data_t (int N, int S, int q, double c, double gamma,
-                skylark::base::context_t& context)
+                skylark::base::context_t& context, bool init = true)
         : base_t(N, S, context, "PPT"), _q(q), _c(c), _gamma(gamma) {
 
-        _populate();
+        if(init) build();
     }
 
-    PPT_data_t (boost::property_tree::ptree &json)
+    PPT_data_t (boost::property_tree::ptree &json, bool init = true)
         : base_t(json),
         _q(json.get<int>("sketch.q")),
         _c(json.get<double>("sketch.c")),
         _gamma(json.get<double>("sketch.gamma")) {
 
-        _populate();
+        if(init) build();
     }
 
     template <typename ValueT>
@@ -63,17 +63,22 @@ protected:
 
     std::list< _CWT_data_t > _cwts_data;
 
-    void _populate() {
+    base::context_t build() {
 
+        base::context_t ctx = base_t::build();
+
+        //FIXME: correct??
         for(int i = 0; i < _q; i++)
             _cwts_data.push_back(
                 _CWT_data_t(base_t::_N, base_t::_S, base_t::_creation_context));
 
         boost::random::uniform_int_distribution<int> distidx(0, base_t::_S - 1);
-        _hash_idx = base_t::_creation_context->generate_random_samples_array(_q, distidx);
+        _hash_idx = ctx.generate_random_samples_array(_q, distidx);
 
         utility::rademacher_distribution_t<double> distval;
-        _hash_val = base_t::_creation_context->generate_random_samples_array(_q, distval);
+        _hash_val = ctx.generate_random_samples_array(_q, distval);
+
+        return ctx;
     }
 };
 

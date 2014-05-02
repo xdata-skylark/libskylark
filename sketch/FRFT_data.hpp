@@ -36,22 +36,22 @@ struct FastRFT_data_t : public transform_data_t {
      * Regular constructor
      */
     FastRFT_data_t (int N, int S, skylark::base::context_t& context,
-                    std::string name)
-        : base_t(N, S, context, name), _NB(N),
+                    std::string type = "FastRFT", bool init = true)
+        : base_t(N, S, context, type), _NB(N),
           numblks(1 + ((base_t::_S - 1) / _NB)),
           scale(std::sqrt(2.0 / base_t::_S)),
           Sm(numblks * _NB)  {
 
-        _populate();
+        if(init) build();
     }
 
-    FastRFT_data_t (boost::property_tree::ptree &json)
+    FastRFT_data_t (boost::property_tree::ptree &json, bool init = true)
         : base_t(json), _NB(base_t::_N),
           numblks(1 + ((base_t::_S - 1) / _NB)),
           scale(std::sqrt(2.0 / base_t::_S)),
           Sm(numblks * _NB)  {
 
-        _populate();
+        if(init) build();
     }
 
 
@@ -66,16 +66,16 @@ protected:
     std::vector<int> P;
     std::vector<value_type> shifts; /** Shifts for scaled trigonometric factor */
 
-    void _populate() {
+    base::context_t build() {
+        base::context_t ctx = base_t::build();
         const double pi = boost::math::constants::pi<value_type>();
         bstrand::uniform_real_distribution<value_type> dist_shifts(0, 2 * pi);
-        shifts = base_t::_creation_context->generate_random_samples_array(
-                    base_t::_S, dist_shifts);
+        shifts = ctx.generate_random_samples_array(base_t::_S, dist_shifts);
         utility::rademacher_distribution_t<value_type> dist_B;
 
-        B = base_t::_creation_context->generate_random_samples_array(numblks * _NB, dist_B);
+        B = ctx.generate_random_samples_array(numblks * _NB, dist_B);
         bstrand::normal_distribution<value_type> dist_G;
-        G = base_t::_creation_context->generate_random_samples_array(numblks * _NB, dist_G);
+        G = ctx.generate_random_samples_array(numblks * _NB, dist_G);
 
 
         // For the permutation we use Fisher-Yates (Knuth)
@@ -83,8 +83,7 @@ protected:
         // the scheme here might have a small bias if NB is small
         // (has to be really small).
         bstrand::uniform_int_distribution<int> dist_P(0);
-        P = base_t::_creation_context->generate_random_samples_array(
-                numblks * (_NB - 1), dist_P);
+        P = ctx.generate_random_samples_array(numblks * (_NB - 1), dist_P);
         for(int i = 0; i < numblks; i++)
             for(int j = _NB - 1; j >= 1; j--)
                 P[i * (_NB - 1) + _NB - 1 - j] =
@@ -93,6 +92,8 @@ protected:
         // Fill scaling matrix with 1. Subclasses (which are adapted to concrete
         // kernels) should modify this.
         std::fill(Sm.begin(), Sm.end(), 1.0);
+
+        return ctx;
     }
 
 
@@ -126,6 +127,7 @@ struct FastGaussianRFT_data_t :
 
         std::fill(base_t::Sm.begin(), base_t::Sm.end(),
                 1.0 / (_sigma * std::sqrt(base_t::_N)));
+        base_t::build();
     }
 
     FastGaussianRFT_data_t(boost::property_tree::ptree &json)
@@ -134,6 +136,7 @@ struct FastGaussianRFT_data_t :
 
         std::fill(base_t::Sm.begin(), base_t::Sm.end(),
                 1.0 / (_sigma * std::sqrt(base_t::_N)));
+        base_t::build();
     }
 
     template <typename ValueT>

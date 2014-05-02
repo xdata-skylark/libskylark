@@ -2,8 +2,7 @@
 
 #include "sketchc.hpp"
 #include "../../base/exception.hpp"
-#include "../../utility/sketch_archive.hpp"
-
+#include "../../sketch/sketch_archive.hpp"
 #include "../../base/sparse_matrix.hpp"
 
 #ifdef SKYLARK_HAVE_COMBBLAS

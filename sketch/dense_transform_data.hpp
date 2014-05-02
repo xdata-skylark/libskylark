@@ -49,8 +49,9 @@ struct dense_transform_data_t : public transform_data_t {
 
 protected:
     value_distribution_type distribution; /**< Distribution for samples */
-    boost::shared_ptr<skylark::utility::random_samples_array_t <value_distribution_type> >
-        random_samples;
+    boost::shared_ptr<
+        skylark::utility::random_samples_array_t <value_distribution_type> >
+            random_samples;
     /**< Array of samples, to be lazily computed */
     double scale; /**< Scaling factor for the samples */
 

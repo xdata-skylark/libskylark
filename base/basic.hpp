@@ -73,6 +73,10 @@ inline void Axpy(const elem::DistMatrix<T, elem::STAR, elem::STAR> &alphas,
     }
 }
 
+template<typename T, elem::Distribution U, elem::Distribution V>
+inline void Scal(const T s, elem::DistMatrix<T, U, V>& X) {
+    elem::Scal(s, X);
+}
 
 #endif
 

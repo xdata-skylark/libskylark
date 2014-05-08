@@ -10,4 +10,6 @@
 /** Include LSQR. No need for a guard as the guards are all within the files */
 #include "LSQR.hpp"
 
+#include "Chebyshev.hpp"
+
 #endif /* SKYLARK_NLA_HPP */

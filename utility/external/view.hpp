@@ -1,8 +1,10 @@
 #ifndef SKYLARK_COMBBLAS_SLAB_VIEW_HPP
 #define SKYLARK_COMBBLAS_SLAB_VIEW_HPP
 
+#if SKYLARK_HAVE_COMBBLAS
 #include <CombBLAS.h>
 #include <CommGrid.h>
+#endif
 
 #include <map>
 #include <boost/mpi.hpp>
@@ -13,6 +15,8 @@
 
 namespace skylark {
 namespace utility {
+
+#if SKYLARK_HAVE_COMBBLAS
 
 /**
  * Slab view for CombBLAS matrices.
@@ -471,6 +475,8 @@ private:
         }
     }
 };
+
+#endif
 
 } } // namespace skylark::utility
 

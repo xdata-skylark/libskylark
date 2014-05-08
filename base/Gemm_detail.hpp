@@ -1,9 +1,14 @@
 #ifndef SKYLARK_GEMM_DETAIL_HPP
 #define SKYLARK_GEMM_DETAIL_HPP
 
+#if SKYLARK_HAVE_COMBBLAS
 #include <CombBLAS.h>
 #include <CommGrid.h>
+#endif
+
+#if SKYLARK_HAVE_ELEMENTAL
 #include <elemental.hpp>
+#endif
 
 #include "../utility/external/view.hpp"
 #include "../utility/external/combblas_comm_grid.hpp"

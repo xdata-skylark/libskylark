@@ -69,14 +69,31 @@ struct fast_exact_solver_type_sb :
     }
 };
 
-struct fast_exact_solver_type_lsrn :
+struct fast_exact_solver_type_blendenpik :
     public skyalg::fast_exact_regressor_t<
     regression_problem_type, rhs_type, sol_type,
-    skyalg::lsrn_tag<skyalg::qr_precond_tag> > {
+    skyalg::blendenpik_tag<skyalg::qr_precond_tag> > {
 
     typedef  skyalg::fast_exact_regressor_t<
         regression_problem_type, rhs_type, sol_type,
-        skyalg::lsrn_tag<skyalg::qr_precond_tag > > base_type;
+        skyalg::blendenpik_tag<skyalg::qr_precond_tag > > base_type;
+
+    fast_exact_solver_type_blendenpik(const regression_problem_type& problem,
+        skybase::context_t& context) :
+        base_type(problem, context) {
+
+    }
+};
+
+
+struct fast_exact_solver_type_lsrn :
+    public skyalg::fast_exact_regressor_t<
+    regression_problem_type, rhs_type, sol_type,
+    skyalg::lsrn_tag<skyalg::svd_precond_tag> > {
+
+    typedef  skyalg::fast_exact_regressor_t<
+        regression_problem_type, rhs_type, sol_type,
+        skyalg::lsrn_tag<skyalg::svd_precond_tag > > base_type;
 
     fast_exact_solver_type_lsrn(const regression_problem_type& problem,
         skybase::context_t& context) :
@@ -206,6 +223,19 @@ int main(int argc, char** argv) {
 
     skybase::Gemv(elem::NORMAL, -1.0, problem.input_matrix, x, 1.0, r);
 
+    // Using SVD
+    timer.restart();
+    exact_solver_type<skyalg::svd_l2_solver_tag>(problem).solve(b, x);
+    telp = timer.elapsed();
+    check_solution(problem, b, x, r, res, resAtr, resFac);
+    if (rank == 0)
+        std::cout << "Exact (SVD):\t\t\t||r||_2 =  "
+                  << boost::format("%.2f") % res
+                  << "\t\t\t\t\t\t\t||A' * r||_2 = " << boost::format("%.2e") % resAtr
+                  << "\t\tTime: " << boost::format("%.2e") % telp << " sec"
+                  << std::endl;
+    res_opt = res;
+
     // Using LSQR
     skynla::iter_params_t lsqrparams;
     lsqrparams.am_i_printing = rank == 0;
@@ -303,6 +333,19 @@ int main(int argc, char** argv) {
     check_solution(problem, b, x, r, res, resAtr, resFac);
     if (rank == 0)
         std::cout << "Simplified Blendenpik (CWT):\t||r||_2 =  "
+                  << boost::format("%.2f") % res
+                  << " (x " << boost::format("%.5f") % (res / res_opt) << ")"
+                  << "\t||r - r*||_2 / ||b - r*||_2 = " << boost::format("%.2e") % resFac
+                  << "\t||A' * r||_2 = " << boost::format("%.2e") % resAtr
+                  << "\t\tTime: " << boost::format("%.2e") % telp << " sec"
+                  << std::endl;
+
+    timer.restart();
+    fast_exact_solver_type_blendenpik(problem, context).solve(b, x);
+    telp = timer.elapsed();
+    check_solution(problem, b, x, r, res, resAtr, resFac);
+    if (rank == 0)
+        std::cout << "Blendenpik:\t\t\t||r||_2 =  "
                   << boost::format("%.2f") % res
                   << " (x " << boost::format("%.5f") % (res / res_opt) << ")"
                   << "\t||r - r*||_2 / ||b - r*||_2 = " << boost::format("%.2e") % resFac

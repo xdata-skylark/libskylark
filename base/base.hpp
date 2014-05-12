@@ -15,6 +15,7 @@
 #include "Gemm.hpp"
 #include "Gemv.hpp"
 #include "Norm.hpp"
+#include "svd.hpp"
 #include "context.hpp"
 
 #endif // SKYLARK_BASE_HPP

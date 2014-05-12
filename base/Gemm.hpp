@@ -3,6 +3,7 @@
 
 #include <boost/mpi.hpp>
 #include "exception.hpp"
+#include "sparse_matrix.hpp"
 
 #include "Gemm_detail.hpp"
 
@@ -119,6 +120,68 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
     T alpha, const elem::DistMatrix<T, elem::VC, elem::STAR>& A,
     const elem::DistMatrix<T, elem::STAR, elem::STAR>& B,
     elem::DistMatrix<T, elem::VC, elem::STAR>& C) {
+
+    int C_height = (oA == elem::NORMAL ? A.Height() : A.Width());
+    int C_width = (oB == elem::NORMAL ? B.Width() : B.Height());
+    elem::Zeros(C, C_height, C_width);
+    base::Gemm(oA, oB, alpha, A, B, T(0), C);
+}
+
+
+template<typename T>
+inline void Gemm(elem::Orientation oA, elem::Orientation oB,
+    T alpha, const elem::DistMatrix<T, elem::VR, elem::STAR>& A,
+    const elem::DistMatrix<T, elem::VR, elem::STAR>& B,
+    T beta, elem::DistMatrix<T, elem::STAR, elem::STAR>& C) {
+    // TODO verify sizes etc.
+
+    if ((oA == elem::TRANSPOSE || oA == elem::ADJOINT) && oB == elem::NORMAL) {
+        boost::mpi::communicator comm(C.Grid().Comm(), boost::mpi::comm_attach);
+        elem::Matrix<T> Clocal(C.Matrix());
+        elem::Gemm(oA, elem::NORMAL,
+            alpha, A.LockedMatrix(), B.LockedMatrix(),
+            beta / T(comm.size()), Clocal);
+        boost::mpi::all_reduce(comm,
+            Clocal.Buffer(), Clocal.MemorySize(), C.Matrix().Buffer(),
+            std::plus<T>());
+    } else {
+        SKYLARK_THROW_EXCEPTION(base::unsupported_base_operation());
+    }
+}
+
+template<typename T>
+inline void Gemm(elem::Orientation oA, elem::Orientation oB,
+    T alpha, const elem::DistMatrix<T, elem::VR, elem::STAR>& A,
+    const elem::DistMatrix<T, elem::VR, elem::STAR>& B,
+    elem::DistMatrix<T, elem::STAR, elem::STAR>& C) {
+
+    int C_height = (oA == elem::NORMAL ? A.Height() : A.Width());
+    int C_width = (oB == elem::NORMAL ? B.Width() : B.Height());
+    elem::Zeros(C, C_height, C_width);
+    base::Gemm(oA, oB, alpha, A, B, T(0), C);
+}
+
+template<typename T>
+inline void Gemm(elem::Orientation oA, elem::Orientation oB,
+    T alpha, const elem::DistMatrix<T, elem::VR, elem::STAR>& A,
+    const elem::DistMatrix<T, elem::STAR, elem::STAR>& B,
+    T beta, elem::DistMatrix<T, elem::VR, elem::STAR>& C) {
+    // TODO verify sizes etc.
+
+    if (oA == elem::NORMAL && oB == elem::NORMAL) {
+        elem::Gemm(elem::NORMAL, elem::NORMAL,
+            alpha, A.LockedMatrix(), B.LockedMatrix(),
+            beta, C.Matrix());
+    } else {
+        SKYLARK_THROW_EXCEPTION(base::unsupported_base_operation());
+    }
+}
+
+template<typename T>
+inline void Gemm(elem::Orientation oA, elem::Orientation oB,
+    T alpha, const elem::DistMatrix<T, elem::VR, elem::STAR>& A,
+    const elem::DistMatrix<T, elem::STAR, elem::STAR>& B,
+    elem::DistMatrix<T, elem::VR, elem::STAR>& C) {
 
     int C_height = (oA == elem::NORMAL ? A.Height() : A.Width());
     int C_width = (oB == elem::NORMAL ? B.Width() : B.Height());

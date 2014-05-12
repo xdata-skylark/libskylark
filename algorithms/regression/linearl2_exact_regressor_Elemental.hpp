@@ -2,6 +2,7 @@
 #define SKYLARK_LINEARL2_EXACT_REGRESSOR_ELEMENTAL_HPP
 
 #include <elemental.hpp>
+#include "../../base/base.hpp"
 
 #include "regression_problem.hpp"
 
@@ -212,7 +213,8 @@ public:
 
 /**
  * Exact regressor (solves the problem exactly) for L2 linear regrssion
- * on a dense distributed [VC/VR, STAR] matrix.
+ * on a dense distributed [VC/VR, STAR] matrix. This implementation uses
+ * a QR based approach.
  *
  * A regressor accepts a right-hand side and output a solution
  * the the regression problem.
@@ -271,6 +273,75 @@ public:
         base::Gemm(elem::ADJOINT, elem::NORMAL, 1.0, _Q, B, X);
         base::Trsm(elem::LEFT, elem::UPPER, elem::NORMAL, elem::NON_UNIT,
             1.0, _R, X);
+    }
+
+};
+
+/**
+ * Exact regressor (solves the problem exactly) for L2 linear regrssion
+ * on a dense distributed [VC/VR, STAR] matrix. This implementation uses
+ * an SVD-based approach.
+ *
+ * A regressor accepts a right-hand side and output a solution
+ * the the regression problem.
+ *
+ * The regression problem is fixed, so it is a parameter of the function
+ * constructing the regressoion.
+ */
+template <typename ValueType, elem::Distribution VD>
+class exact_regressor_t<
+    regression_problem_t<elem::DistMatrix<ValueType, VD, elem::STAR>,
+                         linear_tag, l2_tag, no_reg_tag>,
+    elem::DistMatrix<ValueType, VD, elem::STAR>,
+    elem::DistMatrix<ValueType, elem::STAR, elem::STAR>,
+    svd_l2_solver_tag> {
+
+public:
+
+    typedef ValueType value_type;
+
+    typedef elem::DistMatrix<ValueType, VD, elem::STAR> matrix_type;
+    typedef elem::DistMatrix<ValueType, VD, elem::STAR> rhs_type;
+    typedef elem::DistMatrix<ValueType, elem::STAR, elem::STAR> sol_type;
+
+    typedef regression_problem_t<matrix_type,
+                                 linear_tag, l2_tag, no_reg_tag> problem_type;
+
+private:
+    const int _m;
+    const int _n;
+    matrix_type _U;
+    sol_type _S, _V;
+
+public:
+    /**
+     * Prepares the regressor to quickly solve given a right-hand side.
+     *
+     * @param problem Problem to solve given right-hand side.
+     */
+    exact_regressor_t(const problem_type& problem) :
+        _m(problem.m), _n(problem.n),
+        _U(problem.input_matrix.Grid()), _S(problem.input_matrix.Grid()),
+        _V(problem.input_matrix.Grid()) {
+        // TODO n < m ???
+        _U = problem.input_matrix;
+        base::SVD(_U, _S, _V);
+        for(int i = 0; i < _S.Height(); i++)
+            _S.Set(i, 0, 1 / _S.Get(i, 0));   // TODO handle rank deficiency
+    }
+
+    /**
+     * Solves the regression problem given a multiple right-hand sides.
+     *
+     * @param B Right-hand sides.
+     * @param X Output (overwritten).
+     */
+    void solve (const rhs_type& B, sol_type& X) const {
+        // TODO error checking
+        sol_type UB(X); // Not copying -- just taking grid and size.
+        base::Gemm(elem::ADJOINT, elem::NORMAL, 1.0, _U, B, UB);
+        elem::DiagonalScale(elem::LEFT, elem::NORMAL, _S, UB);
+        base::Gemm(elem::NORMAL, elem::NORMAL, 1.0, _V, UB, X);
     }
 
 };

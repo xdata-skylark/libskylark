@@ -15,15 +15,32 @@ extern "C" {
 void BLAS(dtrcon)(const char* norm, const char* uplo, const char* diag,
     const int* n, const double* A, const int *lda, double *rcond,
     double *work, int *iwork, int *info);
+
+void BLAS(strcon)(const char* norm, const char* uplo, const char* diag,
+    const int* n, const float* A, const int *lda, float *rcond,
+    float *work, int *iwork, int *info);
+
 }
 
-template<typename T>
-inline double utcondest(const elem::Matrix<T>& A) {
+inline double utcondest(const elem::Matrix<double>& A) {
     int n = A.Height(), ld = A.LDim(), info;
-    double *work  = new double[3 * n];
+    double *work = new double[3 * n];
     int *iwork = new int[n];
     double rcond;
-    BLAS(dtrcon)("1", "U", "N", &n, A.LockedBuffer(), &ld, &rcond, work, iwork, &info);
+    BLAS(dtrcon)("1", "U", "N", &n, A.LockedBuffer(), &ld, &rcond, work,
+        iwork, &info); // TODO check info
+    delete[] work;
+    delete[] iwork;
+    return 1/rcond;
+}
+
+inline double utcondest(const elem::Matrix<float>& A) {
+    int n = A.Height(), ld = A.LDim(), info;
+    float *work  = new float[3 * n];
+    int *iwork = new int[n];
+    float rcond;
+    BLAS(strcon)("1", "U", "N", &n, A.LockedBuffer(), &ld, &rcond, work,
+        iwork, &info);  // TODO check info
     delete[] work;
     delete[] iwork;
     return 1/rcond;

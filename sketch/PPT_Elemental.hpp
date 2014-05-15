@@ -373,7 +373,7 @@ struct PPT_t <
 #       ifdef SKYLARK_HAVE_OPENMP
 #       pragma omp for
 #       endif
-        for(int i = 0; i < A.Width(); i++) {
+        for(int i = 0; i < base::Width(A); i++) {
             const matrix_type Av = base::ColumnView(A, i, 1);
 
             for(int j = 0; j < S; j++)
@@ -398,7 +398,7 @@ struct PPT_t <
             for(int j = 0; j < S; j++)
                 P[j] /= (value_type)S;
 
-            elem::View(SAv, sketch_of_A, 0, i, A.Height(), 1);
+            elem::View(SAv, sketch_of_A, 0, i, base::Height(A), 1);
             internal::fftw<value_type>::executebfun(_fftw_bplan,
                 reinterpret_cast<_fftw_complex_t*>(P), SAv.Buffer());
         }

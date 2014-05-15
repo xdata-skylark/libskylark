@@ -140,8 +140,8 @@ int write_hdf5(string fName, sparse_matrix_t& X,
         cout << "Writing to file " << fName << endl;
 
         int* dimensions = new int[3];
-        dimensions[0] = X.Height();
-        dimensions[1] = X.Width();
+        dimensions[0] = X.height();
+        dimensions[1] = X.width();
         dimensions[2] = X.nonzeros();
 
         H5::Exception::dontPrint();

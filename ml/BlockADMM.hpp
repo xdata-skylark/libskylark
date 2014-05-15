@@ -236,8 +236,8 @@ int BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y,
 
        int P = size;
 
-       int ni = X.Width();
-       int d = X.Height();
+       int ni = skylark::base::Width(X);
+       int d = skylark::base::Height(X);
 
        int k = Wbar.Width();
 
@@ -446,7 +446,7 @@ int BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y,
            del_o = sum_o;
 
            SKYLARK_TIMER_RESTART(PREDICTION_PROFILE);
-           if (Xv.Width() > 0) {
+           if (skylark::base::Width(Xv) > 0) {
                elem::MakeZeros(Yp);
                predict(Xv, Yp, Wbar);
                accuracy = evaluate(Yv, Yp, comm);
@@ -461,7 +461,7 @@ int BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y,
 
            if(rank==0) {
                obj = totalloss + lambda*regularizer->evaluate(Wbar);
-               if (Xv.Width() <=0) {
+               if (skylark::base::Width(Xv) <=0) {
                    std::cout << "iteration " << iter << " objective " << obj << " time " << timer.elapsed() << " seconds" << std::endl;
                }
                else {
@@ -522,9 +522,9 @@ void BlockADMMSolver<T>::predict(T& X, LocalMatrixType& Y,LocalMatrixType& W) {
     // TOD W should be really kept as part of the model
 
     // int n = X.Width();
-    int d = X.Height();
-    int k = Y.Width();
-    int ni = X.Width();
+    int d = skylark::base::Height(X);
+    int k = skylark::base::Width(Y);
+    int ni = skylark::base::Width(X);
     int j, start, finish, sj;
     const feature_transform_t* featureMap;
 

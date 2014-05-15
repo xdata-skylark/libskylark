@@ -166,7 +166,7 @@ int run(const boost::mpi::communicator& comm, skylark::base::context_t& context,
     LabelType Y, Yv, Yt;
 
     read(comm, options.fileformat, options.trainfile, X, Y);
-    int dimensions = X.Height();
+    int dimensions = skylark::base::Height(X);
     int classes = GetNumClasses<LabelType>(comm, Y);
 
     BlockADMMSolver<InputType>* Solver =
@@ -175,7 +175,8 @@ int run(const boost::mpi::communicator& comm, skylark::base::context_t& context,
     if(!options.valfile.empty()) {
         comm.barrier();
         if(rank == 0) std::cout << "Loading validation data." << std::endl;
-        read(comm, options.fileformat, options.valfile, Xv, Yv, X.Height());
+        read(comm, options.fileformat, options.valfile, Xv, Yv,
+            skylark::base::Height(X));
     }
 
     elem::Matrix<double> Wbar(Solver->get_numfeatures(), classes);
@@ -188,7 +189,8 @@ int run(const boost::mpi::communicator& comm, skylark::base::context_t& context,
     if(!options.testfile.empty()) {
         comm.barrier();
         if(rank == 0) std::cout << "Starting testing phase." << std::endl;
-        read(comm, options.fileformat, options.testfile, Xt, Yt, X.Height());
+        read(comm, options.fileformat, options.testfile, Xt, Yt,
+            skylark::base::Height(X));
 
         LabelType Yp(Yt.Height(), classes);
         Solver->predict(Xt, Yp, Wbar);

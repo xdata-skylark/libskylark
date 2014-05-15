@@ -204,7 +204,7 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
     const T *values = B.locked_values();
 
     int k = A.Width();
-    int n = B.Width();
+    int n = B.width();
     int m = A.Height();
 
     // NN
@@ -308,7 +308,7 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
     const int* indices = A.indices();
     const double *values = A.locked_values();
 
-    int k = A.Width();
+    int k = A.width();
     int n = B.Width();
     int m = B.Height();
 

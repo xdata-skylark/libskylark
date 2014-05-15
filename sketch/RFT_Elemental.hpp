@@ -100,7 +100,7 @@ private:
 #       if SKYLARK_HAVE_OPENMP
 #       pragma omp parallel for collapse(2)
 #       endif
-        for(int j = 0; j < A.Width(); j++)
+        for(int j = 0; j < base::Width(A); j++)
             for(int i = 0; i < data_type::_S; i++) {
                 value_type x = sketch_of_A.Get(i, j);
                 x *= data_type::_val_scale;
@@ -142,7 +142,7 @@ private:
 #       pragma omp parallel for collapse(2)
 #       endif
         for(int j = 0; j < data_type::_S; j++)
-            for(int i = 0; i < A.Height(); i++) {
+            for(int i = 0; i < base::Height(A); i++) {
                 value_type x = sketch_of_A.Get(i, j);
                 x *= data_type::_val_scale;
                 x += data_type::_shifts[j];
@@ -268,7 +268,7 @@ private:
         underlying_t underlying(data_type::_underlying_data);
         underlying.apply(A, sketch_of_A, tag);
         elem::Matrix<value_type> &Al = sketch_of_A.Matrix();
-        for(int j = 0; j < Al.Width(); j++)
+        for(int j = 0; j < base::Width(Al); j++)
             for(int i = 0; i < data_type::_S; i++) {
                 value_type val = Al.Get(i, j);
                 value_type trans =
@@ -291,7 +291,7 @@ private:
         underlying.apply(A, sketch_of_A, tag);
         elem::Matrix<value_type> &Al = sketch_of_A.Matrix();
         for(int j = 0; j < data_type::_S; j++)
-            for(int i = 0; i < Al.Height(); i++) {
+            for(int i = 0; i < base::Height(Al); i++) {
                 value_type val = Al.Get(i, j);
                 value_type trans =
                     data_type::_scale * std::cos((val * data_type::_val_scale) +

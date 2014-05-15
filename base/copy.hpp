@@ -13,7 +13,7 @@ namespace skylark { namespace base {
 template<typename T>
 inline void DenseCopy(const sparse_matrix_t<T>& A, elem::Matrix<T>& B) {
     if (B.Height() != A.height() || B.Width() != A.width())
-        B.Resize(A.Height(), A.Width());
+        B.Resize(A.height(), A.width());
 
     elem::Zero(B);
 

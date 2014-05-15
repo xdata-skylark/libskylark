@@ -161,15 +161,6 @@ struct sparse_matrix_t {
         return _nnz;
     }
 
-    int Height() const {
-        return height();
-    }
-
-    int Width() const {
-        return width();
-    }
-
-
     const index_type* indptr() const {
         return _indptr;
     }
@@ -259,8 +250,8 @@ void Transpose(const sparse_matrix_t<T>& A, sparse_matrix_t<T>& B) {
     const int* aindices = A.indices();
     const double* avalues = A.locked_values();
 
-    int m = A.Width();
-    int n = A.Height();
+    int m = A.width();
+    int n = A.height();
     int nnz = A.nonzeros();
 
     int *indptr = new int[n + 1];

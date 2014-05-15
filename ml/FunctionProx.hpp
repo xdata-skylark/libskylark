@@ -11,6 +11,7 @@
 #include <elemental.hpp>
 #include "options.hpp"
 #include <cstdlib>
+#include <cmath>
 
 #ifdef SKYLARK_HAVE_OPENMP
 #include <omp.h>
@@ -48,7 +49,14 @@ public:
 	virtual void proxoperator(LocalDenseMatrixType& X, double lambda, LocalTargetMatrixType& T, LocalDenseMatrixType& Y);
 };
 
-// Class to represent hinge loss
+// Class to represent Least Absolute Deviations ||O - T||_1
+class ladloss : public lossfunction {
+public:
+	virtual double evaluate(LocalDenseMatrixType& O, LocalTargetMatrixType& T);
+	virtual void proxoperator(LocalDenseMatrixType& X, double lambda, LocalTargetMatrixType& T, LocalDenseMatrixType& Y);
+};
+
+// Class to represent hinge loss sum(max(1-t*o,0))
 class hingeloss : public lossfunction {
 public:
 	virtual double evaluate(LocalDenseMatrixType& O, LocalTargetMatrixType& T);
@@ -78,6 +86,94 @@ public:
 	virtual double evaluate(LocalDenseMatrixType& W);
 	virtual void proxoperator(LocalDenseMatrixType& W, double lambda, LocalDenseMatrixType& mu, LocalDenseMatrixType& P);
 };
+
+double ladloss::evaluate(LocalDenseMatrixType& O, LocalTargetMatrixType& T) {
+		double loss = 0.0;
+		int k = O.Height();
+		int n = O.Width();
+
+		// check for size compatability
+
+		double* Obuf = O.Buffer();
+		double*  Tbuf = T.Buffer();
+		double x;
+		int i, j, label;
+
+		if (k==1) {
+#ifdef SKYLARK_HAVE_OPENMP
+			#pragma omp parallel for reduction(+:loss) private(i, x)
+#endif
+			for(i=0; i<n; i++) {
+				x = Obuf[i] - Tbuf[i];
+				loss += std::abs(x);
+			}
+		}
+
+		if (k>1) {
+#ifdef SKYLARK_HAVE_OPENMP
+			#pragma omp parallel for reduction(+:loss) private(i,j, x, label)
+#endif
+			for(i=0; i<n; i++) {
+				label = (int) Tbuf[i];
+                                for(j=0;j<k;j++) {
+                                     x = O.Get(j,i) - (j==label ? 1.0:-1.0);
+                        	     loss += std::abs(x);
+	                       	}
+			}
+		}
+
+		return loss;
+	}
+
+	//solution to Y = prox[X] = argmin_Y 0.5*||X-Y||^2_{fro} + lambda ||Y-T||_1
+void ladloss::proxoperator(LocalDenseMatrixType& X, double lambda, LocalTargetMatrixType& T, LocalDenseMatrixType& Y) {
+		int k = X.Height();
+		int n = X.Width();
+
+				// check for size compatability
+
+		double* Xbuf = X.Buffer();
+		double* Tbuf = T.Buffer();
+
+		double* Ybuf = Y.Buffer();
+		double ilambda = 1.0/(1.0 + lambda);
+
+		int label, i, j;
+		double t, x;
+
+		if (k==1) {
+#ifdef SKYLARK_HAVE_OPENMP
+            #pragma omp parallel for private(i)
+#endif
+			for(int i=0; i<n; i++) {
+				Ybuf[i] = Tbuf[i];
+				if (Xbuf[i] > (Tbuf[i]+lambda))
+					Ybuf[i] = Xbuf[i] - lambda;
+				if (Xbuf[i] < (Tbuf[i] - lambda))
+					Ybuf[i] = Xbuf[i] + lambda;
+			}
+		}
+
+		if(k>1) {
+#ifdef SKYLARK_HAVE_OPENMP
+            #pragma omp parallel for private(i,j, label, t, x)
+#endif
+			for(int i=0; i<n; i++) {
+				label = (int) Tbuf[i];
+                                for(j=0;j<k;j++) {
+                                	 t = (j==label ? 1.0:-1.0);
+                                	 x = X.Get(j,i);
+                                     Y.Set(j, i,  t);
+                                     if (x > t + lambda)
+                                    	 Y.Set(j, i,  x - lambda);
+                                     if (x < t - lambda)
+                                    	 Y.Set(j, i,  x + lambda);
+				}
+			}
+		}
+	}
+
+
 
 double squaredloss::evaluate(LocalDenseMatrixType& O, LocalTargetMatrixType& T) {
 		double loss = 0.0;
@@ -152,6 +248,7 @@ void squaredloss::proxoperator(LocalDenseMatrixType& X, double lambda, LocalTarg
 			}
 		}
 	}
+
 
 
 double hingeloss::evaluate(LocalDenseMatrixType& O, LocalTargetMatrixType& T) {

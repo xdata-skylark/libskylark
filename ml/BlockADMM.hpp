@@ -379,7 +379,7 @@ int BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y,
                    Cache[j]->UpdateDiagonal(Ones);
                    elem::Inverse(*Cache[j]);
 
-                   std::cout << CacheTransforms << std::endl;
+
                    if (CacheTransforms) {
                        *TransformCache[j] = z;
                        //DEBUG

@@ -22,6 +22,8 @@ BlockADMMSolver<InputType>* GetSolver(skylark::base::context_t& context,
         loss = new logisticloss();
         break;
     case LAD:
+    	loss = new ladloss();
+    	break;
     default:
         // TODO
         break;

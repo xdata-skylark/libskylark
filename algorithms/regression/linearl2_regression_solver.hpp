@@ -13,6 +13,9 @@ struct l2_solver_tag {};
 /// Tag for using QR to solve L2 linear regression problems.
 struct qr_l2_solver_tag : l2_solver_tag {};
 
+/// Tag for using semi-normal equations to solve L2 linear regression problems.
+struct sne_l2_solver_tag : l2_solver_tag {};
+
 /// Tag for using normal equations to solve L2 linear regression problems.
 struct ne_l2_solver_tag : l2_solver_tag {};
 

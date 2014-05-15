@@ -223,6 +223,19 @@ int main(int argc, char** argv) {
 
     skybase::Gemv(elem::NORMAL, -1.0, problem.input_matrix, x, 1.0, r);
 
+    // Using SNE (semi-normal equations)
+    timer.restart();
+    exact_solver_type<skyalg::sne_l2_solver_tag>(problem).solve(b, x);
+    telp = timer.elapsed();
+    check_solution(problem, b, x, r, res, resAtr, resFac);
+    if (rank == 0)
+        std::cout << "Exact (SNE):\t\t\t||r||_2 =  "
+                  << boost::format("%.2f") % res
+                  << "\t\t\t\t\t\t\t||A' * r||_2 = " << boost::format("%.2e") % resAtr
+                  << "\t\tTime: " << boost::format("%.2e") % telp << " sec"
+                  << std::endl;
+    res_opt = res;
+
     // Using SVD
     timer.restart();
     exact_solver_type<skyalg::svd_l2_solver_tag>(problem).solve(b, x);

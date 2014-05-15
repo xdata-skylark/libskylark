@@ -167,7 +167,7 @@ double hingeloss::evaluate(LocalDenseMatrixType& O, LocalTargetMatrixType& T) {
 		double obj = 0.0;
 		double yx;
 
-		int noutputs = O.Width();
+		int noutputs = O.Height();
 
 		if(noutputs==1) {
 #ifdef SKYLARK_HAVE_OPENMP

@@ -379,8 +379,13 @@ int BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y,
                    Cache[j]->UpdateDiagonal(Ones);
                    elem::Inverse(*Cache[j]);
 
-                   if (CacheTransforms)
+                   std::cout << CacheTransforms << std::endl;
+                   if (CacheTransforms) {
                        *TransformCache[j] = z;
+                       //DEBUG
+                        std::cout << "CACHING TRANSFORMS..." << std::endl;
+                        elem::Write(*TransformCache[0], "FeatureMatrix.asc", elem::ASCII, "");
+                   }
                }
 
                elem::View(tmp, Wbar, start, 0, sj, k); //tmp = Wbar[J,:]

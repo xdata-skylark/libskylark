@@ -128,6 +128,7 @@ BlockADMMSolver<InputType>* GetSolver(skylark::base::context_t& context,
     Solver->set_maxiter(options.MAXITER);
     Solver->set_tol(options.tolerance);
     Solver->set_nthreads(options.numthreads);
+    Solver->set_cache_transform(options.cachetransforms);
 
     return Solver;
 }

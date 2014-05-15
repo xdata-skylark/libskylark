@@ -1,7 +1,7 @@
-#ifndef SKYLARK_FAST_LINEARL2_EXACT_REGRESSOR_HPP
-#define SKYLARK_FAST_LINEARL2_EXACT_REGRESSOR_HPP
+#ifndef SKYLARK_ACCELERATED_LINEARL2_REGRESSION_SOLVER_HPP
+#define SKYLARK_ACCELERATED_LINEARL2_REGRESSION_SOLVER_HPP
 
-#include "fast_exact_regressor.hpp"
+#include "accelerated_regression_solver.hpp"
 
 namespace skylark {
 namespace algorithms {
@@ -33,7 +33,7 @@ struct lsrn_tag : public linearl2_reg_fast_alg_tag { };
 } }
 
 #if SKYLARK_HAVE_ELEMENTAL
-#include "fast_linearl2_exact_regressor_Elemental.hpp"
+#include "accelerated_linearl2_regression_solver_Elemental.hpp"
 #endif
 
-#endif // SKYLARK_FAST_LINEARL2_EXACT_REGRESSOR_HPP
+#endif // SKYLARK_ACCELERATED_LINEARL2_REGRESSION_SOLVER_HPP

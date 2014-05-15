@@ -38,10 +38,10 @@ typedef skyalg::regression_problem_t<matrix_type,
 
 template<typename AlgTag>
 struct exact_solver_type :
-    public skyalg::exact_regressor_t<
+    public skyalg::regression_solver_t<
     regression_problem_type, rhs_type, sol_type, AlgTag> {
 
-    typedef skyalg::exact_regressor_t<
+    typedef skyalg::regression_solver_t<
         regression_problem_type, rhs_type, sol_type, AlgTag> base_type;
 
     exact_solver_type(const regression_problem_type& problem) :
@@ -51,34 +51,34 @@ struct exact_solver_type :
 };
 
 template<template <typename, typename> class TransformType >
-struct fast_exact_solver_type_sb :
-    public skyalg::fast_exact_regressor_t<
+struct accelerated_exact_solver_type_sb :
+    public skyalg::accelerated_regression_solver_t<
     regression_problem_type, rhs_type, sol_type,
     skyalg::simplified_blendenpik_tag<TransformType,
                                       skyalg::svd_precond_tag> > {
 
-    typedef  skyalg::fast_exact_regressor_t<
+    typedef  skyalg::accelerated_regression_solver_t<
         regression_problem_type, rhs_type, sol_type,
         skyalg::simplified_blendenpik_tag<TransformType,
                                           skyalg::svd_precond_tag > > base_type;
 
-    fast_exact_solver_type_sb(const regression_problem_type& problem,
+    accelerated_exact_solver_type_sb(const regression_problem_type& problem,
         skybase::context_t& context) :
         base_type(problem, context) {
 
     }
 };
 
-struct fast_exact_solver_type_blendenpik :
-    public skyalg::fast_exact_regressor_t<
+struct accelerated_exact_solver_type_blendenpik :
+    public skyalg::accelerated_regression_solver_t<
     regression_problem_type, rhs_type, sol_type,
     skyalg::blendenpik_tag<skyalg::qr_precond_tag> > {
 
-    typedef  skyalg::fast_exact_regressor_t<
+    typedef  skyalg::accelerated_regression_solver_t<
         regression_problem_type, rhs_type, sol_type,
         skyalg::blendenpik_tag<skyalg::qr_precond_tag > > base_type;
 
-    fast_exact_solver_type_blendenpik(const regression_problem_type& problem,
+    accelerated_exact_solver_type_blendenpik(const regression_problem_type& problem,
         skybase::context_t& context) :
         base_type(problem, context) {
 
@@ -86,16 +86,16 @@ struct fast_exact_solver_type_blendenpik :
 };
 
 
-struct fast_exact_solver_type_lsrn :
-    public skyalg::fast_exact_regressor_t<
+struct accelerated_exact_solver_type_lsrn :
+    public skyalg::accelerated_regression_solver_t<
     regression_problem_type, rhs_type, sol_type,
     skyalg::lsrn_tag<skyalg::svd_precond_tag> > {
 
-    typedef  skyalg::fast_exact_regressor_t<
+    typedef  skyalg::accelerated_regression_solver_t<
         regression_problem_type, rhs_type, sol_type,
         skyalg::lsrn_tag<skyalg::svd_precond_tag > > base_type;
 
-    fast_exact_solver_type_lsrn(const regression_problem_type& problem,
+    accelerated_exact_solver_type_lsrn(const regression_problem_type& problem,
         skybase::context_t& context) :
         base_type(problem, context) {
 
@@ -105,11 +105,11 @@ struct fast_exact_solver_type_lsrn :
 template<>
 template<typename KT>
 struct exact_solver_type< skyalg::iterative_l2_solver_tag<KT> >:
-    public skyalg::exact_regressor_t<
+    public skyalg::regression_solver_t<
     regression_problem_type, rhs_type, sol_type,
     skyalg::iterative_l2_solver_tag<KT> > {
 
-    typedef skyalg::exact_regressor_t<
+    typedef skyalg::regression_solver_t<
         regression_problem_type, rhs_type, sol_type,
         skyalg::iterative_l2_solver_tag<KT> > base_type;
 
@@ -131,7 +131,7 @@ struct exact_solver_type< skyalg::iterative_l2_solver_tag<KT> >:
 
 template<template <typename, typename> class TransformType >
 struct sketched_solver_type :
-    public skyalg::sketched_regressor_t<
+    public skyalg::sketched_regression_solver_t<
     regression_problem_type, matrix_type, sol_type,
     skyalg::linear_tag,
     sketch_type,
@@ -139,7 +139,7 @@ struct sketched_solver_type :
     TransformType,
     skyalg::qr_l2_solver_tag> {
 
-    typedef skyalg::sketched_regressor_t<
+    typedef skyalg::sketched_regression_solver_t<
         regression_problem_type, matrix_type, sol_type,
         skyalg::linear_tag,
         sketch_type,
@@ -301,7 +301,7 @@ int main(int argc, char** argv) {
     // Accelerate-using-sketching
 #if 0
     timer.restart();
-    fast_exact_solver_type_sb<skysk::JLT_t>(problem, context).solve(b, x);
+    accelerated_exact_solver_type_sb<skysk::JLT_t>(problem, context).solve(b, x);
     telp = timer.elapsed();
     check_solution(problem, b, x, r, res, resAtr, resFac);
     if (rank == 0)
@@ -315,7 +315,7 @@ int main(int argc, char** argv) {
 #endif
 
     timer.restart();
-    fast_exact_solver_type_sb<skysk::FJLT_t>(problem, context).solve(b, x);
+    accelerated_exact_solver_type_sb<skysk::FJLT_t>(problem, context).solve(b, x);
     telp = timer.elapsed();
     check_solution(problem, b, x, r, res, resAtr, resFac);
     if (rank == 0)
@@ -328,7 +328,7 @@ int main(int argc, char** argv) {
                   << std::endl;
 
     timer.restart();
-    fast_exact_solver_type_sb<skysk::CWT_t>(problem, context).solve(b, x);
+    accelerated_exact_solver_type_sb<skysk::CWT_t>(problem, context).solve(b, x);
     telp = timer.elapsed();
     check_solution(problem, b, x, r, res, resAtr, resFac);
     if (rank == 0)
@@ -341,7 +341,7 @@ int main(int argc, char** argv) {
                   << std::endl;
 
     timer.restart();
-    fast_exact_solver_type_blendenpik(problem, context).solve(b, x);
+    accelerated_exact_solver_type_blendenpik(problem, context).solve(b, x);
     telp = timer.elapsed();
     check_solution(problem, b, x, r, res, resAtr, resFac);
     if (rank == 0)
@@ -354,7 +354,7 @@ int main(int argc, char** argv) {
                   << std::endl;
 
     timer.restart();
-    fast_exact_solver_type_lsrn(problem, context).solve(b, x);
+    accelerated_exact_solver_type_lsrn(problem, context).solve(b, x);
     telp = timer.elapsed();
     check_solution(problem, b, x, r, res, resAtr, resFac);
     if (rank == 0)

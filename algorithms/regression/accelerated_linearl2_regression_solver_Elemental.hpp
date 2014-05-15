@@ -1,5 +1,5 @@
-#ifndef SKYLARK_FAST_LINEARL2_EXACT_REGRESSOR_ELEMENTAL_HPP
-#define SKYLARK_FAST_LINEARL2_EXACT_REGRESSOR_ELEMENTAL_HPP
+#ifndef SKYLARK_ACCELERATED_LINEARL2_REGRESSION_SOLVER_ELEMENTAL_HPP
+#define SKYLARK_ACCELERATED_LINEARL2_REGRESSION_SOLVER_ELEMENTAL_HPP
 
 #include <elemental.hpp>
 
@@ -83,7 +83,7 @@ double build_precond(SketchType& SA,
 template <typename ValueType, elem::Distribution VD,
           template <typename, typename> class TransformType,
           typename PrecondTag>
-class fast_exact_regressor_t<
+class accelerated_regression_solver_t<
     regression_problem_t<elem::DistMatrix<ValueType, VD, elem::STAR>,
                          linear_tag, l2_tag, no_reg_tag>,
     elem::DistMatrix<ValueType, VD, elem::STAR>,
@@ -120,7 +120,7 @@ public:
      *
      * @param problem Problem to solve given right-hand side.
      */
-    fast_exact_regressor_t(const problem_type& problem, base::context_t& context) :
+    accelerated_regression_solver_t(const problem_type& problem, base::context_t& context) :
         _m(problem.m), _n(problem.n), _A(problem.input_matrix),
         _R(_n, _n, problem.input_matrix.Grid()) {
         // TODO n < m ???
@@ -134,7 +134,7 @@ public:
         flinl2_internal::build_precond(SA, _R, _precond_R, PrecondTag());
     }
 
-    ~fast_exact_regressor_t() {
+    ~accelerated_regression_solver_t() {
         delete _precond_R;
     }
 
@@ -146,7 +146,7 @@ public:
 /// Specialization for Blendenpik algorithm
 template <typename ValueType, elem::Distribution VD,
           typename PrecondTag>
-class fast_exact_regressor_t<
+class accelerated_regression_solver_t<
     regression_problem_t<elem::DistMatrix<ValueType, VD, elem::STAR>,
                          linear_tag, l2_tag, no_reg_tag>,
     elem::DistMatrix<ValueType, VD, elem::STAR>,
@@ -177,7 +177,7 @@ private:
     precond_type _R;
     nla::precond_t<sol_type> *_precond_R;
 
-    exact_regressor_t<problem_type, rhs_type, sol_type, svd_l2_solver_tag> 
+    regression_solver_t<problem_type, rhs_type, sol_type, svd_l2_solver_tag> 
     *_alt_solver;
 
 public:
@@ -186,7 +186,7 @@ public:
      *
      * @param problem Problem to solve given right-hand side.
      */
-    fast_exact_regressor_t(const problem_type& problem, base::context_t& context) :
+    accelerated_regression_solver_t(const problem_type& problem, base::context_t& context) :
         _m(problem.m), _n(problem.n), _A(problem.input_matrix),
         _R(_n, _n, problem.input_matrix.Grid()) {
         // TODO n < m ???
@@ -226,7 +226,7 @@ public:
             _alt_solver = nullptr;
         else {
             _alt_solver =
-                new exact_regressor_t<problem_type,
+                new regression_solver_t<problem_type,
                                       rhs_type,
                                       sol_type, svd_l2_solver_tag>(problem);
             delete _precond_R;
@@ -234,7 +234,7 @@ public:
         }
     }
 
-    ~fast_exact_regressor_t() {
+    ~accelerated_regression_solver_t() {
         if (_precond_R != nullptr)
             delete _precond_R;
         if (_alt_solver != nullptr)
@@ -249,7 +249,7 @@ public:
 /// Specialization for LSRN algorithm.
 template <typename ValueType, elem::Distribution VD,
           typename PrecondTag>
-class fast_exact_regressor_t<
+class accelerated_regression_solver_t<
     regression_problem_t<elem::DistMatrix<ValueType, VD, elem::STAR>,
                          linear_tag, l2_tag, no_reg_tag>,
     elem::DistMatrix<ValueType, VD, elem::STAR>,
@@ -289,7 +289,7 @@ public:
      *
      * @param problem Problem to solve given right-hand side.
      */
-    fast_exact_regressor_t(const problem_type& problem, base::context_t& context) :
+    accelerated_regression_solver_t(const problem_type& problem, base::context_t& context) :
         _m(problem.m), _n(problem.n), _A(problem.input_matrix),
         _R(_n, _n, problem.input_matrix.Grid()) {
         // TODO n < m ???
@@ -318,7 +318,7 @@ public:
         }
     }
 
-    ~fast_exact_regressor_t() {
+    ~accelerated_regression_solver_t() {
         delete _precond_R;
     }
 
@@ -339,4 +339,4 @@ public:
 
 } } /** namespace skylark::algorithms */
 
-#endif // SKYLARK_FAST_LINEARL2_EXACT_REGRESSOR_ELEMENTAL_HPP
+#endif // SKYLARK_ACCELERATED_LINEARL2_REGRESSION_SOLVER_ELEMENTAL_HPP

@@ -1,5 +1,5 @@
-#ifndef SKYlARK_LINEARL2_EXACT_REGRESSOR_ELEMENTAL_HPP
-#define SKYLARK_LINEARL2_EXACT_REGRESSOR_ELEMENTAL_HPP
+#ifndef SKYlARK_LINEARL2_REGRESSION_SOLVER_ELEMENTAL_HPP
+#define SKYLARK_LINEARL2_REGRESSION_SOLVER_ELEMENTAL_HPP
 
 #include <elemental.hpp>
 #include "../../base/base.hpp"
@@ -10,17 +10,17 @@ namespace skylark {
 namespace algorithms {
 
 /**
- * Exact regressor (solves the problem exactly) for L2 linear regression
+ * Regression solver for L2 linear regression
  * on a dense local matrix.
  *
- * A regressor accepts a right-hand side and output a solution
+ * A regression solver accepts a right-hand side and output a solution
  * the the regression problem.
  *
  * The regression problem is fixed, so it is a parameter of the function
  * constructing the regressoion.
  */
 template <typename ValueType>
-class exact_regressor_t<
+class regression_solver_t<
     regression_problem_t<elem::Matrix<ValueType>,
                          linear_tag, l2_tag, no_reg_tag>,
     elem::Matrix<ValueType>,
@@ -47,11 +47,11 @@ private:
 
 public:
     /**
-     * Prepares the regressor to quickly solve given a right-hand side.
+     * Prepares the solver to quickly solve given a right-hand side.
      *
      * @param problem Problem to solve given right-hand side.
      */
-    exact_regressor_t(const problem_type& problem) :
+    regression_solver_t(const problem_type& problem) :
         _m(problem.m), _n(problem.n) {
         // TODO n < m
         _QR = problem.input_matrix;
@@ -76,17 +76,17 @@ public:
 };
 
 /**
- * Exact regressor (solves the problem exactly) for L2 linear regression
+ * Regression solver for L2 linear regression
  * on a [STAR, STAR] DistMatrix (aka all local copies are the same)
  *
- * A regressor accepts a right-hand side and output a solution
+ * A regression solver accepts a right-hand side and output a solution
  * the the regression problem.
  *
  * The regression problem is fixed, so it is a parameter of the function
  * constructing the regressoion.
  */
 template <typename ValueType>
-class exact_regressor_t<
+class regression_solver_t<
     regression_problem_t<elem::DistMatrix<ValueType, elem::STAR, elem::STAR>,
                          linear_tag, l2_tag, no_reg_tag>,
     elem::DistMatrix<ValueType, elem::STAR, elem::STAR>,
@@ -114,11 +114,11 @@ private:
 
 public:
     /**
-     * Prepares the regressor to quickly solve given a right-hand side.
+     * Prepares the solver to quickly solve given a right-hand side.
      *
      * @param problem Problem to solve given right-hand side.
      */
-    exact_regressor_t(const problem_type& problem) :
+    regression_solver_t(const problem_type& problem) :
         _m(problem.m), _n(problem.n) {
         // TODO n < m
         _QR = problem.input_matrix;
@@ -144,17 +144,17 @@ public:
 };
 
 /**
- * Exact regressor (solves the problem exactly) for L2 linear regrssion
+ * Regression solver for L2 linear regrssion
  * on a dense distributed [MC,MR] matrix.
  *
- * A regressor accepts a right-hand side and output a solution
+ * A regression solver accepts a right-hand side and output a solution
  * the the regression problem.
  *
  * The regression problem is fixed, so it is a parameter of the function
  * constructing the regressoion.
  */
 template <typename ValueType>
-class exact_regressor_t<
+class regression_solver_t<
     regression_problem_t<elem::DistMatrix<ValueType>,
                          linear_tag, l2_tag, no_reg_tag>,
     elem::DistMatrix<ValueType>,
@@ -181,11 +181,11 @@ private:
 
 public:
     /**
-     * Prepares the regressor to quickly solve given a right-hand side.
+     * Prepares the solver to quickly solve given a right-hand side.
      *
      * @param problem Problem to solve given right-hand side.
      */
-    exact_regressor_t(const problem_type& problem) :
+    regression_solver_t(const problem_type& problem) :
         _m(problem.m), _n(problem.n),
         _QR(problem.input_matrix.Grid()), _R(problem.input_matrix.Grid()),
         _t(problem.input_matrix.Grid()) {
@@ -212,18 +212,18 @@ public:
 };
 
 /**
- * Exact regressor (solves the problem exactly) for L2 linear regrssion
+ * Regression solver for L2 linear regrssion
  * on a dense distributed [VC/VR, STAR] matrix. This implementation uses
  * a QR based approach.
  *
- * A regressor accepts a right-hand side and output a solution
+ * A regression solver accepts a right-hand side and output a solution
  * the the regression problem.
  *
  * The regression problem is fixed, so it is a parameter of the function
  * constructing the regressoion.
  */
 template <typename ValueType, elem::Distribution VD>
-class exact_regressor_t<
+class regression_solver_t<
     regression_problem_t<elem::DistMatrix<ValueType, VD, elem::STAR>,
                          linear_tag, l2_tag, no_reg_tag>,
     elem::DistMatrix<ValueType, VD, elem::STAR>,
@@ -249,11 +249,11 @@ private:
 
 public:
     /**
-     * Prepares the regressor to quickly solve given a right-hand side.
+     * Prepares the solver to quickly solve given a right-hand side.
      *
      * @param problem Problem to solve given right-hand side.
      */
-    exact_regressor_t(const problem_type& problem) :
+    regression_solver_t(const problem_type& problem) :
         _m(problem.m), _n(problem.n),
         _Q(problem.input_matrix.Grid()), _R(problem.input_matrix.Grid()) {
         // TODO n < m ???
@@ -278,18 +278,18 @@ public:
 };
 
 /**
- * Exact regressor (solves the problem exactly) for L2 linear regrssion
+ * Regression solver for L2 linear regrssion
  * on a dense distributed [VC/VR, STAR] matrix. This implementation uses
  * an SVD-based approach.
  *
- * A regressor accepts a right-hand side and output a solution
+ * A regression solver accepts a right-hand side and output a solution
  * the the regression problem.
  *
  * The regression problem is fixed, so it is a parameter of the function
  * constructing the regressoion.
  */
 template <typename ValueType, elem::Distribution VD>
-class exact_regressor_t<
+class regression_solver_t<
     regression_problem_t<elem::DistMatrix<ValueType, VD, elem::STAR>,
                          linear_tag, l2_tag, no_reg_tag>,
     elem::DistMatrix<ValueType, VD, elem::STAR>,
@@ -315,11 +315,11 @@ private:
 
 public:
     /**
-     * Prepares the regressor to quickly solve given a right-hand side.
+     * Prepares the solver to quickly solve given a right-hand side.
      *
      * @param problem Problem to solve given right-hand side.
      */
-    exact_regressor_t(const problem_type& problem) :
+    regression_solver_t(const problem_type& problem) :
         _m(problem.m), _n(problem.n),
         _U(problem.input_matrix.Grid()), _S(problem.input_matrix.Grid()),
         _V(problem.input_matrix.Grid()) {
@@ -348,4 +348,4 @@ public:
 
 } } /** namespace skylark::algorithms */
 
-#endif // SKYLARK_LINEARL2_EXACT_REGRESSOR_ELEMENTAL_HPP
+#endif // SKYLARK_LINEARL2_REGRESSION_SOLVER_ELEMENTAL_HPP

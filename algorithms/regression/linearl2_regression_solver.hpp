@@ -1,12 +1,12 @@
-#ifndef SKYLARK_LINEARL2_EXACT_REGRESSOR_HPP
-#define SKYLARK_LINEARL2_EXACT_REGRESSOR_HPP
+#ifndef SKYLARK_LINEARL2_REGRESSION_SOLVER_HPP
+#define SKYLARK_LINEARL2_REGRESSION_SOLVER_HPP
 
-#include "exact_regressor.hpp"
+#include "regression_solver.hpp"
 
 namespace skylark {
 namespace algorithms {
 
-/// Base class for tags specifying strategies for solving L2 
+/// Base class for tags specifying strategies for solving L2
 /// linear regression problems.
 struct l2_solver_tag {};
 
@@ -37,9 +37,9 @@ struct lsqr_tag: public krylov_tag {};
 } // namespace skylark
 
 #if SKYLARK_HAVE_ELEMENTAL
-#include "linearl2_exact_regressor_Elemental.hpp"
+#include "linearl2_regression_solver_Elemental.hpp"
 #endif
 
-#include "linearl2_exact_regressor_Krylov.hpp"
+#include "linearl2_regression_solver_Krylov.hpp"
 
-#endif // SKYLARK_LINEARL2_EXACT_REGRESSOR_HPP
+#endif // SKYLARK_LINEARL2_REGRESSION_SOLVER_HPP

@@ -1,5 +1,5 @@
-#ifndef SKYlARK_LINEARL2_EXACT_REGRESSOR_KRYLOV_HPP
-#define SKYLARK_LINEARL2_EXACT_REGRESSOR_KRYLOV_HPP
+#ifndef SKYlARK_LINEARL2_REGRESSION_SOLVER_KRYLOV_HPP
+#define SKYLARK_LINEARL2_REGRESSION_SOLVER_KRYLOV_HPP
 
 #include "../../base/query.hpp"
 #include "../../utility/typer.hpp"
@@ -8,15 +8,15 @@
 namespace skylark { namespace algorithms {
 
 /**
- * Exact l2 linear regressor. We have not specialized this for any type of matrix
- * because it accepts any matrix type and only works if the required base
- * functions have been implemented.
+ * l2 linear regression solver using Krylov method. We have not specialized this
+ * for any type of matrix because it accepts any matrix type and only works if 
+ * the required base functions have been implemented.
  */
 template <typename MatrixType,
           typename RhsType,
           typename SolType,
           typename KrylovMethod>
-struct exact_regressor_t<
+struct regression_solver_t<
     regression_problem_t<MatrixType, linear_tag, l2_tag, no_reg_tag>,
     RhsType,
     SolType,
@@ -41,13 +41,13 @@ public:
     const nla::precond_t<sol_type>& R;
     const nla::iter_params_t iter_params;
 
-    exact_regressor_t (const problem_type& problem,
+    regression_solver_t (const problem_type& problem,
         nla::iter_params_t iter_params = nla::iter_params_t()) :
         m(problem.m), n(problem.n), A(problem.input_matrix),
         R(_id_precond_obj), iter_params(iter_params)
     { /* Check if m<n? */ }
 
-    exact_regressor_t (const problem_type& problem,
+    regression_solver_t (const problem_type& problem,
         const nla::precond_t<sol_type>& R,
         nla::iter_params_t iter_params = nla::iter_params_t()) :
         m(problem.m), n(problem.n), A(problem.input_matrix), R(R),
@@ -82,4 +82,4 @@ private:
 
 } } // namespace skylark::algorithms
 
-#endif // SKYLARK_LINEARL2_EXACT_REGRESSOR_KRYLOV_HPP
+#endif // SKYLARK_LINEARL2_REGRESSION_SOLVER_KRYLOV_HPP

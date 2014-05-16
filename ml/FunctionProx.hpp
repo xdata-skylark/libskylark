@@ -364,14 +364,16 @@ double logisticloss::evaluate(LocalDenseMatrixType& O, LocalTargetMatrixType& T)
         double obj = 0.0;
         int m = O.Width();
         int n = O.Height();
-
+        double t;
+        int i;
         //double start = omp_get_wtime( );
 
 #ifdef SKYLARK_HAVE_OPENMP
-        #pragma omp parallel for reduction(+:obj)
+        #pragma omp parallel for reduction(+:obj) private(i,t)
 #endif
         for(int i=0;i<m;i++) {
-            obj += -O.Get((int) T.Get(i, 0), i) + logsumexp(O.Buffer(0, i), n);
+        	t = (int) T.Get(i, 0);
+            obj += -O.Get(t, i) + logsumexp(O.Buffer(0, i), n);
         }
 
         //double end = omp_get_wtime( );
@@ -385,12 +387,13 @@ double logisticloss::evaluate(LocalDenseMatrixType& O, LocalTargetMatrixType& T)
 void logisticloss::proxoperator(LocalDenseMatrixType& X, double lambda, LocalTargetMatrixType& T, LocalDenseMatrixType& Y) {
     int m = X.Width();
     int n = X.Height();
+    int i;
 
 #ifdef SKYLARK_HAVE_OPENMP
-    #pragma omp parallel for
+    #pragma omp parallel for private(i)
 #endif
     for(int i=0;i<m;i++) {
-                logexp((int) T.Get(i, 0), X.Buffer(0, i), n, lambda, Y.Buffer(0, i), MAXITER, epsilon, DISPLAY);
+                logexp((int) T.Get(i, 0), X.Buffer(0, i), n, 1.0/lambda, Y.Buffer(0, i), MAXITER, epsilon, DISPLAY);
     }
 
 }
@@ -455,12 +458,14 @@ int logisticloss::logexp(int index, double* v, int n, double lambda, double* x, 
             z[i] = p/(p+lambda);
             pptil += z[i]*p;
         }
+        pptil = 1 - pptil;
         decrement = 0.0;
         for(i=0;i<n;i++) {
             u[i] -= (pu/pptil)*z[i];
             decrement += grad[i]*u[i];
         }
         if (decrement < 2*epsilon) {
+        	// std::cout << "decrement =  " << decrement << std::endl;
             free(u);
             free(z);
             free(grad);

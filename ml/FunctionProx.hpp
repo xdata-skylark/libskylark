@@ -30,6 +30,9 @@ public:
 	virtual void proxoperator(LocalDenseMatrixType& X, double lambda, LocalTargetMatrixType& T, LocalDenseMatrixType& Y) = 0 ;
 
 	virtual ~lossfunction(void){}
+
+private:
+	std::string type;
 };
 
 // abstract class for representing regularizers and their prox operators
@@ -85,6 +88,13 @@ class l2: public regularization {
 public:
 	virtual double evaluate(LocalDenseMatrixType& W);
 	virtual void proxoperator(LocalDenseMatrixType& W, double lambda, LocalDenseMatrixType& mu, LocalDenseMatrixType& P);
+};
+
+class l1: public regularization {
+public:
+	virtual double evaluate(LocalDenseMatrixType& W);
+	virtual void proxoperator(LocalDenseMatrixType& W, double lambda, LocalDenseMatrixType& mu, LocalDenseMatrixType& P);
+	double soft_threshold(double x, double lambda);
 };
 
 double ladloss::evaluate(LocalDenseMatrixType& O, LocalTargetMatrixType& T) {
@@ -507,7 +517,31 @@ void l2::proxoperator(LocalDenseMatrixType& W, double lambda, LocalDenseMatrixTy
 			Pbuf[i] = (Wbuf[i] - mubuf[i])*ilambda;
 	}
 
+double l1::evaluate(LocalDenseMatrixType& W) {
+		double norm = elem::EntrywiseOneNorm(W);
+		return norm;
+	}
 
+double l1::soft_threshold(double x, double lambda) {
+	double v = 0;
+	if (std::abs(x) <= lambda)
+		v = 0.0;
+	if (x > lambda)
+		v =  x - lambda;
+	if (x < -lambda)
+		v = x + lambda;
+	return v;
+}
+
+void l1::proxoperator(LocalDenseMatrixType& W, double lambda, LocalDenseMatrixType& mu, LocalDenseMatrixType& P) {
+		double *Wbuf = W.Buffer();
+		double *mubuf = mu.Buffer();
+		double *Pbuf = P.Buffer();
+		int mn = W.Height()*W.Width();
+
+		for(int i=0;i<mn; i++)
+			Pbuf[i] = soft_threshold(Wbuf[i] - mubuf[i], lambda);
+	}
 
 
 #endif /* FUNCTIONPROX_HPP_ */

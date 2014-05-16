@@ -85,9 +85,12 @@ struct hilbert_options_t {
     std::string modelfile;
     std::string testfile;
     std::string valfile;
+    std::string str = "";
 
     /** A parameter indicating if we need to continue or not */
     bool exit_on_return;
+
+
 
     /**
      * The constructor takes in all the command line parameters and parses them.
@@ -98,7 +101,8 @@ struct hilbert_options_t {
 #ifndef SKYLARK_AVOID_BOOST_PO
 
         po::options_description desc
-            ("Usage: hilbert_train [options] --trainfile trainfile --modelfile modelfile");
+            ("Usage: hilbert [options] --trainfile trainfile --modelfile modelfile\nUsage: hilbert --modelfile modelfile --testfile testfile ");
+
         desc.add_options()
             ("help,h", "produce a help message")
             ("lossfunction,l",
@@ -115,10 +119,10 @@ struct hilbert_options_t {
                 po::value<double>(&kernelparam)->default_value(DEFAULT_KERPARAM),
                 "Kernel Parameter")
             ("kernelparam2,x",
-                po::value<double>(&kernelparam2)->default_value(-1),
+                po::value<double>(&kernelparam2)->default_value(0),
                 "If Applicable - Second Kernel Parameter (Polynomial Kernel: c)")
             ("kernelparam3,y",
-                po::value<double>(&kernelparam3)->default_value(-1),
+                po::value<double>(&kernelparam3)->default_value(1),
                 "If Applicable - Third Kernel Parameter (Polynomial Kernel: gamma)")
             ("lambda,c",
                 po::value<double>(&lambda)->default_value(DEFAULT_LAMBDA),
@@ -157,8 +161,8 @@ struct hilbert_options_t {
                 po::value<int>(&MAXITER)->default_value(DEFAULT_MAXITER),
                 "Maximum Number of Iterations (default: 100)")
             ("trainfile",
-                po::value<std::string>(&trainfile)->required(),
-                "Training data file")
+                po::value<std::string>(&trainfile)->default_value(""),
+                "Training data file (required in training mode)")
             ("modelfile",
                 po::value<std::string>(&modelfile)->required(),
                 "Model output file")
@@ -167,7 +171,7 @@ struct hilbert_options_t {
                 "Validation file (optional)")
             ("testfile",
                 po::value<std::string>(&testfile)->default_value(""),
-                "Test file (optional)")
+                "Test file (optional in training mode; required in testing mode)")
             ; /* end options */
 
         po::positional_options_description positionalOptions;
@@ -204,8 +208,8 @@ struct hilbert_options_t {
         regularizer = L2;
         kernel = LINEAR;
         kernelparam = DEFAULT_KERPARAM;
-        kernelparam2 = -1;
-        kernelparam3 = -1;
+        kernelparam2 = 0;
+        kernelparam3 = 1;
         lambda = DEFAULT_LAMBDA;
         tolerance = DEFAULT_TOL;
         rho = DEFAULT_RHO;
@@ -269,17 +273,25 @@ struct hilbert_options_t {
                 testfile = value;
         }
 #endif
+
+        for(int i=0;i<argc;i++) {
+        	str.append(argv[i]);
+        	if (i<argc-1)
+        		str.append(" ");
+        }
+
+
     }
 
     std::string print () const {
         std::stringstream optionstring;
 
-        optionstring << "# HILBERT OPTIONS:" << std::endl;
+        optionstring << "# HILBERT OPTIONS:" << str << std::endl;
         optionstring << "# Training File = " << trainfile << std::endl;
         optionstring << "# Model File = " << modelfile << std::endl;
         optionstring << "# Validation File = " << valfile << std::endl;
         optionstring << "# Test File = " << testfile << std::endl;
-        optionstring << "# File/Data Format = " << fileformat << std::endl;
+        optionstring << "# File Format = " << fileformat << std::endl;
         optionstring << "# Loss function = " << lossfunction
                      << " ("<< Losses[lossfunction]<< ")" << std::endl;
         optionstring << "# Regularizer = " << regularizer
@@ -291,7 +303,7 @@ struct hilbert_options_t {
             optionstring << "# Second Kernel Parameter = "
                          << kernelparam2 << std::endl;
         if (kernelparam3 != -1)
-            optionstring << " Third Kernel Parameter = "
+            optionstring << "# Third Kernel Parameter = "
                          << kernelparam3 << std::endl;
         optionstring << "# Regularization Parameter = " << lambda << std::endl;
         optionstring << "# Maximum Iterations = " << MAXITER << std::endl;

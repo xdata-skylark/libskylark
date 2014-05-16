@@ -68,8 +68,7 @@ public:
     void InitializeFactorizationCache();
     void InitializeTransformCache(int n);
 
-    int train(T& X, LocalMatrixType& Y, LocalMatrixType& W,
-        T& Xv, LocalMatrixType& Yv, const boost::mpi::communicator& comm);
+    skylark::ml::Model<T>* train(T& X, LocalMatrixType& Y, T& Xv, LocalMatrixType& Yv, const boost::mpi::communicator& comm);
 
     void predict(T& X, LocalMatrixType& Y,LocalMatrixType& W);
 
@@ -79,6 +78,8 @@ public:
     int classification_accuracy(LocalMatrixType& Yt, LocalMatrixType& Yp);
 
     int get_numfeatures() {return NumFeatures;}
+
+    feature_transform_array_t& get_feature_maps() {return featureMaps;}
 
 private:
 
@@ -226,9 +227,9 @@ BlockADMMSolver<T>::~BlockADMMSolver() {
     delete[] Cache;
 }
 
+
 template <class T>
-int BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y, 
-    LocalMatrixType& Wbar, T& Xv, LocalMatrixType& Yv,
+skylark::ml::Model<T>* BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y, T& Xv, LocalMatrixType& Yv,
     const boost::mpi::communicator& comm) {
 
        int rank = comm.rank();
@@ -238,6 +239,13 @@ int BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y,
 
        int ni = skylark::base::Width(X);
        int d = skylark::base::Height(X);
+       int targets = GetNumTargets(comm, Y);
+
+       skylark::ml::Model<T>* model = new skylark::ml::Model<T>(featureMaps, NumFeatures, targets);
+
+       elem::Matrix<double> Wbar;
+       elem::View(Wbar, model->get_coef());
+
 
        int k = Wbar.Width();
 
@@ -519,7 +527,7 @@ int BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y,
        SKYLARK_TIMER_PRINT(BARRIER_PROFILE, comm);
        SKYLARK_TIMER_PRINT(PREDICTION_PROFILE, comm);
 
-       return 0;
+       return model;
 }
 
 template <class T>

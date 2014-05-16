@@ -934,18 +934,17 @@ void read_model_file(string fName, elem::Matrix<double>& W) {
 	}
 }
 
-void SaveModel(hilbert_options_t& options, elem::Matrix<double> W)  {
 
-    // get communicator -- TODO should be a parameter!
-    boost::mpi::communicator comm;
-    int rank = comm.rank();
+std::string read_header(const boost::mpi::communicator &comm, std::string fName) {
+		string line;
+		if (comm.rank()==0) {
+			ifstream file(fName.c_str());
+			getline(file, line);
+		}
 
-    if (rank==0) {
-            std::stringstream dimensionstring;
-            dimensionstring << "# Dimensions " << W.Height() << " " << W.Width() << "\n";
-            elem::Write(W, options.modelfile, elem::ASCII, options.print().append(dimensionstring.str()));
-        }
-}
+		boost::mpi::broadcast(comm, line, 0);
+		return line;
+	}
 
 
 #endif /* IO_HPP_ */

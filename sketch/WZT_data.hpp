@@ -4,7 +4,7 @@
 #include "../base/base.hpp"
 #include "../utility/distributions.hpp"
 
-#include "transform_data.hpp"
+#include "sketch_transform_data.hpp"
 #include "hash_transform_data.hpp"
 
 namespace skylark { namespace sketch {
@@ -35,9 +35,8 @@ struct WZT_data_t : public hash_transform_data_t<
         boost::random::uniform_int_distribution,
         boost::random::exponential_distribution >  base_t;
 
-    WZT_data_t(int N, int S, double p, skylark::base::context_t& context,
-               bool init = true)
-        : base_t(N, S, context, "WZT"), _P(p) {
+    WZT_data_t(int N, int S, double p, skylark::base::context_t& context)
+        : base_t(N, S, context, "WZT", true), _P(p) {
 
         // TODO verify that p is in the correct range.
         if(p < 1 || 2 < p)
@@ -45,21 +44,38 @@ struct WZT_data_t : public hash_transform_data_t<
                 base::sketch_exception()
                     << base::error_msg("WZT parameter p has to be in (1, 2)") );
 
-
-        if(init) build();
+        context = build();
     }
 
-    WZT_data_t(const boost::property_tree::ptree &sketch, bool init = true)
-        : base_t(sketch),
+    WZT_data_t(const boost::property_tree::ptree &sketch)
+        : base_t(sketch, true),
         _P(sketch.get<double>("sketch.p")) {
 
-        if(init) build();
+        build();
     }
 
     template <typename IndexT, typename ValueT>
     friend boost::property_tree::ptree& operator<<(
             boost::property_tree::ptree &sk,
             const WZT_data_t<IndexT, ValueT> &data);
+
+protected:
+    WZT_data_t(int N, int S, double p, skylark::base::context_t& context,
+        bool nobuild)
+        : base_t(N, S, context, "WZT", true), _P(p) {
+
+        // TODO verify that p is in the correct range.
+        if(p < 1 || 2 < p)
+            SKYLARK_THROW_EXCEPTION (
+                utility::sketch_exception()
+                    << utility::error_msg("WZT parameter p has to be in (1, 2)") );
+    }
+
+    WZT_data_t(const boost::property_tree::ptree &sketch, bool nobuild)
+        : base_t(sketch, true),
+        _P(sketch.get<double>("sketch.p")) {
+
+    }
 
 private:
     double _P;
@@ -88,7 +104,7 @@ boost::property_tree::ptree& operator<<(
         boost::property_tree::ptree &sk,
         const WZT_data_t<IndexType, ValueType> &data) {
 
-    sk << static_cast<const transform_data_t&>(data);
+    sk << static_cast<const sketch_transform_data_t&>(data);
     sk.put("sketch.p", data._P);
     return sk;
 }

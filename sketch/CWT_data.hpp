@@ -28,16 +28,28 @@ struct CWT_data_t : public hash_transform_data_t<
         boost::random::uniform_int_distribution,
         utility::rademacher_distribution_t > base_t;
 
-    CWT_data_t(int N, int S, base::context_t context)
-        : base_t(N, S, context, "CWT") {
+    CWT_data_t(int N, int S, base::context_t& context)
+        : base_t(N, S, context, "CWT", true) {
+
+        context = base_t::build();
+    }
+
+    CWT_data_t(const boost::property_tree::ptree& json)
+        : base_t(json, true) {
 
         base_t::build();
     }
 
-    CWT_data_t(const boost::property_tree::ptree &json)
-        : base_t(json) {
+protected:
 
-        base_t::build();
+    CWT_data_t(int N, int S, base::context_t& context, bool nobuild)
+        : base_t(N, S, context, "CWT", true) {
+
+    }
+
+    CWT_data_t(const boost::property_tree::ptree& json, bool nobuild)
+        : base_t(json, true) {
+
     }
 
 };

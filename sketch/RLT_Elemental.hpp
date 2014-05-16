@@ -93,7 +93,7 @@ private:
         output_matrix_type& sketch_of_A,
         skylark::sketch::columnwise_tag tag) const {
 
-        underlying_t underlying(data_type::_underlying_data);
+        underlying_t underlying(*data_type::_underlying_data);
         underlying.apply(A, sketch_of_A, tag);
         for(int j = 0; j < base::Width(A); j++)
             for(int i = 0; i < data_type::_S; i++) {
@@ -112,7 +112,7 @@ private:
         skylark::sketch::rowwise_tag tag) const {
 
         // TODO verify sizes etc.
-        underlying_t underlying(data_type::_underlying_data);
+        underlying_t underlying(*data_type::_underlying_data);
         underlying.apply(A, sketch_of_A, tag);
         for(int j = 0; j < data_type::_S; j++)
             for(int i = 0; i < base::Height(A); i++) {

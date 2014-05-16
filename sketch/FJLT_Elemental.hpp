@@ -146,7 +146,7 @@ private:
         inter_A = A;
 
         // Apply the underlying transform
-        underlying_type underlying(data_type::underlying_data);
+        underlying_type underlying(*data_type::underlying_data);
         underlying.apply(inter_A, inter_A,
             skylark::sketch::columnwise_tag());
 

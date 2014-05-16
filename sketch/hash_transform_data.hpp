@@ -6,7 +6,7 @@
 #include "../base/base.hpp"
 #include "../utility/randgen.hpp"
 
-#include "transform_data.hpp"
+#include "sketch_transform_data.hpp"
 
 namespace skylark { namespace sketch {
 
@@ -19,7 +19,9 @@ template <typename IndexType,
           typename ValueType,
           template <typename> class IdxDistributionType,
           template <typename> class ValueDistribution>
-struct hash_transform_data_t : public transform_data_t {
+struct hash_transform_data_t : public sketch_transform_data_t {
+    typedef sketch_transform_data_t base_t;
+
     typedef IndexType index_type;
     typedef ValueType value_type;
     typedef IdxDistributionType<IndexType> idx_distribution_type;
@@ -31,10 +33,10 @@ struct hash_transform_data_t : public transform_data_t {
      *  @param S
      *  @param context
      */
-    hash_transform_data_t (int N, int S, base::context_t context,
+    hash_transform_data_t (int N, int S, base::context_t& context,
                            const std::string type = "")
-        : transform_data_t(N, S, context, type) {
-
+        : base_t(N, S, context, type) {
+        context = build();
     }
 
     /**
@@ -42,27 +44,40 @@ struct hash_transform_data_t : public transform_data_t {
      *  @param[in] json_filename
      */
     hash_transform_data_t (const boost::property_tree::ptree &json)
-        : transform_data_t(json) {
-
+        : base_t(json, true) {
+        build();
     }
 
 protected:
-    std::vector<index_type> row_idx; /**< precomputed row indices */
-    std::vector<value_type> row_value; /**< precomputed scaling factors */
+
+    hash_transform_data_t (int N, int S, base::context_t& context,
+        const std::string type, bool nobuild)
+        : base_t(N, S, context, type) {
+
+    }
+
+    hash_transform_data_t (const boost::property_tree::ptree &json, 
+        bool nobuild)
+        : base_t(json) {
+    }
+
 
     base::context_t build() {
-        base::context_t tmp = transform_data_t::build();
+        base::context_t ctx = base_t::build();
 
         idx_distribution_type row_idx_distribution(0, _S - 1);
         value_distribution_type row_value_distribution;
 
-        row_idx   = tmp.generate_random_samples_array(
+        row_idx   = ctx.generate_random_samples_array(
                         _N, row_idx_distribution);
-        row_value = tmp.generate_random_samples_array(
+        row_value = ctx.generate_random_samples_array(
                         _N, row_value_distribution);
 
-        return tmp;
+        return ctx;
     }
+
+    std::vector<index_type> row_idx; /**< precomputed row indices */
+    std::vector<value_type> row_value; /**< precomputed scaling factors */
 };
 
 } } /** namespace skylark::sketch */

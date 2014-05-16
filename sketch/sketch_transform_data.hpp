@@ -1,5 +1,5 @@
-#ifndef SKYLARK_TRANSFORM_DATA_HPP
-#define SKYLARK_TRANSFORM_DATA_HPP
+#ifndef SKYLARK_SKETCH_TRANSFORM_DATA_HPP
+#define SKYLARK_SKETCH_TRANSFORM_DATA_HPP
 
 #include <vector>
 #include "../base/context.hpp"
@@ -10,20 +10,18 @@
 
 namespace skylark { namespace sketch {
 
-//FIXME: Haim wants to call this sketch_transform_data_t
-struct transform_data_t {
+struct sketch_transform_data_t {
 
-    transform_data_t (int N, int S, base::context_t context,
-                      const std::string type = "")
+    sketch_transform_data_t (int N, int S, const base::context_t& context,
+        const std::string type = "")
         : _N(N), _S(S), _creation_context(context), _type(type),
-        _version("0.1")
-    {}
+          _version("0.1") { }
 
     /**
      *  Load a serialized sketch from a file.
      *  @param[in] property tree for this sketch
      */
-    transform_data_t (const boost::property_tree::ptree& json)
+    sketch_transform_data_t (const boost::property_tree::ptree& json)
         : _creation_context(json), _version("0.1") {
 
         std::vector<int> dims;
@@ -40,14 +38,16 @@ struct transform_data_t {
         _type = json.get<std::string>("sketch.type");
     }
 
-    friend std::istream& operator>>(std::istream &in, transform_data_t &data);
+    friend std::istream& operator>>(std::istream &in, 
+        sketch_transform_data_t &data);
 
     /**
      *  Serializes a sketch to a string.
      *  @param[out] dump containing serialized JSON object
      */
     friend boost::property_tree::ptree& operator<<(
-            boost::property_tree::ptree &sk, const transform_data_t &data);
+            boost::property_tree::ptree &sk, 
+                const sketch_transform_data_t &data);
 
 protected:
     int _N; /**< Input dimension  */
@@ -70,7 +70,7 @@ private:
 
 /// serialize the sketch
 boost::property_tree::ptree& operator<<(boost::property_tree::ptree &sk,
-                                        const transform_data_t &data) {
+                                        const sketch_transform_data_t &data) {
 
     sk.put("sketch.type", data._type);
     sk.put("sketch.version", data._version);
@@ -90,4 +90,4 @@ boost::property_tree::ptree& operator<<(boost::property_tree::ptree &sk,
 
 } } /** namespace skylark::sketch */
 
-#endif /** SKYLARK_TRANSFORM_DATA_HPP */
+#endif /** SKYLARK_SKETCH_TRANSFORM_DATA_HPP */

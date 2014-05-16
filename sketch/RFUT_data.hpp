@@ -87,6 +87,7 @@ protected:
 };
 
 
+#if 0
 /// serialize the sketch
 template <typename ValueType,
           typename ValueDistributionType>
@@ -106,6 +107,7 @@ boost::property_tree::ptree& operator<<(boost::property_tree::ptree &sk,
 
     return sk;
 }
+#endif
 
 } } /** namespace skylark::sketch */
 

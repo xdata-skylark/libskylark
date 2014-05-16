@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "../base/context.hpp"
-#include "transform_data.hpp"
+#include "sketch_transform_data.hpp"
 #include "dense_transform_data.hpp"
 #include "../utility/randgen.hpp"
 
@@ -27,35 +27,51 @@ namespace bstrand = boost::random;
  * ICML 2013.
  */
 template< typename ValueType >
-struct FastRFT_data_t : public transform_data_t {
+struct FastRFT_data_t : public sketch_transform_data_t {
 
     typedef ValueType value_type;
-    typedef transform_data_t base_t;
+    typedef sketch_transform_data_t base_t;
 
     /**
      * Regular constructor
      */
     FastRFT_data_t (int N, int S, skylark::base::context_t& context,
-                    std::string type = "FastRFT", bool init = true)
+                    std::string type = "FastRFT")
+        : base_t(N, S, context, type, true), _NB(N),
+          numblks(1 + ((base_t::_S - 1) / _NB)),
+          scale(std::sqrt(2.0 / base_t::_S)),
+          Sm(numblks * _NB)  {
+
+        context = build();
+    }
+
+    FastRFT_data_t (boost::property_tree::ptree &json)
+        : base_t(json, true), _NB(base_t::_N),
+          numblks(1 + ((base_t::_S - 1) / _NB)),
+          scale(std::sqrt(2.0 / base_t::_S)),
+          Sm(numblks * _NB)  {
+
+         build();
+    }
+
+protected:
+    FastRFT_data_t (int N, int S, skylark::base::context_t& context,
+        std::string type = "FastRFT", bool nobuild = true)
         : base_t(N, S, context, type), _NB(N),
           numblks(1 + ((base_t::_S - 1) / _NB)),
           scale(std::sqrt(2.0 / base_t::_S)),
           Sm(numblks * _NB)  {
 
-        if(init) build();
     }
 
-    FastRFT_data_t (boost::property_tree::ptree &json, bool init = true)
+    FastRFT_data_t (boost::property_tree::ptree &json, bool nobuild)
         : base_t(json), _NB(base_t::_N),
           numblks(1 + ((base_t::_S - 1) / _NB)),
           scale(std::sqrt(2.0 / base_t::_S)),
           Sm(numblks * _NB)  {
 
-        if(init) build();
     }
 
-
-protected:
     const int _NB; /**< Block size -- closet power of two of N */
 
     const int numblks;
@@ -76,7 +92,6 @@ protected:
         B = ctx.generate_random_samples_array(numblks * _NB, dist_B);
         bstrand::normal_distribution<value_type> dist_G;
         G = ctx.generate_random_samples_array(numblks * _NB, dist_G);
-
 
         // For the permutation we use Fisher-Yates (Knuth)
         // The following will generate the indexes for the swaps. However
@@ -123,15 +138,15 @@ struct FastGaussianRFT_data_t :
      */
     FastGaussianRFT_data_t(int N, int S, value_type sigma,
         skylark::base::context_t& context)
-        : base_t(N, S, context, "FastGaussianRFT"), _sigma(sigma) {
+        : base_t(N, S, context, "FastGaussianRFT", true), _sigma(sigma) {
 
         std::fill(base_t::Sm.begin(), base_t::Sm.end(),
                 1.0 / (_sigma * std::sqrt(base_t::_N)));
-        base_t::build();
+        context = base_t::build();
     }
 
     FastGaussianRFT_data_t(boost::property_tree::ptree &json)
-        : base_t(json),
+        : base_t(json, true),
         _sigma(json.get<value_type>("sketch.sigma")) {
 
         std::fill(base_t::Sm.begin(), base_t::Sm.end(),
@@ -145,6 +160,23 @@ struct FastGaussianRFT_data_t :
         const FastGaussianRFT_data_t<ValueT> &data);
 
 protected:
+    FastGaussianRFT_data_t(int N, int S, value_type sigma,
+        skylark::base::context_t& context, bool nobuild)
+        : base_t(N, S, context, "FastGaussianRFT", true), _sigma(sigma) {
+
+        std::fill(base_t::Sm.begin(), base_t::Sm.end(),
+                1.0 / (_sigma * std::sqrt(base_t::_N)));
+    }
+
+    FastGaussianRFT_data_t(boost::property_tree::ptree &json, bool nobuild)
+        : base_t(json, true),
+        _sigma(json.get<value_type>("sketch.sigma")) {
+
+        std::fill(base_t::Sm.begin(), base_t::Sm.end(),
+                1.0 / (_sigma * std::sqrt(base_t::_N)));
+    }
+
+
     const value_type _sigma; /**< Bandwidth (sigma)  */
 
 };
@@ -154,7 +186,7 @@ boost::property_tree::ptree& operator<<(
         boost::property_tree::ptree &sk,
         const FastGaussianRFT_data_t<ValueType> &data) {
 
-    sk << static_cast<const transform_data_t&>(data);
+    sk << static_cast<const sketch_transform_data_t&>(data);
     sk.put("sketch.sigma", data._sigma);
     return sk;
 }

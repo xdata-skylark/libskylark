@@ -24,16 +24,29 @@ struct JLT_data_t :
      * Most of the work is done by base. Here just write scale
      */
     JLT_data_t(int N, int S, skylark::base::context_t& context)
-        : base_t(N, S, context, "JLT") {
+        : base_t(N, S, context, "JLT", true) {
         base_t::scale = sqrt(1.0 / static_cast<double>(S));
-        base_t::build();
+        context = base_t::build();
     }
 
     JLT_data_t(boost::property_tree::ptree &json)
-        : base_t(json) {
+        : base_t(json, true) {
         base_t::scale = sqrt(1.0 / static_cast<double>(base_t::_S));
         base_t::build();
     }
+
+protected:
+
+    JLT_data_t(int N, int S, skylark::base::context_t& context, bool nobuild)
+        : base_t(N, S, context, "JLT", true) {
+        base_t::scale = sqrt(1.0 / static_cast<double>(S));
+    }
+
+    JLT_data_t(boost::property_tree::ptree &json, bool nobuild)
+        : base_t(json, true) {
+        base_t::scale = sqrt(1.0 / static_cast<double>(base_t::_S));
+    }
+
 };
 
 } } /** namespace skylark::sketch */

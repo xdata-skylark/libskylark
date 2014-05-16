@@ -6,7 +6,7 @@
 #include "../base/context.hpp"
 #include "../utility/randgen.hpp"
 
-#include "transform_data.hpp"
+#include "sketch_transform_data.hpp"
 
 #include "boost/smart_ptr.hpp"
 
@@ -21,7 +21,9 @@ namespace skylark { namespace sketch {
  */
 template <typename ValueType,
           template <typename> class ValueDistribution>
-struct dense_transform_data_t : public transform_data_t {
+struct dense_transform_data_t : public sketch_transform_data_t {
+    typedef sketch_transform_data_t base_t;
+
     // For reasons of naming consistency
     typedef ValueType value_type;
     typedef ValueDistribution<ValueType> value_distribution_type;
@@ -29,25 +31,50 @@ struct dense_transform_data_t : public transform_data_t {
     /**
      * Regular constructor
      */
-    dense_transform_data_t (int N, int S, base::context_t context,
+    dense_transform_data_t (int N, int S, base::context_t& context,
                             std::string type = "")
-        : transform_data_t(N, S, context, type),
+        : base_t(N, S, context, type),
           distribution() {
 
         // No scaling in "raw" form
         scale = 1.0;
+        context = build();
     }
 
-    dense_transform_data_t (const boost::property_tree::ptree json)
-        : transform_data_t(json),
+    dense_transform_data_t (const boost::property_tree::ptree& json)
+        : base_t(json, true),
           distribution() {
 
         // No scaling in "raw" form
         scale = 1.0;
+        build();
     }
-
 
 protected:
+
+    dense_transform_data_t (int N, int S, base::context_t& context,
+        std::string type, bool nobuild)
+        : base_t(N, S, context, type),
+          distribution() {
+
+        // No scaling in "raw" form
+        scale = 1.0;
+    }
+
+    dense_transform_data_t (const boost::property_tree::ptree& json,
+        bool nobuild)
+        : base_t(json),
+          distribution() {
+
+        // No scaling in "raw" form
+        scale = 1.0;
+    }
+
+    base::context_t build() {
+        base::context_t tmp = base_t::build();
+        random_samples = tmp.allocate_random_samples_array(_N * _S, distribution);
+        return tmp;
+    }
     value_distribution_type distribution; /**< Distribution for samples */
     boost::shared_ptr<
         skylark::utility::random_samples_array_t <value_distribution_type> >
@@ -55,11 +82,6 @@ protected:
     /**< Array of samples, to be lazily computed */
     double scale; /**< Scaling factor for the samples */
 
-    base::context_t build() {
-        base::context_t tmp = transform_data_t::build();
-        random_samples = tmp.allocate_random_samples_array(_N * _S, distribution);
-        return tmp;
-    }
 };
 
 } } /** namespace skylark::sketch */

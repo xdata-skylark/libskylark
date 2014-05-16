@@ -22,6 +22,8 @@ BlockADMMSolver<InputType>* GetSolver(skylark::base::context_t& context,
         loss = new logisticloss();
         break;
     case LAD:
+    	loss = new ladloss();
+    	break;
     default:
         // TODO
         break;
@@ -128,6 +130,7 @@ BlockADMMSolver<InputType>* GetSolver(skylark::base::context_t& context,
     Solver->set_maxiter(options.MAXITER);
     Solver->set_tol(options.tolerance);
     Solver->set_nthreads(options.numthreads);
+    Solver->set_cache_transform(options.cachetransforms);
 
     return Solver;
 }
@@ -156,6 +159,8 @@ int GetNumClasses(const boost::mpi::communicator &comm, LabelType& Y) {
         return 1;
 }
 
+
+
 template <class InputType, class LabelType>
 int run(const boost::mpi::communicator& comm, skylark::base::context_t& context,
     hilbert_options_t& options) {
@@ -166,8 +171,23 @@ int run(const boost::mpi::communicator& comm, skylark::base::context_t& context,
     LabelType Y, Yv, Yt;
 
     read(comm, options.fileformat, options.trainfile, X, Y);
+
     int dimensions = skylark::base::Height(X);
     int classes = GetNumClasses<LabelType>(comm, Y);
+
+    bool shift = false;
+
+    // we treat binary classification with multinomial logistic loss as a two-output problem
+    double y;
+    if ((options.lossfunction == LOGISTIC) && (classes == 1)) {
+
+    	for(int i=0;i<Y.Height(); i++) {
+    			y = Y.Get(i, 0);
+    			Y.Set(i, 0, 0.5*(y+1.0));
+    		}
+    	classes = 2;
+    	shift = true;
+    }
 
     BlockADMMSolver<InputType>* Solver =
         GetSolver<InputType>(context, options, dimensions);
@@ -177,6 +197,13 @@ int run(const boost::mpi::communicator& comm, skylark::base::context_t& context,
         if(rank == 0) std::cout << "Loading validation data." << std::endl;
         read(comm, options.fileformat, options.valfile, Xv, Yv,
             skylark::base::Height(X));
+
+        if ((options.lossfunction == LOGISTIC) && shift) {
+            	for(int i=0;i<Yv.Height(); i++) {
+            			y = Yv.Get(i, 0);
+            			Yv.Set(i, 0, 0.5*(y+1.0));
+            		}
+            }
     }
 
     elem::Matrix<double> Wbar(Solver->get_numfeatures(), classes);
@@ -191,6 +218,12 @@ int run(const boost::mpi::communicator& comm, skylark::base::context_t& context,
         if(rank == 0) std::cout << "Starting testing phase." << std::endl;
         read(comm, options.fileformat, options.testfile, Xt, Yt,
             skylark::base::Height(X));
+        	if ((options.lossfunction == LOGISTIC) && shift) {
+                    	for(int i=0;i<Yt.Height(); i++) {
+                    			y = Yt.Get(i, 0);
+                    			Yt.Set(i, 0, 0.5*(y+1.0));
+                    		}
+                    }
 
         LabelType Yp(Yt.Height(), classes);
         Solver->predict(Xt, Yp, Wbar);

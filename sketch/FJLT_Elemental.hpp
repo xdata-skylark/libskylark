@@ -193,12 +193,19 @@ template <typename ValueType, elem::Distribution ColDist>
 struct FJLT_t <
     elem::DistMatrix<ValueType, ColDist, elem::STAR>,
     elem::DistMatrix<ValueType, elem::STAR, elem::STAR> > :
-        public FJLT_data_t<ValueType> {
+        public FJLT_data_t<ValueType>,
+        virtual public sketch_transform_t<elem::DistMatrix<ValueType,
+                                                           ColDist,
+                                                           elem::STAR>,
+                                          elem::DistMatrix<ValueType,
+                                                           elem::STAR,
+                                                           elem::STAR> > {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
     typedef elem::DistMatrix<value_type, ColDist, elem::STAR> matrix_type;
-    typedef elem::DistMatrix<value_type, elem::STAR, elem::STAR> output_matrix_type;
+    typedef elem::DistMatrix<value_type, elem::STAR, elem::STAR>
+    output_matrix_type;
     typedef elem::DistMatrix<ValueType,
                              elem::STAR, ColDist> intermediate_type;
     typedef fft_futs<double>::DCT_t transform_type;
@@ -240,12 +247,12 @@ public:
     }
 
     /**
-     * Apply the sketching transform that is described in by the sketch_of_A.
+     * Apply columnwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
      */
-    template <typename Dimension>
     void apply (const matrix_type& A,
                 output_matrix_type& sketch_of_A,
-                Dimension dimension) const {
+                columnwise_tag dimension) const {
         switch (ColDist) {
         case elem::VR:
         case elem::VC:
@@ -269,6 +276,41 @@ public:
 
         }
     }
+
+
+    /**
+     * Apply rowwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply (const matrix_type& A,
+                output_matrix_type& sketch_of_A,
+                rowwise_tag dimension) const {
+        switch (ColDist) {
+        case elem::VR:
+        case elem::VC:
+            try {
+                apply_impl_vdist (A, sketch_of_A, dimension);
+            } catch (std::logic_error e) {
+                SKYLARK_THROW_EXCEPTION (
+                    base::elemental_exception()
+                        << base::error_msg(e.what()) );
+            } catch(boost::mpi::exception e) {
+                SKYLARK_THROW_EXCEPTION (
+                    base::mpi_exception()
+                        << base::error_msg(e.what()) );
+            }
+
+            break;
+
+        default:
+            SKYLARK_THROW_EXCEPTION (
+                base::unsupported_matrix_distribution() );
+
+        }
+    }
+
+    int get_N() const { return this->_N; } /**< Get input dimesion. */
+    int get_S() const { return this->_S; } /**< Get output dimesion. */
 
 private:
     /**

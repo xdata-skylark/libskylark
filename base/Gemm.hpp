@@ -4,6 +4,8 @@
 #include <boost/mpi.hpp>
 #include "exception.hpp"
 #include "sparse_matrix.hpp"
+#include "computed_matrix.hpp"
+#include "../utility/typer.hpp"
 
 #include "Gemm_detail.hpp"
 
@@ -480,7 +482,52 @@ void Gemm(elem::Orientation oA, elem::Orientation oB, double alpha,
 #endif // SKYLARK_HAVE_COMBBLAS
 #endif // SKYLARK_HAVE_ELEMENTAL
 
+/* All combinations with computed matrix */
+
+template<typename CT, typename RT, typename OT>
+inline void Gemm(elem::Orientation oA, elem::Orientation oB,
+    typename utility::typer_t<OT>::value_type alpha, const computed_matrix_t<CT>& A,
+    const RT& B, typename utility::typer_t<OT>::value_type beta, OT& C) {
+    base::Gemm(oA, oB, alpha, A.materialize(), B, beta, C);
+}
+
+template<typename CT, typename RT, typename OT>
+inline void Gemm(elem::Orientation oA, elem::Orientation oB,
+    typename utility::typer_t<OT>::value_type alpha, const computed_matrix_t<CT>& A,
+    const RT& B, OT& C) {
+    base::Gemm(oA, oB, alpha, A.materialize(), B, C);
+}
+
+template<typename CT, typename RT, typename OT>
+inline void Gemm(elem::Orientation oA, elem::Orientation oB,
+    typename utility::typer_t<OT>::value_type alpha, const RT& A,
+    const computed_matrix_t<CT>& B,
+    typename utility::typer_t<OT>::value_type beta, OT& C) {
+    base::Gemm(oA, oB, alpha, A, B.materialize(), beta, C);
+}
+
+template<typename CT, typename RT, typename OT>
+inline void Gemm(elem::Orientation oA, elem::Orientation oB,
+    typename utility::typer_t<OT>::value_type alpha, const RT& A,
+    const computed_matrix_t<CT>& B, OT& C) {
+    base::Gemm(oA, oB, alpha, A, B.materialize(), C);
+}
+
+template<typename CT1, typename CT2, typename OT>
+inline void Gemm(elem::Orientation oA, elem::Orientation oB,
+    typename utility::typer_t<OT>::value_type alpha, const computed_matrix_t<CT1>& A,
+    const computed_matrix_t<CT2>& B, typename utility::typer_t<OT>::value_type beta,
+    OT& C) {
+    base::Gemm(oA, oB, alpha, A.materialize(), B.materialize(), beta, C);
+}
+
+template<typename CT1, typename CT2, typename OT>
+inline void Gemm(elem::Orientation oA, elem::Orientation oB,
+    typename utility::typer_t<OT>::value_type alpha, const computed_matrix_t<CT1>& A,
+    const computed_matrix_t<CT2>& B, OT& C) {
+    base::Gemm(oA, oB, alpha, A.materialize(), B.materialize(), C);
+}
+
 
 } } // namespace skylark::base
-
 #endif // SKYLARK_GEMM_HPP

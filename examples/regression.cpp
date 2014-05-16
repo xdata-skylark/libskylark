@@ -50,6 +50,41 @@ struct exact_solver_type :
     }
 };
 
+
+// Just a temporary small example on using "computed matrices"
+class cmatrix : public skybase::computed_matrix_t<matrix_type> {
+    const matrix_type &_A;
+
+public:
+    cmatrix(const matrix_type& A) : _A(A) { };
+
+    int height() const { return _A.Height(); }
+    int width() const { return _A.Width(); }
+
+    void materialize(matrix_type& Z) const { Z = _A; }
+    matrix_type materialize() const { matrix_type Z(_A); return Z; }
+};
+
+typedef skyalg::regression_problem_t<skybase::computed_matrix_t<matrix_type>,
+                                     skyalg::linear_tag,
+                                     skyalg::l2_tag,
+                                     skyalg::no_reg_tag> regression_problem_type1;
+
+template<typename AlgTag>
+struct exact_solver_type1 :
+    public skyalg::regression_solver_t<
+    regression_problem_type1, rhs_type, sol_type, AlgTag> {
+
+    typedef skyalg::regression_solver_t<
+        regression_problem_type1, rhs_type, sol_type, AlgTag> base_type;
+
+    exact_solver_type1(const regression_problem_type1& problem) :
+        base_type(problem) {
+
+    }
+};
+
+
 template<template <typename, typename> class TransformType >
 struct accelerated_exact_solver_type_sb :
     public skyalg::accelerated_regression_solver_t<
@@ -230,6 +265,21 @@ int main(int argc, char** argv) {
     check_solution(problem, b, x, r, res, resAtr, resFac);
     if (rank == 0)
         std::cout << "Exact (SNE):\t\t\t||r||_2 =  "
+                  << boost::format("%.2f") % res
+                  << "\t\t\t\t\t\t\t||A' * r||_2 = " << boost::format("%.2e") % resAtr
+                  << "\t\tTime: " << boost::format("%.2e") % telp << " sec"
+                  << std::endl;
+    res_opt = res;
+
+    // Again, using SNE, only with the computed interface (example; to be removed.)
+    cmatrix CA(A);
+    regression_problem_type1 problem1(m, n, CA);
+    timer.restart();
+    exact_solver_type1<skyalg::sne_l2_solver_tag>(problem1).solve(b, x);
+    telp = timer.elapsed();
+    check_solution(problem, b, x, r, res, resAtr, resFac);
+    if (rank == 0)
+        std::cout << "Exact (SNE) (COMPUTED):\t\t\t||r||_2 =  "
                   << boost::format("%.2f") % res
                   << "\t\t\t\t\t\t\t||A' * r||_2 = " << boost::format("%.2e") % resAtr
                   << "\t\tTime: " << boost::format("%.2e") % telp << " sec"

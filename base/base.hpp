@@ -7,6 +7,7 @@
 
 #include "exception.hpp"
 #include "sparse_matrix.hpp"
+#include "computed_matrix.hpp"
 #include "basic.hpp"
 #include "query.hpp"
 #include "viewing.hpp"

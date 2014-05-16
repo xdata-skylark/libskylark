@@ -1,5 +1,5 @@
-#ifndef SPARSE_MATRIX_HPP
-#define SPARSE_MATRIX_HPP
+#ifndef SKYLARK_SPARSE_MATRIX_HPP
+#define SKYLARK_SPARSE_MATRIX_HPP
 
 #include <set>
 #include <vector>
@@ -32,12 +32,16 @@ struct sparse_matrix_t {
     {}
 
     // The following relies on C++11
-    sparse_matrix_t(const sparse_matrix_t<ValueType>&& A) :
+    sparse_matrix_t(sparse_matrix_t<ValueType>&& A) :
         _ownindptr(A._ownindptr), _ownindices(A._ownindices),
         _ownvalues(A._ownvalues), _dirty_struct(A._dirty_struct),
         _height(A._height), _width(A._width), _nnz(A._nnz),
         _indptr(A._indptr), _indices(A._indices), _values(A._values)
-    {}
+    {
+        A._ownindptr = false;
+        A._ownindices = false;
+        A._ownvalues = false;
+    }
 
     ~sparse_matrix_t() {
         _free_data();

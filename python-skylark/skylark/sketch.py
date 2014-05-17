@@ -142,7 +142,7 @@ def load_json(json_data, defouttype = None):
   else:
     sketches = []
     for sketch in dict['sketches']:
-      sketch_name = str(sketch['sketch']['name'])
+      sketch_name = str(sketch['sketch']['type'])
       sketch_dims = sketch['sketch']['size']
       sketch_transform = c_void_p()
       _callsl(_lib.sl_load_sketch_transform, _ctxt_obj, sketch_name, \

@@ -33,9 +33,8 @@ struct RFT_data_t : public sketch_transform_data_t {
         underlying_data_type;
     typedef sketch_transform_data_t base_t;
 
-    RFT_data_t (int N, int S, skylark::base::context_t& context,
-                std::string type = "RFT")
-        : base_t(N, S, context, type), _val_scale(1),
+    RFT_data_t (int N, int S, skylark::base::context_t& context)
+        : base_t(N, S, context, "RFT"), _val_scale(1),
           _underlying_data(nullptr),
           _scale(std::sqrt(2.0 / S)) {
 
@@ -63,7 +62,7 @@ struct RFT_data_t : public sketch_transform_data_t {
 
 protected:
     RFT_data_t (int N, int S, skylark::base::context_t& context,
-        std::string type = "RFT", bool nobuild = true)
+        std::string type)
         : base_t(N, S, context, type), _val_scale(1),
           _underlying_data(nullptr),
           _scale(std::sqrt(2.0 / S)) {
@@ -123,13 +122,13 @@ struct GaussianRFT_data_t :
      */
     GaussianRFT_data_t(int N, int S, typename base_t::value_type sigma,
         skylark::base::context_t& context)
-        : base_t(N, S, context, "GaussianRFT", true), _sigma(sigma) {
+        : base_t(N, S, context, "GaussianRFT"), _sigma(sigma) {
         base_t::_val_scale = 1.0 / sigma;
         context = base_t::build();
     }
 
     GaussianRFT_data_t(boost::property_tree::ptree &json)
-        : base_t(json), _sigma(json.get<ValueType>("sketch.sigma")) {
+        : base_t(json, true), _sigma(json.get<ValueType>("sketch.sigma")) {
         base_t::_val_scale = 1.0 / _sigma;
         base_t::build();
     }
@@ -141,13 +140,13 @@ struct GaussianRFT_data_t :
 
 protected:
     GaussianRFT_data_t(int N, int S, typename base_t::value_type sigma,
-        skylark::base::context_t& context, bool nobuild)
-        : base_t(N, S, context, "GaussianRFT"), _sigma(sigma) {
+        skylark::base::context_t& context, std::string type)
+        : base_t(N, S, context, type), _sigma(sigma) {
         base_t::_val_scale = 1.0 / sigma;
     }
 
     GaussianRFT_data_t(boost::property_tree::ptree &json, bool nobuild)
-        : base_t(json), _sigma(json.get<ValueType>("sketch.sigma")) {
+        : base_t(json, true), _sigma(json.get<ValueType>("sketch.sigma")) {
         base_t::_val_scale = 1.0 / _sigma;
     }
 
@@ -172,13 +171,13 @@ struct LaplacianRFT_data_t :
 
     LaplacianRFT_data_t(int N, int S, typename base_t::value_type sigma,
         skylark::base::context_t& context)
-        : base_t(N, S, context, "LaplacianRFT", false), _sigma(sigma) {
+        : base_t(N, S, context, "LaplacianRFT"), _sigma(sigma) {
         base_t::_val_scale = 1.0 / sigma;
         context = base_t::build();
     }
 
     LaplacianRFT_data_t(boost::property_tree::ptree &json)
-        : base_t(json), _sigma(json.get<ValueType>("sketch.sigma")) {
+        : base_t(json, true), _sigma(json.get<ValueType>("sketch.sigma")) {
         base_t::_val_scale = 1.0 / _sigma;
         base_t::build();
     }
@@ -191,8 +190,8 @@ struct LaplacianRFT_data_t :
 protected:
 
     LaplacianRFT_data_t(int N, int S, typename base_t::value_type sigma,
-        skylark::base::context_t& context, bool noread)
-        : base_t(N, S, context, "LaplacianRFT", false), _sigma(sigma) {
+        skylark::base::context_t& context, std::string type)
+        : base_t(N, S, context, type), _sigma(sigma) {
         base_t::_val_scale = 1.0 / sigma;
     }
 

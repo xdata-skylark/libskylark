@@ -35,9 +35,8 @@ struct FastRFT_data_t : public sketch_transform_data_t {
     /**
      * Regular constructor
      */
-    FastRFT_data_t (int N, int S, skylark::base::context_t& context,
-                    std::string type = "FastRFT")
-        : base_t(N, S, context, type, true), _NB(N),
+    FastRFT_data_t (int N, int S, skylark::base::context_t& context)
+        : base_t(N, S, context, "FastRFT"), _NB(N),
           numblks(1 + ((base_t::_S - 1) / _NB)),
           scale(std::sqrt(2.0 / base_t::_S)),
           Sm(numblks * _NB)  {
@@ -56,7 +55,7 @@ struct FastRFT_data_t : public sketch_transform_data_t {
 
 protected:
     FastRFT_data_t (int N, int S, skylark::base::context_t& context,
-        std::string type = "FastRFT", bool nobuild = true)
+        std::string type)
         : base_t(N, S, context, type), _NB(N),
           numblks(1 + ((base_t::_S - 1) / _NB)),
           scale(std::sqrt(2.0 / base_t::_S)),
@@ -138,7 +137,7 @@ struct FastGaussianRFT_data_t :
      */
     FastGaussianRFT_data_t(int N, int S, value_type sigma,
         skylark::base::context_t& context)
-        : base_t(N, S, context, "FastGaussianRFT", true), _sigma(sigma) {
+        : base_t(N, S, context, "FastGaussianRFT"), _sigma(sigma) {
 
         std::fill(base_t::Sm.begin(), base_t::Sm.end(),
                 1.0 / (_sigma * std::sqrt(base_t::_N)));

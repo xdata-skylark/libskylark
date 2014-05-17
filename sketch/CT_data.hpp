@@ -29,7 +29,7 @@ struct CT_data_t :
      * Most of the work is done by base. Here just write scale
      */
     CT_data_t(int N, int S, double C, skylark::base::context_t& context)
-        : base_t(N, S, context, "CT", true), _C(C) {
+        : base_t(N, S, context, "CT"), _C(C) {
         base_t::scale = C / static_cast<double>(S);
         context = base_t::build();
     }
@@ -48,9 +48,9 @@ struct CT_data_t :
 
 protected:
 
-    CT_data_t(int N, int S, double C, skylark::base::context_t& context,
-        bool nobuild)
-        : base_t(N, S, context, "CT", true), _C(C) {
+    CT_data_t(int N, int S, double C, skylark::base::context_t& context, 
+        std::string type)
+        : base_t(N, S, context, type), _C(C) {
 
         base_t::scale = C / static_cast<double>(S);
     }

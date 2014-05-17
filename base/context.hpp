@@ -78,16 +78,14 @@ struct context_t {
      * @caveat This should be used as a global operation to keep the
      * the internal state of the context synchronized.
      */
-    template <typename Distribution>
-    boost::shared_ptr< utility::random_samples_array_t<Distribution> >
-    allocate_random_samples_array(size_t size, Distribution& distribution) {
-        boost::shared_ptr< utility::random_samples_array_t<Distribution> > tmp(
-            new skylark::utility::random_samples_array_t<Distribution>
-                (_counter, size, _seed, distribution));
-        _counter += size;
-        return tmp;
-    }
-
+     template <typename Distribution>
+     skylark::utility::random_samples_array_t<Distribution>
+     allocate_random_samples_array(size_t size, Distribution& distribution) {
+         skylark::utility::random_samples_array_t<Distribution>
+             random_samples_array(_counter, size, _seed, distribution);
+         _counter += size;
+         return random_samples_array;
+     }
 
     /**
      * Returns a vector of samples drawn from a distribution.

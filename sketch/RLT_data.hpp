@@ -36,9 +36,8 @@ struct RLT_data_t : public sketch_transform_data_t {
     /**
      * Regular constructor
      */
-    RLT_data_t (int N, int S, skylark::base::context_t& context,
-                std::string type)
-        : base_t(N, S, context, type), _val_scale(1),
+    RLT_data_t (int N, int S, skylark::base::context_t& context)
+        : base_t(N, S, context, "RLT"), _val_scale(1),
           _underlying_data(nullptr),
           _scale(std::sqrt(1.0 / base_t::_S)) {
         context = build();
@@ -57,7 +56,7 @@ struct RLT_data_t : public sketch_transform_data_t {
 
 protected:
     RLT_data_t (int N, int S, skylark::base::context_t& context,
-        std::string type, bool nobuild)
+        std::string type)
         : base_t(N, S, context, type), _val_scale(1),
           _underlying_data(nullptr),
           _scale(std::sqrt(1.0 / base_t::_S)) {
@@ -95,7 +94,7 @@ struct ExpSemigroupRLT_data_t :
      */
     ExpSemigroupRLT_data_t(int N, int S, typename base_t::value_type beta,
         skylark::base::context_t& context)
-        : base_t(N, S, context, "ExpSemigroupRLT", true), _beta(beta) {
+        : base_t(N, S, context, "ExpSemigroupRLT"), _beta(beta) {
 
         base_t::_val_scale = beta * beta / 2;
         context = base_t::build();
@@ -116,15 +115,15 @@ struct ExpSemigroupRLT_data_t :
 
 protected:
     ExpSemigroupRLT_data_t(int N, int S, typename base_t::value_type beta,
-        skylark::base::context_t& context, bool nobuild)
-        : base_t(N, S, context, "ExpSemigroupRLT", true), _beta(beta) {
+        skylark::base::context_t& context, std::string type)
+        : base_t(N, S, context, type), _beta(beta) {
 
         base_t::_val_scale = beta * beta / 2;
     }
 
     ExpSemigroupRLT_data_t(boost::property_tree::ptree &json,
         bool nobuild)
-        : base_t(json, nobuild),
+        : base_t(json, true),
         _beta(json.get<ValueType>("sketch.beta")) {
 
         base_t::_val_scale = _beta * _beta / 2;

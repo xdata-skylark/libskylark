@@ -52,8 +52,8 @@ struct PPT_data_t : public sketch_transform_data_t {
 protected:
 
     PPT_data_t (int N, int S, int q, double c, double gamma,
-        skylark::base::context_t& context, bool nobuild)
-        : base_t(N, S, context, "PPT"), _q(q), _c(c), _gamma(gamma) {
+        skylark::base::context_t& context, std::string type)
+        : base_t(N, S, context, type), _q(q), _c(c), _gamma(gamma) {
 
 
     }

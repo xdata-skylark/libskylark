@@ -19,6 +19,7 @@ struct random_samples_array_t {
 public:
 
     typedef typename Distribution::result_type value_type;
+
     /**
      * Convenience nicknames for Random123 types
      */
@@ -36,6 +37,11 @@ public:
             key.v[i] =  static_cast<key_t::value_type>(0);
         key.v[0] = static_cast<key_t::value_type>(seed);
         return key;
+    }
+
+    random_samples_array_t() :
+        _base(0), _size(0), _key(_seed_to_key(0)), _distribution() {
+
     }
 
     /**
@@ -67,6 +73,19 @@ public:
         _distribution.reset();
     }
 
+    random_samples_array_t(const random_samples_array_t& other) :
+        _base(other._base), _size(other._size), _key(other._key),
+        _distribution(other._distribution) {
+
+    }
+
+    random_samples_array_t& operator=(const random_samples_array_t& other) {
+        _base = other._base;
+        _size = other._size;
+        _key = other._key;
+        _distribution = other._distribution;
+        return *this;
+    }
 
     /**
      * @internal The samples could be generated during the sketch apply().
@@ -97,9 +116,9 @@ public:
     }
 
 private:
-    const size_t _base;
-    const size_t _size;
-    const key_t _key;
+    size_t _base;
+    size_t _size;
+    key_t _key;
     Distribution _distribution;
 };
 

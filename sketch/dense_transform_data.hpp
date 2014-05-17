@@ -31,9 +31,8 @@ struct dense_transform_data_t : public sketch_transform_data_t {
     /**
      * Regular constructor
      */
-    dense_transform_data_t (int N, int S, base::context_t& context,
-                            std::string type = "")
-        : base_t(N, S, context, type),
+    dense_transform_data_t (int N, int S, base::context_t& context)
+        : base_t(N, S, context, "DenseTransform"),
           distribution() {
 
         // No scaling in "raw" form
@@ -50,10 +49,16 @@ struct dense_transform_data_t : public sketch_transform_data_t {
         build();
     }
 
+    dense_transform_data_t(const dense_transform_data_t& other)
+        : base_t(other), distribution(other.distribution),
+          random_samples(other.random_samples), scale(other.scale) {
+
+    }
+
 protected:
 
     dense_transform_data_t (int N, int S, base::context_t& context,
-        std::string type, bool nobuild)
+        std::string type)
         : base_t(N, S, context, type),
           distribution() {
 
@@ -71,14 +76,14 @@ protected:
     }
 
     base::context_t build() {
-        base::context_t tmp = base_t::build();
-        random_samples = tmp.allocate_random_samples_array(_N * _S, distribution);
-        return tmp;
+        base::context_t ctx = base_t::build();
+        random_samples = ctx.allocate_random_samples_array(_N * _S, distribution);
+        return ctx;
     }
+
     value_distribution_type distribution; /**< Distribution for samples */
-    boost::shared_ptr<
-        skylark::utility::random_samples_array_t <value_distribution_type> >
-            random_samples;
+    skylark::utility::random_samples_array_t <value_distribution_type> 
+    random_samples;
     /**< Array of samples, to be lazily computed */
     double scale; /**< Scaling factor for the samples */
 

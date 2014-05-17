@@ -42,14 +42,13 @@ struct uniform_matrix_t <FullyDistVec<IndexType, ValueType> > {
         mpi_vector_t x(M, 0);
 
         distribution_t distribution;
-        boost::shared_ptr<random_samples_array_t <distribution_t> > samples;
-        samples = context.allocate_random_samples_array(
-                x.TotalLength(), distribution);
+        random_samples_array_t <distribution_t> samples =
+            context.allocate_random_samples_array(x.TotalLength(), distribution);
 
         /* Iterate and fill up the local entries */
         for (index_t i=0; i<x.TotalLength(); ++i) {
             value_t sample;
-                sample = (*samples)[i];
+                sample = samples[i];
                 x.SetElement(i, sample);
         }
         return x;
@@ -105,12 +104,12 @@ struct uniform_matrix_t <SpParMat<IndexType,
         /* Add edges carefully */
         index_t total_num_edges_added = 0;
         distribution_t distribution;
-        boost::shared_ptr<random_samples_array_t <distribution_t> > samples;
-        samples = context.allocate_random_samples_array(M * N, distribution);
+        random_samples_array_t <distribution_t> samples =
+            context.allocate_random_samples_array(M * N, distribution);
         for (index_t j=0; j<N; ++j) {
             for (index_t i=0; i<M; ++i) {
                 bool sample;
-                sample = (*samples)[j * M + i];
+                sample = samples[j * M + i];
                 if (sample) {
                     col_id.SetElement(total_num_edges_added, j);
                     row_id.SetElement(total_num_edges_added, i);
@@ -141,12 +140,12 @@ struct uniform_matrix_t <elem::Matrix<ValueType> > {
 
         matrix_t A(M, N);
         distribution_t distribution;
-        boost::shared_ptr<random_samples_array_t <distribution_t> > samples;
-        samples = context.allocate_random_samples_array(M * N, distribution);
+        random_samples_array_t <distribution_t> samples =
+            context.allocate_random_samples_array(M * N, distribution);
         for (index_t j = 0; j < N; j++) {
             for (index_t i = 0; i < M; i++) {
                 value_t sample;
-                sample = (*samples)[j * M + i];
+                sample = samples[j * M + i];
                 A.Set(i, j, sample);
             }
         }
@@ -171,11 +170,11 @@ struct uniform_matrix_t <elem::DistMatrix<ValueType, CD, RD> > {
 
         mpi_matrix_t A(M, N, grid);
         distribution_t distribution;
-        boost::shared_ptr<random_samples_array_t <distribution_t> > samples;
-        samples = context.allocate_random_samples_array(M * N, distribution);
+        random_samples_array_t <distribution_t> samples =
+            context.allocate_random_samples_array(M * N, distribution);
         for (index_t j = 0; j < N; j++) {
             for (index_t i = 0; i < M; i++) {
-                value_t sample = (*samples)[j * M + i];
+                value_t sample = samples[j * M + i];
                 A.Set(i, j, sample);
             }
         }

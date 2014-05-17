@@ -33,9 +33,8 @@ struct hash_transform_data_t : public sketch_transform_data_t {
      *  @param S
      *  @param context
      */
-    hash_transform_data_t (int N, int S, base::context_t& context,
-                           const std::string type = "")
-        : base_t(N, S, context, type) {
+    hash_transform_data_t (int N, int S, base::context_t& context)
+        : base_t(N, S, context, "HashTransform") {
         context = build();
     }
 
@@ -51,7 +50,7 @@ struct hash_transform_data_t : public sketch_transform_data_t {
 protected:
 
     hash_transform_data_t (int N, int S, base::context_t& context,
-        const std::string type, bool nobuild)
+        const std::string type)
         : base_t(N, S, context, type) {
 
     }

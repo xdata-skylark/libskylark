@@ -29,7 +29,7 @@ struct CWT_data_t : public hash_transform_data_t<
         utility::rademacher_distribution_t > base_t;
 
     CWT_data_t(int N, int S, base::context_t& context)
-        : base_t(N, S, context, "CWT", true) {
+        : base_t(N, S, context, "CWT") {
 
         context = base_t::build();
     }
@@ -42,8 +42,8 @@ struct CWT_data_t : public hash_transform_data_t<
 
 protected:
 
-    CWT_data_t(int N, int S, base::context_t& context, bool nobuild)
-        : base_t(N, S, context, "CWT", true) {
+    CWT_data_t(int N, int S, base::context_t& context, std::string type)
+        : base_t(N, S, context, type) {
 
     }
 

@@ -12,8 +12,21 @@ namespace skylark { namespace sketch {
 
 struct sketch_transform_data_t {
 
+    friend std::istream& operator>>(std::istream &in, 
+        sketch_transform_data_t &data);
+
+    /**
+     *  Serializes a sketch to a string.
+     *  @param[out] dump containing serialized JSON object
+     */
+    friend boost::property_tree::ptree& operator<<(
+            boost::property_tree::ptree &sk, 
+                const sketch_transform_data_t &data);
+
+protected:
+
     sketch_transform_data_t (int N, int S, const base::context_t& context,
-        const std::string type = "")
+        const std::string type)
         : _N(N), _S(S), _creation_context(context), _type(type),
           _version("0.1") { }
 
@@ -38,18 +51,6 @@ struct sketch_transform_data_t {
         _type = json.get<std::string>("sketch.type");
     }
 
-    friend std::istream& operator>>(std::istream &in, 
-        sketch_transform_data_t &data);
-
-    /**
-     *  Serializes a sketch to a string.
-     *  @param[out] dump containing serialized JSON object
-     */
-    friend boost::property_tree::ptree& operator<<(
-            boost::property_tree::ptree &sk, 
-                const sketch_transform_data_t &data);
-
-protected:
     int _N; /**< Input dimension  */
     int _S; /**< Output dimension  */
 

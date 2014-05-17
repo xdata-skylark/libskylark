@@ -84,7 +84,7 @@ private:
         for(int j = 0; j < data_type::_N; j++) {
             for (int i = 0; i < data_type::_S; i++) {
                 value_type sample =
-                    (*data_type::random_samples)[j * data_type::_S + i];
+                    data_type::random_samples[j * data_type::_S + i];
                 S.Set(i, j, data_type::scale * sample);
             }
         }
@@ -110,7 +110,7 @@ private:
         for(int j = 0; j < data_type::_N; j++) {
             for (int i = 0; i < data_type::_S; i++) {
                 value_type sample =
-                    (*data_type::random_samples)[j * data_type::_S + i];
+                    data_type::random_samples[j * data_type::_S + i];
                 S.Set(i, j, data_type::scale * sample);
             }
         }
@@ -233,7 +233,7 @@ private:
                 int col = A.ColShift() + A.ColStride() * j;
                 for (int i = 0; i < data_type::_S; i++) {
                     value_type sample =
-                        (*data_type::random_samples)[col * data_type::_S + i];
+                        data_type::random_samples[col * data_type::_S + i];
                     S_local.Set(i, j-js, data_type::scale * sample);
                 }
             }
@@ -278,7 +278,7 @@ private:
         for (int j = 0; j < data_type::_N; j++) {
             for (int i = 0; i < data_type::_S; i++) {
                 value_type sample =
-                    (*data_type::random_samples)[j * data_type::_S + i];
+                    data_type::random_samples[j * data_type::_S + i];
                 S_local.Set(i, j, data_type::scale * sample);
             }
         }
@@ -587,7 +587,7 @@ private:
                 int i = S_num_rows_consumed + i_loc;
                 for(int j = 0; j < S_width; ++j) {
                     value_type sample =
-                        (*data_type::random_samples)[j * data_type::_S + i];
+                        data_type::random_samples[j * data_type::_S + i];
                     S_part.Set(i_loc, j, data_type::scale * sample);
                 }
             }
@@ -624,7 +624,7 @@ private:
         for (int j = 0; j < data_type::_N; j++) {
             for (int i = 0; i < data_type::_S; i++) {
                 value_type sample =
-                    (*data_type::random_samples)[j * data_type::_S + i];
+                    data_type::random_samples[j * data_type::_S + i];
                 S_local.Set(i, j, data_type::scale * sample);
             }
         }
@@ -763,7 +763,7 @@ private:
                 int i = S_num_rows_consumed + i_loc;
                 for(int j = 0; j < S_width; ++j) {
                     value_type sample =
-                        (*data_type::random_samples)[j * data_type::_S + i];
+                        data_type::random_samples[j * data_type::_S + i];
                     S_part.Set(i_loc, j, data_type::scale * sample);
                 }
             }
@@ -820,7 +820,7 @@ private:
         for (int j = 0; j < data_type::_N; j++) {
             for (int i = 0; i < data_type::_S; i++) {
                 value_type sample =
-                    (*data_type::random_samples)[j * data_type::_S + i];
+                    data_type::random_samples[j * data_type::_S + i];
                 S_local.Set(i, j, data_type::scale * sample);
             }
         }
@@ -962,7 +962,7 @@ private:
                 int i = S_num_rows_consumed + i_loc;
                 for(int j = 0; j < S_width; ++j) {
                     value_type sample =
-                        (*data_type::random_samples)[j * data_type::_S + i];
+                        data_type::random_samples[j * data_type::_S + i];
                     S_part.Set(i_loc, j, data_type::scale * sample);
                 }
             }
@@ -1004,7 +1004,7 @@ private:
         for (int j = 0; j < data_type::_N; j++) {
             for (int i = 0; i < data_type::_S; i++) {
                 value_type sample =
-                    (*data_type::random_samples)[j * data_type::_S + i];
+                    data_type::random_samples[j * data_type::_S + i];
                 S_local.Set(i, j, data_type::scale * sample);
             }
         }
@@ -1111,7 +1111,7 @@ private:
             for (int i_loc = 0; i_loc < S.LocalHeight(); ++i_loc) {
                 int i = S.ColShift() + S.ColStride() * i_loc;
                 value_type sample =
-                    (*data_type::random_samples)[j * data_type::_S + i];
+                    data_type::random_samples[j * data_type::_S + i];
                 S.SetLocal(i_loc, j_loc, data_type::scale * sample);
             }
         }
@@ -1157,7 +1157,7 @@ private:
             for (int i_loc = 0; i_loc < S.LocalHeight(); ++i_loc) {
                 int i = S.ColShift() + S.ColStride() * i_loc;
                 value_type sample =
-                    (*data_type::random_samples)[j * data_type::_S + i];
+                    data_type::random_samples[j * data_type::_S + i];
                 S.SetLocal(i_loc, j_loc, data_type::scale * sample);
             }
         }
@@ -1266,7 +1266,7 @@ private:
             for (int i_loc = 0; i_loc < S.LocalHeight(); ++i_loc) {
                 int i = S.ColShift() + S.ColStride() * i_loc;
                 value_type sample =
-                    (*data_type::random_samples)[j * data_type::_S + i];
+                    data_type::random_samples[j * data_type::_S + i];
                 S.SetLocal(i_loc, j_loc, data_type::scale * sample);
             }
         }
@@ -1295,7 +1295,7 @@ private:
             for (int i_loc = 0; i_loc < S.LocalHeight(); ++i_loc) {
                 int i = S.ColShift() + S.ColStride() * i_loc;
                 value_type sample =
-                    (*data_type::random_samples)[j * data_type::_S + i];
+                    data_type::random_samples[j * data_type::_S + i];
                 S.SetLocal(i_loc, j_loc, data_type::scale * sample);
             }
         }

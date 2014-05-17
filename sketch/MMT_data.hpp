@@ -27,7 +27,7 @@ struct MMT_data_t : public hash_transform_data_t<
         boost::random::cauchy_distribution > base_t;
 
     MMT_data_t(int N, int S, skylark::base::context_t& context)
-        : base_t(N, S, context, "MMT", true) {
+        : base_t(N, S, context, "MMT") {
 
         context = base_t::build();
    }
@@ -40,8 +40,9 @@ struct MMT_data_t : public hash_transform_data_t<
 
 protected:
 
-    MMT_data_t(int N, int S, skylark::base::context_t& context, bool nobuild)
-        : base_t(N, S, context, "MMT", true) {
+    MMT_data_t(int N, int S, skylark::base::context_t& context, 
+        std::string type)
+        : base_t(N, S, context, type) {
 
    }
 

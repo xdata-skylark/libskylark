@@ -59,7 +59,7 @@ struct dense_transform_data_t : public sketch_transform_data_t {
 #ifdef HP_DENSE_TRANSFORM_ELEMENTAL
 
     void realize_matrix_view(elem::Matrix<value_type>& A) const {
-        realize_matrix_view(A, 0, 0, S, N);
+        realize_matrix_view(A, 0, 0, _S, _N);
     }
 
 
@@ -84,7 +84,7 @@ struct dense_transform_data_t : public sketch_transform_data_t {
             for (int i_loc = 0; i_loc < height; i_loc++) {
                 int i_glob = i + i_loc * col_stride;
                 value_type sample =
-                    random_samples[j_glob * S + i_glob];
+                    random_samples[j_glob * _S + i_glob];
                 data[j_loc * height + i_loc] = scale * sample;
             }
         }
@@ -96,7 +96,7 @@ struct dense_transform_data_t : public sketch_transform_data_t {
     void realize_matrix_view(elem::DistMatrix<value_type,
                                               ColDist,
                                               RowDist>& A) const {
-        realize_matrix_view<ColDist, RowDist>(A, 0, 0, S, N);
+        realize_matrix_view<ColDist, RowDist>(A, 0, 0, _S, _N);
     }
 
 

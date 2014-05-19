@@ -1,6 +1,8 @@
 /** Selecting the parts of HP support to activate */
-// #define HP_DENSE_TRANSFORM_ELEMENTAL
+
+#define HP_DENSE_TRANSFORM_ELEMENTAL
 // #define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR
+
 
 #include <boost/mpi.hpp>
 #include <elemental.hpp>

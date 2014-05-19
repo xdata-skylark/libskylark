@@ -90,7 +90,7 @@ struct dense_transform_t <
 
 private:
 
-#ifdef HP_DENSE_TRANSFORM_ELEMENTAL
+#ifdef HP_DENSE_TRANSFORM_ELEMENTAL_STAR_ROWDIST
 
     // Communication demanding scenario
     // TODO: Adapt from [MC, MR]

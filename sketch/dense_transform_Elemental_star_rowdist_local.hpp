@@ -90,7 +90,7 @@ struct dense_transform_t <
 
 private:
 
-#ifdef HP_DENSE_TRANSFORM_ELEMENTAL
+#ifdef HP_DENSE_TRANSFORM_ELEMENTAL_STAR_ROWDIST_LOCAL
 
     void apply_impl_dist(const matrix_type& A,
                          output_matrix_type& sketch_of_A,

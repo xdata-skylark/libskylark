@@ -81,7 +81,7 @@ struct dense_transform_t <
 
 private:
 
-#ifdef HP_DENSE_TRANSFORM_ELEMENTAL
+#ifdef HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR
 
     void inner_panel_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,

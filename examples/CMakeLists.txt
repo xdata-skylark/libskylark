@@ -1,4 +1,13 @@
 if (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
+
+  add_executable(hp_dense hp_dense.cpp)
+  target_link_libraries(hp_dense
+                        ${Elemental_LIBRARY}
+                        ${FFTW_LIBRARY}
+                        ${Pmrrr_LIBRARY}
+                        ${SKYLARK_LIBS}
+                        ${Boost_LIBRARIES})
+
   add_executable(elemental elemental.cpp)
   target_link_libraries(elemental
                         ${Elemental_LIBRARY}

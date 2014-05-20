@@ -238,17 +238,20 @@ private:
             sketch_of_A11(grid),
             sketch_of_A12(grid);
 
-        int base = 0;
+        // TODO: are alignments necessary?
+
         elem::PartitionDown
         ( sketch_of_A,
           sketch_of_A_Top, sketch_of_A_Bottom, 0 );
 
-        // TODO: Allow for different blocksizes in Down and Right partitionings
+        // TODO: Allow for different blocksizes in "down" and "right" directions
+        int blocksize = get_blocksize();
+        int base = 0;
         while (sketch_of_A_Bottom.Height() > 0) {
-            int b = get_blocksize();
 
-            // TODO: should it be A.Height() instead of A.Width()?
-            base_data_t::realize_matrix_view(R1, base, 0, b, A.Width());
+            int b = std::min(sketch_of_A_Right.Width(), blocksize);
+            data_type::realize_matrix_view(R1, base, 0,
+                                               b,    A.Height());
 
             elem::RepartitionDown
             ( sketch_of_A_Top,    sketch_of_A0,
@@ -275,13 +278,13 @@ private:
                 ( sketch_of_A1_Left, /**/               sketch_of_A1_Right,
                   sketch_of_A10,     /**/ sketch_of_A11, sketch_of_A12,     b );
 
-
-                elem::LocalGemm(elem::NORMAL,
-                                elem::NORMAL,
-                                value_type(1),
-                                R1,
-                                A1,
-                                sketch_of_A11);
+                // Local Gemm
+                base::Gemm(elem::NORMAL,
+                           elem::NORMAL,
+                           value_type(1),
+                           R1.LockedMatrix(),
+                           A1.LockedMatrix(),
+                           sketch_of_A11.Matrix());
 
                 elem::SlideLockedPartitionRight
                 ( A_Left,     /**/ A_Right,
@@ -292,7 +295,6 @@ private:
                   sketch_of_A10,     sketch_of_A11, /**/ sketch_of_A12 );
             }
 
-            // TODO: "added b" should be the min(b, dimension - base)?
             base = base + b;
 
             elem::SlidePartitionDown
@@ -381,16 +383,17 @@ private:
         // TODO: is alignment necessary?
         R1.AlignWith(sketch_of_A);
 
-        int base = 0;
         elem::LockedPartitionDown
         ( A,
           A_Top, A_Bottom, 0 );
 
+        int blocksize = get_blocksize();
+        int base = 0;
         while (A_Bottom.Height() > 0) {
-            int b = get_blocksize();
 
-            // TODO: should it be sketch_of_A.Height() instead of A.Height()?
-            base_data_t::realize_matrix_view(R1, 0, base, A.Height(), b);
+            int b = std::min(A_Bottom.Height(), blocksize);
+            data_type::realize_matrix_view(R1, 0,                   base,
+                                               sketch_of_A.Height(), b);
 
             elem::RepartitionDown
             ( A_Top,    A0,
@@ -398,15 +401,14 @@ private:
                         A1,
               A_Bottom, A2, b );
 
-            elem::LocalGemm(elem::NORMAL,
-                            elem::NORMAL,
-                            value_type(1),
-                            R1,
-                            A1,
-                            value_type(1),
-                            sketch_of_A);
+            base::Gemm(elem::NORMAL,
+                       elem::NORMAL,
+                       value_type(1),
+                       R1.LockedMatrix(),
+                       A1.LockedMatrix(),
+                       value_type(1),
+                       sketch_of_A.Matrix());
 
-            // TODO: "added b" should be the min(b, dimension - base)?
             base = base + b;
 
             elem::SlidePartitionDown
@@ -499,16 +501,17 @@ private:
             sketch_of_A1(grid),
             sketch_of_A2(grid);
 
-        int base = 0;
         elem::PartitionDown
         ( sketch_of_A,
           sketch_of_A_Top, sketch_of_A_Bottom, 0 );
 
+        int blocksize = get_blocksize();
+        int base = 0;
         while (sketch_of_A_Bottom.Height() > 0) {
-            int b = get_blocksize();
 
-            // TODO: should it be A.Height() instead of A.Width()?
-            base_data_t::realize_matrix_view(R1, base, 0, b, A.Width());
+            int b = std::min(sketch_of_A_Bottom.Height(), blocksize);
+            data_type::realize_matrix_view(R1, base, 0,
+                                               b,    A.Height());
 
             elem::RepartitionDown
             ( sketch_of_A_Top,    sketch_of_A0,
@@ -516,16 +519,15 @@ private:
                                   sketch_of_A1,
               sketch_of_A_Bottom, sketch_of_A2, b );
 
+            // Local Gemm
+            base::Gemm(elem::NORMAL,
+                       elem::NORMAL,
+                       value_type(1),
+                       R1.LockedMatrix(),
+                       A.LockedMatrix(),
+                       value_type(0),
+                       sketch_of_A.Matrix());
 
-            // TODO: should it be sketch_of_A1 instead of sketch_of_A?
-            elem::LocalGemm(elem::NORMAL,
-                            elem::NORMAL,
-                            value_type(1),
-                            R1,
-                            A,
-                            sketch_of_A);
-
-            // TODO: "added b" should be the min(b, dimension - base)?
             base = base + b;
 
             elem::SlidePartitionDown

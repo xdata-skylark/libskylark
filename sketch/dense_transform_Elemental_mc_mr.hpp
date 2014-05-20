@@ -225,25 +225,26 @@ private:
         elem::DistMatrix<value_type, elem::STAR, elem::STAR>
             sketch_of_A11_STAR_STAR(grid);
 
-        int base = 0;
+        // TODO: are alignments necessary?
 
         elem::PartitionDown
         ( sketch_of_A,
           sketch_of_A_Top, sketch_of_A_Bottom, 0 );
 
-        // TODO: Allow for different blocksizes in Down and Right partitionings
+        // TODO: Allow for different blocksizes in "down" and "right" directions
+        int blocksize = get_blocksize();
+        int base = 0;
         while (sketch_of_A_Bottom.Height() > 0) {
-            int b = get_blocksize();
 
-            // TODO: should it be A.Height() instead of A.Width()?
-            base_data_t::realize_matrix_view(R1, base, 0, b, A.Width());
+            int b = std::min(sketch_of_A_Right.Width(), blocksize);
+            data_type::realize_matrix_view(R1, base, 0,
+                                               b,    A.Height());
 
             elem::RepartitionDown
             ( sketch_of_A_Top,     sketch_of_A0,
               /**/                 /**/
                                    sketch_of_A1,
               sketch_of_A_Bottom, sketch_of_A2,  b );
-
 
             // TODO: is alignment necessary?
             A1_VC_STAR.AlignWith(R1);
@@ -266,23 +267,19 @@ private:
                 ( sketch_of_A1_Left, /**/                sketch_of_A1_Right,
                   sketch_of_A10,     /**/ sketch_of_A11, sketch_of_A12,      b);
 
-
-                // [MC, MR] -> [VC, STAR]:
-                // TODO: Describe the communication pattern
+                // Alltoall within process rows
                 A1_VC_STAR = A1;
 
-                elem::LocalGemm(elem::NORMAL,
-                                elem::NORMAL,
-                                value_type(1),
-                                R1,
-                                A1_VC_STAR,
-                                sketch_of_A11_STAR_STAR);
+                // Local Gemm
+                base::Gemm(elem::NORMAL,
+                           elem::NORMAL,
+                           value_type(1),
+                           R1.LockedMatrix(),
+                           A1_VC_STAR.LockedMatrix(),
+                           value_type(0),
+                           sketch_of_A11_STAR_STAR.Matrix());
 
-                // [MC, MR].sum-scatter-update([STAR, STAR]):
-                // - sum all [STAR, STAR] matrices over the entire process grid
-                // - scatter to form [MC, MR]
-                // DONE: Should it be SumScatterFrom() in Elemental-0.81?
-                // DONE: Replace with Elemental-0.83 equivalent
+                // Reduce-scatter within process grid
                 sketch_of_A11.SumScatterUpdate(value_type(1),
                     sketch_of_A11_STAR_STAR);
 
@@ -296,7 +293,6 @@ private:
 
             }
 
-            // TODO: "added b" should be the min(b, dimension - base)?
             base = base + b;
 
             elem::SlidePartitionDown
@@ -387,17 +383,17 @@ private:
         R1.AlignWith(sketch_of_A);
         A1Trans_MR_STAR.AlignWith(sketch_of_A);
 
-        int base = 0;
-
         elem::LockedPartitionDown
         ( A,
           A_Top, A_Bottom, 0 );
 
+        int blocksize = get_blocksize();
+        int base = 0;
         while (A_Bottom.Height() > 0) {
-            int b = get_blocksize();
 
-            // TODO: should it be sketch_of_A.Height() instead of A.Height()?
-            base_data_t::realize_matrix_view(R1, 0, base, A.Height(), b);
+            int b = std::min(A_Bottom.Height(), blocksize);
+            data_type::realize_matrix_view(R1, 0,                   base,
+                                               sketch_of_A.Height(), b);
 
             elem::RepartitionDown
              ( A_Top,    A0,
@@ -405,24 +401,19 @@ private:
                          A1,
                A_Bottom, A2, b );
 
-
-            // [MC, MR].transpose-col-all-gather([MR, STAR]):
-            // TODO: Describe the communication pattern
+            // Allgather within process columns
             // TODO: Describe cache benefits from transposition:
             //       why not simply use A1[STAR, MR]?
-            // DONE: Replace with Elemental-0.83 equivalent
-            // A1Trans_MR_STAR.TransposeFrom(A1);
             A1.TransposeColAllGather(A1Trans_MR_STAR);
 
-            elem::LocalGemm(elem::NORMAL,
-                            elem::TRANSPOSE,
-                            value_type(1),
-                            R1,
-                            A1Trans_MR_STAR,
-                            value_type(1),
-                            sketch_of_A);
+            base::Gemm(elem::NORMAL,
+                       elem::TRANSPOSE,
+                       value_type(1),
+                       R1.LockedMatrix(),
+                       A1Trans_MR_STAR.LockedMatrix(),
+                       value_type(1),
+                       sketch_of_A.Matrix());
 
-            // TODO: "added b" should be the min(b, dimension - base)?
             base = base + b;
 
             elem::SlidePartitionDown
@@ -499,9 +490,7 @@ private:
 
         const elem::Grid& grid = A.Grid();
 
-        // TODO: Should it be R1[STAR, MC] instead of R1[STAR, VC]?
-        elem::DistMatrix<value_type, elem::STAR, elem::VC> R1(grid);
-
+        elem::DistMatrix<value_type, elem::STAR, elem::MC> R1(grid);
         elem::DistMatrix<value_type>
             sketch_of_A_Top(grid),
             sketch_of_A_Bottom(grid),
@@ -514,16 +503,17 @@ private:
         // TODO: is alignment necessary?
         sketch_of_A_temp.AlignWith(A);
 
-        int base = 0;
         elem::PartitionDown
         ( sketch_of_A,
           sketch_of_A_Top, sketch_of_A_Bottom, 0 );
 
+        int blocksize = get_blocksize();
+        int base = 0;
         while (sketch_of_A_Bottom.Height() > 0) {
-            int b = get_blocksize();
 
-            // TODO: should it be A.Height() instead of A.Width()?
-            base_data_t::realize_matrix_view(R1, base, 0, b, A.Width());
+            int b = std::min(sketch_of_A_Bottom.Height(), blocksize);
+            data_type::realize_matrix_view(R1, base, 0,
+                                               b,    A.Height());
 
             elem::RepartitionDown
             ( sketch_of_A_Top,     sketch_of_A0,
@@ -531,26 +521,22 @@ private:
                                    sketch_of_A1,
               sketch_of_A_Bottom, sketch_of_A2, b );
 
-
+            // Local Gemm
             // A.T[MR, MC] * R1.T[MC, STAR] = (A.T * R1.T)[MR, STAR]:
-            // extra summation needed because MC index set has gaps
-            elem::LocalGemm(elem::TRANSPOSE,
-                            elem::TRANSPOSE,
-                            value_type(1),
-                            A,
-                            R1,
-                            sketch_of_A_temp);
+            base::Gemm(elem::TRANSPOSE,
+                       elem::TRANSPOSE,
+                       value_type(1),
+                       A.LockedMatrix(),
+                       R1.LockedMatrix(),
+                       value_type(0),
+                       sketch_of_A_temp.Matrix());
 
+            // Reduce-scatter within column communicators
             // TODO: Describe cache benefits from transposition of terms
             //       and implicit transposition of result after the summation
-            // TODO: Describe the effect of
-            //       [MC, MR].transpose-sum-scatter-update([MR, STAR]):
-            //       sum over column communicators and keep subset of values?
-            // DONE: Check/substitute proper Elemental-0.83 equivalent
             sketch_of_A1.TransposeColSumScatterUpdate(value_type(1),
                 sketch_of_A_temp);
 
-            // TODO: "added b" should be the min(b, dimension - base)?
             base = base + b;
 
             elem::SlidePartitionDown

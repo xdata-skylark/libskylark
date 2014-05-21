@@ -15,14 +15,11 @@ namespace skylark { namespace sketch {
  *
  * See Meng and Mahoney's STOC'13 paper.
  */
-template<typename IndexType, typename ValueType>
 struct MMT_data_t : public hash_transform_data_t<
-    IndexType, ValueType,
     boost::random::uniform_int_distribution,
     boost::random::cauchy_distribution > {
 
     typedef hash_transform_data_t<
-        IndexType, ValueType,
         boost::random::uniform_int_distribution,
         boost::random::cauchy_distribution > base_t;
 
@@ -47,7 +44,6 @@ struct MMT_data_t : public hash_transform_data_t<
     boost::property_tree::ptree to_ptree() const {
         boost::property_tree::ptree pt;
         sketch_transform_data_t::add_common(pt);
-        // TODO: serialize index_type and value_type?
         return pt;
     }
 

@@ -30,15 +30,13 @@ class FastRFT_t {
 template< typename InputMatrixType,
           typename OutputMatrixType = InputMatrixType >
 struct FastGaussianRFT_t :
-    public FastGaussianRFT_data_t<typename
-        FastRFT_t<InputMatrixType, OutputMatrixType >::value_type >,
+    public FastGaussianRFT_data_t,
     virtual public sketch_transform_t<InputMatrixType, OutputMatrixType > {
 
     // We use composition to defer calls to RFT_t
     typedef FastRFT_t<InputMatrixType, OutputMatrixType > transform_t;
 
-    typedef FastGaussianRFT_data_t<typename
-      FastRFT_t<InputMatrixType, OutputMatrixType >::value_type > data_type;
+    typedef FastGaussianRFT_data_t data_type;
 
     /**
      * Regular constructor

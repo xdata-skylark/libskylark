@@ -26,10 +26,8 @@ namespace bstrand = boost::random;
  * Fastfood - Approximating Kernel Expansions in Loglinear Time
  * ICML 2013.
  */
-template< typename ValueType >
 struct FastRFT_data_t : public sketch_transform_data_t {
 
-    typedef ValueType value_type;
     typedef sketch_transform_data_t base_t;
 
     /**
@@ -64,7 +62,6 @@ struct FastRFT_data_t : public sketch_transform_data_t {
     boost::property_tree::ptree to_ptree() const {
         boost::property_tree::ptree pt;
         sketch_transform_data_t::add_common(pt);
-        // TODO: serialize index_type and value_type?
         return pt;
     }
 
@@ -82,29 +79,29 @@ protected:
     const int _NB; /**< Block size -- closet power of two of N */
 
     const int numblks;
-    const value_type scale; /** Scaling for trigonometric factor */
-    std::vector<value_type> Sm; /** Scaling based on kernel (filled by subclass) */
-    std::vector<value_type> B;
-    std::vector<value_type> G;
-    std::vector<int> P;
-    std::vector<value_type> shifts; /** Shifts for scaled trigonometric factor */
+    const double scale; /** Scaling for trigonometric factor */
+    std::vector<double> Sm; /** Scaling based on kernel (filled by subclass) */
+    std::vector<double> B;
+    std::vector<double> G;
+    std::vector<size_t> P;
+    std::vector<double> shifts; /** Shifts for scaled trigonometric factor */
 
     base::context_t build() {
         base::context_t ctx = base_t::build();
-        const double pi = boost::math::constants::pi<value_type>();
-        bstrand::uniform_real_distribution<value_type> dist_shifts(0, 2 * pi);
+        const double pi = boost::math::constants::pi<double>();
+        bstrand::uniform_real_distribution<double> dist_shifts(0, 2 * pi);
         shifts = ctx.generate_random_samples_array(base_t::_S, dist_shifts);
-        utility::rademacher_distribution_t<value_type> dist_B;
+        utility::rademacher_distribution_t<double> dist_B;
 
         B = ctx.generate_random_samples_array(numblks * _NB, dist_B);
-        bstrand::normal_distribution<value_type> dist_G;
+        bstrand::normal_distribution<double> dist_G;
         G = ctx.generate_random_samples_array(numblks * _NB, dist_G);
 
         // For the permutation we use Fisher-Yates (Knuth)
         // The following will generate the indexes for the swaps. However
         // the scheme here might have a small bias if NB is small
         // (has to be really small).
-        bstrand::uniform_int_distribution<int> dist_P(0);
+        bstrand::uniform_int_distribution<size_t> dist_P(0);
         P = ctx.generate_random_samples_array(numblks * (_NB - 1), dist_P);
         for(int i = 0; i < numblks; i++)
             for(int j = _NB - 1; j >= 1; j--)
@@ -132,18 +129,16 @@ protected:
 
 };
 
-template<typename ValueType>
 struct FastGaussianRFT_data_t :
-        public FastRFT_data_t<ValueType> {
+        public FastRFT_data_t {
 
-    typedef FastRFT_data_t<ValueType> base_t;
-    typedef typename base_t::value_type value_type;
+    typedef FastRFT_data_t base_t;
 
     /**
      * Constructor
      * Most of the work is done by base. Here just write scale
      */
-    FastGaussianRFT_data_t(int N, int S, value_type sigma,
+    FastGaussianRFT_data_t(int N, int S, double sigma,
         skylark::base::context_t& context)
         : base_t(N, S, context, "FastGaussianRFT"), _sigma(sigma) {
 
@@ -172,12 +167,11 @@ struct FastGaussianRFT_data_t :
         boost::property_tree::ptree pt;
         sketch_transform_data_t::add_common(pt);
         pt.put("sigma", _sigma);
-        // TODO: serialize index_type and value_type?
         return pt;
     }
 
 protected:
-    FastGaussianRFT_data_t(int N, int S, value_type sigma,
+    FastGaussianRFT_data_t(int N, int S, double sigma,
         const skylark::base::context_t& context, std::string type)
         : base_t(N, S, context, type), _sigma(sigma) {
 
@@ -185,7 +179,7 @@ protected:
                 1.0 / (_sigma * std::sqrt(base_t::_N)));
     }
 
-    const value_type _sigma; /**< Bandwidth (sigma)  */
+    const double _sigma; /**< Bandwidth (sigma)  */
 
 };
 

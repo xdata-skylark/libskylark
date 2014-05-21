@@ -24,14 +24,11 @@ namespace skylark { namespace sketch {
  * TODO current implementation is only one sketch index, when for 1 <= p <= 2
  *      you want more than one.
  */
-template<typename IndexType, typename ValueType>
 struct WZT_data_t : public hash_transform_data_t<
-    IndexType, ValueType,
     boost::random::uniform_int_distribution,
     boost::random::exponential_distribution > {
 
     typedef hash_transform_data_t<
-        IndexType, ValueType,
         boost::random::uniform_int_distribution,
         boost::random::exponential_distribution >  base_t;
 
@@ -66,7 +63,6 @@ struct WZT_data_t : public hash_transform_data_t<
         boost::property_tree::ptree pt;
         sketch_transform_data_t::add_common(pt);
         pt.put("P", _P);
-        // TODO: serialize index_type and value_type?
         return pt;
     }
 
@@ -94,8 +90,8 @@ private:
         // We also need it to +/- with equal probability. This solves this as
         // well.
         base::context_t ctx = base_t::build();
-        utility::rademacher_distribution_t<ValueType> pmdist;
-        std::vector<ValueType> pmvals =
+        utility::rademacher_distribution_t<double> pmdist;
+        std::vector<double> pmvals =
             ctx.generate_random_samples_array(base_t::_N, pmdist);
         for(int i = 0; i < base_t::_N; i++)
              base_t::row_value[i] =

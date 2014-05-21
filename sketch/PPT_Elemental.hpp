@@ -87,14 +87,14 @@ template<typename ValueType>
 struct PPT_t <
     elem::Matrix<ValueType>,
     elem::Matrix<ValueType> > :
-        public PPT_data_t<ValueType>,
+        public PPT_data_t,
         virtual public sketch_transform_t<elem::Matrix<ValueType>,
                                           elem::Matrix<ValueType> >{
 
     typedef ValueType value_type;
     typedef elem::Matrix<value_type> matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
-    typedef PPT_data_t<ValueType> data_type;
+    typedef PPT_data_t data_type;
 
     /**
      * Regular constructor
@@ -268,7 +268,6 @@ struct PPT_t <
 
 protected:
 
-    typedef typename data_type::_CWT_data_t _CWT_data_t;
     typedef CWT_t<matrix_type, output_matrix_type> _CWT_t;
 
     typedef typename internal::fftw<value_type>::complex_t _fftw_complex_t;
@@ -280,7 +279,7 @@ protected:
     void build_internal() {
         int S = data_type::_S;
 
-        for(typename std::list<_CWT_data_t>::iterator it =
+        for(typename std::list<CWT_data_t>::iterator it =
                 data_type::_cwts_data.begin();
             it != data_type::_cwts_data.end(); it++)
             _cwts.push_back(_CWT_t(*it));
@@ -305,14 +304,14 @@ template<typename ValueType>
 struct PPT_t <
     base::sparse_matrix_t<ValueType>,
     elem::Matrix<ValueType> > :
-        public PPT_data_t<ValueType>,
+        public PPT_data_t,
         virtual public sketch_transform_t<base::sparse_matrix_t<ValueType>,
                                           elem::Matrix<ValueType> >{
 
     typedef ValueType value_type;
     typedef base::sparse_matrix_t<value_type> matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
-    typedef PPT_data_t<ValueType> data_type;
+    typedef PPT_data_t data_type;
 
     /**
      * Regular constructor
@@ -439,7 +438,6 @@ struct PPT_t <
 
 protected:
 
-    typedef typename data_type::_CWT_data_t _CWT_data_t;
     typedef CWT_t<matrix_type, output_matrix_type> _CWT_t;
 
     typedef typename internal::fftw<value_type>::complex_t _fftw_complex_t;
@@ -451,7 +449,7 @@ protected:
     void build_internal() {
         int S = data_type::_S;
 
-        for(typename std::list<_CWT_data_t>::iterator it =
+        for(typename std::list<CWT_data_t>::iterator it =
                 data_type::_cwts_data.begin();
             it != data_type::_cwts_data.end(); it++)
             _cwts.push_back(_CWT_t(*it));

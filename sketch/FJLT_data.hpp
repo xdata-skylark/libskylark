@@ -16,14 +16,11 @@ namespace skylark { namespace sketch {
  * holds the input and sketched matrix sizes, the vector of samples
  * and the data of the underlying transform.
  */
-template <typename ValueType>
 struct FJLT_data_t : public sketch_transform_data_t {
-    // Typedef value, distribution and data types so that we can use them
-    // regularly and consistently
-    typedef ValueType value_type;
-    typedef boost::random::uniform_int_distribution<int>
+
+    typedef boost::random::uniform_int_distribution<size_t>
     value_distribution_type;
-    typedef utility::rademacher_distribution_t<ValueType>
+    typedef utility::rademacher_distribution_t<double>
     underlying_value_distribution_type;
 
 
@@ -60,7 +57,6 @@ struct FJLT_data_t : public sketch_transform_data_t {
     boost::property_tree::ptree to_ptree() const {
         boost::property_tree::ptree pt;
         sketch_transform_data_t::add_common(pt);
-        // TODO: serialize value_type?
         return pt;
     }
 
@@ -80,11 +76,10 @@ protected:
         return ctx;
     }
 
-    typedef RFUT_data_t<value_type,
-                        underlying_value_distribution_type>
+    typedef RFUT_data_t<underlying_value_distribution_type>
         underlying_data_type;
 
-    std::vector<int> samples; /**< Vector of samples */
+    std::vector<size_t> samples; /**< Vector of samples */
     underlying_data_type *underlying_data;
     /**< Data of the underlying RFUT transformation */
 };

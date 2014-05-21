@@ -26,17 +26,17 @@ namespace skylark { namespace sketch {
 template < typename InputMatrixType,
            typename OutputMatrixType = InputMatrixType >
 class CWT_t :
-        public CWT_data_t<typename _SL_HTBASE::index_type,
-                          typename _SL_HTBASE::value_type>,
+        public CWT_data_t,
         virtual public sketch_transform_t<InputMatrixType, OutputMatrixType > {
 
 public:
 
     // We use composition to defer calls to hash_transform_t
-    typedef _SL_HTBASE transform_t;
+    typedef hash_transform_t<InputMatrixType, OutputMatrixType,
+                             boost::random::uniform_int_distribution,
+                             utility::rademacher_distribution_t> transform_t;
 
-    typedef CWT_data_t<typename _SL_HTBASE::index_type,
-                       typename _SL_HTBASE::value_type> data_type;
+    typedef CWT_data_t data_type;
 
     /**
      * Regular constructor
@@ -95,8 +95,6 @@ public:
 private:
     transform_t _transform;
 };
-
-#undef _SL_HTBASE
 
 } } /** namespace skylark::sketch */
 

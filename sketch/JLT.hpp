@@ -16,9 +16,7 @@ namespace bstrand = boost::random;
 template < typename InputMatrixType,
            typename OutputMatrixType = InputMatrixType >
 class JLT_t :
-  public JLT_data_t<typename
-    dense_transform_t<InputMatrixType, OutputMatrixType,
-                      bstrand::normal_distribution >::value_type >,
+  public JLT_data_t,
   virtual public sketch_transform_t<InputMatrixType, OutputMatrixType > {
 
 public:
@@ -27,7 +25,7 @@ public:
     typedef dense_transform_t<InputMatrixType, OutputMatrixType,
                                bstrand::normal_distribution > transform_t;
 
-    typedef JLT_data_t<typename transform_t::value_type> data_type;
+    typedef JLT_data_t data_type;
 
     /**
      * Regular constructor

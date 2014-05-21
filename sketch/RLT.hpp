@@ -32,9 +32,7 @@ class RLT_t {
 template< typename InputMatrixType,
           typename OutputMatrixType>
 struct ExpSemigroupRLT_t :
-    public ExpSemigroupRLT_data_t<typename
-      RLT_t<InputMatrixType, OutputMatrixType,
-            utility::standard_levy_distribution_t >::value_type >,
+    public ExpSemigroupRLT_data_t,
     virtual public sketch_transform_t<InputMatrixType, OutputMatrixType > {
 
 
@@ -42,9 +40,7 @@ struct ExpSemigroupRLT_t :
     typedef RLT_t<InputMatrixType, OutputMatrixType,
                   utility::standard_levy_distribution_t > transform_t;
 
-    typedef ExpSemigroupRLT_data_t<typename
-      RLT_t<InputMatrixType, OutputMatrixType,
-            utility::standard_levy_distribution_t >::value_type > data_type;
+    typedef ExpSemigroupRLT_data_t data_type;
 
     /**
      * Regular constructor

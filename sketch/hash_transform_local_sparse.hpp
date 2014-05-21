@@ -22,9 +22,7 @@ struct hash_transform_t <
     base::sparse_matrix_t<ValueType>,
     IdxDistributionType,
     ValueDistribution > :
-        public hash_transform_data_t<size_t,
-                                     ValueType,
-                                     IdxDistributionType,
+        public hash_transform_data_t<IdxDistributionType,
                                      ValueDistribution> {
     typedef size_t index_type;
     typedef ValueType value_type;
@@ -32,9 +30,7 @@ struct hash_transform_t <
     typedef base::sparse_matrix_t<ValueType> output_matrix_type;
     typedef IdxDistributionType<index_type> idx_distribution_type;
     typedef ValueDistribution<value_type> value_distribution_type;
-    typedef hash_transform_data_t<index_type,
-                                  value_type,
-                                  IdxDistributionType,
+    typedef hash_transform_data_t<IdxDistributionType,
                                   ValueDistribution> data_type;
 
 
@@ -60,9 +56,7 @@ struct hash_transform_t <
     /**
      * Constructor from data
      */
-    hash_transform_t (hash_transform_data_t<index_type,
-                                            value_type,
-                                            IdxDistributionType,
+    hash_transform_t (hash_transform_data_t<IdxDistributionType,
                                             ValueDistribution>& other_data) :
         data_type(other_data) {}
 

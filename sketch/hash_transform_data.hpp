@@ -15,17 +15,13 @@ namespace skylark { namespace sketch {
  * holds on to a context, and to some random numbers that it has generated
  * both for the scaling factor and for the row/col indices.
  */
-template <typename IndexType,
-          typename ValueType,
-          template <typename> class IdxDistributionType,
+template <template <typename> class IdxDistributionType,
           template <typename> class ValueDistribution>
 struct hash_transform_data_t : public sketch_transform_data_t {
     typedef sketch_transform_data_t base_t;
 
-    typedef IndexType index_type;
-    typedef ValueType value_type;
-    typedef IdxDistributionType<IndexType> idx_distribution_type;
-    typedef ValueDistribution<ValueType> value_distribution_type;
+    typedef IdxDistributionType<size_t> idx_distribution_type;
+    typedef ValueDistribution<double> value_distribution_type;
 
     /**
      *  Constructs the data for a hashing sketch.
@@ -70,8 +66,8 @@ protected:
         return ctx;
     }
 
-    std::vector<index_type> row_idx; /**< precomputed row indices */
-    std::vector<value_type> row_value; /**< precomputed scaling factors */
+    std::vector<size_t> row_idx; /**< precomputed row indices */
+    std::vector<double> row_value; /**< precomputed scaling factors */
 };
 
 } } /** namespace skylark::sketch */

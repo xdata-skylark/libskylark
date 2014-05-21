@@ -16,7 +16,7 @@ template <typename ValueType, elem::Distribution ColDist>
 struct FJLT_t <
     elem::DistMatrix<ValueType, ColDist, elem::STAR>,
     elem::Matrix<ValueType> > :
-        public FJLT_data_t<ValueType>,
+        public FJLT_data_t,
         virtual public sketch_transform_t<elem::DistMatrix<ValueType,
                                                            ColDist,
                                                            elem::STAR>,
@@ -32,7 +32,7 @@ struct FJLT_t <
     typedef utility::rademacher_distribution_t<value_type>
     underlying_value_distribution_type;
 
-    typedef FJLT_data_t<value_type> data_type;
+    typedef FJLT_data_t data_type;
 
 protected:
     typedef RFUT_t<intermediate_type,
@@ -198,7 +198,7 @@ template <typename ValueType, elem::Distribution ColDist>
 struct FJLT_t <
     elem::DistMatrix<ValueType, ColDist, elem::STAR>,
     elem::DistMatrix<ValueType, elem::STAR, elem::STAR> > :
-        public FJLT_data_t<ValueType>,
+        public FJLT_data_t,
         virtual public sketch_transform_t<elem::DistMatrix<ValueType,
                                                            ColDist,
                                                            elem::STAR>,
@@ -217,7 +217,7 @@ struct FJLT_t <
     typedef utility::rademacher_distribution_t<value_type>
     underlying_value_distribution_type;
 
-    typedef FJLT_data_t<value_type> data_type;
+    typedef FJLT_data_t data_type;
 
 protected:
     typedef RFUT_t<intermediate_type,

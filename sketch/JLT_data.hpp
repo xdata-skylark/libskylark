@@ -12,13 +12,10 @@ namespace bstrand = boost::random;
  *
  * The JLT is simply a dense random matrix with i.i.d normal entries.
  */
-template < typename ValueType>
 struct JLT_data_t :
-   public dense_transform_data_t<ValueType,
-                                 bstrand::normal_distribution > {
+   public dense_transform_data_t<bstrand::normal_distribution> {
 
-    typedef dense_transform_data_t<ValueType,
-                                   bstrand::normal_distribution > base_t;
+    typedef dense_transform_data_t<bstrand::normal_distribution> base_t;
     /**
      * Constructor
      * Most of the work is done by base. Here just write scale
@@ -45,7 +42,6 @@ struct JLT_data_t :
     boost::property_tree::ptree to_ptree() const {
         boost::property_tree::ptree pt;
         sketch_transform_data_t::add_common(pt);
-        // TODO: serialize value_type?
         return pt;
     }
 

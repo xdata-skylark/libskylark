@@ -21,9 +21,7 @@ struct hash_transform_t <
     elem::Matrix<ValueType>,
     IdxDistributionType,
     ValueDistribution > :
-        public hash_transform_data_t<size_t,
-                                     ValueType,
-                                     IdxDistributionType,
+        public hash_transform_data_t<IdxDistributionType,
                                      ValueDistribution> {
 
     // Typedef matrix and distribution types so that we can use them regularly
@@ -32,9 +30,7 @@ struct hash_transform_t <
     typedef elem::Matrix<value_type> output_matrix_type;
     typedef IdxDistributionType<size_t> idx_distribution_type;
     typedef ValueDistribution<value_type> value_distribution_type;
-    typedef hash_transform_data_t<size_t,
-                                  ValueType,
-                                  IdxDistributionType,
+    typedef hash_transform_data_t<IdxDistributionType,
                                   ValueDistribution> data_type;
     /**
      * Regular constructor
@@ -138,9 +134,7 @@ struct hash_transform_t <
     elem::Matrix<ValueType>,
     IdxDistributionType,
     ValueDistribution > :
-        public hash_transform_data_t<size_t,
-                                     ValueType,
-                                     IdxDistributionType,
+        public hash_transform_data_t<IdxDistributionType,
                                      ValueDistribution> {
 
     // Typedef matrix and distribution types so that we can use them regularly
@@ -149,9 +143,7 @@ struct hash_transform_t <
     typedef elem::Matrix<value_type> output_matrix_type;
     typedef IdxDistributionType<size_t> idx_distribution_type;
     typedef ValueDistribution<value_type> value_distribution_type;
-    typedef hash_transform_data_t<size_t,
-                                  ValueType,
-                                  IdxDistributionType,
+    typedef hash_transform_data_t<IdxDistributionType,
                                   ValueDistribution> data_type;
     /**
      * Regular constructor
@@ -272,9 +264,7 @@ struct hash_transform_t <
     elem::Matrix<ValueType>,
     IdxDistributionType,
     ValueDistribution > :
-        public hash_transform_data_t<size_t,
-                                     ValueType,
-                                     IdxDistributionType,
+        public hash_transform_data_t<IdxDistributionType,
                                      ValueDistribution> {
 
     // Typedef matrix and distribution types so that we can use them regularly
@@ -283,9 +273,7 @@ struct hash_transform_t <
     typedef elem::Matrix<value_type> output_matrix_type;
     typedef IdxDistributionType<size_t> idx_distribution_type;
     typedef ValueDistribution<value_type> value_distribution_type;
-    typedef hash_transform_data_t<size_t,
-                                  ValueType,
-                                  IdxDistributionType,
+    typedef hash_transform_data_t<IdxDistributionType,
                                   ValueDistribution> data_type;
     /**
      * Regular constructor
@@ -432,9 +420,7 @@ struct hash_transform_t <
     elem::DistMatrix<ValueType, elem::STAR, elem::STAR>,
     IdxDistributionType,
     ValueDistribution > :
-        public hash_transform_data_t<size_t,
-                                     ValueType,
-                                     IdxDistributionType,
+        public hash_transform_data_t<IdxDistributionType,
                                      ValueDistribution>,
         virtual public sketch_transform_t<elem::DistMatrix<ValueType, ColDist,
                                                            RowDist>,
@@ -448,9 +434,7 @@ struct hash_transform_t <
     typedef elem::DistMatrix<value_type, elem::STAR, elem::STAR> output_matrix_type;
     typedef IdxDistributionType<size_t> idx_distribution_type;
     typedef ValueDistribution<value_type> value_distribution_type;
-    typedef hash_transform_data_t<size_t,
-                                  ValueType,
-                                  IdxDistributionType,
+    typedef hash_transform_data_t<IdxDistributionType,
                                   ValueDistribution> data_type;
     /**
      * Regular constructor

@@ -22,15 +22,13 @@ struct dense_transform_t <
     InputType<ValueType>,
     elem::Matrix<ValueType>,
     ValueDistribution> :
-        public dense_transform_data_t<ValueType,
-                                      ValueDistribution> {
+        public dense_transform_data_t<ValueDistribution> {
 
     typedef ValueType value_type;
     typedef InputType<value_type> matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
     typedef ValueDistribution<value_type> value_distribution_type;
-    typedef dense_transform_data_t<ValueType,
-                                  ValueDistribution> data_type;
+    typedef dense_transform_data_t<ValueDistribution> data_type;
 
     /**
      * Regular constructor
@@ -51,8 +49,7 @@ struct dense_transform_t <
     /**
      * Constructor from data
      */
-    dense_transform_t(const dense_transform_data_t<value_type,
-                                            ValueDistribution>& other_data)
+    dense_transform_t(const dense_transform_data_t<ValueDistribution>& other_data)
         : data_type(other_data) {}
 
     /**
@@ -136,15 +133,13 @@ struct dense_transform_t <
     elem::DistMatrix<ValueType, ColDist, elem::STAR>,
     elem::Matrix<ValueType>,
     ValueDistribution > :
-        public dense_transform_data_t<ValueType,
-                                      ValueDistribution> {
+        public dense_transform_data_t<ValueDistribution> {
     // Typedef matrix and distribution types so that we can use them regularly
     typedef ValueType value_type;
     typedef elem::DistMatrix<value_type, ColDist, elem::STAR> matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
     typedef ValueDistribution<value_type> value_distribution_type;
-    typedef dense_transform_data_t<ValueType,
-                                  ValueDistribution> data_type;
+    typedef dense_transform_data_t<ValueDistribution> data_type;
 
     /**
      * Regular constructor
@@ -165,8 +160,7 @@ struct dense_transform_t <
     /**
      * Constructor from data
      */
-    dense_transform_t(const dense_transform_data_t<value_type,
-                                            ValueDistribution>& other_data)
+    dense_transform_t(const dense_transform_data_t<ValueDistribution>& other_data)
         : data_type(other_data) {}
 
     /**
@@ -310,15 +304,13 @@ struct dense_transform_t <
     elem::DistMatrix<ValueType, ColDist, elem::STAR>,
     elem::DistMatrix<ValueType, elem::STAR, elem::STAR>,
     ValueDistribution > :
-        public dense_transform_data_t<ValueType,
-                                      ValueDistribution> {
+        public dense_transform_data_t<ValueDistribution> {
     // Typedef matrix and distribution types so that we can use them regularly
     typedef ValueType value_type;
     typedef elem::DistMatrix<value_type, ColDist, elem::STAR> matrix_type;
     typedef elem::DistMatrix<value_type, elem::STAR, elem::STAR> output_matrix_type;
     typedef ValueDistribution<value_type> value_distribution_type;
-    typedef dense_transform_data_t<ValueType,
-                                  ValueDistribution> data_type;
+    typedef dense_transform_data_t<ValueDistribution> data_type;
 
     /**
      * Regular constructor
@@ -339,8 +331,7 @@ struct dense_transform_t <
     /**
      * Constructor from data
      */
-    dense_transform_t(const dense_transform_data_t<value_type,
-                                            ValueDistribution>& other_data)
+    dense_transform_t(const dense_transform_data_t<ValueDistribution>& other_data)
         : data_type(other_data) {}
 
     /**
@@ -477,16 +468,14 @@ struct dense_transform_t <
     elem::DistMatrix<ValueType, ColDist, elem::STAR>,
     elem::DistMatrix<ValueType, ColDist, elem::STAR>,
     ValueDistribution> :
-        public dense_transform_data_t<ValueType,
-                                      ValueDistribution> {
+        public dense_transform_data_t<ValueDistribution> {
     // Typedef matrix and distribution types so that we can use them regularly
     typedef ValueType value_type;
     typedef elem::DistMatrix<value_type, ColDist, elem::STAR> matrix_type;
     typedef elem::DistMatrix<value_type, ColDist, elem::STAR>
     output_matrix_type;
     typedef ValueDistribution<value_type> value_distribution_type;
-    typedef dense_transform_data_t<ValueType,
-                                   ValueDistribution> data_type;
+    typedef dense_transform_data_t<ValueDistribution> data_type;
 
     /**
      * Regular Constructor
@@ -507,8 +496,7 @@ struct dense_transform_t <
     /**
      * Constructor from data
      */
-    dense_transform_t(const dense_transform_data_t<value_type,
-                                            ValueDistribution>& other_data)
+    dense_transform_t(const dense_transform_data_t<ValueDistribution>& other_data)
         : data_type(other_data) {}
 
     /**
@@ -652,15 +640,13 @@ struct dense_transform_t <
     elem::DistMatrix<ValueType, elem::STAR, RowDist>,
     elem::Matrix<ValueType>,
     ValueDistribution > :
-        public dense_transform_data_t<ValueType,
-                                      ValueDistribution> {
+        public dense_transform_data_t<ValueDistribution> {
     // Typedef matrix and distribution types so that we can use them regularly
     typedef ValueType value_type;
     typedef elem::DistMatrix<value_type, elem::STAR, RowDist> matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
     typedef ValueDistribution<value_type> value_distribution_type;
-    typedef dense_transform_data_t<ValueType,
-                                  ValueDistribution> data_type;
+    typedef dense_transform_data_t<ValueDistribution> data_type;
 
     /**
      * Regular constructor
@@ -681,8 +667,7 @@ struct dense_transform_t <
     /**
      * Constructor from data
      */
-    dense_transform_t(const dense_transform_data_t<value_type,
-                                            ValueDistribution>& other_data)
+    dense_transform_t(const dense_transform_data_t<ValueDistribution>& other_data)
         : data_type(other_data) {}
 
     /**
@@ -858,16 +843,14 @@ struct dense_transform_t <
     elem::DistMatrix<ValueType, elem::STAR, RowDist>,
     elem::DistMatrix<ValueType, elem::STAR, RowDist>,
     ValueDistribution> :
-        public dense_transform_data_t<ValueType,
-                                      ValueDistribution> {
+        public dense_transform_data_t<ValueDistribution> {
     // Typedef matrix and distribution types so that we can use them regularly
     typedef ValueType value_type;
     typedef elem::DistMatrix<value_type, elem::STAR, RowDist> matrix_type;
     typedef elem::DistMatrix<value_type, elem::STAR, RowDist>
     output_matrix_type;
     typedef ValueDistribution<value_type> value_distribution_type;
-    typedef dense_transform_data_t<ValueType,
-                                   ValueDistribution> data_type;
+    typedef dense_transform_data_t<ValueDistribution> data_type;
 
     /**
      * Regular Constructor
@@ -888,8 +871,7 @@ struct dense_transform_t <
     /**
      * Constructor from data
      */
-    dense_transform_t(const dense_transform_data_t<value_type,
-                                            ValueDistribution>& other_data)
+    dense_transform_t(const dense_transform_data_t<ValueDistribution>& other_data)
         : data_type(other_data) {}
 
     /**
@@ -1033,16 +1015,14 @@ struct dense_transform_t <
     elem::DistMatrix<ValueType>,
     elem::Matrix<ValueType>,
     ValueDistribution> :
-        public dense_transform_data_t<ValueType,
-                                      ValueDistribution> {
+        public dense_transform_data_t<ValueDistribution> {
 
     // Typedef matrix and distribution types so that we can use them regularly
     typedef ValueType value_type;
     typedef elem::DistMatrix<value_type> matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
     typedef ValueDistribution<value_type> value_distribution_type;
-    typedef dense_transform_data_t<ValueType,
-                                   ValueDistribution> data_type;
+    typedef dense_transform_data_t<ValueDistribution> data_type;
 
     /**
      * Regular constructor
@@ -1063,8 +1043,7 @@ struct dense_transform_t <
     /**
      * Constructor from data
      */
-    dense_transform_t(const dense_transform_data_t<value_type,
-                                            ValueDistribution>& other_data)
+    dense_transform_t(const dense_transform_data_t<ValueDistribution>& other_data)
         : data_type(other_data) {}
 
     /**
@@ -1193,16 +1172,14 @@ struct dense_transform_t <
     elem::DistMatrix<ValueType>,
     elem::DistMatrix<ValueType>,
     ValueDistribution> :
-        public dense_transform_data_t<ValueType,
-                                      ValueDistribution> {
+        public dense_transform_data_t<ValueDistribution> {
 
     // Typedef matrix and distribution types so that we can use them regularly
     typedef ValueType value_type;
     typedef elem::DistMatrix<value_type> matrix_type;
     typedef elem::DistMatrix<value_type> output_matrix_type;
     typedef ValueDistribution<value_type> value_distribution_type;
-    typedef dense_transform_data_t<ValueType,
-                                   ValueDistribution> data_type;
+    typedef dense_transform_data_t<ValueDistribution> data_type;
 
     /**
      * Regular constructor

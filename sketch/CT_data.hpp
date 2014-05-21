@@ -16,13 +16,10 @@ namespace bstrand = boost::random;
  *
  * The CT is simply a dense random matrix with i.i.d Cauchy variables
  */
-template < typename ValueType>
 struct CT_data_t :
-   public dense_transform_data_t<ValueType,
-                                 bstrand::cauchy_distribution > {
+   public dense_transform_data_t<bstrand::cauchy_distribution> {
 
-    typedef dense_transform_data_t<ValueType,
-                                   bstrand::cauchy_distribution > base_t;
+    typedef dense_transform_data_t<bstrand::cauchy_distribution> base_t;
     /**
      * Constructor
      * Most of the work is done by base. Here just write scale
@@ -52,7 +49,6 @@ struct CT_data_t :
         boost::property_tree::ptree pt;
         sketch_transform_data_t::add_common(pt);
         pt.put("C", _C);
-        // TODO: serialize index_type and value_type?
         return pt;
     }
 

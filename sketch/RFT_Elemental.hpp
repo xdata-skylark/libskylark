@@ -20,15 +20,13 @@ struct RFT_t <
     InputType<ValueType>,
     elem::Matrix<ValueType>,
     KernelDistribution> :
-        public RFT_data_t<ValueType,
-                          KernelDistribution> {
+        public RFT_data_t<KernelDistribution> {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
     typedef InputType<value_type> matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
-    typedef RFT_data_t<ValueType,
-                       KernelDistribution> data_type;
+    typedef RFT_data_t<KernelDistribution> data_type;
 private:
     typedef skylark::sketch::dense_transform_t <matrix_type,
                                                 output_matrix_type,
@@ -178,16 +176,14 @@ struct RFT_t <
     elem::DistMatrix<ValueType, ColDist, elem::STAR>,
     elem::DistMatrix<ValueType, ColDist, elem::STAR>,
     KernelDistribution> :
-        public RFT_data_t<ValueType,
-                          KernelDistribution> {
+        public RFT_data_t<KernelDistribution> {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
     typedef elem::DistMatrix<value_type, ColDist, elem::STAR> matrix_type;
     typedef elem::DistMatrix<value_type,
                              ColDist, elem::STAR> output_matrix_type;
-    typedef RFT_data_t<ValueType,
-                       KernelDistribution> data_type;
+    typedef RFT_data_t<KernelDistribution> data_type;
 private:
     typedef skylark::sketch::dense_transform_t <matrix_type,
                                                 output_matrix_type,

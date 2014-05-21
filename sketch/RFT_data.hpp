@@ -23,14 +23,10 @@ namespace skylark { namespace sketch {
  * Random Features for Large-Scale Kernel Machines
  * NIPS 2007.
  */
-template <typename ValueType,
-          template <typename> class KernelDistribution>
+template <template <typename> class KernelDistribution>
 struct RFT_data_t : public sketch_transform_data_t {
 
-    typedef ValueType value_type;
-    typedef skylark::sketch::dense_transform_data_t<value_type,
-                                                    KernelDistribution>
-        underlying_data_type;
+    typedef dense_transform_data_t<KernelDistribution> underlying_data_type;
     typedef sketch_transform_data_t base_t;
 
     RFT_data_t (int N, int S, skylark::base::context_t& context)
@@ -71,33 +67,32 @@ protected:
         _underlying_data = new underlying_data_type(base_t::_N, base_t::_S,
             ctx);
 
-        const double pi = boost::math::constants::pi<value_type>();
-        boost::random::uniform_real_distribution<value_type>
+        const double pi = boost::math::constants::pi<double>();
+        boost::random::uniform_real_distribution<double>
             distribution(0, 2 * pi);
         _shifts = ctx.generate_random_samples_array(base_t::_S, distribution);
         return ctx;
     }
 
-    value_type _val_scale; /**< Bandwidth (sigma)  */
+    double _val_scale; /**< Bandwidth (sigma)  */
     underlying_data_type *_underlying_data;
     /**< Data of the underlying dense transformation */
-    const value_type _scale; /** Scaling for trigonometric factor */
-    std::vector<value_type> _shifts; /** Shifts for scaled trigonometric factor */
+    const double _scale; /** Scaling for trigonometric factor */
+    std::vector<double> _shifts; /** Shifts for scaled trigonometric factor */
 
 
 };
 
-template<typename ValueType>
 struct GaussianRFT_data_t :
-        public RFT_data_t<ValueType, bstrand::normal_distribution> {
+        public RFT_data_t<bstrand::normal_distribution> {
 
-    typedef RFT_data_t<ValueType, bstrand::normal_distribution > base_t;
+    typedef RFT_data_t<bstrand::normal_distribution > base_t;
 
     /**
      * Constructor
      * Most of the work is done by base. Here just write scale
      */
-    GaussianRFT_data_t(int N, int S, typename base_t::value_type sigma,
+    GaussianRFT_data_t(int N, int S, double sigma,
         skylark::base::context_t& context)
         : base_t(N, S, context, "GaussianRFT"), _sigma(sigma) {
         base_t::_val_scale = 1.0 / _sigma;
@@ -122,28 +117,26 @@ struct GaussianRFT_data_t :
         boost::property_tree::ptree pt;
         sketch_transform_data_t::add_common(pt);
         pt.put("sigma", _sigma);
-        // TODO: serialize index_type and value_type?
         return pt;
     }
 
 protected:
-    GaussianRFT_data_t(int N, int S, typename base_t::value_type sigma,
+    GaussianRFT_data_t(int N, int S, double sigma,
         const skylark::base::context_t& context, std::string type)
         : base_t(N, S, context, type), _sigma(sigma) {
         base_t::_val_scale = 1.0 / _sigma;
     }
 
 private:
-    const ValueType _sigma;
+    const double _sigma;
 };
 
-template<typename ValueType>
 struct LaplacianRFT_data_t :
-        public RFT_data_t<ValueType, bstrand::cauchy_distribution> {
+        public RFT_data_t<bstrand::cauchy_distribution> {
 
-    typedef RFT_data_t<ValueType, bstrand::cauchy_distribution > base_t;
+    typedef RFT_data_t<bstrand::cauchy_distribution > base_t;
 
-    LaplacianRFT_data_t(int N, int S, typename base_t::value_type sigma,
+    LaplacianRFT_data_t(int N, int S, double sigma,
         skylark::base::context_t& context)
         : base_t(N, S, context, "LaplacianRFT"), _sigma(sigma) {
         base_t::_val_scale = 1.0 / sigma;
@@ -168,20 +161,19 @@ struct LaplacianRFT_data_t :
         boost::property_tree::ptree pt;
         sketch_transform_data_t::add_common(pt);
         pt.put("sigma", _sigma);
-        // TODO: serialize index_type and value_type?
         return pt;
     }
 
 protected:
 
-    LaplacianRFT_data_t(int N, int S, typename base_t::value_type sigma,
+    LaplacianRFT_data_t(int N, int S, double sigma,
         const skylark::base::context_t& context, std::string type)
         : base_t(N, S, context, type), _sigma(sigma) {
         base_t::_val_scale = 1.0 / _sigma;
     }
 
 private:
-    const ValueType _sigma;
+    const double _sigma;
 };
 
 } } /** namespace skylark::sketch */

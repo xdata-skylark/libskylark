@@ -19,14 +19,11 @@ namespace skylark { namespace sketch {
  * CWT was additionally analyzed by Meng and Mahoney (STOC'13) and is equivalent
  * to OSNAP with s=1.
  */
-template<typename IndexType, typename ValueType>
 struct CWT_data_t : public hash_transform_data_t<
-    IndexType, ValueType,
     boost::random::uniform_int_distribution,
     utility::rademacher_distribution_t > {
 
     typedef hash_transform_data_t<
-        IndexType, ValueType,
         boost::random::uniform_int_distribution,
         utility::rademacher_distribution_t > base_t;
 
@@ -51,7 +48,6 @@ struct CWT_data_t : public hash_transform_data_t<
     boost::property_tree::ptree to_ptree() const {
         boost::property_tree::ptree pt;
         sketch_transform_data_t::add_common(pt);
-        // TODO: serialize index_type and value_type?
         return pt;
     }
 

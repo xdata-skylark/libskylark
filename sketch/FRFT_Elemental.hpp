@@ -20,13 +20,13 @@ template <typename ValueType,
 struct FastRFT_t <
     InputType<ValueType>,
     elem::Matrix<ValueType> > :
-        public FastRFT_data_t<ValueType> {
+        public FastRFT_data_t {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
     typedef InputType<value_type> matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
-    typedef FastRFT_data_t<ValueType> data_type;
+    typedef FastRFT_data_t data_type;
 
 public:
 

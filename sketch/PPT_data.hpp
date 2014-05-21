@@ -21,7 +21,6 @@ namespace skylark { namespace sketch {
  * Fast and Scalable Polynomial Kernels via Explicit Feature Maps
  * KDD 2013
  */
-template <typename ValueType>
 struct PPT_data_t : public sketch_transform_data_t {
 
     typedef sketch_transform_data_t base_t;
@@ -57,7 +56,6 @@ struct PPT_data_t : public sketch_transform_data_t {
         pt.put("q", _q);
         pt.put("c", _c);
         pt.put("gamma", _gamma);
-        // TODO: serialize index_type and value_type?
         return pt;
     }
 
@@ -70,17 +68,16 @@ protected:
 
     }
 
-    typedef CWT_data_t<size_t, ValueType> _CWT_data_t;
-
     base::context_t build() {
 
         base::context_t ctx = base_t::build();
 
         for(int i = 0; i < _q; i++)
             _cwts_data.push_back(
-                 _CWT_data_t(base_t::_N, base_t::_S, ctx));
+                 CWT_data_t(base_t::_N, base_t::_S, ctx));
 
-        boost::random::uniform_int_distribution<int> distidx(0, base_t::_S - 1);
+        boost::random::uniform_int_distribution<size_t>
+            distidx(0, base_t::_S - 1);
         _hash_idx = ctx.generate_random_samples_array(_q, distidx);
 
         utility::rademacher_distribution_t<double> distval;
@@ -94,10 +91,10 @@ protected:
     const double _gamma;
 
     // Hashing info for the homogenity parameter c
-    std::vector<int> _hash_idx;
+    std::vector<size_t> _hash_idx;
     std::vector<double> _hash_val;
 
-    std::list< _CWT_data_t > _cwts_data;
+    std::list< CWT_data_t > _cwts_data;
 };
 
 } } /** namespace skylark::sketch */

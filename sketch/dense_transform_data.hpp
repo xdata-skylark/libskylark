@@ -19,14 +19,13 @@ namespace skylark { namespace sketch {
  * holds the input and sketched matrix sizes and the array of samples
  * to be lazily computed.
  */
-template <typename ValueType,
-          template <typename> class ValueDistribution>
+template <template <typename> class ValueDistribution>
 struct dense_transform_data_t : public sketch_transform_data_t {
     typedef sketch_transform_data_t base_t;
 
-    // For reasons of naming consistency
-    typedef ValueType value_type;
-    typedef ValueDistribution<ValueType> value_distribution_type;
+    // Note: we always generate doubles for array values,
+    // but when applying to floats the size can be reduced.
+    typedef ValueDistribution<double> value_distribution_type;
 
     /**
      * Regular constructor

@@ -23,23 +23,20 @@ namespace skylark { namespace sketch {
  *      you want more than one.
  */
 
-#define _SL_HTBASE hash_transform_t< InputMatrixType, OutputMatrixType, \
-                                     boost::random::uniform_int_distribution, \
-                                     boost::random::exponential_distribution >
 template < typename InputMatrixType,
            typename OutputMatrixType = InputMatrixType >
 struct WZT_t :
-        public WZT_data_t< typename _SL_HTBASE::index_type,
-                           typename _SL_HTBASE::value_type >,
+        public WZT_data_t,
         virtual public sketch_transform_t<InputMatrixType, OutputMatrixType > {
 
 public:
 
     // We use composition to defer calls to hash_transform_t
-    typedef _SL_HTBASE transform_t;
+    typedef hash_transform_t< InputMatrixType, OutputMatrixType,
+                              boost::random::uniform_int_distribution,
+                              boost::random::exponential_distribution > transform_t;
 
-    typedef WZT_data_t< typename _SL_HTBASE::index_type,
-                        typename _SL_HTBASE::value_type > data_type;
+    typedef WZT_data_t data_type;
 
     /**
      * Regular constructor
@@ -98,8 +95,6 @@ public:
 private:
     transform_t _transform;
 };
-
-#undef _SL_HTBASE
 
 } } /** namespace skylark::sketch */
 

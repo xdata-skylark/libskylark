@@ -16,11 +16,9 @@ namespace skylark { namespace sketch {
  * This is the base data class for RFUT transform. Essentially, it
  * holds the input and sketched matrix sizes and the random diagonal part.
  */
-template <typename ValueType,
-          typename ValueDistributionType>
+template <typename ValueDistributionType>
 struct RFUT_data_t {
     // Only for consistency reasons
-    typedef ValueType value_type;
     typedef ValueDistributionType value_distribution_type;
 
     /**
@@ -40,8 +38,7 @@ protected:
     /// Store the context on creation for serialization
     const base::context_t _creation_context;
 
-    std::vector<value_type> D; /**< Diagonal part */
-
+    std::vector<double> D; /**< Diagonal part */
 
     base::context_t build() {
         base::context_t ctx = _creation_context;

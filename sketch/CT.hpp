@@ -16,9 +16,7 @@ namespace bstrand = boost::random;
 template < typename InputMatrixType,
            typename OutputMatrixType = InputMatrixType >
 struct CT_t :
-  public CT_data_t<typename
-    dense_transform_t<InputMatrixType, OutputMatrixType,
-                      bstrand::cauchy_distribution >::value_type >,
+  public CT_data_t,
   virtual public sketch_transform_t<InputMatrixType, OutputMatrixType > {
 
 
@@ -26,7 +24,7 @@ struct CT_t :
     typedef dense_transform_t<InputMatrixType, OutputMatrixType,
                                bstrand::cauchy_distribution > transform_t;
 
-    typedef CT_data_t<typename transform_t::value_type> data_type;
+    typedef CT_data_t data_type;
 
 
     /**

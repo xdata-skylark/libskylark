@@ -17,24 +17,20 @@ namespace skylark { namespace sketch {
  * See Meng and Mahoney's STOC'13 paper.
  */
 
-#define _SL_HTBASE hash_transform_t< InputMatrixType, OutputMatrixType, \
-                                     boost::random::uniform_int_distribution, \
-                                     boost::random::cauchy_distribution >
-
 template < typename InputMatrixType,
            typename OutputMatrixType = InputMatrixType >
 struct MMT_t :
-        public MMT_data_t< typename _SL_HTBASE::index_type,
-                           typename _SL_HTBASE::value_type >,
+        public MMT_data_t,
         virtual public sketch_transform_t<InputMatrixType, OutputMatrixType > {
 
 public:
 
     // We use composition to defer calls to hash_transform_t
-    typedef _SL_HTBASE transform_t;
+    typedef hash_transform_t< InputMatrixType, OutputMatrixType,
+                              boost::random::uniform_int_distribution,
+                              boost::random::cauchy_distribution> transform_t;
 
-    typedef MMT_data_t< typename _SL_HTBASE::index_type,
-                        typename _SL_HTBASE::value_type > data_type;
+    typedef MMT_data_t data_type;
 
     /**
      * Regular constructor

@@ -32,9 +32,7 @@ class RFT_t {
 template< typename InputMatrixType,
           typename OutputMatrixType>
 struct GaussianRFT_t :
-    public GaussianRFT_data_t<typename
-      RFT_t<InputMatrixType, OutputMatrixType,
-            bstrand::normal_distribution >::value_type >,
+    public GaussianRFT_data_t,
     virtual public sketch_transform_t<InputMatrixType, OutputMatrixType > {
 
 
@@ -42,9 +40,7 @@ struct GaussianRFT_t :
     typedef RFT_t<InputMatrixType, OutputMatrixType,
                   bstrand::normal_distribution > transform_t;
 
-    typedef GaussianRFT_data_t<typename
-      RFT_t<InputMatrixType, OutputMatrixType,
-            bstrand::normal_distribution >::value_type > data_type;
+    typedef GaussianRFT_data_t data_type;
 
     /**
      * Regular constructor
@@ -112,9 +108,7 @@ private:
 template< typename InputMatrixType,
           typename OutputMatrixType>
 struct LaplacianRFT_t :
-    public LaplacianRFT_data_t<typename
-      RFT_t<InputMatrixType, OutputMatrixType,
-            bstrand::cauchy_distribution >::value_type >,
+    public LaplacianRFT_data_t,
     virtual public sketch_transform_t<InputMatrixType, OutputMatrixType > {
 
 
@@ -122,9 +116,7 @@ struct LaplacianRFT_t :
     typedef RFT_t<InputMatrixType, OutputMatrixType,
                   bstrand::cauchy_distribution > transform_t;
 
-    typedef LaplacianRFT_data_t<typename
-      RFT_t<InputMatrixType, OutputMatrixType,
-            bstrand::cauchy_distribution >::value_type > data_type;
+    typedef LaplacianRFT_data_t data_type;
 
     /**
      * Regular constructor

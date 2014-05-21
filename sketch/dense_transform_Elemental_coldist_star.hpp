@@ -200,7 +200,7 @@ private:
         elem::DistMatrix<value_type, elem::STAR, elem::STAR>
             sketch_of_A_STAR_STAR(grid);
 
-        base_data_t::realize_matrix_view(R);
+        data_type::realize_matrix_view(R);
 
         // TODO: is alignment necessary?
 
@@ -370,7 +370,7 @@ private:
         // TODO: is alignment necessary?
         sketch_of_A_STAR_STAR.AlignWith(A);
 
-        base_data_t::realize_matrix_view(R);
+        data_type::realize_matrix_view(R);
 
         // Local Gemm
         base::Gemm(elem::NORMAL,

@@ -92,124 +92,34 @@ private:
 
 #ifdef HP_DENSE_TRANSFORM_ELEMENTAL_STAR_ROWDIST
 
-    // Communication demanding scenario
-    // TODO: Adapt from [MC, MR]
+    // Communication demanding scenario: Memory-oblivious mode
+    // TODO: Block-by-block mode
     void inner_panel_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::rowwise_tag) const {
 
         const elem::Grid& grid = A.Grid();
 
-        elem::DistMatrix<value_type, elem::VR, elem::STAR> R1(grid);
-        elem::DistMatrix<value_type>
-            A_Top(grid),
-            A_Bottom(grid),
-            A0(grid),
-            A1(grid),
-            A2(grid);
-        elem::DistMatrix<value_type>
-            sketch_of_A_Left(grid),
-            sketch_of_A_Right(grid),
-            sketch_of_A0(grid),
-            sketch_of_A1(grid),
-            sketch_of_A2(grid),
-            sketch_of_A1_Top(grid),
-            sketch_of_A1_Bottom(grid),
-            sketch_of_A10(grid),
-            sketch_of_A11(grid),
-            sketch_of_A12(grid);
-        elem::DistMatrix<value_type, elem::STAR, elem::VR>
-            A1_STAR_VR(grid);
+        elem::DistMatrix<value_type, RowDist, elem::STAR> R(grid);
         elem::DistMatrix<value_type, elem::STAR, elem::STAR>
-            sketch_of_A11_STAR_STAR(grid);
+            sketch_of_A_STAR_STAR(grid);
 
-        int base = 0;
+        data_type::realize_matrix_view(R);
 
-        elem::PartitionRight
-        ( sketch_of_A,
-          sketch_of_A_Left, sketch_of_A_Right, 0 );
+        // TODO: is alignment necessary?
 
-        // TODO: Allow for different blocksizes in Down and Right partitionings
-        // TODO: Should it be sketch_of_A_Right.Width()?
-        while (sketch_of_A_Left.Width() > 0) {
-            int b = get_blocksize();
+        // Local Gemm
+        base::Gemm(elem::NORMAL,
+                   elem::NORMAL,
+                   value_type(1),
+                   A.LockedMatrix(),
+                   R.LockedMatrix(),
+                   value_type(0),
+                   sketch_of_A_STAR_STAR.Matrix());
 
-            base_data_t::realize_matrix_view(R1, 0, base, A.Width(), b);
-
-            elem::RepartitionRight
-            ( sketch_of_A_Left, /**/               sketch_of_A_Right,
-              sketch_of_A0,     /**/ sketch_of_A1, sketch_of_A2,      b );
-
-
-            // TODO: is alignment necessary?
-            A1_STAR_VR.AlignWith(R1);
-
-            elem::LockedPartitionDown
-            ( A,
-              A_Top, A_Bottom, 0 );
-
-            elem::PartitionDown
-            ( sketch_of_A1,
-              sketch_of_A1_Top, sketch_of_A1_Bottom, 0 );
-
-            while(A_Bottom.Height() > 0) {
-
-                elem::LockedRepartitionDown
-                ( A_Top,    A0,
-                  /**/      /**/
-                            A1,
-                  A_Bottom, A2, b );
-
-                elem::RepartitionDown
-                ( sketch_of_A1_Top,    sketch_of_A10,
-                  /**/                 /**/
-                                       sketch_of_A11,
-                  sketch_of_A1_Bottom, sketch_of_A12, b );
-
-                // [MC, MR] -> [STAR, VR]:
-                // TODO: Describe the communication pattern
-                A1_STAR_VR = A1;
-
-                elem::LocalGemm(elem::NORMAL,
-                                elem::NORMAL,
-                                value_type(1),
-                                A1_STAR_VR,
-                                R1,
-                                sketch_of_A11_STAR_STAR);
-
-                // [MC, MR].sum-scatter-update([STAR, STAR]):
-                // - sum all [STAR, STAR] matrices over the entire process grid
-                // - scatter to form [MC, MR]
-                // DONE: Should it be SumScatterFrom() in Elemental-0.81?
-                // DONE: Replace with Elemental-0.83 equivalent
-                sketch_of_A11.SumScatterUpdate(value_type(1),
-                    sketch_of_A11_STAR_STAR);
-
-                elem::SlideLockedPartitionDown
-                ( A_Top,    A0,
-                            A1,
-                  /**/      /**/
-                  A_Bottom, A2 );
-
-                elem::SlidePartitionDown
-                ( sketch_of_A1_Top,    sketch_of_A10,
-                                       sketch_of_A11,
-                  /**/                 /**/
-                  sketch_of_A1_Bottom, sketch_of_A12 );
-
-
-            }
-
-            // TODO: "added b" should be the min(b, dimension - base)?
-            base = base + b;
-
-            elem::SlidePartitionRight
-            ( sketch_of_A_Left,               /**/ sketch_of_A_Right,
-              sketch_of_A0,     sketch_of_A1, /**/ sketch_of_A2 );
-
-
-
-        }
+        // Reduce-scatter within process grid
+        sketch_of_A.SumScatterUpdate(value_type(1),
+                    sketch_of_A_STAR_STAR);
     }
 
 
@@ -306,63 +216,36 @@ private:
     }
 
 
-    // Communication demanding scenario
-    // TODO: Adapt from [MC, MR]
+    // Communication demanding scenario: Memory-oblivious mode
+    // TODO: Block-by-block mode
     void outer_panel_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::rowwise_tag) const {
 
         const elem::Grid& grid = A.Grid();
 
-        elem::DistMatrix<value_type, elem::STAR, elem::MR> R1(grid);
-        elem::DistMatrix<value_type>
-            A_Left(grid),
-            A_Right(grid),
-            A0(grid),
-            A1(grid),
-            A2(grid);
-        elem::DistMatrix<value_type, elem::MC, elem::STAR>
-            A1_MC_STAR(grid);
+        elem::DistMatrix<value_type, elem::STAR, RowDist> R(grid);
+        elem::DistMatrix<value_type, elem::STAR, elem::STAR>
+            A_STAR_STAR(grid);
 
         // TODO: are alignments necessary?
-        R1.AlignWith(sketch_of_A);
-        A1_MC_STAR.AlignWith(sketch_of_A);
+        R.AlignWith(sketch_of_A);
+        A_STAR_STAR.AlignWith(sketch_of_A);
 
-        int base = 0;
-        elem::LockedPartitionRight
-        ( A,
-          A_Left, A_Right, 0 );
+        data_type::realize_matrix_view(R);
 
-        while (A_Right.Width() > 0) {
-            int b = get_blocksize();
+        // Allgather within process grid
+        A_STAR_STAR = A;
 
-            base_data_t::realize_matrix_view(R1, 0, base, A.Height(), b);
+        // Local Gemm
+        base::Gemm(elem::NORMAL,
+                   elem::NORMAL,
+                   value_type(1),
+                   A.LockedMatrix(),
+                   R.LockedMatrix(),
+                   value_type(0),
+                   sketch_of_A.Matrix());
 
-            elem::RepartitionRight
-            ( A_Left, /**/      A_Right,
-              A0,     /**/ A1,  A2,      b );
-
-
-            // [MC, MR] -> [MC, STAR]:
-            // TODO: Describe the communication pattern
-            A1_MC_STAR = A1;
-
-            elem::LocalGemm(elem::NORMAL,
-                            elem::NORMAL,
-                            value_type(1),
-                            A1_MC_STAR,
-                            R1,
-                            value_type(1),
-                            sketch_of_A);
-
-            // TODO: "added b" should be the min(b, dimension - base)?
-            base = base + b;
-
-            elem::SlidePartitionRight
-            ( A_Left,     /**/ A_Right,
-              A0,     A1, /**/ A2 );
-
-        }
     }
 
 
@@ -420,70 +303,36 @@ private:
     }
 
 
-    // Communication demanding scenario
-    // TODO: Adapt from [MC, MR]
+    // Communication demanding scenario: Memory-oblivious mode
+    // TODO: Block-by-block mode
     void matrix_panel_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::rowwise_tag) const {
 
         const elem::Grid& grid = A.Grid();
 
-        elem::DistMatrix<value_type, elem::MR, elem::STAR> R1(grid);
-        elem::DistMatrix<value_type>
-            sketch_of_A_Left(grid),
-            sketch_of_A_Right(grid),
-            sketch_of_A0(grid),
-            sketch_of_A1(grid),
-            sketch_of_A2(grid);
-        elem::DistMatrix<value_type, elem::MC, elem::STAR>
-            sketch_of_A_temp(grid);
+        elem::DistMatrix<value_type, RowDist, elem::STAR> R(grid);
+        elem::DistMatrix<value_type, elem::STAR, elem::STAR>
+            sketch_of_A_STAR_STAR(grid);
 
         // TODO: are alignments necessary?
         R1.AlignWith(sketch_of_A);
-        sketch_of_A_temp.AlignWith(sketch_of_A);
+        sketch_of_A_STAR_STAR.AlignWith(sketch_of_A);
 
-        int base = 0;
+        data_type::realize_matrix_view(R);
 
-        elem::PartitionRight
-        ( sketch_of_A,
-          sketch_of_A_Left, sketch_of_A_Right, 0 );
+        // Local Gemm
+        base::Gemm(elem::NORMAL,
+                   elem::NORMAL,
+                   value_type(1),
+                   A.LockedMatrix(),
+                   R.LockedMatrix(),
+                   value_type(0),
+                   sketch_of_A_STAR_STAR.Matrix());
 
-
-        while (sketch_of_A_Right.Width() > 0) {
-            int b = get_blocksize();
-
-            // TODO: should it be A.Width() instead of A.Height()?
-            base_data_t::realize_matrix_view(R1, 0, base, A.Height(), b);
-
-            elem::RepartitionRight
-            ( sketch_of_A_Left, /**/               sketch_of_A_Right,
-              sketch_of_A0,     /**/ sketch_of_A1, sketch_of_A2,      b );
-
-
-            // TODO: Check
-            elem::LocalGemm(elem::NORMAL,
-                            elem::NORMAL,
-                            value_type(1),
-                            A,
-                            R1,
-                            sketch_of_A_temp);
-
-            // TODO: Shoud we add the following command?
-            // TODO: Describe the effect of
-            //       [MC, MR].sum-scatter-update([MC, STAR]):
-            //       sum over row communicators and keep subset of values?
-            // DONE: Check/substitute proper Elemental-0.83 equivalent
-            sketch_of_A1.RowSumScatterUpdate(value_type(1),
-                sketch_of_A_temp);
-
-            // TODO: "added b" should be the min(b, dimension - base)?
-            base = base + b;
-
-            elem::SlidePartitionRight
-            ( sketch_of_A_Left,               /**/ sketch_of_A_Right,
-              sketch_of_A0,     sketch_of_A1, /**/ sketch_of_A2 );
-
-        }
+        // Reduce-scatter within process grid
+        sketch_of_A.SumScatterUpdate(value_type(1),
+                sketch_of_A_STAR_STAR);
     }
 
 

@@ -47,20 +47,31 @@ struct WZT_data_t : public hash_transform_data_t<
         context = build();
     }
 
-    WZT_data_t(const boost::property_tree::ptree &sketch)
-        : base_t(sketch, true),
-        _P(sketch.get<double>("sketch.p")) {
 
-        build();
+    WZT_data_t(const boost::property_tree::ptree &pt) :
+        base_t(pt.get<int>("N"), pt.get<int>("S"),
+            base::context_t(pt.get_child("creation_context")), "WZT"),
+        _P(pt.get<double>("P")) {
+
+        base_t::build();
     }
 
-    template <typename IndexT, typename ValueT>
-    friend boost::property_tree::ptree& operator<<(
-            boost::property_tree::ptree &sk,
-            const WZT_data_t<IndexT, ValueT> &data);
+    /**
+     *  Serializes a sketch to a string.
+     *
+     *  @param[out] property_tree describing the sketch.
+     */
+    virtual
+    boost::property_tree::ptree to_ptree() const {
+        boost::property_tree::ptree pt;
+        sketch_transform_data_t::add_common(pt);
+        pt.put("P", _P);
+        // TODO: serialize index_type and value_type?
+        return pt;
+    }
 
 protected:
-    WZT_data_t(int N, int S, double p, skylark::base::context_t& context,
+    WZT_data_t(int N, int S, double p, const skylark::base::context_t& context,
         std::string type)
         : base_t(N, S, context, type), _P(p) {
 
@@ -69,12 +80,6 @@ protected:
             SKYLARK_THROW_EXCEPTION (
                 base::sketch_exception()
                     << base::error_msg("WZT parameter p has to be in (1, 2)") );
-    }
-
-    WZT_data_t(const boost::property_tree::ptree &sketch, bool nobuild)
-        : base_t(sketch, true),
-        _P(sketch.get<double>("sketch.p")) {
-
     }
 
 private:
@@ -98,16 +103,6 @@ private:
         return ctx;
     }
 };
-
-template <typename IndexType, typename ValueType>
-boost::property_tree::ptree& operator<<(
-        boost::property_tree::ptree &sk,
-        const WZT_data_t<IndexType, ValueType> &data) {
-
-    sk << static_cast<const sketch_transform_data_t&>(data);
-    sk.put("sketch.p", data._P);
-    return sk;
-}
 
 } } /** namespace skylark::sketch */
 

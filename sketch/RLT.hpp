@@ -55,6 +55,11 @@ struct ExpSemigroupRLT_t :
 
     }
 
+    ExpSemigroupRLT_t(const boost::property_tree::ptree &pt)
+        : data_type(pt), _transform(*this) {
+
+    }
+
     /**
      * Copy constructor
      */

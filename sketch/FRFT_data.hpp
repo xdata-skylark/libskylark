@@ -44,8 +44,10 @@ struct FastRFT_data_t : public sketch_transform_data_t {
         context = build();
     }
 
-    FastRFT_data_t (boost::property_tree::ptree &json)
-        : base_t(json, true), _NB(base_t::_N),
+    FastRFT_data_t (const boost::property_tree::ptree &pt)
+        : base_t(pt.get<int>("N"), pt.get<int>("S"),
+            base::context_t(pt.get_child("creation_context")), "FastRFT"),
+          _NB(base_t::_N),
           numblks(1 + ((base_t::_S - 1) / _NB)),
           scale(std::sqrt(2.0 / base_t::_S)),
           Sm(numblks * _NB)  {
@@ -53,18 +55,24 @@ struct FastRFT_data_t : public sketch_transform_data_t {
          build();
     }
 
-protected:
-    FastRFT_data_t (int N, int S, skylark::base::context_t& context,
-        std::string type)
-        : base_t(N, S, context, type), _NB(N),
-          numblks(1 + ((base_t::_S - 1) / _NB)),
-          scale(std::sqrt(2.0 / base_t::_S)),
-          Sm(numblks * _NB)  {
-
+    /**
+     *  Serializes a sketch to a string.
+     *
+     *  @param[out] property_tree describing the sketch.
+     */
+    virtual
+    boost::property_tree::ptree to_ptree() const {
+        boost::property_tree::ptree pt;
+        sketch_transform_data_t::add_common(pt);
+        // TODO: serialize index_type and value_type?
+        return pt;
     }
 
-    FastRFT_data_t (boost::property_tree::ptree &json, bool nobuild)
-        : base_t(json), _NB(base_t::_N),
+
+protected:
+    FastRFT_data_t (int N, int S, const skylark::base::context_t& context,
+        std::string type)
+        : base_t(N, S, context, type), _NB(N),
           numblks(1 + ((base_t::_S - 1) / _NB)),
           scale(std::sqrt(2.0 / base_t::_S)),
           Sm(numblks * _NB)  {
@@ -144,51 +152,42 @@ struct FastGaussianRFT_data_t :
         context = base_t::build();
     }
 
-    FastGaussianRFT_data_t(boost::property_tree::ptree &json)
-        : base_t(json, true),
-        _sigma(json.get<value_type>("sketch.sigma")) {
+    FastGaussianRFT_data_t(boost::property_tree::ptree &pt) :
+        base_t(pt.get<int>("N"), pt.get<int>("S"),
+            base::context_t(pt.get_child("creation_context")), "FastGaussianRFT"),
+        _sigma(pt.get<double>("sigma")) {
 
         std::fill(base_t::Sm.begin(), base_t::Sm.end(),
                 1.0 / (_sigma * std::sqrt(base_t::_N)));
         base_t::build();
     }
 
-    template <typename ValueT>
-    friend boost::property_tree::ptree& operator<<(
-        boost::property_tree::ptree &sk,
-        const FastGaussianRFT_data_t<ValueT> &data);
+    /**
+     *  Serializes a sketch to a string.
+     *
+     *  @param[out] property_tree describing the sketch.
+     */
+    virtual
+    boost::property_tree::ptree to_ptree() const {
+        boost::property_tree::ptree pt;
+        sketch_transform_data_t::add_common(pt);
+        pt.put("sigma", _sigma);
+        // TODO: serialize index_type and value_type?
+        return pt;
+    }
 
 protected:
     FastGaussianRFT_data_t(int N, int S, value_type sigma,
-        skylark::base::context_t& context, bool nobuild)
-        : base_t(N, S, context, "FastGaussianRFT", true), _sigma(sigma) {
+        const skylark::base::context_t& context, std::string type)
+        : base_t(N, S, context, type), _sigma(sigma) {
 
         std::fill(base_t::Sm.begin(), base_t::Sm.end(),
                 1.0 / (_sigma * std::sqrt(base_t::_N)));
     }
-
-    FastGaussianRFT_data_t(boost::property_tree::ptree &json, bool nobuild)
-        : base_t(json, true),
-        _sigma(json.get<value_type>("sketch.sigma")) {
-
-        std::fill(base_t::Sm.begin(), base_t::Sm.end(),
-                1.0 / (_sigma * std::sqrt(base_t::_N)));
-    }
-
 
     const value_type _sigma; /**< Bandwidth (sigma)  */
 
 };
-
-template <typename ValueType>
-boost::property_tree::ptree& operator<<(
-        boost::property_tree::ptree &sk,
-        const FastGaussianRFT_data_t<ValueType> &data) {
-
-    sk << static_cast<const sketch_transform_data_t&>(data);
-    sk.put("sketch.sigma", data._sigma);
-    return sk;
-}
 
 } } /** namespace skylark::sketch */
 

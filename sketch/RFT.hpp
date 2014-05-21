@@ -54,6 +54,11 @@ struct GaussianRFT_t :
 
     }
 
+    GaussianRFT_t(const boost::property_tree::ptree &pt)
+        : data_type(pt), _transform(*this) {
+
+    }
+
     /**
      * Copy constructor
      */
@@ -126,6 +131,11 @@ struct LaplacianRFT_t :
      */
     LaplacianRFT_t(int N, int S, double sigma, base::context_t& context)
         : data_type(N, S, sigma, context), _transform(*this) {
+
+    }
+
+    LaplacianRFT_t(const boost::property_tree::ptree &pt)
+        : data_type(pt), _transform(*this) {
 
     }
 

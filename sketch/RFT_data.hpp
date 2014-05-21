@@ -41,38 +41,26 @@ struct RFT_data_t : public sketch_transform_data_t {
         context = build();
     }
 
-    RFT_data_t (boost::property_tree::ptree &json)
-        : base_t(json), _val_scale(1),
-          _underlying_data(nullptr),
-          _scale(std::sqrt(2.0 / base_t::_S)) {
+    virtual
+    boost::property_tree::ptree to_ptree() const {
+        SKYLARK_THROW_EXCEPTION (
+          base::sketch_exception()
+              << base::error_msg(
+                 "Do not yet support serialization of generic RFT transform"));
 
-        build();
+        return boost::property_tree::ptree();
     }
 
     virtual ~RFT_data_t() {
         delete _underlying_data;
     }
 
-    template <typename ValueT,
-              template <typename> class KernelDist>
-    friend boost::property_tree::ptree& operator<<(
-        boost::property_tree::ptree &sk,
-        const RFT_data_t<ValueT, KernelDist> &data);
-
-
 protected:
-    RFT_data_t (int N, int S, skylark::base::context_t& context,
+    RFT_data_t (int N, int S, const skylark::base::context_t& context,
         std::string type)
         : base_t(N, S, context, type), _val_scale(1),
           _underlying_data(nullptr),
           _scale(std::sqrt(2.0 / S)) {
-
-    }
-
-    RFT_data_t (boost::property_tree::ptree &json, bool nobuild)
-        : base_t(json), _val_scale(1),
-          _underlying_data(nullptr),
-          _scale(std::sqrt(2.0 / base_t::_S)) {
 
     }
 
@@ -99,17 +87,6 @@ protected:
 
 };
 
-template <typename ValueType,
-          template <typename> class KernelDistribution>
-boost::property_tree::ptree& operator<<(
-        boost::property_tree::ptree &sk,
-        const RFT_data_t<ValueType, KernelDistribution> &data) {
-
-    sk << static_cast<const sketch_transform_data_t&>(data);
-    sk.put("sketch.val_scale", data._val_scale);
-    return sk;
-}
-
 template<typename ValueType>
 struct GaussianRFT_data_t :
         public RFT_data_t<ValueType, bstrand::normal_distribution> {
@@ -123,45 +100,42 @@ struct GaussianRFT_data_t :
     GaussianRFT_data_t(int N, int S, typename base_t::value_type sigma,
         skylark::base::context_t& context)
         : base_t(N, S, context, "GaussianRFT"), _sigma(sigma) {
-        base_t::_val_scale = 1.0 / sigma;
+        base_t::_val_scale = 1.0 / _sigma;
         context = base_t::build();
     }
 
-    GaussianRFT_data_t(boost::property_tree::ptree &json)
-        : base_t(json, true), _sigma(json.get<ValueType>("sketch.sigma")) {
+    GaussianRFT_data_t(const boost::property_tree::ptree &pt) :
+        base_t(pt.get<int>("N"), pt.get<int>("S"),
+            base::context_t(pt.get_child("creation_context")), "GaussianRFT"),
+        _sigma(pt.get<double>("sigma")) {
         base_t::_val_scale = 1.0 / _sigma;
         base_t::build();
     }
 
-    template <typename ValueT>
-    friend boost::property_tree::ptree& operator<<(
-            boost::property_tree::ptree &sk,
-            const GaussianRFT_data_t<ValueT> &data);
+    /**
+     *  Serializes a sketch to a string.
+     *
+     *  @param[out] property_tree describing the sketch.
+     */
+    virtual
+    boost::property_tree::ptree to_ptree() const {
+        boost::property_tree::ptree pt;
+        sketch_transform_data_t::add_common(pt);
+        pt.put("sigma", _sigma);
+        // TODO: serialize index_type and value_type?
+        return pt;
+    }
 
 protected:
     GaussianRFT_data_t(int N, int S, typename base_t::value_type sigma,
-        skylark::base::context_t& context, std::string type)
+        const skylark::base::context_t& context, std::string type)
         : base_t(N, S, context, type), _sigma(sigma) {
-        base_t::_val_scale = 1.0 / sigma;
-    }
-
-    GaussianRFT_data_t(boost::property_tree::ptree &json, bool nobuild)
-        : base_t(json, true), _sigma(json.get<ValueType>("sketch.sigma")) {
         base_t::_val_scale = 1.0 / _sigma;
     }
 
+private:
     const ValueType _sigma;
 };
-
-template <typename ValueType>
-boost::property_tree::ptree& operator<<(boost::property_tree::ptree &sk,
-                                        const GaussianRFT_data_t<ValueType> &data) {
-
-    sk << static_cast<const typename GaussianRFT_data_t<ValueType>::base_t&>(data);
-    sk.put("sketch.sigma", data._sigma);
-    return sk;
-}
-
 
 template<typename ValueType>
 struct LaplacianRFT_data_t :
@@ -176,41 +150,39 @@ struct LaplacianRFT_data_t :
         context = base_t::build();
     }
 
-    LaplacianRFT_data_t(boost::property_tree::ptree &json)
-        : base_t(json, true), _sigma(json.get<ValueType>("sketch.sigma")) {
+    LaplacianRFT_data_t(const boost::property_tree::ptree &pt) :
+        base_t(pt.get<int>("N"), pt.get<int>("S"),
+            base::context_t(pt.get_child("creation_context")), "LaplacianRFT"),
+        _sigma(pt.get<double>("sigma")) {
         base_t::_val_scale = 1.0 / _sigma;
         base_t::build();
     }
 
-    template <typename ValueT>
-    friend boost::property_tree::ptree& operator<<(
-            boost::property_tree::ptree &sk,
-            const LaplacianRFT_data_t<ValueT> &data);
+    /**
+     *  Serializes a sketch to a string.
+     *
+     *  @param[out] property_tree describing the sketch.
+     */
+    virtual
+    boost::property_tree::ptree to_ptree() const {
+        boost::property_tree::ptree pt;
+        sketch_transform_data_t::add_common(pt);
+        pt.put("sigma", _sigma);
+        // TODO: serialize index_type and value_type?
+        return pt;
+    }
 
 protected:
 
     LaplacianRFT_data_t(int N, int S, typename base_t::value_type sigma,
-        skylark::base::context_t& context, std::string type)
+        const skylark::base::context_t& context, std::string type)
         : base_t(N, S, context, type), _sigma(sigma) {
-        base_t::_val_scale = 1.0 / sigma;
-    }
-
-    LaplacianRFT_data_t(boost::property_tree::ptree &json, bool noread)
-        : base_t(json), _sigma(json.get<ValueType>("sketch.sigma")) {
         base_t::_val_scale = 1.0 / _sigma;
     }
+
+private:
     const ValueType _sigma;
 };
-
-template <typename ValueType>
-boost::property_tree::ptree& operator<<(
-        boost::property_tree::ptree &sk,
-        const LaplacianRFT_data_t<ValueType> &data) {
-
-    sk << static_cast<const typename LaplacianRFT_data_t<ValueType>::base_t&>(data);
-    sk.put("sketch.sigma", data._sigma);
-    return sk;
-}
 
 } } /** namespace skylark::sketch */
 

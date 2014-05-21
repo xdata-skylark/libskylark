@@ -44,8 +44,8 @@ public:
 
     }
 
-    MMT_t(const std::string json_filename, base::context_t& context)
-        : data_type(json_filename, context), _transform(*this) {
+    MMT_t(const boost::property_tree::ptree& pt)
+        : data_type(pt), _transform(*this) {
 
     }
 

@@ -41,13 +41,13 @@ public:
     /**
      * Regular constructor
      */
-    CWT_t(int N, int S, base::context_t context)
+    CWT_t(int N, int S, base::context_t& context)
         : data_type(N, S, context), _transform(*this) {
 
     }
 
-    CWT_t(const boost::property_tree::ptree &json)
-        : data_type(json), _transform(*this) {
+    CWT_t(const boost::property_tree::ptree &pt)
+        : data_type(pt), _transform(*this) {
 
     }
 

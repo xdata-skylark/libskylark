@@ -36,33 +36,37 @@ struct PPT_data_t : public sketch_transform_data_t {
         context = build();
     }
 
-    PPT_data_t (boost::property_tree::ptree &json)
-        : base_t(json),
-        _q(json.get<int>("sketch.q")),
-        _c(json.get<double>("sketch.c")),
-        _gamma(json.get<double>("sketch.gamma")) {
+    PPT_data_t (boost::property_tree::ptree &pt) :
+        base_t(pt.get<int>("N"), pt.get<int>("S"),
+            base::context_t(pt.get_child("creation_context")), "PPT"),
+        _q(pt.get<int>("q")),
+        _c(pt.get<double>("c")),
+        _gamma(pt.get<double>("gamma")) {
 
     }
 
-    template <typename ValueT>
-    friend boost::property_tree::ptree& operator<<(
-            boost::property_tree::ptree &sk,
-            const PPT_data_t<ValueT> &data);
+    /**
+     *  Serializes a sketch to a string.
+     *
+     *  @param[out] property_tree describing the sketch.
+     */
+    virtual
+    boost::property_tree::ptree to_ptree() const {
+        boost::property_tree::ptree pt;
+        sketch_transform_data_t::add_common(pt);
+        pt.put("q", _q);
+        pt.put("c", _c);
+        pt.put("gamma", _gamma);
+        // TODO: serialize index_type and value_type?
+        return pt;
+    }
 
 protected:
 
     PPT_data_t (int N, int S, int q, double c, double gamma,
-        skylark::base::context_t& context, std::string type)
+        const skylark::base::context_t& context, std::string type)
         : base_t(N, S, context, type), _q(q), _c(c), _gamma(gamma) {
 
-
-    }
-
-    PPT_data_t (boost::property_tree::ptree &json, bool nobuild)
-        : base_t(json),
-        _q(json.get<int>("sketch.q")),
-        _c(json.get<double>("sketch.c")),
-        _gamma(json.get<double>("sketch.gamma")) {
 
     }
 
@@ -95,17 +99,6 @@ protected:
 
     std::list< _CWT_data_t > _cwts_data;
 };
-
-template <typename ValueType>
-boost::property_tree::ptree& operator<<(boost::property_tree::ptree &sk,
-                                        const PPT_data_t<ValueType> &data) {
-
-    sk << static_cast<const sketch_transform_data_t&>(data);
-    sk.put("sketch.q", data._q);
-    sk.put("sketch.c", data._c);
-    sk.put("sketch.gamma", data._gamma);
-    return sk;
-}
 
 } } /** namespace skylark::sketch */
 

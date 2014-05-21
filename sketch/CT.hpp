@@ -32,13 +32,13 @@ struct CT_t :
     /**
      * Regular constructor
      */
-    CT_t(int N, int S, double C, base::context_t context)
+    CT_t(int N, int S, double C, base::context_t& context)
         : data_type(N, S, C, context), _transform(*this) {
 
     }
 
-    CT_t(boost::property_tree::ptree &json)
-        : data_type(json), _transform(*this) {
+    CT_t(const boost::property_tree::ptree &pt)
+        : data_type(pt), _transform(*this) {
 
     }
 

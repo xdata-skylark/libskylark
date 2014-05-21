@@ -142,15 +142,14 @@ def load_json(json_data, defouttype = None):
   else:
     sketches = []
     for sketch in dict['sketches']:
-      sketch_name = str(sketch['sketch']['type'])
-      sketch_dims = sketch['sketch']['size']
+      sketch_name = str(sketch['sketch_type'])
       sketch_transform = c_void_p()
       _callsl(_lib.sl_load_sketch_transform, _ctxt_obj, sketch_name, \
               json.dumps(sketch), byref(sketch_transform))
 
       #sketch_class = eval(sketch_name)
-      sketches.append(_SketchTransform(sketch_name, int(sketch_dims[0]), \
-              int(sketch_dims[1]), defouttype, False, sketch_transform.value))
+      sketches.append(_SketchTransform(sketch_name, int(sketch['N']), \
+              int(sketch['S']), defouttype, False, sketch_transform.value))
 
     return sketches
 

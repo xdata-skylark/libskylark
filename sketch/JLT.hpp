@@ -38,8 +38,8 @@ public:
 
     }
 
-    JLT_t(boost::property_tree::ptree &json)
-        : data_type(json), _transform(*this) {
+    JLT_t(const boost::property_tree::ptree &pt)
+        : data_type(pt), _transform(*this) {
 
     }
 

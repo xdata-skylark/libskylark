@@ -318,6 +318,8 @@ SKYLARK_EXTERN_API int sl_load_sketch_transform(base::context_t *ctxt,
     AUTO_LOAD_DISPATCH(sketchc::FJLT, FJLT_data_t);
 #endif
 
+#undef AUTO_LOAD_DISPATCH
+
     return 0;
 }
 
@@ -329,34 +331,8 @@ SKYLARK_EXTERN_API int sl_dump_sketch_transform(base::context_t *ctxt,
     std::ofstream out(filename);
     boost::property_tree::ptree pt;
     skylark::utility::sketch_archive_t ar;
-
-# define AUTO_DUMP_DISPATCH(T, C)                                   \
-    SKYLARK_BEGIN_TRY()                                             \
-        if (type == T) {                                            \
-            pt << *static_cast<C*>(sketch->transform_obj);          \
-            ar << pt;                                               \
-            out << ar;                                              \
-        }                                                           \
-    SKYLARK_END_TRY()                                               \
-    SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
-
-    AUTO_DUMP_DISPATCH(sketchc::JLT, JLT_data_t);
-    AUTO_DUMP_DISPATCH(sketchc::CT,  CT_data_t);
-    AUTO_DUMP_DISPATCH(sketchc::CWT, CWT_data_t);
-    AUTO_DUMP_DISPATCH(sketchc::MMT, MMT_data_t);
-    AUTO_DUMP_DISPATCH(sketchc::WZT, WZT_data_t);
-    AUTO_DUMP_DISPATCH(sketchc::PPT, PPT_data_t);
-
-    AUTO_DUMP_DISPATCH(sketchc::GaussianRFT,  GaussianRFT_data_t);
-    AUTO_DUMP_DISPATCH(sketchc::LaplacianRFT, LaplacianRFT_data_t);
-
-    AUTO_DUMP_DISPATCH(sketchc::ExpSemigroupRLT, ExpSemigroupRLT_data_t);
-    AUTO_DUMP_DISPATCH(sketchc::FastGaussianRFT, FastGaussianRFT_data_t);
-
-#if SKYLARK_HAVE_FFTW
-    AUTO_DUMP_DISPATCH(sketchc::FJLT, FJLT_data_t);
-#endif
-
+    ar << sketch->transform_obj->to_ptree();
+    out << ar;
     out.close();
     return 0;
 }

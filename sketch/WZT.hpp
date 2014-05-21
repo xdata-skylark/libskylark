@@ -49,8 +49,8 @@ public:
 
     }
 
-    WZT_t(const boost::property_tree::ptree &json, base::context_t& context)
-        : data_type(json, context), _transform(*this) {
+    WZT_t(const boost::property_tree::ptree &pt)
+        : data_type(pt), _transform(*this) {
 
     }
 

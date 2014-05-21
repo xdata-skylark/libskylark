@@ -40,13 +40,14 @@ struct dense_transform_data_t : public sketch_transform_data_t {
         context = build();
     }
 
-    dense_transform_data_t (const boost::property_tree::ptree& json)
-        : base_t(json, true),
-          distribution() {
+    virtual
+    boost::property_tree::ptree to_ptree() const {
+        SKYLARK_THROW_EXCEPTION (
+          base::sketch_exception()
+              << base::error_msg(
+                 "Do not yet support serialization of generic dense transform"));
 
-        // No scaling in "raw" form
-        scale = 1.0;
-        build();
+        return boost::property_tree::ptree();
     }
 
     dense_transform_data_t(const dense_transform_data_t& other)
@@ -57,18 +58,9 @@ struct dense_transform_data_t : public sketch_transform_data_t {
 
 protected:
 
-    dense_transform_data_t (int N, int S, base::context_t& context,
+    dense_transform_data_t (int N, int S, const base::context_t& context,
         std::string type)
         : base_t(N, S, context, type),
-          distribution() {
-
-        // No scaling in "raw" form
-        scale = 1.0;
-    }
-
-    dense_transform_data_t (const boost::property_tree::ptree& json,
-        bool nobuild)
-        : base_t(json),
           distribution() {
 
         // No scaling in "raw" form

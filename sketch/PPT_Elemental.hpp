@@ -110,6 +110,11 @@ struct PPT_t <
         internal::fftw<value_type>::destroyfun(_fftw_bplan);
     }
 
+    PPT_t(const boost::property_tree::ptree &pt)
+        : data_type(pt) {
+
+    }
+
     /**
      * Copy constructor
      */
@@ -323,6 +328,10 @@ struct PPT_t <
         internal::fftw<value_type>::destroyfun(_fftw_bplan);
     }
 
+    PPT_t(const boost::property_tree::ptree &pt)
+        : data_type(pt) {
+
+    }
     /**
      * Copy constructor
      */

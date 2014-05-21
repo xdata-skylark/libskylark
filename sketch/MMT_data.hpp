@@ -32,25 +32,32 @@ struct MMT_data_t : public hash_transform_data_t<
         context = base_t::build();
    }
 
-   MMT_data_t(const boost::property_tree::ptree &json)
-       : base_t(json, true) {
-
+    MMT_data_t(const boost::property_tree::ptree& pt) :
+        base_t(pt.get<int>("N"), pt.get<int>("S"),
+            base::context_t(pt.get_child("creation_context")), "MMT") { 
         base_t::build();
-   }
+    }
+
+    /**
+     *  Serializes a sketch to a string.
+     *
+     *  @param[out] property_tree describing the sketch.
+     */
+    virtual
+    boost::property_tree::ptree to_ptree() const {
+        boost::property_tree::ptree pt;
+        sketch_transform_data_t::add_common(pt);
+        // TODO: serialize index_type and value_type?
+        return pt;
+    }
 
 protected:
 
-    MMT_data_t(int N, int S, skylark::base::context_t& context, 
+    MMT_data_t(int N, int S, const skylark::base::context_t& context, 
         std::string type)
         : base_t(N, S, context, type) {
 
    }
-
-    MMT_data_t(const boost::property_tree::ptree &json, bool nobuild)
-       : base_t(json, true) {
-
-   }
-
 
 };
 

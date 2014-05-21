@@ -5,7 +5,6 @@
 
 #include "boost/foreach.hpp"
 #include "boost/property_tree/ptree.hpp"
-#include "boost/property_tree/json_parser.hpp"
 
 #include "../base/context.hpp"
 #include "../utility/randgen.hpp"
@@ -27,45 +26,13 @@ struct RFUT_data_t {
     /**
      * Regular constructor
      */
-    RFUT_data_t (int N, skylark::base::context_t& context, bool init = true)
+    RFUT_data_t (int N, skylark::base::context_t& context)
         : _N(N), _creation_context(context) {
 
-        if(init) build();
+        build();
     }
 
-
-    //TODO: inherit from (dense_)transform_t or serialize here
-    //TODO: serialize distribution
-    RFUT_data_t (boost::property_tree::ptree &json, bool init = true)
-        : _creation_context(json) {
-
-        std::vector<int> dims;
-        BOOST_FOREACH(const boost::property_tree::ptree::value_type &v,
-                      json.get_child("sketch.size")) {
-
-            std::istringstream i(v.second.data());
-            int x;
-            if (!(i >> x)) dims.push_back(0);
-            dims.push_back(x);
-        }
-
-        _N = dims[0];
-
-        //_type = json.get<std::string>("sketch.type");
-    }
-
-    template< typename VT, typename VDT >
-    friend std::istream& operator>>(std::istream &in,
-            RFUT_data_t<VT, VDT> &data);
-
-    /**
-     *  Serializes a sketch to a string.
-     *  @param[out] dump containing serialized JSON object
-     */
-    template< typename VT, typename VDT >
-    friend boost::property_tree::ptree& operator<<(
-            boost::property_tree::ptree &sk,
-            const RFUT_data_t<VT, VDT> &data);
+    // TODO support to_ptree (challenging part: the distribution).
 
 protected:
     int _N; /**< Input dimension  */
@@ -85,29 +52,6 @@ protected:
         return ctx;
     }
 };
-
-
-#if 0
-/// serialize the sketch
-template <typename ValueType,
-          typename ValueDistributionType>
-boost::property_tree::ptree& operator<<(boost::property_tree::ptree &sk,
-                                        const RFUT_data_t<ValueType, ValueDistributionType> &data) {
-
-    sk.put("sketch.type", "RFUT");
-    sk.put("sketch.version", "0.1");
-
-    boost::property_tree::ptree size;
-    boost::property_tree::ptree size_n, size_s;
-    size_n.put("", data._N);
-    size.push_back(std::make_pair("", size_n));
-    sk.add_child("sketch.size", size);
-
-    sk << data._creation_context;
-
-    return sk;
-}
-#endif
 
 } } /** namespace skylark::sketch */
 

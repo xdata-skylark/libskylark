@@ -1,5 +1,5 @@
-#ifndef SKETCHC_HPP
-#define SKETCHC_HPP
+#ifndef SKYLARK_SKETCHC_HPP
+#define SKYLARK_SKETCHC_HPP
 
 #include "mpi.h"
 #include "../../config.h"
@@ -48,9 +48,10 @@ enum matrix_type_t {
 
 struct sketch_transform_t {
     const transform_type_t type;
-    void * const transform_obj;
+    sketch_transform_data_t * const transform_obj;
 
-    sketch_transform_t(transform_type_t type, void *transform_obj)
+    sketch_transform_t(transform_type_t type,
+        sketch_transform_data_t *transform_obj)
         : type(type), transform_obj(transform_obj) {}
 };
 
@@ -191,4 +192,4 @@ SKYLARK_EXTERN_API int sl_raw_sp_matrix_data(void *A_, int32_t *indptr,
 
 } // extern "C"
 
-#endif // SKETCHC_HPP
+#endif // SKYLARK_SKETCHC_HPP

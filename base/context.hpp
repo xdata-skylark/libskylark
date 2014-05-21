@@ -1,6 +1,8 @@
 #ifndef SKYLARK_CONTEXT_HPP
 #define SKYLARK_CONTEXT_HPP
 
+#include "../config.h"
+
 #include "exception.hpp"
 #include "../utility/randgen.hpp"
 
@@ -23,29 +25,39 @@ struct context_t {
         _counter(counter),
         _seed(seed) {}
 
-    //context_t (context_t&& ctxt) :
-        //_counter(std::move(ctxt._counter)), _seed(std::move(ctxt._seed))
-    //{}
+#if 0
+    context_t (context_t&& ctxt) :
+        _counter(std::move(ctxt._counter)), _seed(std::move(ctxt._seed))
+    {}
 
-    //context_t(const context_t& other) {
-        //_seed    = other._seed;
-        //_counter = other._counter;
-    //}
+    context_t(const context_t& other) {
+        _seed    = other._seed;
+        _counter = other._counter;
+    }
 
-    //context_t& operator=(const context_t& other) {
-        //_seed    = other._seed;
-        //_counter = other._counter;
-        //return *this;
-    //}
-
+    context_t& operator=(const context_t& other) {
+        _seed    = other._seed;
+        _counter = other._counter;
+        return *this;
+    }
+#endif
 
     /**
      * Load context from a serialized JSON structure.
      * @param[in] filename of JSON structure encoding serialized state.
      */
     context_t (const boost::property_tree::ptree& json) {
-        _counter = json.get<size_t>("sketch.context.counter");
-        _seed = json.get<int>("sketch.context.seed");
+        _counter = json.get<size_t>("seed");
+        _seed = json.get<int>("counter");
+    }
+
+    boost::property_tree::ptree to_ptree() const {
+        boost::property_tree::ptree pt;
+        pt.put("skylark_object_type", "context");
+        pt.put("skylark_version", VERSION);
+        pt.put("seed", _seed);
+        pt.put("counter", _counter);
+        return pt;
     }
 
 
@@ -154,11 +166,6 @@ struct context_t {
     friend boost::property_tree::ptree& operator<<(
             boost::property_tree::ptree &sk, const context_t &data);
 private:
-
-    /// Disable copy constructor as this is error prone for context
-    //context_t(const context_t&);
-    /// Disable assignment operator as this is error prone for context
-    //context_t& operator=(const context_t&);
 
     /// Internal counter identifying the start of next stream of random numbers
     size_t _counter;

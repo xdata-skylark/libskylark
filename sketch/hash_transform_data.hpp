@@ -38,28 +38,23 @@ struct hash_transform_data_t : public sketch_transform_data_t {
         context = build();
     }
 
-    /**
-     *  Load a serialized sketch from a file.
-     *  @param[in] json_filename
-     */
-    hash_transform_data_t (const boost::property_tree::ptree &json)
-        : base_t(json, true) {
-        build();
+    virtual
+    boost::property_tree::ptree to_ptree() const {
+        SKYLARK_THROW_EXCEPTION (
+          base::sketch_exception()
+              << base::error_msg(
+                 "Do not yet support serialization of generic hash transform"));
+
+        return boost::property_tree::ptree();
     }
 
 protected:
 
-    hash_transform_data_t (int N, int S, base::context_t& context,
+    hash_transform_data_t (int N, int S, const base::context_t& context,
         const std::string type)
         : base_t(N, S, context, type) {
 
     }
-
-    hash_transform_data_t (const boost::property_tree::ptree &json, 
-        bool nobuild)
-        : base_t(json) {
-    }
-
 
     base::context_t build() {
         base::context_t ctx = base_t::build();

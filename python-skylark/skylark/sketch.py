@@ -1,6 +1,7 @@
 import errors
 import ctypes
 from ctypes import byref, cdll, c_double, c_void_p, c_int, c_char_p, pointer, POINTER, c_bool
+import ctypes.util
 import sprand
 import math
 from math import sqrt, pi
@@ -11,6 +12,10 @@ import sys
 import os
 import time
 import atexit
+import json
+
+_libc = cdll.LoadLibrary(ctypes.util.find_library('c'))
+_libc.free.argtypes = (ctypes.c_void_p,)
 
 # Function for initialization and reinitilialization
 def initialize(seed=-1):
@@ -35,7 +40,7 @@ def initialize(seed=-1):
       _lib.sl_context_rank.restype                = c_int
       _lib.sl_context_size.restype                = c_int
       _lib.sl_create_sketch_transform.restype     = c_int
-      _lib.sl_dump_sketch_transform.restype       = c_int
+      _lib.sl_serialize_sketch_transform.restype  = c_int
       _lib.sl_deserialize_sketch_transform.restype = c_int
       _lib.sl_wrap_raw_matrix.restype             = c_int
       _lib.sl_free_raw_matrix_wrap.restype        = c_int
@@ -124,26 +129,17 @@ def _callsl(f, *args):
   if errno != 0:
     raise errors.UnexpectedLowerLayerError(_lib.sl_strerror(errno))
 
-def deserialize_sketch(json_data):
+def deserialize_sketch(sketch_dict):
   """
   Load Serialized Transform
 
-  :param json_data: string holding the serialized JSON structure.
+  :param sketch_dict dictionary that is the sketch in serialized form (from .serialize()).
   """
-
-  import json
-  try:
-    sketch = json.loads(json_data)
-  except ValueError:
-    print "Failed to parse JSON"
-  else:
-    sketch_transform = c_void_p()
-    _callsl(_lib.sl_deserialize_sketch_transform, \
-              json.dumps(sketch), byref(sketch_transform))
-
-    
-    sketch_name = str(sketch['sketch_type'])
-    return _map_csketch_type_to_cfun[sketch_name](sketch, sketch_transform)
+  sketch_transform = c_void_p()
+  _callsl(_lib.sl_deserialize_sketch_transform, \
+            json.dumps(sketch_dict), byref(sketch_transform))    
+  sketch_name = str(sketch_dict['sketch_type'])
+  return _map_csketch_type_to_cfun[sketch_name](sketch_dict, sketch_transform)
 
 #
 # Matrix type adapters: specifies how to interact with the underlying (perhaps in C/C++)
@@ -508,11 +504,25 @@ class _SketchTransform(object):
     if not self._ppy:
       _callsl(_lib.sl_free_sketch_transform, self._obj)
 
-  def dump(self, filename):
+  def serialize(self):
+    """
+    Returns a dictionary that is the sketch in a serialized for.
+    That is, the sketch object can be reconstructed using the deserialize_sketch
+    function.
+    """
     if not self._ppy:
-      _callsl(_lib.sl_dump_sketch_transform, filename, self._obj)
+      json_data = c_char_p()
+      _callsl(_lib.sl_serialize_sketch_transform, self._obj, byref(json_data))
+      try:
+        serialized_sketch = json.loads(json_data.value)
+      except ValueError:
+        _libc.free(json_data)
+        print "Failed to parse JSON"
+      else:
+        _libc.free(json_data)
+        return serialized_sketch
     else:
-        #TODO: python serialization of sketch
+        # TODO: python serialization of sketch
         pass
 
   def apply(self, A, SA, dim=0):
@@ -672,8 +682,8 @@ class JLT(_SketchTransform):
   >>> plt.hist(distortions,10)
   >>> plt.show()
   """
-  def __init__(self, n, s, defouttype=None, forceppy=False):
-    super(JLT, self).__init__("JLT", n, s, defouttype, forceppy);
+  def __init__(self, n, s, defouttype=None, forceppy=False, sketch_transform=None):
+    super(JLT, self).__init__("JLT", n, s, defouttype, forceppy, sketch_transform);
     if self._ppy:
       # The following is not memory efficient, but for a pure Python impl it will do
       self._S = numpy.random.standard_normal((s, n)) / sqrt(s)

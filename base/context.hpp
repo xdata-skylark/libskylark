@@ -47,8 +47,8 @@ struct context_t {
      * @param[in] filename of JSON structure encoding serialized state.
      */
     context_t (const boost::property_tree::ptree& json) {
-        _counter = json.get<size_t>("seed");
-        _seed = json.get<int>("counter");
+        _seed = json.get<int>("seed");
+        _counter = json.get<size_t>("counter");
     }
 
     boost::property_tree::ptree to_ptree() const {

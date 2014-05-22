@@ -270,7 +270,7 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(base::context_t *ctxt,
     return 0;
 }
 
-SKYLARK_EXTERN_API int sl_deserialize_sketch_transform(char *data,
+SKYLARK_EXTERN_API int sl_deserialize_sketch_transform(const char *data,
     sketchc::sketch_transform_t **sketch) {
 
     std::stringstream json_data(data);
@@ -286,14 +286,15 @@ SKYLARK_EXTERN_API int sl_deserialize_sketch_transform(char *data,
     return 0;
 }
 
+SKYLARK_EXTERN_API int sl_serialize_sketch_transform(
+    const sketchc::sketch_transform_t *sketch, char **data) {
 
-SKYLARK_EXTERN_API int sl_dump_sketch_transform(char *filename, 
-    sketchc::sketch_transform_t *sketch) {
-
-    std::ofstream out(filename);
     boost::property_tree::ptree pt = sketch->transform_obj->to_ptree();
-    write_json(out, pt);
-    out.close();
+    std::stringstream json_data;
+    boost::property_tree::write_json(json_data, pt);
+    *data = new char[json_data.str().length() + 1];
+    std::strcpy(*data, json_data.str().c_str());
+
     return 0;
 }
 

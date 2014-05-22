@@ -44,10 +44,6 @@ struct FJLT_data_t : public sketch_transform_data_t {
          build();
     }
 
-    virtual ~FJLT_data_t() {
-        delete underlying_data;
-    }
-
     /**
      *  Serializes a sketch to a string.
      *
@@ -70,7 +66,8 @@ protected:
 
     base::context_t build() {
         base::context_t ctx = base_t::build();
-        underlying_data = new underlying_data_type(base_t::_N, ctx);
+        underlying_data = boost::shared_ptr<underlying_data_type>(new
+            underlying_data_type(base_t::_N, ctx));
         value_distribution_type distribution(0, base_t::_N - 1);
         samples = ctx.generate_random_samples_array(base_t::_S, distribution);
         return ctx;
@@ -80,7 +77,7 @@ protected:
         underlying_data_type;
 
     std::vector<size_t> samples; /**< Vector of samples */
-    underlying_data_type *underlying_data;
+    boost::shared_ptr<underlying_data_type> underlying_data;
     /**< Data of the underlying RFUT transformation */
 };
 

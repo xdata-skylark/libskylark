@@ -47,10 +47,6 @@ struct RFT_data_t : public sketch_transform_data_t {
         return boost::property_tree::ptree();
     }
 
-    virtual ~RFT_data_t() {
-        delete _underlying_data;
-    }
-
 protected:
     RFT_data_t (int N, int S, const skylark::base::context_t& context,
         std::string type)
@@ -64,8 +60,8 @@ protected:
 
         base::context_t ctx = base_t::build();
 
-        _underlying_data = new underlying_data_type(base_t::_N, base_t::_S,
-            ctx);
+        _underlying_data = boost::shared_ptr<underlying_data_type>(new
+            underlying_data_type(base_t::_N, base_t::_S, ctx));
 
         const double pi = boost::math::constants::pi<double>();
         boost::random::uniform_real_distribution<double>
@@ -75,12 +71,10 @@ protected:
     }
 
     double _val_scale; /**< Bandwidth (sigma)  */
-    underlying_data_type *_underlying_data;
+    boost::shared_ptr<underlying_data_type> _underlying_data;
     /**< Data of the underlying dense transformation */
     const double _scale; /** Scaling for trigonometric factor */
     std::vector<double> _shifts; /** Shifts for scaled trigonometric factor */
-
-
 };
 
 struct GaussianRFT_data_t :

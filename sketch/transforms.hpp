@@ -31,9 +31,12 @@ public:
 
     virtual int get_S() const = 0; /**< Get output dimension */
 
-    virtual ~sketch_transform_t<InputMatrixType, OutputMatrixType>() {
+    virtual ~sketch_transform_t() {
 
     }
+
+    static
+    sketch_transform_t* from_ptree(const boost::property_tree::ptree& pt);
 
 };
 

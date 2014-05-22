@@ -35,7 +35,7 @@ struct PPT_data_t : public sketch_transform_data_t {
         context = build();
     }
 
-    PPT_data_t (boost::property_tree::ptree &pt) :
+    PPT_data_t (const boost::property_tree::ptree &pt) :
         base_t(pt.get<int>("N"), pt.get<int>("S"),
             base::context_t(pt.get_child("creation_context")), "PPT"),
         _q(pt.get<int>("q")),

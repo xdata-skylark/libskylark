@@ -22,39 +22,8 @@ struct sketch_transform_data_t {
 
     }
 
-    /*
     static
-    sketch_transform_data_t* from_ptree(const boost::property_tree::ptree& pt) {
-        std::string type = pt.get<std::string>("type");
-
-# define AUTO_LOAD_DISPATCH(T, C)                                    \
-        if (std::strcmp(type, #T) == 0)                              \
-            return new C(pt);
-
-        AUTO_LOAD_DISPATCH(JLT, JLT_data_t);
-        AUTO_LOAD_DISPATCH(CT,  CT_data_t);
-        AUTO_LOAD_DISPATCH(CWT, CWT_data_t);
-        AUTO_LOAD_DISPATCH(MMT, MMT_data_t);
-        AUTO_LOAD_DISPATCH(WZT, WZT_data_t);
-        AUTO_LOAD_DISPATCH(PPT, PPT_data_t);
-
-        AUTO_LOAD_DISPATCH(GaussianRFT,  GaussianRFT_data_t);
-        AUTO_LOAD_DISPATCH(LaplacianRFT, LaplacianRFT_data_t);
-
-        AUTO_LOAD_DISPATCH(ExpSemigroupRLT, ExpSemigroupRLT_data_t);
-        AUTO_LOAD_DISPATCH(FastGaussianRFT, FastGaussianRFT_data_t);
-
-#if SKYLARK_HAVE_FFTW
-        AUTO_LOAD_DISPATCH(FJLT, FJLT_data_t);
-#endif
-
-#undef AUTO_LOAD_DISPATCH
-
-        // TODO exception if got here
-
-        return nullptr;
-    }
-    */
+    sketch_transform_data_t* from_ptree(const boost::property_tree::ptree& pt);
 
     std::string get_type() {
         return _type;

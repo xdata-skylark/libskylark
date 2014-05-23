@@ -399,6 +399,40 @@ private:
 
 #endif // OPTIMIZED
 
+    void outer_panel_gemm(const matrix_type& A,
+                          output_matrix_type& sketch_of_A,
+                          skylark::sketch::columnwise_tag) const {
+
+        const elem::Grid& grid = A.Grid();
+
+        elem::DistMatrix<value_type, elem::MC, elem::STAR> R(grid);
+        elem::DistMatrix<value_type, elem::MR, elem::STAR>
+            ATrans_MR_STAR(grid);
+
+        // TODO: are alignments necessary?
+        R.AlignWith(sketch_of_A);
+        ATrans_MR_STAR.AlignWith(sketch_of_A);
+
+        data_type::realize_matrix_view(R);
+
+        // Allgather within process columns
+        // TODO: Describe cache benefits from transposition:
+        //       why not simply use A1[STAR, MR]?
+        A.TransposeColAllGather(ATrans_MR_STAR);
+
+        base::Gemm(elem::NORMAL,
+                   elem::TRANSPOSE,
+                   value_type(1),
+                   R.LockedMatrix(),
+                   ATrans_MR_STAR.LockedMatrix(),
+                   value_type(1),
+                   sketch_of_A.Matrix());
+    }
+
+
+
+
+#ifdef OPTIMIZED // OPTIMIZED
 
     void outer_panel_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
@@ -460,6 +494,8 @@ private:
               A_Bottom, A2 );
         }
     }
+
+#endif // OPTIMIZED
 
 
     void matrix_panel_gemm(const matrix_type& A,

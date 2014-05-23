@@ -265,6 +265,7 @@ struct PPT_t <
     int get_N() const { return data_type::_N; } /**< Get input dimesion. */
     int get_S() const { return data_type::_S; } /**< Get output dimesion. */
 
+    const sketch_transform_data_t* get_data() const { return this; }
 
 protected:
 
@@ -435,6 +436,7 @@ struct PPT_t <
     int get_N() const { return data_type::_N; } /**< Get input dimesion. */
     int get_S() const { return data_type::_S; } /**< Get output dimesion. */
 
+    const sketch_transform_data_t* get_data() const { return this; }
 
 protected:
 

@@ -53,6 +53,7 @@ endif (SKYLARK_HAVE_COMBBLAS)
 add_executable(local_sparse_apply LocalSparseSketchApply.cpp)
 target_link_libraries( local_sparse_apply
                        ${SKYLARK_LIBS}
+                       ${FFTW_LIBRARY}
                        ${DEP_LIBRARIES}
                        ${Boost_LIBRARIES} )
 add_test( local_sparse_apply_test local_sparse_apply )

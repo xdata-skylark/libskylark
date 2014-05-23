@@ -74,6 +74,11 @@ struct hash_transform_t <
         }
     }
 
+    int get_N() const { return this->_N; } /**< Get input dimension. */
+    int get_S() const { return this->_S; } /**< Get output dimension. */
+
+    const sketch_transform_data_t* get_data() const { return this; }
+
 private:
 
     /**
@@ -186,6 +191,11 @@ struct hash_transform_t <
                     << base::error_msg(e.what()) );
         }
     }
+
+    int get_N() const { return this->_N; } /**< Get input dimension. */
+    int get_S() const { return this->_S; } /**< Get output dimension. */
+
+    const sketch_transform_data_t* get_data() const { return this; }
 
 private:
 
@@ -499,6 +509,8 @@ struct hash_transform_t <
 
     int get_N() const { return this->_N; } /**< Get input dimension. */
     int get_S() const { return this->_S; } /**< Get output dimension. */
+
+    const sketch_transform_data_t* get_data() const { return this; }
 
 private:
     /**

@@ -1,6 +1,8 @@
 #ifndef SKYLARK_TRANSFORMS_HPP
 #define SKYLARK_TRANSFORMS_HPP
 
+#include "sketch_transform_data.hpp"
+
 namespace skylark {
 namespace sketch {
 
@@ -30,6 +32,12 @@ public:
     virtual int get_N() const = 0; /**< Get input dimension */
 
     virtual int get_S() const = 0; /**< Get output dimension */
+
+    virtual const sketch_transform_data_t* get_data() const = 0;
+
+    boost::property_tree::ptree to_ptree() const {
+        return get_data()->to_ptree();
+    }
 
     virtual ~sketch_transform_t() {
 

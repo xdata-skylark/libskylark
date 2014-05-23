@@ -92,6 +92,8 @@ public:
     int get_N() const { return this->_N; } /**< Get input dimesion. */
     int get_S() const { return this->_S; } /**< Get output dimesion. */
 
+    const sketch_transform_data_t* get_data() const { return this; }
+
 private:
     transform_t _transform;
 };

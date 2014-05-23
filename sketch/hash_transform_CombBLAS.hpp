@@ -80,6 +80,11 @@ struct hash_transform_t <FullyDistMultiVec<IndexType, ValueType>,
         }
     }
 
+    int get_N() const { return this->_N; } /**< Get input dimension. */
+    int get_S() const { return this->_S; } /**< Get output dimension. */
+
+    const sketch_transform_data_t* get_data() const { return this; }
+
 
 private:
     void apply_impl_single (const mpi_vector_t& a_,
@@ -204,6 +209,10 @@ struct hash_transform_t <
         }
     }
 
+    int get_N() const { return this->_N; } /**< Get input dimension. */
+    int get_S() const { return this->_S; } /**< Get output dimension. */
+
+    const sketch_transform_data_t* get_data() const { return this; }
 
 private:
     /**
@@ -545,6 +554,10 @@ struct hash_transform_t <
         }
     }
 
+    int get_N() const { return this->_N; } /**< Get input dimension. */
+    int get_S() const { return this->_S; } /**< Get output dimension. */
+
+    const sketch_transform_data_t* get_data() const { return this; }
 
 private:
     /**

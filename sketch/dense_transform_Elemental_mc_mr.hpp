@@ -83,6 +83,7 @@ private:
 
 #ifdef HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR
 
+////////////////////////////////////////////////////////////////////////////////
     void inner_panel_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::rowwise_tag) const {
@@ -196,6 +197,7 @@ private:
     }
 
 
+////////////////////////////////////////////////////////////////////////////////
     void inner_panel_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::columnwise_tag) const {
@@ -305,44 +307,13 @@ private:
     }
 
 
-    void outer_panel_gemm(const matrix_type& A,
-                          output_matrix_type& sketch_of_A,
-                          skylark::sketch::rowwise_tag) const {
-
-        const elem::Grid& grid = A.Grid();
-
-        elem::DistMatrix<value_type, elem::MR, elem::STAR> R(grid);
-        elem::DistMatrix<value_type, elem::MC, elem::STAR>
-            A_MC_STAR(grid);
-
-        // TODO: are alignments necessary?
-        R.AlignWith(sketch_of_A);
-        A_MC_STAR.AlignWith(sketch_of_A);
-
-        data_type::realize_matrix_view(R);
-
-        // Allgather within process rows
-        A_MC_STAR = A;
-
-        // TODO: Consider Zero-ing sketch_of_A
-
-        // Local Gemm
-        base::Gemm(elem::NORMAL,
-                   elem::TRANSPOSE,
-                   value_type(1),
-                   A_MC_STAR.LockedMatrix(),
-                   R.LockedMatrix(),
-                   value_type(1),
-                   sketch_of_A.Matrix());
-    }
-
-
-
+////////////////////////////////////////////////////////////////////////////////
 #ifdef OPTIMIZED // OPTIMIZED
 
     void outer_panel_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::rowwise_tag) const {
+
 
         const elem::Grid& grid = A.Grid();
 
@@ -397,41 +368,44 @@ private:
         }
     }
 
-#endif // OPTIMIZED
+#else
 
     void outer_panel_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
-                          skylark::sketch::columnwise_tag) const {
+                          skylark::sketch::rowwise_tag) const {
+
 
         const elem::Grid& grid = A.Grid();
 
-        elem::DistMatrix<value_type, elem::MC, elem::STAR> R(grid);
-        elem::DistMatrix<value_type, elem::MR, elem::STAR>
-            ATrans_MR_STAR(grid);
+        elem::DistMatrix<value_type, elem::MR, elem::STAR> R(grid);
+        elem::DistMatrix<value_type, elem::MC, elem::STAR>
+            A_MC_STAR(grid);
 
         // TODO: are alignments necessary?
         R.AlignWith(sketch_of_A);
-        ATrans_MR_STAR.AlignWith(sketch_of_A);
+        A_MC_STAR.AlignWith(sketch_of_A);
 
         data_type::realize_matrix_view(R);
 
-        // Allgather within process columns
-        // TODO: Describe cache benefits from transposition:
-        //       why not simply use A1[STAR, MR]?
-        A.TransposeColAllGather(ATrans_MR_STAR);
+        // Allgather within process rows
+        A_MC_STAR = A;
 
+        // TODO: Consider Zero-ing sketch_of_A
+
+        // Local Gemm
         base::Gemm(elem::NORMAL,
                    elem::TRANSPOSE,
                    value_type(1),
+                   A_MC_STAR.LockedMatrix(),
                    R.LockedMatrix(),
-                   ATrans_MR_STAR.LockedMatrix(),
                    value_type(1),
                    sketch_of_A.Matrix());
     }
 
+#endif // OPTIMIZED
 
 
-
+////////////////////////////////////////////////////////////////////////////////
 #ifdef OPTIMIZED // OPTIMIZED
 
     void outer_panel_gemm(const matrix_type& A,
@@ -495,40 +469,42 @@ private:
         }
     }
 
-#endif // OPTIMIZED
+#else
 
-
-    void matrix_panel_gemm(const matrix_type& A,
+    void outer_panel_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
-                          skylark::sketch::rowwise_tag) const {
+                          skylark::sketch::columnwise_tag) const {
 
         const elem::Grid& grid = A.Grid();
 
-        elem::DistMatrix<value_type, elem::STAR, elem::MR> R(grid);
-        elem::DistMatrix<value_type, elem::MC, elem::STAR>
-            sketch_of_A_temp(grid);
+        elem::DistMatrix<value_type, elem::MC, elem::STAR> R(grid);
+        elem::DistMatrix<value_type, elem::MR, elem::STAR>
+            ATrans_MR_STAR(grid);
 
         // TODO: are alignments necessary?
         R.AlignWith(sketch_of_A);
-        sketch_of_A_temp.AlignWith(sketch_of_A);
+        ATrans_MR_STAR.AlignWith(sketch_of_A);
 
         data_type::realize_matrix_view(R);
 
-        // Local Gemm
+        // Allgather within process columns
+        // TODO: Describe cache benefits from transposition:
+        //       why not simply use A1[STAR, MR]?
+        A.TransposeColAllGather(ATrans_MR_STAR);
+
         base::Gemm(elem::NORMAL,
                    elem::TRANSPOSE,
                    value_type(1),
-                   A.LockedMatrix(),
                    R.LockedMatrix(),
-                   sketch_of_A_temp.Matrix());
-
-        // Reduce-scatter within row communicators
-        sketch_of_A.RowSumScatterUpdate(value_type(1),
-            sketch_of_A_temp);
+                   ATrans_MR_STAR.LockedMatrix(),
+                   value_type(1),
+                   sketch_of_A.Matrix());
     }
 
+#endif // OPTIMIZED
 
 
+////////////////////////////////////////////////////////////////////////////////
 #ifdef OPTIMIZED // OPTIMIZED
 
     void matrix_panel_gemm(const matrix_type& A,
@@ -588,39 +564,42 @@ private:
         }
     }
 
-#endif // OPTIMIZED
+#else
 
-
-    void panel_matrix_gemm(const matrix_type& A,
+    void matrix_panel_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
-                          skylark::sketch::columnwise_tag) const {
+                          skylark::sketch::rowwise_tag) const {
 
         const elem::Grid& grid = A.Grid();
 
-        elem::DistMatrix<value_type, elem::STAR, elem::MC> R(grid);
-        elem::DistMatrix<value_type, elem::STAR, elem::MR>
+        elem::DistMatrix<value_type, elem::STAR, elem::MR> R(grid);
+        elem::DistMatrix<value_type, elem::MC, elem::STAR>
             sketch_of_A_temp(grid);
 
-        // TODO: is alignment necessary?
-        sketch_of_A_temp.AlignWith(A);
+        // TODO: are alignments necessary?
+        R.AlignWith(sketch_of_A);
+        sketch_of_A_temp.AlignWith(sketch_of_A);
 
         data_type::realize_matrix_view(R);
 
         // Local Gemm
         base::Gemm(elem::NORMAL,
-                   elem::NORMAL,
+                   elem::TRANSPOSE,
                    value_type(1),
-                   R.LockedMatrix(),
                    A.LockedMatrix(),
+                   R.LockedMatrix(),
                    sketch_of_A_temp.Matrix());
 
-        // Reduce-scatter within column communicators
-        sketch_of_A.ColSumScatterUpdate(value_type(1),
+        // Reduce-scatter within row communicators
+        sketch_of_A.RowSumScatterUpdate(value_type(1),
             sketch_of_A_temp);
     }
 
 
+#endif // OPTIMIZED
 
+
+////////////////////////////////////////////////////////////////////////////////
 #ifdef OPTIMIZED // OPTIMIZED
 
     void panel_matrix_gemm(const matrix_type& A,
@@ -687,11 +666,37 @@ private:
         }
     }
 
+#else
+
+    void panel_matrix_gemm(const matrix_type& A,
+                          output_matrix_type& sketch_of_A,
+                          skylark::sketch::columnwise_tag) const {
+
+        const elem::Grid& grid = A.Grid();
+
+        elem::DistMatrix<value_type, elem::STAR, elem::MC> R(grid);
+        elem::DistMatrix<value_type, elem::STAR, elem::MR>
+            sketch_of_A_temp(grid);
+
+        // TODO: is alignment necessary?
+        sketch_of_A_temp.AlignWith(A);
+
+        data_type::realize_matrix_view(R);
+
+        // Local Gemm
+        base::Gemm(elem::NORMAL,
+                   elem::NORMAL,
+                   value_type(1),
+                   R.LockedMatrix(),
+                   A.LockedMatrix(),
+                   sketch_of_A_temp.Matrix());
+
+        // Reduce-scatter within column communicators
+        sketch_of_A.ColSumScatterUpdate(value_type(1),
+            sketch_of_A_temp);
+    }
+
 #endif // OPTIMIZED
-
-
-#define TESTED_ROWWISE    outer_panel_gemm(A, sketch_of_A, tag); return;
-#define TESTED_COLUMNWISE outer_panel_gemm(A, sketch_of_A, tag); return;
 
     void sketch_gemm(const matrix_type& A,
         output_matrix_type& sketch_of_A,
@@ -703,7 +708,9 @@ private:
 
         const double factor = get_factor();
 
+#ifdef TESTED_ROWWISE
         TESTED_ROWWISE
+#else
         if((sketch_height * factor <= width) &&
             (sketch_width * factor <= width))
             inner_panel_gemm(A, sketch_of_A, tag);
@@ -712,6 +719,7 @@ private:
             outer_panel_gemm(A, sketch_of_A, tag);
         else
             matrix_panel_gemm(A, sketch_of_A, tag);
+#endif
     }
 
 
@@ -725,7 +733,9 @@ private:
 
         const double factor = get_factor();
 
+#ifdef TESTED_COLUMNWISE
         TESTED_COLUMNWISE
+#else
         if((sketch_height * factor <= height) &&
             (sketch_width * factor <= height))
             inner_panel_gemm(A, sketch_of_A, tag);
@@ -734,6 +744,7 @@ private:
             outer_panel_gemm(A, sketch_of_A, tag);
         else
             panel_matrix_gemm(A, sketch_of_A, tag);
+#endif
     }
 
     void apply_impl_dist (const matrix_type& A,
@@ -752,7 +763,11 @@ private:
     }
 
 
-#else
+////////////////////////////////////////////////////////////////////////////////
+
+#else // HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR
+
+////////////////////////////////////////////////////////////////////////////////
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.

@@ -1,7 +1,16 @@
 /** Selecting the parts of HP support to activate */
+////////////////////////////////////////////////////////////////////////////////
+
+#define ROWWISE
 
 #define HP_DENSE_TRANSFORM_ELEMENTAL
 #define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR
+#define OPTIMIZED
+
+#define TESTED_ROWWISE    matrix_panel_gemm(A, sketch_of_A, tag); return;
+#define TESTED_COLUMNWISE panel_matrix_gemm(A, sketch_of_A, tag); return;
+
+////////////////////////////////////////////////////////////////////////////////
 
 
 #include <boost/mpi.hpp>
@@ -38,20 +47,22 @@ int main(int argc, char* argv[]) {
     /** Initialize context */
     skylark::base::context_t context(0);
 
-#if 1
+#ifdef ROWWISE
+
     /** Sketch transform (rowwise)*/
     int size = width;
     dist_matrix_t sketched_A(height, sketch_size);
     sketch_transform_t sketch_transform(size, sketch_size, context);
     sketch_transform.apply(A, sketched_A, skylark::sketch::rowwise_tag());
-#endif
 
-#if 0
+#else
+
     /** Sketch transform (columnwise)*/
     int size = height;
     dist_matrix_t sketched_A(sketch_size, width);
     sketch_transform_t sketch_transform(size, sketch_size, context);
     sketch_transform.apply(A, sketched_A, skylark::sketch::columnwise_tag());
+
 #endif
 
     /** Print sketched_A */

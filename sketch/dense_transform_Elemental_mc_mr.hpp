@@ -311,6 +311,41 @@ private:
 
         const elem::Grid& grid = A.Grid();
 
+        elem::DistMatrix<value_type, elem::MR, elem::STAR> R(grid);
+        elem::DistMatrix<value_type, elem::MC, elem::STAR>
+            A_MC_STAR(grid);
+
+        // TODO: are alignments necessary?
+        R.AlignWith(sketch_of_A);
+        A_MC_STAR.AlignWith(sketch_of_A);
+
+        data_type::realize_matrix_view(R);
+
+        // Allgather within process rows
+        A_MC_STAR = A;
+
+        // TODO: Consider Zero-ing sketch_of_A
+
+        // Local Gemm
+        base::Gemm(elem::NORMAL,
+                   elem::TRANSPOSE,
+                   value_type(1),
+                   A_MC_STAR.LockedMatrix(),
+                   R.LockedMatrix(),
+                   value_type(1),
+                   sketch_of_A.Matrix());
+    }
+
+
+
+#ifdef OPTIMIZED // OPTIMIZED
+
+    void outer_panel_gemm(const matrix_type& A,
+                          output_matrix_type& sketch_of_A,
+                          skylark::sketch::rowwise_tag) const {
+
+        const elem::Grid& grid = A.Grid();
+
         elem::DistMatrix<value_type, elem::MR, elem::STAR> R1(grid);
         elem::DistMatrix<value_type>
             A_Left(grid),
@@ -361,6 +396,8 @@ private:
 
         }
     }
+
+#endif // OPTIMIZED
 
 
     void outer_panel_gemm(const matrix_type& A,
@@ -597,6 +634,7 @@ private:
                        value_type(0),
                        sketch_of_A_temp.Matrix());
 
+            // TODO: Revisit the transposition logic
             // Reduce-scatter within column communicators
             // TODO: Describe cache benefits from transposition of terms
             //       and implicit transposition of result after the summation
@@ -616,6 +654,8 @@ private:
 #endif // OPTIMIZED
 
 
+#define TESTED_ROWWISE    outer_panel_gemm(A, sketch_of_A, tag); return;
+#define TESTED_COLUMNWISE outer_panel_gemm(A, sketch_of_A, tag); return;
 
     void sketch_gemm(const matrix_type& A,
         output_matrix_type& sketch_of_A,
@@ -627,6 +667,7 @@ private:
 
         const double factor = get_factor();
 
+        TESTED_ROWWISE
         if((sketch_height * factor <= width) &&
             (sketch_width * factor <= width))
             inner_panel_gemm(A, sketch_of_A, tag);
@@ -648,6 +689,7 @@ private:
 
         const double factor = get_factor();
 
+        TESTED_COLUMNWISE
         if((sketch_height * factor <= height) &&
             (sketch_width * factor <= height))
             inner_panel_gemm(A, sketch_of_A, tag);

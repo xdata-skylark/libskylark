@@ -27,9 +27,9 @@ int main(int argc, char* argv[]) {
     elem::Grid grid(mpi_world);
 
     /** Example parameters */
-    int height = 500;
-    int width  = 300;
-    int sketch_size = 100;
+    int height = 200;
+    int width  = 100;
+    int sketch_size = 50;
 
     /** Define input matrix A */
     dist_matrix_t A(grid);
@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
     /** Initialize context */
     skylark::base::context_t context(0);
 
-#if 0
+#if 1
     /** Sketch transform (rowwise)*/
     int size = width;
     dist_matrix_t sketched_A(height, sketch_size);
@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
     sketch_transform.apply(A, sketched_A, skylark::sketch::rowwise_tag());
 #endif
 
-#if 1
+#if 0
     /** Sketch transform (columnwise)*/
     int size = height;
     dist_matrix_t sketched_A(sketch_size, width);

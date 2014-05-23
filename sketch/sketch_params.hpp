@@ -4,7 +4,9 @@
 
 namespace skylark { namespace sketch {
 
-int blocksize = 128;
+// for testing with smaller matrices
+int blocksize = 30;
+// int blocksize = 128;
 double factor = 20.;
 
 void set_blocksize(int blocksize) {

@@ -160,13 +160,16 @@ private:
                 // Alltoall within process columns
                 A1_STAR_VR = A1;
 
+                // Global size of the result of the Local Gemm that follows
+                sketch_of_A11_STAR_STAR.Resize(A1_STAR_VR.Height(),
+                                               R1.Height());
+
                 // Local Gemm
                 base::Gemm(elem::NORMAL,
                            elem::TRANSPOSE,
                            value_type(1),
                            A1_STAR_VR.LockedMatrix(),
                            R1.LockedMatrix(),
-                    value_type(0),
                            sketch_of_A11_STAR_STAR.Matrix());
 
                 // Reduce-scatter within process grid
@@ -641,8 +644,10 @@ private:
                                    sketch_of_A1,
               sketch_of_A_Bottom, sketch_of_A2, b );
 
+            // Global size of the result of the Local Gemm that follows
             sketch_of_A_temp.Resize(sketch_of_A1.Height(),
                                     sketch_of_A1.Width());
+
             // Local Gemm
             // A.T[MR, MC] * R1.T[MC, STAR] = (A.T * R1.T)[MR, STAR]:
             base::Gemm(elem::TRANSPOSE,

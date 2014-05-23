@@ -275,6 +275,10 @@ private:
                 // Alltoall within process rows
                 A1_VC_STAR = A1;
 
+                // Global size of the result of the Local Gemm that follows
+                sketch_of_A11_STAR_STAR.Resize(R1.Height(),
+                                               A1_VC_STAR.Width());
+
                 // Local Gemm
                 base::Gemm(elem::NORMAL,
                            elem::NORMAL,

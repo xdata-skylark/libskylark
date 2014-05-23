@@ -31,7 +31,7 @@ int main (int argc, char** argv) {
     bmpi::environment env (argc, argv);
     boost::mpi::communicator comm;
 
-    hilbert_options_t options (argc, argv, comm.rank());
+    hilbert_options_t options (argc, argv, comm.size());
     skylark::base::context_t context (options.seed);
 
     elem::Initialize (argc, argv);

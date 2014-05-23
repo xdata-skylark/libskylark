@@ -57,6 +57,7 @@ public:
         double lambda, // regularization parameter
         bool ScaleFeatureMaps = true);
 
+    void configureModel(skylark::ml::Model<T>* M);
     void set_nthreads(int NumThreads) { this->NumThreads = NumThreads; }
     void set_rho(double RHO) { this->RHO = RHO; }
     void set_maxiter(double MAXITER) { this->MAXITER = MAXITER; }
@@ -69,13 +70,6 @@ public:
     void InitializeTransformCache(int n);
 
     skylark::ml::Model<T>* train(T& X, LocalMatrixType& Y, T& Xv, LocalMatrixType& Yv, const boost::mpi::communicator& comm);
-
-    void predict(T& X, LocalMatrixType& Y,LocalMatrixType& W);
-
-    double evaluate(LocalMatrixType& Y, LocalMatrixType& Yp,
-        const boost::mpi::communicator& comm);
-
-    int classification_accuracy(LocalMatrixType& Yt, LocalMatrixType& Yp);
 
     int get_numfeatures() {return NumFeatures;}
 
@@ -102,6 +96,16 @@ private:
 
     bool CacheTransforms;
 };
+
+template <class T>
+void BlockADMMSolver<T>::configureModel(skylark::ml::Model<T>* M) {
+		M->featureMaps = featureMaps;
+		M->starts = starts;
+		M->finishes = finishes;
+		M->NumThreads = 1;
+		M->ScaleFeatureMaps = ScaleFeatureMaps;
+		M->NumFeatures = NumFeatures;
+}
 
 template <class T>
 void BlockADMMSolver<T>::InitializeFactorizationCache() {
@@ -241,7 +245,8 @@ skylark::ml::Model<T>* BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y, T& Xv
        int d = skylark::base::Height(X);
        int targets = GetNumTargets(comm, Y);
 
-       skylark::ml::Model<T>* model = new skylark::ml::Model<T>(featureMaps, NumFeatures, targets);
+       skylark::ml::Model<T>* model = new skylark::ml::Model<T>(featureMaps, ScaleFeatureMaps, starts, finishes, d, NumFeatures, targets);
+       model->set_num_threads(NumThreads);
 
        elem::Matrix<double> Wbar;
        elem::View(Wbar, model->get_coef());
@@ -294,6 +299,7 @@ skylark::ml::Model<T>* BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y, T& Xv
        LocalMatrixType sum_o, del_o, wbar_output;
        elem::Zeros(del_o, k, ni);
        LocalMatrixType Yp(Yv.Height(), k);
+       LocalMatrixType Yp_labels(Yv.Height(), 1);
 
        LocalMatrixType wbar_tmp;
        if (NumThreads > 1)
@@ -461,8 +467,9 @@ skylark::ml::Model<T>* BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y, T& Xv
            SKYLARK_TIMER_RESTART(PREDICTION_PROFILE);
            if (skylark::base::Width(Xv) > 0) {
                elem::MakeZeros(Yp);
-               predict(Xv, Yp, Wbar);
-               accuracy = evaluate(Yv, Yp, comm);
+               elem::MakeZeros(Yp_labels);
+               model->predict(Xv, Yp_labels, Yp);
+               accuracy = model->evaluate(Yv, Yp, comm);
            }
            SKYLARK_TIMER_ACCUMULATE(PREDICTION_PROFILE);
 
@@ -530,96 +537,5 @@ skylark::ml::Model<T>* BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y, T& Xv
        return model;
 }
 
-template <class T>
-void BlockADMMSolver<T>::predict(T& X, LocalMatrixType& Y,LocalMatrixType& W) {
-    // TOD W should be really kept as part of the model
-
-    // int n = X.Width();
-    int d = skylark::base::Height(X);
-    int k = skylark::base::Width(Y);
-    int ni = skylark::base::Width(X);
-    int j, start, finish, sj;
-    const feature_transform_t* featureMap;
-
-    if (featureMaps.size() == 0) {
-        Y.Resize(ni, k);
-        skylark::base::Gemm(elem::TRANSPOSE,elem::NORMAL,1.0, X, W, 0.0, Y);
-        return;
-    }
-
-    elem::Zeros(Y, ni, k);
-
-    LocalMatrixType Wslice;
-
-#   ifdef SKYLARK_HAVE_OPENMP
-#   pragma omp parallel for if(NumThreads > 1) private(j, start, finish, sj, featureMap) num_threads(NumThreads)
-#   endif
-    for(j = 0; j < NumFeaturePartitions; j++) {
-        start = starts[j];
-        finish = finishes[j];
-        sj = finish - start  + 1;
-
-        elem::Matrix<double> z(sj, ni);
-        featureMap = featureMaps[j];
-        featureMap->apply(X, z, skylark::sketch::columnwise_tag());
-        if (ScaleFeatureMaps)
-            elem::Scal(sqrt(double(sj) / d), z);
-
-        elem::Matrix<double> o(ni, k);
-
-        elem::View(Wslice, W, start, 0, sj, k);
-        elem::Gemm(elem::TRANSPOSE, elem::NORMAL, 1.0, z, Wslice, 0.0, o);
-
-#       ifdef SKYLARK_HAVE_OPENMP
-#       pragma omp critical
-#       endif
-        elem::Axpy(+1.0, o, Y);
-    }
-}
-
-// move elsewhere
-template <class T>
-int BlockADMMSolver<T>::classification_accuracy(LocalMatrixType& Yt, LocalMatrixType& Yp) {
-    int correct = 0;
-        double o, o1;
-        int pred;
-
-
-        for(int i=0; i < Yp.Height(); i++) {
-            o = Yp.Get(i,0);
-            pred = 0;
-            if (Yp.Width()==1)
-                    pred = (o >= 0)? +1:-1;
-
-            for(int j=1; j < Yp.Width(); j++) {
-                o1 = Yp.Get(i,j);
-                if ( o1 > o) {
-                    o = o1;
-                    pred = j;
-                }
-            }
-
-            if(pred == (int) Yt.Get(i,0))
-                correct++;
-        }
-        return correct;
-}
-
-template <class T>
-double BlockADMMSolver<T>::evaluate(LocalMatrixType& Yt, 
-    LocalMatrixType& Yp, const boost::mpi::communicator& comm) {
-
-    int rank = comm.rank();
-
-    int correct = classification_accuracy(Yt, Yp);
-    double accuracy = 0.0;
-    int totalcorrect, total;
-    boost::mpi::reduce(comm, correct, totalcorrect, std::plus<double>(), 0);
-    boost::mpi::reduce(comm, Yt.Height(), total, std::plus<int>(), 0);
-
-    if(rank ==0)
-        accuracy =  totalcorrect*100.0/total;
-    return accuracy;
-}
 
 #endif /* SKYLARK_BLOCKADDM_HPP */

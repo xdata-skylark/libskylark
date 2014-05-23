@@ -190,6 +190,27 @@ int run(const boost::mpi::communicator& comm, skylark::base::context_t& context,
     	model->save(options.modelfile, options.print(), comm.rank());
     }
 
+    else {
+
+    	std::cout << "Testing Mode" << std::endl;
+    	skylark::ml::Model<InputType>* model = new skylark::ml::Model<InputType>(options.modelfile, comm);
+    	model->set_num_threads(options.numthreads);
+    	read(comm, options.fileformat, options.testfile, Xt, Yt,
+    	    				skylark::base::Height(X));
+    	LabelType DecisionValues(Yt.Height(), model->get_classes());
+    	LabelType PredictedLabels(Yt.Height(), 1);
+    	elem::MakeZeros(DecisionValues);
+    	elem::MakeZeros(PredictedLabels);
+
+    	std::cout << "Starting predictions" << std::endl;
+    	model->predict(Xt, PredictedLabels, DecisionValues);
+    	double accuracy = model->evaluate(Yt, DecisionValues, comm);
+    	if(rank == 0)
+    	        std::cout << "Test Accuracy = " <<  accuracy << " %" << std::endl;
+
+    	// fix logistic case -- provide mechanism to dump predictions -- clean up evaluate
+
+    }
     /*else  { // test mode
 
     	// set other options from model file

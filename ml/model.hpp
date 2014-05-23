@@ -22,7 +22,7 @@ typedef elem::Matrix<double> LocalMatrixType;
 
 namespace skylark { namespace ml {
 
-int classification_accuracy(LocalMatrixType& Yt, LocalMatrixType& Yp) {
+int classification_accuracy(elem::Matrix<double>& Yt, elem::Matrix<double>& Yp) {
     int correct = 0;
         double o, o1;
         int pred;
@@ -48,15 +48,14 @@ int classification_accuracy(LocalMatrixType& Yt, LocalMatrixType& Yp) {
         return correct;
 }
 
-
-template <class T>
-struct Model
+template <typename InputType, typename OutputType>
+struct model_t
 {
 public:
-	typedef skylark::sketch::sketch_transform_t<T, LocalMatrixType>
-	    feature_transform_t;
-	typedef std::vector<const feature_transform_t *> feature_transform_array_t;
+    typedef InputType input_type;
+    typedef OutputType output_type;
 
+<<<<<<< HEAD
 	Model<T>(feature_transform_array_t& featureMaps, bool ScaleFeatureMaps, std::vector<int>& starts, std::vector<int>& finishes, int dimensions, int NumFeatures, int NumTargets);
 	Model<T>(std::string fName, const boost::mpi::communicator& comm);
 	void predict(T& X, LocalMatrixType& PredictedLabels, LocalMatrixType& DecisionValues);
@@ -71,16 +70,42 @@ public:
 private:
 	 feature_transform_array_t* featureMaps;
 	 elem::Matrix<double>* Wbar;
-	 std::vector<int>* starts;
-	 std::vector<int>* finishes;
-	 int NumThreads;
-	 bool ScaleFeatureMaps;
-	 int NumFeatures;
-	 int dimensions;
-	 int classes;
+
 };
+=======
+    // TODO the following two should depend on the input type
+    // TODO explicit doubles is not desired.
+    typedef elem::Matrix<double> intermediate_type;
+    typedef elem::Matrix<double> coef_type;
 
+    typedef skylark::sketch::sketch_transform_t<input_type, intermediate_type>
+    feature_transform_type;
 
+    model_t(std::vector<const feature_transform_type *>& maps,
+        int num_features, int num_outputs) : coef(num_features, num_outputs) {
+
+        elem::MakeZeros(coef);
+        this->featureMaps = featureMaps;
+    }
+
+    // TODO
+    //void predict(T& X, LocalMatrixType& Y, LocalMatrixType& Outputs);
+
+    // TODO
+    //void predict(T& X, LocalMatrixType& Y, LocalMatrixType& Outputs, LocalMatrixType& Prob);
+>>>>>>> Some basic rearrangement of model.hpp to fit our C++ standards
+
+    // TODO remove
+    void save(std::string fName, std::string header, int rank) {
+        std::stringstream dimensionstring;
+        dimensionstring << "# Dimensions " << coef.Height() << " "
+                        << coef.Width() << "\n";
+        if (rank==0)
+            elem::Write(coef, fName, elem::ASCII,
+                header.append(dimensionstring.str()));
+    }
+
+<<<<<<< HEAD
 template <class T>
 Model<T>::Model(feature_transform_array_t& featureMaps,  bool ScaleFeatureMaps, std::vector<int>& starts, std::vector<int>& finishes, int dimensions, int NumFeatures, int NumTargets) {
 	this->Wbar = new elem::Matrix<double>(NumFeatures, NumTargets);
@@ -98,14 +123,18 @@ Model<T>::Model(feature_transform_array_t& featureMaps,  bool ScaleFeatureMaps, 
 	this->classes = NumTargets;
 }
 
-template <class T>
-void Model<T>::save(std::string fName, std::string header, int rank) {
-	std::stringstream dimensionstring;
 
-	dimensionstring << "# CoefficientDimensions " << Wbar->Height() << " " << Wbar->Width() << "\n" << "# InputDimensions " << dimensions << "\n";
-	if (rank==0)
-	   elem::Write(*Wbar, fName, elem::ASCII, header.append(dimensionstring.str()));
-	}
+    // TODO remove
+    void load(std::string fName);
+
+    coef_type& get_coef() { return coef; }
+
+private:
+    // TODO use shared_ptr
+    std::vector<const feature_transform_type *> featureMaps;
+    coef_type coef;
+};
+>>>>>>> Some basic rearrangement of model.hpp to fit our C++ standards
 
 template <class T>
 Model<T>::Model(std::string fName, const boost::mpi::communicator& comm) {

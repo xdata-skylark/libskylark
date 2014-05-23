@@ -69,7 +69,7 @@ public:
     void InitializeFactorizationCache();
     void InitializeTransformCache(int n);
 
-    skylark::ml::Model<T>* train(T& X, LocalMatrixType& Y, T& Xv, LocalMatrixType& Yv, const boost::mpi::communicator& comm);
+    skylark::ml::model_t<T, LocalMatrixType>* train(T& X, LocalMatrixType& Y, T& Xv, LocalMatrixType& Yv, const boost::mpi::communicator& comm);
 
     int get_numfeatures() {return NumFeatures;}
 
@@ -233,7 +233,7 @@ BlockADMMSolver<T>::~BlockADMMSolver() {
 
 
 template <class T>
-skylark::ml::Model<T>* BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y, T& Xv, LocalMatrixType& Yv,
+skylark::ml::model_t<T, LocalMatrixType>* BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y, T& Xv, LocalMatrixType& Yv,
     const boost::mpi::communicator& comm) {
 
        int rank = comm.rank();
@@ -245,7 +245,9 @@ skylark::ml::Model<T>* BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y, T& Xv
        int d = skylark::base::Height(X);
        int targets = GetNumTargets(comm, Y);
 
-       skylark::ml::Model<T>* model = new skylark::ml::Model<T>(featureMaps, ScaleFeatureMaps, starts, finishes, d, NumFeatures, targets);
+       skylark::ml::model_t<T, LocalMatrixType>* model =
+           new skylark::ml::model_t<T, LocalMatrixType>(featureMaps, 
+               ScaleFeatureMaps, starts, finishes, d, NumFeatures, targets);
        model->set_num_threads(NumThreads);
 
        elem::Matrix<double> Wbar;

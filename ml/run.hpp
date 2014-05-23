@@ -186,7 +186,7 @@ int run(const boost::mpi::communicator& comm, skylark::base::context_t& context,
             	}
     		}
 
-    	skylark::ml::Model<InputType>* model = Solver->train(X, Y, Xv, Yv, comm);
+    	skylark::ml::model_t<InputType, LabelType>* model = Solver->train(X, Y, Xv, Yv, comm);
     	model->save(options.modelfile, options.print(), comm.rank());
     }
 

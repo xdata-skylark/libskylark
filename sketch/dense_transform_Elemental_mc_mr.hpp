@@ -524,6 +524,38 @@ private:
 
         const elem::Grid& grid = A.Grid();
 
+        elem::DistMatrix<value_type, elem::STAR, elem::MC> R(grid);
+        elem::DistMatrix<value_type, elem::STAR, elem::MR>
+            sketch_of_A_temp(grid);
+
+        // TODO: is alignment necessary?
+        sketch_of_A_temp.AlignWith(A);
+
+        data_type::realize_matrix_view(R);
+
+        // Local Gemm
+        base::Gemm(elem::NORMAL,
+                   elem::NORMAL,
+                   value_type(1),
+                   R.LockedMatrix(),
+                   A.LockedMatrix(),
+                   sketch_of_A_temp.Matrix());
+
+        // Reduce-scatter within column communicators
+        sketch_of_A.ColSumScatterUpdate(value_type(1),
+            sketch_of_A_temp);
+    }
+
+
+
+#ifdef OPTIMIZED // OPTIMIZED
+
+    void panel_matrix_gemm(const matrix_type& A,
+                          output_matrix_type& sketch_of_A,
+                          skylark::sketch::columnwise_tag) const {
+
+        const elem::Grid& grid = A.Grid();
+
         elem::DistMatrix<value_type, elem::STAR, elem::MC> R1(grid);
         elem::DistMatrix<value_type>
             sketch_of_A_Top(grid),
@@ -580,6 +612,9 @@ private:
               sketch_of_A_Bottom, sketch_of_A2 );
         }
     }
+
+#endif // OPTIMIZED
+
 
 
     void sketch_gemm(const matrix_type& A,

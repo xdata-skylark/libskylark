@@ -1,7 +1,7 @@
 /** Selecting the parts of HP support to activate */
 
 #define HP_DENSE_TRANSFORM_ELEMENTAL
-// #define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR
+#define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR
 
 
 #include <boost/mpi.hpp>
@@ -19,11 +19,12 @@ int main(int argc, char* argv[]) {
     /** Initialize MPI  */
     boost::mpi::environment env(argc, argv);
     boost::mpi::communicator world;
-    MPI_Comm mpi_world(world);
-    elem::Grid grid(mpi_world);
 
     /** Initialize Elemental */
     elem::Initialize (argc, argv);
+
+    MPI_Comm mpi_world(world);
+    elem::Grid grid(mpi_world);
 
     /** Example parameters */
     int height = 500;
@@ -40,7 +41,7 @@ int main(int argc, char* argv[]) {
 #if 1
     /** Sketch transform (rowwise)*/
     int size = width;
-    dist_matrix_t sketched_A(size, sketch_size);
+    dist_matrix_t sketched_A(height, sketch_size);
     sketch_transform_t sketch_transform(size, sketch_size, context);
     sketch_transform.apply(A, sketched_A, skylark::sketch::rowwise_tag());
 #endif
@@ -48,7 +49,7 @@ int main(int argc, char* argv[]) {
 #if 0
     /** Sketch transform (columnwise)*/
     int size = height;
-    dist_matrix_t sketched_A(sketch_size, size);
+    dist_matrix_t sketched_A(sketch_size, width);
     sketch_transform_t sketch_transform(size, sketch_size, context);
     sketch_transform.apply(A, sketched_A, skylark::sketch::columnwise_tag());
 #endif

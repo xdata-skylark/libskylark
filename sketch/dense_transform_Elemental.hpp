@@ -17,6 +17,10 @@
 
 */
 
+// testing the full stack
+// #define HP_DENSE_TRANSFORM_ELEMENTAL
+// #define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR
+
 #include "dense_transform_Elemental_local.hpp"
 #include "dense_transform_Elemental_coldist_star.hpp"
 #include "dense_transform_Elemental_coldist_star_local.hpp"

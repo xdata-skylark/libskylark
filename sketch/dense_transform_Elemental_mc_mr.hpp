@@ -165,7 +165,7 @@ private:
                            value_type(1),
                            A1_STAR_VR.LockedMatrix(),
                            R1.LockedMatrix(),
-                           value_type(0)
+                    value_type(0),
                            sketch_of_A11_STAR_STAR.Matrix());
 
                 // Reduce-scatter within process grid
@@ -236,7 +236,7 @@ private:
         int base = 0;
         while (sketch_of_A_Bottom.Height() > 0) {
 
-            int b = std::min(sketch_of_A_Right.Width(), blocksize);
+            int b = std::min(sketch_of_A_Bottom.Height(), blocksize);
             data_type::realize_matrix_view(R1, base, 0,
                                                b,    A.Height());
 
@@ -431,6 +431,39 @@ private:
 
         const elem::Grid& grid = A.Grid();
 
+        elem::DistMatrix<value_type, elem::STAR, elem::MR> R(grid);
+        elem::DistMatrix<value_type, elem::MC, elem::STAR>
+            sketch_of_A_temp(grid);
+
+        // TODO: are alignments necessary?
+        R.AlignWith(sketch_of_A);
+        sketch_of_A_temp.AlignWith(sketch_of_A);
+
+        data_type::realize_matrix_view(R);
+
+        // Local Gemm
+        base::Gemm(elem::NORMAL,
+                   elem::TRANSPOSE,
+                   value_type(1),
+                   A.LockedMatrix(),
+                   R.LockedMatrix(),
+                   sketch_of_A_temp.Matrix());
+
+        // Reduce-scatter within row communicators
+        sketch_of_A.RowSumScatterUpdate(value_type(1),
+            sketch_of_A_temp);
+    }
+
+
+
+#ifdef OPTIMIZED // OPTIMIZED
+
+    void matrix_panel_gemm(const matrix_type& A,
+                          output_matrix_type& sketch_of_A,
+                          skylark::sketch::rowwise_tag) const {
+
+        const elem::Grid& grid = A.Grid();
+
         elem::DistMatrix<value_type, elem::STAR, elem::MR> R1(grid);
         elem::DistMatrix<value_type>
             sketch_of_A_Left(grid),
@@ -467,7 +500,6 @@ private:
                        value_type(1),
                        A.LockedMatrix(),
                        R1.LockedMatrix(),
-                       value_type(0),
                        sketch_of_A_temp.Matrix());
 
             // Reduce-scatter within row communicators
@@ -482,6 +514,8 @@ private:
 
         }
     }
+
+#endif // OPTIMIZED
 
 
     void panel_matrix_gemm(const matrix_type& A,

@@ -618,7 +618,8 @@ private:
         elem::DistMatrix<value_type, elem::MR, elem::STAR>
             sketch_of_A_temp(grid);
 
-        // TODO: is alignment necessary?
+        // TODO: are alignments necessary?
+        R1.AlignWith(A);
         sketch_of_A_temp.AlignWith(A);
 
         elem::PartitionDown
@@ -630,6 +631,7 @@ private:
         while (sketch_of_A_Bottom.Height() > 0) {
 
             int b = std::min(sketch_of_A_Bottom.Height(), blocksize);
+
             data_type::realize_matrix_view(R1, base, 0,
                                                b,    A.Height());
 
@@ -639,6 +641,8 @@ private:
                                    sketch_of_A1,
               sketch_of_A_Bottom, sketch_of_A2, b );
 
+            sketch_of_A_temp.Resize(sketch_of_A1.Height(),
+                                    sketch_of_A1.Width());
             // Local Gemm
             // A.T[MR, MC] * R1.T[MC, STAR] = (A.T * R1.T)[MR, STAR]:
             base::Gemm(elem::TRANSPOSE,
@@ -646,13 +650,13 @@ private:
                        value_type(1),
                        A.LockedMatrix(),
                        R1.LockedMatrix(),
-                       value_type(0),
                        sketch_of_A_temp.Matrix());
 
             // TODO: Revisit the transposition logic
             // Reduce-scatter within column communicators
             // TODO: Describe cache benefits from transposition of terms
             //       and implicit transposition of result after the summation
+
             sketch_of_A1.TransposeColSumScatterUpdate(value_type(1),
                 sketch_of_A_temp);
 

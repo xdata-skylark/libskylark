@@ -82,10 +82,36 @@ private:
     feature_transform_type;
 
     model_t(std::vector<const feature_transform_type *>& maps,
-        int num_features, int num_outputs) : coef(num_features, num_outputs) {
+        int num_features, int num_outputs) :
+        _coef(num_features, num_outputs), _maps(maps) {
 
-        elem::MakeZeros(coef);
-        this->featureMaps = featureMaps;
+        elem::MakeZeros(_coef);
+    }
+
+    boost::property_tree::ptree to_ptree() const {
+        boost::property_tree::ptree pt;
+        pt.put("skylark_object_type", "model:linear-on-features");
+        pt.put("skylark_version", VERSION);
+
+        pt.put("num_features", _coef.Height());
+        pt.put("num_outputs", _coef.Width());
+
+        boost::property_tree::ptree ptfmap;
+        ptfmap.put("number_maps", _maps.size());
+
+        boost::property_tree::ptree ptmaps;
+        for(int i = 0; i < _maps.size(); i++)
+            ptmaps.push_back(std::make_pair(std::to_string(i),
+                    _maps[i]->to_ptree()));
+        ptfmap.add_child("maps", ptmaps);
+
+        pt.add_child("feature_mapping", ptfmap);
+
+        std::stringstream scoef;
+        elem::Print(_coef, "", scoef);
+        pt.put("coef_matrix", scoef.str());
+
+        return pt;
     }
 
     // TODO
@@ -95,16 +121,18 @@ private:
     //void predict(T& X, LocalMatrixType& Y, LocalMatrixType& Outputs, LocalMatrixType& Prob);
 >>>>>>> Some basic rearrangement of model.hpp to fit our C++ standards
 
-    // TODO remove
+    // TODO remove 
     void save(std::string fName, std::string header, int rank) {
+
         std::stringstream dimensionstring;
-        dimensionstring << "# Dimensions " << coef.Height() << " "
-                        << coef.Width() << "\n";
+        dimensionstring << "# Dimensions " << _coef.Height() << " "
+                        << _coef.Width() << "\n";
         if (rank==0)
-            elem::Write(coef, fName, elem::ASCII,
+            elem::Write(_coef, fName, elem::ASCII,
                 header.append(dimensionstring.str()));
     }
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 template <class T>
 Model<T>::Model(feature_transform_array_t& featureMaps,  bool ScaleFeatureMaps, std::vector<int>& starts, std::vector<int>& finishes, int dimensions, int NumFeatures, int NumTargets) {
@@ -125,14 +153,18 @@ Model<T>::Model(feature_transform_array_t& featureMaps,  bool ScaleFeatureMaps, 
 
 
     // TODO remove
+=======
+    // TODO remove 
+>>>>>>> Implement to_ptree() on model_t
     void load(std::string fName);
 
-    coef_type& get_coef() { return coef; }
+    coef_type& get_coef() { return _coef; }
 
 private:
-    // TODO use shared_ptr
-    std::vector<const feature_transform_type *> featureMaps;
-    coef_type coef;
+
+    coef_type _coef;
+    std::vector<const feature_transform_type *> _maps; // TODO use shared_ptr
+
 };
 >>>>>>> Some basic rearrangement of model.hpp to fit our C++ standards
 

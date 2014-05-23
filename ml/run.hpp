@@ -186,25 +186,35 @@ int run(const boost::mpi::communicator& comm, skylark::base::context_t& context,
             	}
     		}
 
-    	skylark::ml::model_t<InputType, LabelType>* model = Solver->train(X, Y, Xv, Yv, comm);
-    	model->save(options.modelfile, options.print(), comm.rank());
+    	skylark::ml::model_t<InputType, LabelType>* model =
+            Solver->train(X, Y, Xv, Yv, comm);
+
+        if (comm.rank() == 0) {
+            boost::property_tree::ptree ptmodel = model->to_ptree();
+            ofstream of(options.modelfile);
+            boost::property_tree::write_json(of, ptmodel);
+            of.close();
+        }
     }
 
     else {
 
     	std::cout << "Testing Mode" << std::endl;
-    	skylark::ml::Model<InputType>* model = new skylark::ml::Model<InputType>(options.modelfile, comm);
-    	model->set_num_threads(options.numthreads);
+        std::ifstream is(options.modelfile);
+        boost::property_tree::ptree pt;
+        boost::property_tree::read_json(is, pt);
+        is.close();
+    	skylark::ml::model_t<InputType, LabelType> model(pt);
     	read(comm, options.fileformat, options.testfile, Xt, Yt,
     	    				skylark::base::Height(X));
-    	LabelType DecisionValues(Yt.Height(), model->get_classes());
+    	LabelType DecisionValues(Yt.Height(), model.get_num_outputs());
     	LabelType PredictedLabels(Yt.Height(), 1);
     	elem::MakeZeros(DecisionValues);
     	elem::MakeZeros(PredictedLabels);
 
     	std::cout << "Starting predictions" << std::endl;
-    	model->predict(Xt, PredictedLabels, DecisionValues);
-    	double accuracy = model->evaluate(Yt, DecisionValues, comm);
+    	model.predict(Xt, PredictedLabels, DecisionValues, options.numthreads);
+    	double accuracy = model.evaluate(Yt, DecisionValues, comm);
     	if(rank == 0)
     	        std::cout << "Test Accuracy = " <<  accuracy << " %" << std::endl;
 

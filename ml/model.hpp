@@ -68,6 +68,8 @@ public:
         _coef(num_features, num_outputs), _maps(maps), _scale_maps(scale_maps),
         _starts(maps.size()), _finishes(maps.size()) {
 
+        // TODO verify all N dimension of the maps match
+
         elem::MakeZeros(_coef);
 
         int nf = 0;
@@ -79,7 +81,43 @@ public:
     }
 
     model_t(const boost::property_tree::ptree &pt) {
-        // TODO
+        int num_features = pt.get<int>("num_features");
+        int num_outputs = pt.get<int>("num_outputs");
+        _coef.Resize(num_features, num_outputs);
+
+        int num_maps = pt.get<int>("feature_mapping.number_maps");
+        _maps.resize(num_maps);
+        const boost::property_tree::ptree &ptmaps =
+            pt.get_child("feature_mapping.maps");
+        for(int i = 0; i < num_maps; i++)
+            _maps[i] =
+                feature_transform_type::from_ptree(
+                   ptmaps.get_child(std::to_string(i)));
+
+        int nf = 0;
+        _starts.resize(num_maps);
+        _finishes.resize(num_maps);
+        for(int i = 0; i < _maps.size(); i++) {
+            _starts[i] = nf;
+            _finishes[i] = nf + _maps[i]->get_S() - 1;
+            nf += _maps[i]->get_S();
+        }
+
+        _scale_maps = pt.get<bool>("feature_mapping.scale_maps");
+
+        std::istringstream coef_str(pt.get<std::string>("coef_matrix"));
+        double *buffer = _coef.Buffer();
+        int ldim = _coef.LDim();
+        for(int i = 0; i < num_features; i++) {
+            std::string line;
+            std::getline(coef_str, line);
+            std::istringstream coefstream(line);
+            for(int j = 0; j < num_outputs; j++) {
+                std::string token;
+                coefstream >> token;
+                buffer[i + j * ldim] = atof(token.c_str());
+            }
+        }
     }
 
     boost::property_tree::ptree to_ptree() const {
@@ -176,6 +214,7 @@ public:
         const boost::mpi::communicator& comm);
 
     int get_num_outputs() const { return _coef.Width(); }
+    int get_input_size() const { return _maps[0]->get_N(); /* FIXME linear ? */}
 
 private:
     coef_type _coef;

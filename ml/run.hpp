@@ -191,6 +191,8 @@ int run(const boost::mpi::communicator& comm, skylark::base::context_t& context,
 
         if (comm.rank() == 0) {
             boost::property_tree::ptree ptmodel = model->to_ptree();
+            ptmodel.push_front(std::make_pair("hilbert_cmdline", 
+                    boost::property_tree::ptree(options.str)));
             ofstream of(options.modelfile);
             boost::property_tree::write_json(of, ptmodel);
             of.close();
@@ -206,7 +208,7 @@ int run(const boost::mpi::communicator& comm, skylark::base::context_t& context,
         is.close();
     	skylark::ml::model_t<InputType, LabelType> model(pt);
     	read(comm, options.fileformat, options.testfile, Xt, Yt,
-    	    				skylark::base::Height(X));
+            model.get_input_size());
     	LabelType DecisionValues(Yt.Height(), model.get_num_outputs());
     	LabelType PredictedLabels(Yt.Height(), 1);
     	elem::MakeZeros(DecisionValues);

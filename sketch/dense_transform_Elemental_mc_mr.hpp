@@ -883,7 +883,7 @@ private:
     void apply_impl_dist (const matrix_type& A,
                           output_matrix_type& sketch_of_A,
                           columnwise_tag) const {
-
+        std::cout << "Reference Impl" << std::endl;
         elem::DistMatrix<value_type> S(data_type::_S, data_type::_N);
 
         for(int j_loc = 0; j_loc < S.LocalWidth(); ++j_loc) {
@@ -912,7 +912,7 @@ private:
     void apply_impl_dist(const matrix_type& A,
                          output_matrix_type& sketch_of_A,
                          rowwise_tag) const {
-
+        std::cout << "Reference Impl" << std::endl;
         elem::DistMatrix<value_type> S(data_type::_S, data_type::_N);
 
         for(int j_loc = 0; j_loc < S.LocalWidth(); ++j_loc) {

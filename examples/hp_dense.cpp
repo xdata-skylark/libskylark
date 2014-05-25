@@ -1,14 +1,14 @@
 /** Selecting the parts of HP support to activate */
 ////////////////////////////////////////////////////////////////////////////////
 
-#define ROWWISE
+// #define ROWWISE
 
 #define HP_DENSE_TRANSFORM_ELEMENTAL
 #define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR
 #define OPTIMIZED
 
 #define TESTED_ROWWISE    inner_panel_gemm(A, sketch_of_A, tag); return;
-#define TESTED_COLUMNWISE inner_panel_gemm(A, sketch_of_A, tag); return;
+#define TESTED_COLUMNWISE panel_matrix_gemm(A, sketch_of_A, tag); return;
 
 ////////////////////////////////////////////////////////////////////////////////
 

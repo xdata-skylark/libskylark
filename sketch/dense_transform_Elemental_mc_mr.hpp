@@ -703,6 +703,8 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 #ifdef OPTIMIZED // OPTIMIZED
 
+#ifdef EXPERIMENTAL // EXPERIMENTAL
+
     void panel_matrix_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::columnwise_tag) const {
@@ -772,6 +774,75 @@ private:
               sketch_of_A_Bottom, sketch_of_A2 );
         }
     }
+
+#else
+
+    void panel_matrix_gemm(const matrix_type& A,
+                          output_matrix_type& sketch_of_A,
+                          skylark::sketch::columnwise_tag) const {
+
+        const elem::Grid& grid = A.Grid();
+
+        elem::DistMatrix<value_type, elem::STAR, elem::MC> R1(grid);
+        elem::DistMatrix<value_type>
+            sketch_of_A_Top(grid),
+            sketch_of_A_Bottom(grid),
+            sketch_of_A0(grid),
+            sketch_of_A1(grid),
+            sketch_of_A2(grid);
+        elem::DistMatrix<value_type, elem::STAR, elem::MR>
+            sketch_of_A_temp(grid);
+
+        // TODO: are alignments necessary?
+        R1.AlignWith(A);
+        sketch_of_A_temp.AlignWith(A);
+
+        elem::PartitionDown
+        ( sketch_of_A,
+          sketch_of_A_Top, sketch_of_A_Bottom, 0 );
+
+        int blocksize = get_blocksize();
+        int base = 0;
+        while (sketch_of_A_Bottom.Height() > 0) {
+
+            int b = std::min(sketch_of_A_Bottom.Height(), blocksize);
+
+            data_type::realize_matrix_view(R1, base, 0,
+                                               b,    A.Height());
+
+            elem::RepartitionDown
+            ( sketch_of_A_Top,     sketch_of_A0,
+              /**/                 /**/
+                                   sketch_of_A1,
+              sketch_of_A_Bottom, sketch_of_A2, b );
+
+            // Global size of the result of the Local Gemm that follows
+            sketch_of_A_temp.Resize(sketch_of_A1.Height(),
+                                    sketch_of_A1.Width());
+
+            // Local Gemm
+            base::Gemm(elem::NORMAL,
+                       elem::NORMAL,
+                       value_type(1),
+                       R1.LockedMatrix(),
+                       A.LockedMatrix(),
+                       sketch_of_A_temp.Matrix());
+
+            // Reduce-scatter within column communicators
+            sketch_of_A1.ColSumScatterUpdate(value_type(1),
+                sketch_of_A_temp);
+
+            base = base + b;
+
+            elem::SlidePartitionDown
+            ( sketch_of_A_Top,    sketch_of_A0,
+                                  sketch_of_A1,
+              /**/                /**/
+              sketch_of_A_Bottom, sketch_of_A2 );
+        }
+    }
+
+#endif // EXPERIMENTAL
 
 #else
 

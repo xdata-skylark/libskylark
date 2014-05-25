@@ -84,6 +84,8 @@ private:
 #ifdef HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR
 
 ////////////////////////////////////////////////////////////////////////////////
+#ifdef OPTIMIZED // OPTIMIZED
+
     void inner_panel_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::rowwise_tag) const {
@@ -199,8 +201,54 @@ private:
         }
     }
 
+#else
+
+    void inner_panel_gemm(const matrix_type& A,
+                          output_matrix_type& sketch_of_A,
+                          skylark::sketch::rowwise_tag) const {
+
+        const elem::Grid& grid = A.Grid();
+
+        elem::DistMatrix<value_type, elem::STAR, elem::VR> R(grid);
+        elem::DistMatrix<value_type, elem::STAR, elem::VR>
+            A_STAR_VR(grid);
+        elem::DistMatrix<value_type, elem::STAR, elem::STAR>
+            sketch_of_A_STAR_STAR(grid);
+
+        // TODO: are alignments necessary?
+
+        data_type::realize_matrix_view(R);
+
+        // TODO: is alignment necessary?
+        A_STAR_VR.AlignWith(R);
+
+        // Alltoall within process columns
+        A_STAR_VR = A;
+
+        // Global size of the result of the Local Gemm that follows
+        sketch_of_A_STAR_STAR.Resize(A_STAR_VR.Height(),
+                    R.Height());
+
+        // Local Gemm
+        base::Gemm(elem::NORMAL,
+                   elem::TRANSPOSE,
+                   value_type(1),
+                   A_STAR_VR.LockedMatrix(),
+                   R.LockedMatrix(),
+                   sketch_of_A_STAR_STAR.Matrix());
+
+        // Reduce-scatter within process grid
+        sketch_of_A.SumScatterUpdate(value_type(1),
+            sketch_of_A_STAR_STAR);
+    }
+
+
+#endif // OPTIMIZED
+
 
 ////////////////////////////////////////////////////////////////////////////////
+#ifdef OPTIMIZED // OPTIMIZED
+
     void inner_panel_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::columnwise_tag) const {
@@ -312,6 +360,52 @@ private:
 
         }
     }
+
+#else
+
+    void inner_panel_gemm(const matrix_type& A,
+                          output_matrix_type& sketch_of_A,
+                          skylark::sketch::columnwise_tag) const {
+
+        const elem::Grid& grid = A.Grid();
+
+        elem::DistMatrix<value_type, elem::STAR, elem::VC> R(grid);
+        elem::DistMatrix<value_type, elem::VC, elem::STAR>
+            A_VC_STAR(grid);
+        elem::DistMatrix<value_type, elem::STAR, elem::STAR>
+            sketch_of_A_STAR_STAR(grid);
+
+        // TODO: are alignments necessary?
+
+        data_type::realize_matrix_view(R);
+
+        // TODO: is alignment necessary?
+        A_VC_STAR.AlignWith(R);
+
+        // Alltoall within process rows
+        A_VC_STAR = A;
+
+        // Global size of the result of the Local Gemm that follows
+        sketch_of_A_STAR_STAR.Resize(R.Height(),
+                                      A_VC_STAR.Width());
+
+        // Local Gemm
+        base::Gemm(elem::NORMAL,
+                   elem::NORMAL,
+                   value_type(1),
+                   R.LockedMatrix(),
+                   A_VC_STAR.LockedMatrix(),
+                   value_type(0),
+                   sketch_of_A_STAR_STAR.Matrix());
+
+        // Reduce-scatter within process grid
+        sketch_of_A.SumScatterUpdate(value_type(1),
+            sketch_of_A_STAR_STAR);
+
+    }
+
+
+#endif // OPTIMIZED
 
 
 ////////////////////////////////////////////////////////////////////////////////

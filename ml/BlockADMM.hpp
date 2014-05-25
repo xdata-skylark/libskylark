@@ -301,9 +301,10 @@ skylark::ml::Model<T>* BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y, T& Xv
        LocalMatrixType Yp(Yv.Height(), k);
        LocalMatrixType Yp_labels(Yv.Height(), 1);
 
-       LocalMatrixType wbar_tmp;
-       if (NumThreads > 1)
-           elem::Zeros(wbar_tmp, k, ni);
+       /*LocalMatrixType wbar_tmp;
+       //if (NumThreads > 1)
+
+       elem::Zeros(wbar_tmp, k, ni);*/
 
        if (CacheTransforms)
                    InitializeTransformCache(ni);
@@ -403,6 +404,9 @@ skylark::ml::Model<T>* BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y, T& Xv
                }
 
                elem::View(tmp, Wbar, start, 0, sj, k); //tmp = Wbar[J,:]
+
+               LocalMatrixType wbar_tmp;
+               elem::Zeros(wbar_tmp, k, ni);
 
                if (NumThreads > 1) {
                    elem::Gemm(elem::TRANSPOSE, elem::NORMAL, 1.0, tmp, z, 0.0, wbar_tmp);

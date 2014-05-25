@@ -197,6 +197,15 @@ int run(const boost::mpi::communicator& comm, skylark::base::context_t& context,
     	model->set_num_threads(options.numthreads);
     	read(comm, options.fileformat, options.testfile, Xt, Yt,
     	    				skylark::base::Height(X));
+
+    	int targets = GetNumTargets<LabelType>(comm, Yt);
+    	bool shift = false;
+    //	if ((model.lossfunction == LOGISTIC) && (targets == 1)) {
+    //	    		ShiftForLogistic(Yt);
+    //	    		targets = 2;
+    //	    		shift = true;
+    //	 }
+
     	LabelType DecisionValues(Yt.Height(), model->get_classes());
     	LabelType PredictedLabels(Yt.Height(), 1);
     	elem::MakeZeros(DecisionValues);

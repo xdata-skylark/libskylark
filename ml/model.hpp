@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 #include "kernels.hpp"
+#include "options.hpp"
 
 #ifdef SKYLARK_HAVE_OPENMP
 #include <omp.h>
@@ -78,6 +79,7 @@ private:
 	 int NumFeatures;
 	 int dimensions;
 	 int classes;
+//	 Losstype lossfunction;
 };
 
 

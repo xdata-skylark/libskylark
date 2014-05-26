@@ -5,7 +5,7 @@
 namespace skylark { namespace sketch {
 
 // for testing with smaller matrices
-int blocksize = 3;
+int blocksize = 30;
 // int blocksize = 128;
 double factor = 20.;
 

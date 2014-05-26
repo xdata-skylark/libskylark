@@ -428,6 +428,9 @@ private:
         elem::DistMatrix<value_type, elem::MC, elem::STAR>
             A1_MC_STAR(grid);
 
+        // Zero sketch_of_A
+        elem::Zero(sketch_of_A);
+
         // TODO: are alignments necessary?
         R1.AlignWith(sketch_of_A);
         A1_MC_STAR.AlignWith(sketch_of_A);
@@ -491,7 +494,8 @@ private:
         // Allgather within process rows
         A_MC_STAR = A;
 
-        // TODO: Consider Zero-ing sketch_of_A
+        // Zero sketch_of_A
+        elem::Zero(sketch_of_A);
 
         // Local Gemm
         base::Gemm(elem::NORMAL,
@@ -644,6 +648,10 @@ private:
             ( sketch_of_A_Left, /**/               sketch_of_A_Right,
               sketch_of_A0,     /**/ sketch_of_A1, sketch_of_A2,      b );
 
+            // Global size of the result of the Local Gemm that follows
+            sketch_of_A_temp.Resize(sketch_of_A.Height(),
+                                    R1.Height());
+
             // Local Gemm
             base::Gemm(elem::NORMAL,
                        elem::TRANSPOSE,
@@ -653,8 +661,7 @@ private:
                        sketch_of_A_temp.Matrix());
 
             // Reduce-scatter within row communicators
-            sketch_of_A1.RowSumScatterUpdate(value_type(1),
-                sketch_of_A_temp);
+            sketch_of_A1.RowSumScatterFrom(sketch_of_A_temp);
 
             base = base + b;
 
@@ -678,10 +685,14 @@ private:
             sketch_of_A_temp(grid);
 
         // TODO: are alignments necessary?
-        R.AlignWith(sketch_of_A);
-        sketch_of_A_temp.AlignWith(sketch_of_A);
+        R.AlignWith(A);
+        sketch_of_A_temp.AlignWith(A);
 
         data_type::realize_matrix_view(R);
+
+        // Global size of the result of the Local Gemm that follows
+        sketch_of_A_temp.Resize(sketch_of_A.Height(),
+                                sketch_of_A.Width());
 
         // Local Gemm
         base::Gemm(elem::NORMAL,
@@ -692,8 +703,12 @@ private:
                    sketch_of_A_temp.Matrix());
 
         // Reduce-scatter within row communicators
-        sketch_of_A.RowSumScatterUpdate(value_type(1),
-            sketch_of_A_temp);
+        // sketch_of_A.RowSumScatterUpdate(value_type(1),
+        //    sketch_of_A_temp);
+
+        // Reduce-scatter within row communicators
+        sketch_of_A.RowSumScatterFrom(sketch_of_A_temp);
+
     }
 
 

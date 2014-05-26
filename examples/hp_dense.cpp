@@ -1,7 +1,7 @@
 /** Selecting the parts of HP support to activate */
 ////////////////////////////////////////////////////////////////////////////////
 
-#define ROWWISE
+//#define ROWWISE
 
 #define HP_DENSE_TRANSFORM_ELEMENTAL
 #define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR

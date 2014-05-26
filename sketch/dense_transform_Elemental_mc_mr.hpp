@@ -336,8 +336,7 @@ private:
                            sketch_of_A11_STAR_STAR.Matrix());
 
                 // Reduce-scatter within process grid
-                sketch_of_A11.SumScatterUpdate(value_type(1),
-                    sketch_of_A11_STAR_STAR);
+                sketch_of_A11.SumScatterFrom(sketch_of_A11_STAR_STAR);
 
                 elem::SlideLockedPartitionRight
                 ( A_Left,     /**/ A_Right,
@@ -386,7 +385,7 @@ private:
 
         // Global size of the result of the Local Gemm that follows
         sketch_of_A_STAR_STAR.Resize(R.Height(),
-                                      A_VC_STAR.Width());
+                                     A_VC_STAR.Width());
 
         // Local Gemm
         base::Gemm(elem::NORMAL,
@@ -398,9 +397,7 @@ private:
                    sketch_of_A_STAR_STAR.Matrix());
 
         // Reduce-scatter within process grid
-        sketch_of_A.SumScatterUpdate(value_type(1),
-            sketch_of_A_STAR_STAR);
-
+        sketch_of_A.SumScatterFrom(sketch_of_A_STAR_STAR);
 
     }
 
@@ -529,6 +526,9 @@ private:
         elem::DistMatrix<value_type, elem::MR, elem::STAR>
             A1Trans_MR_STAR(grid);
 
+        // Zero sketch_of_A
+        elem::Zero(sketch_of_A);
+
         // TODO: are alignments necessary?
         R1.AlignWith(sketch_of_A);
         A1Trans_MR_STAR.AlignWith(sketch_of_A);
@@ -550,6 +550,11 @@ private:
                /**/      /**/
                          A1,
                A_Bottom, A2, b );
+
+
+            // Global size of the target of Allgather that follows
+            A1Trans_MR_STAR.Resize(A1.Width(),
+                                   A1.Height());
 
             // Allgather within process columns
             // TODO: Describe cache benefits from transposition:
@@ -591,6 +596,13 @@ private:
         ATrans_MR_STAR.AlignWith(sketch_of_A);
 
         data_type::realize_matrix_view(R);
+
+        // Zero sketch_of_A
+        elem::Zero(sketch_of_A);
+
+        // Global size of the target of Allgather that follows
+        ATrans_MR_STAR.Resize(A.Width(),
+                              A.Height());
 
         // Allgather within process columns
         // TODO: Describe cache benefits from transposition:
@@ -832,8 +844,8 @@ private:
               sketch_of_A_Bottom, sketch_of_A2, b );
 
             // Global size of the result of the Local Gemm that follows
-            sketch_of_A_temp.Resize(sketch_of_A1.Height(),
-                                    sketch_of_A1.Width());
+            sketch_of_A_temp.Resize(R1.Height(),
+                                    A.Width());
 
             // Local Gemm
             base::Gemm(elem::NORMAL,
@@ -844,8 +856,11 @@ private:
                        sketch_of_A_temp.Matrix());
 
             // Reduce-scatter within column communicators
-            sketch_of_A1.ColSumScatterUpdate(value_type(1),
-                sketch_of_A_temp);
+            sketch_of_A1.ColSumScatterFrom(sketch_of_A_temp);
+
+            // Reduce-scatter within column communicators
+            // sketch_of_A1.ColSumScatterUpdate(value_type(1),
+            //    sketch_of_A_temp);
 
             base = base + b;
 
@@ -876,6 +891,10 @@ private:
 
         data_type::realize_matrix_view(R);
 
+        // Global size of the result of the Local Gemm that follows
+        sketch_of_A_temp.Resize(R.Height(),
+                                A.Width());
+
         // Local Gemm
         base::Gemm(elem::NORMAL,
                    elem::NORMAL,
@@ -885,8 +904,8 @@ private:
                    sketch_of_A_temp.Matrix());
 
         // Reduce-scatter within column communicators
-        sketch_of_A.ColSumScatterUpdate(value_type(1),
-            sketch_of_A_temp);
+        sketch_of_A.ColSumScatterFrom(sketch_of_A_temp);
+
     }
 
 #endif // OPTIMIZED

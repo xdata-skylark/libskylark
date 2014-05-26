@@ -31,7 +31,7 @@ struct FJLT_data_t : public sketch_transform_data_t {
      */
     FJLT_data_t (int N, int S, skylark::base::context_t& context)
         : base_t(N, S, context, "FJLT"),
-          samples(base_t::_S), underlying_data(nullptr) {
+          samples(base_t::_S) {
 
         context = build();
     }
@@ -61,7 +61,7 @@ protected:
     FJLT_data_t (int N, int S, const skylark::base::context_t& context,
         std::string type)
         : base_t(N, S, context, type),
-          samples(base_t::_S), underlying_data(nullptr) {
+          samples(base_t::_S) {
     }
 
     base::context_t build() {

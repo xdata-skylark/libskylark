@@ -34,7 +34,6 @@ struct RLT_data_t : public sketch_transform_data_t {
      */
     RLT_data_t (int N, int S, skylark::base::context_t& context)
         : base_t(N, S, context, "RLT"), _val_scale(1),
-          _underlying_data(nullptr),
           _scale(std::sqrt(1.0 / base_t::_S)) {
         context = build();
     }
@@ -58,7 +57,6 @@ protected:
     RLT_data_t (int N, int S, const skylark::base::context_t& context,
         std::string type)
         : base_t(N, S, context, type), _val_scale(1),
-          _underlying_data(nullptr),
           _scale(std::sqrt(1.0 / base_t::_S)) {
 
     }

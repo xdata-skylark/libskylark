@@ -35,12 +35,13 @@ struct CWT_data_t : public hash_transform_data_t<
 
     CWT_data_t(const boost::property_tree::ptree& pt) :
         base_t(pt.get<int>("N"), pt.get<int>("S"),
-            base::context_t(pt.get_child("creation_context")), "CWT") { 
+            base::context_t(pt.get_child("creation_context")), "CWT") {
         base_t::build();
     }
 
     /**
-     *  Serializes a sketch to a string.
+     *  Serializes a sketch to a Boost property tree. This can be conveniently
+     *  converted to other formats, e.g. to JSON and XML.
      *
      *  @param[out] property_tree describing the sketch.
      */

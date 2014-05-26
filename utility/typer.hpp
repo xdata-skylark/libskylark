@@ -1,6 +1,13 @@
 #ifndef SKYLARK_TYPER_HPP
 #define SKYLARK_TYPER_HPP
 
+#ifdef SKYLARK_HAVE_ELEMENTAL
+#include <elemental.hpp>
+#endif
+#ifdef SKYLARK_HAVE_COMBBLAS
+#include <CombBLAS.h>
+#endif
+
 namespace skylark {
 namespace utility {
 
@@ -10,10 +17,8 @@ struct typer_t {
     typedef typename T::index_type index_type;
 };
 
+
 #ifdef SKYLARK_HAVE_ELEMENTAL
-
-#include <elemental.hpp>
-
 template<typename F>
 struct typer_t<elem::Matrix<F> > {
     typedef F value_type;
@@ -25,13 +30,9 @@ struct typer_t< elem::DistMatrix<F, CD, RD> > {
     typedef F value_type;
     typedef int index_type;
 };
-
 #endif
 
 #ifdef SKYLARK_HAVE_COMBBLAS
-
-#include <CombBLAS.h>
-
 template<typename IT, typename VT, typename DT>
 struct typer_t< SpParMat<IT, VT, DT> > {
     typedef VT value_type;
@@ -43,7 +44,6 @@ struct typer_t< FullyDistVec<IT, VT> > {
     typedef VT value_type;
     typedef IT index_type;
 };
-
 #endif
 
 } }  // namespace skylark::utility

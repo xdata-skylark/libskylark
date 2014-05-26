@@ -175,8 +175,7 @@ private:
                            sketch_of_A11_STAR_STAR.Matrix());
 
                 // Reduce-scatter within process grid
-                sketch_of_A11.SumScatterUpdate(value_type(1),
-                    sketch_of_A11_STAR_STAR);
+                sketch_of_A11.SumScatterFrom(sketch_of_A11_STAR_STAR);
 
                 elem::SlideLockedPartitionDown
                 ( A_Top,    A0,
@@ -238,8 +237,8 @@ private:
                    sketch_of_A_STAR_STAR.Matrix());
 
         // Reduce-scatter within process grid
-        sketch_of_A.SumScatterUpdate(value_type(1),
-            sketch_of_A_STAR_STAR);
+        sketch_of_A.SumScatterFrom(sketch_of_A_STAR_STAR);
+
     }
 
 
@@ -401,6 +400,7 @@ private:
         // Reduce-scatter within process grid
         sketch_of_A.SumScatterUpdate(value_type(1),
             sketch_of_A_STAR_STAR);
+
 
     }
 

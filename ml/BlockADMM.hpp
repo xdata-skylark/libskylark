@@ -57,7 +57,6 @@ public:
         double lambda, // regularization parameter
         bool ScaleFeatureMaps = true);
 
-    void configureModel(skylark::ml::Model<T>* M);
     void set_nthreads(int NumThreads) { this->NumThreads = NumThreads; }
     void set_rho(double RHO) { this->RHO = RHO; }
     void set_maxiter(double MAXITER) { this->MAXITER = MAXITER; }
@@ -69,7 +68,9 @@ public:
     void InitializeFactorizationCache();
     void InitializeTransformCache(int n);
 
-    skylark::ml::Model<T>* train(T& X, LocalMatrixType& Y, T& Xv, LocalMatrixType& Yv, const boost::mpi::communicator& comm);
+    skylark::ml::model_t<T, LocalMatrixType>* train(T& X,
+        LocalMatrixType& Y, T& Xv, LocalMatrixType& Yv,
+        const boost::mpi::communicator& comm);
 
     int get_numfeatures() {return NumFeatures;}
 
@@ -96,16 +97,6 @@ private:
 
     bool CacheTransforms;
 };
-
-template <class T>
-void BlockADMMSolver<T>::configureModel(skylark::ml::Model<T>* M) {
-		M->featureMaps = featureMaps;
-		M->starts = starts;
-		M->finishes = finishes;
-		M->NumThreads = 1;
-		M->ScaleFeatureMaps = ScaleFeatureMaps;
-		M->NumFeatures = NumFeatures;
-}
 
 template <class T>
 void BlockADMMSolver<T>::InitializeFactorizationCache() {
@@ -212,8 +203,6 @@ BlockADMMSolver<T>::BlockADMMSolver(const lossfunction* loss,
         starts[i] = NumFeatures;
         finishes[i] = NumFeatures + featureMaps[i]->get_S() - 1;
         NumFeatures += featureMaps[i]->get_S();
-
-        std::cout << starts[i] << " " << finishes[i] << "\n";
     }
     this->ScaleFeatureMaps = ScaleFeatureMaps;
     OwnFeatureMaps = false;
@@ -233,7 +222,7 @@ BlockADMMSolver<T>::~BlockADMMSolver() {
 
 
 template <class T>
-skylark::ml::Model<T>* BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y, T& Xv, LocalMatrixType& Yv,
+skylark::ml::model_t<T, LocalMatrixType>* BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y, T& Xv, LocalMatrixType& Yv,
     const boost::mpi::communicator& comm) {
 
        int rank = comm.rank();
@@ -245,8 +234,9 @@ skylark::ml::Model<T>* BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y, T& Xv
        int d = skylark::base::Height(X);
        int targets = GetNumTargets(comm, Y);
 
-       skylark::ml::Model<T>* model = new skylark::ml::Model<T>(featureMaps, ScaleFeatureMaps, starts, finishes, d, NumFeatures, targets);
-       model->set_num_threads(NumThreads);
+       skylark::ml::model_t<T, LocalMatrixType>* model =
+           new skylark::ml::model_t<T, LocalMatrixType>(featureMaps,
+               ScaleFeatureMaps, NumFeatures, targets);
 
        elem::Matrix<double> Wbar;
        elem::View(Wbar, model->get_coef());
@@ -472,7 +462,7 @@ skylark::ml::Model<T>* BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y, T& Xv
            if (skylark::base::Width(Xv) > 0) {
                elem::MakeZeros(Yp);
                elem::MakeZeros(Yp_labels);
-               model->predict(Xv, Yp_labels, Yp);
+               model->predict(Xv, Yp_labels, Yp, NumThreads);
                accuracy = model->evaluate(Yv, Yp, comm);
            }
            SKYLARK_TIMER_ACCUMULATE(PREDICTION_PROFILE);

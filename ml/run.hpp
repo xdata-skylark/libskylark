@@ -202,11 +202,7 @@ int run(const boost::mpi::communicator& comm, skylark::base::context_t& context,
     else {
 
     	std::cout << "Testing Mode" << std::endl;
-        std::ifstream is(options.modelfile);
-        boost::property_tree::ptree pt;
-        boost::property_tree::read_json(is, pt);
-        is.close();
-    	skylark::ml::model_t<InputType, LabelType> model(pt);
+    	skylark::ml::model_t<InputType, LabelType> model(options.modelfile);
     	read(comm, options.fileformat, options.testfile, Xt, Yt,
             model.get_input_size());
     	LabelType DecisionValues(Yt.Height(), model.get_num_outputs());

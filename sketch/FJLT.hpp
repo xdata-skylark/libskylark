@@ -6,17 +6,16 @@
 
 namespace skylark { namespace sketch {
 
-template < typename InputType,
-           typename OutputType = InputType >
+template < typename InputMatrixType,
+           typename OutputMatrixType = InputMatrixType >
 struct FJLT_t :
         public FJLT_data_t,
-        virtual public sketch_transform_t<InputType, OutputType > {
+        virtual public sketch_transform_t<InputMatrixType, OutputMatrixType > {
 
     // To be specilized and derived. Just some guards here.
-    typedef InputType matrix_type;
-    typedef OutputType output_matrix_type;
+    typedef InputMatrixType matrix_type;
+    typedef OutputMatrixType output_matrix_type;
     typedef FJLT_data_t data_type;
-
 
     FJLT_t(const boost::property_tree::ptree &pt)
         : data_type(pt) {
@@ -51,7 +50,6 @@ struct FJLT_t :
 
 private:
     FJLT_t(int N, int S, base::context_t& context);
-
 };
 
 } } /** namespace skylark::sketch */

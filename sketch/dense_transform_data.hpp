@@ -6,7 +6,7 @@
 #include "../base/context.hpp"
 #include "../utility/randgen.hpp"
 
-#include "sketch_transform_data.hpp"
+#include "sketch.hpp"
 
 #include "boost/smart_ptr.hpp"
 

@@ -214,30 +214,25 @@ private:
         // accumulate values from other procs
         for(size_t p = 0; p < comm_size; ++p) {
 
-            size_t offset = 0;
-            MPI_Get(&offset, 1, boost::mpi::get_mpi_datatype<size_t>(),
-                    p, rank, 1, boost::mpi::get_mpi_datatype<size_t>(),
-                    start_offset_win);
-
-            size_t end_offset = 0;
-            MPI_Get(&end_offset, 1, boost::mpi::get_mpi_datatype<size_t>(),
-                    p, rank + 1, 1, boost::mpi::get_mpi_datatype<size_t>(),
+            // get the start/end offset
+            std::vector<size_t> offset(2);
+            MPI_Get(&(offset[0]), 2, boost::mpi::get_mpi_datatype<size_t>(),
+                    p, rank, 2, boost::mpi::get_mpi_datatype<size_t>(),
                     start_offset_win);
 
             MPI_Win_fence(MPI_MODE_NOPUT, start_offset_win);
-            size_t num_values = end_offset - offset;
+            size_t num_values = offset[1] - offset[0];
 
-            // since all procs need to call the fence we fill indices and
-            // values even if num_values can be 0 (= don't get data).
+            // and fill indices/values.
             std::vector<index_type> add_idx(num_values);
             std::vector<value_type> add_val(num_values);
             MPI_Get(&(add_idx[0]), num_values,
-                    boost::mpi::get_mpi_datatype<index_type>(), p, offset,
+                    boost::mpi::get_mpi_datatype<index_type>(), p, offset[0],
                     num_values, boost::mpi::get_mpi_datatype<index_type>(),
                     idx_win);
 
             MPI_Get(&(add_val[0]), num_values,
-                    boost::mpi::get_mpi_datatype<value_type>(), p, offset,
+                    boost::mpi::get_mpi_datatype<value_type>(), p, offset[0],
                     num_values, boost::mpi::get_mpi_datatype<value_type>(),
                     val_win);
 

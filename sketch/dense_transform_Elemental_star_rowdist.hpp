@@ -269,6 +269,9 @@ private:
             A1(grid),
             A2(grid);
 
+        // Zero sketch_of_A
+        elem::Zero(sketch_of_A);
+
         // TODO: is alignment necessary?
         R1.AlignWith(sketch_of_A);
 
@@ -359,6 +362,9 @@ private:
             sketch_of_A1(grid),
             sketch_of_A2(grid);
 
+        // TODO: is alignment necessary?
+        R1.AlignWith(A);
+
         elem::PartitionDown
         ( sketch_of_A,
           sketch_of_A_Top, sketch_of_A_Bottom, 0 );
@@ -383,8 +389,7 @@ private:
                        value_type(1),
                        R1.LockedMatrix(),
                        A.LockedMatrix(),
-                       value_type(0),
-                       sketch_of_A.Matrix());
+                       sketch_of_A1.Matrix());
 
             base = base + b;
 
@@ -447,7 +452,7 @@ private:
     }
 
 
-    void apply_impl_dist (const matrix_type& A,
+    void apply_impl_vdist (const matrix_type& A,
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::rowwise_tag tag) const {
 

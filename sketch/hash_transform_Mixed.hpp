@@ -18,9 +18,13 @@
 namespace skylark { namespace sketch {
 
 //FIXME:
-//  - Benchmark one-sided vs. col/row comm (or midpoint scheme)
-//  - Most likely the scheme depends on the output Elemental distribution,
+//  - Benchmark one-sided vs. col/row comm (or midpoint scheme):
+//    Most likely the scheme depends on the output Elemental distribution,
 //    here we use the same comm-scheme for all of them.
+//  - Sparse matrix should be processed in blocks
+//  - MPI-3 stuff, see: Enabling highly-scalable remote memory access
+//    programming with MPI-3 one sided, R. Gerstenbergerm,  M. Besta, and
+//    T. Hoefler.
 
 
 /* Specialization: SpParMat for input, Elemental for output */
@@ -140,7 +144,8 @@ private:
                 const size_t pos       = getPos(rowid, colid, ncols, dist);
 
                 // compute target processor for this target index
-                const size_t target = sketch_of_A.Owner(pos / ncols, pos % ncols);
+                const size_t target =
+                    sketch_of_A.Owner(pos / ncols, pos % ncols);
 
                 if(proc_set[target].count(pos) == 0) {
                     assert(target < comm_size);
@@ -158,6 +163,7 @@ private:
             proc_start_idx[i] = proc_start_idx[i-1] + proc_size[i-1];
         }
 
+        // total number of nnz that will result when applying sketch locally
         size_t nnz = proc_start_idx[comm_size-1] + proc_size[comm_size-1];
         std::vector<index_type> indicies(nnz, 0);
         std::vector<value_type> values(nnz, 0);
@@ -191,7 +197,6 @@ private:
         }
 
         // Creating windows for all relevant arrays
-        ///FIXME: MPI-3 stuff?
         boost::mpi::communicator comm = utility::get_communicator(A);
         MPI_Win proc_win, start_offset_win, idx_win, val_win;
         MPI_Win_create(&proc_size[0], sizeof(size_t) * comm_size,
@@ -206,14 +211,15 @@ private:
         MPI_Win_create(&values[0], sizeof(value_type) * values.size(),
                        sizeof(value_type), MPI_INFO_NULL, comm, &val_win);
 
-        MPI_Win_fence(0, proc_win);
-        MPI_Win_fence(0, start_offset_win);
-        MPI_Win_fence(0, idx_win);
-        MPI_Win_fence(0, val_win);
+        // Synchronize epoch, no subsequent put operations (read only) and no
+        // preceding fence calls.
+        MPI_Win_fence(MPI_MODE_NOPUT | MPI_MODE_NOPRECEDE, proc_win);
+        MPI_Win_fence(MPI_MODE_NOPUT | MPI_MODE_NOPRECEDE, start_offset_win);
+        MPI_Win_fence(MPI_MODE_NOPUT | MPI_MODE_NOPRECEDE, idx_win);
+        MPI_Win_fence(MPI_MODE_NOPUT | MPI_MODE_NOPRECEDE, val_win);
 
 
         // accumulate values from other procs
-        std::map<size_t, value_type> vals_map;
         for(size_t p = 0; p < comm_size; ++p) {
 
             // since all procs need to call the fence we gather all the
@@ -222,13 +228,14 @@ private:
             MPI_Get(&num_values, 1, boost::mpi::get_mpi_datatype<size_t>(),
                     p, rank, 1, boost::mpi::get_mpi_datatype<size_t>(),
                     proc_win);
-            MPI_Win_fence(0, proc_win);
 
             size_t offset = 0;
             MPI_Get(&offset, 1, boost::mpi::get_mpi_datatype<size_t>(),
                     p, rank, 1, boost::mpi::get_mpi_datatype<size_t>(),
                     start_offset_win);
-            MPI_Win_fence(0, start_offset_win);
+
+            MPI_Win_fence(MPI_MODE_NOPUT, proc_win);
+            MPI_Win_fence(MPI_MODE_NOPUT, start_offset_win);
 
             // since all procs need to call the fence we fill indices and
             // values even if num_values can be 0 (= don't get data).
@@ -238,36 +245,27 @@ private:
                     boost::mpi::get_mpi_datatype<index_type>(), p, offset,
                     num_values, boost::mpi::get_mpi_datatype<index_type>(),
                     idx_win);
-            MPI_Win_fence(0, idx_win);
 
             MPI_Get(&(add_val[0]), num_values,
                     boost::mpi::get_mpi_datatype<value_type>(), p, offset,
                     num_values, boost::mpi::get_mpi_datatype<value_type>(),
                     val_win);
-            MPI_Win_fence(0, val_win);
+
+            MPI_Win_fence(MPI_MODE_NOPUT, idx_win);
+            MPI_Win_fence(MPI_MODE_NOPUT, val_win);
 
             // finally, add data to local buffer (if we have any).
             for(size_t i = 0; i < num_values; ++i) {
-                if(vals_map.count(add_idx[i]) != 0)
-                    vals_map[add_idx[i]] += add_val[i];
-                else
-                    vals_map.insert(std::make_pair(add_idx[i], add_val[i]));
+                index_type lrow = sketch_of_A.LocalRow(add_idx[i] / ncols);
+                index_type lcol = sketch_of_A.LocalCol(add_idx[i] % ncols);
+                sketch_of_A.UpdateLocal(lrow, lcol, add_val[i]);
             }
         }
 
-        // fill into sketch matrix
-        typename std::map<size_t, value_type>::const_iterator itr;
-        for(itr = vals_map.begin(); itr != vals_map.end(); itr++) {
-            index_type lrow = sketch_of_A.LocalRow(itr->first / ncols);
-            index_type lcol = sketch_of_A.LocalCol(itr->first % ncols);
-            value_type val  = itr->second;
-            sketch_of_A.SetLocal(lrow, lcol, val);
-        }
-
-        MPI_Win_fence(0, proc_win);
-        MPI_Win_fence(0, start_offset_win);
-        MPI_Win_fence(0, idx_win);
-        MPI_Win_fence(0, val_win);
+        MPI_Win_fence(MPI_MODE_NOPUT | MPI_MODE_NOSUCCEED, proc_win);
+        MPI_Win_fence(MPI_MODE_NOPUT | MPI_MODE_NOSUCCEED, start_offset_win);
+        MPI_Win_fence(MPI_MODE_NOPUT | MPI_MODE_NOSUCCEED, idx_win);
+        MPI_Win_fence(MPI_MODE_NOPUT | MPI_MODE_NOSUCCEED, val_win);
 
         MPI_Win_free(&proc_win);
         MPI_Win_free(&start_offset_win);

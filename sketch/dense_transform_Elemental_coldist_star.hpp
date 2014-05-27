@@ -241,6 +241,9 @@ private:
             A1(grid),
             A2(grid);
 
+        // Zero sketch_of_A
+        elem::Zero(sketch_of_A);
+
         // TODO: is alignment necessary?
         R1.AlignWith(sketch_of_A);
 
@@ -457,7 +460,7 @@ private:
     }
 
 
-    void apply_impl_dist (const matrix_type& A,
+    void apply_impl_vdist (const matrix_type& A,
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::columnwise_tag tag) const {
 

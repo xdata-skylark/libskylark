@@ -154,19 +154,14 @@ private:
             }
         }
 
-        // constructing arrays for one-sided access
-        std::vector<size_t>     proc_size(comm_size, 0);
-        std::vector<index_type> proc_start_idx(comm_size, 0);
-        proc_size[0] = proc_set[0].size();
-        for(size_t i = 1; i < proc_start_idx.size(); ++i) {
-            proc_size[i]      = proc_set[i].size();
-            proc_start_idx[i] = proc_start_idx[i-1] + proc_size[i-1];
-        }
+        // constructing array holding start/end indices for one-sided access
+        std::vector<index_type> proc_start_idx(comm_size + 1, 0);
+        for(size_t i = 1; i < comm_size + 1; ++i)
+            proc_start_idx[i] = proc_start_idx[i-1] + proc_set[i-1].size();
 
         // total number of nnz that will result when applying sketch locally
-        size_t nnz = proc_start_idx[comm_size-1] + proc_size[comm_size-1];
-        std::vector<index_type> indicies(nnz, 0);
-        std::vector<value_type> values(nnz, 0);
+        std::vector<index_type> indicies(proc_start_idx[comm_size], 0);
+        std::vector<value_type> values(proc_start_idx[comm_size], 0);
 
         // Apply sketch for all local values. Note that some of the resulting
         // values might end up on a different processor. The data structure
@@ -198,11 +193,9 @@ private:
 
         // Creating windows for all relevant arrays
         boost::mpi::communicator comm = utility::get_communicator(A);
-        MPI_Win proc_win, start_offset_win, idx_win, val_win;
-        MPI_Win_create(&proc_size[0], sizeof(size_t) * comm_size,
-                       sizeof(size_t), MPI_INFO_NULL, comm, &proc_win);
+        MPI_Win start_offset_win, idx_win, val_win;
 
-        MPI_Win_create(&proc_start_idx[0], sizeof(size_t) * comm_size,
+        MPI_Win_create(&proc_start_idx[0], sizeof(size_t) * (comm_size + 1),
                        sizeof(size_t), MPI_INFO_NULL, comm, &start_offset_win);
 
         MPI_Win_create(&indicies[0], sizeof(index_type) * indicies.size(),
@@ -213,7 +206,6 @@ private:
 
         // Synchronize epoch, no subsequent put operations (read only) and no
         // preceding fence calls.
-        MPI_Win_fence(MPI_MODE_NOPUT | MPI_MODE_NOPRECEDE, proc_win);
         MPI_Win_fence(MPI_MODE_NOPUT | MPI_MODE_NOPRECEDE, start_offset_win);
         MPI_Win_fence(MPI_MODE_NOPUT | MPI_MODE_NOPRECEDE, idx_win);
         MPI_Win_fence(MPI_MODE_NOPUT | MPI_MODE_NOPRECEDE, val_win);
@@ -222,20 +214,18 @@ private:
         // accumulate values from other procs
         for(size_t p = 0; p < comm_size; ++p) {
 
-            // since all procs need to call the fence we gather all the
-            // necessary values
-            size_t num_values = 0;
-            MPI_Get(&num_values, 1, boost::mpi::get_mpi_datatype<size_t>(),
-                    p, rank, 1, boost::mpi::get_mpi_datatype<size_t>(),
-                    proc_win);
-
             size_t offset = 0;
             MPI_Get(&offset, 1, boost::mpi::get_mpi_datatype<size_t>(),
                     p, rank, 1, boost::mpi::get_mpi_datatype<size_t>(),
                     start_offset_win);
 
-            MPI_Win_fence(MPI_MODE_NOPUT, proc_win);
+            size_t end_offset = 0;
+            MPI_Get(&end_offset, 1, boost::mpi::get_mpi_datatype<size_t>(),
+                    p, rank + 1, 1, boost::mpi::get_mpi_datatype<size_t>(),
+                    start_offset_win);
+
             MPI_Win_fence(MPI_MODE_NOPUT, start_offset_win);
+            size_t num_values = end_offset - offset;
 
             // since all procs need to call the fence we fill indices and
             // values even if num_values can be 0 (= don't get data).
@@ -262,12 +252,10 @@ private:
             }
         }
 
-        MPI_Win_fence(MPI_MODE_NOPUT | MPI_MODE_NOSUCCEED, proc_win);
         MPI_Win_fence(MPI_MODE_NOPUT | MPI_MODE_NOSUCCEED, start_offset_win);
         MPI_Win_fence(MPI_MODE_NOPUT | MPI_MODE_NOSUCCEED, idx_win);
         MPI_Win_fence(MPI_MODE_NOPUT | MPI_MODE_NOSUCCEED, val_win);
 
-        MPI_Win_free(&proc_win);
         MPI_Win_free(&start_offset_win);
         MPI_Win_free(&idx_win);
         MPI_Win_free(&val_win);

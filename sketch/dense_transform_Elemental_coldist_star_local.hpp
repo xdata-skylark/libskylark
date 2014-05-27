@@ -104,8 +104,8 @@ private:
         intermediate_matrix_type sketch_of_A_CIRC_CIRC(data_type::_S,
                              data_type::_N);
 
-        dense_transform_t<matrix_type, matrix_type> transform(data_type::_N,
-            data_type::_S, data_type::_context);
+        dense_transform_t<matrix_type, matrix_type, ValueDistribution>
+            transform(data_type::_N, data_type::_S, data_type::_context);
 
         transform.apply(A, sketch_of_A_CD_STAR, tag);
 
@@ -123,7 +123,7 @@ private:
 
     void apply_impl_dist(const matrix_type& A,
                          output_matrix_type& sketch_of_A,
-                         skylark::sketch::colwise_tag tag) const {
+                         skylark::sketch::columnwise_tag tag) const {
 
         typedef elem::DistMatrix<value_type, elem::CIRC, elem::CIRC>
             intermediate_matrix_type;
@@ -133,8 +133,8 @@ private:
         intermediate_matrix_type sketch_of_A_CIRC_CIRC(data_type::_S,
                              data_type::_N);
 
-        dense_transform_t<matrix_type, matrix_type> transform(data_type::_N,
-            data_type::_S, data_type::_context);
+        dense_transform_t<matrix_type, matrix_type, ValueDistribution>
+            transform(data_type::_N, data_type::_S, data_type::_context);
 
         transform.apply(A, sketch_of_A_CD_STAR, tag);
 

@@ -16,7 +16,6 @@
 #include "../base/sparse_matrix.hpp"
 #include "options.hpp"
 
-using namespace std;
 namespace bmpi =  boost::mpi;
 
 typedef elem::DistMatrix<double, elem::CIRC, elem::CIRC> DistCircMatrixType;
@@ -27,7 +26,7 @@ typedef elem::Matrix<double> LocalMatrixType;
 #include <H5Cpp.h>
 
 int write_hdf5(const boost::mpi::communicator &comm, 
-    string fName, elem::Matrix<double>& X,
+    std::string fName, elem::Matrix<double>& X,
     elem::Matrix<double>& Y) {
 
     int n, d;
@@ -37,7 +36,7 @@ int write_hdf5(const boost::mpi::communicator &comm,
 
     if (comm.rank() == 0) {
         try {
-            cout << "Writing to file " << fName << " " << n << "x" << d << endl;
+            std::cout << "Writing to file " << fName << " " << n << "x" << d << std::endl;
 
             H5::Exception::dontPrint();
 
@@ -132,12 +131,12 @@ int write_hdf5(const boost::mpi::communicator &comm,
     return 0; // successfully terminated
 }
 
-int write_hdf5(string fName, sparse_matrix_t& X,
+int write_hdf5(std::string fName, sparse_matrix_t& X,
         elem::Matrix<double>& Y) {
 
     try {
 
-        cout << "Writing to file " << fName << endl;
+        std::cout << "Writing to file " << fName << std::endl;
 
         int* dimensions = new int[3];
         dimensions[0] = X.height();
@@ -160,7 +159,7 @@ int write_hdf5(string fName, sparse_matrix_t& X,
 
         // write col_ptr
         {
-        	cout << "Writing col_ptr" << endl;
+        	std::cout << "Writing col_ptr" << std::endl;
         	hsize_t dim[1]; // dataset dimensions
         	dim[0] = dimensions[1]+1;
         	H5::DataSpace dataspace( 1, dim );
@@ -171,7 +170,7 @@ int write_hdf5(string fName, sparse_matrix_t& X,
 
         // write row_ind
         {
-        	cout << "Writing row indices" << endl;
+        	std::cout << "Writing row indices" << std::endl;
         	hsize_t dim[1]; // dataset dimensions
         	dim[0] = dimensions[2];
         	H5::DataSpace dataspace( 1, dim );
@@ -181,7 +180,7 @@ int write_hdf5(string fName, sparse_matrix_t& X,
         }
         // write row_ind
         {
-        	cout << "Writing values" << endl;
+        	std::cout << "Writing values" << std::endl;
         	hsize_t dim[1]; // dataset dimensions
         	dim[0] = dimensions[2];
         	H5::DataSpace dataspace( 1, dim );
@@ -193,7 +192,7 @@ int write_hdf5(string fName, sparse_matrix_t& X,
 
         // write values
         {
-        	cout << "Writing targets" << endl;
+        	std::cout << "Writing targets" << std::endl;
         	hsize_t dim[1]; // dataset dimensions
         	dim[0] = dimensions[1];
         	H5::DataSpace dataspace( 1, dim );
@@ -233,7 +232,7 @@ int write_hdf5(string fName, sparse_matrix_t& X,
   return 0; // successfully terminated
 }
 
-void read_hdf5_dataset(H5::H5File& file, string name, int* buf, int offset, int count) {
+void read_hdf5_dataset(H5::H5File& file, std::string name, int* buf, int offset, int count) {
 			std::cout << "reading HDF5 dataset " << name << std::endl;
 			H5::DataSet dataset = file.openDataSet(name);
 			H5::DataSpace filespace = dataset.getSpace();
@@ -248,7 +247,7 @@ void read_hdf5_dataset(H5::H5File& file, string name, int* buf, int offset, int 
 			dataset.read(buf, H5::PredType::NATIVE_INT, mspace, filespace);
 }
 
-void read_hdf5_dataset(H5::H5File& file, string name, double* buf, int offset, int count) {
+void read_hdf5_dataset(H5::H5File& file, std::string name, double* buf, int offset, int count) {
 			std::cout << "reading HDF5 dataset " << name << std::endl;
 			H5::DataSet dataset = file.openDataSet(name);
 			H5::DataSpace filespace = dataset.getSpace();
@@ -264,7 +263,7 @@ void read_hdf5_dataset(H5::H5File& file, string name, double* buf, int offset, i
 }
 
 
-void read_hdf5(const boost::mpi::communicator &comm, string fName,
+void read_hdf5(const boost::mpi::communicator &comm, std::string fName,
         sparse_matrix_t& X,
         elem::Matrix<double>& Y, int min_d = 0) {
 
@@ -274,7 +273,7 @@ void read_hdf5(const boost::mpi::communicator &comm, string fName,
 
 	bmpi::timer timer;
 	if (rank==0)
-		            cout << "Reading sparse matrix from HDF5 file " << fName << endl;
+		            std::cout << "Reading sparse matrix from HDF5 file " << fName << std::endl;
 
 	H5::H5File file( fName, H5F_ACC_RDONLY );
 
@@ -397,7 +396,7 @@ void read_hdf5(const boost::mpi::communicator &comm, string fName,
 
 	 double readtime = timer.elapsed();
 	 if (rank==0)
-		        cout << "Read Matrix with dimensions: " << n << " by " << d << " (" << readtime << "secs)" << endl;
+		        std::cout << "Read Matrix with dimensions: " << n << " by " << d << " (" << readtime << "secs)" << std::endl;
 
 	 comm.barrier();
 
@@ -432,13 +431,13 @@ void read_hdf5(const boost::mpi::communicator &comm, string fName,
 
 }
 
-void read_hdf5(const boost::mpi::communicator &comm, string fName,
+void read_hdf5(const boost::mpi::communicator &comm, std::string fName,
     LocalMatrixType&  Xlocal, LocalMatrixType& Ylocal, int blocksize = 10000) {
 
         int rank = comm.rank();
         bmpi::timer timer;
         if (rank==0)
-                    cout << "Reading Dense matrix from HDF5 file " << fName << endl;
+                    std::cout << "Reading Dense matrix from HDF5 file " << fName << std::endl;
 
 
         elem::DistMatrix<double, elem::STAR, elem::VC> X;
@@ -503,7 +502,7 @@ void read_hdf5(const boost::mpi::communicator &comm, string fName,
             filespaceY.selectHyperslab( H5S_SELECT_SET, countY, offsetY );
 
             if(rank==0) {
-                cout << "Reading and distributing chunk " << i*blocksize << " to " << i*blocksize + block - 1 << " ("<< block << " elements )" << endl;
+                std::cout << "Reading and distributing chunk " << i*blocksize << " to " << i*blocksize + block - 1 << " ("<< block << " elements )" << std::endl;
 
                 double *Xdata = x.Matrix().Buffer();
                 double *Ydata = y.Matrix().Buffer();
@@ -532,12 +531,12 @@ void read_hdf5(const boost::mpi::communicator &comm, string fName,
 
         double readtime = timer.elapsed();
         if (rank==0)
-                cout << "Read Matrix with dimensions: " << n << " by " << d << " (" << readtime << "secs)" << endl;
+                std::cout << "Read Matrix with dimensions: " << n << " by " << d << " (" << readtime << "secs)" << std::endl;
 }
 #endif
 
 template<typename T>
-void read_libsvm(const boost::mpi::communicator &comm, string fName,
+void read_libsvm(const boost::mpi::communicator &comm, std::string fName,
 		elem::Matrix<T>& Xlocal, elem::Matrix<T>& Ylocal,
 		int min_d = 0, int blocksize = 10000) {
 
@@ -547,11 +546,11 @@ void read_libsvm(const boost::mpi::communicator &comm, string fName,
 
         int rank = comm.rank();
 	if (rank==0)
-			cout << "Reading from file " << fName << endl;
+			std::cout << "Reading from file " << fName << std::endl;
 
-	ifstream file(fName.c_str());
-	string line;
-	string token, val, ind;
+        std::ifstream file(fName.c_str());
+	std::string line;
+	std::string token, val, ind;
 	float label;
 	unsigned int start = 0;
 	unsigned int delim, t;
@@ -621,7 +620,7 @@ void read_libsvm(const boost::mpi::communicator &comm, string fName,
 
                 if(rank==0) {
 
-                    cout << "Reading and distributing chunk " << i*blocksize << " to " << i*blocksize + block - 1 << " ("<< block << " elements )" << endl;
+                    std::cout << "Reading and distributing chunk " << i*blocksize << " to " << i*blocksize + block - 1 << " ("<< block << " elements )" << std::endl;
                     T *Xdata = x.Matrix().Buffer();
                     T *Ydata = y.Matrix().Buffer();
 
@@ -632,7 +631,7 @@ void read_libsvm(const boost::mpi::communicator &comm, string fName,
                             break;
                         }
 
-                        istringstream tokenstream (line);
+                        std::istringstream tokenstream (line);
                         tokenstream >> label;
                         Ydata[t] = label;
 
@@ -651,7 +650,7 @@ void read_libsvm(const boost::mpi::communicator &comm, string fName,
 
                 // The calls below should distribute the data to all the nodes.
                // if (rank==0)
-                //    cout << "Distributing Data.." << endl;
+                //    std::cout << "Distributing Data.." << std::endl;
 
                 elem::DistMatrix<T, elem::STAR, elem::VC> viewX;
                 elem::DistMatrix<T, elem::VC, elem::STAR> viewY;
@@ -668,24 +667,24 @@ void read_libsvm(const boost::mpi::communicator &comm, string fName,
 
 	double readtime = timer.elapsed();
 	if (rank==0) {
-		cout << "Read Matrix with dimensions: " << n << " by " << d << " (" << readtime << "secs)" << endl;
-		// elem::Print(X,"X",cout);
+		std::cout << "Read Matrix with dimensions: " << n << " by " << d << " (" << readtime << "secs)" << std::endl;
+		// elem::Print(X,"X",std::cout);
 	}
 }
 
 template<typename T>
-void read_libsvm(const boost::mpi::communicator &comm, string fName, 
+void read_libsvm(const boost::mpi::communicator &comm, std::string fName, 
     skylark::base::sparse_matrix_t<T>& X, elem::Matrix<T>& Y, int min_d = 0) {
 
     int rank = comm.rank();
     int size = comm.size();
 
     if (rank==0)
-            cout << "Reading sparse matrix from file " << fName << endl;
+            std::cout << "Reading sparse matrix from file " << fName << std::endl;
 
-    ifstream file(fName.c_str());
-    string line;
-    string token, val, ind;
+    std::ifstream file(fName.c_str());
+    std::string line;
+    std::string token, val, ind;
     float label;
     unsigned int start = 0;
     unsigned int delim, t;
@@ -743,10 +742,10 @@ void read_libsvm(const boost::mpi::communicator &comm, string fName,
     // read chunks on rank = 0 and send
     if(rank==0) {
 
-        vector<int> col_ptr;
-        vector<int> rowind;
-        vector<double> values;
-        vector<double> y;
+        std::vector<int> col_ptr;
+        std::vector<int> rowind;
+        std::vector<double> values;
+        std::vector<double> y;
 
         int process = 0;
         int nnz_local = 0;
@@ -759,7 +758,7 @@ void read_libsvm(const boost::mpi::communicator &comm, string fName,
                 break;
             }
 
-            istringstream tokenstream (line);
+            std::istringstream tokenstream (line);
             tokenstream >> label;
             y.push_back(label);
             col_ptr.push_back(nnz_local);
@@ -869,7 +868,7 @@ void read_libsvm(const boost::mpi::communicator &comm, string fName,
 
     double readtime = timer.elapsed();
     if (rank==0)
-        cout << "Read Matrix with dimensions: " << n << " by " << d << " (" << readtime << "secs)" << endl;
+        std::cout << "Read Matrix with dimensions: " << n << " by " << d << " (" << readtime << "secs)" << std::endl;
 
     comm.barrier();
 }
@@ -877,7 +876,7 @@ void read_libsvm(const boost::mpi::communicator &comm, string fName,
 
 template <class InputType, class LabelType>
 void read(const boost::mpi::communicator &comm,
-    int fileformat, string filename, InputType& X, LabelType& Y, int d=0) {
+    int fileformat, std::string filename, InputType& X, LabelType& Y, int d=0) {
 
     switch(fileformat) {
             case LIBSVM_DENSE: case LIBSVM_SPARSE:
@@ -898,17 +897,17 @@ void read(const boost::mpi::communicator &comm,
 
 }
 
-void read_model_file(string fName, elem::Matrix<double>& W) {
-	ifstream file(fName.c_str());
-	string line, token;
-	string prefix = "# Dimensions";
+void read_model_file(std::string fName, elem::Matrix<double>& W) {
+    std::ifstream file(fName.c_str());
+	std::string line, token;
+	std::string prefix = "# Dimensions";
 	int i=0;
 	int j;
 	int m, n;
 	while(!file.eof()) {
 			getline(file, line);
 			if(line.compare(0, prefix.size(), prefix) == 0) {
-				istringstream tokenstream (line.substr(prefix.size(), line.size()));
+                            std::istringstream tokenstream (line.substr(prefix.size(), line.size()));
 				tokenstream >> token;
 
 				m = atoi(token.c_str());
@@ -924,7 +923,7 @@ void read_model_file(string fName, elem::Matrix<double>& W) {
 					continue;
 			}
 
-			istringstream tokenstream (line);
+                        std::istringstream tokenstream (line);
 			j = 0;
 			while (tokenstream >> token){
 				W.Set(i,j, atof(token.c_str()));
@@ -936,9 +935,9 @@ void read_model_file(string fName, elem::Matrix<double>& W) {
 
 
 std::string read_header(const boost::mpi::communicator &comm, std::string fName) {
-		string line;
+		std::string line;
 		if (comm.rank()==0) {
-			ifstream file(fName.c_str());
+                    std::ifstream file(fName.c_str());
 			getline(file, line);
 		}
 

@@ -18,9 +18,6 @@
 #include <omp.h>
 #endif
 
-
-typedef elem::Matrix<double> LocalMatrixType;
-
 namespace skylark { namespace ml {
 
 int classification_accuracy(elem::Matrix<double>& Yt, elem::Matrix<double>& Yp) {

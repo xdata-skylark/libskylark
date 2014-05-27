@@ -193,7 +193,7 @@ int run(const boost::mpi::communicator& comm, skylark::base::context_t& context,
             boost::property_tree::ptree ptmodel = model->to_ptree();
             ptmodel.push_front(std::make_pair("hilbert_cmdline", 
                     boost::property_tree::ptree(options.str)));
-            ofstream of(options.modelfile);
+            std::ofstream of(options.modelfile);
             boost::property_tree::write_json(of, ptmodel);
             of.close();
         }
@@ -219,52 +219,6 @@ int run(const boost::mpi::communicator& comm, skylark::base::context_t& context,
     	// fix logistic case -- provide mechanism to dump predictions -- clean up evaluate
 
     }
-    /*else  { // test mode
-
-    	// set other options from model file
-
-    	options_str =  read_header(comm, options.modelfile);
-    	int argc1;
-    	char **argv1;
-
-    	argc1 = splitstr(options_str, argv1);
-    	hilbert_options_t train_options (argc1, argv1, comm.rank());
-
-
-    	// read model Wbar
-    	elem::Matrix<double> Wbar;
-    	elem::Read(Wbar, options.modelfile, elem::ASCII);
-
-    	// Create a solver object
-    	int dimensions = Wbar.Height();
-    	BlockADMMSolver<InputType>* Solver =
-    	        	GetSolver<InputType>(context, options, dimensions);
-
-    	if(!options.testfile.empty()) {
-    		comm.barrier();
-    		if(rank == 0) std::cout << "Starting testing phase (currently we load all data in memory - to be changed.)" << std::endl;
-    		read(comm, options.fileformat, options.testfile, Xt, Yt,
-    				skylark::base::Height(X));
-        		if ((options.lossfunction == LOGISTIC) && shift) {
-        			for(int i=0;i<Yt.Height(); i++) {
-        				y = Yt.Get(i, 0);
-        				Yt.Set(i, 0, 0.5*(y+1.0));
-        					}
-                    	}
-
-        		LabelType Yp(Yt.Height(), classes);
-        		Solver->predict(Xt, Yp, Wbar);
-        		double accuracy = Solver->evaluate(Yt, Yp, comm);
-        		if(rank == 0)
-        			std::cout << "Test Accuracy = " <<  accuracy << " %" << std::endl;
-    	}
-
-    	else {
-    		std::cout << "Test mode: did not detect a test file." << std::endl;
-    	}
-    }
-*/
-
 
     return 0;
 }

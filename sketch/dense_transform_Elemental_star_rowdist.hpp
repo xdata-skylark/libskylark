@@ -159,7 +159,7 @@ private:
         int base = 0;
         while (sketch_of_A_Bottom.Height() > 0) {
 
-            int b = std::min(sketch_of_A_Right.Width(), blocksize);
+            int b = std::min(sketch_of_A_Bottom.Height(), blocksize);
             data_type::realize_matrix_view(R1, base, 0,
                                                b,    A.Height());
 
@@ -316,7 +316,7 @@ private:
             sketch_of_A_STAR_STAR(grid);
 
         // TODO: are alignments necessary?
-        R1.AlignWith(sketch_of_A);
+        R.AlignWith(sketch_of_A);
         sketch_of_A_STAR_STAR.AlignWith(sketch_of_A);
 
         data_type::realize_matrix_view(R);

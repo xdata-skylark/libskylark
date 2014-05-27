@@ -384,7 +384,6 @@ private:
         // Reduce-scatter within process grid
         sketch_of_A.SumScatterUpdate(value_type(1),
                     sketch_of_A_STAR_STAR);
-        }
     }
 
 

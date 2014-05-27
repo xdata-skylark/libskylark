@@ -78,6 +78,9 @@ public:
             _finishes[i] = nf + _maps[i]->get_S() - 1;
             nf += _maps[i]->get_S();
         }
+
+        _num_input_features = (_maps.size() == 0) ?
+            num_features : _maps[0]->get_N();
     }
 
     model_t(const boost::property_tree::ptree &pt) {
@@ -99,6 +102,7 @@ public:
 
         pt.put("num_features", _coef.Height());
         pt.put("num_outputs", _coef.Width());
+        pt.put("num_input_features", _num_input_features);
 
         boost::property_tree::ptree ptfmap;
         ptfmap.put("number_maps", _maps.size());
@@ -138,38 +142,41 @@ public:
         int n = base::Width(X);
 
         if (_maps.size() == 0)  {
+            // No maps (linear case)
+
             DV.Resize(n, k);
             base::Gemm(elem::TRANSPOSE,elem::NORMAL,1.0, X, _coef, 0.0, DV);
-            return;
-        }
+        } else {
+            // Non-linear case
 
-        coef_type Wslice;
-        int j, start, finish, sj;
+            coef_type Wslice;
+            int j, start, finish, sj;
 
-        elem::Zeros(DV, n, k);
-#       ifdef SKYLARK_HAVE_OPENMP
-#       pragma omp parallel for if(num_threads > 1) private(j, start, finish, sj) num_threads(num_threads)
-#       endif
-        for(j = 0; j < _maps.size(); j++) {
-            start = _starts[j];
-            finish = _finishes[j];
-            sj = finish - start  + 1;
-
-            intermediate_type z(sj, n);
-            _maps[j]->apply(X, z, sketch::columnwise_tag());
-
-            if (_scale_maps)
-                elem::Scal(sqrt(double(sj) / d), z);
-
-            output_type o(n, k);
-
-            elem::LockedView(Wslice, _coef, start, 0, sj, k);
-            base::Gemm(elem::TRANSPOSE, elem::NORMAL, 1.0, z, Wslice, o);
-
+            elem::Zeros(DV, n, k);
 #           ifdef SKYLARK_HAVE_OPENMP
-#           pragma omp critical
+#           pragma omp parallel for if(num_threads > 1) private(j, start, finish, sj) num_threads(num_threads)
 #           endif
-            base::Axpy(+1.0, o, DV);
+            for(j = 0; j < _maps.size(); j++) {
+                start = _starts[j];
+                finish = _finishes[j];
+                sj = finish - start  + 1;
+
+                intermediate_type z(sj, n);
+                _maps[j]->apply(X, z, sketch::columnwise_tag());
+
+                if (_scale_maps)
+                    elem::Scal(sqrt(double(sj) / d), z);
+
+                output_type o(n, k);
+
+                elem::LockedView(Wslice, _coef, start, 0, sj, k);
+                base::Gemm(elem::TRANSPOSE, elem::NORMAL, 1.0, z, Wslice, o);
+
+#               ifdef SKYLARK_HAVE_OPENMP
+#               pragma omp critical
+#               endif
+                base::Axpy(+1.0, o, DV);
+            }
         }
 
         double o, o1, pred;
@@ -198,14 +205,16 @@ public:
         const boost::mpi::communicator& comm);
 
     int get_num_outputs() const { return _coef.Width(); }
-    int get_input_size() const { return _maps[0]->get_N(); /* FIXME linear ? */}
+    int get_input_size() const { return _num_input_features; }
 
 protected:
 
     void build_from_ptree(const boost::property_tree::ptree &pt) {
-       int num_features = pt.get<int>("num_features");
+        int num_features = pt.get<int>("num_features");
         int num_outputs = pt.get<int>("num_outputs");
         _coef.Resize(num_features, num_outputs);
+
+        _num_input_features = pt.get<int>("num_input_features");
 
         int num_maps = pt.get<int>("feature_mapping.number_maps");
         _maps.resize(num_maps);
@@ -244,6 +253,7 @@ protected:
 
 private:
     coef_type _coef;
+    int _num_input_features;
     std::vector<const feature_transform_type *> _maps; // TODO use shared_ptr
     bool _scale_maps;
 

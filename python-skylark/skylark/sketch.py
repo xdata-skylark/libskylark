@@ -147,6 +147,11 @@ def deserialize_sketch(sketch_dict):
 #
 class _NumpyAdapter:
   def __init__(self, A):
+    if A.dtype is not numpy.dtype('float64'):
+      raise errors.UnsupportedError("Only float64 matrices are supported.")
+    if A.base is not None:
+      raise errors.UnsupportedError("Passing a numpy matrix view is not supported.")
+
     self._A = A
 
   def ctype(self):
@@ -312,21 +317,20 @@ if _ELEM_INSTALLED:
     def __init__(self, A):
       self._A = A
       if isinstance(A, elem.DistMatrix_d):
-        self._typeid = ""
+        self._ctype = "DistMatrix"
       elif isinstance(A, elem.DistMatrix_d_VC_STAR):
-        self._typeid ="VC_STAR"
+        self._ctype ="DistMatrix_VC_STAR"
       elif isinstance(A, elem.DistMatrix_d_VR_STAR):
-        self._typeid = "VR_STAR"
+        self._ctype = "DistMatrix_VR_STAR"
       elif isinstance(A, elem.DistMatrix_d_STAR_VC):
-        self._typeid = "STAR_VC"
+        self._ctype = "DistMatrix_STAR_VC"
       elif isinstance(A, elem.DistMatrix_d_STAR_VR):
-        self._typeid = "STAR_VR"
+        self._ctype = "DistMatrix_STAR_VR"
       else:
         raise errors.UnsupportedError("Unsupported Elemental type")
-      self._typestr = "DistMatrix_" + self._typeid
 
     def ctype(self):
-      return self._typestr
+      return self._ctype
 
     def ptr(self):
       return ctypes.c_void_p(long(self._A.this))
@@ -407,7 +411,7 @@ def _adapt(obj):
   if _ELEM_INSTALLED and sys.modules.has_key('elem'):
     global elem
     import elem
-    elemcls = [elem.DistMatrix_d,
+    elemcls = [elem.DistMatrix_d, 
                elem.DistMatrix_d_VR_STAR, elem.DistMatrix_d_VC_STAR,
                elem.DistMatrix_d_STAR_VC, elem.DistMatrix_d_STAR_VR]
   else:

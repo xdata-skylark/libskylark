@@ -1,9 +1,9 @@
 /** Selecting the parts of HP support to activate */
 ////////////////////////////////////////////////////////////////////////////////
 
-//#define ROWWISE
+#define ROWWISE
 
-#define OPTIMIZED
+// #define OPTIMIZED
 
 #define TESTED_ROWWISE    inner_panel_gemm(A, sketch_of_A, tag); return;
 #define TESTED_COLUMNWISE inner_panel_gemm(A, sketch_of_A, tag); return;
@@ -43,8 +43,8 @@ typedef elem::DistMatrix<double, elem::CIRC, elem::CIRC>
 dist_CIRC_CIRC_dense_matrix_t;
 
 /* Set the following 2 typedefs for various matrix-type tests */
-typedef dist_STAR_VC_dense_matrix_t input_matrix_t;
-typedef dist_STAR_VC_dense_matrix_t output_matrix_t;
+typedef dist_VC_STAR_dense_matrix_t input_matrix_t;
+typedef dist_VC_STAR_dense_matrix_t output_matrix_t;
 
 
 typedef skylark::sketch::JLT_t<input_matrix_t, output_matrix_t>

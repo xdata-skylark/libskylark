@@ -93,6 +93,7 @@ private:
 #ifdef HP_DENSE_TRANSFORM_ELEMENTAL_COLDIST_STAR
 
 ////////////////////////////////////////////////////////////////////////////////
+#ifdef OPTIMIZED // OPTIMIZED
 
     void inner_panel_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
@@ -165,7 +166,6 @@ private:
                            value_type(1),
                            A1.LockedMatrix(),
                            R1.LockedMatrix(),
-                           value_type(0),
                            sketch_of_A11.Matrix());
 
                 elem::SlideLockedPartitionDown
@@ -189,7 +189,30 @@ private:
         }
     }
 
+#else
 
+    void inner_panel_gemm(const matrix_type& A,
+                          output_matrix_type& sketch_of_A,
+                          skylark::sketch::rowwise_tag) const {
+
+        const elem::Grid& grid = A.Grid();
+
+        elem::DistMatrix<value_type, elem::STAR, elem::STAR> R(grid);
+
+        // TODO: are alignments necessary?
+
+        data_type::realize_matrix_view(R);
+
+        // Local Gemm
+        base::Gemm(elem::NORMAL,
+                   elem::TRANSPOSE,
+                   value_type(1),
+                   A.LockedMatrix(),
+                   R.LockedMatrix(),
+                   sketch_of_A.Matrix());
+    }
+
+#endif // OPTIMIZED
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -226,6 +249,7 @@ private:
 
 
 ////////////////////////////////////////////////////////////////////////////////
+#ifdef OPTIMIZED // OPTIMIZED
 
     void outer_panel_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
@@ -281,6 +305,35 @@ private:
         }
     }
 
+#else
+
+    void outer_panel_gemm(const matrix_type& A,
+                          output_matrix_type& sketch_of_A,
+                          skylark::sketch::rowwise_tag) const {
+
+        const elem::Grid& grid = A.Grid();
+
+        elem::DistMatrix<value_type, elem::STAR, elem::STAR> R(grid);
+
+        // Zero sketch_of_A
+        elem::Zero(sketch_of_A);
+
+        // TODO: is alignment necessary?
+        R.AlignWith(sketch_of_A);
+
+        data_type::realize_matrix_view(R);
+
+        // Local Gemm
+        base::Gemm(elem::NORMAL,
+                   elem::TRANSPOSE,
+                   value_type(1),
+                   A.LockedMatrix(),
+                   R.LockedMatrix(),
+                   value_type(1),
+                   sketch_of_A.Matrix());
+    }
+
+#endif // OPTIMIZED
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -315,6 +368,7 @@ private:
 
 
 ////////////////////////////////////////////////////////////////////////////////
+#ifdef OPTIMIZED // OPTIMIZED
 
     void matrix_panel_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
@@ -355,7 +409,6 @@ private:
                        value_type(1),
                        A.LockedMatrix(),
                        R1.LockedMatrix(),
-                       value_type(0),
                        sketch_of_A1.Matrix());
 
             base = base + b;
@@ -366,6 +419,33 @@ private:
 
         }
     }
+
+#else
+
+    void matrix_panel_gemm(const matrix_type& A,
+                          output_matrix_type& sketch_of_A,
+                          skylark::sketch::rowwise_tag) const {
+
+        const elem::Grid& grid = A.Grid();
+
+        elem::DistMatrix<value_type, elem::STAR, elem::STAR> R(grid);
+
+        // TODO: is alignment necessary?
+        R.AlignWith(sketch_of_A);
+
+        data_type::realize_matrix_view(R);
+
+        // Local Gemm
+        base::Gemm(elem::NORMAL,
+                   elem::TRANSPOSE,
+                   value_type(1),
+                   A.LockedMatrix(),
+                   R.LockedMatrix(),
+                   sketch_of_A.Matrix());
+    }
+
+
+#endif // OPTIMIZED
 
 ////////////////////////////////////////////////////////////////////////////////
 

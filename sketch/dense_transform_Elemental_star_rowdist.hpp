@@ -92,6 +92,8 @@ private:
 
 #ifdef HP_DENSE_TRANSFORM_ELEMENTAL_STAR_ROWDIST
 
+////////////////////////////////////////////////////////////////////////////////
+
     // Communication demanding scenario: Memory-oblivious mode
     // TODO: Block-by-block mode
     void inner_panel_gemm(const matrix_type& A,
@@ -122,6 +124,7 @@ private:
                     sketch_of_A_STAR_STAR);
     }
 
+////////////////////////////////////////////////////////////////////////////////
 
     void inner_panel_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
@@ -216,6 +219,8 @@ private:
     }
 
 
+////////////////////////////////////////////////////////////////////////////////
+
     // Communication demanding scenario: Memory-oblivious mode
     // TODO: Block-by-block mode
     void outer_panel_gemm(const matrix_type& A,
@@ -248,6 +253,7 @@ private:
 
     }
 
+////////////////////////////////////////////////////////////////////////////////
 
     void outer_panel_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
@@ -302,6 +308,7 @@ private:
         }
     }
 
+////////////////////////////////////////////////////////////////////////////////
 
     // Communication demanding scenario: Memory-oblivious mode
     // TODO: Block-by-block mode
@@ -335,6 +342,8 @@ private:
                 sketch_of_A_STAR_STAR);
     }
 
+
+////////////////////////////////////////////////////////////////////////////////
 
     void panel_matrix_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
@@ -398,6 +407,9 @@ private:
 
         const double factor = get_factor();
 
+#ifdef TESTED_ROWWISE
+        TESTED_ROWWISE
+#else
         if((sketch_height * factor <= width) &&
             (sketch_width * factor <= width))
             inner_panel_gemm(A, sketch_of_A, tag);
@@ -406,6 +418,7 @@ private:
             outer_panel_gemm(A, sketch_of_A, tag);
         else
             matrix_panel_gemm(A, sketch_of_A, tag);
+#endif
     }
 
 
@@ -419,6 +432,9 @@ private:
 
         const double factor = get_factor();
 
+#ifdef TESTED_COLUMNWISE
+        TESTED_COLUMNWISE
+#else
         if((sketch_height * factor <= height) &&
             (sketch_width * factor <= height))
             inner_panel_gemm(A, sketch_of_A, tag);
@@ -427,6 +443,7 @@ private:
             outer_panel_gemm(A, sketch_of_A, tag);
         else
             panel_matrix_gemm(A, sketch_of_A, tag);
+#endif
     }
 
 
@@ -445,7 +462,12 @@ private:
         sketch_gemm(A, sketch_of_A, tag);
     }
 
-#else
+////////////////////////////////////////////////////////////////////////////////
+
+#else // HP_DENSE_TRANSFORM_ELEMENTAL_STAR_ROWDIST
+
+////////////////////////////////////////////////////////////////////////////////
+
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
@@ -544,7 +566,6 @@ private:
     // Redistribute the sketch: [VC/VR, STAR] -> [STAR, VC/VR]
     sketch_of_A = sketch_of_A_RowDist_STAR;
     }
-
 
 #endif
 

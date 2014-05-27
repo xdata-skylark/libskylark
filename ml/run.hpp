@@ -189,14 +189,8 @@ int run(const boost::mpi::communicator& comm, skylark::base::context_t& context,
     	skylark::ml::model_t<InputType, LabelType>* model =
             Solver->train(X, Y, Xv, Yv, comm);
 
-        if (comm.rank() == 0) {
-            boost::property_tree::ptree ptmodel = model->to_ptree();
-            ptmodel.push_front(std::make_pair("hilbert_cmdline", 
-                    boost::property_tree::ptree(options.str)));
-            std::ofstream of(options.modelfile);
-            boost::property_tree::write_json(of, ptmodel);
-            of.close();
-        }
+        if (comm.rank() == 0) 
+            model->save(options.modelfile, options.print());
     }
 
     else {

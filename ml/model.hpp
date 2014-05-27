@@ -87,6 +87,11 @@ public:
 
     model_t(const std::string& fname) {
         std::ifstream is(fname);
+
+        // Skip all lines begining with "#"
+        while(is.peek() == '#')
+            is.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
         boost::property_tree::ptree pt;
         boost::property_tree::read_json(is, pt);
         is.close();
@@ -125,9 +130,10 @@ public:
      * Saves the model to a file named fname. You may want to use this method
      * from only a single rank.
      */
-    void save(const std::string& fname) const {
+    void save(const std::string& fname, const std::string& header) const {
         boost::property_tree::ptree pt = to_ptree();
         std::ofstream of(fname);
+        of << header;
         boost::property_tree::write_json(of, pt);
         of.close();
     }

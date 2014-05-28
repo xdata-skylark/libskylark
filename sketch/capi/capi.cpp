@@ -650,42 +650,42 @@ SKYLARK_EXTERN_API int
     AUTO_APPLY_DISPATCH(sketchc::CWT,
         sketchc::DIST_SPARSE_MATRIX, sketchc::MATRIX,
         sketch::CWT_t, DistSparseMatrix, Matrix,
-        CWT_data_t);
+        sketch::CWT_data_t);
 
     AUTO_APPLY_DISPATCH(sketchc::CWT,
         sketchc::DIST_SPARSE_MATRIX, sketchc::DIST_MATRIX,
         sketch::CWT_t, DistSparseMatrix, DistMatrix,
-        CWT_data_t);
+        sketch::CWT_data_t);
 
     AUTO_APPLY_DISPATCH(sketchc::CWT,
         sketchc::DIST_SPARSE_MATRIX, sketchc::DIST_MATRIX_VC_STAR,
         sketch::CWT_t, DistSparseMatrix, DistMatrix_VC_STAR,
-        CWT_data_t);
+        sketch::CWT_data_t);
 
     AUTO_APPLY_DISPATCH(sketchc::CWT,
         sketchc::DIST_SPARSE_MATRIX, sketchc::DIST_MATRIX_VR_STAR,
         sketch::CWT_t, DistSparseMatrix, DistMatrix_VR_STAR,
-        CWT_data_t);
+        sketch::CWT_data_t);
 
     AUTO_APPLY_DISPATCH(sketchc::MMT,
         sketchc::DIST_SPARSE_MATRIX, sketchc::MATRIX,
         sketch::MMT_t, DistSparseMatrix, Matrix,
-        MMT_data_t);
+        sketch::MMT_data_t);
 
     AUTO_APPLY_DISPATCH(sketchc::MMT,
         sketchc::DIST_SPARSE_MATRIX, sketchc::DIST_MATRIX,
         sketch::MMT_t, DistSparseMatrix, DistMatrix,
-        MMT_data_t);
+        sketch::MMT_data_t);
 
     AUTO_APPLY_DISPATCH(sketchc::MMT,
         sketchc::DIST_SPARSE_MATRIX, sketchc::DIST_MATRIX_VC_STAR,
         sketch::MMT_t, DistSparseMatrix, DistMatrix_VC_STAR,
-        MMT_data_t);
+        sketch::MMT_data_t);
 
     AUTO_APPLY_DISPATCH(sketchc::MMT,
         sketchc::DIST_SPARSE_MATRIX, sketchc::DIST_MATRIX_VR_STAR,
         sketch::MMT_t, DistSparseMatrix, DistMatrix_VR_STAR,
-        MMT_data_t);
+        sketch::MMT_data_t);
 #endif
 #endif
 

@@ -121,6 +121,12 @@ int test_main(int argc, char *argv[]) {
     //[> Setup test <]
     namespace mpi = boost::mpi;
     mpi::environment env(argc, argv);
+
+#ifdef SKYLARK_HAVE_OPENMP
+    int provided;
+    MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
+#endif
+
     mpi::communicator world;
     const size_t rank = world.rank();
 

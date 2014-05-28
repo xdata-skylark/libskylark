@@ -39,9 +39,7 @@ struct hash_transform_t <
     elem::DistMatrix<ValueType, ColDist, RowDist>,
     IdxDistributionType,
     ValueDistribution > :
-        public hash_transform_data_t<IndexType,
-                                     ValueType,
-                                     IdxDistributionType,
+        public hash_transform_data_t<IdxDistributionType,
                                      ValueDistribution> {
     typedef IndexType index_type;
     typedef ValueType value_type;
@@ -49,9 +47,7 @@ struct hash_transform_t <
     typedef FullyDistVec< index_type, value_type> mpi_vector_t;
     typedef SpParMat< index_type, value_type, col_t > matrix_type;
     typedef elem::DistMatrix< value_type, ColDist, RowDist > output_matrix_type;
-    typedef hash_transform_data_t<IndexType,
-                                  ValueType,
-                                  IdxDistributionType,
+    typedef hash_transform_data_t<IdxDistributionType,
                                   ValueDistribution> data_type;
 
 
@@ -77,9 +73,7 @@ struct hash_transform_t <
     /**
      * Constructor from data
      */
-    hash_transform_t (hash_transform_data_t<index_type,
-                                            value_type,
-                                            IdxDistributionType,
+    hash_transform_t (hash_transform_data_t<IdxDistributionType,
                                             ValueDistribution>& other_data) :
         data_type(other_data) {}
 
@@ -297,9 +291,7 @@ struct hash_transform_t <
     elem::Matrix<ValueType>,
     IdxDistributionType,
     ValueDistribution > :
-        public hash_transform_data_t<IndexType,
-                                     ValueType,
-                                     IdxDistributionType,
+        public hash_transform_data_t<IdxDistributionType,
                                      ValueDistribution> {
     typedef IndexType index_type;
     typedef ValueType value_type;
@@ -307,9 +299,7 @@ struct hash_transform_t <
     typedef FullyDistVec< index_type, value_type> mpi_vector_t;
     typedef SpParMat< index_type, value_type, col_t > matrix_type;
     typedef elem::Matrix< value_type > output_matrix_type;
-    typedef hash_transform_data_t<IndexType,
-                                  ValueType,
-                                  IdxDistributionType,
+    typedef hash_transform_data_t<IdxDistributionType,
                                   ValueDistribution> data_type;
 
 
@@ -335,9 +325,7 @@ struct hash_transform_t <
     /**
      * Constructor from data
      */
-    hash_transform_t (hash_transform_data_t<index_type,
-                                            value_type,
-                                            IdxDistributionType,
+    hash_transform_t (hash_transform_data_t<IdxDistributionType,
                                             ValueDistribution>& other_data) :
         data_type(other_data) {}
 

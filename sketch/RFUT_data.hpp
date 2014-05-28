@@ -3,6 +3,9 @@
 
 #include <vector>
 
+#include "boost/foreach.hpp"
+#include "boost/property_tree/ptree.hpp"
+
 #include "../base/context.hpp"
 #include "../utility/randgen.hpp"
 
@@ -13,30 +16,38 @@ namespace skylark { namespace sketch {
  * This is the base data class for RFUT transform. Essentially, it
  * holds the input and sketched matrix sizes and the random diagonal part.
  */
-template <typename ValueType,
-          typename ValueDistributionType>
+template <typename ValueDistributionType>
 struct RFUT_data_t {
     // Only for consistency reasons
-    typedef ValueType value_type;
     typedef ValueDistributionType value_distribution_type;
 
     /**
      * Regular constructor
      */
     RFUT_data_t (int N, skylark::base::context_t& context)
-        : _N(N), _context(context) {
-        value_distribution_type distribution;
-        D = context.generate_random_samples_array(N, distribution);
+        : _N(N), _creation_context(context) {
+
+        build();
     }
 
-
-    //TODO: inherit from (dense_)transform_t or serialize here
-    //TODO: serialize distribution
+    // TODO support to_ptree (challenging part: the distribution).
 
 protected:
-    const int _N; /**< Input dimension  */
-    skylark::base::context_t& _context; /**< Context for this sketch */
-    std::vector<value_type> D; /**< Diagonal part */
+    int _N; /**< Input dimension  */
+
+    /// Store the context on creation for serialization
+    const base::context_t _creation_context;
+
+    std::vector<double> D; /**< Diagonal part */
+
+    base::context_t build() {
+        base::context_t ctx = _creation_context;
+
+        value_distribution_type distribution;
+        D = ctx.generate_random_samples_array(_N, distribution);
+
+        return ctx;
+    }
 };
 
 } } /** namespace skylark::sketch */

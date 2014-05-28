@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "../base/context.hpp"
-#include "transform_data.hpp"
+#include "sketch_transform_data.hpp"
 #include "dense_transform_data.hpp"
 #include "../utility/randgen.hpp"
 
@@ -23,86 +23,110 @@ namespace skylark { namespace sketch {
  * Random Laplace Feature Maps for Semigroup Kernels on Histograms
  *
  */
-template <typename ValueType,
-          template <typename> class KernelDistribution>
-struct RLT_data_t : public transform_data_t {
+template <template <typename> class KernelDistribution>
+struct RLT_data_t : public sketch_transform_data_t {
 
-    typedef ValueType value_type;
-    typedef skylark::sketch::dense_transform_data_t<value_type,
-                                                    KernelDistribution>
-        underlying_data_type;
-    typedef transform_data_t base_t;
+    typedef dense_transform_data_t<KernelDistribution> underlying_data_type;
+    typedef sketch_transform_data_t base_t;
 
     /**
      * Regular constructor
      */
-    RLT_data_t (int N, int S, skylark::base::context_t& context,
-                std::string name)
-        : base_t(N, S, context, name), _val_scale(1),
-          _underlying_data(base_t::_N, base_t::_S, base_t::_context),
+    RLT_data_t (int N, int S, skylark::base::context_t& context)
+        : base_t(N, S, context, "RLT"), _val_scale(1),
           _scale(std::sqrt(1.0 / base_t::_S)) {
-
+        context = build();
     }
 
-    RLT_data_t (boost::property_tree::ptree &json,
-                skylark::base::context_t& context)
-        : base_t(json, context), _val_scale(1),
-          _underlying_data(base_t::_N, base_t::_S, base_t::_context),
-          _scale(std::sqrt(1.0 / base_t::_S)) {
+    /**
+     *  Serializes a sketch to a string.
+     *
+     *  @param[out] property_tree describing the sketch.
+     */
+    virtual
+    boost::property_tree::ptree to_ptree() const {
+        SKYLARK_THROW_EXCEPTION (
+          base::sketch_exception()
+              << base::error_msg(
+                 "Do not yet support serialization of generic RLT transform"));
 
+        return boost::property_tree::ptree();
     }
 
 protected:
-    value_type _val_scale; /**< Bandwidth (sigma)  */
-    const underlying_data_type _underlying_data;
+    RLT_data_t (int N, int S, const skylark::base::context_t& context,
+        std::string type)
+        : base_t(N, S, context, type), _val_scale(1),
+          _scale(std::sqrt(1.0 / base_t::_S)) {
+
+    }
+
+   base::context_t build() {
+       base::context_t ctx = base_t::build();
+       _underlying_data = boost::shared_ptr<underlying_data_type>(new
+           underlying_data_type(base_t::_N, base_t::_S, ctx));
+       return ctx;
+   }
+
+    double _val_scale; /**< Bandwidth (sigma)  */
+    boost::shared_ptr<underlying_data_type> _underlying_data;
     /**< Data of the underlying dense transformation */
-    const value_type _scale; /** Scaling for trigonometric factor */
+    const double _scale; /** Scaling for trigonometric factor */
 };
 
 /**
  * Random Features for Exponential Semigroup
  */
-template<typename ValueType>
 struct ExpSemigroupRLT_data_t :
-        public RLT_data_t<ValueType, utility::standard_levy_distribution_t> {
+        public RLT_data_t<utility::standard_levy_distribution_t> {
 
-    typedef RLT_data_t<ValueType, utility::standard_levy_distribution_t > base_t;
+    typedef RLT_data_t<utility::standard_levy_distribution_t > base_t;
 
     /**
      * Constructor
      */
-    ExpSemigroupRLT_data_t(int N, int S, typename base_t::value_type beta,
+    ExpSemigroupRLT_data_t(int N, int S, double beta,
         skylark::base::context_t& context)
         : base_t(N, S, context, "ExpSemigroupRLT"), _beta(beta) {
+
+        base_t::_val_scale = beta * beta / 2;
+        context = base_t::build();
+    }
+
+    ExpSemigroupRLT_data_t(const boost::property_tree::ptree &pt) :
+        base_t(pt.get<int>("N"), pt.get<int>("S"),
+            base::context_t(pt.get_child("creation_context")), "ExpSemiGroupRLT"),
+        _beta(pt.get<double>("beta")) {
+
+        base_t::_val_scale = _beta * _beta / 2;
+        base_t::build();
+    }
+
+    /**
+     *  Serializes a sketch to a string.
+     *
+     *  @param[out] property_tree describing the sketch.
+     */
+    virtual
+    boost::property_tree::ptree to_ptree() const {
+        boost::property_tree::ptree pt;
+        sketch_transform_data_t::add_common(pt);
+        pt.put("beta", _beta);
+        return pt;
+    }
+
+protected:
+    ExpSemigroupRLT_data_t(int N, int S, double beta,
+        const skylark::base::context_t& context, std::string type)
+        : base_t(N, S, context, type), _beta(beta) {
+
         base_t::_val_scale = beta * beta / 2;
     }
 
-    ExpSemigroupRLT_data_t(boost::property_tree::ptree &json,
-                           skylark::base::context_t& context)
-        : base_t(json, context),
-        _beta(json.get<ValueType>("sketch.beta")) {
 
-        base_t::_val_scale = _beta * _beta / 2;
-    }
-
-    template <typename ValueT>
-    friend boost::property_tree::ptree& operator<<(
-        boost::property_tree::ptree &sk,
-        const ExpSemigroupRLT_data_t<ValueT> &data);
-
-protected:
-    const ValueType _beta;
+private:
+    const double _beta;
 };
-
-template <typename ValueType>
-boost::property_tree::ptree& operator<<(
-        boost::property_tree::ptree &sk,
-        const ExpSemigroupRLT_data_t<ValueType> &data) {
-
-    sk << static_cast<const transform_data_t&>(data);
-    sk.put("sketch.beta", data._beta);
-    return sk;
-}
 
 } } /** namespace skylark::sketch */
 

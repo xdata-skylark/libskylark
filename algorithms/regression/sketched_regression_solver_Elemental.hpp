@@ -1,5 +1,5 @@
-#ifndef SKYLARK_SKETCHED_REGRESSOR_ELEMENTAL_HPP
-#define SKYLARK_SKETCHED_REGRESSOR_ELEMENTAL_HPP
+#ifndef SKYLARK_SKETCHED_REGRESSION_SOLVER_ELEMENTAL_HPP
+#define SKYLARK_SKETCHED_REGRESSION_SOLVER_ELEMENTAL_HPP
 
 #include <boost/mpi.hpp>
 #include <elemental.hpp>
@@ -7,14 +7,14 @@
 #include "../../base/context.hpp"
 #include "regression_problem.hpp"
 #include "../../sketch/sketch.hpp"
-#include "utility/typer.hpp"
+#include "../../utility/typer.hpp"
 
 namespace skylark {
 namespace algorithms {
 
 /**
- * Generic sketched regressor using sketch-and-solve when sketch fits into a
- * single node.
+ * Generic sketched regression solver using sketch-and-solve when sketch fits
+ * int single node.
  */
 template <
     typename RegressionType,
@@ -26,7 +26,7 @@ template <
     typename SketchedRegressionType,
     template <typename, typename> class TransformType,
     typename ExactAlgTag>
-class sketched_regressor_t<
+class sketched_regression_solver_t<
     regression_problem_t<InputType,
                          RegressionType, PenaltyType, RegularizationType>,
     RhsType,
@@ -37,8 +37,7 @@ class sketched_regressor_t<
     elem::Matrix<
         typename utility::typer_t<InputType>::value_type >,
     TransformType,
-    ExactAlgTag,
-    sketch_and_solve_tag> {
+    ExactAlgTag> {
 
 public:
 
@@ -63,10 +62,10 @@ public:
                                  regularization_type> sketched_problem_type;
 
 
-    typedef exact_regressor_t<sketched_problem_type,
+    typedef regression_solver_t<sketched_problem_type,
                               sketch_rhs_type,
                               sol_type,
-                              ExactAlgTag> underlying_regressor_type;
+                              ExactAlgTag> underlying_solver_type;
 
 private:
     typedef typename TransformType<matrix_type, sketch_type>::data_type
@@ -75,10 +74,10 @@ private:
     const int _my_rank;
     const int _sketch_size;
     const transform_data_type _sketch;
-    const underlying_regressor_type  *_underlying_regressor;
+    const underlying_solver_type  *_underlying_solver;
 
 public:
-    sketched_regressor_t(const problem_type& problem, int sketch_size,
+    sketched_regression_solver_t(const problem_type& problem, int sketch_size,
         base::context_t& context) :
         _my_rank(utility::get_communicator(problem.input_matrix)),
         _sketch_size(sketch_size),
@@ -90,11 +89,11 @@ public:
         sketch_type sketch(sketch_size, problem.n);
         S.apply(problem.input_matrix, sketch, sketch::columnwise_tag());
         sketched_problem_type sketched_problem(sketch_size, problem.n, sketch);
-        _underlying_regressor = new underlying_regressor_type(sketched_problem);
+        _underlying_solver = new underlying_solver_type(sketched_problem);
     }
 
-    ~sketched_regressor_t() {
-        delete _underlying_regressor;
+    ~sketched_regression_solver_t() {
+        delete _underlying_solver;
     }
 
     void solve(const rhs_type& b, sol_type& x) {
@@ -102,7 +101,7 @@ public:
         sketch_type Sb(_sketch_size, 1);
         S.apply(b, Sb, sketch::columnwise_tag());
         if (_my_rank == 0)
-            _underlying_regressor->solve(Sb, x);
+            _underlying_solver->solve(Sb, x);
     }
 
     void solve_mulitple(const rhs_type& B, sol_type& X) {
@@ -110,7 +109,7 @@ public:
         sketch_type SB(_sketch_size, B.Width());
         S.apply(SB, SB, sketch::columnwise_tag());
         if (_my_rank == 0)
-            _underlying_regressor->solve_mulitple(SB, X);
+            _underlying_solver->solve_mulitple(SB, X);
     }
 };
 
@@ -128,7 +127,7 @@ template <
     elem::Distribution CD, elem::Distribution RD,
     template <typename, typename> class TransformType,
     typename ExactAlgTag>
-class sketched_regressor_t<
+class sketched_regression_solver_t<
     regression_problem_t<InputType,
                          RegressionType, PenaltyType, RegularizationType>,
     RhsType,
@@ -141,8 +140,7 @@ class sketched_regressor_t<
         typename utility::typer_t<InputType>::value_type,
         CD, RD >,
     TransformType,
-    ExactAlgTag,
-    sketch_and_solve_tag> {
+    ExactAlgTag> {
 
 public:
 
@@ -166,10 +164,10 @@ public:
                                  sketched_regression_type, penalty_type,
                                  regularization_type> sketched_problem_type;
 
-    typedef exact_regressor_t<sketched_problem_type,
-                              sketch_rhs_type,
-                              sol_type,
-                              ExactAlgTag> underlying_regressor_type;
+    typedef regression_solver_t<sketched_problem_type,
+                                sketch_rhs_type,
+                                sol_type,
+                                ExactAlgTag> underlying_solver_type;
 
 private:
     typedef typename TransformType<matrix_type, sketch_type>::data_type
@@ -177,10 +175,10 @@ private:
 
     const int _sketch_size;
     const transform_data_type _sketch;
-    const underlying_regressor_type  *_underlying_regressor;
+    const underlying_solver_type  *_underlying_solver;
 
 public:
-    sketched_regressor_t(const problem_type& problem, int sketch_size,
+    sketched_regression_solver_t(const problem_type& problem, int sketch_size,
         base::context_t& context) :
         _sketch_size(sketch_size),
         _sketch(problem.m, sketch_size, context) {
@@ -191,11 +189,11 @@ public:
         sketch_type sketch(sketch_size, problem.n);
         S.apply(problem.input_matrix, sketch, sketch::columnwise_tag());
         sketched_problem_type sketched_problem(sketch_size, problem.n, sketch);
-        _underlying_regressor = new underlying_regressor_type(sketched_problem);
+        _underlying_solver = new underlying_solver_type(sketched_problem);
     }
 
-    ~sketched_regressor_t() {
-        delete _underlying_regressor;
+    ~sketched_regression_solver_t() {
+        delete _underlying_solver;
     }
 
     void solve(const rhs_type& b, sol_type& x) {
@@ -204,7 +202,7 @@ public:
         TransformType<rhs_type, sketch_type> S(_sketch);
         sketch_type Sb(_sketch_size, 1);
         S.apply(b, Sb, sketch::columnwise_tag());
-        _underlying_regressor->solve(Sb, x);
+        _underlying_solver->solve(Sb, x);
     }
 
     void solve_mulitple(const rhs_type& B, sol_type& X) {
@@ -213,10 +211,10 @@ public:
         TransformType<rhs_type, sketch_type> S(_sketch);
         sketch_type SB(_sketch_size, B.Width());
         S.apply(SB, SB, sketch::columnwise_tag());
-        _underlying_regressor->solve_mulitple(SB, X);
+        _underlying_solver->solve_mulitple(SB, X);
     }
 };
 
 } } // namespace skylark::algorithms
 
-#endif // SKYLARK_SKETCHED_REGRESSOR_ELEMENTAL_HPP
+#endif // SKYLARK_SKETCHED_REGRESSION_SOLVER_ELEMENTAL_HPP

@@ -32,9 +32,7 @@ class RFT_t {
 template< typename InputMatrixType,
           typename OutputMatrixType>
 struct GaussianRFT_t :
-    public GaussianRFT_data_t<typename
-      RFT_t<InputMatrixType, OutputMatrixType,
-            bstrand::normal_distribution >::value_type >,
+    public GaussianRFT_data_t,
     virtual public sketch_transform_t<InputMatrixType, OutputMatrixType > {
 
 
@@ -42,15 +40,18 @@ struct GaussianRFT_t :
     typedef RFT_t<InputMatrixType, OutputMatrixType,
                   bstrand::normal_distribution > transform_t;
 
-    typedef GaussianRFT_data_t<typename
-      RFT_t<InputMatrixType, OutputMatrixType,
-            bstrand::normal_distribution >::value_type > data_type;
+    typedef GaussianRFT_data_t data_type;
 
     /**
      * Regular constructor
      */
     GaussianRFT_t(int N, int S, double sigma, base::context_t& context)
         : data_type(N, S, sigma, context), _transform(*this) {
+
+    }
+
+    GaussianRFT_t(const boost::property_tree::ptree &pt)
+        : data_type(pt), _transform(*this) {
 
     }
 
@@ -96,6 +97,8 @@ struct GaussianRFT_t :
     int get_N() const { return this->_N; } /**< Get input dimesion. */
     int get_S() const { return this->_S; } /**< Get output dimesion. */
 
+    const sketch_transform_data_t* get_data() const { return this; }
+
 private:
     transform_t _transform;
 
@@ -107,9 +110,7 @@ private:
 template< typename InputMatrixType,
           typename OutputMatrixType>
 struct LaplacianRFT_t :
-    public LaplacianRFT_data_t<typename
-      RFT_t<InputMatrixType, OutputMatrixType,
-            bstrand::cauchy_distribution >::value_type >,
+    public LaplacianRFT_data_t,
     virtual public sketch_transform_t<InputMatrixType, OutputMatrixType > {
 
 
@@ -117,15 +118,18 @@ struct LaplacianRFT_t :
     typedef RFT_t<InputMatrixType, OutputMatrixType,
                   bstrand::cauchy_distribution > transform_t;
 
-    typedef LaplacianRFT_data_t<typename
-      RFT_t<InputMatrixType, OutputMatrixType,
-            bstrand::cauchy_distribution >::value_type > data_type;
+    typedef LaplacianRFT_data_t data_type;
 
     /**
      * Regular constructor
      */
     LaplacianRFT_t(int N, int S, double sigma, base::context_t& context)
         : data_type(N, S, sigma, context), _transform(*this) {
+
+    }
+
+    LaplacianRFT_t(const boost::property_tree::ptree &pt)
+        : data_type(pt), _transform(*this) {
 
     }
 
@@ -170,6 +174,8 @@ struct LaplacianRFT_t :
 
     int get_N() const { return this->_N; } /**< Get input dimension. */
     int get_S() const { return this->_S; } /**< Get output dimension. */
+
+    const sketch_transform_data_t* get_data() const { return this; }
 
 private:
     transform_t _transform;

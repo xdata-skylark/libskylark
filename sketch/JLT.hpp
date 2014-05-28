@@ -16,9 +16,7 @@ namespace bstrand = boost::random;
 template < typename InputMatrixType,
            typename OutputMatrixType = InputMatrixType >
 class JLT_t :
-  public JLT_data_t<typename
-    dense_transform_t<InputMatrixType, OutputMatrixType,
-                      bstrand::normal_distribution >::value_type >,
+  public JLT_data_t,
   virtual public sketch_transform_t<InputMatrixType, OutputMatrixType > {
 
 public:
@@ -27,19 +25,19 @@ public:
     typedef dense_transform_t<InputMatrixType, OutputMatrixType,
                                bstrand::normal_distribution > transform_t;
 
-    typedef JLT_data_t<typename transform_t::value_type> data_type;
+    typedef JLT_data_t data_type;
 
     /**
      * Regular constructor
      */
     JLT_t(int N, int S, base::context_t& context)
-        : data_type(N, S, context), _transform(*this) {
+        : data_type(N, S, context), 
+          _transform(*this) {
 
     }
 
-    JLT_t(boost::property_tree::ptree &json,
-          base::context_t& context)
-        : data_type(json, context), _transform(*this) {
+    JLT_t(const boost::property_tree::ptree &pt)
+        : data_type(pt), _transform(*this) {
 
     }
 
@@ -83,6 +81,8 @@ public:
 
     int get_N() const { return this->_N; } /**< Get input dimesion. */
     int get_S() const { return this->_S; } /**< Get output dimesion. */
+
+    const sketch_transform_data_t* get_data() const { return this; }
 
 private:
     transform_t _transform;

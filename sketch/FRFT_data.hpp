@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "../base/context.hpp"
-#include "transform_data.hpp"
+#include "sketch_transform_data.hpp"
 #include "dense_transform_data.hpp"
 #include "../utility/randgen.hpp"
 
@@ -26,66 +26,83 @@ namespace bstrand = boost::random;
  * Fastfood - Approximating Kernel Expansions in Loglinear Time
  * ICML 2013.
  */
-template< typename ValueType >
-struct FastRFT_data_t : public transform_data_t {
+struct FastRFT_data_t : public sketch_transform_data_t {
 
-    typedef ValueType value_type;
-    typedef transform_data_t base_t;
+    typedef sketch_transform_data_t base_t;
 
     /**
      * Regular constructor
      */
-    FastRFT_data_t (int N, int S, skylark::base::context_t& context,
-                    std::string name)
-        : base_t(N, S, context, name), _NB(N),
+    FastRFT_data_t (int N, int S, skylark::base::context_t& context)
+        : base_t(N, S, context, "FastRFT"), _NB(N),
           numblks(1 + ((base_t::_S - 1) / _NB)),
           scale(std::sqrt(2.0 / base_t::_S)),
           Sm(numblks * _NB)  {
 
-        _populate();
+        context = build();
     }
 
-    FastRFT_data_t (boost::property_tree::ptree &json,
-                    skylark::base::context_t& context)
-        : base_t(json, context), _NB(base_t::_N),
+    FastRFT_data_t (const boost::property_tree::ptree &pt)
+        : base_t(pt.get<int>("N"), pt.get<int>("S"),
+            base::context_t(pt.get_child("creation_context")), "FastRFT"),
+          _NB(base_t::_N),
           numblks(1 + ((base_t::_S - 1) / _NB)),
           scale(std::sqrt(2.0 / base_t::_S)),
           Sm(numblks * _NB)  {
 
-        _populate();
+         build();
+    }
+
+    /**
+     *  Serializes a sketch to a string.
+     *
+     *  @param[out] property_tree describing the sketch.
+     */
+    virtual
+    boost::property_tree::ptree to_ptree() const {
+        boost::property_tree::ptree pt;
+        sketch_transform_data_t::add_common(pt);
+        return pt;
     }
 
 
 protected:
+    FastRFT_data_t (int N, int S, const skylark::base::context_t& context,
+        std::string type)
+        : base_t(N, S, context, type), _NB(N),
+          numblks(1 + ((base_t::_S - 1) / _NB)),
+          scale(std::sqrt(2.0 / base_t::_S)),
+          Sm(numblks * _NB)  {
+
+    }
+
     const int _NB; /**< Block size -- closet power of two of N */
 
     const int numblks;
-    const value_type scale; /** Scaling for trigonometric factor */
-    std::vector<value_type> Sm; /** Scaling based on kernel (filled by subclass) */
-    std::vector<value_type> B;
-    std::vector<value_type> G;
-    std::vector<int> P;
-    std::vector<value_type> shifts; /** Shifts for scaled trigonometric factor */
+    const double scale; /** Scaling for trigonometric factor */
+    std::vector<double> Sm; /** Scaling based on kernel (filled by subclass) */
+    std::vector<double> B;
+    std::vector<double> G;
+    std::vector<size_t> P;
+    std::vector<double> shifts; /** Shifts for scaled trigonometric factor */
 
-    void _populate() {
-        const double pi = boost::math::constants::pi<value_type>();
-        bstrand::uniform_real_distribution<value_type> dist_shifts(0, 2 * pi);
-        shifts = base_t::_context.generate_random_samples_array(
-                    base_t::_S, dist_shifts);
-        utility::rademacher_distribution_t<value_type> dist_B;
+    base::context_t build() {
+        base::context_t ctx = base_t::build();
+        const double pi = boost::math::constants::pi<double>();
+        bstrand::uniform_real_distribution<double> dist_shifts(0, 2 * pi);
+        shifts = ctx.generate_random_samples_array(base_t::_S, dist_shifts);
+        utility::rademacher_distribution_t<double> dist_B;
 
-        B = base_t::_context.generate_random_samples_array(numblks * _NB, dist_B);
-        bstrand::normal_distribution<value_type> dist_G;
-        G = base_t::_context.generate_random_samples_array(numblks * _NB, dist_G);
-
+        B = ctx.generate_random_samples_array(numblks * _NB, dist_B);
+        bstrand::normal_distribution<double> dist_G;
+        G = ctx.generate_random_samples_array(numblks * _NB, dist_G);
 
         // For the permutation we use Fisher-Yates (Knuth)
         // The following will generate the indexes for the swaps. However
         // the scheme here might have a small bias if NB is small
         // (has to be really small).
-        bstrand::uniform_int_distribution<int> dist_P(0);
-        P = base_t::_context.generate_random_samples_array(
-                numblks * (_NB - 1), dist_P);
+        bstrand::uniform_int_distribution<size_t> dist_P(0);
+        P = ctx.generate_random_samples_array(numblks * (_NB - 1), dist_P);
         for(int i = 0; i < numblks; i++)
             for(int j = _NB - 1; j >= 1; j--)
                 P[i * (_NB - 1) + _NB - 1 - j] =
@@ -94,6 +111,8 @@ protected:
         // Fill scaling matrix with 1. Subclasses (which are adapted to concrete
         // kernels) should modify this.
         std::fill(Sm.begin(), Sm.end(), 1.0);
+
+        return ctx;
     }
 
 
@@ -110,53 +129,59 @@ protected:
 
 };
 
-template<typename ValueType>
 struct FastGaussianRFT_data_t :
-        public FastRFT_data_t<ValueType> {
+        public FastRFT_data_t {
 
-    typedef FastRFT_data_t<ValueType> base_t;
-    typedef typename base_t::value_type value_type;
+    typedef FastRFT_data_t base_t;
 
     /**
      * Constructor
      * Most of the work is done by base. Here just write scale
      */
-    FastGaussianRFT_data_t(int N, int S, value_type sigma,
+    FastGaussianRFT_data_t(int N, int S, double sigma,
         skylark::base::context_t& context)
         : base_t(N, S, context, "FastGaussianRFT"), _sigma(sigma) {
 
         std::fill(base_t::Sm.begin(), base_t::Sm.end(),
                 1.0 / (_sigma * std::sqrt(base_t::_N)));
+        context = base_t::build();
     }
 
-    FastGaussianRFT_data_t(boost::property_tree::ptree &json,
-                           skylark::base::context_t& context)
-        : base_t(json, context),
-        _sigma(json.get<value_type>("sketch.sigma")) {
+    FastGaussianRFT_data_t(const boost::property_tree::ptree &pt) :
+        base_t(pt.get<int>("N"), pt.get<int>("S"),
+            base::context_t(pt.get_child("creation_context")), "FastGaussianRFT"),
+        _sigma(pt.get<double>("sigma")) {
+
+        std::fill(base_t::Sm.begin(), base_t::Sm.end(),
+                1.0 / (_sigma * std::sqrt(base_t::_N)));
+        base_t::build();
+    }
+
+    /**
+     *  Serializes a sketch to a string.
+     *
+     *  @param[out] property_tree describing the sketch.
+     */
+    virtual
+    boost::property_tree::ptree to_ptree() const {
+        boost::property_tree::ptree pt;
+        sketch_transform_data_t::add_common(pt);
+        pt.put("sigma", _sigma);
+        return pt;
+    }
+
+protected:
+    FastGaussianRFT_data_t(int N, int S, double sigma,
+        const skylark::base::context_t& context, std::string type)
+        : base_t(N, S, context, type), _sigma(sigma) {
 
         std::fill(base_t::Sm.begin(), base_t::Sm.end(),
                 1.0 / (_sigma * std::sqrt(base_t::_N)));
     }
 
-    template <typename ValueT>
-    friend boost::property_tree::ptree& operator<<(
-        boost::property_tree::ptree &sk,
-        const FastGaussianRFT_data_t<ValueT> &data);
-
-protected:
-    const value_type _sigma; /**< Bandwidth (sigma)  */
+    const double _sigma; /**< Bandwidth (sigma)  */
 
 };
-
-template <typename ValueType>
-boost::property_tree::ptree& operator<<(
-        boost::property_tree::ptree &sk,
-        const FastGaussianRFT_data_t<ValueType> &data) {
-
-    sk << static_cast<const transform_data_t&>(data);
-    sk.put("sketch.sigma", data._sigma);
-    return sk;
-}
 
 } } /** namespace skylark::sketch */
 

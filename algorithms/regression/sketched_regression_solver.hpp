@@ -1,11 +1,14 @@
-#ifndef SKYLARK_SKETCHED_REGRESSOR_HPP
-#define SKYLARK_SKETCHED_REGRESSOR_HPP
+#ifndef SKYLARK_SKETCHED_REGRESSION_SOLVER_HPP
+#define SKYLARK_SKETCHED_REGRESSION_SOLVER_HPP
 
 #include "../../config.h"
 
 namespace skylark {
 namespace algorithms {
 
+/**
+ * Generic class for the sketch-and-solve strategy.
+ */
 template <typename RegressionProblemType,
           typename RhsType,
           typename SolType,
@@ -13,9 +16,8 @@ template <typename RegressionProblemType,
           typename SketchType,
           typename SketchRhsType,
           template <typename, typename> class SketchTransformType,
-          typename ExactAlgTag,
-          typename UseTag = sketch_and_solve_tag>
-class sketched_regressor_t {
+          typename ExactAlgTag>
+class sketched_regression_solver_t {
 
 };
 
@@ -24,7 +26,7 @@ class sketched_regressor_t {
 } // namespace skylark
 
 #if SKYLARK_HAVE_ELEMENTAL
-#include "sketched_regressor_Elemental.hpp"
+#include "sketched_regression_solver_Elemental.hpp"
 #endif
 
-#endif // SKYLARK_SKETCHED_REGRESSOR_HPP
+#endif // SKYLARK_SKETCHED_REGRESSION_SOLVER_HPP

@@ -22,8 +22,7 @@ struct RFUT_t<
     elem::DistMatrix<ValueType, elem::STAR, RowDist>,
     FUT,
     ValueDistributionType> :
-        public RFUT_data_t<ValueType,
-                           ValueDistributionType> {
+        public RFUT_data_t<ValueDistributionType> {
     // Typedef value, matrix, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
@@ -32,8 +31,7 @@ struct RFUT_t<
     typedef elem::DistMatrix<ValueType,
                              elem::STAR, RowDist> output_matrix_type;
     typedef ValueDistributionType value_distribution_type;
-    typedef RFUT_data_t<ValueType,
-                        ValueDistributionType> data_type;
+    typedef RFUT_data_t<ValueDistributionType> data_type;
 
     /**
      * Regular constructor
@@ -54,8 +52,7 @@ struct RFUT_t<
     /**
      * Constructor from data
      */
-    RFUT_t(const RFUT_data_t<value_type,
-                             value_distribution_type>& other_data) :
+    RFUT_t(const data_type& other_data) :
         data_type(other_data) {}
 
     /**
@@ -128,8 +125,7 @@ struct RFUT_t<
     elem::DistMatrix<ValueType, RowDist, elem::STAR>,
     FUT,
     ValueDistributionType> :
-        public RFUT_data_t<ValueType,
-                           ValueDistributionType> {
+        public RFUT_data_t<ValueDistributionType> {
     // Typedef value, matrix, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
@@ -139,8 +135,7 @@ struct RFUT_t<
     typedef elem::DistMatrix<ValueType, elem::STAR, RowDist> intermediate_type;
     /**< Intermediate type for columnwise applications */
     typedef ValueDistributionType value_distribution_type;
-    typedef RFUT_data_t<ValueType,
-                        ValueDistributionType> data_type;
+    typedef RFUT_data_t<ValueDistributionType> data_type;
 
     /**
      * Regular constructor
@@ -161,8 +156,7 @@ struct RFUT_t<
     /**
      * Constructor from data
      */
-    RFUT_t(const RFUT_data_t<value_type,
-           value_distribution_type>& other_data) :
+    RFUT_t(const data_type& other_data) :
            data_type(other_data) {}
 
     /**

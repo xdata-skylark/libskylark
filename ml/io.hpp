@@ -140,8 +140,8 @@ int write_hdf5(string fName, sparse_matrix_t& X,
         cout << "Writing to file " << fName << endl;
 
         int* dimensions = new int[3];
-        dimensions[0] = X.Height();
-        dimensions[1] = X.Width();
+        dimensions[0] = X.height();
+        dimensions[1] = X.width();
         dimensions[2] = X.nonzeros();
 
         H5::Exception::dontPrint();
@@ -339,6 +339,7 @@ void read_hdf5(const boost::mpi::communicator &comm, string fName,
 					 X.attach(_col_ptr, _rowind, _values, nnz_local, d, examples_local, true);
 					 LocalMatrixType Y2(examples_local, 1, y, 0);
 					 Y = Y2;
+					 delete[] y;
 					 std::cout << "rank=0: Read " << examples_local << " x " << d << " with " << nnz_local << " nonzeros" << std::endl;
 
 				 } else {
@@ -385,7 +386,7 @@ void read_hdf5(const boost::mpi::communicator &comm, string fName,
 	                    comm.recv(0, 7, y, t);
 	                    LocalMatrixType Y2(t, 1, y, 0);
 	                    Y = Y2; // copy
-
+	                    delete[] y;
 	                    //Y.Resize(t,1);
 	                    //Y.Attach(t,1,y,0);
 
@@ -933,18 +934,17 @@ void read_model_file(string fName, elem::Matrix<double>& W) {
 	}
 }
 
-void SaveModel(hilbert_options_t& options, elem::Matrix<double> W)  {
 
-    // get communicator -- TODO should be a parameter!
-    boost::mpi::communicator comm;
-    int rank = comm.rank();
+std::string read_header(const boost::mpi::communicator &comm, std::string fName) {
+		string line;
+		if (comm.rank()==0) {
+			ifstream file(fName.c_str());
+			getline(file, line);
+		}
 
-    if (rank==0) {
-            std::stringstream dimensionstring;
-            dimensionstring << "# Dimensions " << W.Height() << " " << W.Width() << "\n";
-            elem::Write(W, options.modelfile, elem::ASCII, options.print().append(dimensionstring.str()));
-        }
-}
+		boost::mpi::broadcast(comm, line, 0);
+		return line;
+	}
 
 
 #endif /* IO_HPP_ */

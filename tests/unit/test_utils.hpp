@@ -76,7 +76,7 @@ void check(elem::DistMatrix<double>& A,
     double threshold=1e-4) {
     elem::DistMatrix<double> U, V;
     elem::DistMatrix<double, elem::VR, elem::STAR> S_VR_STAR;
-    skylark::base::svd(A, U, S_VR_STAR, V);
+    skylark::base::SVD(A, U, S_VR_STAR, V);
     bool passed = equal_svd_product(A, U, S_VR_STAR, V, threshold);
     if (!passed) {
         BOOST_FAIL("Failure in [MC, MR] case");
@@ -91,7 +91,7 @@ void check(elem::DistMatrix<double, ColDist, elem::STAR>& A,
     elem::DistMatrix<double, ColDist, elem::STAR> A_CD_STAR, U_CD_STAR;
     elem::DistMatrix<double, elem::STAR, elem::STAR> S_STAR_STAR, V_STAR_STAR;
     A_CD_STAR = A;
-    skylark::base::svd(A_CD_STAR, U_CD_STAR, S_STAR_STAR, V_STAR_STAR);
+    skylark::base::SVD(A_CD_STAR, U_CD_STAR, S_STAR_STAR, V_STAR_STAR);
     bool passed = equal_svd_product(A_CD_STAR,
         U_CD_STAR, S_STAR_STAR, V_STAR_STAR, threshold);
     if (!passed) {
@@ -104,7 +104,7 @@ void check(elem::DistMatrix<double, elem::STAR, RowDist>& A,
     double threshold=1e-4) {
     elem::DistMatrix<double, RowDist, elem::STAR> V_RD_STAR;
     elem::DistMatrix<double, elem::STAR, elem::STAR> S_STAR_STAR, U_STAR_STAR;
-    skylark::base::svd(A, U_STAR_STAR, S_STAR_STAR, V_RD_STAR);
+    skylark::base::SVD(A, U_STAR_STAR, S_STAR_STAR, V_RD_STAR);
     bool passed = equal_svd_product(A,
         U_STAR_STAR, S_STAR_STAR, V_RD_STAR, threshold);
     if (!passed) {

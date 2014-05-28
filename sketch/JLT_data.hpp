@@ -12,13 +12,10 @@ namespace bstrand = boost::random;
  *
  * The JLT is simply a dense random matrix with i.i.d normal entries.
  */
-template < typename ValueType>
 struct JLT_data_t :
-   public dense_transform_data_t<ValueType,
-                                 bstrand::normal_distribution > {
+   public dense_transform_data_t<bstrand::normal_distribution> {
 
-    typedef dense_transform_data_t<ValueType,
-                                   bstrand::normal_distribution > base_t;
+    typedef dense_transform_data_t<bstrand::normal_distribution> base_t;
     /**
      * Constructor
      * Most of the work is done by base. Here just write scale
@@ -26,13 +23,37 @@ struct JLT_data_t :
     JLT_data_t(int N, int S, skylark::base::context_t& context)
         : base_t(N, S, context, "JLT") {
         base_t::scale = sqrt(1.0 / static_cast<double>(S));
+        context = base_t::build();
     }
 
-    JLT_data_t(boost::property_tree::ptree &json,
-               skylark::base::context_t& context)
-        : base_t(json, context) {
+    JLT_data_t(const boost::property_tree::ptree &pt) :
+        base_t(pt.get<int>("N"), pt.get<int>("S"),
+            base::context_t(pt.get_child("creation_context")), "JLT") {
         base_t::scale = sqrt(1.0 / static_cast<double>(base_t::_S));
+        base_t::build();
     }
+
+    /**
+     *  Serializes a sketch to a string.
+     *
+     *  @param[out] property_tree describing the sketch.
+     */
+    virtual
+    boost::property_tree::ptree to_ptree() const {
+        boost::property_tree::ptree pt;
+        sketch_transform_data_t::add_common(pt);
+        return pt;
+    }
+
+protected:
+
+    JLT_data_t(int N, int S, const skylark::base::context_t& context,
+        std::string type)
+        : base_t(N, S, context, type) {
+        base_t::scale = sqrt(1.0 / static_cast<double>(S));
+    }
+
+
 };
 
 } } /** namespace skylark::sketch */

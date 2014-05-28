@@ -1,5 +1,5 @@
-#ifndef SPARSE_MATRIX_HPP
-#define SPARSE_MATRIX_HPP
+#ifndef SKYLARK_SPARSE_MATRIX_HPP
+#define SKYLARK_SPARSE_MATRIX_HPP
 
 #include <set>
 #include <vector>
@@ -32,12 +32,16 @@ struct sparse_matrix_t {
     {}
 
     // The following relies on C++11
-    sparse_matrix_t(const sparse_matrix_t<ValueType>&& A) :
+    sparse_matrix_t(sparse_matrix_t<ValueType>&& A) :
         _ownindptr(A._ownindptr), _ownindices(A._ownindices),
         _ownvalues(A._ownvalues), _dirty_struct(A._dirty_struct),
         _height(A._height), _width(A._width), _nnz(A._nnz),
         _indptr(A._indptr), _indices(A._indices), _values(A._values)
-    {}
+    {
+        A._ownindptr = false;
+        A._ownindices = false;
+        A._ownvalues = false;
+    }
 
     ~sparse_matrix_t() {
         _free_data();
@@ -161,15 +165,6 @@ struct sparse_matrix_t {
         return _nnz;
     }
 
-    int Height() const {
-        return height();
-    }
-
-    int Width() const {
-        return width();
-    }
-
-
     const index_type* indptr() const {
         return _indptr;
     }
@@ -259,8 +254,8 @@ void Transpose(const sparse_matrix_t<T>& A, sparse_matrix_t<T>& B) {
     const int* aindices = A.indices();
     const double* avalues = A.locked_values();
 
-    int m = A.Width();
-    int n = A.Height();
+    int m = A.width();
+    int n = A.height();
     int nnz = A.nonzeros();
 
     int *indptr = new int[n + 1];

@@ -3,9 +3,8 @@
 
 #include <boost/random.hpp>
 #include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
 
-#include "transform_data.hpp"
+#include "sketch_transform_data.hpp"
 #include "dense_transform_data.hpp"
 
 namespace skylark { namespace sketch {
@@ -17,13 +16,10 @@ namespace bstrand = boost::random;
  *
  * The CT is simply a dense random matrix with i.i.d Cauchy variables
  */
-template < typename ValueType>
 struct CT_data_t :
-   public dense_transform_data_t<ValueType,
-                                 bstrand::cauchy_distribution > {
+   public dense_transform_data_t<bstrand::cauchy_distribution> {
 
-    typedef dense_transform_data_t<ValueType,
-                                   bstrand::cauchy_distribution > base_t;
+    typedef dense_transform_data_t<bstrand::cauchy_distribution> base_t;
     /**
      * Constructor
      * Most of the work is done by base. Here just write scale
@@ -31,33 +27,45 @@ struct CT_data_t :
     CT_data_t(int N, int S, double C, skylark::base::context_t& context)
         : base_t(N, S, context, "CT"), _C(C) {
         base_t::scale = C / static_cast<double>(S);
+        context = base_t::build();
     }
 
-    CT_data_t(const boost::property_tree::ptree &sketch,
-              skylark::base::context_t& context)
-        : base_t(sketch, context),
-        _C(sketch.get<double>("sketch.c")) {
+    CT_data_t(const boost::property_tree::ptree &pt) :
+        base_t(pt.get<int>("N"), pt.get<int>("S"),
+            base::context_t(pt.get_child("creation_context")), "CT"),
+        _C(pt.get<double>("C")) {
 
         base_t::scale = _C / static_cast<double>(base_t::_S);
+        base_t::build();
     }
 
-    template <typename ValueT>
-    friend boost::property_tree::ptree& operator<<(
-            boost::property_tree::ptree &sk, const CT_data_t<ValueT> &data);
+    /**
+     *  Serializes a sketch to a string.
+     *
+     *  @param[out] property_tree describing the sketch.
+     */
+    virtual
+    boost::property_tree::ptree to_ptree() const {
+        boost::property_tree::ptree pt;
+        sketch_transform_data_t::add_common(pt);
+        pt.put("C", _C);
+        return pt;
+    }
+
+protected:
+
+    CT_data_t(int N, int S, double C, const skylark::base::context_t& context, 
+        std::string type)
+        : base_t(N, S, context, type), _C(C) {
+
+        base_t::scale = C / static_cast<double>(S);
+    }
+
 private:
 
     double _C;
 };
 
-template <typename ValueType>
-boost::property_tree::ptree& operator<<(boost::property_tree::ptree &sk,
-                                        const CT_data_t<ValueType> &data) {
-
-    sk << static_cast<const transform_data_t&>(data);
-    sk.put("sketch.c", data._C);
-    return sk;
-}
-
 } } /** namespace skylark::sketch */
 
-#endif // SKYLARK_JLT_DATA_HPP
+#endif // SKYLARK_CT_DATA_HPP

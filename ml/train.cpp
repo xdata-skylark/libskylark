@@ -18,20 +18,23 @@ namespace bmpi =  boost::mpi;
 namespace po = boost::program_options;
 using namespace std;
 
+typedef skylark::base::sparse_matrix_t<double> sparse_matrix_t;
+
+
 int main (int argc, char** argv) {
     /* Various MPI/Skylark/Elemental/OpenMP initializations */
+
+	std::cout << " Running Hilbert..." << std::endl;
+
     int provided;
     MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
     bmpi::environment env (argc, argv);
     boost::mpi::communicator comm;
 
-    hilbert_options_t options (argc, argv, comm.rank());
-
+    hilbert_options_t options (argc, argv, comm.size());
     skylark::base::context_t context (options.seed);
 
     elem::Initialize (argc, argv);
-
-    /* Load Commandline options and log them */
 
     if (options.exit_on_return) { return -1; }
     if (comm.rank() == 0)

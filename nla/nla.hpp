@@ -7,10 +7,9 @@
 /** Include the iterative solver parameters */
 #include "iter_params.hpp"
 
-/** Include the iterative solver operator */
-#include "iter_solver_op.hpp"
-
 /** Include LSQR. No need for a guard as the guards are all within the files */
-#include "lsqr.hpp"
+#include "LSQR.hpp"
+
+#include "Chebyshev.hpp"
 
 #endif /* SKYLARK_NLA_HPP */

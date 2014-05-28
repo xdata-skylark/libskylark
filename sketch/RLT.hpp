@@ -32,9 +32,7 @@ class RLT_t {
 template< typename InputMatrixType,
           typename OutputMatrixType>
 struct ExpSemigroupRLT_t :
-    public ExpSemigroupRLT_data_t<typename
-      RLT_t<InputMatrixType, OutputMatrixType,
-            utility::standard_levy_distribution_t >::value_type >,
+    public ExpSemigroupRLT_data_t,
     virtual public sketch_transform_t<InputMatrixType, OutputMatrixType > {
 
 
@@ -42,9 +40,7 @@ struct ExpSemigroupRLT_t :
     typedef RLT_t<InputMatrixType, OutputMatrixType,
                   utility::standard_levy_distribution_t > transform_t;
 
-    typedef ExpSemigroupRLT_data_t<typename
-      RLT_t<InputMatrixType, OutputMatrixType,
-            utility::standard_levy_distribution_t >::value_type > data_type;
+    typedef ExpSemigroupRLT_data_t data_type;
 
     /**
      * Regular constructor
@@ -52,6 +48,11 @@ struct ExpSemigroupRLT_t :
     ExpSemigroupRLT_t(int N, int S, double beta,
         base::context_t& context)
         : data_type(N, S, beta, context), _transform(*this) {
+
+    }
+
+    ExpSemigroupRLT_t(const boost::property_tree::ptree &pt)
+        : data_type(pt), _transform(*this) {
 
     }
 
@@ -96,6 +97,8 @@ struct ExpSemigroupRLT_t :
 
     int get_N() const { return this->_N; } /**< Get input dimesion. */
     int get_S() const { return this->_S; } /**< Get output dimesion. */
+
+    const sketch_transform_data_t* get_data() const { return this; }
 
 private:
     transform_t _transform;

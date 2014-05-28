@@ -16,16 +16,15 @@ namespace bstrand = boost::random;
 template < typename InputMatrixType,
            typename OutputMatrixType = InputMatrixType >
 struct CT_t :
-  public CT_data_t<typename
-    dense_transform_t<InputMatrixType, OutputMatrixType,
-                      bstrand::cauchy_distribution >::value_type > {
+  public CT_data_t,
+  virtual public sketch_transform_t<InputMatrixType, OutputMatrixType > {
 
 
     // We use composition to defer calls to dense_transform_t
     typedef dense_transform_t<InputMatrixType, OutputMatrixType,
                                bstrand::cauchy_distribution > transform_t;
 
-    typedef CT_data_t<typename transform_t::value_type> data_type;
+    typedef CT_data_t data_type;
 
 
     /**
@@ -35,6 +34,12 @@ struct CT_t :
         : data_type(N, S, C, context), _transform(*this) {
 
     }
+
+    CT_t(const boost::property_tree::ptree &pt)
+        : data_type(pt), _transform(*this) {
+
+    }
+
 
     /**
      * Copy constructor
@@ -55,14 +60,29 @@ struct CT_t :
     }
 
     /**
-     * Apply the sketching transform that is described in by the sketch_of_A.
+     * Apply columnwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
      */
-    template <typename Dimension>
     void apply (const typename transform_t::matrix_type& A,
                 typename transform_t::output_matrix_type& sketch_of_A,
-                Dimension dimension) const {
+                columnwise_tag dimension) const {
         _transform.apply(A, sketch_of_A, dimension);
     }
+
+    /**
+     * Apply rowwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply (const typename transform_t::matrix_type& A,
+                typename transform_t::output_matrix_type& sketch_of_A,
+                rowwise_tag dimension) const {
+        _transform.apply(A, sketch_of_A, dimension);
+    }
+
+    int get_N() const { return this->_N; } /**< Get input dimesion. */
+    int get_S() const { return this->_S; } /**< Get output dimesion. */
+
+    const sketch_transform_data_t* get_data() const { return this; }
 
 private:
     transform_t _transform;

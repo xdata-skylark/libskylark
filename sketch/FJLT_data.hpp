@@ -7,7 +7,7 @@
 #include "RFUT_data.hpp"
 #include "../utility/randgen.hpp"
 
-#include "transform_data.hpp"
+#include "sketch_transform_data.hpp"
 
 namespace skylark { namespace sketch {
 
@@ -16,53 +16,70 @@ namespace skylark { namespace sketch {
  * holds the input and sketched matrix sizes, the vector of samples
  * and the data of the underlying transform.
  */
-template <typename ValueType>
-struct FJLT_data_t : public transform_data_t {
-    // Typedef value, distribution and data types so that we can use them
-    // regularly and consistently
-    typedef ValueType value_type;
-    typedef boost::random::uniform_int_distribution<int>
+struct FJLT_data_t : public sketch_transform_data_t {
+
+    typedef boost::random::uniform_int_distribution<size_t>
     value_distribution_type;
-    typedef utility::rademacher_distribution_t<ValueType>
+    typedef utility::rademacher_distribution_t<double>
     underlying_value_distribution_type;
-    typedef RFUT_data_t<value_type,
-                        underlying_value_distribution_type>
-        underlying_data_type;
-    typedef transform_data_t base_t;
+
+
+    typedef sketch_transform_data_t base_t;
 
     /**
      * Regular constructor
      */
     FJLT_data_t (int N, int S, skylark::base::context_t& context)
         : base_t(N, S, context, "FJLT"),
-          samples(base_t::_S),
-          underlying_data(base_t::_N, base_t::_context) {
+          samples(base_t::_S) {
 
-        _populate();
+        context = build();
     }
 
-    FJLT_data_t (boost::property_tree::ptree &json,
-                 skylark::base::context_t& context)
-        : base_t(json, context),
-          samples(base_t::_S),
-          underlying_data(base_t::_N, base_t::_context) {
+    FJLT_data_t (const boost::property_tree::ptree &pt) :
+        base_t(pt.get<int>("N"), pt.get<int>("S"),
+            base::context_t(pt.get_child("creation_context")), "FJLT"),
+          samples(base_t::_S) {
 
-        _populate();
+         build();
+    }
+
+    /**
+     *  Serializes a sketch to a string.
+     *
+     *  @param[out] property_tree describing the sketch.
+     */
+    virtual
+    boost::property_tree::ptree to_ptree() const {
+        boost::property_tree::ptree pt;
+        sketch_transform_data_t::add_common(pt);
+        return pt;
     }
 
 protected:
-    std::vector<int> samples; /**< Vector of samples */
-    const underlying_data_type underlying_data;
-    /**< Data of the underlying RFUT transformation */
 
-
-    void _populate() {
-
-        value_distribution_type distribution(0, base_t::_N - 1);
-        samples = _context.generate_random_samples_array(base_t::_S, distribution);
+    FJLT_data_t (int N, int S, const skylark::base::context_t& context,
+        std::string type)
+        : base_t(N, S, context, type),
+          samples(base_t::_S) {
     }
 
-  };
+    base::context_t build() {
+        base::context_t ctx = base_t::build();
+        underlying_data = boost::shared_ptr<underlying_data_type>(new
+            underlying_data_type(base_t::_N, ctx));
+        value_distribution_type distribution(0, base_t::_N - 1);
+        samples = ctx.generate_random_samples_array(base_t::_S, distribution);
+        return ctx;
+    }
+
+    typedef RFUT_data_t<underlying_value_distribution_type>
+        underlying_data_type;
+
+    std::vector<size_t> samples; /**< Vector of samples */
+    boost::shared_ptr<underlying_data_type> underlying_data;
+    /**< Data of the underlying RFUT transformation */
+};
 
 } } /** namespace skylark::sketch */
 

@@ -1,9 +1,12 @@
 #ifndef SKYLARK_CONTEXT_HPP
 #define SKYLARK_CONTEXT_HPP
 
+#include "../config.h"
+
 #include "exception.hpp"
 #include "../utility/randgen.hpp"
 
+#include "boost/smart_ptr.hpp"
 #include "boost/property_tree/ptree.hpp"
 #include "boost/property_tree/json_parser.hpp"
 
@@ -18,18 +21,43 @@ struct context_t {
      * Initialize context with a seed.
      * @param[in] seed Random seed to be used for all computations.
      */
-    context_t (int seed) :
-        _counter(0),
+    context_t (int seed, int counter=0) :
+        _counter(counter),
         _seed(seed) {}
 
+#if 0
+    context_t (context_t&& ctxt) :
+        _counter(std::move(ctxt._counter)), _seed(std::move(ctxt._seed))
+    {}
+
+    context_t(const context_t& other) {
+        _seed    = other._seed;
+        _counter = other._counter;
+    }
+
+    context_t& operator=(const context_t& other) {
+        _seed    = other._seed;
+        _counter = other._counter;
+        return *this;
+    }
+#endif
 
     /**
      * Load context from a serialized JSON structure.
      * @param[in] filename of JSON structure encoding serialized state.
      */
     context_t (const boost::property_tree::ptree& json) {
-        _counter = json.get<size_t>("sketch.context.counter");
-        _seed = json.get<int>("sketch.context.seed");
+        _seed = json.get<int>("seed");
+        _counter = json.get<size_t>("counter");
+    }
+
+    boost::property_tree::ptree to_ptree() const {
+        boost::property_tree::ptree pt;
+        pt.put("skylark_object_type", "context");
+        pt.put("skylark_version", VERSION);
+        pt.put("seed", _seed);
+        pt.put("counter", _counter);
+        return pt;
     }
 
 
@@ -62,15 +90,14 @@ struct context_t {
      * @caveat This should be used as a global operation to keep the
      * the internal state of the context synchronized.
      */
-    template <typename Distribution>
-    skylark::utility::random_samples_array_t<Distribution>
-    allocate_random_samples_array(size_t size, Distribution& distribution) {
-        skylark::utility::random_samples_array_t<Distribution>
-            random_samples_array(_counter, size, _seed, distribution);
-        _counter += size;
-        return random_samples_array;
-    }
-
+     template <typename Distribution>
+     skylark::utility::random_samples_array_t<Distribution>
+     allocate_random_samples_array(size_t size, Distribution& distribution) {
+         skylark::utility::random_samples_array_t<Distribution>
+             random_samples_array(_counter, size, _seed, distribution);
+         _counter += size;
+         return random_samples_array;
+     }
 
     /**
      * Returns a vector of samples drawn from a distribution.
@@ -140,11 +167,6 @@ struct context_t {
             boost::property_tree::ptree &sk, const context_t &data);
 private:
 
-    /// Disable copy constructor as this is error prone for context
-    context_t(const context_t &other) {
-
-    }
-
     /// Internal counter identifying the start of next stream of random numbers
     size_t _counter;
     /// The seed used for initializing the context
@@ -154,6 +176,7 @@ private:
 boost::property_tree::ptree& operator<<(boost::property_tree::ptree &sk,
                                         const context_t &data) {
         sk.put("sketch.context.seed", data._seed);
+        sk.put("sketch.context.counter", data._counter);
         return sk;
 }
 

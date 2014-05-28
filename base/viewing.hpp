@@ -41,7 +41,7 @@ void ColumnView(sparse_matrix_t<T>& A, sparse_matrix_t<T>& B, int j, int width) 
 
 template<typename T>
 inline
-const sparse_matrix_t<T> ColumnView(const sparse_matrix_t<T>& B, int j, int width) {
+sparse_matrix_t<T> ColumnView(const sparse_matrix_t<T>& B, int j, int width) {
     sparse_matrix_t<T> A;
     ColumnView(A, const_cast<sparse_matrix_t<T>&>(B), j, width);
     return A;

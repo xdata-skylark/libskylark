@@ -1,10 +1,13 @@
 #ifndef SKYLARK_HILBERT_RUN_HPP
 #define SKYLARK_HILBERT_RUN_HPP
 
+//#include "hilbert.hpp"
 #include "BlockADMM.hpp"
 #include "options.hpp"
 #include "io.hpp"
 #include "../base/context.hpp"
+#include "model.hpp"
+
 
 template <class InputType>
 BlockADMMSolver<InputType>* GetSolver(skylark::base::context_t& context,
@@ -22,6 +25,8 @@ BlockADMMSolver<InputType>* GetSolver(skylark::base::context_t& context,
         loss = new logisticloss();
         break;
     case LAD:
+    	loss = new ladloss();
+    	break;
     default:
         // TODO
         break;
@@ -33,6 +38,8 @@ BlockADMMSolver<InputType>* GetSolver(skylark::base::context_t& context,
         regularizer = new l2();
         break;
     case L1:
+    	regularizer = new l1();
+    	break;
     default:
         // TODO
         break;
@@ -128,33 +135,19 @@ BlockADMMSolver<InputType>* GetSolver(skylark::base::context_t& context,
     Solver->set_maxiter(options.MAXITER);
     Solver->set_tol(options.tolerance);
     Solver->set_nthreads(options.numthreads);
+    Solver->set_cache_transform(options.cachetransforms);
 
     return Solver;
 }
 
-/* TODO move to utility */
-int max(DistTargetMatrixType& Y) {
-    int k =  (int) *std::max_element(Y.Buffer(), Y.Buffer() + Y.LocalHeight());
-    return k;
-}
-int max(elem::Matrix<double> Y) {
-    int k =  (int) *std::max_element(Y.Buffer(), Y.Buffer() + Y.Height());
-    return k;
-}
 
-template<class LabelType>
-int GetNumClasses(const boost::mpi::communicator &comm, LabelType& Y) {
-    int k = 0;
-    int kmax = max(Y);
-    boost::mpi::all_reduce(comm, kmax, k, boost::mpi::maximum<int>());
-
-    // we assume 0-to-N encoding of classes. Hence N = k+1.
-    // For two classes, k=1.
-    if (k>1)
-        return k+1;
-    else
-        return 1;
-}
+void ShiftForLogistic(LocalMatrixType& Y) {
+	double y;
+	for(int i=0;i<Y.Height(); i++) {
+	    		y = Y.Get(i, 0);
+	    		Y.Set(i, 0, 0.5*(y+1.0));
+	    	}
+	}
 
 template <class InputType, class LabelType>
 int run(const boost::mpi::communicator& comm, skylark::base::context_t& context,
@@ -165,39 +158,114 @@ int run(const boost::mpi::communicator& comm, skylark::base::context_t& context,
     InputType X, Xv, Xt;
     LabelType Y, Yv, Yt;
 
-    read(comm, options.fileformat, options.trainfile, X, Y);
-    int dimensions = X.Height();
-    int classes = GetNumClasses<LabelType>(comm, Y);
+    if(!options.trainfile.empty()) { //training mode
 
-    BlockADMMSolver<InputType>* Solver =
-        GetSolver<InputType>(context, options, dimensions);
+    	read(comm, options.fileformat, options.trainfile, X, Y);
+    	int dimensions = skylark::base::Height(X);
+    	int targets = GetNumTargets<LabelType>(comm, Y);
+    	bool shift = false;
 
-    if(!options.valfile.empty()) {
-        comm.barrier();
-        if(rank == 0) std::cout << "Loading validation data." << std::endl;
-        read(comm, options.fileformat, options.valfile, Xv, Yv, X.Height());
+    	if ((options.lossfunction == LOGISTIC) && (targets == 1)) {
+    		ShiftForLogistic(Y);
+    		targets = 2;
+    		shift = true;
+    	}
+
+    	BlockADMMSolver<InputType>* Solver =
+        	GetSolver<InputType>(context, options, dimensions);
+
+    	if(!options.valfile.empty()) {
+    		comm.barrier();
+    		if(rank == 0) std::cout << "Loading validation data." << std::endl;
+
+    		read(comm, options.fileformat, options.valfile, Xv, Yv,
+    			skylark::base::Height(X));
+
+    		if ((options.lossfunction == LOGISTIC) && shift) {
+    				ShiftForLogistic(Yv);
+            	}
+    		}
+
+    	skylark::ml::Model<InputType>* model = Solver->train(X, Y, Xv, Yv, comm);
+    	model->save(options.modelfile, options.print(), comm.rank());
     }
 
-    elem::Matrix<double> Wbar(Solver->get_numfeatures(), classes);
-    elem::MakeZeros(Wbar);
+    else {
 
-    Solver->train(X, Y, Wbar, Xv, Yv, comm);
+    	std::cout << "Testing Mode" << std::endl;
+    	skylark::ml::Model<InputType>* model = new skylark::ml::Model<InputType>(options.modelfile, comm);
+    	model->set_num_threads(options.numthreads);
+    	read(comm, options.fileformat, options.testfile, Xt, Yt,
+    	    				skylark::base::Height(X));
 
-    SaveModel(options, Wbar);
+    	int targets = GetNumTargets<LabelType>(comm, Yt);
+    	bool shift = false;
+    //	if ((model.lossfunction == LOGISTIC) && (targets == 1)) {
+    //	    		ShiftForLogistic(Yt);
+    //	    		targets = 2;
+    //	    		shift = true;
+    //	 }
 
-    if(!options.testfile.empty()) {
-        comm.barrier();
-        if(rank == 0) std::cout << "Starting testing phase." << std::endl;
-        read(comm, options.fileformat, options.testfile, Xt, Yt, X.Height());
+    	LabelType DecisionValues(Yt.Height(), model->get_classes());
+    	LabelType PredictedLabels(Yt.Height(), 1);
+    	elem::MakeZeros(DecisionValues);
+    	elem::MakeZeros(PredictedLabels);
 
-        LabelType Yp(Yt.Height(), classes);
-        Solver->predict(Xt, Yp, Wbar);
-        double accuracy = Solver->evaluate(Yt, Yp, comm);
-        if(rank == 0)
-            std::cout << "Test Accuracy = " <<  accuracy << " %" << std::endl;
+    	std::cout << "Starting predictions" << std::endl;
+    	model->predict(Xt, PredictedLabels, DecisionValues);
+    	double accuracy = model->evaluate(Yt, DecisionValues, comm);
+    	if(rank == 0)
+    	        std::cout << "Test Accuracy = " <<  accuracy << " %" << std::endl;
+
+    	// fix logistic case -- provide mechanism to dump predictions -- clean up evaluate
+
     }
+    /*else  { // test mode
 
-    delete Solver;
+    	// set other options from model file
+
+    	options_str =  read_header(comm, options.modelfile);
+    	int argc1;
+    	char **argv1;
+
+    	argc1 = splitstr(options_str, argv1);
+    	hilbert_options_t train_options (argc1, argv1, comm.rank());
+
+
+    	// read model Wbar
+    	elem::Matrix<double> Wbar;
+    	elem::Read(Wbar, options.modelfile, elem::ASCII);
+
+    	// Create a solver object
+    	int dimensions = Wbar.Height();
+    	BlockADMMSolver<InputType>* Solver =
+    	        	GetSolver<InputType>(context, options, dimensions);
+
+    	if(!options.testfile.empty()) {
+    		comm.barrier();
+    		if(rank == 0) std::cout << "Starting testing phase (currently we load all data in memory - to be changed.)" << std::endl;
+    		read(comm, options.fileformat, options.testfile, Xt, Yt,
+    				skylark::base::Height(X));
+        		if ((options.lossfunction == LOGISTIC) && shift) {
+        			for(int i=0;i<Yt.Height(); i++) {
+        				y = Yt.Get(i, 0);
+        				Yt.Set(i, 0, 0.5*(y+1.0));
+        					}
+                    	}
+
+        		LabelType Yp(Yt.Height(), classes);
+        		Solver->predict(Xt, Yp, Wbar);
+        		double accuracy = Solver->evaluate(Yt, Yp, comm);
+        		if(rank == 0)
+        			std::cout << "Test Accuracy = " <<  accuracy << " %" << std::endl;
+    	}
+
+    	else {
+    		std::cout << "Test mode: did not detect a test file." << std::endl;
+    	}
+    }
+*/
+
 
     return 0;
 }

@@ -1,5 +1,5 @@
-#ifndef SKETCHC_HPP
-#define SKETCHC_HPP
+#ifndef SKYLARK_SKETCHC_HPP
+#define SKYLARK_SKETCHC_HPP
 
 #include "mpi.h"
 #include "../../config.h"
@@ -48,9 +48,10 @@ enum matrix_type_t {
 
 struct sketch_transform_t {
     const transform_type_t type;
-    void * const transform_obj;
+    sketch_transform_data_t * const transform_obj;
 
-    sketch_transform_t(transform_type_t type, void *transform_obj)
+    sketch_transform_t(transform_type_t type,
+        sketch_transform_data_t *transform_obj)
         : type(type), transform_obj(transform_obj) {}
 };
 
@@ -129,25 +130,19 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(
         base::context_t *ctxt, char *type,
         int n, int s, sketchc::sketch_transform_t **sketch, ...);
 
-/** Load a sketch transformation.
- *  @param ctxt Sklark context
- *  @param type type of the sketch
+/** Deserialize a sketch transformation.
  *  @param data string of serialized JSON structure
- *  @return sketch transformation
+ *  @param sketch the deserialized sketch transformation
  */
-SKYLARK_EXTERN_API int sl_load_sketch_transform(
-        base::context_t *ctxt, char *type,
-        char *data, sketchc::sketch_transform_t **sketch);
+SKYLARK_EXTERN_API int sl_deserialize_sketch_transform(
+       const char *data, sketchc::sketch_transform_t **sketch);
 
-/** Dump a sketch transformation.
- *  @param ctxt Sklark context
- *  @param type type of the sketch
- *  @param filename of the serialized JSON structure
- *  @return sketch transformation
+/** Serializes a sketch transformation.
+ *  @param sketch the sketch to be serialized
+ *  @param data of the serialized JSON structure
  */
-SKYLARK_EXTERN_API int sl_dump_sketch_transform(
-        base::context_t *ctxt, char *type,
-        char *filename, sketchc::sketch_transform_t *sketch);
+SKYLARK_EXTERN_API int sl_serialize_sketch_transform(
+       const sketchc::sketch_transform_t *sketch, char **data);
 
 /** Free resources hold by a sketch transformation.
  *  @param S sketch transform
@@ -191,4 +186,4 @@ SKYLARK_EXTERN_API int sl_raw_sp_matrix_data(void *A_, int32_t *indptr,
 
 } // extern "C"
 
-#endif // SKETCHC_HPP
+#endif // SKYLARK_SKETCHC_HPP

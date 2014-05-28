@@ -20,15 +20,13 @@ struct RLT_t <
     InputType<ValueType>,
     elem::Matrix<ValueType>,
     KernelDistribution> :
-        public RLT_data_t<ValueType,
-                          KernelDistribution> {
+        public RLT_data_t<KernelDistribution> {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
     typedef InputType<value_type> matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
-    typedef RLT_data_t<ValueType,
-                       KernelDistribution> data_type;
+    typedef RLT_data_t<KernelDistribution> data_type;
 private:
     typedef skylark::sketch::dense_transform_t <matrix_type,
                                                 output_matrix_type,
@@ -93,9 +91,9 @@ private:
         output_matrix_type& sketch_of_A,
         skylark::sketch::columnwise_tag tag) const {
 
-        underlying_t underlying(data_type::_underlying_data);
+        underlying_t underlying(*data_type::_underlying_data);
         underlying.apply(A, sketch_of_A, tag);
-        for(int j = 0; j < A.Width(); j++)
+        for(int j = 0; j < base::Width(A); j++)
             for(int i = 0; i < data_type::_S; i++) {
                 value_type val = sketch_of_A.Get(i, j);
                 sketch_of_A.Set(i, j,
@@ -112,10 +110,10 @@ private:
         skylark::sketch::rowwise_tag tag) const {
 
         // TODO verify sizes etc.
-        underlying_t underlying(data_type::_underlying_data);
+        underlying_t underlying(*data_type::_underlying_data);
         underlying.apply(A, sketch_of_A, tag);
         for(int j = 0; j < data_type::_S; j++)
-            for(int i = 0; i < A.Height(); i++) {
+            for(int i = 0; i < base::Height(A); i++) {
                 value_type val = sketch_of_A.Get(i, j);
                 sketch_of_A.Set(i, j,
                     data_type::_scale * std::exp(- val * data_type::_val_scale));

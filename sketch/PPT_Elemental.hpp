@@ -87,14 +87,14 @@ template<typename ValueType>
 struct PPT_t <
     elem::Matrix<ValueType>,
     elem::Matrix<ValueType> > :
-        public PPT_data_t<ValueType>,
+        public PPT_data_t,
         virtual public sketch_transform_t<elem::Matrix<ValueType>,
                                           elem::Matrix<ValueType> >{
 
     typedef ValueType value_type;
     typedef elem::Matrix<value_type> matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
-    typedef PPT_data_t<ValueType> data_type;
+    typedef PPT_data_t data_type;
 
     /**
      * Regular constructor
@@ -108,6 +108,11 @@ struct PPT_t <
     ~PPT_t() {
         internal::fftw<value_type>::destroyfun(_fftw_fplan);
         internal::fftw<value_type>::destroyfun(_fftw_bplan);
+    }
+
+    PPT_t(const boost::property_tree::ptree &pt)
+        : data_type(pt) {
+
     }
 
     /**
@@ -260,10 +265,10 @@ struct PPT_t <
     int get_N() const { return data_type::_N; } /**< Get input dimesion. */
     int get_S() const { return data_type::_S; } /**< Get output dimesion. */
 
+    const sketch_transform_data_t* get_data() const { return this; }
 
 protected:
 
-    typedef typename data_type::_CWT_data_t _CWT_data_t;
     typedef CWT_t<matrix_type, output_matrix_type> _CWT_t;
 
     typedef typename internal::fftw<value_type>::complex_t _fftw_complex_t;
@@ -275,7 +280,7 @@ protected:
     void build_internal() {
         int S = data_type::_S;
 
-        for(typename std::list<_CWT_data_t>::iterator it =
+        for(typename std::list<CWT_data_t>::iterator it =
                 data_type::_cwts_data.begin();
             it != data_type::_cwts_data.end(); it++)
             _cwts.push_back(_CWT_t(*it));
@@ -300,14 +305,14 @@ template<typename ValueType>
 struct PPT_t <
     base::sparse_matrix_t<ValueType>,
     elem::Matrix<ValueType> > :
-        public PPT_data_t<ValueType>,
+        public PPT_data_t,
         virtual public sketch_transform_t<base::sparse_matrix_t<ValueType>,
                                           elem::Matrix<ValueType> >{
 
     typedef ValueType value_type;
     typedef base::sparse_matrix_t<value_type> matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
-    typedef PPT_data_t<ValueType> data_type;
+    typedef PPT_data_t data_type;
 
     /**
      * Regular constructor
@@ -323,6 +328,10 @@ struct PPT_t <
         internal::fftw<value_type>::destroyfun(_fftw_bplan);
     }
 
+    PPT_t(const boost::property_tree::ptree &pt)
+        : data_type(pt) {
+
+    }
     /**
      * Copy constructor
      */
@@ -373,7 +382,7 @@ struct PPT_t <
 #       ifdef SKYLARK_HAVE_OPENMP
 #       pragma omp for
 #       endif
-        for(int i = 0; i < A.Width(); i++) {
+        for(int i = 0; i < base::Width(A); i++) {
             const matrix_type Av = base::ColumnView(A, i, 1);
 
             for(int j = 0; j < S; j++)
@@ -398,7 +407,7 @@ struct PPT_t <
             for(int j = 0; j < S; j++)
                 P[j] /= (value_type)S;
 
-            elem::View(SAv, sketch_of_A, 0, i, A.Height(), 1);
+            elem::View(SAv, sketch_of_A, 0, i, base::Height(A), 1);
             internal::fftw<value_type>::executebfun(_fftw_bplan,
                 reinterpret_cast<_fftw_complex_t*>(P), SAv.Buffer());
         }
@@ -427,10 +436,10 @@ struct PPT_t <
     int get_N() const { return data_type::_N; } /**< Get input dimesion. */
     int get_S() const { return data_type::_S; } /**< Get output dimesion. */
 
+    const sketch_transform_data_t* get_data() const { return this; }
 
 protected:
 
-    typedef typename data_type::_CWT_data_t _CWT_data_t;
     typedef CWT_t<matrix_type, output_matrix_type> _CWT_t;
 
     typedef typename internal::fftw<value_type>::complex_t _fftw_complex_t;
@@ -442,7 +451,7 @@ protected:
     void build_internal() {
         int S = data_type::_S;
 
-        for(typename std::list<_CWT_data_t>::iterator it =
+        for(typename std::list<CWT_data_t>::iterator it =
                 data_type::_cwts_data.begin();
             it != data_type::_cwts_data.end(); it++)
             _cwts.push_back(_CWT_t(*it));

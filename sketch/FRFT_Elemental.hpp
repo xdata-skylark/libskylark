@@ -20,13 +20,13 @@ template <typename ValueType,
 struct FastRFT_t <
     InputType<ValueType>,
     elem::Matrix<ValueType> > :
-        public FastRFT_data_t<ValueType> {
+        public FastRFT_data_t {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
     typedef InputType<value_type> matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
-    typedef FastRFT_data_t<ValueType> data_type;
+    typedef FastRFT_data_t data_type;
 
 public:
 
@@ -103,7 +103,7 @@ private:
 #       ifdef SKYLARK_HAVE_OPENMP
 #       pragma omp for
 #       endif
-        for(int c = 0; c < A.Width(); c++) {
+        for(int c = 0; c < base::Width(A); c++) {
             const matrix_type Acs = base::ColumnView(A, c, 1);
             base::DenseCopy(Acs, Acv);
             std::fill(ac + data_type::_N, ac + data_type::_NB, 0);
@@ -176,7 +176,7 @@ private:
         // TODO this version is not as optimized as the columnwise version.
 
         // Create a work array W
-        output_matrix_type W(A.Height(), A.Width());
+        output_matrix_type W(base::Height(A), base::Width(A));
 
         output_matrix_type B(data_type::_N, 1), G(data_type::_N, 1);
         output_matrix_type Sm(data_type::_N, 1);
@@ -200,7 +200,7 @@ private:
             _fut.apply(W, tag);
 
             double *w = W.Buffer();
-            for(int c = 0; c < W.Height(); c++)
+            for(int c = 0; c < base::Height(W); c++)
                 for(int l = 0; l < data_type::_N - 1; l++) {
                     int idx1 = c + (data_type::_N - 1 - l) * W.LDim();
                     int idx2 = c  +
@@ -216,14 +216,15 @@ private:
 
             // Copy that part to the output
             output_matrix_type view_sketch_of_A;
-            elem::View(view_sketch_of_A, sketch_of_A, 0, s, A.Height(), e - s);
+            elem::View(view_sketch_of_A, sketch_of_A, 0, s,
+                base::Height(A), e - s);
             output_matrix_type view_W;
-            elem::View(view_W, W, 0, 0, A.Height(), e - s);
+            elem::View(view_W, W, 0, 0, base::Height(A), e - s);
             view_sketch_of_A = view_W;
         }
 
         for(int j = 0; j < data_type::_S; j++)
-            for(int i = 0; i < A.Height(); i++) {
+            for(int i = 0; i < base::Height(A); i++) {
                 value_type x = sketch_of_A.Get(i, j);
                 x += data_type::shifts[j];
 

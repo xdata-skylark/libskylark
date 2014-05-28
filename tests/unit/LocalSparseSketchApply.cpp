@@ -17,8 +17,7 @@
 
 #include "../../utility/distributions.hpp"
 #include "../../base/sparse_matrix.hpp"
-#include "../../base/context.hpp"
-#include "../../sketch/hash_transform.hpp"
+#include "../../sketch/sketch.hpp"
 
 
 template < typename InputMatrixType,

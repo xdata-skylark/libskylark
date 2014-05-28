@@ -1,6 +1,7 @@
 import errors
 import ctypes
 from ctypes import byref, cdll, c_double, c_void_p, c_int, c_char_p, pointer, POINTER, c_bool
+import ctypes.util
 import sprand
 import math
 from math import sqrt, pi
@@ -11,6 +12,10 @@ import sys
 import os
 import time
 import atexit
+import json
+
+_libc = cdll.LoadLibrary(ctypes.util.find_library('c'))
+_libc.free.argtypes = (ctypes.c_void_p,)
 
 # Function for initialization and reinitilialization
 def initialize(seed=-1):
@@ -35,8 +40,8 @@ def initialize(seed=-1):
       _lib.sl_context_rank.restype                = c_int
       _lib.sl_context_size.restype                = c_int
       _lib.sl_create_sketch_transform.restype     = c_int
-      _lib.sl_dump_sketch_transform.restype       = c_int
-      _lib.sl_load_sketch_transform.restype       = c_int
+      _lib.sl_serialize_sketch_transform.restype  = c_int
+      _lib.sl_deserialize_sketch_transform.restype = c_int
       _lib.sl_wrap_raw_matrix.restype             = c_int
       _lib.sl_free_raw_matrix_wrap.restype        = c_int
       _lib.sl_wrap_raw_sp_matrix.restype          = c_int
@@ -124,34 +129,17 @@ def _callsl(f, *args):
   if errno != 0:
     raise errors.UnexpectedLowerLayerError(_lib.sl_strerror(errno))
 
-def load_json(filename, defouttype = None):
+def deserialize_sketch(sketch_dict):
   """
   Load Serialized Transform
 
-  :param filename: Filename of the file holding the serialized JSON structure.
+  :param sketch_dict dictionary that is the sketch in serialized form (from .serialize()).
   """
-  with open (filename, "r") as file:
-    json_data = file.read().replace('\n', '')
-
-  import json
-  try:
-    dict = json.loads(json_data)
-  except ValueError:
-    print "Failed to parse JSON file"
-  else:
-    sketches = []
-    for sketch in dict['sketches']:
-      sketch_name = str(sketch['sketch']['name'])
-      sketch_dims = sketch['sketch']['size']
-      sketch_transform = c_void_p()
-      _callsl(_lib.sl_load_sketch_transform, _ctxt_obj, sketch_name, \
-              json.dumps(sketch), byref(sketch_transform))
-
-      #sketch_class = eval(sketch_name)
-      sketches.append(_SketchTransform(sketch_name, int(sketch_dims[0]), \
-              int(sketch_dims[1]), defouttype, False, sketch_transform.value))
-
-    return sketches
+  sketch_transform = c_void_p()
+  _callsl(_lib.sl_deserialize_sketch_transform, \
+            json.dumps(sketch_dict), byref(sketch_transform))    
+  sketch_name = str(sketch_dict['sketch_type'])
+  return _map_csketch_type_to_cfun[sketch_name](sketch_dict, sketch_transform)
 
 #
 # Matrix type adapters: specifies how to interact with the underlying (perhaps in C/C++)
@@ -448,6 +436,7 @@ def _adapt(obj):
   else:
     raise errors.InvalidObjectError("Invalid/unsupported object passed as A or SA")
 
+
 #
 # Create mapping between type string and and constructor for that type
 #
@@ -469,8 +458,7 @@ if _KDT_INSTALLED:
 # Generic Sketch Transform
 #
 class _SketchTransform(object):
-  """
-  A sketching transform - in very general terms - is a dimensionality-reducing map
+  """  A sketching transform - in very general terms - is a dimensionality-reducing map
   from R^n to R^s which preserves key structural properties.
 
   _SketchTransform is base class sketch transforms. The various sketch transforms derive
@@ -516,12 +504,25 @@ class _SketchTransform(object):
     if not self._ppy:
       _callsl(_lib.sl_free_sketch_transform, self._obj)
 
-  def dump(self, filename):
+  def serialize(self):
+    """
+    Returns a dictionary that is the sketch in a serialized for.
+    That is, the sketch object can be reconstructed using the deserialize_sketch
+    function.
+    """
     if not self._ppy:
-      _callsl(_lib.sl_dump_sketch_transform, _ctxt_obj, self._ttype, filename, \
-               self._obj)
+      json_data = c_char_p()
+      _callsl(_lib.sl_serialize_sketch_transform, self._obj, byref(json_data))
+      try:
+        serialized_sketch = json.loads(json_data.value)
+      except ValueError:
+        _libc.free(json_data)
+        print "Failed to parse JSON"
+      else:
+        _libc.free(json_data)
+        return serialized_sketch
     else:
-        #TODO: python serialization of sketch
+        # TODO: python serialization of sketch
         pass
 
   def apply(self, A, SA, dim=0):
@@ -681,8 +682,8 @@ class JLT(_SketchTransform):
   >>> plt.hist(distortions,10)
   >>> plt.show()
   """
-  def __init__(self, n, s, defouttype=None, forceppy=False):
-    super(JLT, self).__init__("JLT", n, s, defouttype, forceppy);
+  def __init__(self, n, s, defouttype=None, forceppy=False, sketch_transform=None):
+    super(JLT, self).__init__("JLT", n, s, defouttype, forceppy, sketch_transform);
     if self._ppy:
       # The following is not memory efficient, but for a pure Python impl it will do
       self._S = numpy.random.standard_normal((s, n)) / sqrt(s)
@@ -746,16 +747,19 @@ class CT(_SketchTransform):
   *C. Sohler* and *D. Woodruff*, **Subspace Embeddings for the L_1-norm with
   Application**, STOC 2011
   """
-  def __init__(self, n, s, C, defouttype=None, forceppy=False):
+  def __init__(self, n, s, C, defouttype=None, forceppy=False, sketch_transform=None):
     super(CT, self)._baseinit("CT", n, s, defouttype, forceppy)
 
     if self._ppy:
       self._S = numpy.random.standard_cauchy((s, n)) * (C / s)
     else:
-      sketch_transform = c_void_p()
-      _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "CT", n, s, \
-                byref(sketch_transform), ctypes.c_double(C))
-      self._obj = sketch_transform.value
+      if sketch_transform is None:
+        sketch_transform = c_void_p()
+        _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "CT", n, s, \
+                  byref(sketch_transform), ctypes.c_double(C))
+        self._obj = sketch_transform.value
+      else:
+        self._obj = sketch_transform
 
   def _ppyapply(self, A, SA, dim):
     if dim == 0:
@@ -781,8 +785,8 @@ class FJLT(_SketchTransform):
   *N. Ailon* and *B. Chazelle*, **The Fast Johnson-Lindenstrauss Transform and
   Approximate Nearest Neighbors**, SIAM Journal on Computing 39 (1), pg. 302-322
   """
-  def __init__(self, n, s, defouttype=None, forceppy=False):
-    super(FJLT, self).__init__("FJLT", n, s, defouttype, forceppy);
+  def __init__(self, n, s, defouttype=None, forceppy=False, sketch_transform=None):
+    super(FJLT, self).__init__("FJLT", n, s, defouttype, forceppy, sketch_transform);
     if self._ppy:
       d = scipy.stats.rv_discrete(values=([-1,1], [0.5,0.5]), name = 'uniform').rvs(size=n)
       self._D = scipy.sparse.spdiags(d, 0, n, n)
@@ -813,8 +817,8 @@ class CWT(_SketchTransform):
   *K. Clarkson* and *D. Woodruff*, **Low Rank Approximation and Regression
   in Input Sparsity Time**, STOC 2013
   """
-  def __init__(self, n, s, defouttype=None, forceppy=False):
-    super(CWT, self).__init__("CWT", n, s, defouttype, forceppy);
+  def __init__(self, n, s, defouttype=None, forceppy=False, sketch_transform=None):
+    super(CWT, self).__init__("CWT", n, s, defouttype, forceppy, sketch_transform);
     if self._ppy:
       # The following is not memory efficient, but for a pure Python impl
       # it will do
@@ -845,8 +849,8 @@ class MMT(_SketchTransform):
   *X. Meng* and *M. W. Mahoney*, **Low-distortion Subspace Embeddings in
   Input-sparsity Time and Applications to Robust Linear Regression**, STOC 2013
   """
-  def __init__(self, n, s, defouttype=None, forceppy=False):
-    super(MMT, self).__init__("MMT", n, s, defouttype, forceppy);
+  def __init__(self, n, s, defouttype=None, forceppy=False, sketch_transform=None):
+    super(MMT, self).__init__("MMT", n, s, defouttype, forceppy, sketch_transform);
     if self._ppy:
       # The following is not memory efficient, but for a pure Python impl
       # it will do
@@ -891,7 +895,7 @@ class WZT(_SketchTransform):
         val[idx] = (2 * self._bdist.rvs() - 1) * math.pow(self._edist.rvs(), 1/self._p)
       return val
 
-  def __init__(self, n, s, p, defouttype=None, forceppy=False):
+  def __init__(self, n, s, p, defouttype=None, forceppy=False, sketch_transform=None):
     super(WZT, self)._baseinit("WZT", n, s, defouttype, forceppy)
 
     if self._ppy:
@@ -900,10 +904,13 @@ class WZT(_SketchTransform):
       distribution = WZT._WZTDistribution(p)
       self._S = sprand.hashmap(s, n, distribution, dimension = 0)
     else:
-      sketch_transform = c_void_p()
-      _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "WZT", n, s, \
-                byref(sketch_transform), ctypes.c_double(p))
-      self._obj = sketch_transform.value
+      if sketch_transform is None:
+        sketch_transform = c_void_p()
+        _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "WZT", n, s, \
+                  byref(sketch_transform), ctypes.c_double(p))
+        self._obj = sketch_transform.value
+      else:
+        self._obj = sketch_transform
 
   def _ppyapply(self, A, SA, dim):
     if dim == 0:
@@ -928,7 +935,7 @@ class GaussianRFT(_SketchTransform):
   *A. Rahimi* and *B. Recht*, **Random Features for Large-scale
   Kernel Machines**, NIPS 2009
   """
-  def __init__(self, n, s, sigma=1.0, defouttype=None, forceppy=False):
+  def __init__(self, n, s, sigma=1.0, defouttype=None, forceppy=False, sketch_transform=None):
     super(GaussianRFT, self)._baseinit("GaussianRFT", n, s, defouttype, forceppy)
 
     self._sigma = sigma
@@ -936,10 +943,13 @@ class GaussianRFT(_SketchTransform):
       self._T = JLT(n, s, forceppy=forceppy)
       self._b = numpy.matrix(numpy.random.uniform(0, 2 * pi, (s,1)))
     else:
-      sketch_transform = c_void_p()
-      _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "GaussianRFT", n, s, \
-                byref(sketch_transform), ctypes.c_double(sigma))
-      self._obj = sketch_transform.value
+      if sketch_transform is None:
+        sketch_transform = c_void_p()
+        _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "GaussianRFT", n, s, \
+                  byref(sketch_transform), ctypes.c_double(sigma))
+        self._obj = sketch_transform.value
+      else:
+        self._obj = sketch_transform
 
   def _ppyapply(self, A, SA, dim):
     self._T.apply(A, SA, dim)
@@ -962,14 +972,17 @@ class LaplacianRFT(_SketchTransform):
   *A. Rahimi* and *B. Recht*, **Random Features for Large-scale
   Kernel Machines**, NIPS 2009
   """
-  def __init__(self, n, s, sigma=1.0, defouttype=None, forceppy=False):
+  def __init__(self, n, s, sigma=1.0, defouttype=None, forceppy=False, sketch_transform=None):
     super(LaplacianRFT, self)._baseinit("LaplacianRFT", n, s, defouttype, forceppy)
 
     if not self._ppy:
-      sketch_transform = c_void_p()
-      _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "LaplacianRFT", n, s, \
-                byref(sketch_transform), ctypes.c_double(sigma))
-      self._obj = sketch_transform.value
+      if sketch_transform is None:
+        sketch_transform = c_void_p()
+        _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "LaplacianRFT", n, s, \
+                  byref(sketch_transform), ctypes.c_double(sigma))
+        self._obj = sketch_transform.value
+      else:
+        self._obj = sketch_transform
 
     # TODO ppy implementation
 
@@ -988,7 +1001,7 @@ class FastGaussianRFT(_SketchTransform):
   *Q. Le*, *T. Sarlos*, *A. Smola*, **Fastfood - Computing Hilbert Space
   Expansions in Loglinear Time**, ICML 2013
   """
-  def __init__(self, n, s, sigma=1.0, defouttype=None, forceppy=False):
+  def __init__(self, n, s, sigma=1.0, defouttype=None, forceppy=False, sketch_transform=None):
     super(FastGaussianRFT, self)._baseinit("FastGaussianRFT", n, s, defouttype, forceppy);
 
     self._sigma = sigma
@@ -1001,10 +1014,13 @@ class FastGaussianRFT(_SketchTransform):
       self._G = [numpy.random.randn(n) for i in range(self._blocks)]
       self._P = [numpy.random.permutation(n) for i in range(self._blocks)]
     else:
-      sketch_transform = c_void_p()
-      _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "FastGaussianRFT", n, s, \
-                byref(sketch_transform), ctypes.c_double(sigma))
-      self._obj = sketch_transform.value
+      if sketch_transform is None:
+        sketch_transform = c_void_p()
+        _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "FastGaussianRFT", n, s, \
+                  byref(sketch_transform), ctypes.c_double(sigma))
+        self._obj = sketch_transform.value
+      else:
+        self._obj = sketch_transform
 
   def _ppyapply(self, A, SA, dim):
     blks = [self._ppyapplyblk(A, dim, i) for i in range(self._blocks)]
@@ -1046,15 +1062,18 @@ class ExpSemigroupRLT(_SketchTransform):
 
   **Random Laplace Feature Maps for Semigroup Kernels on Histograms**, 2014
   """
-  def __init__(self, n, s, beta=1.0, defouttype=None, forceppy=False):
+  def __init__(self, n, s, beta=1.0, defouttype=None, forceppy=False, sketch_transform=None):
     super(ExpSemigroupRLT, self)._baseinit("ExpSemigroupRLT", n, s, defouttype, forceppy)
 
     self._beta = beta
     if not self._ppy:
-      sketch_transform = c_void_p()
-      _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "ExpSemigroupRLT", n, s, \
-                byref(sketch_transform), ctypes.c_double(beta))
-      self._obj = sketch_transform.value
+      if sketch_transform is None:
+        sketch_transform = c_void_p()
+        _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "ExpSemigroupRLT", n, s, \
+                  byref(sketch_transform), ctypes.c_double(beta))
+        self._obj = sketch_transform.value
+      else:
+        self._obj = sketch_transform
 
     # TODO ppy implementation
 
@@ -1075,7 +1094,7 @@ class PPT(_SketchTransform):
   *N. Pham* and *R. Pagh*, **Fast and Scalable Polynomial Kernels via Explicit
   Feature Maps**, KDD 2013
   """
-  def __init__(self, n, s, q=3,  c=0, gamma=1, defouttype=None, forceppy=False):
+  def __init__(self, n, s, q=3,  c=0, gamma=1, defouttype=None, forceppy=False, sketch_transform=None):
     super(PPT, self)._baseinit("PPT", n, s, defouttype, forceppy);
 
     if c < 0:
@@ -1087,11 +1106,14 @@ class PPT(_SketchTransform):
       self._c = c
       self._css = [CWT(n + (c > 0), s, forceppy=forceppy) for i in range(q)]
     else:
-      sketch_transform = c_void_p()
-      _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "PPT", n, s, \
-                byref(sketch_transform), \
-                ctypes.c_int(q), ctypes.c_double(c), ctypes.c_double(gamma))
-      self._obj = sketch_transform.value
+      if sketch_transform is None:
+        sketch_transform = c_void_p()
+        _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "PPT", n, s, \
+                  byref(sketch_transform), \
+                  ctypes.c_int(q), ctypes.c_double(c), ctypes.c_double(gamma))
+        self._obj = sketch_transform.value
+      else:
+        self._obj = sketch_transform
 
   def _ppyapply(self, A, SA, dim):
     sc = sqrt(self._c)
@@ -1170,3 +1192,28 @@ Fastfood=FastGaussianRFT
 TensorSketch = PPT
 UniformSampler = URST
 NonUniformSampler = NURST
+
+#
+# Mapping between serialize type string and Python calss
+#
+_map_csketch_type_to_cfun = { } 
+_map_csketch_type_to_cfun["JLT"] = lambda sd, obj : JLT(int(sd['N']), int(sd['S']), None, False, obj.value)
+_map_csketch_type_to_cfun["CT"] = \
+    lambda sd, obj : CT(int(sd['N']), int(sd['S']), float(sd['C']), None, False, obj.value)
+_map_csketch_type_to_cfun["FJLT"] = lambda sd, obj : FJLT(int(sd['N']), int(sd['S']), None, False, obj.value)
+_map_csketch_type_to_cfun["CWT"] = lambda sd, obj : CWT(int(sd['N']), int(sd['S']), None, False, obj.value)
+_map_csketch_type_to_cfun["MMT"] = lambda sd, obj : MMT(int(sd['N']), int(sd['S']), None, False, obj.value)
+_map_csketch_type_to_cfun["WZT"] = \
+    lambda sd, obj : WZT(int(sd['N']), int(sd['S']), float(sd['P']), None, False, obj.value)
+_map_csketch_type_to_cfun["GaussianRFT"] = \
+    lambda sd, obj : GaussianRFT(int(sd['N']), int(sd['S']), float(sd['sigma']), None, False, obj.value)
+_map_csketch_type_to_cfun["LaplacianRFT"] = \
+    lambda sd, obj : LaplacianRFT(int(sd['N']), int(sd['S']), float(sd['sigma']), None, False, obj.value)
+_map_csketch_type_to_cfun["FastGaussianRFT"] = \
+    lambda sd, obj : FastGaussianRFT(int(sd['N']), int(sd['S']), float(sd['sigma']), None, False, obj.value)
+_map_csketch_type_to_cfun["ExpSemigroupRLT"] = \
+    lambda sd, obj : ExpSemigroupRLT(int(sd['N']), int(sd['S']), float(sd['beta']), None, False, obj.value)
+_map_csketch_type_to_cfun["PPT"] = \
+    lambda sd, obj : PPT(int(sd['N']), int(sd['S']), int(sd['q']), float(sd['c']), float(sd['gamma']), \
+                           None, False, obj.value)
+

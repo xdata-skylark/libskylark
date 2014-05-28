@@ -1,5 +1,5 @@
-#ifndef UTILITY_HPP
-#define UTILITY_HPP
+#ifndef SKYLARK_UTILITY_HPP
+#define SKYLARK_UTILITY_HPP
 
 /**
  * In general, please only include files that you actually want. However, the
@@ -8,14 +8,12 @@
  * directory.
  */
 
-#include "matrix.hpp"
-#include "mapper.hpp"
-#include "partitioner.hpp"
-#include "reader.hpp"
 #include "comm.hpp"
 #include "distributions.hpp"
 #include "randgen.hpp"
 #include "get_communicator.hpp"
+#include "typer.hpp"
+#include "elem_extender.hpp"
 
 /**
  * This file contains all the functions that we wrote to support external 

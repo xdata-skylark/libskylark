@@ -1,6 +1,8 @@
 #ifndef SKYLARK_CWT_DATA_HPP
 #define SKYLARK_CWT_DATA_HPP
 
+#include "../config.h"
+
 #include "../utility/distributions.hpp"
 #include "hash_transform_data.hpp"
 
@@ -17,29 +19,46 @@ namespace skylark { namespace sketch {
  * CWT was additionally analyzed by Meng and Mahoney (STOC'13) and is equivalent
  * to OSNAP with s=1.
  */
-template<typename IndexType, typename ValueType>
 struct CWT_data_t : public hash_transform_data_t<
-    IndexType, ValueType,
     boost::random::uniform_int_distribution,
     utility::rademacher_distribution_t > {
 
-
-   CWT_data_t(int N, int S, skylark::base::context_t& context)
-        : hash_transform_data_t<
-        IndexType, ValueType,
+    typedef hash_transform_data_t<
         boost::random::uniform_int_distribution,
-        utility::rademacher_distribution_t > (N, S, context, "CWT") {
+        utility::rademacher_distribution_t > base_t;
 
-   }
+    CWT_data_t(int N, int S, base::context_t& context)
+        : base_t(N, S, context, "CWT") {
 
-   CWT_data_t(const boost::property_tree::ptree &json,
-       skylark::base::context_t& context)
-        : hash_transform_data_t<
-        IndexType, ValueType,
-        boost::random::uniform_int_distribution,
-        utility::rademacher_distribution_t > (json, context) {
+        context = base_t::build();
+    }
 
-   }
+    CWT_data_t(const boost::property_tree::ptree& pt) :
+        base_t(pt.get<int>("N"), pt.get<int>("S"),
+            base::context_t(pt.get_child("creation_context")), "CWT") {
+        base_t::build();
+    }
+
+    /**
+     *  Serializes a sketch to a Boost property tree. This can be conveniently
+     *  converted to other formats, e.g. to JSON and XML.
+     *
+     *  @param[out] property_tree describing the sketch.
+     */
+    virtual
+    boost::property_tree::ptree to_ptree() const {
+        boost::property_tree::ptree pt;
+        sketch_transform_data_t::add_common(pt);
+        return pt;
+    }
+
+protected:
+
+    CWT_data_t(int N, int S, const base::context_t& context, std::string type)
+        : base_t(N, S, context, type) {
+
+    }
+
 
 };
 

@@ -1,5 +1,5 @@
-#ifndef PRINT_HPP
-#define PRINT_HPP
+#ifndef SKYLARK_PRINT_HPP
+#define SKYLARK_PRINT_HPP
 
 #include <cstdio>
 
@@ -69,34 +69,27 @@ template <typename ValueType,
           elem::Distribution RD>
 struct print_t <elem::DistMatrix<ValueType, CD, RD> > {
 
-  typedef int index_t;
-  typedef ValueType value_t;
-  typedef elem::DistMatrix<ValueType, CD, RD> mpi_matrix_t;
-  typedef elem::Matrix<ValueType> matrix_t;
+    typedef int index_t;
+    typedef ValueType value_t;
+    typedef elem::DistMatrix<ValueType, CD, RD> mpi_matrix_t;
 
-  static void apply(const mpi_matrix_t& X,
-                    const char* msg,
-                    bool am_i_printing,
-                    int debug_level=0) {
-    if (1>=debug_level) return;
+    static void apply(const mpi_matrix_t& X,
+        const char* msg,
+        bool am_i_printing,
+        int debug_level=0) {
 
-    elem::AxpyInterface<value_t> interface;
-    interface.Attach (elem::GLOBAL_TO_LOCAL, X);
-    if (am_i_printing) {
-      matrix_t local_X (X.Height(), X.Width()); 
-      elem::MakeZeros (local_X);
-      interface.Axpy (1.0, local_X, 0, 0);
+        if (1>=debug_level) return;
 
-        
-      printf ("Dump of %s\n", msg);
-      for (index_t i=0; i<local_X.Height(); ++i) {
-        for (index_t j=0; j<local_X.Width(); ++j) {
-          printf ("%lf ", local_X.Get(i,j));
+        elem::DistMatrix<value_t, elem::STAR, elem::STAR> Xss(X);
+        if (am_i_printing) {
+            printf ("Dump of %s\n", msg);
+            for (index_t i=0; i<Xss.Height(); ++i) {
+                for (index_t j=0; j<Xss.Width(); ++j) {
+                    printf ("%lf ", Xss.Get(i,j));
+                }
+                printf ("\n");
+            }
         }
-        printf ("\n");
-      }
-    }
-    interface.Detach();
   }
 
   static void apply(const mpi_matrix_t& X,
@@ -106,28 +99,16 @@ struct print_t <elem::DistMatrix<ValueType, CD, RD> > {
                     int debug_level=0) {
     if (1>=debug_level) return;
 
-    elem::AxpyInterface<value_t> interface_1;
-    interface_1.Attach (elem::GLOBAL_TO_LOCAL, X);
-    elem::AxpyInterface<value_t> interface_2;
-    interface_2.Attach (elem::GLOBAL_TO_LOCAL, Y);
+    elem::DistMatrix<value_t, elem::STAR, elem::STAR> Xss(X), Yss(Y);
     if (am_i_printing) {
-      matrix_t local_X (X.Height(), X.Width()); 
-      matrix_t local_Y (Y.Height(), Y.Width()); 
-      elem::MakeZeros (local_X);
-      elem::MakeZeros (local_Y);
-      interface_1.Axpy (1.0, local_X, 0, 0);
-      interface_2.Axpy (1.0, local_Y, 0, 0);
-        
       printf ("Dump of %s\n", msg);
-      for (index_t i=0; i<local_X.Height(); ++i) {
-        for (index_t j=0; j<local_X.Width(); ++j) {
-          printf ("(%lf -- %lf) ", local_X.Get(i,j), local_Y.Get(i,j));
+      for (index_t i=0; i<Xss.Height(); ++i) {
+        for (index_t j=0; j<Xss.Width(); ++j) {
+          printf ("(%lf -- %lf) ", Xss.Get(i,j), Yss.Get(i,j));
         }
         printf ("\n");
       }
     }
-    interface_1.Detach();
-    interface_2.Detach();
   }
 };
 
@@ -247,6 +228,6 @@ struct print_t<FullyDistMultiVec<IndexType,ValueType> > {
 
 #endif
 
-} } /** namespace skylark::nla */
+} } /** namespace skylark::utility */
 
-#endif // PRINT_HPP
+#endif // SKYLARK_PRINT_HPP

@@ -23,27 +23,31 @@ namespace skylark { namespace sketch {
  *      you want more than one.
  */
 
-#define _SL_HTBASE hash_transform_t< InputMatrixType, OutputMatrixType, \
-                                     boost::random::uniform_int_distribution, \
-                                     boost::random::exponential_distribution >
 template < typename InputMatrixType,
            typename OutputMatrixType = InputMatrixType >
 struct WZT_t :
-        public WZT_data_t< typename _SL_HTBASE::index_type,
-                           typename _SL_HTBASE::value_type > {
+        public WZT_data_t,
+        virtual public sketch_transform_t<InputMatrixType, OutputMatrixType > {
+
 public:
 
     // We use composition to defer calls to hash_transform_t
-    typedef _SL_HTBASE transform_t;
+    typedef hash_transform_t< InputMatrixType, OutputMatrixType,
+                              boost::random::uniform_int_distribution,
+                              boost::random::exponential_distribution > transform_t;
 
-    typedef WZT_data_t< typename _SL_HTBASE::index_type,
-                        typename _SL_HTBASE::value_type > data_type;
+    typedef WZT_data_t data_type;
 
     /**
      * Regular constructor
      */
     WZT_t(int N, int S, double p, base::context_t& context)
         : data_type(N, S, p, context), _transform(*this) {
+
+    }
+
+    WZT_t(const boost::property_tree::ptree &pt)
+        : data_type(pt), _transform(*this) {
 
     }
 
@@ -66,20 +70,33 @@ public:
     }
 
     /**
-     * Apply the sketching transform that is described in by the sketch_of_A.
+     * Apply columnwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
      */
-    template <typename Dimension>
     void apply (const typename transform_t::matrix_type& A,
                 typename transform_t::output_matrix_type& sketch_of_A,
-                Dimension dimension) const {
+                columnwise_tag dimension) const {
         _transform.apply(A, sketch_of_A, dimension);
     }
+
+    /**
+     * Apply rowwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply (const typename transform_t::matrix_type& A,
+                typename transform_t::output_matrix_type& sketch_of_A,
+                rowwise_tag dimension) const {
+        _transform.apply(A, sketch_of_A, dimension);
+    }
+
+    int get_N() const { return this->_N; } /**< Get input dimesion. */
+    int get_S() const { return this->_S; } /**< Get output dimesion. */
+
+    const sketch_transform_data_t* get_data() const { return this; }
 
 private:
     transform_t _transform;
 };
-
-#undef _SL_HTBASE
 
 } } /** namespace skylark::sketch */
 

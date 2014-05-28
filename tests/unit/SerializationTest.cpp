@@ -8,12 +8,8 @@
 #include "../../sketch/CT.hpp"
 #include "../../sketch/CWT.hpp"
 #include "../../base/context.hpp"
-#include "../../utility/sketch_archive.hpp"
 
 int test_main(int argc, char *argv[]) {
-
-    //XXX: disable for now...
-    return 0;
 
     //////////////////////////////////////////////////////////////////////////
     //[> Parameters <]
@@ -58,26 +54,24 @@ int test_main(int argc, char *argv[]) {
         Sparse(n, n_s, context);
 
     // dump to property tree
-    //FIXME: improve interface (remove indirection)
-    boost::property_tree::ptree pt;
-    pt << Sparse;
-    skylark::utility::sketch_archive_t ar;
-    ar << pt;
+    boost::property_tree::ptree pt = Sparse.get_data()->to_ptree();
 
     //[> 2. Dump the JSON string to file <]
     std::ofstream out("sketch.json");
-    out << ar;
+    write_json(out, pt);
     out.close();
 
     //[> 3. Create a sketch from the JSON file. <]
     std::ifstream file;
     std::stringstream json;
     file.open("sketch.json", std::ios::in);
-    skylark::utility::sketch_archive_t arl;
-    file >> arl;
-    skylark::sketch::CWT_t<DistMatrixType, DistMatrixType> tmp(
-            arl.get(0), context);
 
+    boost::property_tree::ptree json_tree;
+    boost::property_tree::read_json(file, json_tree);
+
+    skylark::sketch::CWT_t<DistMatrixType, DistMatrixType> tmp(json_tree);
+
+    //[> 4. Both sketches should compute the same result. <]
     mpi_vector_t zero;
     DistMatrixType sketch_A(n_s, m, zero, zero, zero);
     DistMatrixType sketch_Atmp(n_s, m, zero, zero, zero);
@@ -87,25 +81,6 @@ int test_main(int argc, char *argv[]) {
 
     if (!static_cast<bool>(sketch_A == sketch_Atmp))
         BOOST_FAIL("Applied sketch did not result in same result");
-
-
-    //[> 4. Serialize two sketches in one file <]
-    typedef elem::DistMatrix<double, elem::VR, elem::STAR> DenseDistMat_t;
-    elem::Initialize (argc, argv);
-    elem::Grid grid (world);
-
-    //DenseDistMat_t A(grid);
-    //elem::Uniform(A, m, n);
-
-    skylark::sketch::CT_t<DenseDistMat_t, DenseDistMat_t> Dense(n, n_s, 2.2, context);
-    boost::property_tree::ptree ptd;
-    ptd << Dense;
-
-    skylark::utility::sketch_archive_t ar2;
-    ar2 << ptd << pt;
-
-    //TODO: check if as expected
-    std::cout << ar2 << std::endl;
 
     return 0;
 }

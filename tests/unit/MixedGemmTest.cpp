@@ -48,13 +48,13 @@ void check_matrix(const dist_matrix_t &result, const MatrixType &expected,
 int test_main(int argc, char *argv[]) {
 
     namespace mpi = boost::mpi;
+    mpi::environment env (argc, argv);
 
 #ifdef SKYLARK_HAVE_OPENMP
     int provided;
     MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
 #endif
 
-    mpi::environment env (argc, argv);
     mpi::communicator world;
 
     elem::Initialize (argc, argv);

@@ -102,7 +102,7 @@ private:
 
         const elem::Grid& grid = A.Grid();
 
-        elem::DistMatrix<value_type, RowDist, elem::STAR> R(grid);
+        elem::DistMatrix<value_type, elem::STAR, RowDist> R(grid);
         elem::DistMatrix<value_type, elem::STAR, elem::STAR>
             sketch_of_A_STAR_STAR(grid);
 
@@ -110,18 +110,20 @@ private:
 
         // TODO: is alignment necessary?
 
+        // Global size of the result of the Local Gemm that follows
+        sketch_of_A_STAR_STAR.Resize(A.Height(),
+                                     R.Height());
+
         // Local Gemm
         base::Gemm(elem::NORMAL,
-                   elem::NORMAL,
+                   elem::TRANSPOSE,
                    value_type(1),
                    A.LockedMatrix(),
                    R.LockedMatrix(),
-                   value_type(0),
                    sketch_of_A_STAR_STAR.Matrix());
 
         // Reduce-scatter within process grid
-        sketch_of_A.SumScatterUpdate(value_type(1),
-                    sketch_of_A_STAR_STAR);
+        sketch_of_A.SumScatterFrom(sketch_of_A_STAR_STAR);
     }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -255,7 +257,7 @@ private:
 
         const elem::Grid& grid = A.Grid();
 
-        elem::DistMatrix<value_type, elem::STAR, RowDist> R(grid);
+        elem::DistMatrix<value_type, RowDist, elem::STAR> R(grid);
         elem::DistMatrix<value_type, elem::STAR, elem::STAR>
             A_STAR_STAR(grid);
 
@@ -268,13 +270,16 @@ private:
         // Allgather within process grid
         A_STAR_STAR = A;
 
+        // Zero sketch_of_A
+        elem::Zero(sketch_of_A);
+
         // Local Gemm
         base::Gemm(elem::NORMAL,
-                   elem::NORMAL,
+                   elem::TRANSPOSE,
                    value_type(1),
-                   A.LockedMatrix(),
+                   A_STAR_STAR.LockedMatrix(),
                    R.LockedMatrix(),
-                   value_type(0),
+                   value_type(1),
                    sketch_of_A.Matrix());
 
     }
@@ -379,7 +384,7 @@ private:
 
         const elem::Grid& grid = A.Grid();
 
-        elem::DistMatrix<value_type, RowDist, elem::STAR> R(grid);
+        elem::DistMatrix<value_type, elem::STAR, RowDist> R(grid);
         elem::DistMatrix<value_type, elem::STAR, elem::STAR>
             sketch_of_A_STAR_STAR(grid);
 
@@ -389,18 +394,21 @@ private:
 
         data_type::realize_matrix_view(R);
 
+        // Global size of the result of the Local Gemm that follows
+        sketch_of_A_STAR_STAR.Resize(sketch_of_A.Height(),
+                                      sketch_of_A.Width());
+
         // Local Gemm
         base::Gemm(elem::NORMAL,
-                   elem::NORMAL,
+                   elem::TRANSPOSE,
                    value_type(1),
                    A.LockedMatrix(),
                    R.LockedMatrix(),
-                   value_type(0),
                    sketch_of_A_STAR_STAR.Matrix());
 
         // Reduce-scatter within process grid
-        sketch_of_A.SumScatterUpdate(value_type(1),
-                sketch_of_A_STAR_STAR);
+        sketch_of_A.SumScatterFrom(sketch_of_A_STAR_STAR);
+
     }
 
 

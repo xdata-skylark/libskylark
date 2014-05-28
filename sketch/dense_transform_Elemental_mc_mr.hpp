@@ -717,10 +717,6 @@ private:
                    sketch_of_A_temp.Matrix());
 
         // Reduce-scatter within row communicators
-        // sketch_of_A.RowSumScatterUpdate(value_type(1),
-        //    sketch_of_A_temp);
-
-        // Reduce-scatter within row communicators
         sketch_of_A.RowSumScatterFrom(sketch_of_A_temp);
 
     }

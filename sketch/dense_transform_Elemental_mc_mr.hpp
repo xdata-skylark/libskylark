@@ -561,6 +561,7 @@ private:
             //       why not simply use A1[STAR, MR]?
             A1.TransposeColAllGather(A1Trans_MR_STAR);
 
+            // Local Gemm
             base::Gemm(elem::NORMAL,
                        elem::TRANSPOSE,
                        value_type(1),
@@ -609,6 +610,7 @@ private:
         //       why not simply use A1[STAR, MR]?
         A.TransposeColAllGather(ATrans_MR_STAR);
 
+        // Local Gemm
         base::Gemm(elem::NORMAL,
                    elem::TRANSPOSE,
                    value_type(1),

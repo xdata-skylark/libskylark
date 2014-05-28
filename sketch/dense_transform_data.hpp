@@ -6,7 +6,7 @@
 #include "../base/context.hpp"
 #include "../utility/randgen.hpp"
 
-#include "sketch.hpp"
+#include "sketch_transform_data.hpp"
 
 #include "boost/smart_ptr.hpp"
 
@@ -73,7 +73,7 @@ protected:
     }
 
     value_distribution_type distribution; /**< Distribution for samples */
-    skylark::utility::random_samples_array_t <value_distribution_type> 
+    skylark::utility::random_samples_array_t <value_distribution_type>
     random_samples;
     /**< Array of samples, to be lazily computed */
     double scale; /**< Scaling factor for the samples */

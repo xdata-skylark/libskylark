@@ -2,6 +2,7 @@
 #define SKYLARK_DENSE_TRANSFORM_HPP
 
 #include "../config.h"
+#include "transforms.hpp"
 #include "dense_transform_data.hpp"
 
 namespace skylark { namespace sketch {
@@ -15,7 +16,7 @@ class dense_transform_t {
     // renaming the class.
 
     // Without deriving, the scale should be 1.0, so this is just a
-    // random matrix with enteries from the specified distribution.
+    // random matrix with entries from the specified distribution.
     // sets a scale variable, but can add methods.
 
     typedef InputMatrixType matrix_type;

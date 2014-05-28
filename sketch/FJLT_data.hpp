@@ -6,6 +6,7 @@
 #include "../base/context.hpp"
 #include "RFUT_data.hpp"
 #include "../utility/randgen.hpp"
+#include "../utility/distributions.hpp"
 
 #include "sketch_transform_data.hpp"
 

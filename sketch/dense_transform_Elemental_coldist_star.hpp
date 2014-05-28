@@ -232,18 +232,20 @@ private:
 
         // TODO: is alignment necessary?
 
+        // Global size of the result of the Local Gemm that follows
+        sketch_of_A_STAR_STAR.Resize(R.Height(),
+                                     A.Width());
+
         // Local Gemm
         base::Gemm(elem::NORMAL,
                    elem::NORMAL,
                    value_type(1),
                    R.LockedMatrix(),
                    A.LockedMatrix(),
-                   value_type(0),
                    sketch_of_A_STAR_STAR.Matrix());
 
         // Reduce-scatter within process grid
-        sketch_of_A.SumScatterUpdate(value_type(1),
-                    sketch_of_A_STAR_STAR);
+        sketch_of_A.SumScatterFrom(sketch_of_A_STAR_STAR);
 
     }
 
@@ -353,6 +355,11 @@ private:
         R.AlignWith(sketch_of_A);
         A_STAR_STAR.AlignWith(sketch_of_A);
 
+        data_type::realize_matrix_view(R);
+
+        // Zero sketch_of_A
+        elem::Zero(sketch_of_A);
+
         // Allgather within process grid
         A_STAR_STAR = A;
 
@@ -361,8 +368,8 @@ private:
                    elem::NORMAL,
                    value_type(1),
                    R.LockedMatrix(),
-                   A.LockedMatrix(),
-                   value_type(0),
+                   A_STAR_STAR.LockedMatrix(),
+                   value_type(1),
                    sketch_of_A.Matrix());
     }
 
@@ -458,7 +465,6 @@ private:
         const elem::Grid& grid = A.Grid();
 
         elem::DistMatrix<value_type, elem::STAR, ColDist> R(grid);
-
         elem::DistMatrix<value_type, elem::STAR, elem::STAR>
             sketch_of_A_STAR_STAR(grid);
 
@@ -467,18 +473,20 @@ private:
 
         data_type::realize_matrix_view(R);
 
+        // Global size of the result of the Local Gemm that follows
+        sketch_of_A_STAR_STAR.Resize(R.Height(),
+                                     A.Width());
+
         // Local Gemm
         base::Gemm(elem::NORMAL,
                    elem::NORMAL,
                    value_type(1),
-                   A.LockeMatrix(),
                    R.LockedMatrix(),
-                   value_type(0),
+                   A.LockedMatrix(),
                    sketch_of_A_STAR_STAR.Matrix());
 
         // Reduce-scatter within process grid
-        sketch_of_A.SumScatterUpdate(value_type(1),
-                    sketch_of_A_STAR_STAR);
+        sketch_of_A.SumScatterFrom(sketch_of_A_STAR_STAR);
     }
 
 

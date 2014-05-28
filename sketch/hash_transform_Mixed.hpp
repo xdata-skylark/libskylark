@@ -193,16 +193,24 @@ private:
 
         // Creating windows for all relevant arrays
         boost::mpi::communicator comm = utility::get_communicator(A);
+
+        // tell MPI that we will not use locks
+        MPI_Info info;
+        MPI_Info_create(&info);
+        MPI_Info_set(info, "no_locks", "true");
+
         MPI_Win start_offset_win, idx_win, val_win;
 
         MPI_Win_create(&proc_start_idx[0], sizeof(size_t) * (comm_size + 1),
-                       sizeof(size_t), MPI_INFO_NULL, comm, &start_offset_win);
+                       sizeof(size_t), info, comm, &start_offset_win);
 
         MPI_Win_create(&indicies[0], sizeof(index_type) * indicies.size(),
-                       sizeof(index_type), MPI_INFO_NULL, comm, &idx_win);
+                       sizeof(index_type), info, comm, &idx_win);
 
         MPI_Win_create(&values[0], sizeof(value_type) * values.size(),
-                       sizeof(value_type), MPI_INFO_NULL, comm, &val_win);
+                       sizeof(value_type), info, comm, &val_win);
+
+        MPI_Info_free(&info);
 
         // Synchronize epoch, no subsequent put operations (read only) and no
         // preceding fence calls.

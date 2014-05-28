@@ -92,6 +92,10 @@ private:
 
 #ifdef HP_DENSE_TRANSFORM_ELEMENTAL_COLDIST_STAR_LOCAL
 
+    /**
+     * High-performance implementations
+     */
+
     void apply_impl_dist(const matrix_type& A,
                          output_matrix_type& sketch_of_A,
                          skylark::sketch::rowwise_tag tag) const {
@@ -155,7 +159,9 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 
-
+    /**
+     * BASE implementations
+     */
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.

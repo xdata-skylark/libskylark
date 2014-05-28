@@ -95,6 +95,9 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 #ifdef OPTIMIZED // OPTIMIZED
 
+    /**
+     * High-performance OPTIMIZED implementation
+     */
     void inner_panel_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::rowwise_tag) const {
@@ -191,6 +194,9 @@ private:
 
 #else
 
+    /**
+     * High-performance MEMORY_OBLIVIOUS implementation
+     */
     void inner_panel_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::rowwise_tag) const {
@@ -216,7 +222,11 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 
-   // Communication demanding scenario: Memory-oblivious mode
+    /**
+     * High-performance implementation
+     */
+
+    // Communication demanding scenario: Memory-oblivious mode
     // TODO: Block-by-block mode
     void inner_panel_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
@@ -253,6 +263,9 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 #ifdef OPTIMIZED // OPTIMIZED
 
+    /**
+     * High-performance OPTIMIZED implementation
+     */
     void outer_panel_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::rowwise_tag) const {
@@ -309,6 +322,9 @@ private:
 
 #else
 
+    /**
+     * High-performance MEMORY_OBLIVIOUS implementation
+     */
     void outer_panel_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::rowwise_tag) const {
@@ -338,6 +354,10 @@ private:
 #endif // OPTIMIZED
 
 ////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * High-performance implementation
+     */
 
     // Communication demanding scenario: Memory-oblivious mode
     // TODO: Block-by-block mode
@@ -377,6 +397,9 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 #ifdef OPTIMIZED // OPTIMIZED
 
+    /**
+     * High-performance OPTIMIZED implementation
+     */
     void matrix_panel_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::rowwise_tag) const {
@@ -429,6 +452,9 @@ private:
 
 #else
 
+    /**
+     * High-performance MEMORY_OBLIVIOUS implementation
+     */
     void matrix_panel_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::rowwise_tag) const {
@@ -455,6 +481,10 @@ private:
 #endif // OPTIMIZED
 
 ////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * High-performance implementation
+     */
 
     // Communication demanding scenario: Memory-oblivious mode
     // TODO: Block-by-block mode
@@ -561,6 +591,9 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 
+    /**
+     * BASE implementations
+     */
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.

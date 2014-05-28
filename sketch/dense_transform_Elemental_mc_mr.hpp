@@ -86,6 +86,9 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 #ifdef OPTIMIZED // OPTIMIZED
 
+    /**
+     * High-performance OPTIMIZED implementation
+     */
     void inner_panel_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::rowwise_tag) const {
@@ -202,6 +205,9 @@ private:
 
 #else
 
+    /**
+     * High-performance MEMORY_OBLIVIOUS implementation
+     */
     void inner_panel_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::rowwise_tag) const {
@@ -248,6 +254,9 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 #ifdef OPTIMIZED // OPTIMIZED
 
+    /**
+     * High-performance OPTIMIZED implementation
+     */
     void inner_panel_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::columnwise_tag) const {
@@ -361,6 +370,9 @@ private:
 
 #else
 
+    /**
+     * High-performance MEMORY_OBLIVIOUS implementation
+     */
     void inner_panel_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::columnwise_tag) const {
@@ -408,6 +420,9 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 #ifdef OPTIMIZED // OPTIMIZED
 
+    /**
+     * High-performance OPTIMIZED implementation
+     */
     void outer_panel_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::rowwise_tag) const {
@@ -471,6 +486,9 @@ private:
 
 #else
 
+    /**
+     * High-performance MEMORY_OBLIVIOUS implementation
+     */
     void outer_panel_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::rowwise_tag) const {
@@ -510,6 +528,9 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 #ifdef OPTIMIZED // OPTIMIZED
 
+    /**
+     * High-performance OPTIMIZED implementation
+     */
     void outer_panel_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::columnwise_tag) const {
@@ -582,6 +603,9 @@ private:
 
 #else
 
+    /**
+     * High-performance MEMORY_OBLIVIOUS implementation
+     */
     void outer_panel_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::columnwise_tag) const {
@@ -626,6 +650,9 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 #ifdef OPTIMIZED // OPTIMIZED
 
+    /**
+     * High-performance OPTIMIZED implementation
+     */
     void matrix_panel_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::rowwise_tag) const {
@@ -688,6 +715,9 @@ private:
 
 #else
 
+    /**
+     * High-performance MEMORY_OBLIVIOUS implementation
+     */
     void matrix_panel_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::rowwise_tag) const {
@@ -802,6 +832,9 @@ private:
 
 #else
 
+    /**
+     * High-performance OPTIMIZED implementation
+     */
     void panel_matrix_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::columnwise_tag) const {
@@ -874,6 +907,9 @@ private:
 
 #else
 
+    /**
+     * High-performance MEMORY_OBLIVIOUS implementation
+     */
     void panel_matrix_gemm(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::columnwise_tag) const {
@@ -978,6 +1014,10 @@ private:
 #else // HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR
 
 ////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * BASE implementations
+     */
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.

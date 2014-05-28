@@ -186,86 +186,33 @@ int run(const boost::mpi::communicator& comm, skylark::base::context_t& context,
             	}
     		}
 
-    	skylark::ml::Model<InputType>* model = Solver->train(X, Y, Xv, Yv, comm);
-    	model->save(options.modelfile, options.print(), comm.rank());
+    	skylark::ml::model_t<InputType, LabelType>* model =
+            Solver->train(X, Y, Xv, Yv, comm);
+
+        if (comm.rank() == 0) 
+            model->save(options.modelfile, options.print());
     }
 
     else {
 
     	std::cout << "Testing Mode" << std::endl;
-    	skylark::ml::Model<InputType>* model = new skylark::ml::Model<InputType>(options.modelfile, comm);
-    	model->set_num_threads(options.numthreads);
+    	skylark::ml::model_t<InputType, LabelType> model(options.modelfile);
     	read(comm, options.fileformat, options.testfile, Xt, Yt,
-    	    				skylark::base::Height(X));
-
-    	int targets = GetNumTargets<LabelType>(comm, Yt);
-    	bool shift = false;
-    //	if ((model.lossfunction == LOGISTIC) && (targets == 1)) {
-    //	    		ShiftForLogistic(Yt);
-    //	    		targets = 2;
-    //	    		shift = true;
-    //	 }
-
-    	LabelType DecisionValues(Yt.Height(), model->get_classes());
+            model.get_input_size());
+    	LabelType DecisionValues(Yt.Height(), model.get_num_outputs());
     	LabelType PredictedLabels(Yt.Height(), 1);
     	elem::MakeZeros(DecisionValues);
     	elem::MakeZeros(PredictedLabels);
 
     	std::cout << "Starting predictions" << std::endl;
-    	model->predict(Xt, PredictedLabels, DecisionValues);
-    	double accuracy = model->evaluate(Yt, DecisionValues, comm);
+    	model.predict(Xt, PredictedLabels, DecisionValues, options.numthreads);
+    	double accuracy = model.evaluate(Yt, DecisionValues, comm);
     	if(rank == 0)
     	        std::cout << "Test Accuracy = " <<  accuracy << " %" << std::endl;
 
     	// fix logistic case -- provide mechanism to dump predictions -- clean up evaluate
 
     }
-    /*else  { // test mode
-
-    	// set other options from model file
-
-    	options_str =  read_header(comm, options.modelfile);
-    	int argc1;
-    	char **argv1;
-
-    	argc1 = splitstr(options_str, argv1);
-    	hilbert_options_t train_options (argc1, argv1, comm.rank());
-
-
-    	// read model Wbar
-    	elem::Matrix<double> Wbar;
-    	elem::Read(Wbar, options.modelfile, elem::ASCII);
-
-    	// Create a solver object
-    	int dimensions = Wbar.Height();
-    	BlockADMMSolver<InputType>* Solver =
-    	        	GetSolver<InputType>(context, options, dimensions);
-
-    	if(!options.testfile.empty()) {
-    		comm.barrier();
-    		if(rank == 0) std::cout << "Starting testing phase (currently we load all data in memory - to be changed.)" << std::endl;
-    		read(comm, options.fileformat, options.testfile, Xt, Yt,
-    				skylark::base::Height(X));
-        		if ((options.lossfunction == LOGISTIC) && shift) {
-        			for(int i=0;i<Yt.Height(); i++) {
-        				y = Yt.Get(i, 0);
-        				Yt.Set(i, 0, 0.5*(y+1.0));
-        					}
-                    	}
-
-        		LabelType Yp(Yt.Height(), classes);
-        		Solver->predict(Xt, Yp, Wbar);
-        		double accuracy = Solver->evaluate(Yt, Yp, comm);
-        		if(rank == 0)
-        			std::cout << "Test Accuracy = " <<  accuracy << " %" << std::endl;
-    	}
-
-    	else {
-    		std::cout << "Test mode: did not detect a test file." << std::endl;
-    	}
-    }
-*/
-
 
     return 0;
 }

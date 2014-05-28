@@ -16,7 +16,6 @@
 
 namespace bmpi =  boost::mpi;
 namespace po = boost::program_options;
-using namespace std;
 
 typedef skylark::base::sparse_matrix_t<double> sparse_matrix_t;
 

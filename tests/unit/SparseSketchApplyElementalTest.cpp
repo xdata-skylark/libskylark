@@ -15,8 +15,7 @@
 #include <elemental.hpp>
 
 #include "../../utility/distributions.hpp"
-#include "../../sketch/hash_transform.hpp"
-#include "../../base/context.hpp"
+#include "../../sketch/sketch.hpp"
 
 #include <boost/mpi.hpp>
 #include <boost/test/minimal.hpp>

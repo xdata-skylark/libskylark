@@ -37,6 +37,8 @@ enum transform_type_t {
 enum matrix_type_t {
     MATRIX_TYPE_ERROR,
     MATRIX,                     /**< Dense Elemental matrix */
+    SHARED_MATRIX,              /**< Same matrix on all processors: STAR-STAR */
+    ROOT_MATRIX,                /**< One rank holds the matrix: CIRC-CIRC */
     DIST_MATRIX,                /**< Distributed Elemental matrix (MC-MR) */
     DIST_MATRIX_VC_STAR,
     DIST_MATRIX_VR_STAR,

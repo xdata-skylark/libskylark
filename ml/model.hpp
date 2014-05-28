@@ -18,294 +18,255 @@
 #include <omp.h>
 #endif
 
-
-typedef elem::Matrix<double> LocalMatrixType;
-
 namespace skylark { namespace ml {
 
-int classification_accuracy(LocalMatrixType& Yt, LocalMatrixType& Yp) {
+int classification_accuracy(elem::Matrix<double>& Yt, elem::Matrix<double>& Yp) {
     int correct = 0;
-        double o, o1;
-        int pred;
+    double o, o1;
+    int pred;
 
 
-        for(int i=0; i < Yp.Height(); i++) {
-            o = Yp.Get(i,0);
+    for(int i=0; i < Yp.Height(); i++) {
+        o = Yp.Get(i,0);
+        pred = 0;
+        if (Yp.Width()==1)
+            pred = (o >= 0)? +1:-1;
+
+        for(int j=1; j < Yp.Width(); j++) {
+            o1 = Yp.Get(i,j);
+            if ( o1 > o) {
+                o = o1;
+                pred = j;
+            }
+        }
+
+        if(pred == (int) Yt.Get(i,0))
+            correct++;
+    }
+    return correct;
+}
+
+template <typename InputType, typename OutputType>
+struct model_t
+{
+public:
+    typedef InputType input_type;
+    typedef OutputType output_type;
+
+    // TODO the following two should depend on the input type
+    // TODO explicit doubles is not desired.
+    typedef elem::Matrix<double> intermediate_type;
+    typedef elem::Matrix<double> coef_type;
+
+    typedef skylark::sketch::sketch_transform_t<input_type, intermediate_type>
+    feature_transform_type;
+
+    model_t(std::vector<const feature_transform_type *>& maps, bool scale_maps,
+        int num_features, int num_outputs) :
+        _coef(num_features, num_outputs), _maps(maps), _scale_maps(scale_maps),
+        _starts(maps.size()), _finishes(maps.size()) {
+
+        // TODO verify all N dimension of the maps match
+
+        elem::MakeZeros(_coef);
+
+        int nf = 0;
+        for(int i = 0; i < _maps.size(); i++) {
+            _starts[i] = nf;
+            _finishes[i] = nf + _maps[i]->get_S() - 1;
+            nf += _maps[i]->get_S();
+        }
+
+        _num_input_features = (_maps.size() == 0) ?
+            num_features : _maps[0]->get_N();
+    }
+
+    model_t(const boost::property_tree::ptree &pt) {
+        build_from_ptree(pt);
+    }
+
+    model_t(const std::string& fname) {
+        std::ifstream is(fname);
+
+        // Skip all lines begining with "#"
+        while(is.peek() == '#')
+            is.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+        boost::property_tree::ptree pt;
+        boost::property_tree::read_json(is, pt);
+        is.close();
+        build_from_ptree(pt);
+    }
+
+    boost::property_tree::ptree to_ptree() const {
+        boost::property_tree::ptree pt;
+        pt.put("skylark_object_type", "model:linear-on-features");
+        pt.put("skylark_version", VERSION);
+
+        pt.put("num_features", _coef.Height());
+        pt.put("num_outputs", _coef.Width());
+        pt.put("num_input_features", _num_input_features);
+
+        boost::property_tree::ptree ptfmap;
+        ptfmap.put("number_maps", _maps.size());
+        ptfmap.put("scale_maps", _scale_maps);
+
+        boost::property_tree::ptree ptmaps;
+        for(int i = 0; i < _maps.size(); i++)
+            ptmaps.push_back(std::make_pair(std::to_string(i),
+                    _maps[i]->to_ptree()));
+        ptfmap.add_child("maps", ptmaps);
+
+        pt.add_child("feature_mapping", ptfmap);
+
+        std::stringstream scoef;
+        elem::Print(_coef, "", scoef);
+        pt.put("coef_matrix", scoef.str());
+
+        return pt;
+    }
+
+    /**
+     * Saves the model to a file named fname. You may want to use this method
+     * from only a single rank.
+     */
+    void save(const std::string& fname, const std::string& header) const {
+        boost::property_tree::ptree pt = to_ptree();
+        std::ofstream of(fname);
+        of << header;
+        boost::property_tree::write_json(of, pt);
+        of.close();
+    }
+
+    void predict(input_type& X, output_type& PV, output_type& DV,
+        int num_threads = 1) const {
+
+        int d = base::Height(X);
+        int k = base::Width(_coef);
+        int n = base::Width(X);
+
+        if (_maps.size() == 0)  {
+            // No maps (linear case)
+
+            DV.Resize(n, k);
+            base::Gemm(elem::TRANSPOSE,elem::NORMAL,1.0, X, _coef, 0.0, DV);
+        } else {
+            // Non-linear case
+
+            coef_type Wslice;
+            int j, start, finish, sj;
+
+            elem::Zeros(DV, n, k);
+#           ifdef SKYLARK_HAVE_OPENMP
+#           pragma omp parallel for if(num_threads > 1) private(j, start, finish, sj) num_threads(num_threads)
+#           endif
+            for(j = 0; j < _maps.size(); j++) {
+                start = _starts[j];
+                finish = _finishes[j];
+                sj = finish - start  + 1;
+
+                intermediate_type z(sj, n);
+                _maps[j]->apply(X, z, sketch::columnwise_tag());
+
+                if (_scale_maps)
+                    elem::Scal(sqrt(double(sj) / d), z);
+
+                output_type o(n, k);
+
+                elem::LockedView(Wslice, _coef, start, 0, sj, k);
+                base::Gemm(elem::TRANSPOSE, elem::NORMAL, 1.0, z, Wslice, o);
+
+#               ifdef SKYLARK_HAVE_OPENMP
+#               pragma omp critical
+#               endif
+                base::Axpy(+1.0, o, DV);
+            }
+        }
+
+        double o, o1, pred;
+        for(int i=0; i < DV.Height(); i++) {
+            o = DV.Get(i,0);
             pred = 0;
-            if (Yp.Width()==1)
-                    pred = (o >= 0)? +1:-1;
+            if (DV.Width()==1)
+                pred = (o >= 0)? +1:-1;
 
-            for(int j=1; j < Yp.Width(); j++) {
-                o1 = Yp.Get(i,j);
+            for(int j=1; j < DV.Width(); j++) {
+                o1 = DV.Get(i,j);
                 if ( o1 > o) {
                     o = o1;
                     pred = j;
                 }
             }
 
-            if(pred == (int) Yt.Get(i,0))
-                correct++;
+            PV.Set(i,0, pred);
         }
-        return correct;
-}
+    }
 
+    void get_probabilities(input_type& X, output_type& P, int num_threads = 1)
+        const;
+    coef_type& get_coef() { return _coef; }
+    static double evaluate(output_type& Yt, output_type& Yp,
+        const boost::mpi::communicator& comm);
 
-template <class T>
-struct Model
-{
-public:
-	typedef skylark::sketch::sketch_transform_t<T, LocalMatrixType>
-	    feature_transform_t;
-	typedef std::vector<const feature_transform_t *> feature_transform_array_t;
+    int get_num_outputs() const { return _coef.Width(); }
+    int get_input_size() const { return _num_input_features; }
 
-	Model<T>(feature_transform_array_t& featureMaps, bool ScaleFeatureMaps, std::vector<int>& starts, std::vector<int>& finishes, int dimensions, int NumFeatures, int NumTargets);
-	Model<T>(std::string fName, const boost::mpi::communicator& comm);
-	void predict(T& X, LocalMatrixType& PredictedLabels, LocalMatrixType& DecisionValues);
-	void get_probabilities(T& X, LocalMatrixType& Probabilities);
-	double evaluate(LocalMatrixType& Yt, LocalMatrixType& Yp, const boost::mpi::communicator& comm);
-	void save(std::string fName, std::string header, int rank);
-	// void load(std::string fName);
-	elem::Matrix<double>& get_coef() {return *Wbar;}
-	void set_num_threads(int nthreads) {NumThreads = nthreads;}
-	int get_classes() {return classes;}
+protected:
+
+    void build_from_ptree(const boost::property_tree::ptree &pt) {
+        int num_features = pt.get<int>("num_features");
+        int num_outputs = pt.get<int>("num_outputs");
+        _coef.Resize(num_features, num_outputs);
+
+        _num_input_features = pt.get<int>("num_input_features");
+
+        int num_maps = pt.get<int>("feature_mapping.number_maps");
+        _maps.resize(num_maps);
+        const boost::property_tree::ptree &ptmaps =
+            pt.get_child("feature_mapping.maps");
+        for(int i = 0; i < num_maps; i++)
+            _maps[i] =
+                feature_transform_type::from_ptree(
+                   ptmaps.get_child(std::to_string(i)));
+
+        int nf = 0;
+        _starts.resize(num_maps);
+        _finishes.resize(num_maps);
+        for(int i = 0; i < _maps.size(); i++) {
+            _starts[i] = nf;
+            _finishes[i] = nf + _maps[i]->get_S() - 1;
+            nf += _maps[i]->get_S();
+        }
+
+        _scale_maps = pt.get<bool>("feature_mapping.scale_maps");
+
+        std::istringstream coef_str(pt.get<std::string>("coef_matrix"));
+        double *buffer = _coef.Buffer();
+        int ldim = _coef.LDim();
+        for(int i = 0; i < num_features; i++) {
+            std::string line;
+            std::getline(coef_str, line);
+            std::istringstream coefstream(line);
+            for(int j = 0; j < num_outputs; j++) {
+                std::string token;
+                coefstream >> token;
+                buffer[i + j * ldim] = atof(token.c_str());
+            }
+        }
+    }
 
 private:
-	 feature_transform_array_t* featureMaps;
-	 elem::Matrix<double>* Wbar;
-	 std::vector<int>* starts;
-	 std::vector<int>* finishes;
-	 int NumThreads;
-	 bool ScaleFeatureMaps;
-	 int NumFeatures;
-	 int dimensions;
-	 int classes;
-//	 Losstype lossfunction;
+    coef_type _coef;
+    int _num_input_features;
+    std::vector<const feature_transform_type *> _maps; // TODO use shared_ptr
+    bool _scale_maps;
+
+    std::vector<int> _starts, _finishes;
 };
 
-
-template <class T>
-Model<T>::Model(feature_transform_array_t& featureMaps,  bool ScaleFeatureMaps, std::vector<int>& starts, std::vector<int>& finishes, int dimensions, int NumFeatures, int NumTargets) {
-	this->Wbar = new elem::Matrix<double>(NumFeatures, NumTargets);
-	elem::MakeZeros(*Wbar);
-	this->featureMaps = new feature_transform_array_t();
-	*(this->featureMaps) = featureMaps;
-	this->starts = new std::vector<int> ();
-	*(this->starts) = starts;
-	this->finishes = new std::vector<int> ();
-	*(this->finishes) = finishes;
-	this->NumThreads = 1;
-	this->ScaleFeatureMaps = ScaleFeatureMaps;
-	this->NumFeatures = NumFeatures;
-	this->dimensions = dimensions;
-	this->classes = NumTargets;
-}
-
-template <class T>
-void Model<T>::save(std::string fName, std::string header, int rank) {
-	std::stringstream dimensionstring;
-
-	dimensionstring << "# CoefficientDimensions " << Wbar->Height() << " " << Wbar->Width() << "\n" << "# InputDimensions " << dimensions << "\n";
-	if (rank==0)
-	   elem::Write(*Wbar, fName, elem::ASCII, header.append(dimensionstring.str()));
-	}
-
-template <class T>
-Model<T>::Model(std::string fName, const boost::mpi::communicator& comm) {
-	std::ifstream file(fName.c_str());
-	std::string line;
-	std::getline(file, line);
-
-	int pos = line.find(":", 0);
-	std::string commandline  = line.substr(pos+1, std::string::npos);
-	std::cout << "line:" << commandline << std::endl;
-	std::istringstream tokenstream (commandline);
-	std::string token;
-	std::vector<std::string> argvec;
-	while (tokenstream >> token) {
-		argvec.push_back(token);
-	}
-	int argc = argvec.size();
-	char ** argv = new char*[argvec.size()];
-	for(size_t i = 0; i < argvec.size(); i++){
-	    argv[i] = new char[argvec[i].size() + 1];
-	    strcpy(argv[i], argvec[i].c_str());
-	}
-
-	hilbert_options_t options (argc, argv, comm.size());
-	skylark::base::context_t context (options.seed);
-
-	std::string tok, inputdimensions, coefwidth, coefheight;
-	while(line.substr(0,1) == "#") {
-		std::istringstream tokenstream2 (line);
-		tokenstream2 >> tok;
-		tokenstream2 >> tok;
-		if (tok=="InputDimensions") {
-			tokenstream2 >> inputdimensions;
-		}
-		if (tok=="CoefficientDimensions") {
-			tokenstream2 >> coefheight;
-			tokenstream2 >> coefwidth;
-		}
-
-		std::getline(file, line);
-	}
-	int dimensions = atoi(inputdimensions.c_str());
-	int height = atoi(coefheight.c_str());
-	int width = atoi(coefwidth.c_str());
-
-	this->dimensions = dimensions;
-
-	Wbar = new elem::Matrix<double>(height, width);
-	this->NumFeatures = height;
-	this->classes = width;
-
-	skylark::ml::kernels::gaussian_t gaussian(dimensions, options.kernelparam);
-	skylark::ml::kernels::polynomial_t poly(dimensions,
-			options.kernelparam, options.kernelparam2, options.kernelparam3);
-	skylark::ml::kernels::laplacian_t lap(dimensions, options.kernelparam);
-	skylark::ml::kernels::expsemigroup_t semigrp(dimensions, options.kernelparam);
-
-	this->featureMaps = new feature_transform_array_t(options.numfeaturepartitions);
-	this->starts = new std::vector<int> (options.numfeaturepartitions);
-	this->finishes = new std::vector<int> (options.numfeaturepartitions);
-
-	int blksize = int(ceil(double(NumFeatures) / options.numfeaturepartitions));
-
-	    for(int i = 0; i < options.numfeaturepartitions; i++) {
-
-
-	        (*starts)[i] = i * blksize;
-	        (*finishes)[i] = std::min((i + 1) * blksize, NumFeatures) - 1;
-	        int sj = (*finishes)[i] - (*starts)[i] + 1;
-
-	        switch(options.kernel) {
-				case GAUSSIAN:
-					if(options.regularmap)
-						(*featureMaps)[i]  = gaussian.template create_rft< T, LocalMatrixType >(sj, skylark::ml::regular_feature_transform_tag(), context);
-					else
-						(*featureMaps)[i]  = gaussian.template create_rft< T, LocalMatrixType >(sj, skylark::ml::fast_feature_transform_tag(), context);
-					break;
-				case POLYNOMIAL:
-				         (*featureMaps)[i] = poly.template create_rft< T, LocalMatrixType >(sj, skylark::ml::regular_feature_transform_tag(), context);
-					break;
-				case LAPLACIAN:
-				         (*featureMaps)[i] = lap.template create_rft< T, LocalMatrixType >(sj, skylark::ml::regular_feature_transform_tag(), context);
-					break;
-				case EXPSEMIGROUP:
-			 			(*featureMaps)[i]  = semigrp.template create_rft< T, LocalMatrixType >(sj, skylark::ml::regular_feature_transform_tag(), context);
-					break;
-	        }
-
-
-	  }
-
-	this->ScaleFeatureMaps = true;
-
-    double* buffer = Wbar->Buffer();
-    const int ldim = Wbar->LDim();
-    int i = 0;
-
-    std::cout << "Reading coefficients" << std::endl;
-    while(!file.eof()) {
-    	std::istringstream coefstream (line);
-    	int j = 0;
-    	while(coefstream >> token) {
-    	//	std::cout << " " << i << " " << j << " " << token << std::endl;
-    		buffer[i+j*ldim] = atof(token.c_str());
-    		j++;
-    	}
-    	std::getline(file, line);
-    	if (j>0)
-    		i++;
-    }
-
-    this->NumThreads = 1.0;
-}
-
-
-template <class T>
-void Model<T>::predict(T& X, LocalMatrixType& PredictedLabels, LocalMatrixType& DecisionValues) {
-    // TOD W should be really kept as part of the model
-
-    // int n = X.Width();
-    int d = skylark::base::Height(X);
-    int k = skylark::base::Width(DecisionValues);
-    int ni = skylark::base::Width(X);
-    int j, start, finish, sj;
-    const feature_transform_t* featureMap;
-
-
-
-    if (featureMaps->size() == 0) {
-        DecisionValues.Resize(ni, k);
-        skylark::base::Gemm(elem::TRANSPOSE,elem::NORMAL,1.0, X, *Wbar, 0.0, DecisionValues);
-        return;
-    }
-
-    elem::Zeros(DecisionValues, ni, k);
-
-    LocalMatrixType Wslice;
-
-#   ifdef SKYLARK_HAVE_OPENMP
-#   pragma omp parallel for if(NumThreads > 1) private(j, start, finish, sj, featureMap) num_threads(NumThreads)
-#   endif
-    for(j = 0; j < featureMaps->size(); j++) {
-        start = (*starts)[j];
-        finish = (*finishes)[j];
-        sj = finish - start  + 1;
-
-
-
-        elem::Matrix<double> z(sj, ni);
-        featureMap = (*featureMaps)[j];
-
-        featureMap->apply(X, z, skylark::sketch::columnwise_tag());
-
-        if (ScaleFeatureMaps)
-            elem::Scal(sqrt(double(sj) / d), z);
-
-
-        elem::Matrix<double> o(ni, k);
-
-        elem::View(Wslice, *Wbar, start, 0, sj, k);
-        elem::Gemm(elem::TRANSPOSE, elem::NORMAL, 1.0, z, Wslice, 0.0, o);
-
-#       ifdef SKYLARK_HAVE_OPENMP
-#       pragma omp critical
-#       endif
-        elem::Axpy(+1.0, o, DecisionValues);
-    }
-
-    double o, o1, pred;
-
-
-
-    for(int i=0; i < DecisionValues.Height(); i++) {
-                o = DecisionValues.Get(i,0);
-                pred = 0;
-                if (DecisionValues.Width()==1)
-                        pred = (o >= 0)? +1:-1;
-
-                for(int j=1; j < DecisionValues.Width(); j++) {
-                    o1 = DecisionValues.Get(i,j);
-                    if ( o1 > o) {
-                        o = o1;
-                        pred = j;
-                    }
-                }
-
-           //     if(pred == (int) Yt.Get(i,0))
-            //        correct++;
-
-                PredictedLabels.Set(i,0, pred);
-      }
-
-}
-
-
-template <class T>
-double Model<T>::evaluate(LocalMatrixType& Yt,
-    LocalMatrixType& Yp, const boost::mpi::communicator& comm) {
+template <typename InputType, typename OutputType>
+double model_t<InputType, OutputType>::evaluate(OutputType& Yt,
+    OutputType& Yp, const boost::mpi::communicator& comm) {
 
     int rank = comm.rank();
 

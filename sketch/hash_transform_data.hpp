@@ -6,7 +6,7 @@
 #include "../base/base.hpp"
 #include "../utility/randgen.hpp"
 
-#include "sketch_transform_data.hpp"
+#include "sketch.hpp"
 
 namespace skylark { namespace sketch {
 

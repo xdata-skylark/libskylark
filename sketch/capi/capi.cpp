@@ -17,6 +17,8 @@
 
 static sketchc::matrix_type_t str2matrix_type(const char *str) {
     STRCMP_TYPE(Matrix,     sketchc::MATRIX);
+    STRCMP_TYPE(SharedMatrix,  sketchc::SHARED_MATRIX);
+    STRCMP_TYPE(RootMatrix, sketchc::ROOT_MATRIX);
     STRCMP_TYPE(DistMatrix, sketchc::DIST_MATRIX);
     STRCMP_TYPE(DistMatrix_VC_STAR, sketchc::DIST_MATRIX_VC_STAR);
     STRCMP_TYPE(DistMatrix_VR_STAR, sketchc::DIST_MATRIX_VR_STAR);
@@ -47,6 +49,8 @@ static sketchc::transform_type_t str2transform_type(const char *str) {
 // Just for shorter notation
 #if SKYLARK_HAVE_ELEMENTAL
 typedef elem::Matrix<double> Matrix;
+typedef elem::DistMatrix<double, elem::STAR, elem::STAR> SharedMatrix;
+typedef elem::DistMatrix<double, elem::CIRC, elem::CIRC> RootMatrix;
 typedef elem::DistMatrix<double> DistMatrix;
 typedef elem::DistMatrix<double, elem::VR, elem::STAR> DistMatrix_VR_STAR;
 typedef elem::DistMatrix<double, elem::VC, elem::STAR> DistMatrix_VC_STAR;
@@ -75,6 +79,8 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
         SKDEF(JLT, DistMatrix, DistMatrix)
         SKDEF(JLT, DistMatrix_VR_STAR, Matrix)
         SKDEF(JLT, DistMatrix_VC_STAR, Matrix)
+        SKDEF(JLT, DistMatrix_VR_STAR, SharedMatrix)
+        SKDEF(JLT, DistMatrix_VC_STAR, SharedMatrix)
         SKDEF(JLT, DistMatrix_VR_STAR, DistMatrix_VR_STAR)
         SKDEF(JLT, DistMatrix_VC_STAR, DistMatrix_VC_STAR)
         SKDEF(JLT, DistMatrix_STAR_VR, Matrix)
@@ -87,6 +93,8 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
         SKDEF(CT, DistMatrix, DistMatrix)
         SKDEF(CT, DistMatrix_VR_STAR, Matrix)
         SKDEF(CT, DistMatrix_VC_STAR, Matrix)
+        SKDEF(CT, DistMatrix_VR_STAR, SharedMatrix)
+        SKDEF(CT, DistMatrix_VC_STAR, SharedMatrix)
         SKDEF(CT, DistMatrix_VR_STAR, DistMatrix_VR_STAR)
         SKDEF(CT, DistMatrix_VC_STAR, DistMatrix_VC_STAR)
         SKDEF(CT, DistMatrix_STAR_VR, Matrix)

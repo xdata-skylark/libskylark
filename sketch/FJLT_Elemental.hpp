@@ -253,6 +253,11 @@ public:
 
     }
 
+    FJLT_t(const boost::property_tree::ptree &pt)
+        : data_type(pt) {
+
+    }
+
     /**
      * Apply columnwise the sketching transform that is described by the
      * the transform with output sketch_of_A.

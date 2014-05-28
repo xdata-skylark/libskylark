@@ -23,14 +23,45 @@ template < typename InputMatrixType,
            template <typename> class KernelDistribution>
 class RFT_t {
     // To be specilized and derived.
+    typedef InputMatrixType matrix_type;
+    typedef OutputMatrixType output_matrix_type;
+    typedef RFT_data_t<KernelDistribution> data_type;
 
+    RFT_t(const boost::property_tree::ptree &pt)
+        : data_type(pt) {
+        SKYLARK_THROW_EXCEPTION (
+          base::sketch_exception()
+              << base::error_msg(
+                 "This combination has not yet been implemented for RFT"));
+    }
+
+    void apply (const matrix_type& A,
+                output_matrix_type& sketch_of_A,
+                columnwise_tag dimension) const {
+        SKYLARK_THROW_EXCEPTION (
+          base::sketch_exception()
+              << base::error_msg(
+                 "This combination has not yet been implemented for RFT"));
+    }
+
+    void apply (const matrix_type& A,
+                output_matrix_type& sketch_of_A,
+                rowwise_tag dimension) const {
+        SKYLARK_THROW_EXCEPTION (
+          base::sketch_exception()
+              << base::error_msg(
+                 "This combination has not yet been implemented for RFT"));
+    }
+
+private:
+    RFT_t(int N, int S, double sigma, base::context_t& context);
 };
 
 /**
  * Random Features for Gaussian Kernel
  */
 template< typename InputMatrixType,
-          typename OutputMatrixType>
+          typename OutputMatrixType = InputMatrixType>
 struct GaussianRFT_t :
     public GaussianRFT_data_t,
     virtual public sketch_transform_t<InputMatrixType, OutputMatrixType > {
@@ -108,7 +139,7 @@ private:
  * Random Features for Laplacian Kernel
  */
 template< typename InputMatrixType,
-          typename OutputMatrixType>
+          typename OutputMatrixType = InputMatrixType>
 struct LaplacianRFT_t :
     public LaplacianRFT_data_t,
     virtual public sketch_transform_t<InputMatrixType, OutputMatrixType > {

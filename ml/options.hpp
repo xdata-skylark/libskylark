@@ -286,7 +286,10 @@ struct hilbert_options_t {
     std::string print () const {
         std::stringstream optionstring;
 
-        optionstring << "# HILBERT OPTIONS:" << str << std::endl;
+        optionstring << "# Generated using libSkylark/hilbert ";
+        optionstring << "using the following command-line: " << std::endl;
+        optionstring << "#\t" << str << std::endl;
+        optionstring << "#" << std::endl;
         optionstring << "# Training File = " << trainfile << std::endl;
         optionstring << "# Model File = " << modelfile << std::endl;
         optionstring << "# Validation File = " << valfile << std::endl;

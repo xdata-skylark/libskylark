@@ -96,20 +96,20 @@ private:
      * High-performance implementations
      */
 
-    void apply_impl_dist(const matrix_type& A,
+    void apply_impl_vdist(const matrix_type& A,
                          output_matrix_type& sketch_of_A,
                          skylark::sketch::rowwise_tag tag) const {
 
         typedef elem::DistMatrix<value_type, elem::CIRC, elem::CIRC>
             intermediate_matrix_type;
 
-        matrix_type sketch_of_A_STAR_RD(data_type::_S,
-                             data_type::_N);
-        intermediate_matrix_type sketch_of_A_CIRC_CIRC(data_type::_S,
-                             data_type::_N);
+        matrix_type sketch_of_A_STAR_RD(A.Height(),
+                             data_type::_S);
+        intermediate_matrix_type sketch_of_A_CIRC_CIRC(A.Height(),
+                             data_type::_S);
 
         dense_transform_t<matrix_type, matrix_type, ValueDistribution>
-            transform(data_type::_N, data_type::_S, data_type::_context);
+            transform(*this);
 
         transform.apply(A, sketch_of_A_STAR_RD, tag);
 
@@ -125,7 +125,7 @@ private:
     }
 
 
-    void apply_impl_dist(const matrix_type& A,
+    void apply_impl_vdist(const matrix_type& A,
                          output_matrix_type& sketch_of_A,
                          skylark::sketch::columnwise_tag tag) const {
 
@@ -133,12 +133,12 @@ private:
             intermediate_matrix_type;
 
         matrix_type sketch_of_A_STAR_RD(data_type::_S,
-                             data_type::_N);
+                                        A.Width());
         intermediate_matrix_type sketch_of_A_CIRC_CIRC(data_type::_S,
-                             data_type::_N);
+                                        A.Width());
 
         dense_transform_t<matrix_type, matrix_type, ValueDistribution>
-            transform(data_type::_N, data_type::_S, data_type::_context);
+            transform(*this);
 
         transform.apply(A, sketch_of_A_STAR_RD, tag);
 

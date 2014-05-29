@@ -109,18 +109,6 @@ SKYLARK_EXTERN_API int sl_create_context(int seed, MPI_Comm cm,
  */
 SKYLARK_EXTERN_API int sl_free_context(base::context_t *ctxt);
 
-/** Get rank.
- *  @param ctxt Skylark context
- *  @return MPI rank
- */
-SKYLARK_EXTERN_API int sl_context_rank(base::context_t *ctxt, int *rank);
-
-/** Get total number of processor.
- *  @param ctxt Skylark context
- *  @return number of processors in the context
- */
-SKYLARK_EXTERN_API int sl_context_size(base::context_t *ctxt, int *size);
-
 /** Creating a sketch transformation.
  *  @param ctxt Sklark context
  *  @param type type of the sketch

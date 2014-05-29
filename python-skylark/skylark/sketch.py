@@ -26,7 +26,6 @@ def initialize(seed=-1):
 
   global _lib, _ctxt_obj, _ELEM_INSTALLED, _KDT_INSTALLED
   global SUPPORTED_SKETCH_TRANSFORMS
-  global _rank, _size
 
   if '_lib' not in globals():
     try:
@@ -37,8 +36,6 @@ def initialize(seed=-1):
       _lib.sl_create_context.restype              = c_int
       _lib.sl_create_default_context.restype      = c_int
       _lib.sl_free_context.restype                = c_int
-      _lib.sl_context_rank.restype                = c_int
-      _lib.sl_context_size.restype                = c_int
       _lib.sl_create_sketch_transform.restype     = c_int
       _lib.sl_serialize_sketch_transform.restype  = c_int
       _lib.sl_deserialize_sketch_transform.restype = c_int
@@ -78,9 +75,6 @@ def initialize(seed=-1):
     seed = int(time.time())
 
   if _lib is None:
-    # We assume completly local operation when no C++ layer.
-    _rank = 1
-    _size = 1
     numpy.random.seed(seed)
     return
 
@@ -90,14 +84,6 @@ def initialize(seed=-1):
   ctxt_obj = c_void_p()
   _lib.sl_create_default_context(seed, byref(ctxt_obj))
   _ctxt_obj = ctxt_obj.value
-
-  rank = c_int()
-  _lib.sl_context_rank(_ctxt_obj, byref(rank))
-  _rank = rank.value
-
-  size = c_int()
-  _lib.sl_context_size(_ctxt_obj, byref(size))
-  _size = size.value
 
   # TODO the following is temporary. Random numbers should be taken from library
   #      even for pure-Python implementations.
@@ -112,7 +98,7 @@ def finalize():
   the garbage collector when detected as garbage (no references).
   """
   # TODO free dll (?)
-  global _lib, _ctxt_obj, _rank, _size
+  global _lib, _ctxt_obj
   if _lib is not None:
     if _ctxt_obj != 0:
       _lib.sl_free_context(_ctxt_obj)
@@ -318,14 +304,19 @@ if _ELEM_INSTALLED:
       self._A = A
       if isinstance(A, elem.DistMatrix_d):
         self._ctype = "DistMatrix"
+        self._typeid = ""
       elif isinstance(A, elem.DistMatrix_d_VC_STAR):
         self._ctype ="DistMatrix_VC_STAR"
+        self._typeid = "VC_STAR"
       elif isinstance(A, elem.DistMatrix_d_VR_STAR):
         self._ctype = "DistMatrix_VR_STAR"
+        self._typeid = "VR_STAR"
       elif isinstance(A, elem.DistMatrix_d_STAR_VC):
         self._ctype = "DistMatrix_STAR_VC"
+        self._typeid = "STAR_VC"
       elif isinstance(A, elem.DistMatrix_d_STAR_VR):
         self._ctype = "DistMatrix_STAR_VR"
+        self._typeid = "STAR_VR"
       else:
         raise errors.UnsupportedError("Unsupported Elemental type")
 

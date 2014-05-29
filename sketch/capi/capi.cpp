@@ -202,22 +202,6 @@ SKYLARK_EXTERN_API int sl_free_context(base::context_t *ctxt) {
     return 0;
 }
 
-SKYLARK_EXTERN_API int sl_context_rank(base::context_t *ctxt, int *rank) {
-    SKYLARK_BEGIN_TRY()
-        //*rank = ctxt->rank;
-    SKYLARK_END_TRY()
-    SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
-    return 0;
-}
-
-SKYLARK_EXTERN_API int sl_context_size(base::context_t *ctxt, int *size) {
-    SKYLARK_BEGIN_TRY()
-        //*size = ctxt->size;
-    SKYLARK_END_TRY()
-    SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
-    return 0;
-}
-
 /** Transforms */
 SKYLARK_EXTERN_API int sl_create_sketch_transform(base::context_t *ctxt,
     char *type_, int n, int s,

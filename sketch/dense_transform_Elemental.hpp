@@ -49,7 +49,7 @@ struct dense_transform_t <
     /**
      * Constructor from data
      */
-    dense_transform_t(const dense_transform_data_t<ValueDistribution>& other_data)
+    dense_transform_t(const data_type& other_data)
         : data_type(other_data) {}
 
     /**

@@ -27,6 +27,14 @@ class RLT_t {
     typedef OutputMatrixType output_matrix_type;
     typedef RLT_data_t<KernelDistribution> data_type;
 
+    RLT_t(const data_type& other_data)
+        : data_type(other_data) {
+        SKYLARK_THROW_EXCEPTION (
+          base::sketch_exception()
+              << base::error_msg(
+                 "This combination has not yet been implemented for RLT"));
+    }
+
     RLT_t(const boost::property_tree::ptree &pt)
         : data_type(pt) {
         SKYLARK_THROW_EXCEPTION (

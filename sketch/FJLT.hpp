@@ -17,6 +17,15 @@ struct FJLT_t :
     typedef OutputMatrixType output_matrix_type;
     typedef FJLT_data_t data_type;
 
+
+    FJLT_t(const data_type& other_data)
+        : data_type(other_data) {
+        SKYLARK_THROW_EXCEPTION (
+          base::sketch_exception()
+              << base::error_msg(
+                 "This combination has not yet been implemented for FJLT"));
+    }
+
     FJLT_t(const boost::property_tree::ptree &pt)
         : data_type(pt) {
         SKYLARK_THROW_EXCEPTION (

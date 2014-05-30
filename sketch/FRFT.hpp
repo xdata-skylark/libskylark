@@ -28,7 +28,15 @@ class FastRFT_t :
     // To be specilized and derived. Just some guards here.
     typedef InputMatrixType matrix_type;
     typedef OutputMatrixType output_matrix_type;
+
     typedef FastRFT_data_t data_type;
+
+    FastRFT_t(int N, int S, base::context_t& context) : data_type(N, S, context) {
+        SKYLARK_THROW_EXCEPTION (
+          base::sketch_exception()
+              << base::error_msg(
+                 "This combination has not yet been implemented for FastRFT"));
+    }
 
     FastRFT_t(const boost::property_tree::ptree &pt)
         : data_type(pt) {
@@ -60,9 +68,6 @@ class FastRFT_t :
     int get_S() const { return this->_S; } /**< Get output dimesion. */
 
     const sketch_transform_data_t* get_data() const { return this; }
-
-private:
-    FastRFT_t(int N, int S, double sigma, base::context_t& context);
 };
 
 /**

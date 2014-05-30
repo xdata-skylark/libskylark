@@ -237,16 +237,6 @@ private:
         const size_t my_row_offset = utility::cb_my_row_offset(A);
         const size_t my_col_offset = utility::cb_my_col_offset(A);
 
-        //FIXME: move to comm_grid
-        const size_t grows = sketch_of_A.getcommgrid()->GetGridRows();
-        const size_t rows_per_proc = static_cast<size_t>(
-            sketch_of_A.getnrow() / grows);
-
-        const size_t gcols = sketch_of_A.getcommgrid()->GetGridCols();
-        const size_t cols_per_proc = static_cast<size_t>(
-            sketch_of_A.getncol() / gcols);
-
-
         size_t comm_size = A.getcommgrid()->GetSize();
         std::vector< std::set<size_t> > proc_set(comm_size);
 
@@ -263,9 +253,8 @@ private:
                 const size_t pos       = getPos(rowid, colid, ncols, dist);
 
                 // compute target processor for this target index
-                const size_t target = sketch_of_A.getcommgrid()->GetRank(
-                    std::min(static_cast<size_t>((pos / ncols) / rows_per_proc), grows - 1),
-                    std::min(static_cast<size_t>((pos % ncols) / cols_per_proc), gcols - 1));
+                const size_t target =
+                    utility::owner(sketch_of_A, pos / ncols, pos % ncols);
 
                 if(proc_set[target].count(pos) == 0) {
                     assert(target < comm_size);
@@ -299,9 +288,8 @@ private:
                 const size_t pos       = getPos(rowid, colid, ncols, dist);
 
                 // compute target processor for this target index
-                const size_t proc = sketch_of_A.getcommgrid()->GetRank(
-                    std::min(static_cast<size_t>((pos / ncols) / rows_per_proc), grows - 1),
-                    std::min(static_cast<size_t>((pos % ncols) / cols_per_proc), gcols - 1));
+                const size_t proc =
+                    utility::owner(sketch_of_A, pos / ncols, pos % ncols);
 
                 // get offset in array for current element
                 const size_t ar_idx = proc_start_idx[proc] +

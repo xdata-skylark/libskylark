@@ -82,10 +82,10 @@ int test_main(int argc, char *argv[]) {
     //[> Parameters <]
 
     //FIXME: use random sizes?
-    const size_t n   = 500;
-    const size_t m   = 250;
-    const size_t n_s = 300;
-    const size_t m_s = 150;
+    const size_t n   = 200;
+    const size_t m   = 100;
+    const size_t n_s = 120;
+    const size_t m_s = 60;
 
     //////////////////////////////////////////////////////////////////////////
     //[> Setup test <]

@@ -68,7 +68,7 @@ index_type cb_cols_per_proc(
 
 /// computes the rank owning the global (row_idx, col_idx) element
 template<typename index_type, typename value_type>
-index_type compute_target_rank(
+index_type owner(
     const SpParMat<index_type, value_type, SpDCCols<index_type, value_type> > &A,
     const size_t row_idx, const size_t col_idx) {
 

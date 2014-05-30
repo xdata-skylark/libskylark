@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 /** To enforce matrix output from root process only */
-#define ROOT_OUTPUT
+// #define ROOT_OUTPUT
 
 /** Select OPTIMIZED implementations from the high-performance layer;
  *  otherwise (if the corresponding HP_DENSE_TRANSFORM_ELEMENTAL* are ON)
@@ -18,7 +18,7 @@
 // #define ROWWISE
 
 #ifdef ROWWISE
-#define TESTED_ROWWISE    inner_panel_gemm(A, sketch_of_A, tag); return;
+#define TESTED_ROWWISE    matrix_panel_gemm(A, sketch_of_A, tag); return;
 #else
 #define TESTED_COLUMNWISE inner_panel_gemm(A, sketch_of_A, tag); return;
 #endif
@@ -28,14 +28,15 @@
  *  rest);
  *  used for testing purposes
  */
-#define HP_DENSE_TRANSFORM_ELEMENTAL
-
-#define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR
-#define HP_DENSE_TRANSFORM_ELEMENTAL_COLDIST_STAR
-#define HP_DENSE_TRANSFORM_ELEMENTAL_STAR_ROWDIST
-#define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR_LOCAL
-#define HP_DENSE_TRANSFORM_ELEMENTAL_COLDIST_STAR_LOCAL
-#define HP_DENSE_TRANSFORM_ELEMENTAL_STAR_ROWDIST_LOCAL
+// #define HP_DENSE_TRANSFORM_ELEMENTAL
+// #define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR
+// #define HP_DENSE_TRANSFORM_ELEMENTAL_COLDIST_STAR
+// #define HP_DENSE_TRANSFORM_ELEMENTAL_STAR_ROWDIST
+// #define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR_LOCAL
+// #define HP_DENSE_TRANSFORM_ELEMENTAL_COLDIST_STAR_LOCAL
+// #define HP_DENSE_TRANSFORM_ELEMENTAL_STAR_ROWDIST_LOCAL
+// #define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR_CIRC_CIRC
+// #define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR_STAR_STAR
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -62,9 +63,13 @@ dist_STAR_VR_dense_matrix_t;
 typedef elem::DistMatrix<double, elem::CIRC, elem::CIRC>
 dist_CIRC_CIRC_dense_matrix_t;
 
+typedef elem::DistMatrix<double, elem::STAR, elem::STAR>
+dist_STAR_STAR_dense_matrix_t;
+
+
 /* Set the following 2 typedefs for various matrix-type tests */
-typedef dist_STAR_VC_dense_matrix_t input_matrix_t;
-typedef dense_matrix_t output_matrix_t;
+typedef dist_dense_matrix_t input_matrix_t;
+typedef dist_STAR_STAR_dense_matrix_t output_matrix_t;
 
 
 typedef skylark::sketch::JLT_t<input_matrix_t, output_matrix_t>

@@ -1,5 +1,5 @@
-#ifndef SKYLARK_DENSE_TRANSFORM_ELEMENTAL_MC_MR_LOCAL_HPP
-#define SKYLARK_DENSE_TRANSFORM_ELEMENTAL_MC_MR_LOCAL_HPP
+#ifndef SKYLARK_DENSE_TRANSFORM_ELEMENTAL_MC_MR_CIRC_CIRC_HPP
+#define SKYLARK_DENSE_TRANSFORM_ELEMENTAL_MC_MR_CIRC_CIRC_HPP
 
 #include "../base/base.hpp"
 
@@ -15,13 +15,13 @@
 
 namespace skylark { namespace sketch {
 /**
- * Specialization distributed input [MC, MR], local output
+ * Specialization distributed input [MC, MR], distributed [CIRC, CIRC] output
  */
 template <typename ValueType,
           template <typename> class ValueDistribution>
 struct dense_transform_t <
     elem::DistMatrix<ValueType>,
-    elem::Matrix<ValueType>,
+    elem::DistMatrix<ValueType, elem::CIRC, elem::CIRC>,
     ValueDistribution> :
         public dense_transform_data_t<ValueType,
                                       ValueDistribution> {
@@ -29,7 +29,8 @@ struct dense_transform_t <
     // Typedef matrix and distribution types so that we can use them regularly
     typedef ValueType value_type;
     typedef elem::DistMatrix<value_type> matrix_type;
-    typedef elem::Matrix<value_type> output_matrix_type;
+    typedef elem::DistMatrix<value_type, elem::CIRC, elem::CIRC>
+     output_matrix_type;
     typedef ValueDistribution<value_type> value_distribution_type;
     typedef dense_transform_data_t<ValueType,
                                    ValueDistribution> data_type;
@@ -79,7 +80,7 @@ struct dense_transform_t <
 
 private:
 
-#ifdef HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR_LOCAL
+#ifdef HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR_CIRC_CIRC
 
     /**
      * High-performance implementations
@@ -89,12 +90,8 @@ private:
                          output_matrix_type& sketch_of_A,
                          skylark::sketch::rowwise_tag tag) const {
 
-        typedef elem::DistMatrix<value_type, elem::CIRC, elem::CIRC>
-            intermediate_matrix_type;
 
         matrix_type sketch_of_A_MC_MR(A.Height(),
-                                  data_type::_S);
-        intermediate_matrix_type sketch_of_A_CIRC_CIRC(A.Height(),
                                   data_type::_S);
 
         dense_transform_t<matrix_type, matrix_type, ValueDistribution>
@@ -102,15 +99,7 @@ private:
 
         transform.apply(A, sketch_of_A_MC_MR, tag);
 
-        sketch_of_A_CIRC_CIRC = sketch_of_A_MC_MR;
-
-        boost::mpi::communicator world;
-        MPI_Comm mpi_world(world);
-        elem::Grid grid(mpi_world);
-        int rank = world.rank();
-        if (rank == 0) {
-            sketch_of_A = sketch_of_A_CIRC_CIRC.Matrix();
-        }
+        sketch_of_A = sketch_of_A_MC_MR;
     }
 
 
@@ -118,12 +107,8 @@ private:
                          output_matrix_type& sketch_of_A,
                          skylark::sketch::columnwise_tag tag) const {
 
-        typedef elem::DistMatrix<value_type, elem::CIRC, elem::CIRC>
-            intermediate_matrix_type;
 
         matrix_type sketch_of_A_MC_MR(data_type::_S,
-                                      A.Width());
-        intermediate_matrix_type sketch_of_A_CIRC_CIRC(data_type::_S,
                                       A.Width());
 
         dense_transform_t<matrix_type, matrix_type, ValueDistribution>
@@ -131,21 +116,13 @@ private:
 
         transform.apply(A, sketch_of_A_MC_MR, tag);
 
-        sketch_of_A_CIRC_CIRC = sketch_of_A_MC_MR;
-
-        boost::mpi::communicator world;
-        MPI_Comm mpi_world(world);
-        elem::Grid grid(mpi_world);
-        int rank = world.rank();
-        if (rank == 0) {
-            sketch_of_A = sketch_of_A_CIRC_CIRC.Matrix();
-        }
+        sketch_of_A = sketch_of_A_MC_MR;
     }
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#else // HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR_LOCAL
+#else // HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR_CIRC_CIRC
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -155,8 +132,8 @@ private:
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
-     * Implementation for distributed input [MC, MR], local output
-     * and columnwise.
+     * Implementation for distributed input [MC, MR], distributed output
+     * [CIRC, CIRC] and columnwise.
      */
     void apply_impl_dist (const matrix_type& A,
                           output_matrix_type& sketch_of_A,
@@ -165,11 +142,6 @@ private:
         elem::DistMatrix<value_type,
                          elem::MC,
                          elem::MR> sketch_of_A_MC_MR(data_type::_S,
-                                                     A.Width());
-
-        elem::DistMatrix<value_type,
-                         elem::CIRC,
-                         elem::CIRC> sketch_of_A_CIRC_CIRC(data_type::_S,
                                                      A.Width());
 
         for(int j_loc = 0; j_loc < S.LocalWidth(); ++j_loc) {
@@ -189,35 +161,21 @@ private:
                     A,
                     0.0,
                     sketch_of_A_MC_MR);
-        sketch_of_A_CIRC_CIRC = sketch_of_A_MC_MR;
-
-        boost::mpi::communicator world;
-        MPI_Comm mpi_world(world);
-        elem::Grid grid(mpi_world);
-        int rank = world.rank();
-        if (rank == 0) {
-            sketch_of_A = sketch_of_A_CIRC_CIRC.Matrix();
-        }
+        sketch_of_A = sketch_of_A_MC_MR;
     }
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
-     * Implementation for distributed input [MC, MR], local output
-     * and rowwise.
+     * Implementation for distributed input [MC, MR], distributed output
+     * [CIRC, CIRC] and rowwise.
      */
     void apply_impl_dist(const matrix_type& A,
                          output_matrix_type& sketch_of_A,
                          rowwise_tag) const {
-
         elem::DistMatrix<value_type> S(data_type::_S, data_type::_N);
         elem::DistMatrix<value_type,
                          elem::MC,
                          elem::MR> sketch_of_A_MC_MR(A.Height(),
-                                                     data_type::_S);
-
-        elem::DistMatrix<value_type,
-                         elem::CIRC,
-                         elem::CIRC> sketch_of_A_CIRC_CIRC(A.Height(),
                                                      data_type::_S);
 
         for(int j_loc = 0; j_loc < S.LocalWidth(); ++j_loc) {
@@ -237,16 +195,7 @@ private:
                     S,
                     0.0,
                     sketch_of_A_MC_MR);
-        sketch_of_A_CIRC_CIRC = sketch_of_A_MC_MR;
-
-        boost::mpi::communicator world;
-        MPI_Comm mpi_world(world);
-        elem::Grid grid(mpi_world);
-        int rank = world.rank();
-        if (rank == 0) {
-            sketch_of_A = sketch_of_A_CIRC_CIRC.Matrix();
-        }
-
+        sketch_of_A = sketch_of_A_MC_MR;
     }
 
 #endif
@@ -255,4 +204,4 @@ private:
 
 } } /** namespace skylark::sketch */
 
-#endif // SKYLARK_DENSE_TRANSFORM_ELEMENTAL_MC_MR_LOCAL_HPP
+#endif // SKYLARK_DENSE_TRANSFORM_ELEMENTAL_MC_MR_CIRC_CIRC_HPP

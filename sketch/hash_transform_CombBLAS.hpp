@@ -328,8 +328,17 @@ private:
         MPI_Win_fence(MPI_MODE_NOPUT | MPI_MODE_NOPRECEDE, val_win);
 
 
-        // accumulate values from other procs
-        std::map<size_t, value_type> vals_map;
+        // creating a local structure to hold sparse data triplets
+        std::vector< tuple< index_type, index_type, value_type > > sketch_data;
+
+        std::map<index_type, size_t> tuple_idx;
+        typedef typename std::map<index_type, size_t>::iterator itr_t;
+
+        // in order to compute local indices in sketch_of_A we need to know
+        // row and column offset on each rank.
+        const size_t res_row_offset = utility::cb_my_row_offset(sketch_of_A);
+        const size_t res_col_offset = utility::cb_my_col_offset(sketch_of_A);
+
         for(size_t p = 0; p < comm_size; ++p) {
 
             // get the start/end offset
@@ -357,16 +366,42 @@ private:
             MPI_Win_fence(MPI_MODE_NOPUT, idx_win);
             MPI_Win_fence(MPI_MODE_NOPUT, val_win);
 
-            // finally, add data to local buffer (if we have any).
+            // finally, add data to local CombBLAS buffer (if we have any).
+            //XXX: We cannot have duplicated (row/col) pairs in sketch_data.
+            //     Check again with CombBLAS if there is a more suitable way
+            //     to create sparse dist matrices.
             for(size_t i = 0; i < num_values; ++i) {
-                if(vals_map.count(add_idx[i]) != 0)
-                    vals_map[add_idx[i]] += add_val[i];
-                else
-                    vals_map.insert(std::make_pair(add_idx[i], add_val[i]));
+
+                index_type lrow = add_idx[i] / ncols - res_row_offset;
+                index_type lcol = add_idx[i] % ncols - res_col_offset;
+
+                itr_t itr = tuple_idx.find(add_idx[i]);
+                if(itr == tuple_idx.end()) {
+                    tuple_idx.insert(
+                        std::make_pair(add_idx[i], sketch_data.size()));
+                    sketch_data.push_back(make_tuple(lrow, lcol, add_val[i]));
+                } else {
+                    get<2>(sketch_data[itr->second]) += add_val[i];
+                }
             }
         }
 
-        create_local_sp_mat(vals_map, sketch_of_A);
+        // this pointer will be freed in the destructor of col_t (see below).
+        //FIXME: verify with Valgrind
+        SpTuples<index_type, value_type> *tmp_tpl =
+            new SpTuples<index_type, value_type> (
+                sketch_data.size(), sketch_of_A.getlocalrows(),
+                sketch_of_A.getlocalcols(), &sketch_data[0]);
+
+        // create temporary matrix (no further communication should be
+        // required because all the data are local) and assign (deep copy).
+        col_t *sp_data = new col_t(*tmp_tpl, false);
+
+        //FIXME: is there a direct way to set the "data buffer" for the output
+        //       matrix? Currently this method creates a temporary matrix and
+        //       then assigns to the output matrix (deep copy).
+        sketch_of_A = output_matrix_type(sp_data, sketch_of_A.getcommgrid());
+
 
         MPI_Win_fence(MPI_MODE_NOPUT | MPI_MODE_NOSUCCEED, start_offset_win);
         MPI_Win_fence(MPI_MODE_NOPUT | MPI_MODE_NOSUCCEED, idx_win);
@@ -375,61 +410,6 @@ private:
         MPI_Win_free(&start_offset_win);
         MPI_Win_free(&idx_win);
         MPI_Win_free(&val_win);
-    }
-
-
-    //FIXME: move to util
-    /** Create a sparse CombBLAS matrix given a mapping of local indices to
-     *  values. The 1D index is defined as:
-     *
-     *      index = row_index * num_cols + col_index
-     *
-     *  where num_cols denotes the number of columns in the output matrix.
-     *
-     *  FIXME: is there a direct way to set the "data buffer" for the output
-     *         matrix? Currently this method creates a temporary matrix and
-     *         then assigns to the output matrix (deep copy).
-     */
-    void create_local_sp_mat(std::map<size_t, value_type> &vals_map,
-                             output_matrix_type &matrix) const {
-
-        const size_t ncols = matrix.getncol();
-        const size_t rank  = matrix.getcommgrid()->GetRank();
-
-        // creating a local structure to hold sparse data triplets
-        std::vector< tuple< index_type, index_type, value_type > > data;
-
-        // in order to convert global row/col index to local we need to know
-        // the row/col offsets for each processor.
-        const size_t row_offset =
-            static_cast<size_t>((static_cast<double>(matrix.getnrow()) /
-                    matrix.getcommgrid()->GetGridRows())) *
-                    matrix.getcommgrid()->GetRankInProcCol(rank);
-        const size_t col_offset =
-            static_cast<size_t>((static_cast<double>(ncols) /
-                    matrix.getcommgrid()->GetGridCols())) *
-                    matrix.getcommgrid()->GetRankInProcRow(rank);
-
-        // fill into sketch matrix
-        typename std::map<size_t, value_type>::const_iterator itr;
-        for(itr = vals_map.begin(); itr != vals_map.end(); itr++) {
-            index_type lrow = itr->first / ncols - row_offset;
-            index_type lcol = itr->first % ncols - col_offset;
-            value_type val  = itr->second;
-            data.push_back(make_tuple(lrow, lcol, val));
-        }
-
-        // this pointer will be freed in the destructor of col_t (see below).
-        //FIXME: verify with Valgrind
-        SpTuples<index_type, value_type> *tmp_tpl =
-            new SpTuples<index_type, value_type> (
-                data.size(), matrix.getlocalrows(), matrix.getlocalcols(),
-                &data[0]);
-
-        // create temporary matrix (no further communication should be
-        // required because all the data are local) and assign (deep copy).
-        col_t *sp_data = new col_t(*tmp_tpl, false);
-        matrix         = output_matrix_type(sp_data, matrix.getcommgrid());
     }
 
 

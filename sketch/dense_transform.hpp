@@ -16,6 +16,14 @@ class dense_transform_t {
     typedef OutputMatrixType output_matrix_type;
     typedef dense_transform_data_t<ValueDistribution> data_type;
 
+    dense_transform_t(int N, int S, base::context_t& context) 
+        : data_type(N, S, context) {
+        SKYLARK_THROW_EXCEPTION (
+          base::sketch_exception()
+              << base::error_msg(
+                 "This combination has not yet been implemented for DenseTransform"));
+    }
+
     dense_transform_t(const data_type& other_data)
         : data_type(other_data) {
         SKYLARK_THROW_EXCEPTION (
@@ -49,9 +57,6 @@ class dense_transform_t {
               << base::error_msg(
                  "This combination has not yet been implemented for DenseTransform"));
     }
-
-private:
-    dense_transform_t(int N, int S, base::context_t& context);
 };
 
 

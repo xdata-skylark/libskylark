@@ -21,6 +21,14 @@ struct hash_transform_t {
     typedef hash_transform_data_t<IdxDistributionType, ValueDistribution>
     data_type;
 
+    hash_transform_t(int N, int S, base::context_t& context) 
+        : data_type(N, S, context) {
+        SKYLARK_THROW_EXCEPTION (
+          base::sketch_exception()
+              << base::error_msg(
+                 "This combination has not yet been implemented for HashTransform"));
+    }
+
     hash_transform_t(const data_type& other_data)
         : data_type(other_data) {
         SKYLARK_THROW_EXCEPTION (
@@ -54,9 +62,6 @@ struct hash_transform_t {
               << base::error_msg(
                  "This combination has not yet been implemented for HashTransform"));
     }
-
-private:
-    hash_transform_t(int N, int S, base::context_t& context);
 };
 
 } } /** namespace skylark::sketch */

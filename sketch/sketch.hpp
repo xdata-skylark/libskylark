@@ -2,8 +2,9 @@
 #define SKYLARK_SKETCH_HPP
 
 #include "../base/context.hpp"
-#include "sketch_transform_data.hpp"
 #include "transforms.hpp"
+#include "sketch_transform_data.hpp"
+#include "sketch_transform.hpp"
 #include "FUT.hpp"
 #include "RFUT.hpp"
 #include "dense_transform.hpp"

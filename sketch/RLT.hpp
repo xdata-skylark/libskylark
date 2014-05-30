@@ -1,7 +1,9 @@
 #ifndef SKYLARK_RLT_HPP
 #define SKYLARK_RLT_HPP
 
-#include "RLT_data.hpp"
+#ifndef SKYLARK_SKETCH_HPP
+#error "Include top-level sketch.hpp instead of including individuals headers"
+#endif
 
 namespace skylark { namespace sketch {
 

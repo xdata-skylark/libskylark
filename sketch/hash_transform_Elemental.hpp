@@ -1,11 +1,6 @@
 #ifndef SKYLARK_HASH_TRANSFORM_ELEMENTAL_HPP
 #define SKYLARK_HASH_TRANSFORM_ELEMENTAL_HPP
 
-#include <elemental.hpp>
-#include "../base/base.hpp"
-
-#include "transforms.hpp"
-#include "hash_transform_data.hpp"
 #include "../utility/get_communicator.hpp"
 
 namespace skylark { namespace sketch {

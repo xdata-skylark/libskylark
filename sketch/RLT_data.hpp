@@ -1,13 +1,13 @@
 #ifndef SKYLARK_RLT_DATA_HPP
 #define SKYLARK_RLT_DATA_HPP
 
+#ifndef SKYLARK_SKETCH_HPP
+#error "Include top-level sketch.hpp instead of including individuals headers"
+#endif
+
 #include <vector>
 
-#include "../base/context.hpp"
-#include "sketch_transform_data.hpp"
-#include "dense_transform_data.hpp"
 #include "../utility/randgen.hpp"
-
 
 namespace skylark { namespace sketch {
 

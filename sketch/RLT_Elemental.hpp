@@ -1,12 +1,6 @@
 #ifndef SKYLARK_RLT_ELEMENTAL_HPP
 #define SKYLARK_RLT_ELEMENTAL_HPP
 
-#include <elemental.hpp>
-#include "../base/base.hpp"
-
-#include "transforms.hpp"
-#include "RLT_data.hpp"
-
 namespace skylark {
 namespace sketch {
 

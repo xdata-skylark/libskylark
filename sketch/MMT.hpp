@@ -1,9 +1,11 @@
 #ifndef SKYLARK_MMT_HPP
 #define SKYLARK_MMT_HPP
 
+#ifndef SKYLARK_SKETCH_HPP
+#error "Include top-level sketch.hpp instead of including individuals headers"
+#endif
+
 #include <boost/random.hpp>
-#include "MMT_data.hpp"
-#include "hash_transform.hpp"
 
 namespace skylark { namespace sketch {
 

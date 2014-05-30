@@ -1,7 +1,9 @@
 #ifndef SKYLARK_TRANSFORMS_HPP
 #define SKYLARK_TRANSFORMS_HPP
 
-#include "sketch_transform_data.hpp"
+#ifndef SKYLARK_SKETCH_HPP
+#error "Include top-level sketch.hpp instead of including individuals headers"
+#endif
 
 namespace skylark {
 namespace sketch {

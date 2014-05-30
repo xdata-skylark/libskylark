@@ -1,8 +1,9 @@
 #ifndef SKYLARK_FJLT_HPP
 #define SKYLARK_FJLT_HPP
 
-#include "../config.h"
-#include "FJLT_data.hpp"
+#ifndef SKYLARK_SKETCH_HPP
+#error "Include top-level sketch.hpp instead of including individuals headers"
+#endif
 
 namespace skylark { namespace sketch {
 

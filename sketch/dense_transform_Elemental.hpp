@@ -1,10 +1,6 @@
 #ifndef SKYLARK_DENSE_TRANSFORM_ELEMENTAL_HPP
 #define SKYLARK_DENSE_TRANSFORM_ELEMENTAL_HPP
 
-#include "../base/base.hpp"
-
-#include "transforms.hpp"
-#include "dense_transform_data.hpp"
 #include "../utility/comm.hpp"
 #include "../utility/get_communicator.hpp"
 

@@ -1,13 +1,13 @@
 #ifndef SKYLARK_PPT_DATA_HPP
 #define SKYLARK_PPT_DATA_HPP
 
+#ifndef SKYLARK_SKETCH_HPP
+#error "Include top-level sketch.hpp instead of including individuals headers"
+#endif
+
 #include <vector>
 
 #include "../utility/distributions.hpp"
-
-#include "../base/context.hpp"
-#include "CWT_data.hpp"
-#include "sketch_transform_data.hpp"
 
 namespace skylark { namespace sketch {
 

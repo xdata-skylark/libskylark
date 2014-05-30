@@ -1,9 +1,11 @@
 #ifndef SKYLARK_WZT_HPP
 #define SKYLARK_WZT_HPP
 
+#ifndef SKYLARK_SKETCH_HPP
+#error "Include top-level sketch.hpp instead of including individuals headers"
+#endif
+
 #include <boost/random.hpp>
-#include "WZT_data.hpp"
-#include "hash_transform.hpp"
 
 namespace skylark { namespace sketch {
 

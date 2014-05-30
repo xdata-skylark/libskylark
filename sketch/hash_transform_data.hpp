@@ -1,12 +1,11 @@
 #ifndef SKYLARK_HASH_TRANSFORM_DATA_HPP
 #define SKYLARK_HASH_TRANSFORM_DATA_HPP
 
+#ifndef SKYLARK_SKETCH_HPP
+#error "Include top-level sketch.hpp instead of including individuals headers"
+#endif
+
 #include <vector>
-
-#include "../base/base.hpp"
-#include "../utility/randgen.hpp"
-
-#include "sketch_transform_data.hpp"
 
 namespace skylark { namespace sketch {
 

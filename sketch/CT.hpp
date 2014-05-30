@@ -1,8 +1,9 @@
 #ifndef SKYLARK_CT_HPP
 #define SKYLARK_CT_HPP
 
-#include "CT_data.hpp"
-#include "dense_transform.hpp"
+#ifndef SKYLARK_SKETCH_HPP
+#error "Include top-level sketch.hpp instead of including individuals headers"
+#endif
 
 namespace skylark { namespace sketch {
 

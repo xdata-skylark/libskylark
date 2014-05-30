@@ -4,14 +4,7 @@
 #include <map>
 #include <boost/serialization/map.hpp>
 
-#include <CombBLAS.h>
 #include "../utility/external/FullyDistMultiVec.hpp"
-#include "../base/exception.hpp"
-#include "../base/sparse_matrix.hpp"
-
-#include "../base/context.hpp"
-#include "transforms.hpp"
-#include "hash_transform_data.hpp"
 
 namespace skylark { namespace sketch {
 

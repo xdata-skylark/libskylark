@@ -1,11 +1,11 @@
 #ifndef SKYLARK_HASH_TRANSFORM_HPP
 #define SKYLARK_HASH_TRANSFORM_HPP
 
-#include "../config.h"
-#include "../utility/distributions.hpp"
+#ifndef SKYLARK_SKETCH_HPP
+#error "Include top-level sketch.hpp instead of including individuals headers"
+#endif
 
-#include "transforms.hpp"
-#include "hash_transform_data.hpp"
+#include "../utility/distributions.hpp"
 
 namespace skylark { namespace sketch {
 

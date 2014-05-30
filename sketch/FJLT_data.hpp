@@ -1,14 +1,14 @@
 #ifndef SKYLARK_FJLT_DATA_HPP
 #define SKYLARK_FJLT_DATA_HPP
 
+#ifndef SKYLARK_SKETCH_HPP
+#error "Include top-level sketch.hpp instead of including individuals headers"
+#endif
+
 #include <vector>
 
-#include "../base/context.hpp"
-#include "RFUT_data.hpp"
 #include "../utility/randgen.hpp"
 #include "../utility/distributions.hpp"
-
-#include "sketch_transform_data.hpp"
 
 namespace skylark { namespace sketch {
 

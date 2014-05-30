@@ -3,14 +3,6 @@
 
 #include <boost/dynamic_bitset.hpp>
 
-#include "../base/sparse_matrix.hpp"
-#include "../base/exception.hpp"
-
-#include "../base/context.hpp"
-#include "transforms.hpp"
-#include "hash_transform_data.hpp"
-
-
 namespace skylark { namespace sketch {
 
 /* Specialization: local SpMat for input, output */

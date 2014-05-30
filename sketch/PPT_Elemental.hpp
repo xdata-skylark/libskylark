@@ -1,16 +1,9 @@
 #ifndef SKYLARK_PPT_ELEMENTAL_HPP
 #define SKYLARK_PPT_ELEMENTAL_HPP
 
-#include "../config.h"
-
 #if (SKYLARK_HAVE_FFTW || SKYLARK_HAVE_FFTWF) && SKYLARK_HAVE_ELEMENTAL
 
-#include <elemental.hpp>
 #include <fftw3.h>
-#include "../base/base.hpp"
-
-#include "transforms.hpp"
-#include "PPT_data.hpp"
 
 namespace skylark { namespace sketch {
 

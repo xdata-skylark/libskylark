@@ -1,15 +1,13 @@
 #ifndef SKYLARK_FUT_HPP
 #define SKYLARK_FUT_HPP
 
-#include "../config.h"
+#ifndef SKYLARK_SKETCH_HPP
+#error "Include top-level sketch.hpp instead of including individuals headers"
+#endif
 
 #if SKYLARK_HAVE_FFTW && SKYLARK_HAVE_ELEMENTAL
 
-#include <elemental.hpp>
 #include <fftw3.h>
-
-#include "../base/context.hpp"
-#include "transforms.hpp"
 
 namespace skylark { namespace sketch {
 
@@ -157,14 +155,10 @@ struct fft_futs<float> {
 
 #if SKYLARK_HAVE_SPIRALWHT && SKYLARK_HAVE_ELEMENTAL
 
-#include <elemental.hpp>
 
 extern "C" {
 #include <spiral_wht.h>
 }
-
-#include "../base/context.hpp"
-#include "transforms.hpp"
 
 namespace skylark { namespace sketch {
 

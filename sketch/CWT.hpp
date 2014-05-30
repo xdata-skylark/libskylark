@@ -1,9 +1,9 @@
 #ifndef SKYLARK_CWT_HPP
 #define SKYLARK_CWT_HPP
 
-
-#include "CWT_data.hpp"
-#include "hash_transform.hpp"
+#ifndef SKYLARK_SKETCH_HPP
+#error "Include top-level sketch.hpp instead of including individuals headers"
+#endif
 
 namespace skylark { namespace sketch {
 

@@ -1,8 +1,9 @@
 #ifndef SKYLARK_JLT_HPP
 #define SKYLARK_JLT_HPP
 
-#include "JLT_data.hpp"
-#include "dense_transform.hpp"
+#ifndef SKYLARK_SKETCH_HPP
+#error "Include top-level sketch.hpp instead of including individuals headers"
+#endif
 
 namespace skylark { namespace sketch {
 

@@ -1,14 +1,16 @@
 #ifndef SKYLARK_RFUT_DATA_HPP
 #define SKYLARK_RFUT_DATA_HPP
 
+#ifndef SKYLARK_SKETCH_HPP
+#error "Include top-level sketch.hpp instead of including individuals headers"
+#endif
+
 #include <vector>
 
 #include "boost/foreach.hpp"
 #include "boost/property_tree/ptree.hpp"
 
-#include "../base/context.hpp"
 #include "../utility/randgen.hpp"
-
 
 namespace skylark { namespace sketch {
 

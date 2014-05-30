@@ -1,11 +1,11 @@
 #ifndef SKYLARK_WZT_DATA_HPP
 #define SKYLARK_WZT_DATA_HPP
 
-#include "../base/base.hpp"
-#include "../utility/distributions.hpp"
+#ifndef SKYLARK_SKETCH_HPP
+#error "Include top-level sketch.hpp instead of including individuals headers"
+#endif
 
-#include "sketch_transform_data.hpp"
-#include "hash_transform_data.hpp"
+#include "../utility/distributions.hpp"
 
 namespace skylark { namespace sketch {
 

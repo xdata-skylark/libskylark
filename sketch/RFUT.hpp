@@ -1,7 +1,9 @@
 #ifndef SKYLARK_RFUT_HPP
 #define SKYLARK_RFUT_HPP
 
-#include "../config.h"
+#ifndef SKYLARK_SKETCH_HPP
+#error "Include top-level sketch.hpp instead of including individuals headers"
+#endif
 
 namespace skylark { namespace sketch {
 

@@ -233,18 +233,9 @@ private:
         col_t &data = A.seq();
 
         const size_t ncols = sketch_of_A.getncol();
-        const size_t nrows = sketch_of_A.getnrow();
 
-        //FIXME: use comm_grid
-        const size_t my_row_offset =
-            static_cast<int>((static_cast<double>(A.getnrow()) /
-                    A.getcommgrid()->GetGridRows())) *
-                    A.getcommgrid()->GetRankInProcCol(rank);
-
-        const size_t my_col_offset =
-            static_cast<int>((static_cast<double>(A.getncol()) /
-                    A.getcommgrid()->GetGridCols())) *
-                    A.getcommgrid()->GetRankInProcRow(rank);
+        const size_t my_row_offset = utility::cb_my_row_offset(A);
+        const size_t my_col_offset = utility::cb_my_col_offset(A);
 
         //FIXME: move to comm_grid
         const size_t grows = sketch_of_A.getcommgrid()->GetGridRows();
@@ -284,17 +275,12 @@ private:
         }
 
         // constructing arrays for one-sided access
-        std::vector<size_t>     proc_size(comm_size, 0);
-        std::vector<index_type> proc_start_idx(comm_size, 0);
-        proc_size[0] = proc_set[0].size();
-        for(size_t i = 1; i < proc_start_idx.size(); ++i) {
-            proc_size[i]      = proc_set[i].size();
-            proc_start_idx[i] = proc_start_idx[i-1] + proc_size[i-1];
-        }
+        std::vector<index_type> proc_start_idx(comm_size + 1, 0);
+        for(size_t i = 1; i < comm_size + 1; ++i)
+            proc_start_idx[i] = proc_start_idx[i-1] + proc_set[i-1].size();
 
-        size_t nnz = proc_start_idx[comm_size-1] + proc_size[comm_size-1];
-        std::vector<index_type> indicies(nnz, 0);
-        std::vector<value_type> values(nnz, 0);
+        std::vector<index_type> indicies(proc_start_idx[comm_size], 0);
+        std::vector<value_type> values(proc_start_idx[comm_size], 0);
 
         // Apply sketch for all local values. Note that some of the resulting
         // values might end up on a different processor. The data structure
@@ -327,63 +313,61 @@ private:
         }
 
         // Creating windows for all relevant arrays
-        ///FIXME: MPI-3 stuff?
-        MPI_Win proc_win, start_offset_win, idx_win, val_win;
-        MPI_Win_create(&proc_size[0], sizeof(size_t) * comm_size,
-                       sizeof(size_t), MPI_INFO_NULL,
-                       A.getcommgrid()->GetWorld(), &proc_win);
+        boost::mpi::communicator comm = utility::get_communicator(A);
 
-        MPI_Win_create(&proc_start_idx[0], sizeof(size_t) * comm_size,
-                       sizeof(size_t), MPI_INFO_NULL,
-                       A.getcommgrid()->GetWorld(), &start_offset_win);
+        // tell MPI that we will not use locks
+        MPI_Info info;
+        MPI_Info_create(&info);
+        MPI_Info_set(info, "no_locks", "true");
+
+        MPI_Win start_offset_win, idx_win, val_win;
+
+        MPI_Win_create(&proc_start_idx[0], sizeof(size_t) * (comm_size + 1),
+                       sizeof(size_t), info, comm, &start_offset_win);
 
         MPI_Win_create(&indicies[0], sizeof(index_type) * indicies.size(),
-                       sizeof(index_type), MPI_INFO_NULL,
-                       A.getcommgrid()->GetWorld(), &idx_win);
+                       sizeof(index_type), info, comm, &idx_win);
 
         MPI_Win_create(&values[0], sizeof(value_type) * values.size(),
-                       sizeof(value_type), MPI_INFO_NULL,
-                       A.getcommgrid()->GetWorld(), &val_win);
+                       sizeof(value_type), info, comm, &val_win);
 
-        MPI_Win_fence(0, proc_win);
-        MPI_Win_fence(0, start_offset_win);
-        MPI_Win_fence(0, idx_win);
-        MPI_Win_fence(0, val_win);
+        MPI_Info_free(&info);
+
+        // Synchronize epoch, no subsequent put operations (read only) and no
+        // preceding fence calls.
+        MPI_Win_fence(MPI_MODE_NOPUT | MPI_MODE_NOPRECEDE, start_offset_win);
+        MPI_Win_fence(MPI_MODE_NOPUT | MPI_MODE_NOPRECEDE, idx_win);
+        MPI_Win_fence(MPI_MODE_NOPUT | MPI_MODE_NOPRECEDE, val_win);
 
 
         // accumulate values from other procs
         std::map<size_t, value_type> vals_map;
         for(size_t p = 0; p < comm_size; ++p) {
 
-            // since all procs need to call the fence we gather all the
-            // necessary values
-            size_t num_values = 0;
-            MPI_Get(&num_values, 1, boost::mpi::get_mpi_datatype<size_t>(),
-                    p, rank, 1, boost::mpi::get_mpi_datatype<size_t>(),
-                    proc_win);
-            MPI_Win_fence(0, proc_win);
-
-            size_t offset = 0;
-            MPI_Get(&offset, 1, boost::mpi::get_mpi_datatype<size_t>(),
-                    p, rank, 1, boost::mpi::get_mpi_datatype<size_t>(),
+            // get the start/end offset
+            std::vector<size_t> offset(2);
+            MPI_Get(&(offset[0]), 2, boost::mpi::get_mpi_datatype<size_t>(),
+                    p, rank, 2, boost::mpi::get_mpi_datatype<size_t>(),
                     start_offset_win);
-            MPI_Win_fence(0, start_offset_win);
 
-            // since all procs need to call the fence we fill indices and
-            // values even if num_values can be 0 (= don't get data).
+            MPI_Win_fence(MPI_MODE_NOPUT, start_offset_win);
+            size_t num_values = offset[1] - offset[0];
+
+            // and fill indices/values.
             std::vector<index_type> add_idx(num_values);
             std::vector<value_type> add_val(num_values);
             MPI_Get(&(add_idx[0]), num_values,
-                    boost::mpi::get_mpi_datatype<index_type>(), p, offset,
+                    boost::mpi::get_mpi_datatype<index_type>(), p, offset[0],
                     num_values, boost::mpi::get_mpi_datatype<index_type>(),
                     idx_win);
-            MPI_Win_fence(0, idx_win);
 
             MPI_Get(&(add_val[0]), num_values,
-                    boost::mpi::get_mpi_datatype<value_type>(), p, offset,
+                    boost::mpi::get_mpi_datatype<value_type>(), p, offset[0],
                     num_values, boost::mpi::get_mpi_datatype<value_type>(),
                     val_win);
-            MPI_Win_fence(0, val_win);
+
+            MPI_Win_fence(MPI_MODE_NOPUT, idx_win);
+            MPI_Win_fence(MPI_MODE_NOPUT, val_win);
 
             // finally, add data to local buffer (if we have any).
             for(size_t i = 0; i < num_values; ++i) {
@@ -396,12 +380,10 @@ private:
 
         create_local_sp_mat(vals_map, sketch_of_A);
 
-        MPI_Win_fence(0, proc_win);
-        MPI_Win_fence(0, start_offset_win);
-        MPI_Win_fence(0, idx_win);
-        MPI_Win_fence(0, val_win);
+        MPI_Win_fence(MPI_MODE_NOPUT | MPI_MODE_NOSUCCEED, start_offset_win);
+        MPI_Win_fence(MPI_MODE_NOPUT | MPI_MODE_NOSUCCEED, idx_win);
+        MPI_Win_fence(MPI_MODE_NOPUT | MPI_MODE_NOSUCCEED, val_win);
 
-        MPI_Win_free(&proc_win);
         MPI_Win_free(&start_offset_win);
         MPI_Win_free(&idx_win);
         MPI_Win_free(&val_win);
@@ -577,17 +559,8 @@ private:
         // extract columns of matrix
         col_t &data = A.seq();
 
-        //FIXME: use comm_grid
-        const size_t my_row_offset =
-            static_cast<int>((static_cast<double>(A.getnrow()) /
-                    A.getcommgrid()->GetGridRows())) *
-                    A.getcommgrid()->GetRankInProcCol(rank);
-
-        const size_t my_col_offset =
-            static_cast<int>((static_cast<double>(A.getncol()) /
-                    A.getcommgrid()->GetGridCols())) *
-                    A.getcommgrid()->GetRankInProcRow(rank);
-
+        const size_t my_row_offset = utility::cb_my_row_offset(A);
+        const size_t my_col_offset = utility::cb_my_col_offset(A);
 
         int n_res_cols = A.getncol();
         int n_res_rows = A.getnrow();

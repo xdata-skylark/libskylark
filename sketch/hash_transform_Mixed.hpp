@@ -117,7 +117,6 @@ private:
         col_t &data = A.seq();
 
         const size_t ncols = sketch_of_A.Width();
-        const size_t nrows = sketch_of_A.Height();
 
         const size_t my_row_offset = utility::cb_my_row_offset(A);
         const size_t my_col_offset = utility::cb_my_col_offset(A);
@@ -241,7 +240,7 @@ private:
             MPI_Win_fence(MPI_MODE_NOPUT, idx_win);
             MPI_Win_fence(MPI_MODE_NOPUT, val_win);
 
-            // finally, add data to local buffer (if we have any).
+            // finally, set data in local buffer
             for(size_t i = 0; i < num_values; ++i) {
                 index_type lrow = sketch_of_A.LocalRow(add_idx[i] / ncols);
                 index_type lcol = sketch_of_A.LocalCol(add_idx[i] % ncols);

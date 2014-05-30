@@ -212,12 +212,9 @@ void check_solution(const ProblemType &pr, const RhsType &b, const SolType &x,
 int main(int argc, char** argv) {
     double res, resAtr, resFac;
 
-    bmpi::environment env(argc, argv);
-    bmpi::communicator world;
-
     elem::Initialize(argc, argv);
-    MPI_Comm mpi_world(world);
-    elem::Grid grid(mpi_world);
+
+    bmpi::communicator world;
     int rank = world.rank();
 
     skybase::context_t context(23234);

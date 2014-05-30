@@ -29,24 +29,19 @@ typedef elem::Matrix<double> MatrixType;
 typedef elem::DistMatrix<double, elem::VC, elem::STAR> DistMatrixType;
 
 int main (int argc, char** argv) {
-    /* Initialize MPI */
-    bmpi::environment env (argc, argv);
-
-    /* Create a global communicator */
-    bmpi::communicator world;
+    /* Initialize Elemental */
+    elem::Initialize (argc, argv);
 
     /* MPI sends argc and argv everywhere --- parse everywhere */
     parse_parameters (argc,argv);
-
-    /* Initialize elemental */
-    elem::Initialize (argc, argv);
-    MPI_Comm mpi_world(world);
-    elem::Grid grid (mpi_world);
 
     /* Initialize skylark */
     skyb::context_t context (int_params[RAND_SEED_INDEX]);
 
     /* Create matrices A and B */
+    bmpi::communicator world;
+    MPI_Comm mpi_world(world);
+    elem::Grid grid (mpi_world);
     elem::DistMatrix<double, elem::VR, elem::STAR> A(grid);
     elem::DistMatrix<double, elem::VR, elem::STAR> B(grid);
 

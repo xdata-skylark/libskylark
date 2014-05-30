@@ -28,18 +28,16 @@ typedef elem::Matrix<double> MatrixType;
 typedef elem::DistMatrix<double, elem::VR, elem::STAR> DistMatrixType;
 
 int main (int argc, char** argv) {
-    /* Initialize MPI */
-    bmpi::environment env (argc, argv);
+    /* Initialize Elemental (and MPI) */
+    elem::Initialize (argc, argv);
+
+    /* MPI sends argc and argv everywhere --- parse everywhere */
+    parse_parameters (argc,argv);
 
     // get communicator
     boost::mpi::communicator comm;
     int rank = comm.rank();
 
-    /* MPI sends argc and argv everywhere --- parse everywhere */
-    parse_parameters (argc,argv);
-
-    /* Initialize elemental */
-    elem::Initialize (argc, argv);
     MPI_Comm mpi_world(world);
     elem::Grid grid (mpi_world);
 
@@ -58,7 +56,6 @@ int main (int argc, char** argv) {
     DistMatrixType s33(grid);
     DistMatrixType A(grid);
     DistMatrixType U(grid);
-    //DistMatrixType U(m,k);
     MatrixType s(k,1);
     MatrixType V(n,k);
 
@@ -71,23 +68,12 @@ int main (int argc, char** argv) {
         elem::Uniform (A1, m, k);
         elem::Uniform (A2, m, k);
         elem::Matrix<double> A3(k,k);
-      //  A1.Print("A1");
-      //  A2.Print("A2");
 
         skylark::nla::Gemm(A1,A2,A3,context);
-        if (rank == 0) {
-  //      		A3.Print("Checking Matrix multiplication [VR,*]-times-[VR,*] A1'A2 = A3");
-        }
 
         elem::Uniform (A3, k, k);
 
-//        A3.Print("Generated new A3:");
         skylark::nla::Gemm(A1,A3,A2);
-
-    //    A2.Print("Checking Matrix multiplication between [VR,*] A1 and Matrix A3");
-
-        //A3.Resize(m, n);
-        //V.Resize(m, k);
 
         elem::Uniform(A11, m, k);
         elem::Uniform(A22, k, n);
@@ -98,9 +84,6 @@ int main (int argc, char** argv) {
         elem::SVD(A33, s33, V33);
         elem::Display(s33, "True singular values");
 
-        //A.Resize(m, n);
-        //A = A3;
-      //  elem::Uniform (int_params[M_INDEX], int_params[N_RHS_INDEX], B);
     }
 
     /**
@@ -109,12 +92,7 @@ int main (int argc, char** argv) {
     if (0==strcmp("JLT", chr_params[TRANSFORM_INDEX]) ) {
 
         if (SKETCH_LEFT == int_params[SKETCH_DIRECTION_INDEX]) {
-            //	A.Print("Matrix A");
-            //U.Resize(m,k);
-            // skylark::nla::SVD(A, U, s, V, int_params[S_INDEX], 1, context);
-            //	U.Print("U: Left Singular Vectors");
             elem::Display(s, "Approximate singular values");
-            //	V.Print("V: Right Singular Vectors");
         } else {
             //std::cout << "We only have left sketching. Please retry" << std::endl;
         }
@@ -126,5 +104,4 @@ int main (int argc, char** argv) {
     elem::Finalize();
 
     return 0;
-
 }

@@ -56,8 +56,10 @@ typedef skyutil::print_t<SparseMultiVectorType> sparse_dist_multi_vec_printer_t;
 typedef skyutil::print_t<DenseDistMatrixType> dense_dist_mat_printer_t;
 
 int main (int argc, char** argv) {
-  /* Initialize MPI */
-  bmpi::environment env (argc, argv);
+
+  /* Initilize MPI manually to make sure that threading is supported */
+  int provided;
+  MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
 
   /* Create a global communicator */
   bmpi::communicator world;

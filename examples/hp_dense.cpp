@@ -15,7 +15,7 @@
  */
 
 /** To denote whether rowwise sketching is attempted (columnwise otherwise) */
-// #define ROWWISE
+#define ROWWISE
 
 #ifdef ROWWISE
 #define TESTED_ROWWISE    matrix_panel_gemm(A, sketch_of_A, tag); return;
@@ -28,15 +28,17 @@
  *  rest);
  *  used for testing purposes
  */
-// #define HP_DENSE_TRANSFORM_ELEMENTAL
-// #define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR
-// #define HP_DENSE_TRANSFORM_ELEMENTAL_COLDIST_STAR
-// #define HP_DENSE_TRANSFORM_ELEMENTAL_STAR_ROWDIST
-// #define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR_LOCAL
-// #define HP_DENSE_TRANSFORM_ELEMENTAL_COLDIST_STAR_LOCAL
-// #define HP_DENSE_TRANSFORM_ELEMENTAL_STAR_ROWDIST_LOCAL
-// #define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR_CIRC_CIRC
-// #define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR_STAR_STAR
+#define HP_DENSE_TRANSFORM_ELEMENTAL
+#define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR
+#define HP_DENSE_TRANSFORM_ELEMENTAL_COLDIST_STAR
+#define HP_DENSE_TRANSFORM_ELEMENTAL_STAR_ROWDIST
+#define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR_LOCAL
+#define HP_DENSE_TRANSFORM_ELEMENTAL_COLDIST_STAR_LOCAL
+#define HP_DENSE_TRANSFORM_ELEMENTAL_STAR_ROWDIST_LOCAL
+#define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR_CIRC_CIRC
+#define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR_STAR_STAR
+#define HP_DENSE_TRANSFORM_ELEMENTAL_COLDIST_STAR_STAR_STAR
+#define HP_DENSE_TRANSFORM_ELEMENTAL_COLDIST_STAR_CIRC_CIRC
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -68,8 +70,8 @@ dist_STAR_STAR_dense_matrix_t;
 
 
 /* Set the following 2 typedefs for various matrix-type tests */
-typedef dist_dense_matrix_t input_matrix_t;
-typedef dist_STAR_STAR_dense_matrix_t output_matrix_t;
+typedef dist_VC_STAR_dense_matrix_t input_matrix_t;
+typedef dist_CIRC_CIRC_dense_matrix_t output_matrix_t;
 
 
 typedef skylark::sketch::JLT_t<input_matrix_t, output_matrix_t>

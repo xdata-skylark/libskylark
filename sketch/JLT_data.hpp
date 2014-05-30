@@ -16,11 +16,20 @@ struct JLT_data_t :
    public dense_transform_data_t<bstrand::normal_distribution> {
 
     typedef dense_transform_data_t<bstrand::normal_distribution> base_t;
-    /**
-     * Constructor
-     * Most of the work is done by base. Here just write scale
-     */
+
+    /// Params structure
+    struct params_t : public sketch_params_t {
+
+    };
+
     JLT_data_t(int N, int S, skylark::base::context_t& context)
+        : base_t(N, S, sqrt(1.0 / static_cast<double>(S)), context, "JLT") {
+
+        context = base_t::build();
+    }
+
+    JLT_data_t(int N, int S, const params_t& params,
+        skylark::base::context_t& context)
         : base_t(N, S, sqrt(1.0 / static_cast<double>(S)), context, "JLT") {
 
         context = base_t::build();

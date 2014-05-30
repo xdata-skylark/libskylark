@@ -83,13 +83,28 @@ struct ExpSemigroupRLT_data_t :
 
     typedef RLT_data_t<utility::standard_levy_distribution_t > base_t;
 
-    /**
-     * Constructor
-     */
+    /// Params structure
+    struct params_t : public sketch_params_t {
+
+        params_t(double beta) : beta(beta) {
+
+        }
+
+        const double beta;
+    };
+
     ExpSemigroupRLT_data_t(int N, int S, double beta,
         skylark::base::context_t& context)
         : base_t(N, S, beta * beta / 2, std::sqrt(1.0 / S), 
             context, "ExpSemigroupRLT"), _beta(beta) {
+
+        context = base_t::build();
+    }
+
+    ExpSemigroupRLT_data_t(int N, int S, const params_t& params,
+        skylark::base::context_t& context)
+        : base_t(N, S, params.beta * params.beta / 2, std::sqrt(1.0 / S), 
+            context, "ExpSemigroupRLT"), _beta(params.beta) {
 
         context = base_t::build();
     }

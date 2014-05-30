@@ -23,7 +23,18 @@ struct MMT_data_t : public hash_transform_data_t<
         boost::random::uniform_int_distribution,
         boost::random::cauchy_distribution > base_t;
 
-    MMT_data_t(int N, int S, skylark::base::context_t& context)
+    /// Params structure
+    struct params_t : public sketch_params_t {
+
+    };
+
+    MMT_data_t(int N, int S, base::context_t& context)
+        : base_t(N, S, context, "MMT") {
+
+        context = base_t::build();
+   }
+
+    MMT_data_t(int N, int S, const params_t& params, base::context_t& context)
         : base_t(N, S, context, "MMT") {
 
         context = base_t::build();
@@ -49,7 +60,7 @@ struct MMT_data_t : public hash_transform_data_t<
 
 protected:
 
-    MMT_data_t(int N, int S, const skylark::base::context_t& context, 
+    MMT_data_t(int N, int S, const base::context_t& context, 
         std::string type)
         : base_t(N, S, context, type) {
 

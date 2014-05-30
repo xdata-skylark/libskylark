@@ -27,7 +27,18 @@ struct CWT_data_t : public hash_transform_data_t<
         boost::random::uniform_int_distribution,
         utility::rademacher_distribution_t > base_t;
 
+    /// Params structure
+    struct params_t : public sketch_params_t {
+
+    };
+
     CWT_data_t(int N, int S, base::context_t& context)
+        : base_t(N, S, context, "CWT") {
+
+        context = base_t::build();
+    }
+
+    CWT_data_t(int N, int S, const params_t& params, base::context_t& context)
         : base_t(N, S, context, "CWT") {
 
         context = base_t::build();

@@ -81,14 +81,28 @@ struct GaussianRFT_data_t :
 
     typedef RFT_data_t<bstrand::normal_distribution > base_t;
 
-    /**
-     * Constructor
-     * Most of the work is done by base. Here just write scale
-     */
+    /// Params structure
+    struct params_t : public sketch_params_t {
+
+        params_t(double sigma) : sigma(sigma) {
+
+        }
+
+        const double sigma;
+    };
+
     GaussianRFT_data_t(int N, int S, double sigma,
         base::context_t& context)
         : base_t(N, S, 1.0 / sigma, std::sqrt(2.0 / S), context, "GaussianRFT"), 
           _sigma(sigma) {
+
+        context = base_t::build();
+    }
+
+    GaussianRFT_data_t(int N, int S, const params_t& params,
+        base::context_t& context)
+        : base_t(N, S, 1.0 / params.sigma, std::sqrt(2.0 / S), context, "GaussianRFT"), 
+          _sigma(params.sigma) {
 
         context = base_t::build();
     }
@@ -133,10 +147,28 @@ struct LaplacianRFT_data_t :
 
     typedef RFT_data_t<bstrand::cauchy_distribution > base_t;
 
+    /// Params structure
+    struct params_t : public sketch_params_t {
+
+        params_t(double sigma) : sigma(sigma) {
+
+        }
+
+        const double sigma;
+    };
+
     LaplacianRFT_data_t(int N, int S, double sigma,
         base::context_t& context)
         : base_t(N, S, 1.0 / sigma, std::sqrt(2.0 / S), context, "LaplacianRFT"),
         _sigma(sigma) {
+
+        context = base_t::build();
+    }
+
+    LaplacianRFT_data_t(int N, int S, const params_t& params,
+        base::context_t& context)
+        : base_t(N, S, 1.0 / params.sigma, std::sqrt(2.0 / S), context, "LaplacianRFT"),
+        _sigma(params.sigma) {
 
         context = base_t::build();
     }

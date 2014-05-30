@@ -24,13 +24,21 @@ struct FJLT_data_t : public sketch_transform_data_t {
     typedef utility::rademacher_distribution_t<double>
     underlying_value_distribution_type;
 
-
     typedef sketch_transform_data_t base_t;
 
-    /**
-     * Regular constructor
-     */
-    FJLT_data_t (int N, int S, skylark::base::context_t& context)
+    /// Params structure
+    struct params_t : public sketch_params_t {
+
+    };
+
+    FJLT_data_t (int N, int S, base::context_t& context)
+        : base_t(N, S, context, "FJLT"),
+          samples(base_t::_S) {
+
+        context = build();
+    }
+
+    FJLT_data_t (int N, int S, const params_t& params, base::context_t& context)
         : base_t(N, S, context, "FJLT"),
           samples(base_t::_S) {
 
@@ -59,7 +67,7 @@ struct FJLT_data_t : public sketch_transform_data_t {
 
 protected:
 
-    FJLT_data_t (int N, int S, const skylark::base::context_t& context,
+    FJLT_data_t (int N, int S, const base::context_t& context,
         std::string type)
         : base_t(N, S, context, type),
           samples(base_t::_S) {

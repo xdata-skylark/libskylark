@@ -9,6 +9,13 @@
 
 namespace skylark { namespace sketch {
 
+/**
+ * Base class for all sketch transform parameter objects.
+ */
+struct sketch_params_t {
+
+};
+
 struct sketch_transform_data_t {
 
 
@@ -33,7 +40,7 @@ protected:
 
     sketch_transform_data_t (int N, int S, const base::context_t& context,
         const std::string type)
-        : _N(N), _S(S), _creation_context(context), _type(type) { 
+        : _N(N), _S(S), _creation_context(context), _type(type) {
 
     }
 

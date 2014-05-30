@@ -25,12 +25,29 @@ struct PPT_data_t : public sketch_transform_data_t {
 
     typedef sketch_transform_data_t base_t;
 
-    /**
-     * Regular constructor
-     */
+    /// Params structure
+    struct params_t : public sketch_params_t {
+
+        params_t(int q = 3, double c = 1.0, double gamma = 1.0) :
+            q(q), c(c), gamma(gamma) {
+
+        }
+        const int q;
+        const double c;
+        const double gamma;
+    };
+
     PPT_data_t (int N, int S, int q, double c, double gamma,
-                skylark::base::context_t& context)
+                base::context_t& context)
         : base_t(N, S, context, "PPT"), _q(q), _c(c), _gamma(gamma) {
+
+        context = build();
+    }
+
+    PPT_data_t (int N, int S, const params_t& params,
+                base::context_t& context)
+        : base_t(N, S, context, "PPT"), _q(params.q), _c(params.c),
+          _gamma(params.gamma) {
 
         context = build();
     }
@@ -62,7 +79,7 @@ struct PPT_data_t : public sketch_transform_data_t {
 protected:
 
     PPT_data_t (int N, int S, int q, double c, double gamma,
-        const skylark::base::context_t& context, std::string type)
+        const base::context_t& context, std::string type)
         : base_t(N, S, context, type), _q(q), _c(c), _gamma(gamma) {
 
 

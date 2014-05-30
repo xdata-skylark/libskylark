@@ -21,12 +21,26 @@ struct CT_data_t :
 
     typedef dense_transform_data_t<bstrand::cauchy_distribution> base_t;
 
-    /**
-     * Constructor
-     * Most of the work is done by base. Here just write scale
-     */
+    /// Params structure
+    struct params_t : public sketch_params_t {
+
+        params_t(double C) : C(C) {
+
+        }
+
+        const double C;
+    };
+
     CT_data_t(int N, int S, double C, skylark::base::context_t& context)
         : base_t(N, S, C / static_cast<double>(S), context, "CT"), _C(C) {
+
+        context = base_t::build();
+    }
+
+    CT_data_t(int N, int S, const params_t& params,
+        skylark::base::context_t& context)
+        : base_t(N, S, params.C / static_cast<double>(S), context, "CT"),
+          _C(params.C) {
 
         context = base_t::build();
     }

@@ -144,7 +144,6 @@ struct LaplacianRFT_t :
     public LaplacianRFT_data_t,
     virtual public sketch_transform_t<InputMatrixType, OutputMatrixType > {
 
-
     // We use composition to defer calls to RFT_t
     typedef RFT_t<InputMatrixType, OutputMatrixType,
                   bstrand::cauchy_distribution > transform_t;

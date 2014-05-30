@@ -32,11 +32,33 @@ struct WZT_data_t : public hash_transform_data_t<
         boost::random::uniform_int_distribution,
         boost::random::exponential_distribution >  base_t;
 
-    WZT_data_t(int N, int S, double p, skylark::base::context_t& context)
+    /// Params structure
+    struct params_t : public sketch_params_t {
+
+        params_t(double p) : p(p) {
+
+        }
+
+        const double p;
+    };
+
+    WZT_data_t(int N, int S, double p, base::context_t& context)
         : base_t(N, S, context, "WZT"), _P(p) {
 
         // TODO verify that p is in the correct range.
         if(p < 1 || 2 < p)
+            SKYLARK_THROW_EXCEPTION (
+                base::sketch_exception()
+                    << base::error_msg("WZT parameter p has to be in (1, 2)") );
+
+        context = build();
+    }
+
+    WZT_data_t(int N, int S, const params_t& params, base::context_t& context)
+        : base_t(N, S, context, "WZT"), _P(params.p) {
+
+        // TODO verify that p is in the correct range.
+        if(_P < 1 || 2 < _P)
             SKYLARK_THROW_EXCEPTION (
                 base::sketch_exception()
                     << base::error_msg("WZT parameter p has to be in (1, 2)") );
@@ -67,7 +89,7 @@ struct WZT_data_t : public hash_transform_data_t<
     }
 
 protected:
-    WZT_data_t(int N, int S, double p, const skylark::base::context_t& context,
+    WZT_data_t(int N, int S, double p, const base::context_t& context,
         std::string type)
         : base_t(N, S, context, type), _P(p) {
 

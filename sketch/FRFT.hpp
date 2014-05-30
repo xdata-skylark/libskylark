@@ -78,18 +78,19 @@ struct FastGaussianRFT_t :
     typedef FastRFT_t<InputMatrixType, OutputMatrixType > transform_t;
 
     typedef FastGaussianRFT_data_t data_type;
+    typedef data_type::params_t params_t;
 
-    /**
-     * Regular constructor
-     */
     FastGaussianRFT_t(int N, int S, double sigma, base::context_t& context)
         : data_type(N, S, sigma, context), _transform(*this) {
 
     }
 
-    /**
-     * Copy constructor
-     */
+    FastGaussianRFT_t(int N, int S, const params_t& params,
+                          base::context_t& context)
+        : data_type(N, S, params, context), _transform(*this) {
+
+    }
+
     template <typename OtherInputMatrixType,
               typename OtherOutputMatrixType>
     FastGaussianRFT_t(
@@ -98,10 +99,6 @@ struct FastGaussianRFT_t :
 
     }
 
-
-    /**
-     * Constructor from data
-     */
     FastGaussianRFT_t (const data_type& other)
         : data_type(other), _transform(*this) {
 

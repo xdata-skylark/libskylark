@@ -98,7 +98,6 @@ struct GaussianRFT_t :
 
     }
 
-
     GaussianRFT_t(const boost::property_tree::ptree &pt)
         : data_type(pt), _transform(*this) {
 

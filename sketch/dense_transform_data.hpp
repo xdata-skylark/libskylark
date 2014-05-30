@@ -30,12 +30,12 @@ struct dense_transform_data_t : public sketch_transform_data_t {
     /**
      * Regular constructor
      */
-    dense_transform_data_t (int N, int S, base::context_t& context)
+    dense_transform_data_t (int N, int S, double scale, 
+        base::context_t& context)
         : base_t(N, S, context, "DenseTransform"),
-          distribution() {
+          scale(scale), distribution() {
 
         // No scaling in "raw" form
-        scale = 1.0;
         context = build();
     }
 
@@ -50,20 +50,19 @@ struct dense_transform_data_t : public sketch_transform_data_t {
     }
 
     dense_transform_data_t(const dense_transform_data_t& other)
-        : base_t(other), distribution(other.distribution),
-          random_samples(other.random_samples), scale(other.scale) {
+        : base_t(other), scale(other.scale), distribution(other.distribution),
+          random_samples(other.random_samples)  {
 
     }
 
 protected:
 
-    dense_transform_data_t (int N, int S, const base::context_t& context,
-        std::string type)
+    dense_transform_data_t (int N, int S, double scale, 
+        const base::context_t& context, std::string type)
         : base_t(N, S, context, type),
+          scale(scale),
           distribution() {
 
-        // No scaling in "raw" form
-        scale = 1.0;
     }
 
     base::context_t build() {
@@ -72,11 +71,12 @@ protected:
         return ctx;
     }
 
+    double scale; /**< Scaling factor for the samples */
     value_distribution_type distribution; /**< Distribution for samples */
     skylark::utility::random_samples_array_t <value_distribution_type>
     random_samples;
     /**< Array of samples, to be lazily computed */
-    double scale; /**< Scaling factor for the samples */
+
 
 };
 

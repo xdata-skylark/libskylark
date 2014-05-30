@@ -21,15 +21,16 @@ struct JLT_data_t :
      * Most of the work is done by base. Here just write scale
      */
     JLT_data_t(int N, int S, skylark::base::context_t& context)
-        : base_t(N, S, context, "JLT") {
-        base_t::scale = sqrt(1.0 / static_cast<double>(S));
+        : base_t(N, S, sqrt(1.0 / static_cast<double>(S)), context, "JLT") {
+
         context = base_t::build();
     }
 
     JLT_data_t(const boost::property_tree::ptree &pt) :
         base_t(pt.get<int>("N"), pt.get<int>("S"),
+            sqrt(1.0 / pt.get<double>("S")),
             base::context_t(pt.get_child("creation_context")), "JLT") {
-        base_t::scale = sqrt(1.0 / static_cast<double>(base_t::_S));
+
         base_t::build();
     }
 
@@ -49,8 +50,8 @@ protected:
 
     JLT_data_t(int N, int S, const skylark::base::context_t& context,
         std::string type)
-        : base_t(N, S, context, type) {
-        base_t::scale = sqrt(1.0 / static_cast<double>(S));
+        : base_t(N, S, sqrt(1.0 / static_cast<double>(S)), context, type) {
+
     }
 
 

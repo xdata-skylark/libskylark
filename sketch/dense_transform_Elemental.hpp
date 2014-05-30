@@ -33,8 +33,8 @@ struct dense_transform_t <
     /**
      * Regular constructor
      */
-    dense_transform_t (int N, int S, base::context_t& context)
-        : data_type (N, S, context) {
+    dense_transform_t (int N, int S, double scale, base::context_t& context)
+        : data_type (N, S, scale, context) {
 
     }
 
@@ -149,8 +149,8 @@ struct dense_transform_t <
     /**
      * Regular constructor
      */
-    dense_transform_t (int N, int S, base::context_t& context)
-        : data_type (N, S, context) {
+    dense_transform_t (int N, int S, double scale, base::context_t& context)
+        : data_type (N, S, scale, context) {
 
     }
 
@@ -325,8 +325,8 @@ struct dense_transform_t <
     /**
      * Regular constructor
      */
-    dense_transform_t (int N, int S, base::context_t& context)
-        : data_type (N, S, context) {
+    dense_transform_t (int N, int S, double scale, base::context_t& context)
+        : data_type (N, S, scale, context) {
 
     }
 
@@ -495,8 +495,8 @@ struct dense_transform_t <
     /**
      * Regular Constructor
      */
-    dense_transform_t (int N, int S, base::context_t& context)
-        : data_type (N, S, context) {
+    dense_transform_t (int N, int S, double scale, base::context_t& context)
+        : data_type (N, S, scale, context) {
 
     }
 
@@ -671,8 +671,8 @@ struct dense_transform_t <
     /**
      * Regular constructor
      */
-    dense_transform_t (int N, int S, base::context_t& context)
-        : data_type (N, S, context) {
+    dense_transform_t (int N, int S, double scale, base::context_t& context)
+        : data_type (N, S, scale, context) {
 
     }
 
@@ -880,8 +880,8 @@ struct dense_transform_t <
     /**
      * Regular Constructor
      */
-    dense_transform_t (int N, int S, base::context_t& context)
-        : data_type (N, S, context) {
+    dense_transform_t (int N, int S, double scale, base::context_t& context)
+        : data_type (N, S, scale, context) {
 
     }
 
@@ -1057,8 +1057,8 @@ struct dense_transform_t <
     /**
      * Regular constructor
      */
-    dense_transform_t (int N, int S, base::context_t& context)
-        : data_type (N, S, context) {
+    dense_transform_t (int N, int S, double scale, base::context_t& context)
+        : data_type (N, S, scale, context) {
 
     }
 
@@ -1219,8 +1219,8 @@ struct dense_transform_t <
     /**
      * Regular constructor
      */
-    dense_transform_t (int N, int S, base::context_t& context)
-        : data_type (N, S, context) {
+    dense_transform_t (int N, int S, double scale, base::context_t& context)
+        : data_type (N, S, scale, context) {
 
     }
 

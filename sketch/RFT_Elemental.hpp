@@ -101,7 +101,6 @@ private:
         for(int j = 0; j < base::Width(A); j++)
             for(int i = 0; i < data_type::_S; i++) {
                 value_type x = sketch_of_A.Get(i, j);
-                x *= data_type::_val_scale;
                 x += data_type::_shifts[i];
 
 #               ifdef SKYLARK_EXACT_COSINE
@@ -119,7 +118,7 @@ private:
                     1.27323954 * x - 0.405284735 * x * x;
 #               endif
 
-                x = data_type::_scale * x;
+                x = data_type::_outscale * x;
                 sketch_of_A.Set(i, j, x);
             }
     }
@@ -142,7 +141,6 @@ private:
         for(int j = 0; j < data_type::_S; j++)
             for(int i = 0; i < base::Height(A); i++) {
                 value_type x = sketch_of_A.Get(i, j);
-                x *= data_type::_val_scale;
                 x += data_type::_shifts[j];
 
 #               ifdef SKYLARK_EXACT_COSINE
@@ -160,7 +158,7 @@ private:
                     1.27323954 * x - 0.405284735 * x * x;
 #               endif
 
-                x = data_type::_scale * x;
+                x = data_type::_outscale * x;
                 sketch_of_A.Set(i, j, x);
             }
     }
@@ -268,8 +266,7 @@ private:
             for(int i = 0; i < data_type::_S; i++) {
                 value_type val = Al.Get(i, j);
                 value_type trans =
-                    data_type::_scale * std::cos((val * data_type::_val_scale) +
-                        data_type::_shifts[i]);
+                    data_type::_outscale * std::cos(val + data_type::_shifts[i]);
                 Al.Set(i, j, trans);
             }
     }
@@ -290,8 +287,7 @@ private:
             for(int i = 0; i < base::Height(Al); i++) {
                 value_type val = Al.Get(i, j);
                 value_type trans =
-                    data_type::_scale * std::cos((val * data_type::_val_scale) +
-                        data_type::_shifts[j]);
+                    data_type::_outscale * std::cos(val + data_type::_shifts[j]);
                 Al.Set(i, j, trans);
             }
     }

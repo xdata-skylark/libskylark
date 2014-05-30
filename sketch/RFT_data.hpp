@@ -29,9 +29,10 @@ struct RFT_data_t : public sketch_transform_data_t {
     typedef dense_transform_data_t<KernelDistribution> underlying_data_type;
     typedef sketch_transform_data_t base_t;
 
-    RFT_data_t (int N, int S, skylark::base::context_t& context)
-        : base_t(N, S, context, "RFT"), _val_scale(1),
-          _scale(std::sqrt(2.0 / S)) {
+    RFT_data_t (int N, int S, double inscale, double outscale,
+        base::context_t& context)
+        : base_t(N, S, context, "RFT"), _inscale(inscale),
+          _outscale(outscale) {
 
         context = build();
     }
@@ -47,10 +48,10 @@ struct RFT_data_t : public sketch_transform_data_t {
     }
 
 protected:
-    RFT_data_t (int N, int S, const skylark::base::context_t& context,
-        std::string type)
-        : base_t(N, S, context, type), _val_scale(1),
-          _scale(std::sqrt(2.0 / S)) {
+    RFT_data_t (int N, int S, double inscale, double outscale,
+        const base::context_t& context, std::string type)
+        : base_t(N, S, context, type),  _inscale(inscale),
+          _outscale(outscale) {
 
     }
 
@@ -59,7 +60,7 @@ protected:
         base::context_t ctx = base_t::build();
 
         _underlying_data = boost::shared_ptr<underlying_data_type>(new
-            underlying_data_type(base_t::_N, base_t::_S, ctx));
+            underlying_data_type(base_t::_N, base_t::_S, _inscale, ctx));
 
         const double pi = boost::math::constants::pi<double>();
         boost::random::uniform_real_distribution<double>
@@ -68,10 +69,10 @@ protected:
         return ctx;
     }
 
-    double _val_scale; /**< Bandwidth (sigma)  */
+    double _inscale;
+    double _outscale; /** Scaling for trigonometric factor */
     boost::shared_ptr<underlying_data_type> _underlying_data;
     /**< Data of the underlying dense transformation */
-    const double _scale; /** Scaling for trigonometric factor */
     std::vector<double> _shifts; /** Shifts for scaled trigonometric factor */
 };
 
@@ -85,17 +86,20 @@ struct GaussianRFT_data_t :
      * Most of the work is done by base. Here just write scale
      */
     GaussianRFT_data_t(int N, int S, double sigma,
-        skylark::base::context_t& context)
-        : base_t(N, S, context, "GaussianRFT"), _sigma(sigma) {
-        base_t::_val_scale = 1.0 / _sigma;
+        base::context_t& context)
+        : base_t(N, S, 1.0 / sigma, std::sqrt(2.0 / S), context, "GaussianRFT"), 
+          _sigma(sigma) {
+
         context = base_t::build();
     }
 
     GaussianRFT_data_t(const boost::property_tree::ptree &pt) :
         base_t(pt.get<int>("N"), pt.get<int>("S"),
+            1.0 / pt.get<double>("sigma"),
+            std::sqrt(2.0 / pt.get<double>("S")),
             base::context_t(pt.get_child("creation_context")), "GaussianRFT"),
         _sigma(pt.get<double>("sigma")) {
-        base_t::_val_scale = 1.0 / _sigma;
+
         base_t::build();
     }
 
@@ -114,9 +118,10 @@ struct GaussianRFT_data_t :
 
 protected:
     GaussianRFT_data_t(int N, int S, double sigma,
-        const skylark::base::context_t& context, std::string type)
-        : base_t(N, S, context, type), _sigma(sigma) {
-        base_t::_val_scale = 1.0 / _sigma;
+        const base::context_t& context, std::string type)
+        : base_t(N, S, 1.0 / sigma, std::sqrt(2.0 / S), context, type),
+          _sigma(sigma) {
+
     }
 
 private:
@@ -129,17 +134,20 @@ struct LaplacianRFT_data_t :
     typedef RFT_data_t<bstrand::cauchy_distribution > base_t;
 
     LaplacianRFT_data_t(int N, int S, double sigma,
-        skylark::base::context_t& context)
-        : base_t(N, S, context, "LaplacianRFT"), _sigma(sigma) {
-        base_t::_val_scale = 1.0 / sigma;
+        base::context_t& context)
+        : base_t(N, S, 1.0 / sigma, std::sqrt(2.0 / S), context, "LaplacianRFT"),
+        _sigma(sigma) {
+
         context = base_t::build();
     }
 
     LaplacianRFT_data_t(const boost::property_tree::ptree &pt) :
         base_t(pt.get<int>("N"), pt.get<int>("S"),
+            1.0 / pt.get<double>("sigma"),
+            std::sqrt(2.0 / pt.get<double>("S")),
             base::context_t(pt.get_child("creation_context")), "LaplacianRFT"),
         _sigma(pt.get<double>("sigma")) {
-        base_t::_val_scale = 1.0 / _sigma;
+
         base_t::build();
     }
 
@@ -159,9 +167,10 @@ struct LaplacianRFT_data_t :
 protected:
 
     LaplacianRFT_data_t(int N, int S, double sigma,
-        const skylark::base::context_t& context, std::string type)
-        : base_t(N, S, context, type), _sigma(sigma) {
-        base_t::_val_scale = 1.0 / _sigma;
+        const base::context_t& context, std::string type)
+        : base_t(N, S, 1.0 / sigma, std::sqrt(2.0 / S), context, type), 
+          _sigma(sigma) {
+
     }
 
 private:

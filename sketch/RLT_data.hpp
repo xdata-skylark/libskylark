@@ -29,12 +29,11 @@ struct RLT_data_t : public sketch_transform_data_t {
     typedef dense_transform_data_t<KernelDistribution> underlying_data_type;
     typedef sketch_transform_data_t base_t;
 
-    /**
-     * Regular constructor
-     */
-    RLT_data_t (int N, int S, skylark::base::context_t& context)
-        : base_t(N, S, context, "RLT"), _val_scale(1),
-          _scale(std::sqrt(1.0 / base_t::_S)) {
+    RLT_data_t (int N, int S, double inscale, double outscale, 
+        skylark::base::context_t& context)
+        : base_t(N, S, context, "RLT"), _inscale(inscale), 
+          _outscale(outscale) {
+
         context = build();
     }
 
@@ -54,24 +53,26 @@ struct RLT_data_t : public sketch_transform_data_t {
     }
 
 protected:
-    RLT_data_t (int N, int S, const skylark::base::context_t& context,
+    RLT_data_t (int N, int S, double inscale, double outscale, 
+        const skylark::base::context_t& context,
         std::string type)
-        : base_t(N, S, context, type), _val_scale(1),
-          _scale(std::sqrt(1.0 / base_t::_S)) {
+        : base_t(N, S, context, type), _inscale(inscale),
+          _outscale(outscale) {
 
     }
 
    base::context_t build() {
        base::context_t ctx = base_t::build();
        _underlying_data = boost::shared_ptr<underlying_data_type>(new
-           underlying_data_type(base_t::_N, base_t::_S, ctx));
+           underlying_data_type(base_t::_N, base_t::_S, _inscale, ctx));
        return ctx;
    }
 
-    double _val_scale; /**< Bandwidth (sigma)  */
+    double _inscale; 
+    double _outscale; /** Scaling for exponential factor */
     boost::shared_ptr<underlying_data_type> _underlying_data;
     /**< Data of the underlying dense transformation */
-    const double _scale; /** Scaling for trigonometric factor */
+
 };
 
 /**
@@ -87,18 +88,19 @@ struct ExpSemigroupRLT_data_t :
      */
     ExpSemigroupRLT_data_t(int N, int S, double beta,
         skylark::base::context_t& context)
-        : base_t(N, S, context, "ExpSemigroupRLT"), _beta(beta) {
+        : base_t(N, S, beta * beta / 2, std::sqrt(1.0 / S), 
+            context, "ExpSemigroupRLT"), _beta(beta) {
 
-        base_t::_val_scale = beta * beta / 2;
         context = base_t::build();
     }
 
     ExpSemigroupRLT_data_t(const boost::property_tree::ptree &pt) :
         base_t(pt.get<int>("N"), pt.get<int>("S"),
+            pt.get<double>("beta") * pt.get<double>("beta") / 2,
+            std::sqrt(1.0 / pt.get<double>("S")),
             base::context_t(pt.get_child("creation_context")), "ExpSemiGroupRLT"),
         _beta(pt.get<double>("beta")) {
 
-        base_t::_val_scale = _beta * _beta / 2;
         base_t::build();
     }
 
@@ -118,9 +120,9 @@ struct ExpSemigroupRLT_data_t :
 protected:
     ExpSemigroupRLT_data_t(int N, int S, double beta,
         const skylark::base::context_t& context, std::string type)
-        : base_t(N, S, context, type), _beta(beta) {
+        : base_t(N, S,  beta * beta / 2, std::sqrt(1.0 / S), context, type), 
+          _beta(beta) {
 
-        base_t::_val_scale = beta * beta / 2;
     }
 
 

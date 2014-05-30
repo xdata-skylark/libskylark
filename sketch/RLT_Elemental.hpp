@@ -97,7 +97,7 @@ private:
             for(int i = 0; i < data_type::_S; i++) {
                 value_type val = sketch_of_A.Get(i, j);
                 sketch_of_A.Set(i, j,
-                    data_type::_scale * std::exp(- val * data_type::_val_scale));
+                    data_type::_outscale * std::exp(-val));
             }
     }
 
@@ -116,7 +116,7 @@ private:
             for(int i = 0; i < base::Height(A); i++) {
                 value_type val = sketch_of_A.Get(i, j);
                 sketch_of_A.Set(i, j,
-                    data_type::_scale * std::exp(- val * data_type::_val_scale));
+                    data_type::_outscale * std::exp(-val));
 
             }
     }

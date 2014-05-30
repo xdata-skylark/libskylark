@@ -20,22 +20,23 @@ struct CT_data_t :
    public dense_transform_data_t<bstrand::cauchy_distribution> {
 
     typedef dense_transform_data_t<bstrand::cauchy_distribution> base_t;
+
     /**
      * Constructor
      * Most of the work is done by base. Here just write scale
      */
     CT_data_t(int N, int S, double C, skylark::base::context_t& context)
-        : base_t(N, S, context, "CT"), _C(C) {
-        base_t::scale = C / static_cast<double>(S);
+        : base_t(N, S, C / static_cast<double>(S), context, "CT"), _C(C) {
+
         context = base_t::build();
     }
 
     CT_data_t(const boost::property_tree::ptree &pt) :
         base_t(pt.get<int>("N"), pt.get<int>("S"),
+            pt.get<double>("C") / pt.get<double>("S"),
             base::context_t(pt.get_child("creation_context")), "CT"),
         _C(pt.get<double>("C")) {
 
-        base_t::scale = _C / static_cast<double>(base_t::_S);
         base_t::build();
     }
 
@@ -56,9 +57,8 @@ protected:
 
     CT_data_t(int N, int S, double C, const skylark::base::context_t& context, 
         std::string type)
-        : base_t(N, S, context, type), _C(C) {
+        : base_t(N, S, C / static_cast<double>(S), context, type), _C(C) {
 
-        base_t::scale = C / static_cast<double>(S);
     }
 
 private:

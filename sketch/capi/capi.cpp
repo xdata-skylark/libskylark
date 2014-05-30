@@ -138,6 +138,17 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
         SKDEF(ExpSemigroupRLT, Matrix, Matrix)
         SKDEF(ExpSemigroupRLT, SparseMatrix, Matrix)
 
+#ifdef SKYLARK_HAVE_COMBBLAS
+        SKDEF(CWT, DistSparseMatrix, Matrix)
+        SKDEF(CWT, DistSparseMatrix, DistMatrix)
+        SKDEF(CWT, DistSparseMatrix, DistMatrix_VC_STAR)
+        SKDEF(CWT, DistSparseMatrix, DistMatrix_VR_STAR)
+        SKDEF(MMT, DistSparseMatrix, Matrix)
+        SKDEF(MMT, DistSparseMatrix, DistMatrix)
+        SKDEF(MMT, DistSparseMatrix, DistMatrix_VC_STAR)
+        SKDEF(MMT, DistSparseMatrix, DistMatrix_VR_STAR)
+#endif
+
 #if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT
         SKDEF(FJLT, DistMatrix_VR_STAR, Matrix)
         SKDEF(FJLT, DistMatrix_VC_STAR, Matrix)
@@ -622,6 +633,51 @@ SKYLARK_EXTERN_API int
         sketch::FastGaussianRFT_t, SparseMatrix, Matrix,
         sketch::FastGaussianRFT_data_t);
 
+#endif
+
+#ifdef SKYLARK_HAVE_COMBBLAS
+
+    // adding a bunch of sp -> sp_sketch -> dense types
+    //FIXME: only tested types, */SOMETHING should work as well...
+    AUTO_APPLY_DISPATCH(sketchc::CWT,
+        sketchc::DIST_SPARSE_MATRIX, sketchc::MATRIX,
+        sketch::CWT_t, DistSparseMatrix, Matrix,
+        sketch::CWT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::CWT,
+        sketchc::DIST_SPARSE_MATRIX, sketchc::DIST_MATRIX,
+        sketch::CWT_t, DistSparseMatrix, DistMatrix,
+        sketch::CWT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::CWT,
+        sketchc::DIST_SPARSE_MATRIX, sketchc::DIST_MATRIX_VC_STAR,
+        sketch::CWT_t, DistSparseMatrix, DistMatrix_VC_STAR,
+        sketch::CWT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::CWT,
+        sketchc::DIST_SPARSE_MATRIX, sketchc::DIST_MATRIX_VR_STAR,
+        sketch::CWT_t, DistSparseMatrix, DistMatrix_VR_STAR,
+        sketch::CWT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::MMT,
+        sketchc::DIST_SPARSE_MATRIX, sketchc::MATRIX,
+        sketch::MMT_t, DistSparseMatrix, Matrix,
+        sketch::MMT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::MMT,
+        sketchc::DIST_SPARSE_MATRIX, sketchc::DIST_MATRIX,
+        sketch::MMT_t, DistSparseMatrix, DistMatrix,
+        sketch::MMT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::MMT,
+        sketchc::DIST_SPARSE_MATRIX, sketchc::DIST_MATRIX_VC_STAR,
+        sketch::MMT_t, DistSparseMatrix, DistMatrix_VC_STAR,
+        sketch::MMT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::MMT,
+        sketchc::DIST_SPARSE_MATRIX, sketchc::DIST_MATRIX_VR_STAR,
+        sketch::MMT_t, DistSparseMatrix, DistMatrix_VR_STAR,
+        sketch::MMT_data_t);
 #endif
 #endif
 

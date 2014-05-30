@@ -2,8 +2,10 @@
 #define SKYLARK_HASH_TRANSFORM_HPP
 
 #include "../config.h"
-#include "hash_transform_data.hpp"
 #include "../utility/distributions.hpp"
+
+#include "transforms.hpp"
+#include "hash_transform_data.hpp"
 
 namespace skylark { namespace sketch {
 
@@ -13,10 +15,10 @@ template < typename InputMatrixType,
            template <typename> class ValueDistribution
         >
 struct hash_transform_t {
-    // To be specilized and derived. Just some guards here.
+    // To be specialized and derived. Just some guards here.
     typedef InputMatrixType matrix_type;
     typedef OutputMatrixType output_matrix_type;
-    typedef hash_transform_data_t<IdxDistributionType, ValueDistribution> 
+    typedef hash_transform_data_t<IdxDistributionType, ValueDistribution>
     data_type;
 
     hash_transform_t(const boost::property_tree::ptree &pt)
@@ -57,6 +59,10 @@ private:
 
 #if SKYLARK_HAVE_COMBBLAS
 #include "hash_transform_CombBLAS.hpp"
+#endif
+
+#if SKYLARK_HAVE_ELEMENTAL and SKYLARK_HAVE_COMBBLAS
+#include "hash_transform_Mixed.hpp"
 #endif
 
 #include "hash_transform_local_sparse.hpp"

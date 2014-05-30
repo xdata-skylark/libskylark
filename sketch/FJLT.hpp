@@ -15,8 +15,24 @@ struct FJLT_t :
     // To be specilized and derived. Just some guards here.
     typedef InputMatrixType matrix_type;
     typedef OutputMatrixType output_matrix_type;
-    typedef FJLT_data_t data_type;
 
+    typedef FJLT_data_t data_type;
+    typedef data_type::params_t params_t;
+
+    FJLT_t(int N, int S, base::context_t& context) : data_type(N, S, context) {
+        SKYLARK_THROW_EXCEPTION (
+          base::sketch_exception()
+              << base::error_msg(
+                 "This combination has not yet been implemented for FJLT"));
+    }
+
+    FJLT_t(int N, int S, const params_t& params, base::context_t& context) 
+        : data_type(N, S, params, context) {
+        SKYLARK_THROW_EXCEPTION (
+          base::sketch_exception()
+              << base::error_msg(
+                 "This combination has not yet been implemented for FJLT"));
+    }
 
     FJLT_t(const data_type& other_data)
         : data_type(other_data) {
@@ -56,9 +72,6 @@ struct FJLT_t :
     int get_S() const { return this->_S; } /**< Get output dimesion. */
 
     const sketch_transform_data_t* get_data() const { return this; }
-
-private:
-    FJLT_t(int N, int S, base::context_t& context);
 };
 
 } } /** namespace skylark::sketch */

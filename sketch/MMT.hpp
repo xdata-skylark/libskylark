@@ -31,12 +31,16 @@ public:
                               boost::random::cauchy_distribution> transform_t;
 
     typedef MMT_data_t data_type;
+    typedef data_type::params_t params_t;
 
-    /**
-     * Regular constructor
-     */
     MMT_t(int N, int S, base::context_t& context)
         : data_type(N, S, context), _transform(*this) {
+
+    }
+
+    MMT_t(int N, int S, const params_t& params, base::context_t& context)
+        : data_type(N, S, params, context),
+          _transform(*this) {
 
     }
 
@@ -45,9 +49,6 @@ public:
 
     }
 
-    /**
-     * Copy constructor
-     */
     template< typename OtherInputMatrixType,
               typename OtherOutputMatrixType >
     MMT_t(const MMT_t<OtherInputMatrixType,OtherOutputMatrixType>& other)
@@ -55,9 +56,6 @@ public:
 
     }
 
-    /**
-     * Constructor from data
-     */
     MMT_t(const data_type& other)
         : data_type(other), _transform(*this) {
 

@@ -37,12 +37,16 @@ public:
                               boost::random::exponential_distribution > transform_t;
 
     typedef WZT_data_t data_type;
+    typedef data_type::params_t params_t;
 
-    /**
-     * Regular constructor
-     */
     WZT_t(int N, int S, double p, base::context_t& context)
         : data_type(N, S, p, context), _transform(*this) {
+
+    }
+
+    WZT_t(int N, int S, const params_t& params, base::context_t& context)
+        : data_type(N, S, params, context),
+          _transform(*this) {
 
     }
 
@@ -51,9 +55,6 @@ public:
 
     }
 
-    /**
-     * Copy constructor
-     */
     template< typename OtherInputMatrixType,
               typename OtherOutputMatrixType >
     WZT_t(const WZT_t<OtherInputMatrixType,OtherOutputMatrixType>& other)
@@ -61,9 +62,6 @@ public:
 
     }
 
-    /**
-     * Constructor from data
-     */
     WZT_t(const data_type& other)
         : data_type(other), _transform(*this) {
 

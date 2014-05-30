@@ -26,15 +26,20 @@ public:
                                bstrand::normal_distribution > transform_t;
 
     typedef JLT_data_t data_type;
+    typedef data_type::params_t params_t;
 
-    /**
-     * Regular constructor
-     */
     JLT_t(int N, int S, base::context_t& context)
-        : data_type(N, S, context), 
+        : data_type(N, S, context),
           _transform(*this) {
 
     }
+
+    JLT_t(int N, int S, const params_t& params, base::context_t& context)
+        : data_type(N, S, params, context),
+          _transform(*this) {
+
+    }
+
 
     JLT_t(const boost::property_tree::ptree &pt)
         : data_type(pt), _transform(*this) {

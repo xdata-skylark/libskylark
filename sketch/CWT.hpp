@@ -18,11 +18,6 @@ namespace skylark { namespace sketch {
  * CWT was additionally analyzed by Meng and Mahoney (STOC'13) and is equivalent
  * to OSNAP with s=1.
  */
-
-#define _SL_HTBASE hash_transform_t<InputMatrixType, OutputMatrixType, \
-                                    boost::random::uniform_int_distribution, \
-                                    utility::rademacher_distribution_t>
-
 template < typename InputMatrixType,
            typename OutputMatrixType = InputMatrixType >
 class CWT_t :
@@ -37,12 +32,16 @@ public:
                              utility::rademacher_distribution_t> transform_t;
 
     typedef CWT_data_t data_type;
+    typedef data_type::params_t params_t;
 
-    /**
-     * Regular constructor
-     */
     CWT_t(int N, int S, base::context_t& context)
         : data_type(N, S, context), _transform(*this) {
+
+    }
+
+    CWT_t(int N, int S, const params_t& params, base::context_t& context)
+        : data_type(N, S, params, context),
+          _transform(*this) {
 
     }
 
@@ -51,9 +50,6 @@ public:
 
     }
 
-    /**
-     * Copy constructor
-     */
     template <typename OtherInputMatrixType,
               typename OtherOutputMatrixType>
     CWT_t(const CWT_t<OtherInputMatrixType,OtherOutputMatrixType>& other)
@@ -61,9 +57,6 @@ public:
 
     }
 
-    /**
-     * Constructor from data
-     */
     CWT_t(const data_type& other)
         : data_type(other), _transform(*this) {
 

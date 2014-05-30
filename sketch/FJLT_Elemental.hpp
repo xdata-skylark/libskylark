@@ -33,6 +33,7 @@ struct FJLT_t <
     underlying_value_distribution_type;
 
     typedef FJLT_data_t data_type;
+    typedef data_type::params_t params_t;
 
 protected:
     typedef RFUT_t<intermediate_type,
@@ -40,11 +41,13 @@ protected:
                    underlying_value_distribution_type> underlying_type;
 
 public:
-    /**
-     * Regular constructor
-     */
     FJLT_t(int N, int S, base::context_t& context)
         : data_type (N, S, context) {
+
+    }
+
+    FJLT_t(int N, int S, const params_t& params, base::context_t& context)
+        : data_type (N, S, params, context) {
 
     }
 
@@ -53,9 +56,6 @@ public:
 
     }
 
-    /**
-     * Copy constructor
-     */
     template <typename OtherInputMatrixType,
               typename OtherOutputMatrixType>
     FJLT_t(const FJLT_t<OtherInputMatrixType, OtherOutputMatrixType>& other)
@@ -63,9 +63,6 @@ public:
 
     }
 
-    /**
-     * Constructor from data
-     */
     FJLT_t(const data_type& other_data)
         : data_type(other_data) {
 
@@ -220,6 +217,7 @@ struct FJLT_t <
     underlying_value_distribution_type;
 
     typedef FJLT_data_t data_type;
+    typedef data_type::params_t params_t;
 
 protected:
     typedef RFUT_t<intermediate_type,
@@ -227,17 +225,17 @@ protected:
                    underlying_value_distribution_type> underlying_type;
 
 public:
-    /**
-     * Regular constructor
-     */
+
     FJLT_t(int N, int S, base::context_t& context)
         : data_type (N, S, context) {
 
     }
 
-    /**
-     * Copy constructor
-     */
+    FJLT_t(int N, int S, const params_t& params, base::context_t& context)
+        : data_type (N, S, params, context) {
+
+    }
+
     template <typename OtherInputMatrixType,
               typename OtherOutputMatrixType>
     FJLT_t(const FJLT_t<OtherInputMatrixType, OtherOutputMatrixType>& other)
@@ -245,9 +243,6 @@ public:
 
     }
 
-    /**
-     * Constructor from data
-     */
     FJLT_t(const data_type& other_data)
         : data_type(other_data) {
 

@@ -74,19 +74,22 @@ struct ExpSemigroupRLT_t :
     public ExpSemigroupRLT_data_t,
     virtual public sketch_transform_t<InputMatrixType, OutputMatrixType > {
 
-
     // We use composition to defer calls to RLT_t
     typedef RLT_t<InputMatrixType, OutputMatrixType,
                   utility::standard_levy_distribution_t > transform_t;
 
     typedef ExpSemigroupRLT_data_t data_type;
+    typedef data_type::params_t params_t;
 
-    /**
-     * Regular constructor
-     */
     ExpSemigroupRLT_t(int N, int S, double beta,
         base::context_t& context)
         : data_type(N, S, beta, context), _transform(*this) {
+
+    }
+
+    ExpSemigroupRLT_t(int N, int S, const params_t& params,
+        base::context_t& context)
+        : data_type(N, S, params, context), _transform(*this) {
 
     }
 
@@ -95,9 +98,6 @@ struct ExpSemigroupRLT_t :
 
     }
 
-    /**
-     * Copy constructor
-     */
     template <typename OtherInputMatrixType,
               typename OtherOutputMatrixType>
     ExpSemigroupRLT_t(
@@ -106,9 +106,6 @@ struct ExpSemigroupRLT_t :
 
     }
 
-    /**
-     * Constructor from data
-     */
     ExpSemigroupRLT_t (const data_type& other)
         : data_type(other), _transform(*this) {
 

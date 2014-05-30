@@ -94,30 +94,27 @@ struct PPT_t <
     typedef ValueType value_type;
     typedef elem::Matrix<value_type> matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
-    typedef PPT_data_t data_type;
 
-    /**
-     * Regular constructor
-     */
+    typedef PPT_data_t data_type;
+    typedef data_type::params_t params_t;
+
     PPT_t(int N, int S, int q, double c, double gamma, base::context_t& context)
         : data_type (N, S, q, c, gamma, context)  {
 
         build_internal();
     }
 
-    ~PPT_t() {
-        internal::fftw<value_type>::destroyfun(_fftw_fplan);
-        internal::fftw<value_type>::destroyfun(_fftw_bplan);
+    PPT_t(int N, int S, const params_t& params, base::context_t& context)
+        : data_type (N, S, params, context)  {
+
+        build_internal();
     }
 
     PPT_t(const boost::property_tree::ptree &pt)
         : data_type(pt) {
-
+        build_internal();
     }
 
-    /**
-     * Copy constructor
-     */
     template <typename OtherInputMatrixType,
               typename OtherOutputMatrixType>
     PPT_t(const PPT_t<OtherInputMatrixType, OtherOutputMatrixType>& other)
@@ -126,13 +123,15 @@ struct PPT_t <
         build_internal();
     }
 
-    /**
-     * Constructor from data
-     */
     PPT_t(const data_type& other_data)
         : data_type(other_data) {
 
         build_internal();
+    }
+
+    ~PPT_t() {
+        internal::fftw<value_type>::destroyfun(_fftw_fplan);
+        internal::fftw<value_type>::destroyfun(_fftw_bplan);
     }
 
     /**
@@ -312,29 +311,28 @@ struct PPT_t <
     typedef ValueType value_type;
     typedef base::sparse_matrix_t<value_type> matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
-    typedef PPT_data_t data_type;
 
-    /**
-     * Regular constructor
-     */
+    typedef PPT_data_t data_type;
+    typedef data_type::params_t params_t;
+
     PPT_t(int N, int S, int q, double c, double gamma, base::context_t& context)
         : data_type (N, S, q, c, gamma, context)  {
 
         build_internal();
     }
 
-    ~PPT_t() {
-        internal::fftw<value_type>::destroyfun(_fftw_fplan);
-        internal::fftw<value_type>::destroyfun(_fftw_bplan);
+    PPT_t(int N, int S, const params_t& params, base::context_t& context)
+        : data_type (N, S, params, context)  {
+
+        build_internal();
     }
 
     PPT_t(const boost::property_tree::ptree &pt)
         : data_type(pt) {
 
+        build_internal();
     }
-    /**
-     * Copy constructor
-     */
+
     template <typename OtherInputMatrixType,
               typename OtherOutputMatrixType>
     PPT_t(const PPT_t<OtherInputMatrixType, OtherOutputMatrixType>& other)
@@ -343,15 +341,16 @@ struct PPT_t <
         build_internal();
     }
 
-    /**
-     * Constructor from data
-     */
     PPT_t(const data_type& other_data)
         : data_type(other_data) {
 
         build_internal();
     }
 
+    ~PPT_t() {
+        internal::fftw<value_type>::destroyfun(_fftw_fplan);
+        internal::fftw<value_type>::destroyfun(_fftw_bplan);
+    }
     /**
      * Apply columnwise the sketching transform that is described by the
      * the transform with output sketch_of_A.

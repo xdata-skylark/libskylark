@@ -25,13 +25,19 @@ struct CT_t :
                                bstrand::cauchy_distribution > transform_t;
 
     typedef CT_data_t data_type;
-
+    typedef data_type::params_t params_t;
 
     /**
      * Regular constructor
      */
     CT_t(int N, int S, double C, base::context_t& context)
         : data_type(N, S, C, context), _transform(*this) {
+
+    }
+
+    CT_t(int N, int S, const params_t& params, base::context_t& context)
+        : data_type(N, S, params, context),
+          _transform(*this) {
 
     }
 

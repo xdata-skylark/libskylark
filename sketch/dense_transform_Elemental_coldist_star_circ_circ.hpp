@@ -149,56 +149,17 @@ private:
                            output_matrix_type& sketch_of_A,
                            columnwise_tag) const {
 
-        // Create space to hold partial SA --- for 1D, we need SA space
-        elem::Matrix<value_type> SA_part (sketch_of_A.Height(),
-                                          sketch_of_A.Width(),
-                                          sketch_of_A.LDim());
-        elem::Zero(SA_part);
+        matrix_type sketch_of_A_CD_STAR(data_type::_S,
+                                      A.Width());
 
-        // To avoid allocating a huge S_local matrix we are breaking
-        // S_local into column slices, and multiply one by one.
-        // The number of columns in each slice is A's width
-        // since that way the slice take the same amount of memory as
-        // the sketch.
+        dense_transform_t<matrix_type, matrix_type, ValueDistribution>
+            transform(*this);
 
-        int slice_width = A.Width();
+        transform.apply(A, sketch_of_A_CD_STAR,
+            skylark::sketch::columnwise_tag());
 
-        elem::Matrix<value_type> S_local(data_type::_S, slice_width);
-        for (int js = 0; js < A.LocalHeight(); js += slice_width) {
-            int je = std::min(js + slice_width, A.LocalHeight());
-            // adapt size of local portion (can be less than slice_width)
-            S_local.Resize(data_type::_S, je-js);
-            for(int j = js; j < je; j++) {
-                int col = A.ColShift() + A.ColStride() * j;
-                for (int i = 0; i < data_type::_S; i++) {
-                    value_type sample =
-                        data_type::random_samples[col * data_type::_S + i];
-                    S_local.Set(i, j-js, data_type::scale * sample);
-                }
-            }
+        sketch_of_A = sketch_of_A_CD_STAR;
 
-            elem::Matrix<value_type> A_slice;
-            elem::LockedView(A_slice, A.LockedMatrix(),
-                js, 0, je-js, A.Width());
-
-            // Do the multiplication
-            base::Gemm (elem::NORMAL,
-                elem::NORMAL,
-                1.0,
-                S_local,
-                A_slice,
-                1.0,
-                SA_part);
-        }
-
-        // FIXME: reduce to root
-        int root = 0;
-        boost::mpi::reduce (utility::get_communicator(A),
-                            SA_part.LockedBuffer(),
-                            SA_part.MemorySize(),
-                            sketch_of_A.Buffer(),
-                            std::plus<value_type>(),
-                            root);
     }
 
     /**

@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 /** To enforce matrix output from root process only */
-// #define ROOT_OUTPUT
+#define ROOT_OUTPUT
 
 /** Select OPTIMIZED implementations from the high-performance layer;
  *  otherwise (if the corresponding HP_DENSE_TRANSFORM_ELEMENTAL* are ON)
@@ -15,7 +15,7 @@
  */
 
 /** To denote whether rowwise sketching is attempted (columnwise otherwise) */
-// #define ROWWISE
+#define ROWWISE
 
 #ifdef ROWWISE
 #define TESTED_ROWWISE    matrix_panel_gemm(A, sketch_of_A, tag); return;
@@ -70,8 +70,8 @@ dist_STAR_STAR_dense_matrix_t;
 
 
 /* Set the following 2 typedefs for various matrix-type tests */
-typedef dist_VC_STAR_dense_matrix_t input_matrix_t;
-typedef dist_CIRC_CIRC_dense_matrix_t output_matrix_t;
+typedef dist_STAR_VC_dense_matrix_t input_matrix_t;
+typedef dense_matrix_t output_matrix_t;
 
 
 typedef skylark::sketch::JLT_t<input_matrix_t, output_matrix_t>

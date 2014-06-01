@@ -277,7 +277,6 @@ private:
             1.0,
             A_RowDist_STAR.LockedMatrix(),
             S_local,
-            0.0,
             sketch_of_A_RowDist_STAR.Matrix());
 
         sketch_of_A_CIRC_CIRC = sketch_of_A_RowDist_STAR;

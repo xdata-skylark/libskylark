@@ -687,8 +687,7 @@ private:
             1.0,
             A_RowDist_STAR.LockedMatrix(),
             S_local,
-            0.0,
-            sketch_of_A.Matrix());
+            sketch_of_A_RowDist_STAR.Matrix());
 
     // Redistribute the sketch: [VC/VR, STAR] -> [STAR, VC/VR]
     sketch_of_A = sketch_of_A_RowDist_STAR;

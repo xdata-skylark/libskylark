@@ -34,18 +34,20 @@ if (SKYLARK_HAVE_COMBBLAS)
 
   add_executable(sparse_cb_apply SparseSketchApplyCombBLASTest.cpp)
   target_link_libraries( sparse_cb_apply
-                         ${SKYLARK_LIBS}
-                         ${DEP_LIBRARIES}
-                         ${CombBLAS_LIBRARIES}
-                         ${Boost_LIBRARIES} )
+                        ${SKYLARK_LIBS}
+                        ${DEP_LIBRARIES}
+                        ${CombBLAS_LIBRARIES}
+                        ${Boost_LIBRARIES} )
   add_test( sparse_cb_apply_test sparse_cb_apply )
 
   add_executable(serialization_test SerializationTest.cpp)
   target_link_libraries( serialization_test
-                         ${SKYLARK_LIBS}
-                         ${DEP_LIBRARIES}
-                         ${CombBLAS_LIBRARIES}
-                         ${Boost_LIBRARIES} )
+                        ${SKYLARK_LIBS}
+                        ${Elemental_LIBRARY}
+                        ${FFTW_LIBRARY}
+                        ${DEP_LIBRARIES}
+                        ${CombBLAS_LIBRARIES}
+                        ${Boost_LIBRARIES} )
   add_test( serialization_test serialization_test )
 
 endif (SKYLARK_HAVE_COMBBLAS)

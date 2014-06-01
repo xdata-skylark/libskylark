@@ -15,8 +15,11 @@
 #include <boost/mpi.hpp>
 #include <boost/test/minimal.hpp>
 
-#include "../../utility/distributions.hpp"
+//FIXME: ugly
+#define SKYLARK_SKETCH_HPP 1
+
 #include "../../base/context.hpp"
+#include "../../utility/distributions.hpp"
 #include "../../sketch/hash_transform.hpp"
 
 #include "../../base/sparse_matrix.hpp"

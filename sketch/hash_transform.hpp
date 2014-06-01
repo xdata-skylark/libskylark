@@ -3,6 +3,11 @@
 
 #ifndef SKYLARK_SKETCH_HPP
 #error "Include top-level sketch.hpp instead of including individuals headers"
+#else
+    #include "transforms.hpp"
+    #include "hash_transform_data.hpp"
+    #include "sketch_transform_data.hpp"
+    #include "sketch_transform.hpp"
 #endif
 
 #include "../utility/distributions.hpp"
@@ -21,7 +26,7 @@ struct hash_transform_t {
     typedef hash_transform_data_t<IdxDistributionType, ValueDistribution>
     data_type;
 
-    hash_transform_t(int N, int S, base::context_t& context) 
+    hash_transform_t(int N, int S, base::context_t& context)
         : data_type(N, S, context) {
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()

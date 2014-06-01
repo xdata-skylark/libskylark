@@ -5,8 +5,9 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
-#include "../../sketch/CT.hpp"
-#include "../../sketch/CWT.hpp"
+//#include "../../sketch/CT.hpp"
+//#include "../../sketch/CWT.hpp"
+#include "../../sketch/sketch.hpp"
 #include "../../base/context.hpp"
 
 int test_main(int argc, char *argv[]) {

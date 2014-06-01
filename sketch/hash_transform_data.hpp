@@ -3,6 +3,8 @@
 
 #ifndef SKYLARK_SKETCH_HPP
 #error "Include top-level sketch.hpp instead of including individuals headers"
+#else
+#include "sketch_transform_data.hpp"
 #endif
 
 #include <vector>

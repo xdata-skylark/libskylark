@@ -199,6 +199,10 @@ struct hash_transform_t <
             SKYLARK_THROW_EXCEPTION (
                 base::combblas_exception()
                     << base::error_msg(e.what()) );
+        } catch (std::bad_alloc e) {
+            SKYLARK_THROW_EXCEPTION (
+                base::skylark_exception()
+                    << base::error_msg("bad_alloc: out of memory") );
         }
     }
 
@@ -289,7 +293,8 @@ private:
                     std::distance(proc_set[proc].begin(), proc_set[proc].find(pos));
 
                 indicies[ar_idx] = pos;
-                values[ar_idx]  += nz.value() * getRowValue(rowid, colid, dist);
+                values[ar_idx]  += nz.value() *
+                                   data_type::getValue(rowid, colid, dist);
             }
         }
 
@@ -415,16 +420,6 @@ private:
         rowwise_tag) const {
         return rowid * ncols + data_type::row_idx[colid];
     }
-
-    inline value_type getRowValue(index_type rowid, index_type colid,
-        columnwise_tag) const {
-        return data_type::row_value[rowid];
-    }
-
-    inline value_type getRowValue(index_type rowid, index_type colid,
-        rowwise_tag) const {
-        return data_type::row_value[colid];
-    }
 };
 
 
@@ -494,6 +489,10 @@ struct hash_transform_t <
             SKYLARK_THROW_EXCEPTION (
                 base::combblas_exception()
                     << base::error_msg(e.what()) );
+        } catch (std::bad_alloc e) {
+            SKYLARK_THROW_EXCEPTION (
+                base::skylark_exception()
+                    << base::error_msg("bad_alloc: out of memory") );
         }
     }
 
@@ -525,7 +524,7 @@ private:
 
         int n_res_cols = A.getncol();
         int n_res_rows = A.getnrow();
-        get_res_size(n_res_rows, n_res_cols, dist);
+        data_type::get_res_size(n_res_rows, n_res_cols, dist);
 
         // Apply sketch for all local values. Subsequently, all values are
         // gathered on processor 0 and the local matrix is populated.
@@ -543,8 +542,8 @@ private:
                 index_type colid = col.colid() + my_col_offset;
 
                 const value_type value =
-                    nz.value() * getValue(rowid, colid, dist);
-                finalPos(rowid, colid, dist);
+                    nz.value() * data_type::getValue(rowid, colid, dist);
+                data_type::finalPos(rowid, colid, dist);
                 col_values[colid * n_res_rows + rowid] += value;
             }
         }
@@ -552,8 +551,7 @@ private:
         boost::mpi::communicator world(A.getcommgrid()->GetWorld(),
                                        boost::mpi::comm_duplicate);
 
-        std::vector< std::map<index_type, value_type > >
-            result;
+        std::vector< std::map<index_type, value_type > > result;
         boost::mpi::gather(world, col_values, result, 0);
 
         // unpack into temp structure
@@ -565,36 +563,10 @@ private:
         }
     }
 
-    inline void finalPos(index_type &rowid, index_type &colid, columnwise_tag) const {
-        rowid = data_type::row_idx[rowid];
-    }
-
-    inline void finalPos(index_type &rowid, index_type &colid, rowwise_tag) const {
-        colid = data_type::row_idx[colid];
-    }
-
-    inline value_type getValue(index_type rowid, index_type colid,
-                               columnwise_tag) const {
-        return data_type::row_value[rowid];
-    }
-
-    inline value_type getValue(index_type rowid, index_type colid,
-                               rowwise_tag) const {
-        return data_type::row_value[colid];
-    }
-
-    inline void get_res_size(int &rows, int &cols, columnwise_tag) const {
-        rows = data_type::_S;
-    }
-
-    inline void get_res_size(int &rows, int &cols, rowwise_tag) const {
-        cols = data_type::_S;
-    }
-
-
-    void create_local_sp_mat(std::vector< std::map<index_type, value_type > > &result,
-                             int n_res_rows, int n_res_cols, int size_estimate,
-                             output_matrix_type &sketch_of_A) const {
+    void create_local_sp_mat(
+            std::vector< std::map<index_type, value_type > > &result,
+            int n_res_rows, int n_res_cols, int size_estimate,
+            output_matrix_type &sketch_of_A) const {
 
         int nnz = 0;
         int *indptr_new = new int[n_res_cols + 1];

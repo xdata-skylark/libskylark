@@ -11,14 +11,14 @@ namespace skylark { namespace sketch {
 //FIXME:
 //  - Benchmark one-sided vs. col/row comm (or midpoint scheme):
 //    Most likely the scheme depends on the output Elemental distribution,
-//    here we use the same comm-scheme for all of them.
-//  - Sparse matrix should be processed in blocks
+//    here we use the same comm-scheme for all output types.
+//  - Processing Sparse matrix in blocks?
 //  - MPI-3 stuff, see: Enabling highly-scalable remote memory access
 //    programming with MPI-3 one sided, R. Gerstenbergerm,  M. Besta, and
 //    T. Hoefler.
 
 
-/* Specialization: SpParMat for input, Elemental for output */
+/* Specialization: SpParMat for input, distributed Elemental for output */
 template <typename IndexType,
           typename ValueType,
           elem::Distribution ColDist,
@@ -85,6 +85,10 @@ struct hash_transform_t <
             SKYLARK_THROW_EXCEPTION (
                 base::combblas_exception()
                     << base::error_msg(e.what()) );
+        } catch (std::bad_alloc e) {
+            SKYLARK_THROW_EXCEPTION (
+                base::skylark_exception()
+                    << base::error_msg("bad_alloc: out of memory") );
         }
     }
 
@@ -171,7 +175,8 @@ private:
                     std::distance(proc_set[proc].begin(), proc_set[proc].find(pos));
 
                 indicies[ar_idx] = pos;
-                values[ar_idx]  += nz.value() * getRowValue(rowid, colid, dist);
+                values[ar_idx]  += nz.value() *
+                                   data_type::getValue(rowid, colid, dist);
             }
         }
 
@@ -248,7 +253,6 @@ private:
         MPI_Win_free(&val_win);
     }
 
-
     inline index_type getPos(index_type rowid, index_type colid, size_t ncols,
         columnwise_tag) const {
         return colid + ncols * data_type::row_idx[rowid];
@@ -258,18 +262,7 @@ private:
         rowwise_tag) const {
         return rowid * ncols + data_type::row_idx[colid];
     }
-
-    inline value_type getRowValue(index_type rowid, index_type colid,
-        columnwise_tag) const {
-        return data_type::row_value[rowid];
-    }
-
-    inline value_type getRowValue(index_type rowid, index_type colid,
-        rowwise_tag) const {
-        return data_type::row_value[colid];
-    }
 };
-
 
 /* Specialization: SpParMat for input, Local Elemental output */
 template <typename IndexType,
@@ -336,6 +329,10 @@ struct hash_transform_t <
             SKYLARK_THROW_EXCEPTION (
                 base::combblas_exception()
                     << base::error_msg(e.what()) );
+        } catch (std::bad_alloc e) {
+            SKYLARK_THROW_EXCEPTION (
+                base::skylark_exception()
+                    << base::error_msg("bad_alloc: out of memory") );
         }
     }
 
@@ -363,7 +360,7 @@ private:
 
         int n_res_cols = A.getncol();
         int n_res_rows = A.getnrow();
-        get_res_size(n_res_rows, n_res_cols, dist);
+        data_type::get_res_size(n_res_rows, n_res_cols, dist);
 
         // Apply sketch for all local values. Subsequently, all values are
         // gathered on processor 0 and the local matrix is populated.
@@ -378,14 +375,13 @@ private:
                 index_type colid = col.colid() + my_col_offset;
 
                 const value_type value =
-                    nz.value() * getValue(rowid, colid, dist);
-                finalPos(rowid, colid, dist);
+                    nz.value() * data_type::getValue(rowid, colid, dist);
+                data_type::finalPos(rowid, colid, dist);
                 col_values[colid * n_res_rows + rowid] += value;
             }
         }
 
-        std::vector< std::map<index_type, value_type > >
-            result;
+        std::vector< std::map<index_type, value_type > > result;
         boost::mpi::gather(utility::get_communicator(A), col_values, result, 0);
 
         if(rank == 0) {
@@ -400,35 +396,143 @@ private:
             }
         }
     }
+};
 
-    inline void finalPos(index_type &rowid, index_type &colid,
-                         columnwise_tag) const {
-        rowid = data_type::row_idx[rowid];
+
+#if 0
+/* Specialization: SpParMat for input, Elemental[* / *] output */
+template <typename IndexType,
+          typename ValueType,
+          template <typename> class IdxDistributionType,
+          template <typename> class ValueDistribution>
+struct hash_transform_t <
+    SpParMat<IndexType, ValueType, SpDCCols<IndexType, ValueType> >,
+    elem::DistMatrix<ValueType, elem::STAR, elem::STAR>,
+    IdxDistributionType,
+    ValueDistribution > :
+        public hash_transform_data_t<IdxDistributionType,
+                                     ValueDistribution> {
+    typedef IndexType index_type;
+    typedef ValueType value_type;
+    typedef SpDCCols< index_type, value_type > col_t;
+    typedef FullyDistVec< index_type, value_type> mpi_vector_t;
+    typedef SpParMat< index_type, value_type, col_t > matrix_type;
+    typedef elem::DistMatrix< value_type, elem::STAR, elem::STAR > output_matrix_type;
+    typedef hash_transform_data_t<IdxDistributionType,
+                                  ValueDistribution> data_type;
+
+
+    /**
+     * Regular constructor
+     */
+    hash_transform_t (int N, int S, base::context_t& context) :
+        data_type(N, S, context) {
+
     }
 
-    inline void finalPos(index_type &rowid, index_type &colid,
-                         rowwise_tag) const {
-        colid = data_type::row_idx[colid];
+    /**
+     * Copy constructor
+     */
+    template <typename InputMatrixType,
+              typename OutputMatrixType>
+    hash_transform_t (hash_transform_t<InputMatrixType,
+                                       OutputMatrixType,
+                                       IdxDistributionType,
+                                       ValueDistribution>& other) :
+        data_type(other) {}
+
+    /**
+     * Constructor from data
+     */
+    hash_transform_t (hash_transform_data_t<IdxDistributionType,
+                                            ValueDistribution>& other_data) :
+        data_type(other_data) {}
+
+    template <typename Dimension>
+    void apply (const matrix_type &A, output_matrix_type &sketch_of_A,
+                Dimension dimension) const {
+        try {
+            apply_impl (A, sketch_of_A, dimension);
+        } catch(boost::mpi::exception e) {
+            SKYLARK_THROW_EXCEPTION (
+                base::mpi_exception()
+                    << base::error_msg(e.what()) );
+        } catch (std::string e) {
+            SKYLARK_THROW_EXCEPTION (
+                base::combblas_exception()
+                    << base::error_msg(e) );
+        } catch (std::logic_error e) {
+            SKYLARK_THROW_EXCEPTION (
+                base::combblas_exception()
+                    << base::error_msg(e.what()) );
+        } catch (std::bad_alloc e) {
+            SKYLARK_THROW_EXCEPTION (
+                base::skylark_exception()
+                    << base::error_msg("bad_alloc: out of memory") );
+        }
     }
 
-    inline value_type getValue(index_type rowid, index_type colid,
-                               columnwise_tag) const {
-        return data_type::row_value[rowid];
-    }
 
-    inline value_type getValue(index_type rowid, index_type colid,
-                               rowwise_tag) const {
-        return data_type::row_value[colid];
-    }
+private:
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     */
+    template <typename Dimension>
+    void apply_impl (const matrix_type &A_,
+        output_matrix_type &sketch_of_A,
+        Dimension dist) const {
 
-    inline void get_res_size(int &rows, int &cols, columnwise_tag) const {
-        rows = data_type::_S;
-    }
+        // We are essentially doing a 'const' access to A, but the necessary,
+        // 'const' option is missing from the interface
+        matrix_type &A = const_cast<matrix_type&>(A_);
 
-    inline void get_res_size(int &rows, int &cols, rowwise_tag) const {
-        cols = data_type::_S;
+        const size_t rank = A.getcommgrid()->GetRank();
+
+        // extract columns of matrix
+        col_t &data = A.seq();
+
+        const size_t my_row_offset = utility::cb_my_row_offset(A);
+        const size_t my_col_offset = utility::cb_my_col_offset(A);
+
+        int n_res_cols = A.getncol();
+        int n_res_rows = A.getnrow();
+        data_type::get_res_size(n_res_rows, n_res_cols, dist);
+
+        // Apply sketch for all local values. Subsequently, all values are
+        // gathered on all processor and the "local" matrix is populated.
+        typedef std::map<index_type, value_type> col_values_t;
+        col_values_t col_values;
+        for(typename col_t::SpColIter col = data.begcol();
+            col != data.endcol(); col++) {
+            for(typename col_t::SpColIter::NzIter nz = data.begnz(col);
+                nz != data.endnz(col); nz++) {
+
+                index_type rowid = nz.rowid()  + my_row_offset;
+                index_type colid = col.colid() + my_col_offset;
+
+                const value_type value =
+                    nz.value() * data_type::getValue(rowid, colid, dist);
+                data_type::finalPos(rowid, colid, dist);
+                col_values[colid * n_res_rows + rowid] += value;
+            }
+        }
+
+        std::vector< std::map<index_type, value_type > > result;
+        boost::mpi::all_gather(
+                utility::get_communicator(A), col_values, result);
+
+        typedef typename std::map<index_type, value_type>::iterator itr_t;
+        for(size_t i = 0; i < result.size(); ++i) {
+            itr_t proc_itr = result[i].begin();
+            for(; proc_itr != result[i].end(); proc_itr++) {
+                int row = proc_itr->first % n_res_rows;
+                int col = proc_itr->first / n_res_rows;
+                sketch_of_A.Update(row, col, proc_itr->second);
+            }
+        }
     }
 };
+#endif
 
 } } /** namespace skylark::sketch */
 

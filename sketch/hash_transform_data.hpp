@@ -69,6 +69,30 @@ protected:
 
     std::vector<size_t> row_idx; /**< precomputed row indices */
     std::vector<double> row_value; /**< precomputed scaling factors */
+
+    inline void finalPos(size_t &rowid, size_t &colid, columnwise_tag) const {
+        rowid = row_idx[rowid];
+    }
+
+    inline void finalPos(size_t &rowid, size_t &colid, rowwise_tag) const {
+        colid = row_idx[colid];
+    }
+
+    inline double getValue(size_t rowid, size_t colid, columnwise_tag) const {
+        return row_value[rowid];
+    }
+
+    inline double getValue(size_t rowid, size_t colid, rowwise_tag) const {
+        return row_value[colid];
+    }
+
+    inline void get_res_size(int &rows, int &cols, columnwise_tag) const {
+        rows = _S;
+    }
+
+    inline void get_res_size(int &rows, int &cols, rowwise_tag) const {
+        cols = _S;
+    }
 };
 
 } } /** namespace skylark::sketch */

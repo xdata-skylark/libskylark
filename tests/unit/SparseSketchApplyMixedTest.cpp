@@ -214,6 +214,33 @@ int test_main(int argc, char *argv[]) {
 
     compare_result(rank, expected_A, result);
 
+#if 0
+    //////////////////////////////////////////////////////////////////////////
+    //[> Column wise application DistSparseMatrix -> DistMatrix[*/*] <]
+
+    typedef elem::DistMatrix<double, elem::STAR, elem::STAR> st_target_t;
+
+    //[> 1. Create the sketching matrix <]
+    Dummy_t<DistMatrixType, st_target_t> SparseST(n, n_s, context);
+
+    //[> 2. Create space for the sketched matrix <]
+    st_target_t sketch_A_st(n, n_s, grid);
+    elem::Zero(sketch_A_st);
+
+    //[> 3. Apply the transform <]
+    SparseST.apply(A, sketch_A_st, skylark::sketch::columnwise_tag());
+
+    //[> 4. Build structure to compare <]
+    // easier to check if all processors own result
+    result = sketch_A_st;
+
+    compute_sketch_matrix(SparseVC, A, pi_sketch);
+    expected_A = Mult_AnXBn_Synch<PTDD, double, col_t>(
+            pi_sketch, A, false, false);
+
+    compare_result(rank, expected_A, result);
+#endif
+
     //////////////////////////////////////////////////////////////////////////
     //[> Column wise application DistSparseMatrix -> LocalDenseMatrix <]
 

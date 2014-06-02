@@ -8,10 +8,8 @@
 #include "../utility/comm.hpp"
 #include "../utility/get_communicator.hpp"
 
-#ifdef HP_DENSE_TRANSFORM_ELEMENTAL
 #include "sketch_params.hpp"
 #include "dense_transform_Elemental_coldist_star.hpp"
-#endif
 
 namespace skylark { namespace sketch {
 /**
@@ -91,8 +89,6 @@ struct dense_transform_t <
 
 private:
 
-#ifdef HP_DENSE_TRANSFORM_ELEMENTAL_COLDIST_STAR_CIRC_CIRC
-
     /**
      * High-performance implementations
      */
@@ -129,75 +125,6 @@ private:
 
         sketch_of_A = sketch_of_A_CD_STAR;
     }
-
-
-////////////////////////////////////////////////////////////////////////////////
-
-#else // HP_DENSE_TRANSFORM_ELEMENTAL_COLDIST_STAR_CIRC_CIRC
-
-////////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * BASE implementations
-     */
-
-    /**
-     * Apply the sketching transform that is described in by the sketch_of_A.
-     * Implementation for [VR/VC, *] and columnwise.
-     */
-    void apply_impl_vdist (const matrix_type& A,
-                           output_matrix_type& sketch_of_A,
-                           columnwise_tag) const {
-
-        matrix_type sketch_of_A_CD_STAR(data_type::_S,
-                                      A.Width());
-
-        dense_transform_t<matrix_type, matrix_type, ValueDistribution>
-            transform(*this);
-
-        transform.apply(A, sketch_of_A_CD_STAR,
-            skylark::sketch::columnwise_tag());
-
-        sketch_of_A = sketch_of_A_CD_STAR;
-
-    }
-
-    /**
-      * Apply the sketching transform that is described in by the sketch_of_A.
-      * Implementation for [VR/VC, *] and rowwise.
-      */
-    void apply_impl_vdist(const matrix_type& A,
-                          output_matrix_type& sketch_of_A,
-                          rowwise_tag) const {
-
-        // Create a distributed matrix to hold the output.
-        //  We later gather to a dense matrix.
-        matrix_type SA_dist(A.Height(), data_type::_S, A.Grid());
-
-        // Create S. Since it is rowwise, we assume it can be held in memory.
-        elem::Matrix<value_type> S_local(data_type::_S, data_type::_N);
-        for (int j = 0; j < data_type::_N; j++) {
-            for (int i = 0; i < data_type::_S; i++) {
-                value_type sample =
-                    data_type::random_samples[j * data_type::_S + i];
-                S_local.Set(i, j, data_type::scale * sample);
-            }
-        }
-
-        // Apply S to the local part of A to get the local part of SA.
-        base::Gemm(elem::NORMAL,
-            elem::TRANSPOSE,
-            1.0,
-            A.LockedMatrix(),
-            S_local,
-            0.0,
-            SA_dist.Matrix());
-
-        sketch_of_A = SA_dist;
-    }
-
-#endif
-
 };
 
 } } /** namespace skylark::sketch */

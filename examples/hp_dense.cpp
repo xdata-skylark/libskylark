@@ -10,7 +10,7 @@
  *  otherwise (if the corresponding HP_DENSE_TRANSFORM_ELEMENTAL* are ON)
  *  use the MEMORY_OBLIVIOUS implementation of the high-performance layer
  */
-#define OPTIMIZED
+// #define OPTIMIZED
 
 /** Select the specific implementation in the high-performance layer
  * bypassing the relative matrix-size selection happening internally;
@@ -20,32 +20,6 @@
 /** To denote whether rowwise sketching is attempted (columnwise otherwise) */
 #define ROWWISE
 
-#ifdef ROWWISE
-#define TESTED_ROWWISE    matrix_panel_gemm(A, sketch_of_A, tag); return;
-#else
-#define TESTED_COLUMNWISE inner_panel_gemm(A, sketch_of_A, tag); return;
-#endif
-
-/** Selecting the specific parts of high-performance support to activate;
- *  the first macro should be for ON then (and in conjunction with some of the
- *  rest);
- *  used for testing purposes
- */
-
-#define HP_DENSE_TRANSFORM_ELEMENTAL
-#define HP_DENSE_TRANSFORM_ELEMENTAL_LOCAL
-#define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR
-#define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR_STAR_STAR
-#define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR_CIRC_CIRC
-#define HP_DENSE_TRANSFORM_ELEMENTAL_COLDIST_STAR
-#define HP_DENSE_TRANSFORM_ELEMENTAL_COLDIST_STAR_STAR_STAR
-#define HP_DENSE_TRANSFORM_ELEMENTAL_COLDIST_STAR_CIRC_CIRC
-#define HP_DENSE_TRANSFORM_ELEMENTAL_STAR_ROWDIST
-#define HP_DENSE_TRANSFORM_ELEMENTAL_STAR_ROWDIST_STAR_STAR
-#define HP_DENSE_TRANSFORM_ELEMENTAL_STAR_ROWDIST_CIRC_CIRC
-#define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR_LOCAL
-#define HP_DENSE_TRANSFORM_ELEMENTAL_COLDIST_STAR_LOCAL
-#define HP_DENSE_TRANSFORM_ELEMENTAL_STAR_ROWDIST_LOCAL
 
 ////////////////////////////////////////////////////////////////////////////////
 

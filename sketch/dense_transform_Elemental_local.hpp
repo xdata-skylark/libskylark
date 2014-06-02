@@ -8,15 +8,13 @@
 #include "../utility/comm.hpp"
 #include "../utility/get_communicator.hpp"
 
-#ifdef HP_DENSE_TRANSFORM_ELEMENTAL
 #include "sketch_params.hpp"
-#endif
 
 namespace skylark { namespace sketch {
 
 /**
  * Specialization local input (sparse of dense), local output.
- * InputType should either be elem::Matrix, or base:spare_matrix_t.
+ * InputType should either be elem::Matrix, or base:sparse_matrix_t.
  */
 template <typename ValueType,
           template <typename> class InputType,
@@ -76,10 +74,6 @@ struct dense_transform_t <
 
 private:
 
-#ifdef HP_DENSE_TRANSFORM_ELEMENTAL_LOCAL
-
-////////////////////////////////////////////////////////////////////////////////
-
     // TODO: Block-by-block mode
     void apply_impl_local (const matrix_type& A,
                           output_matrix_type& sketch_of_A,
@@ -112,73 +106,6 @@ private:
                     A,
                     sketch_of_A);
     }
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-
-#else // HP_DENSE_TRANSFORM_ELEMENTAL_LOCAL
-
-////////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * BASE implementations
-     */
-
-    /**
-     * Apply the sketching transform that is described in by the sketch_of_A.
-     * Implementation for local and columnwise.
-     */
-    void apply_impl_local(const matrix_type& A,
-                          output_matrix_type& sketch_of_A,
-                          columnwise_tag) const {
-
-        elem::Matrix<value_type> S(data_type::_S, data_type::_N);
-        for(int j = 0; j < data_type::_N; j++) {
-            for (int i = 0; i < data_type::_S; i++) {
-                value_type sample =
-                    data_type::random_samples[j * data_type::_S + i];
-                S.Set(i, j, data_type::scale * sample);
-            }
-        }
-
-        base::Gemm (elem::NORMAL,
-                    elem::NORMAL,
-                    1.0,
-                    S,
-                    A,
-                    0.0,
-                    sketch_of_A);
-    }
-
-    /**
-     * Apply the sketching transform that is described in by the sketch_of_A.
-     * Implementation for local and rowwise.
-     */
-    void apply_impl_local(const matrix_type& A,
-                          output_matrix_type& sketch_of_A,
-                          rowwise_tag) const {
-
-        elem::Matrix<value_type> S(data_type::_S, data_type::_N);
-        for(int j = 0; j < data_type::_N; j++) {
-            for (int i = 0; i < data_type::_S; i++) {
-                value_type sample =
-                    data_type::random_samples[j * data_type::_S + i];
-                S.Set(i, j, data_type::scale * sample);
-            }
-        }
-
-        base::Gemm (elem::NORMAL,
-                    elem::TRANSPOSE,
-                    1.0,
-                    A,
-                    S,
-                    0.0,
-                    sketch_of_A);
-    }
-
-#endif
-
 };
 
 } } /** namespace skylark::sketch */

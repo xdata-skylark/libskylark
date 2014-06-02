@@ -4,9 +4,11 @@
 
 namespace skylark { namespace sketch {
 
-// for testing with smaller matrices
-int blocksize = 3;
-// int blocksize = 128;
+/** Should be changed by the user to a nonzero value to indicate
+ *  the intention NOT to use maximum blocksize value.
+*/
+int blocksize = 0;
+
 double factor = 20.;
 
 void set_blocksize(int blocksize) {

@@ -8,10 +8,8 @@
 #include "../utility/comm.hpp"
 #include "../utility/get_communicator.hpp"
 
-#ifdef HP_DENSE_TRANSFORM_ELEMENTAL
 #include "sketch_params.hpp"
 #include "dense_transform_Elemental_coldist_star.hpp"
-#endif
 
 namespace skylark { namespace sketch {
 /**
@@ -91,7 +89,6 @@ struct dense_transform_t <
 
 private:
 
-#ifdef HP_DENSE_TRANSFORM_ELEMENTAL_COLDIST_STAR_STAR_STAR
 
     /**
      * High-performance implementations
@@ -129,111 +126,6 @@ private:
 
         sketch_of_A = sketch_of_A_CD_STAR;
     }
-
-
-////////////////////////////////////////////////////////////////////////////////
-
-#else // HP_DENSE_TRANSFORM_ELEMENTAL_COLDIST_STAR_STAR_STAR
-
-////////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * BASE implementations
-     */
-
-    /**
-     * Apply the sketching transform that is described in by the sketch_of_A.
-     * Implementation for [VR/VC, *] and columnwise.
-     */
-    void apply_impl_vdist (const matrix_type& A,
-                           output_matrix_type& sketch_of_A,
-                           columnwise_tag) const {
-
-        // Create space to hold partial SA --- for 1D, we need SA space
-        elem::Matrix<value_type> SA_part (sketch_of_A.Height(),
-                                          sketch_of_A.Width(),
-                                          sketch_of_A.LDim());
-        elem::Zero(SA_part);
-
-        // To avoid allocating a huge S_local matrix we are breaking
-        // S_local into column slices, and multiply one by one.
-        // The number of columns in each slice is A's width
-        // since that way the slice take the same amount of memory as
-        // the sketch.
-
-        int slice_width = A.Width();
-
-        elem::Matrix<value_type> S_local(data_type::_S, slice_width);
-        for (int js = 0; js < A.LocalHeight(); js += slice_width) {
-            int je = std::min(js + slice_width, A.LocalHeight());
-            // adapt size of local portion (can be less than slice_width)
-            S_local.Resize(data_type::_S, je-js);
-            for(int j = js; j < je; j++) {
-                int col = A.ColShift() + A.ColStride() * j;
-                for (int i = 0; i < data_type::_S; i++) {
-                    value_type sample =
-                        data_type::random_samples[col * data_type::_S + i];
-                    S_local.Set(i, j-js, data_type::scale * sample);
-                }
-            }
-
-            elem::Matrix<value_type> A_slice;
-            elem::LockedView(A_slice, A.LockedMatrix(),
-                js, 0, je-js, A.Width());
-
-            // Do the multiplication
-            base::Gemm (elem::NORMAL,
-                elem::NORMAL,
-                1.0,
-                S_local,
-                A_slice,
-                1.0,
-                SA_part);
-        }
-
-        boost::mpi::all_reduce (utility::get_communicator(A),
-                            SA_part.LockedBuffer(),
-                            SA_part.MemorySize(),
-                            sketch_of_A.Buffer(),
-                            std::plus<value_type>());
-    }
-
-    /**
-      * Apply the sketching transform that is described in by the sketch_of_A.
-      * Implementation for [VR/VC, *] and rowwise.
-      */
-    void apply_impl_vdist(const matrix_type& A,
-                          output_matrix_type& sketch_of_A,
-                          rowwise_tag) const {
-
-        // Create a distributed matrix to hold the output.
-        //  We later gather to a dense matrix.
-        matrix_type SA_dist(A.Height(), data_type::_S, A.Grid());
-
-        // Create S. Since it is rowwise, we assume it can be held in memory.
-        elem::Matrix<value_type> S_local(data_type::_S, data_type::_N);
-        for (int j = 0; j < data_type::_N; j++) {
-            for (int i = 0; i < data_type::_S; i++) {
-                value_type sample =
-                    data_type::random_samples[j * data_type::_S + i];
-                S_local.Set(i, j, data_type::scale * sample);
-            }
-        }
-
-        // Apply S to the local part of A to get the local part of SA.
-        base::Gemm(elem::NORMAL,
-            elem::TRANSPOSE,
-            1.0,
-            A.LockedMatrix(),
-            S_local,
-            0.0,
-            SA_dist.Matrix());
-
-        sketch_of_A = SA_dist;
-    }
-
-#endif
-
 };
 
 } } /** namespace skylark::sketch */

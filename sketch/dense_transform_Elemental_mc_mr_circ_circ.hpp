@@ -8,10 +8,8 @@
 #include "../utility/comm.hpp"
 #include "../utility/get_communicator.hpp"
 
-#ifdef HP_DENSE_TRANSFORM_ELEMENTAL
 #include "sketch_params.hpp"
 #include "dense_transform_Elemental_mc_mr.hpp"
-#endif
 
 namespace skylark { namespace sketch {
 /**
@@ -80,8 +78,6 @@ struct dense_transform_t <
 
 private:
 
-#ifdef HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR_CIRC_CIRC
-
     /**
      * High-performance implementations
      */
@@ -118,88 +114,6 @@ private:
 
         sketch_of_A = sketch_of_A_MC_MR;
     }
-
-
-////////////////////////////////////////////////////////////////////////////////
-
-#else // HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR_CIRC_CIRC
-
-////////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * BASE implementations
-     */
-
-    /**
-     * Apply the sketching transform that is described in by the sketch_of_A.
-     * Implementation for distributed input [MC, MR], distributed output
-     * [CIRC, CIRC] and columnwise.
-     */
-    void apply_impl_dist (const matrix_type& A,
-                          output_matrix_type& sketch_of_A,
-                          columnwise_tag) const {
-        elem::DistMatrix<value_type> S(data_type::_S, data_type::_N);
-        elem::DistMatrix<value_type,
-                         elem::MC,
-                         elem::MR> sketch_of_A_MC_MR(data_type::_S,
-                                                     A.Width());
-
-        for(int j_loc = 0; j_loc < S.LocalWidth(); ++j_loc) {
-            int j = S.RowShift() + S.RowStride() * j_loc;
-            for (int i_loc = 0; i_loc < S.LocalHeight(); ++i_loc) {
-                int i = S.ColShift() + S.ColStride() * i_loc;
-                value_type sample =
-                    data_type::random_samples[j * data_type::_S + i];
-                S.SetLocal(i_loc, j_loc, data_type::scale * sample);
-            }
-        }
-
-        base::Gemm (elem::NORMAL,
-                    elem::NORMAL,
-                    1.0,
-                    S,
-                    A,
-                    0.0,
-                    sketch_of_A_MC_MR);
-        sketch_of_A = sketch_of_A_MC_MR;
-    }
-
-    /**
-     * Apply the sketching transform that is described in by the sketch_of_A.
-     * Implementation for distributed input [MC, MR], distributed output
-     * [CIRC, CIRC] and rowwise.
-     */
-    void apply_impl_dist(const matrix_type& A,
-                         output_matrix_type& sketch_of_A,
-                         rowwise_tag) const {
-        elem::DistMatrix<value_type> S(data_type::_S, data_type::_N);
-        elem::DistMatrix<value_type,
-                         elem::MC,
-                         elem::MR> sketch_of_A_MC_MR(A.Height(),
-                                                     data_type::_S);
-
-        for(int j_loc = 0; j_loc < S.LocalWidth(); ++j_loc) {
-            int j = S.RowShift() + S.RowStride() * j_loc;
-            for (int i_loc = 0; i_loc < S.LocalHeight(); ++i_loc) {
-                int i = S.ColShift() + S.ColStride() * i_loc;
-                value_type sample =
-                    data_type::random_samples[j * data_type::_S + i];
-                S.SetLocal(i_loc, j_loc, data_type::scale * sample);
-            }
-        }
-
-        base::Gemm (elem::NORMAL,
-                    elem::TRANSPOSE,
-                    1.0,
-                    A,
-                    S,
-                    0.0,
-                    sketch_of_A_MC_MR);
-        sketch_of_A = sketch_of_A_MC_MR;
-    }
-
-#endif
-
 };
 
 } } /** namespace skylark::sketch */

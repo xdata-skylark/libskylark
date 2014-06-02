@@ -56,8 +56,6 @@ struct dense_transform_data_t : public sketch_transform_data_t {
     }
 
 
-#ifdef HP_DENSE_TRANSFORM_ELEMENTAL
-
     void realize_matrix_view(elem::Matrix<value_type>& A) const {
         realize_matrix_view(A, 0, 0, _S, _N);
     }
@@ -141,7 +139,6 @@ struct dense_transform_data_t : public sketch_transform_data_t {
             col_stride, row_stride);
     }
 
-#endif
 
 protected:
 

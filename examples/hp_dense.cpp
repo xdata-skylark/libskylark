@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 /** To enforce matrix output from root process only */
-#define ROOT_OUTPUT
+// #define ROOT_OUTPUT
 
 /** Select OPTIMIZED implementations from the high-performance layer;
  *  otherwise (if the corresponding HP_DENSE_TRANSFORM_ELEMENTAL* are ON)
@@ -28,17 +28,20 @@
  *  rest);
  *  used for testing purposes
  */
+
 // #define HP_DENSE_TRANSFORM_ELEMENTAL
 // #define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR
+// #define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR_STAR_STAR
+// #define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR_CIRC_CIRC
 // #define HP_DENSE_TRANSFORM_ELEMENTAL_COLDIST_STAR
+// #define HP_DENSE_TRANSFORM_ELEMENTAL_COLDIST_STAR_STAR_STAR
+// #define HP_DENSE_TRANSFORM_ELEMENTAL_COLDIST_STAR_CIRC_CIRC
 // #define HP_DENSE_TRANSFORM_ELEMENTAL_STAR_ROWDIST
+// #define HP_DENSE_TRANSFORM_ELEMENTAL_STAR_ROWDIST_STAR_STAR
+// #define HP_DENSE_TRANSFORM_ELEMENTAL_STAR_ROWDIST_CIRC_CIRC
 // #define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR_LOCAL
 // #define HP_DENSE_TRANSFORM_ELEMENTAL_COLDIST_STAR_LOCAL
 // #define HP_DENSE_TRANSFORM_ELEMENTAL_STAR_ROWDIST_LOCAL
-// #define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR_CIRC_CIRC
-// #define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR_STAR_STAR
-// #define HP_DENSE_TRANSFORM_ELEMENTAL_COLDIST_STAR_STAR_STAR
-// #define HP_DENSE_TRANSFORM_ELEMENTAL_COLDIST_STAR_CIRC_CIRC
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -71,8 +74,7 @@ dist_STAR_STAR_dense_matrix_t;
 
 /* Set the following 2 typedefs for various matrix-type tests */
 typedef dist_STAR_VC_dense_matrix_t input_matrix_t;
-typedef dense_matrix_t output_matrix_t;
-
+typedef dist_CIRC_CIRC_dense_matrix_t output_matrix_t;
 
 typedef skylark::sketch::JLT_t<input_matrix_t, output_matrix_t>
 sketch_transform_t;

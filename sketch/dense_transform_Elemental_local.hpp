@@ -8,6 +8,9 @@
 #include "../utility/comm.hpp"
 #include "../utility/get_communicator.hpp"
 
+#ifdef HP_DENSE_TRANSFORM_ELEMENTAL
+#include "sketch_params.hpp"
+#endif
 
 namespace skylark { namespace sketch {
 
@@ -72,6 +75,56 @@ struct dense_transform_t <
     }
 
 private:
+
+#ifdef HP_DENSE_TRANSFORM_ELEMENTAL_LOCAL
+
+////////////////////////////////////////////////////////////////////////////////
+
+    // TODO: Block-by-block mode
+    void apply_impl_local (const matrix_type& A,
+                          output_matrix_type& sketch_of_A,
+                          skylark::sketch::rowwise_tag tag) const {
+
+        output_matrix_type R;
+        data_type::realize_matrix_view(R);
+
+        base::Gemm (elem::NORMAL,
+                    elem::TRANSPOSE,
+                    value_type(1),
+                    A,
+                    R,
+                    sketch_of_A);
+    }
+
+
+    // TODO: Block-by-block mode
+    void apply_impl_local (const matrix_type& A,
+                          output_matrix_type& sketch_of_A,
+                          skylark::sketch::columnwise_tag tag) const {
+
+        output_matrix_type R;
+        data_type::realize_matrix_view(R);
+
+        base::Gemm (elem::NORMAL,
+                    elem::NORMAL,
+                    value_type(1),
+                    R,
+                    A,
+                    sketch_of_A);
+    }
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+#else // HP_DENSE_TRANSFORM_ELEMENTAL_LOCAL
+
+////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * BASE implementations
+     */
+
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
      * Implementation for local and columnwise.
@@ -123,6 +176,8 @@ private:
                     0.0,
                     sketch_of_A);
     }
+
+#endif
 
 };
 

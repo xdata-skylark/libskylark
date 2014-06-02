@@ -1,7 +1,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 /** To enforce matrix output from root process only */
-// #define ROOT_OUTPUT
+#define ROOT_OUTPUT
+
+/** To enforce matrix generation for local->local */
+#define LOCAL
 
 /** Select OPTIMIZED implementations from the high-performance layer;
  *  otherwise (if the corresponding HP_DENSE_TRANSFORM_ELEMENTAL* are ON)
@@ -29,19 +32,20 @@
  *  used for testing purposes
  */
 
-// #define HP_DENSE_TRANSFORM_ELEMENTAL
-// #define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR
-// #define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR_STAR_STAR
-// #define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR_CIRC_CIRC
-// #define HP_DENSE_TRANSFORM_ELEMENTAL_COLDIST_STAR
-// #define HP_DENSE_TRANSFORM_ELEMENTAL_COLDIST_STAR_STAR_STAR
-// #define HP_DENSE_TRANSFORM_ELEMENTAL_COLDIST_STAR_CIRC_CIRC
-// #define HP_DENSE_TRANSFORM_ELEMENTAL_STAR_ROWDIST
-// #define HP_DENSE_TRANSFORM_ELEMENTAL_STAR_ROWDIST_STAR_STAR
-// #define HP_DENSE_TRANSFORM_ELEMENTAL_STAR_ROWDIST_CIRC_CIRC
-// #define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR_LOCAL
-// #define HP_DENSE_TRANSFORM_ELEMENTAL_COLDIST_STAR_LOCAL
-// #define HP_DENSE_TRANSFORM_ELEMENTAL_STAR_ROWDIST_LOCAL
+#define HP_DENSE_TRANSFORM_ELEMENTAL
+#define HP_DENSE_TRANSFORM_ELEMENTAL_LOCAL
+#define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR
+#define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR_STAR_STAR
+#define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR_CIRC_CIRC
+#define HP_DENSE_TRANSFORM_ELEMENTAL_COLDIST_STAR
+#define HP_DENSE_TRANSFORM_ELEMENTAL_COLDIST_STAR_STAR_STAR
+#define HP_DENSE_TRANSFORM_ELEMENTAL_COLDIST_STAR_CIRC_CIRC
+#define HP_DENSE_TRANSFORM_ELEMENTAL_STAR_ROWDIST
+#define HP_DENSE_TRANSFORM_ELEMENTAL_STAR_ROWDIST_STAR_STAR
+#define HP_DENSE_TRANSFORM_ELEMENTAL_STAR_ROWDIST_CIRC_CIRC
+#define HP_DENSE_TRANSFORM_ELEMENTAL_MC_MR_LOCAL
+#define HP_DENSE_TRANSFORM_ELEMENTAL_COLDIST_STAR_LOCAL
+#define HP_DENSE_TRANSFORM_ELEMENTAL_STAR_ROWDIST_LOCAL
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -73,8 +77,8 @@ dist_STAR_STAR_dense_matrix_t;
 
 
 /* Set the following 2 typedefs for various matrix-type tests */
-typedef dist_STAR_VC_dense_matrix_t input_matrix_t;
-typedef dist_CIRC_CIRC_dense_matrix_t output_matrix_t;
+typedef dense_matrix_t input_matrix_t;
+typedef dense_matrix_t output_matrix_t;
 
 typedef skylark::sketch::JLT_t<input_matrix_t, output_matrix_t>
 sketch_transform_t;
@@ -98,10 +102,16 @@ int main(int argc, char* argv[]) {
     int sketch_size = 5;
 
     /** Define input matrix A */
+
+#ifdef LOCAL
+    input_matrix_t A;
+    elem::Uniform(A, height, width);
+#else
     dist_CIRC_CIRC_dense_matrix_t A_CIRC_CIRC(grid);
     input_matrix_t A(grid);
     elem::Uniform(A_CIRC_CIRC, height, width);
     A = A_CIRC_CIRC;
+#endif
 
     /** Initialize context */
     skylark::base::context_t context(0);

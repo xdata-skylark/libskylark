@@ -124,12 +124,6 @@ Notes:
 	* Currently, Python interface uses ctypes. We may switch to SWIG to be consistent with Elemental and CVX.
 
 
-Installation
---------------
-
-We provide a separate install guide in pdf.
-
-
 License and Copyright
 ----------------------
 

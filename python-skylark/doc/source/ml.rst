@@ -28,6 +28,9 @@ Matrix Completion
 ------------------
 To be done. Dependency on randomized low-rank approximations (SVD) implementation in the NLA layer.
 
+.. doxygenstruct:: skylark::algorithms::krylov_tag
+   :project: libskylark
+
 Statistical Dimensionality Reduction
 --------------------------------------
 

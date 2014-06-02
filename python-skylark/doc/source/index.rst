@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-skylark
-===================================
+libskylark: Sketching-based Matrix Computations for Machine Learning
+=====================================================================
 
 **Contents:**
 
@@ -12,7 +12,9 @@ skylark
    :maxdepth: 3
   
    introduction
+   installation
    sketching
+   nla
    ml
    io
   

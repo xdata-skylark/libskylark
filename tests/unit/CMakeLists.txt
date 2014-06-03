@@ -13,6 +13,17 @@ if (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
                         ${Boost_LIBRARIES})
   add_test( sparse_elemental_apply_test sparse_elemental_apply )
 
+
+  add_executable(dense_elemental_apply DenseSketchApplyElementalTest.cpp)
+  target_link_libraries(dense_elemental_apply
+                        ${SKYLARK_LIBS}
+                        ${Elemental_LIBRARY}
+                        ${FFTW_LIBRARY}
+                        ${Pmrrr_LIBRARY}
+                        ${Boost_LIBRARIES})
+  add_test( dense_elemental_apply_test dense_elemental_apply )
+
+
 endif (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
 
 if (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_COMBBLAS)

@@ -27,6 +27,8 @@ struct dense_transform_data_t : public sketch_transform_data_t {
     // but when applying to floats the size can be reduced.
     typedef ValueDistribution<double> value_distribution_type;
 
+    typedef double value_type;
+
     /**
      * Regular constructor
      */

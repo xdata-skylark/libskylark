@@ -22,24 +22,23 @@ struct dense_transform_t <
     elem::DistMatrix<ValueType, elem::STAR, RowDist>,
     elem::DistMatrix<ValueType, elem::STAR, elem::STAR>,
     ValueDistribution > :
-        public dense_transform_data_t<ValueType,
-                                      ValueDistribution> {
+        public dense_transform_data_t<ValueDistribution> {
     // Typedef matrix and distribution types so that we can use them regularly
     typedef ValueType value_type;
     typedef elem::DistMatrix<value_type, elem::STAR, RowDist> matrix_type;
     typedef elem::DistMatrix<value_type, elem::STAR, elem::STAR>
      output_matrix_type;
     typedef ValueDistribution<value_type> value_distribution_type;
-    typedef dense_transform_data_t<ValueType,
-                                  ValueDistribution> data_type;
+    typedef dense_transform_data_t<ValueDistribution> data_type;
 
     /**
      * Regular constructor
      */
-    dense_transform_t (int N, int S, base::context_t& context)
-        : data_type (N, S, context) {
+    dense_transform_t (int N, int S, double scale, base::context_t& context)
+        : data_type (N, S, scale, context) {
 
     }
+
 
     /**
      * Copy constructor
@@ -52,9 +51,9 @@ struct dense_transform_t <
     /**
      * Constructor from data
      */
-    dense_transform_t(const dense_transform_data_t<value_type,
-                                            ValueDistribution>& other_data)
+    dense_transform_t(const data_type& other_data)
         : data_type(other_data) {}
+
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
@@ -86,6 +85,11 @@ struct dense_transform_t <
                 base::unsupported_matrix_distribution() );
         }
     }
+
+    int get_N() const { return this->_N; } /**< Get input dimension. */
+    int get_S() const { return this->_S; } /**< Get output dimension. */
+
+    const sketch_transform_data_t* get_data() const { return this; }
 
 private:
 

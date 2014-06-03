@@ -1,21 +1,10 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 /** To enforce matrix output from root process only */
-#define ROOT_OUTPUT
+// #define ROOT_OUTPUT
 
 /** To enforce matrix generation for local->local */
-#define LOCAL
-
-/** Select OPTIMIZED implementations from the high-performance layer;
- *  otherwise (if the corresponding HP_DENSE_TRANSFORM_ELEMENTAL* are ON)
- *  use the MEMORY_OBLIVIOUS implementation of the high-performance layer
- */
-// #define OPTIMIZED
-
-/** Select the specific implementation in the high-performance layer
- * bypassing the relative matrix-size selection happening internally;
- * used for testing purposes
- */
+// #define LOCAL
 
 /** To denote whether rowwise sketching is attempted (columnwise otherwise) */
 #define ROWWISE
@@ -51,8 +40,8 @@ dist_STAR_STAR_dense_matrix_t;
 
 
 /* Set the following 2 typedefs for various matrix-type tests */
-typedef dense_matrix_t input_matrix_t;
-typedef dense_matrix_t output_matrix_t;
+typedef dist_dense_matrix_t input_matrix_t;
+typedef dist_dense_matrix_t output_matrix_t;
 
 typedef skylark::sketch::JLT_t<input_matrix_t, output_matrix_t>
 sketch_transform_t;

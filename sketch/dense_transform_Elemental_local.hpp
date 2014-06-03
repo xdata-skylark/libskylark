@@ -23,21 +23,19 @@ struct dense_transform_t <
     InputType<ValueType>,
     elem::Matrix<ValueType>,
     ValueDistribution> :
-        public dense_transform_data_t<ValueType,
-                                      ValueDistribution> {
+        public dense_transform_data_t<ValueDistribution> {
 
     typedef ValueType value_type;
     typedef InputType<value_type> matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
     typedef ValueDistribution<value_type> value_distribution_type;
-    typedef dense_transform_data_t<ValueType,
-                                  ValueDistribution> data_type;
+    typedef dense_transform_data_t<ValueDistribution> data_type;
 
     /**
      * Regular constructor
      */
-    dense_transform_t (int N, int S, base::context_t& context)
-        : data_type (N, S, context) {
+    dense_transform_t (int N, int S, double scale, base::context_t& context)
+        : data_type (N, S, scale, context) {
 
     }
 
@@ -52,9 +50,9 @@ struct dense_transform_t <
     /**
      * Constructor from data
      */
-    dense_transform_t(const dense_transform_data_t<value_type,
-                                            ValueDistribution>& other_data)
+    dense_transform_t(const data_type& other_data)
         : data_type(other_data) {}
+
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
@@ -71,6 +69,11 @@ struct dense_transform_t <
                     << base::error_msg(e.what()) );
         }
     }
+
+    int get_N() const { return this->_N; } /**< Get input dimension. */
+    int get_S() const { return this->_S; } /**< Get output dimension. */
+
+    const sketch_transform_data_t* get_data() const { return this; }
 
 private:
 

@@ -9,6 +9,7 @@ if (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
                         ${Boost_LIBRARIES}
                         ${HDF5_LIBRARIES}
                         ${ZLIB_LIBRARIES})
+   install_targets(/bin hilbert)
 
 endif (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
 

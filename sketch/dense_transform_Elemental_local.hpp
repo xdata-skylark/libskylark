@@ -87,6 +87,7 @@ private:
                     value_type(1),
                     A,
                     R,
+                    value_type(0),
                     sketch_of_A);
     }
 
@@ -104,6 +105,7 @@ private:
                     value_type(1),
                     R,
                     A,
+                    value_type(0),
                     sketch_of_A);
     }
 };

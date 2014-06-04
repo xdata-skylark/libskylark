@@ -161,6 +161,8 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
 #ifdef SKYLARK_HAVE_COMBBLAS
         SKDEF(CWT, DistSparseMatrix, DistSparseMatrix)
         SKDEF(CWT, DistSparseMatrix, SparseMatrix)
+        SKDEF(MMT, DistSparseMatrix, DistSparseMatrix)
+        SKDEF(MMT, DistSparseMatrix, SparseMatrix)
 #endif
 
         "";
@@ -696,6 +698,11 @@ SKYLARK_EXTERN_API int
     AUTO_APPLY_DISPATCH(sketchc::MMT,
         sketchc::DIST_SPARSE_MATRIX, sketchc::DIST_SPARSE_MATRIX,
         sketch::MMT_t, DistSparseMatrix, DistSparseMatrix,
+        sketch::MMT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::MMT,
+        sketchc::DIST_SPARSE_MATRIX, sketchc::SPARSE_MATRIX,
+        sketch::MMT_t, DistSparseMatrix, SparseMatrix,
         sketch::MMT_data_t);
 
 #endif

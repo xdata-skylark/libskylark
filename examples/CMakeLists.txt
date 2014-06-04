@@ -23,13 +23,6 @@ if (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
                         ${Pmrrr_LIBRARY}
                         ${SKYLARK_LIBS}
                         ${Boost_LIBRARIES})
-  add_executable(randSVD rand_svd.cpp)
-  target_link_libraries(randSVD
-                        ${Elemental_LIBRARY}
-                        ${FFTW_LIBRARY}
-                        ${Pmrrr_LIBRARY}
-                        ${SKYLARK_LIBS}
-                        ${Boost_LIBRARIES})
   add_executable(randSVD1 rand_svd1.cpp)
   target_link_libraries(randSVD1
                         ${Elemental_LIBRARY}

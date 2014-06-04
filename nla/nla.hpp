@@ -12,4 +12,6 @@
 
 #include "Chebyshev.hpp"
 
+#include "RandSVD.hpp"
+
 #endif /* SKYLARK_NLA_HPP */

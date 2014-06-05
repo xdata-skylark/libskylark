@@ -47,12 +47,12 @@ sys.path.append( "/home/vikas/docproj/ext/breathe/" )
 
 # 'sphinx.ext.intersphinx'
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.pngmath', 'numpydoc',
-              'sphinx.ext.coverage','sphinx.ext.doctest', 'sphinx.ext.autosummary', 'breathe']
+              'sphinx.ext.coverage','sphinx.ext.doctest', 'sphinx.ext.autosummary']
 
 
 # breathe options
-breathe_projects = { "libskylark": os.environ["DOXYGEN_XML"] }
-breathe_default_project = "libskylark"
+#breathe_projects = { "libskylark": os.environ["DOXYGEN_XML"] }
+#breathe_default_project = "libskylark"
 
 #Determine if the matplotlib has a recent enough version of the
 # plot_directive, otherwise use the local fork.

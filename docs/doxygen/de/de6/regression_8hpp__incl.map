@@ -9,11 +9,11 @@
 <area shape="rect" id="node37" href="$d6/df9/linearl2__regression__solver__Krylov_8hpp.html" title="linearl2_regression_solver_Krylov.hpp" alt="" coords="43,237,283,267"/>
 <area shape="rect" id="node16" href="$dd/d3c/base_8hpp.html" title="../../base/base.hpp" alt="" coords="848,392,979,421"/>
 <area shape="rect" id="node20" href="$d7/d1e/exception_8hpp.html" title="exception.hpp" alt="" coords="1073,547,1175,576"/>
-<area shape="rect" id="node22" href="$dd/def/query_8hpp.html" title="query.hpp" alt="" coords="405,469,483,499"/>
+<area shape="rect" id="node22" href="$dd/def/query_8hpp.html" title="query.hpp" alt="" coords="403,469,480,499"/>
 <area shape="rect" id="node24" href="$d2/da3/context_8hpp.html" title="context.hpp" alt="" coords="1244,469,1335,499"/>
 <area shape="rect" id="node28" href="$d6/d95/randgen_8hpp.html" title="../utility/randgen.hpp" alt="" coords="2361,547,2500,576"/>
-<area shape="rect" id="node40" href="$d3/daa/typer_8hpp.html" title="../utility/typer.hpp" alt="" coords="468,392,591,421"/>
-<area shape="rect" id="node43" href="$d7/d75/LSQR_8hpp.html" title="../../nla/LSQR.hpp" alt="" coords="464,315,592,344"/>
+<area shape="rect" id="node40" href="$d3/daa/typer_8hpp.html" title="../utility/typer.hpp" alt="" coords="465,392,588,421"/>
+<area shape="rect" id="node43" href="$d7/d75/LSQR_8hpp.html" title="../Krylov/LSQR.hpp" alt="" coords="456,315,592,344"/>
 <area shape="rect" id="node50" href="$d7/dab/sketched__regression__solver__Elemental_8hpp.html" title="sketched_regression_solver_Elemental.hpp" alt="" coords="1053,237,1328,267"/>
 <area shape="rect" id="node57" href="$d7/d36/sketch_8hpp.html" title="../../sketch/sketch.hpp" alt="" coords="2345,315,2497,344"/>
 <area shape="rect" id="node60" href="$d3/de7/transforms_8hpp.html" title="transforms.hpp" alt="" coords="3331,392,3440,421"/>

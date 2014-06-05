@@ -268,7 +268,7 @@ Functions</h2></td></tr>
 <b>Value:</b><div class="fragment"><pre class="fragment"><a class="code" href="../../d7/d1e/exception_8hpp.html#a5ee9afaef080c30682e2011c664e88f6" title="macro defining the beginning of a try block">SKYLARK_BEGIN_TRY</a>()                                             \
         if (type == T)                                              \
             *sketch = <span class="keyword">new</span> <a class="code" href="../../d9/dd0/hp__dense_8cpp.html#aff3d2a4d05c5ea09ac5708604d1405e2">sketchc::sketch_transform_t</a>(type,         \
-                          <span class="keyword">new</span> C(<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, s, *ctxt));                      \
+                          <span class="keyword">new</span> C(<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, s, *ctxt));                      \
     SKYLARK_END_TRY()                                               \
     SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
 </pre></div>
@@ -307,7 +307,7 @@ Functions</h2></td></tr>
             double p1 = va_arg(argp, <span class="keywordtype">double</span>);                        <a class="code" href="../../d9/dd0/hp__dense_8cpp.html#aff3d2a4d05c5ea09ac5708604d1405e2">\</a>
 <a class="code" href="../../d9/dd0/hp__dense_8cpp.html#aff3d2a4d05c5ea09ac5708604d1405e2">            sketchc::sketch_transform_t</a> *r =                         \
                 new <a class="code" href="../../d9/dd0/hp__dense_8cpp.html#aff3d2a4d05c5ea09ac5708604d1405e2">sketchc::sketch_transform_t</a>(type,                \
-                    <span class="keyword">new</span> C(<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, s, p1, *ctxt));                         \
+                    <span class="keyword">new</span> C(<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, s, p1, *ctxt));                         \
             va_end(argp);                                            \
             *sketch = r;                                             \
         }                                                            \
@@ -677,7 +677,7 @@ Functions</h2></td></tr>
 
 <p>Definition at line <a class="el" href="../../dc/d74/capi_8cpp_source.html#l00201">201</a> of file <a class="el" href="../../dc/d74/capi_8cpp_source.html">capi.cpp</a>.</p>
 
-<p>References <a class="el" href="../../d7/d1e/exception_8hpp_source.html#l00029">SKYLARK_BEGIN_TRY</a>, <a class="el" href="../../d7/d1e/exception_8hpp_source.html#l00050">SKYLARK_CATCH_AND_RETURN_ERROR_CODE</a>, and <a class="el" href="../../d7/d1e/exception_8hpp_source.html#l00031">SKYLARK_END_TRY</a>.</p>
+<p>References <a class="el" href="../../d7/d1e/exception_8hpp_source.html#l00030">SKYLARK_BEGIN_TRY</a>, <a class="el" href="../../d7/d1e/exception_8hpp_source.html#l00051">SKYLARK_CATCH_AND_RETURN_ERROR_CODE</a>, and <a class="el" href="../../d7/d1e/exception_8hpp_source.html#l00032">SKYLARK_END_TRY</a>.</p>
 
 </div>
 </div>
@@ -709,7 +709,7 @@ Functions</h2></td></tr>
 
 <p>Definition at line <a class="el" href="../../dc/d74/capi_8cpp_source.html#l00192">192</a> of file <a class="el" href="../../dc/d74/capi_8cpp_source.html">capi.cpp</a>.</p>
 
-<p>References <a class="el" href="../../d7/d1e/exception_8hpp_source.html#l00029">SKYLARK_BEGIN_TRY</a>, <a class="el" href="../../d7/d1e/exception_8hpp_source.html#l00050">SKYLARK_CATCH_AND_RETURN_ERROR_CODE</a>, and <a class="el" href="../../d7/d1e/exception_8hpp_source.html#l00031">SKYLARK_END_TRY</a>.</p>
+<p>References <a class="el" href="../../d7/d1e/exception_8hpp_source.html#l00030">SKYLARK_BEGIN_TRY</a>, <a class="el" href="../../d7/d1e/exception_8hpp_source.html#l00051">SKYLARK_CATCH_AND_RETURN_ERROR_CODE</a>, and <a class="el" href="../../d7/d1e/exception_8hpp_source.html#l00032">SKYLARK_END_TRY</a>.</p>
 
 </div>
 </div>
@@ -765,7 +765,7 @@ Functions</h2></td></tr>
 
 <p>Definition at line <a class="el" href="../../dc/d74/capi_8cpp_source.html#l00219">219</a> of file <a class="el" href="../../dc/d74/capi_8cpp_source.html">capi.cpp</a>.</p>
 
-<p>References <a class="el" href="../../dc/d74/capi_8cpp.html#a067639d6edeb988e5088e25d8fa95310">AUTO_NEW_DISPATCH</a>, <a class="el" href="../../dc/d74/capi_8cpp.html#ac1d8b5ef06b553f268d08499bf79a085">AUTO_NEW_DISPATCH_1P</a>, <a class="el" href="../../dd/df1/sketchc_8hpp_source.html#l00025">skylark::sketch::c::CT</a>, <a class="el" href="../../dd/df1/sketchc_8hpp_source.html#l00027">skylark::sketch::c::CWT</a>, <a class="el" href="../../dd/df1/sketchc_8hpp_source.html#l00034">skylark::sketch::c::ExpSemigroupRLT</a>, <a class="el" href="../../dd/df1/sketchc_8hpp_source.html#l00033">skylark::sketch::c::FastGaussianRFT</a>, <a class="el" href="../../dd/df1/sketchc_8hpp_source.html#l00026">skylark::sketch::c::FJLT</a>, <a class="el" href="../../dd/df1/sketchc_8hpp_source.html#l00031">skylark::sketch::c::GaussianRFT</a>, <a class="el" href="../../dd/df1/sketchc_8hpp_source.html#l00024">skylark::sketch::c::JLT</a>, <a class="el" href="../../dd/df1/sketchc_8hpp_source.html#l00032">skylark::sketch::c::LaplacianRFT</a>, <a class="el" href="../../dd/df1/sketchc_8hpp_source.html#l00028">skylark::sketch::c::MMT</a>, <a class="el" href="../../dd/df1/sketchc_8hpp_source.html#l00030">skylark::sketch::c::PPT</a>, <a class="el" href="../../d7/d1e/exception_8hpp_source.html#l00029">SKYLARK_BEGIN_TRY</a>, <a class="el" href="../../d7/d1e/exception_8hpp_source.html#l00050">SKYLARK_CATCH_AND_RETURN_ERROR_CODE</a>, <a class="el" href="../../d7/d1e/exception_8hpp_source.html#l00031">SKYLARK_END_TRY</a>, and <a class="el" href="../../dd/df1/sketchc_8hpp_source.html#l00029">skylark::sketch::c::WZT</a>.</p>
+<p>References <a class="el" href="../../dc/d74/capi_8cpp.html#a067639d6edeb988e5088e25d8fa95310">AUTO_NEW_DISPATCH</a>, <a class="el" href="../../dc/d74/capi_8cpp.html#ac1d8b5ef06b553f268d08499bf79a085">AUTO_NEW_DISPATCH_1P</a>, <a class="el" href="../../dd/df1/sketchc_8hpp_source.html#l00025">skylark::sketch::c::CT</a>, <a class="el" href="../../dd/df1/sketchc_8hpp_source.html#l00027">skylark::sketch::c::CWT</a>, <a class="el" href="../../dd/df1/sketchc_8hpp_source.html#l00034">skylark::sketch::c::ExpSemigroupRLT</a>, <a class="el" href="../../dd/df1/sketchc_8hpp_source.html#l00033">skylark::sketch::c::FastGaussianRFT</a>, <a class="el" href="../../dd/df1/sketchc_8hpp_source.html#l00026">skylark::sketch::c::FJLT</a>, <a class="el" href="../../dd/df1/sketchc_8hpp_source.html#l00031">skylark::sketch::c::GaussianRFT</a>, <a class="el" href="../../dd/df1/sketchc_8hpp_source.html#l00024">skylark::sketch::c::JLT</a>, <a class="el" href="../../dd/df1/sketchc_8hpp_source.html#l00032">skylark::sketch::c::LaplacianRFT</a>, <a class="el" href="../../dd/df1/sketchc_8hpp_source.html#l00028">skylark::sketch::c::MMT</a>, <a class="el" href="../../dd/df1/sketchc_8hpp_source.html#l00030">skylark::sketch::c::PPT</a>, <a class="el" href="../../d7/d1e/exception_8hpp_source.html#l00030">SKYLARK_BEGIN_TRY</a>, <a class="el" href="../../d7/d1e/exception_8hpp_source.html#l00051">SKYLARK_CATCH_AND_RETURN_ERROR_CODE</a>, <a class="el" href="../../d7/d1e/exception_8hpp_source.html#l00032">SKYLARK_END_TRY</a>, and <a class="el" href="../../dd/df1/sketchc_8hpp_source.html#l00029">skylark::sketch::c::WZT</a>.</p>
 
 </div>
 </div>
@@ -841,7 +841,7 @@ Here is the call graph for this function:</div>
 
 <p>Definition at line <a class="el" href="../../dc/d74/capi_8cpp_source.html#l00210">210</a> of file <a class="el" href="../../dc/d74/capi_8cpp_source.html">capi.cpp</a>.</p>
 
-<p>References <a class="el" href="../../d7/d1e/exception_8hpp_source.html#l00029">SKYLARK_BEGIN_TRY</a>, <a class="el" href="../../d7/d1e/exception_8hpp_source.html#l00050">SKYLARK_CATCH_AND_RETURN_ERROR_CODE</a>, and <a class="el" href="../../d7/d1e/exception_8hpp_source.html#l00031">SKYLARK_END_TRY</a>.</p>
+<p>References <a class="el" href="../../d7/d1e/exception_8hpp_source.html#l00030">SKYLARK_BEGIN_TRY</a>, <a class="el" href="../../d7/d1e/exception_8hpp_source.html#l00051">SKYLARK_CATCH_AND_RETURN_ERROR_CODE</a>, and <a class="el" href="../../d7/d1e/exception_8hpp_source.html#l00032">SKYLARK_END_TRY</a>.</p>
 
 </div>
 </div>
@@ -1140,7 +1140,7 @@ Here is the call graph for this function:</div>
 
 <p>Definition at line <a class="el" href="../../dc/d74/capi_8cpp_source.html#l00171">171</a> of file <a class="el" href="../../dc/d74/capi_8cpp_source.html">capi.cpp</a>.</p>
 
-<p>References <a class="el" href="../../d7/d1e/exception_8hpp_source.html#l00023">skylark_strerror()</a>.</p>
+<p>References <a class="el" href="../../d7/d1e/exception_8hpp_source.html#l00024">skylark_strerror()</a>.</p>
 
 <p><div class="dynheader">
 Here is the call graph for this function:</div>
@@ -1289,7 +1289,7 @@ Here is the call graph for this function:</div>
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jun 5 2014 02:49:12 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jun 5 2014 18:16:08 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

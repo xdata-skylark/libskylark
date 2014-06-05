@@ -75,7 +75,7 @@
 <a name="l00016"></a>00016                          elem::DistMatrix&lt;ValueType, elem::MC, elem::MR&gt;,
 <a name="l00017"></a>00017                          elem::DistMatrix&lt;ValueType, elem::MC, elem::MR&gt; &gt; &gt; {
 <a name="l00018"></a>00018     <span class="keyword">typedef</span> ValueType value_type;
-<a name="l00019"></a>00019     <span class="keyword">typedef</span> elem::DistMatrix&lt;value_type, elem::MC, elem::MR&gt; <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>;
+<a name="l00019"></a>00019     <span class="keyword">typedef</span> elem::DistMatrix&lt;value_type, elem::MC, elem::MR&gt; <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>;
 <a name="l00020"></a>00020     <span class="keyword">typedef</span> elem::DistMatrix&lt;value_type, elem::MC, elem::MR&gt; output_matrix_type;
 <a name="l00021"></a>00021     <span class="keyword">typedef</span> SketchTransformType sketch_transform_type;
 <a name="l00022"></a>00022     <span class="keyword">typedef</span> sketch_transform_type::output_matrix_type sketched_matrix_type;
@@ -83,7 +83,7 @@
 <a name="l00035"></a>00035     <span class="keyword">static</span> <span class="keywordtype">void</span> apply (<span class="keywordtype">int</span> k,
 <a name="l00036"></a>00036                        <span class="keywordtype">int</span> sketch_size,
 <a name="l00037"></a>00037                        <span class="keywordtype">int</span> q,
-<a name="l00038"></a>00038                        <span class="keyword">const</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
+<a name="l00038"></a>00038                        <span class="keyword">const</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
 <a name="l00039"></a>00039                        output_matrix_type&amp; U,
 <a name="l00040"></a>00040                        output_matrix_type&amp; S,
 <a name="l00041"></a>00041                        output_matrix_type&amp; V,
@@ -194,8 +194,8 @@
 <a name="l00163"></a>00163          <span class="keywordtype">int</span> q,
 <a name="l00164"></a>00164          <a class="code" href="../../de/dea/structskylark_1_1base_1_1context__t.html">skylark::base::context_t</a>&amp; context) {
 <a name="l00165"></a>00165 
-<a name="l00166"></a>00166     <span class="keywordtype">int</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a> = A.Height();
-<a name="l00167"></a>00167     <span class="keywordtype">int</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a> = A.Width();
+<a name="l00166"></a>00166     <span class="keywordtype">int</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a> = A.Height();
+<a name="l00167"></a>00167     <span class="keywordtype">int</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a> = A.Width();
 <a name="l00168"></a>00168 
 <a name="l00169"></a>00169     <span class="comment">// Create an n x l JLT Sketch</span>
 <a name="l00170"></a>00170     <a class="code" href="../../d2/db6/classskylark_1_1sketch_1_1JLT__t.html">skylark::sketch::JLT_t&lt;DistMatrixType, DistMatrixType&gt;</a> <a class="code" href="../../d8/dc0/namespaceskylark_1_1sketch_1_1c.html#a31c97c70b200d7cf6a49ae99a39cf1c5a7e9e1846fa367d0305354ad3b3994f1a">JLT</a> (n, l, context);
@@ -235,7 +235,7 @@
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jun 5 2014 02:49:11 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jun 5 2014 18:16:07 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

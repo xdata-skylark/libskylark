@@ -87,8 +87,8 @@
 <a name="l00039"></a>00039           skylark::utility::rademacher_distribution_t&gt;(N, S, context)
 <a name="l00040"></a>00040     {}
 <a name="l00041"></a>00041 
-<a name="l00042"></a><a class="code" href="../../d1/d98/structDummy__t.html#a79ebaae525d354043b53460d5f15e31c">00042</a>     std::vector&lt;size_t&gt; <a class="code" href="../../d1/d98/structDummy__t.html#a79ebaae525d354043b53460d5f15e31c">getRowIdx</a>() { <span class="keywordflow">return</span> hash_t::row_idx; }
-<a name="l00043"></a><a class="code" href="../../d1/d98/structDummy__t.html#a22a2724d34da8a5410e96e289779619d">00043</a>     std::vector&lt;double&gt; <a class="code" href="../../d1/d98/structDummy__t.html#a22a2724d34da8a5410e96e289779619d">getRowValues</a>() { <span class="keywordflow">return</span> hash_t::row_value; }
+<a name="l00042"></a><a class="code" href="../../d1/d98/structDummy__t.html#a79ebaae525d354043b53460d5f15e31c">00042</a>     std::vector&lt;size_t&gt; <a class="code" href="../../d1/d98/structDummy__t.html#a79ebaae525d354043b53460d5f15e31c">getRowIdx</a>() { <span class="keywordflow">return</span> <a class="code" href="../../da/dbf/structskylark_1_1sketch_1_1hash__transform__data__t.html#ac156c21c1adaeadc91f204d4556ba9c5">hash_t::row_idx</a>; }
+<a name="l00043"></a><a class="code" href="../../d1/d98/structDummy__t.html#a22a2724d34da8a5410e96e289779619d">00043</a>     std::vector&lt;double&gt; <a class="code" href="../../d1/d98/structDummy__t.html#a22a2724d34da8a5410e96e289779619d">getRowValues</a>() { <span class="keywordflow">return</span> <a class="code" href="../../da/dbf/structskylark_1_1sketch_1_1hash__transform__data__t.html#af461e3c57e5cd5f6cc829e33869fdf18">hash_t::row_value</a>; }
 <a name="l00044"></a>00044 };
 <a name="l00045"></a>00045 
 <a name="l00046"></a><a class="code" href="../../d8/d7e/SparseSketchApplyElementalTest_8cpp.html#a225542f6ca1f8158933f2a7897ad0339">00046</a> <span class="keywordtype">int</span> <a class="code" href="../../db/dfb/DenseSketchApplyElementalTest_8cpp.html#a225542f6ca1f8158933f2a7897ad0339">test_main</a>(<span class="keywordtype">int</span> argc, <span class="keywordtype">char</span> *argv[]) {
@@ -96,8 +96,8 @@
 <a name="l00049"></a>00049     <span class="comment">//[&gt; Parameters &lt;]</span>
 <a name="l00050"></a>00050 
 <a name="l00051"></a>00051     <span class="comment">//FIXME: use random sizes?</span>
-<a name="l00052"></a>00052     <span class="keyword">const</span> <span class="keywordtype">size_t</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>   = 10;
-<a name="l00053"></a>00053     <span class="keyword">const</span> <span class="keywordtype">size_t</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>   = 5;
+<a name="l00052"></a>00052     <span class="keyword">const</span> <span class="keywordtype">size_t</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>   = 10;
+<a name="l00053"></a>00053     <span class="keyword">const</span> <span class="keywordtype">size_t</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>   = 5;
 <a name="l00054"></a>00054     <span class="keyword">const</span> <span class="keywordtype">size_t</span> n_s = 6;
 <a name="l00055"></a>00055     <span class="keyword">const</span> <span class="keywordtype">size_t</span> m_s = 3;
 <a name="l00056"></a>00056 
@@ -209,7 +209,7 @@
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jun 5 2014 02:49:12 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jun 5 2014 18:16:08 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

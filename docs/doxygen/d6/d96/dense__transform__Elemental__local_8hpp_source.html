@@ -86,7 +86,7 @@
 <a name="l00031"></a><a class="code" href="../../dd/d88/structskylark_1_1sketch_1_1dense__transform__t_3_01InputType_3_01ValueType_01_4_00_01elem_1_1Matef654bfbd93aa208a1815b48393c23b3.html#a86f90421b65ab002c28e9696addce8d6">00031</a>     <span class="keyword">typedef</span> ValueDistribution&lt;value_type&gt; <a class="code" href="../../dd/d88/structskylark_1_1sketch_1_1dense__transform__t_3_01InputType_3_01ValueType_01_4_00_01elem_1_1Matef654bfbd93aa208a1815b48393c23b3.html#a86f90421b65ab002c28e9696addce8d6">value_distribution_type</a>;
 <a name="l00032"></a><a class="code" href="../../dd/d88/structskylark_1_1sketch_1_1dense__transform__t_3_01InputType_3_01ValueType_01_4_00_01elem_1_1Matef654bfbd93aa208a1815b48393c23b3.html#aadcf9674d565a2156b11d668edfe2498">00032</a>     <span class="keyword">typedef</span> <a class="code" href="../../d1/dd1/structskylark_1_1sketch_1_1dense__transform__data__t.html">dense_transform_data_t&lt;ValueDistribution&gt;</a> <a class="code" href="../../dd/d88/structskylark_1_1sketch_1_1dense__transform__t_3_01InputType_3_01ValueType_01_4_00_01elem_1_1Matef654bfbd93aa208a1815b48393c23b3.html#aadcf9674d565a2156b11d668edfe2498">data_type</a>;
 <a name="l00033"></a>00033 
-<a name="l00037"></a><a class="code" href="../../dd/d88/structskylark_1_1sketch_1_1dense__transform__t_3_01InputType_3_01ValueType_01_4_00_01elem_1_1Matef654bfbd93aa208a1815b48393c23b3.html#aadae8c9fc1acc0e4323ffbfe5ceefe7d">00037</a>     <a class="code" href="../../d4/de7/classskylark_1_1sketch_1_1dense__transform__t.html">dense_transform_t</a> (<span class="keywordtype">int</span> N, <span class="keywordtype">int</span> S, <span class="keywordtype">double</span> scale, <a class="code" href="../../de/dea/structskylark_1_1base_1_1context__t.html">base::context_t</a>&amp; context)
+<a name="l00037"></a><a class="code" href="../../dd/d88/structskylark_1_1sketch_1_1dense__transform__t_3_01InputType_3_01ValueType_01_4_00_01elem_1_1Matef654bfbd93aa208a1815b48393c23b3.html#aadae8c9fc1acc0e4323ffbfe5ceefe7d">00037</a>     <a class="code" href="../../d4/de7/classskylark_1_1sketch_1_1dense__transform__t.html">dense_transform_t</a> (<span class="keywordtype">int</span> N, <span class="keywordtype">int</span> S, <span class="keywordtype">double</span> <a class="code" href="../../d1/dd1/structskylark_1_1sketch_1_1dense__transform__data__t.html#a791dca8cca513f2309226a7df1df9e23">scale</a>, <a class="code" href="../../de/dea/structskylark_1_1base_1_1context__t.html">base::context_t</a>&amp; context)
 <a name="l00038"></a>00038         : <a class="code" href="../../d1/dd1/structskylark_1_1sketch_1_1dense__transform__data__t.html">data_type</a> (N, S, scale, context) {
 <a name="l00039"></a>00039 
 <a name="l00040"></a>00040     }
@@ -113,44 +113,44 @@
 <a name="l00070"></a>00070         }
 <a name="l00071"></a>00071     }
 <a name="l00072"></a>00072 
-<a name="l00073"></a><a class="code" href="../../dd/d88/structskylark_1_1sketch_1_1dense__transform__t_3_01InputType_3_01ValueType_01_4_00_01elem_1_1Matef654bfbd93aa208a1815b48393c23b3.html#adf93addd770999eb455549d1f8647f2a">00073</a>     <span class="keywordtype">int</span> <a class="code" href="../../dd/d88/structskylark_1_1sketch_1_1dense__transform__t_3_01InputType_3_01ValueType_01_4_00_01elem_1_1Matef654bfbd93aa208a1815b48393c23b3.html#adf93addd770999eb455549d1f8647f2a">get_N</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> this-&gt;_N; } 
-<a name="l00074"></a><a class="code" href="../../dd/d88/structskylark_1_1sketch_1_1dense__transform__t_3_01InputType_3_01ValueType_01_4_00_01elem_1_1Matef654bfbd93aa208a1815b48393c23b3.html#ab690c40acfc24f4d0f4034ad4628a398">00074</a>     <span class="keywordtype">int</span> <a class="code" href="../../dd/d88/structskylark_1_1sketch_1_1dense__transform__t_3_01InputType_3_01ValueType_01_4_00_01elem_1_1Matef654bfbd93aa208a1815b48393c23b3.html#ab690c40acfc24f4d0f4034ad4628a398">get_S</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> this-&gt;_S; } 
+<a name="l00073"></a><a class="code" href="../../dd/d88/structskylark_1_1sketch_1_1dense__transform__t_3_01InputType_3_01ValueType_01_4_00_01elem_1_1Matef654bfbd93aa208a1815b48393c23b3.html#adf93addd770999eb455549d1f8647f2a">00073</a>     <span class="keywordtype">int</span> <a class="code" href="../../dd/d88/structskylark_1_1sketch_1_1dense__transform__t_3_01InputType_3_01ValueType_01_4_00_01elem_1_1Matef654bfbd93aa208a1815b48393c23b3.html#adf93addd770999eb455549d1f8647f2a">get_N</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> this-&gt;<a class="code" href="../../d3/dc2/structskylark_1_1sketch_1_1sketch__transform__data__t.html#a14e65da6ca93c86695b5ed4295db4611">_N</a>; } 
+<a name="l00074"></a><a class="code" href="../../dd/d88/structskylark_1_1sketch_1_1dense__transform__t_3_01InputType_3_01ValueType_01_4_00_01elem_1_1Matef654bfbd93aa208a1815b48393c23b3.html#ab690c40acfc24f4d0f4034ad4628a398">00074</a>     <span class="keywordtype">int</span> <a class="code" href="../../dd/d88/structskylark_1_1sketch_1_1dense__transform__t_3_01InputType_3_01ValueType_01_4_00_01elem_1_1Matef654bfbd93aa208a1815b48393c23b3.html#ab690c40acfc24f4d0f4034ad4628a398">get_S</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> this-&gt;<a class="code" href="../../d3/dc2/structskylark_1_1sketch_1_1sketch__transform__data__t.html#a5f6518e8b02aa7ae60aa7985130c0194">_S</a>; } 
 <a name="l00076"></a><a class="code" href="../../dd/d88/structskylark_1_1sketch_1_1dense__transform__t_3_01InputType_3_01ValueType_01_4_00_01elem_1_1Matef654bfbd93aa208a1815b48393c23b3.html#aeb47e05cfc726b14997b07304cdb4973">00076</a>     <span class="keyword">const</span> <a class="code" href="../../d3/dc2/structskylark_1_1sketch_1_1sketch__transform__data__t.html">sketch_transform_data_t</a>* <a class="code" href="../../dd/d88/structskylark_1_1sketch_1_1dense__transform__t_3_01InputType_3_01ValueType_01_4_00_01elem_1_1Matef654bfbd93aa208a1815b48393c23b3.html#aeb47e05cfc726b14997b07304cdb4973">get_data</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> <span class="keyword">this</span>; }
 <a name="l00077"></a>00077 
 <a name="l00078"></a>00078 <span class="keyword">private</span>:
 <a name="l00079"></a>00079 
 <a name="l00080"></a>00080     <span class="comment">// TODO: Block-by-block mode</span>
-<a name="l00081"></a>00081     <span class="keywordtype">void</span> apply_impl_local (<span class="keyword">const</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
+<a name="l00081"></a>00081     <span class="keywordtype">void</span> apply_impl_local (<span class="keyword">const</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
 <a name="l00082"></a>00082                           output_matrix_type&amp; sketch_of_A,
 <a name="l00083"></a>00083                           <a class="code" href="../../d4/d9b/structskylark_1_1sketch_1_1rowwise__tag.html" title="Apply the sketch/transform to the rows. In matrix form this is A-&gt;AS^T.">skylark::sketch::rowwise_tag</a> tag)<span class="keyword"> const </span>{
 <a name="l00084"></a>00084 
 <a name="l00085"></a>00085         output_matrix_type R;
-<a name="l00086"></a>00086         <a class="code" href="../../d1/dd1/structskylark_1_1sketch_1_1dense__transform__data__t.html#aed2f673b17ae1ecd2eff4926272194f6">data_type::realize_matrix_view</a>(R);
+<a name="l00086"></a>00086         <a class="code" href="../../d1/dd1/structskylark_1_1sketch_1_1dense__transform__data__t.html#a6ef915480e08e8a45a2c20fde2ae640c">data_type::realize_matrix_view</a>(R);
 <a name="l00087"></a>00087 
 <a name="l00088"></a>00088         <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a8f7ed6aa7741ff54e546fa88fc706a53">base::Gemm</a> (elem::NORMAL,
 <a name="l00089"></a>00089                     elem::TRANSPOSE,
-<a name="l00090"></a>00090                     value_type(1),
+<a name="l00090"></a>00090                     <a class="code" href="../../d1/dd1/structskylark_1_1sketch_1_1dense__transform__data__t.html#af70cce35184c8ace000b8136883715d0">value_type</a>(1),
 <a name="l00091"></a>00091                     A,
 <a name="l00092"></a>00092                     R,
-<a name="l00093"></a>00093                     value_type(0),
+<a name="l00093"></a>00093                     <a class="code" href="../../d1/dd1/structskylark_1_1sketch_1_1dense__transform__data__t.html#af70cce35184c8ace000b8136883715d0">value_type</a>(0),
 <a name="l00094"></a>00094                     sketch_of_A);
 <a name="l00095"></a>00095     }
 <a name="l00096"></a>00096 
 <a name="l00097"></a>00097 
 <a name="l00098"></a>00098     <span class="comment">// TODO: Block-by-block mode</span>
-<a name="l00099"></a>00099     <span class="keywordtype">void</span> apply_impl_local (<span class="keyword">const</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
+<a name="l00099"></a>00099     <span class="keywordtype">void</span> apply_impl_local (<span class="keyword">const</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
 <a name="l00100"></a>00100                           output_matrix_type&amp; sketch_of_A,
 <a name="l00101"></a>00101                           <a class="code" href="../../df/d8f/structskylark_1_1sketch_1_1columnwise__tag.html" title="Apply the sketch/transform to the columns. In matrix form this is A-&gt;SA.">skylark::sketch::columnwise_tag</a> tag)<span class="keyword"> const </span>{
 <a name="l00102"></a>00102 
 <a name="l00103"></a>00103         output_matrix_type R;
-<a name="l00104"></a>00104         <a class="code" href="../../d1/dd1/structskylark_1_1sketch_1_1dense__transform__data__t.html#aed2f673b17ae1ecd2eff4926272194f6">data_type::realize_matrix_view</a>(R);
+<a name="l00104"></a>00104         <a class="code" href="../../d1/dd1/structskylark_1_1sketch_1_1dense__transform__data__t.html#a6ef915480e08e8a45a2c20fde2ae640c">data_type::realize_matrix_view</a>(R);
 <a name="l00105"></a>00105 
 <a name="l00106"></a>00106         <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a8f7ed6aa7741ff54e546fa88fc706a53">base::Gemm</a> (elem::NORMAL,
 <a name="l00107"></a>00107                     elem::NORMAL,
-<a name="l00108"></a>00108                     value_type(1),
+<a name="l00108"></a>00108                     <a class="code" href="../../d1/dd1/structskylark_1_1sketch_1_1dense__transform__data__t.html#af70cce35184c8ace000b8136883715d0">value_type</a>(1),
 <a name="l00109"></a>00109                     R,
 <a name="l00110"></a>00110                     A,
-<a name="l00111"></a>00111                     value_type(0),
+<a name="l00111"></a>00111                     <a class="code" href="../../d1/dd1/structskylark_1_1sketch_1_1dense__transform__data__t.html#af70cce35184c8ace000b8136883715d0">value_type</a>(0),
 <a name="l00112"></a>00112                     sketch_of_A);
 <a name="l00113"></a>00113     }
 <a name="l00114"></a>00114 };
@@ -161,7 +161,7 @@
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jun 5 2014 02:49:11 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jun 5 2014 18:16:07 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

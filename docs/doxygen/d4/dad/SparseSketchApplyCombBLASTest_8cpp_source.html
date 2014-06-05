@@ -98,8 +98,8 @@
 <a name="l00050"></a>00050           skylark::utility::rademacher_distribution_t&gt;(N, S, context)
 <a name="l00051"></a>00051     {}
 <a name="l00052"></a>00052 
-<a name="l00053"></a><a class="code" href="../../d1/d98/structDummy__t.html#a79ebaae525d354043b53460d5f15e31c">00053</a>     std::vector&lt;size_t&gt; <a class="code" href="../../d1/d98/structDummy__t.html#a79ebaae525d354043b53460d5f15e31c">getRowIdx</a>() { <span class="keywordflow">return</span> hash_t::row_idx; }
-<a name="l00054"></a><a class="code" href="../../d1/d98/structDummy__t.html#a22a2724d34da8a5410e96e289779619d">00054</a>     std::vector&lt;double&gt; <a class="code" href="../../d1/d98/structDummy__t.html#a22a2724d34da8a5410e96e289779619d">getRowValues</a>() { <span class="keywordflow">return</span> hash_t::row_value; }
+<a name="l00053"></a><a class="code" href="../../d1/d98/structDummy__t.html#a79ebaae525d354043b53460d5f15e31c">00053</a>     std::vector&lt;size_t&gt; <a class="code" href="../../d1/d98/structDummy__t.html#a79ebaae525d354043b53460d5f15e31c">getRowIdx</a>() { <span class="keywordflow">return</span> <a class="code" href="../../da/dbf/structskylark_1_1sketch_1_1hash__transform__data__t.html#ac156c21c1adaeadc91f204d4556ba9c5">hash_t::row_idx</a>; }
+<a name="l00054"></a><a class="code" href="../../d1/d98/structDummy__t.html#a22a2724d34da8a5410e96e289779619d">00054</a>     std::vector&lt;double&gt; <a class="code" href="../../d1/d98/structDummy__t.html#a22a2724d34da8a5410e96e289779619d">getRowValues</a>() { <span class="keywordflow">return</span> <a class="code" href="../../da/dbf/structskylark_1_1sketch_1_1hash__transform__data__t.html#af461e3c57e5cd5f6cc829e33869fdf18">hash_t::row_value</a>; }
 <a name="l00055"></a>00055 };
 <a name="l00056"></a>00056 
 <a name="l00057"></a>00057 
@@ -132,8 +132,8 @@
 <a name="l00085"></a>00085     <span class="comment">//[&gt; Parameters &lt;]</span>
 <a name="l00086"></a>00086 
 <a name="l00087"></a>00087     <span class="comment">//FIXME: use random sizes?</span>
-<a name="l00088"></a>00088     <span class="keyword">const</span> <span class="keywordtype">size_t</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>   = 200;
-<a name="l00089"></a>00089     <span class="keyword">const</span> <span class="keywordtype">size_t</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>   = 100;
+<a name="l00088"></a>00088     <span class="keyword">const</span> <span class="keywordtype">size_t</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>   = 200;
+<a name="l00089"></a>00089     <span class="keyword">const</span> <span class="keywordtype">size_t</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>   = 100;
 <a name="l00090"></a>00090     <span class="keyword">const</span> <span class="keywordtype">size_t</span> n_s = 120;
 <a name="l00091"></a>00091     <span class="keyword">const</span> <span class="keywordtype">size_t</span> m_s = 60;
 <a name="l00092"></a>00092 
@@ -147,7 +147,7 @@
 <a name="l00101"></a>00101 
 <a name="l00102"></a>00102     <span class="keywordtype">double</span> count = 1.0;
 <a name="l00103"></a>00103 
-<a name="l00104"></a>00104     <span class="keyword">const</span> <span class="keywordtype">size_t</span> matrix_full = n * <a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>;
+<a name="l00104"></a>00104     <span class="keyword">const</span> <span class="keywordtype">size_t</span> matrix_full = n * <a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>;
 <a name="l00105"></a>00105     <a class="code" href="../../d4/dad/SparseSketchApplyCombBLASTest_8cpp.html#a3f9c296f4f1ee969fba677a109b8a45f">mpi_vector_t</a> colsf(matrix_full);
 <a name="l00106"></a>00106     <a class="code" href="../../d4/dad/SparseSketchApplyCombBLASTest_8cpp.html#a3f9c296f4f1ee969fba677a109b8a45f">mpi_vector_t</a> rowsf(matrix_full);
 <a name="l00107"></a>00107     <a class="code" href="../../d4/dad/SparseSketchApplyCombBLASTest_8cpp.html#a3f9c296f4f1ee969fba677a109b8a45f">mpi_vector_t</a> valsf(matrix_full);
@@ -212,7 +212,7 @@
 <a name="l00168"></a>00168         <span class="comment">// See creation of A.</span>
 <a name="l00169"></a>00169         <span class="keywordflow">for</span>(<span class="keywordtype">int</span> col = 0; col &lt; pi_sketch_l.width(); col++) {
 <a name="l00170"></a>00170             <span class="keywordflow">for</span>(<span class="keywordtype">int</span> idx = indptr[col]; idx &lt; indptr[col + 1]; idx++) {
-<a name="l00171"></a>00171                 <span class="keywordflow">for</span>(<span class="keywordtype">int</span> ccol = 0; ccol &lt; <a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>; ++ccol) {
+<a name="l00171"></a>00171                 <span class="keywordflow">for</span>(<span class="keywordtype">int</span> ccol = 0; ccol &lt; <a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>; ++ccol) {
 <a name="l00172"></a>00172                     <span class="keyword">typename</span> LocalMatrixType::coord_tuple_t new_entry(indices[idx],
 <a name="l00173"></a>00173                             ccol, values[idx] * (ccol + col * m + 1));
 <a name="l00174"></a>00174                     coords_new.push_back(new_entry);
@@ -254,7 +254,7 @@
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jun 5 2014 02:49:12 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jun 5 2014 18:16:08 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

@@ -74,8 +74,8 @@
 <table class="memberdecls">
 <tr><td colspan="2"><h2><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr><td class="memTemplParams" colspan="2">template&lt;typename InputMatrixType , typename OutputMatrixType1 , typename SingularValuesMatrixType , typename OutputMatrixType2 &gt; </td></tr>
-<tr><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="../../d6/dba/structskylark_1_1nla_1_1randsvd__t.html#aaa9d5e7da463316e9f22bdcff69e953c">operator()</a> (InputMatrixType &amp;A, int target_rank, OutputMatrixType1 &amp;U, SingularValuesMatrixType &amp;SV, OutputMatrixType2 &amp;V, <a class="el" href="../../d3/d55/structskylark_1_1nla_1_1rand__svd__params__t.html">rand_svd_params_t</a> params, <a class="el" href="../../de/dea/structskylark_1_1base_1_1context__t.html">skylark::base::context_t</a> &amp;context)</td></tr>
+<tr><td class="memTemplParams" colspan="2">template&lt;typename InputMatrixType , typename UMatrixType , typename SingularValuesMatrixType , typename VMatrixType &gt; </td></tr>
+<tr><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="../../d6/dba/structskylark_1_1nla_1_1randsvd__t.html#ae1b6ee10a161811a3520449e73a530cd">operator()</a> (InputMatrixType &amp;A, int target_rank, UMatrixType &amp;U, SingularValuesMatrixType &amp;SV, VMatrixType &amp;V, <a class="el" href="../../d3/d55/structskylark_1_1nla_1_1rand__svd__params__t.html">rand_svd_params_t</a> params, <a class="el" href="../../de/dea/structskylark_1_1base_1_1context__t.html">skylark::base::context_t</a> &amp;context)</td></tr>
 </table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock"><h3>template&lt;template&lt; typename, typename &gt; class SketchTransform&gt;<br/>
@@ -84,13 +84,13 @@ struct skylark::nla::randsvd_t&lt; SketchTransform &gt;</h3>
 
 <p>Definition at line <a class="el" href="../../d2/d9d/RandSVD_8hpp_source.html#l00036">36</a> of file <a class="el" href="../../d2/d9d/RandSVD_8hpp_source.html">RandSVD.hpp</a>.</p>
 </div><hr/><h2>Member Function Documentation</h2>
-<a class="anchor" id="aaa9d5e7da463316e9f22bdcff69e953c"></a><!-- doxytag: member="skylark::nla::randsvd_t::operator()" ref="aaa9d5e7da463316e9f22bdcff69e953c" args="(InputMatrixType &amp;A, int target_rank, OutputMatrixType1 &amp;U, SingularValuesMatrixType &amp;SV, OutputMatrixType2 &amp;V, rand_svd_params_t params, skylark::base::context_t &amp;context)" -->
+<a class="anchor" id="ae1b6ee10a161811a3520449e73a530cd"></a><!-- doxytag: member="skylark::nla::randsvd_t::operator()" ref="ae1b6ee10a161811a3520449e73a530cd" args="(InputMatrixType &amp;A, int target_rank, UMatrixType &amp;U, SingularValuesMatrixType &amp;SV, VMatrixType &amp;V, rand_svd_params_t params, skylark::base::context_t &amp;context)" -->
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;template&lt; typename, typename &gt; class SketchTransform&gt; </div>
 <div class="memtemplate">
-template&lt;typename InputMatrixType , typename OutputMatrixType1 , typename SingularValuesMatrixType , typename OutputMatrixType2 &gt; </div>
+template&lt;typename InputMatrixType , typename UMatrixType , typename SingularValuesMatrixType , typename VMatrixType &gt; </div>
       <table class="memname">
         <tr>
           <td class="memname">void <a class="el" href="../../d6/dba/structskylark_1_1nla_1_1randsvd__t.html">skylark::nla::randsvd_t</a>&lt; SketchTransform &gt;::operator() </td>
@@ -107,7 +107,7 @@ template&lt;typename InputMatrixType , typename OutputMatrixType1 , typename Sin
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">OutputMatrixType1 &amp;&#160;</td>
+          <td class="paramtype">UMatrixType &amp;&#160;</td>
           <td class="paramname"><em>U</em>, </td>
         </tr>
         <tr>
@@ -119,7 +119,7 @@ template&lt;typename InputMatrixType , typename OutputMatrixType1 , typename Sin
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">OutputMatrixType2 &amp;&#160;</td>
+          <td class="paramtype">VMatrixType &amp;&#160;</td>
           <td class="paramname"><em>V</em>, </td>
         </tr>
         <tr>
@@ -161,13 +161,13 @@ template&lt;typename InputMatrixType , typename OutputMatrixType1 , typename Sin
 
 <p>Definition at line <a class="el" href="../../d2/d9d/RandSVD_8hpp_source.html#l00042">42</a> of file <a class="el" href="../../d2/d9d/RandSVD_8hpp_source.html">RandSVD.hpp</a>.</p>
 
-<p>References <a class="el" href="../../dd/df1/sketchc_8hpp_source.html#l00027">skylark::sketch::c::CWT</a>, <a class="el" href="../../dd/df1/sketchc_8hpp_source.html#l00026">skylark::sketch::c::FJLT</a>, <a class="el" href="../../d0/d97/Gemm_8hpp_source.html#l00488">skylark::base::Gemm()</a>, <a class="el" href="../../dd/df1/sketchc_8hpp_source.html#l00024">skylark::sketch::c::JLT</a>, <a class="el" href="../../df/d93/utils_8hpp_source.html#l00011">min()</a>, <a class="el" href="../../d2/d9d/RandSVD_8hpp_source.html#l00023">skylark::nla::rand_svd_params_t::num_iterations</a>, <a class="el" href="../../d2/d9d/RandSVD_8hpp_source.html#l00022">skylark::nla::rand_svd_params_t::oversampling</a>, <a class="el" href="../../d2/d9d/RandSVD_8hpp_source.html#l00025">skylark::nla::rand_svd_params_t::skip_qr</a>, <a class="el" href="../../d7/d1e/exception_8hpp_source.html#l00034">SKYLARK_THROW_EXCEPTION</a>, and <a class="el" href="../../d2/d9d/RandSVD_8hpp_source.html#l00024">skylark::nla::rand_svd_params_t::transform</a>.</p>
+<p>References <a class="el" href="../../dd/df1/sketchc_8hpp_source.html#l00027">skylark::sketch::c::CWT</a>, <a class="el" href="../../dd/df1/sketchc_8hpp_source.html#l00026">skylark::sketch::c::FJLT</a>, <a class="el" href="../../d0/d97/Gemm_8hpp_source.html#l00488">skylark::base::Gemm()</a>, <a class="el" href="../../dd/df1/sketchc_8hpp_source.html#l00024">skylark::sketch::c::JLT</a>, <a class="el" href="../../df/d93/utils_8hpp_source.html#l00011">min()</a>, <a class="el" href="../../d2/d9d/RandSVD_8hpp_source.html#l00023">skylark::nla::rand_svd_params_t::num_iterations</a>, <a class="el" href="../../d2/d9d/RandSVD_8hpp_source.html#l00022">skylark::nla::rand_svd_params_t::oversampling</a>, <a class="el" href="../../d2/d9d/RandSVD_8hpp_source.html#l00025">skylark::nla::rand_svd_params_t::skip_qr</a>, <a class="el" href="../../d7/d1e/exception_8hpp_source.html#l00035">SKYLARK_THROW_EXCEPTION</a>, and <a class="el" href="../../d2/d9d/RandSVD_8hpp_source.html#l00024">skylark::nla::rand_svd_params_t::transform</a>.</p>
 
 <p><div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d6/dba/structskylark_1_1nla_1_1randsvd__t_aaa9d5e7da463316e9f22bdcff69e953c_cgraph.png" border="0" usemap="#d6/dba/structskylark_1_1nla_1_1randsvd__t_aaa9d5e7da463316e9f22bdcff69e953c_cgraph" alt=""/></div>
-<map name="d6/dba/structskylark_1_1nla_1_1randsvd__t_aaa9d5e7da463316e9f22bdcff69e953c_cgraph" id="d6/dba/structskylark_1_1nla_1_1randsvd__t_aaa9d5e7da463316e9f22bdcff69e953c_cgraph">
+<div class="center"><img src="../../d6/dba/structskylark_1_1nla_1_1randsvd__t_ae1b6ee10a161811a3520449e73a530cd_cgraph.png" border="0" usemap="#d6/dba/structskylark_1_1nla_1_1randsvd__t_ae1b6ee10a161811a3520449e73a530cd_cgraph" alt=""/></div>
+<map name="d6/dba/structskylark_1_1nla_1_1randsvd__t_ae1b6ee10a161811a3520449e73a530cd_cgraph" id="d6/dba/structskylark_1_1nla_1_1randsvd__t_ae1b6ee10a161811a3520449e73a530cd_cgraph">
 <area shape="rect" id="node3" href="../../d3/d18/namespaceskylark_1_1base.html#a8f7ed6aa7741ff54e546fa88fc706a53" title="skylark::base::Gemm" alt="" coords="272,5,419,35"/><area shape="rect" id="node7" href="../../df/d93/utils_8hpp.html#a3f9599c9c447625449f078e770cf9f37" title="min" alt="" coords="324,59,367,88"/><area shape="rect" id="node5" href="../../d1/dfc/structskylark_1_1base_1_1computed__matrix__t.html#a450ee5429c4a1abaa83002f8e9b45eb5" title="skylark::base::computed_matrix_t::materialize" alt="" coords="467,5,757,35"/></map>
 </div>
 </p>
@@ -181,7 +181,7 @@ Here is the call graph for this function:</div>
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jun 5 2014 02:49:13 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jun 5 2014 18:16:09 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

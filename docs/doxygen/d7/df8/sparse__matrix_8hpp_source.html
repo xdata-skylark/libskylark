@@ -296,8 +296,8 @@
 <a name="l00254"></a>00254     <span class="keyword">const</span> <span class="keywordtype">int</span>* aindices = A.<a class="code" href="../../dc/dbf/structskylark_1_1base_1_1sparse__matrix__t.html#a1d01c4437e0f15063f7d53448a65b53e">indices</a>();
 <a name="l00255"></a>00255     <span class="keyword">const</span> <span class="keywordtype">double</span>* avalues = A.<a class="code" href="../../dc/dbf/structskylark_1_1base_1_1sparse__matrix__t.html#ac947ffd541302ec87ba32c392ac00aca">locked_values</a>();
 <a name="l00256"></a>00256 
-<a name="l00257"></a>00257     <span class="keywordtype">int</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a> = A.<a class="code" href="../../dc/dbf/structskylark_1_1base_1_1sparse__matrix__t.html#a7de5d2d055e4526b115c804426b23ab1">width</a>();
-<a name="l00258"></a>00258     <span class="keywordtype">int</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a> = A.<a class="code" href="../../dc/dbf/structskylark_1_1base_1_1sparse__matrix__t.html#a7c726f818c6b38279653d087ee9cebb9">height</a>();
+<a name="l00257"></a>00257     <span class="keywordtype">int</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a> = A.<a class="code" href="../../dc/dbf/structskylark_1_1base_1_1sparse__matrix__t.html#a7de5d2d055e4526b115c804426b23ab1">width</a>();
+<a name="l00258"></a>00258     <span class="keywordtype">int</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a> = A.<a class="code" href="../../dc/dbf/structskylark_1_1base_1_1sparse__matrix__t.html#a7c726f818c6b38279653d087ee9cebb9">height</a>();
 <a name="l00259"></a>00259     <span class="keywordtype">int</span> nnz = A.<a class="code" href="../../dc/dbf/structskylark_1_1base_1_1sparse__matrix__t.html#ad5d6dc5b6a83d3875ee616397e5f3c1d">nonzeros</a>();
 <a name="l00260"></a>00260 
 <a name="l00261"></a>00261     <span class="keywordtype">int</span> *indptr = <span class="keyword">new</span> <span class="keywordtype">int</span>[n + 1];
@@ -305,20 +305,20 @@
 <a name="l00263"></a>00263     <span class="keywordtype">double</span> *values = <span class="keyword">new</span> <span class="keywordtype">double</span>[nnz];
 <a name="l00264"></a>00264 
 <a name="l00265"></a>00265     <span class="comment">// Count nonzeros in each row</span>
-<a name="l00266"></a>00266     <span class="keywordtype">int</span> *nzrow = <span class="keyword">new</span> <span class="keywordtype">int</span>[<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>];
+<a name="l00266"></a>00266     <span class="keywordtype">int</span> *nzrow = <span class="keyword">new</span> <span class="keywordtype">int</span>[<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>];
 <a name="l00267"></a>00267     std::fill(nzrow, nzrow + n, 0);
-<a name="l00268"></a>00268     <span class="keywordflow">for</span>(<span class="keywordtype">int</span> col = 0; col &lt; <a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>; col++)
+<a name="l00268"></a>00268     <span class="keywordflow">for</span>(<span class="keywordtype">int</span> col = 0; col &lt; <a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>; col++)
 <a name="l00269"></a>00269         <span class="keywordflow">for</span>(<span class="keywordtype">int</span> idx = aindptr[col]; idx &lt; aindptr[col + 1]; idx++)
 <a name="l00270"></a>00270             nzrow[aindices[idx]]++;
 <a name="l00271"></a>00271 
 <a name="l00272"></a>00272     <span class="comment">// Set indptr</span>
 <a name="l00273"></a>00273     indptr[0] = 0;
-<a name="l00274"></a>00274     <span class="keywordflow">for</span>(<span class="keywordtype">int</span> col = 1; col &lt;= <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>; col++)
+<a name="l00274"></a>00274     <span class="keywordflow">for</span>(<span class="keywordtype">int</span> col = 1; col &lt;= <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>; col++)
 <a name="l00275"></a>00275         indptr[col] = indptr[col - 1] + nzrow[col - 1];
 <a name="l00276"></a>00276 
 <a name="l00277"></a>00277     <span class="comment">// Fill values</span>
 <a name="l00278"></a>00278     std::fill(nzrow, nzrow + n, 0);
-<a name="l00279"></a>00279     <span class="keywordflow">for</span>(<span class="keywordtype">int</span> col = 0; col &lt; <a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>; col++)
+<a name="l00279"></a>00279     <span class="keywordflow">for</span>(<span class="keywordtype">int</span> col = 0; col &lt; <a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>; col++)
 <a name="l00280"></a>00280         <span class="keywordflow">for</span>(<span class="keywordtype">int</span> idx = aindptr[col]; idx &lt; aindptr[col + 1]; idx++) {
 <a name="l00281"></a>00281             <span class="keywordtype">int</span> row = aindices[idx];
 <a name="l00282"></a>00282             <span class="keywordtype">double</span> val = avalues[idx];
@@ -339,7 +339,7 @@
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jun 5 2014 02:49:11 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jun 5 2014 18:16:07 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

@@ -88,7 +88,7 @@
 <a name="l00032"></a><a class="code" href="../../d1/d20/structskylark_1_1sketch_1_1dense__transform__t_3_01elem_1_1DistMatrix_3_01ValueType_01_4_00_01el772af1d170cedb73949f5c03adc3510c.html#aead7b30cbfb49bfc765622d5640b23ac">00032</a>     <span class="keyword">typedef</span> <a class="code" href="../../d1/dd1/structskylark_1_1sketch_1_1dense__transform__data__t.html">dense_transform_data_t&lt;ValueDistribution&gt;</a> <a class="code" href="../../d1/d20/structskylark_1_1sketch_1_1dense__transform__t_3_01elem_1_1DistMatrix_3_01ValueType_01_4_00_01el772af1d170cedb73949f5c03adc3510c.html#aead7b30cbfb49bfc765622d5640b23ac">data_type</a>;
 <a name="l00033"></a>00033 
 <a name="l00034"></a>00034 
-<a name="l00038"></a><a class="code" href="../../d1/d20/structskylark_1_1sketch_1_1dense__transform__t_3_01elem_1_1DistMatrix_3_01ValueType_01_4_00_01el772af1d170cedb73949f5c03adc3510c.html#ac6746dfdab652932ba37d9248b03279b">00038</a>     <a class="code" href="../../d4/de7/classskylark_1_1sketch_1_1dense__transform__t.html">dense_transform_t</a> (<span class="keywordtype">int</span> N, <span class="keywordtype">int</span> S, <span class="keywordtype">double</span> scale, <a class="code" href="../../de/dea/structskylark_1_1base_1_1context__t.html">base::context_t</a>&amp; context)
+<a name="l00038"></a><a class="code" href="../../d1/d20/structskylark_1_1sketch_1_1dense__transform__t_3_01elem_1_1DistMatrix_3_01ValueType_01_4_00_01el772af1d170cedb73949f5c03adc3510c.html#ac6746dfdab652932ba37d9248b03279b">00038</a>     <a class="code" href="../../d4/de7/classskylark_1_1sketch_1_1dense__transform__t.html">dense_transform_t</a> (<span class="keywordtype">int</span> N, <span class="keywordtype">int</span> S, <span class="keywordtype">double</span> <a class="code" href="../../d1/dd1/structskylark_1_1sketch_1_1dense__transform__data__t.html#a791dca8cca513f2309226a7df1df9e23">scale</a>, <a class="code" href="../../de/dea/structskylark_1_1base_1_1context__t.html">base::context_t</a>&amp; context)
 <a name="l00039"></a>00039         : <a class="code" href="../../d1/dd1/structskylark_1_1sketch_1_1dense__transform__data__t.html">data_type</a> (N, S, scale, context) {
 <a name="l00040"></a>00040 
 <a name="l00041"></a>00041     }
@@ -118,19 +118,19 @@
 <a name="l00074"></a>00074         }
 <a name="l00075"></a>00075     }
 <a name="l00076"></a>00076 
-<a name="l00077"></a><a class="code" href="../../d1/d20/structskylark_1_1sketch_1_1dense__transform__t_3_01elem_1_1DistMatrix_3_01ValueType_01_4_00_01el772af1d170cedb73949f5c03adc3510c.html#a8607b9ab4d34329c20b9709eada5545f">00077</a>     <span class="keywordtype">int</span> <a class="code" href="../../d1/d20/structskylark_1_1sketch_1_1dense__transform__t_3_01elem_1_1DistMatrix_3_01ValueType_01_4_00_01el772af1d170cedb73949f5c03adc3510c.html#a8607b9ab4d34329c20b9709eada5545f">get_N</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> this-&gt;_N; } 
-<a name="l00078"></a><a class="code" href="../../d1/d20/structskylark_1_1sketch_1_1dense__transform__t_3_01elem_1_1DistMatrix_3_01ValueType_01_4_00_01el772af1d170cedb73949f5c03adc3510c.html#a8200a976ddb53bb1de9279e4055519d6">00078</a>     <span class="keywordtype">int</span> <a class="code" href="../../d1/d20/structskylark_1_1sketch_1_1dense__transform__t_3_01elem_1_1DistMatrix_3_01ValueType_01_4_00_01el772af1d170cedb73949f5c03adc3510c.html#a8200a976ddb53bb1de9279e4055519d6">get_S</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> this-&gt;_S; } 
+<a name="l00077"></a><a class="code" href="../../d1/d20/structskylark_1_1sketch_1_1dense__transform__t_3_01elem_1_1DistMatrix_3_01ValueType_01_4_00_01el772af1d170cedb73949f5c03adc3510c.html#a8607b9ab4d34329c20b9709eada5545f">00077</a>     <span class="keywordtype">int</span> <a class="code" href="../../d1/d20/structskylark_1_1sketch_1_1dense__transform__t_3_01elem_1_1DistMatrix_3_01ValueType_01_4_00_01el772af1d170cedb73949f5c03adc3510c.html#a8607b9ab4d34329c20b9709eada5545f">get_N</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> this-&gt;<a class="code" href="../../d3/dc2/structskylark_1_1sketch_1_1sketch__transform__data__t.html#a14e65da6ca93c86695b5ed4295db4611">_N</a>; } 
+<a name="l00078"></a><a class="code" href="../../d1/d20/structskylark_1_1sketch_1_1dense__transform__t_3_01elem_1_1DistMatrix_3_01ValueType_01_4_00_01el772af1d170cedb73949f5c03adc3510c.html#a8200a976ddb53bb1de9279e4055519d6">00078</a>     <span class="keywordtype">int</span> <a class="code" href="../../d1/d20/structskylark_1_1sketch_1_1dense__transform__t_3_01elem_1_1DistMatrix_3_01ValueType_01_4_00_01el772af1d170cedb73949f5c03adc3510c.html#a8200a976ddb53bb1de9279e4055519d6">get_S</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> this-&gt;<a class="code" href="../../d3/dc2/structskylark_1_1sketch_1_1sketch__transform__data__t.html#a5f6518e8b02aa7ae60aa7985130c0194">_S</a>; } 
 <a name="l00080"></a><a class="code" href="../../d1/d20/structskylark_1_1sketch_1_1dense__transform__t_3_01elem_1_1DistMatrix_3_01ValueType_01_4_00_01el772af1d170cedb73949f5c03adc3510c.html#a39975c46617ede385482cb10920d39f3">00080</a>     <span class="keyword">const</span> <a class="code" href="../../d3/dc2/structskylark_1_1sketch_1_1sketch__transform__data__t.html">sketch_transform_data_t</a>* <a class="code" href="../../d1/d20/structskylark_1_1sketch_1_1dense__transform__t_3_01elem_1_1DistMatrix_3_01ValueType_01_4_00_01el772af1d170cedb73949f5c03adc3510c.html#a39975c46617ede385482cb10920d39f3">get_data</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> <span class="keyword">this</span>; }
 <a name="l00081"></a>00081 
 <a name="l00082"></a>00082 <span class="keyword">private</span>:
 <a name="l00083"></a>00083 
 <a name="l00084"></a>00084 
-<a name="l00089"></a>00089     <span class="keywordtype">void</span> apply_impl_dist(<span class="keyword">const</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
+<a name="l00089"></a>00089     <span class="keywordtype">void</span> apply_impl_dist(<span class="keyword">const</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
 <a name="l00090"></a>00090                          output_matrix_type&amp; sketch_of_A,
 <a name="l00091"></a>00091                          <a class="code" href="../../d4/d9b/structskylark_1_1sketch_1_1rowwise__tag.html" title="Apply the sketch/transform to the rows. In matrix form this is A-&gt;AS^T.">skylark::sketch::rowwise_tag</a> tag)<span class="keyword"> const </span>{
 <a name="l00092"></a>00092 
 <a name="l00093"></a>00093 
-<a name="l00094"></a>00094         <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a> sketch_of_A_MC_MR(A.Height(),
+<a name="l00094"></a>00094         <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a> sketch_of_A_MC_MR(A.Height(),
 <a name="l00095"></a>00095                                   <a class="code" href="../../d3/dc2/structskylark_1_1sketch_1_1sketch__transform__data__t.html#a5f6518e8b02aa7ae60aa7985130c0194">data_type::_S</a>);
 <a name="l00096"></a>00096 
 <a name="l00097"></a>00097         <a class="code" href="../../d4/de7/classskylark_1_1sketch_1_1dense__transform__t.html">dense_transform_t&lt;matrix_type, matrix_type, ValueDistribution&gt;</a>
@@ -142,12 +142,12 @@
 <a name="l00103"></a>00103     }
 <a name="l00104"></a>00104 
 <a name="l00105"></a>00105 
-<a name="l00106"></a>00106     <span class="keywordtype">void</span> apply_impl_dist(<span class="keyword">const</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
+<a name="l00106"></a>00106     <span class="keywordtype">void</span> apply_impl_dist(<span class="keyword">const</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
 <a name="l00107"></a>00107                          output_matrix_type&amp; sketch_of_A,
 <a name="l00108"></a>00108                          <a class="code" href="../../df/d8f/structskylark_1_1sketch_1_1columnwise__tag.html" title="Apply the sketch/transform to the columns. In matrix form this is A-&gt;SA.">skylark::sketch::columnwise_tag</a> tag)<span class="keyword"> const </span>{
 <a name="l00109"></a>00109 
 <a name="l00110"></a>00110 
-<a name="l00111"></a>00111         <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a> sketch_of_A_MC_MR(<a class="code" href="../../d3/dc2/structskylark_1_1sketch_1_1sketch__transform__data__t.html#a5f6518e8b02aa7ae60aa7985130c0194">data_type::_S</a>,
+<a name="l00111"></a>00111         <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a> sketch_of_A_MC_MR(<a class="code" href="../../d3/dc2/structskylark_1_1sketch_1_1sketch__transform__data__t.html#a5f6518e8b02aa7ae60aa7985130c0194">data_type::_S</a>,
 <a name="l00112"></a>00112                                       A.Width());
 <a name="l00113"></a>00113 
 <a name="l00114"></a>00114         dense_transform_t&lt;matrix_type, matrix_type, ValueDistribution&gt;
@@ -165,7 +165,7 @@
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jun 5 2014 02:49:11 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jun 5 2014 18:16:07 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

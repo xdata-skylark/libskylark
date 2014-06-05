@@ -86,7 +86,7 @@
 <a name="l00027"></a>00027 {
 <a name="l00028"></a>00028         PyArrayObject *x, *v, *y;
 <a name="l00029"></a>00029         <span class="keywordtype">double</span> lambda, epsilon;
-<a name="l00030"></a>00030         <span class="keywordtype">int</span> MAXITER, <a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>, <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, flag, i, DISPLAY;  <span class="comment">// ncomps=n*m=total number of matrix components in mat1</span>
+<a name="l00030"></a>00030         <span class="keywordtype">int</span> MAXITER, <a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>, <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, flag, i, DISPLAY;  <span class="comment">// ncomps=n*m=total number of matrix components in mat1</span>
 <a name="l00031"></a>00031 
 <a name="l00032"></a>00032         <span class="comment">/* Parse tuples separately since args will differ between C fcns */</span>
 <a name="l00033"></a>00033         <span class="keywordflow">if</span> (!PyArg_ParseTuple(args, <span class="stringliteral">&quot;OOdOidi&quot;</span>,
@@ -133,8 +133,8 @@
 <a name="l00074"></a>00074 <span class="comment">//              printf(&quot;%f &quot;, cy[i]);</span>
 <a name="l00075"></a>00075 <span class="comment">//      printf(&quot;\n&quot;);</span>
 <a name="l00076"></a>00076 
-<a name="l00077"></a>00077         <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>;i++)
-<a name="l00078"></a>00078                 flag = <a class="code" href="../../d1/d9b/libproxoperators_8c.html#a58e6acc9d2ba8664b35522fd266b0584">logexp</a>((<span class="keywordtype">int</span>) cy[i], cv + i*<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, lambda, cx + i*<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, MAXITER, epsilon, DISPLAY);
+<a name="l00077"></a>00077         <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>;i++)
+<a name="l00078"></a>00078                 flag = <a class="code" href="../../d1/d9b/libproxoperators_8c.html#a58e6acc9d2ba8664b35522fd266b0584">logexp</a>((<span class="keywordtype">int</span>) cy[i], cv + i*<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, lambda, cx + i*<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, MAXITER, epsilon, DISPLAY);
 <a name="l00079"></a>00079 
 <a name="l00080"></a>00080         Py_DECREF(x_array);
 <a name="l00081"></a>00081         Py_DECREF(v_array);
@@ -151,7 +151,7 @@
 <a name="l00092"></a>00092 {
 <a name="l00093"></a>00093         PyArrayObject *x, *v, *y;
 <a name="l00094"></a>00094         <span class="keywordtype">double</span> lambda, yv, yy, *cvv, *cxx;
-<a name="l00095"></a>00095         <span class="keywordtype">int</span>  <a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>, <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, i, j,label;  <span class="comment">// ncomps=n*m=total number of matrix components in mat1</span>
+<a name="l00095"></a>00095         <span class="keywordtype">int</span>  <a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>, <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, i, j,label;  <span class="comment">// ncomps=n*m=total number of matrix components in mat1</span>
 <a name="l00096"></a>00096 
 <a name="l00097"></a>00097         <span class="comment">/* Parse tuples separately since args will differ between C fcns */</span>
 <a name="l00098"></a>00098         <span class="keywordflow">if</span> (!PyArg_ParseTuple(args, <span class="stringliteral">&quot;OOdO&quot;</span>,
@@ -199,7 +199,7 @@
 <a name="l00140"></a>00140 <span class="comment">//      printf(&quot;\n&quot;);</span>
 <a name="l00141"></a>00141         <span class="comment">//flag = logexp((int) cy[i], cv + i*n, n, lambda, cx + i*n);</span>
 <a name="l00142"></a>00142         <span class="keywordflow">if</span>(n==1) { <span class="comment">// We assume cy has +1 or -1 entries for n=1 outputs</span>
-<a name="l00143"></a>00143                 <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>;i++) {
+<a name="l00143"></a>00143                 <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>;i++) {
 <a name="l00144"></a>00144                         yv = cy[i]*cv[i];
 <a name="l00145"></a>00145                         <span class="keywordflow">if</span> (yv&gt;1.0)
 <a name="l00146"></a>00146                                 cx[i] = cv[i];
@@ -213,11 +213,11 @@
 <a name="l00154"></a>00154         }
 <a name="l00155"></a>00155 
 <a name="l00156"></a>00156         <span class="keywordflow">if</span> (n&gt;1) {
-<a name="l00157"></a>00157                 <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>;i++) {
+<a name="l00157"></a>00157                 <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>;i++) {
 <a name="l00158"></a>00158                         label = (int) cy[i];
-<a name="l00159"></a>00159                         cvv = cv + i*<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;
-<a name="l00160"></a>00160                         cxx = cx + i*<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;
-<a name="l00161"></a>00161                         <span class="keywordflow">for</span>(j=0;j&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;j++) {
+<a name="l00159"></a>00159                         cvv = cv + i*<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;
+<a name="l00160"></a>00160                         cxx = cx + i*<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;
+<a name="l00161"></a>00161                         <span class="keywordflow">for</span>(j=0;j&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;j++) {
 <a name="l00162"></a>00162                                 yv = cvv[j];
 <a name="l00163"></a>00163                                 yy = +1.0;
 <a name="l00164"></a>00164                                 <span class="keywordflow">if</span>(!(j==label)) {
@@ -267,7 +267,7 @@
 <a name="l00208"></a>00208                         printf(<span class="stringliteral">&quot;iter=%d, obj=%f\n&quot;</span>, iter, obj);
 <a name="l00209"></a>00209                 pu = 0.0;
 <a name="l00210"></a>00210                 pptil = 0.0;
-<a name="l00211"></a>00211                 <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;i++) {
+<a name="l00211"></a>00211                 <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;i++) {
 <a name="l00212"></a>00212                         p = exp(x[i] - logsum);
 <a name="l00213"></a>00213                         grad[i] = p + lambda*(x[i] - v[i]);
 <a name="l00214"></a>00214                         <span class="keywordflow">if</span>(i==index)
@@ -278,7 +278,7 @@
 <a name="l00219"></a>00219                         pptil += z[i]*p;
 <a name="l00220"></a>00220                 }
 <a name="l00221"></a>00221                 decrement = 0.0;
-<a name="l00222"></a>00222                 <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;i++) {
+<a name="l00222"></a>00222                 <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;i++) {
 <a name="l00223"></a>00223                         u[i] -= (pu/pptil)*z[i];
 <a name="l00224"></a>00224                         decrement += grad[i]*u[i];
 <a name="l00225"></a>00225                 }
@@ -290,14 +290,14 @@
 <a name="l00231"></a>00231                 }
 <a name="l00232"></a>00232                 t = 1.0;
 <a name="l00233"></a>00233                 <span class="keywordflow">while</span>(1) {
-<a name="l00234"></a>00234                         <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;i++)
+<a name="l00234"></a>00234                         <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;i++)
 <a name="l00235"></a>00235                                 z[i] = x[i] - t*u[i];
 <a name="l00236"></a>00236                         newobj = <a class="code" href="../../d1/d9b/libproxoperators_8c.html#aef6d76340a524a07506a4df6f0a8e7df">objective</a>(index, z, v, n, lambda);
 <a name="l00237"></a>00237                         <span class="keywordflow">if</span> (newobj &lt;= obj + alpha*t*decrement)
 <a name="l00238"></a>00238                                 <span class="keywordflow">break</span>;
 <a name="l00239"></a>00239                         t = beta*<a class="code" href="../../d8/d1e/regression_8cpp.html#a9d8bf90e74fd38c19ef18649b5613d7f">t</a>;
 <a name="l00240"></a>00240                 }
-<a name="l00241"></a>00241                 <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;i++)
+<a name="l00241"></a>00241                 <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;i++)
 <a name="l00242"></a>00242                         x[i] = z[i];
 <a name="l00243"></a>00243                         obj = newobj;
 <a name="l00244"></a>00244         }
@@ -317,7 +317,7 @@
 <a name="l00258"></a><a class="code" href="../../dc/d10/libproxoperators_8h.html#a3063e072ff5c6efe2a2dfc864be92a03">00258</a> <span class="keywordtype">double</span> <a class="code" href="../../d1/d9b/libproxoperators_8c.html#a3063e072ff5c6efe2a2dfc864be92a03">normsquare</a>(<span class="keywordtype">double</span>* x, <span class="keywordtype">double</span>* y, <span class="keywordtype">int</span> n){
 <a name="l00259"></a>00259         <span class="keywordtype">double</span> nrm = 0.0;
 <a name="l00260"></a>00260         <span class="keywordtype">int</span> i;
-<a name="l00261"></a>00261         <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;i++)
+<a name="l00261"></a>00261         <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;i++)
 <a name="l00262"></a>00262                 nrm+= pow(x[i] - y[i], 2);
 <a name="l00263"></a>00263         <span class="keywordflow">return</span> nrm;
 <a name="l00264"></a>00264 }
@@ -326,12 +326,12 @@
 <a name="l00267"></a>00267         <span class="keywordtype">int</span> i;
 <a name="l00268"></a>00268         <span class="keywordtype">double</span> <a class="code" href="../../df/d93/utils_8hpp.html#a5b8922aac97383a6bdcf7fd777f6ea85">max</a>=x[0];
 <a name="l00269"></a>00269         <span class="keywordtype">double</span> f = 0.0;
-<a name="l00270"></a>00270         <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;i++) {
+<a name="l00270"></a>00270         <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;i++) {
 <a name="l00271"></a>00271                 <span class="keywordflow">if</span> (x[i]&gt;max) {
 <a name="l00272"></a>00272                         max = x[i];
 <a name="l00273"></a>00273                 }
 <a name="l00274"></a>00274         }
-<a name="l00275"></a>00275         <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;i++)
+<a name="l00275"></a>00275         <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;i++)
 <a name="l00276"></a>00276                 f +=  exp(x[i] - max);
 <a name="l00277"></a>00277         f = max + log(f);
 <a name="l00278"></a>00278 
@@ -342,7 +342,7 @@
 <a name="l00283"></a>00283 <span class="keyword">static</span> PyObject *crossentropy_obj(PyObject *<span class="keyword">self</span>, PyObject *args)
 <a name="l00284"></a>00284 {
 <a name="l00285"></a>00285         PyArrayObject *x, *y;
-<a name="l00286"></a>00286         <span class="keywordtype">int</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>,<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, i;
+<a name="l00286"></a>00286         <span class="keywordtype">int</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>,<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, i;
 <a name="l00287"></a>00287         <span class="keywordtype">double</span> obj;
 <a name="l00288"></a>00288         <span class="comment">/* Parse tuples separately since args will differ between C fcns */</span>
 <a name="l00289"></a>00289         <span class="keywordflow">if</span> (!PyArg_ParseTuple(args, <span class="stringliteral">&quot;OO&quot;</span>,
@@ -387,7 +387,7 @@
 <a name="l00328"></a>00328         <span class="keywordtype">double</span> *cy = (<span class="keywordtype">double</span>*) PyArray_DATA(y_array);
 <a name="l00329"></a>00329 
 <a name="l00330"></a>00330         obj = 0.0;
-<a name="l00331"></a>00331         <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>;i++)
+<a name="l00331"></a>00331         <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>;i++)
 <a name="l00332"></a>00332                 obj += -*(cx + i*n + (<span class="keywordtype">int</span>) cy[i]) + <a class="code" href="../../d1/d9b/libproxoperators_8c.html#ab14a0df505917183b4141b4cb7c194c9">logsumexp</a>(cx + i*n, n);
 <a name="l00333"></a>00333 
 <a name="l00334"></a>00334 
@@ -403,7 +403,7 @@
 <a name="l00344"></a>00344 <span class="keyword">static</span> PyObject *hinge_obj(PyObject *<span class="keyword">self</span>, PyObject *args)
 <a name="l00345"></a>00345 {
 <a name="l00346"></a>00346         PyArrayObject *x, *y;
-<a name="l00347"></a>00347         <span class="keywordtype">int</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>,<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, i,j, label;
+<a name="l00347"></a>00347         <span class="keywordtype">int</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>,<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, i,j, label;
 <a name="l00348"></a>00348         <span class="keywordtype">double</span> obj, yx, yy, *cxx;
 <a name="l00349"></a>00349         <span class="comment">/* Parse tuples separately since args will differ between C fcns */</span>
 <a name="l00350"></a>00350         <span class="keywordflow">if</span> (!PyArg_ParseTuple(args, <span class="stringliteral">&quot;OO&quot;</span>,
@@ -450,7 +450,7 @@
 <a name="l00391"></a>00391         obj = 0.0;
 <a name="l00392"></a>00392 
 <a name="l00393"></a>00393         <span class="keywordflow">if</span>(n==1) {
-<a name="l00394"></a>00394                 <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>;i++) {
+<a name="l00394"></a>00394                 <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>;i++) {
 <a name="l00395"></a>00395                         yx = cx[i]*cy[i];
 <a name="l00396"></a>00396                         <span class="keywordflow">if</span>(yx&lt;1.0)
 <a name="l00397"></a>00397                                 obj += (1.0 - yx);
@@ -459,10 +459,10 @@
 <a name="l00400"></a>00400 
 <a name="l00401"></a>00401 
 <a name="l00402"></a>00402         <span class="keywordflow">if</span>(n&gt;1) {
-<a name="l00403"></a>00403                         <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>;i++) {
+<a name="l00403"></a>00403                         <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>;i++) {
 <a name="l00404"></a>00404                                 label = (int) cy[i];
-<a name="l00405"></a>00405                                 cxx = cx + i*<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;
-<a name="l00406"></a>00406                                 <span class="keywordflow">for</span>(j=0;j&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;j++) {
+<a name="l00405"></a>00405                                 cxx = cx + i*<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;
+<a name="l00406"></a>00406                                 <span class="keywordflow">for</span>(j=0;j&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;j++) {
 <a name="l00407"></a>00407                                         yy = -1.0;
 <a name="l00408"></a>00408                                         <span class="keywordflow">if</span> (j==label)
 <a name="l00409"></a>00409                                                 yy = +1.0;
@@ -486,7 +486,7 @@
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jun 5 2014 02:49:11 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jun 5 2014 18:16:07 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

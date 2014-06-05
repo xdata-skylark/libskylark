@@ -1,5 +1,3 @@
 <map id="G" name="G">
-<area shape="rect" id="node3" href="$da/dbf/structskylark_1_1sketch_1_1hash__transform__data__t.html#a63e13be083c3e2b1b04e9d7161dfac7d" title="skylark::sketch::hash_transform_data_t\&lt; boost::random::uniform_int_distribution, utility::rademacher_distribution_t \&gt;::build" alt="" coords="329,32,1060,61"/>
-<area shape="rect" id="node5" href="$d3/dc2/structskylark_1_1sketch_1_1sketch__transform__data__t.html#adf0ac4a368548eb53e4ff680349d7127" title="skylark::sketch::sketch_transform_data_t::build" alt="" coords="1141,5,1440,35"/>
-<area shape="rect" id="node7" href="$de/dea/structskylark_1_1base_1_1context__t.html#a6479b023369016e855a4e6df235eac59" title="skylark::base::context_t::generate_random_samples_array" alt="" coords="1109,59,1472,88"/>
+<area shape="rect" id="node3" href="$da/dbf/structskylark_1_1sketch_1_1hash__transform__data__t.html#a63e13be083c3e2b1b04e9d7161dfac7d" title="skylark::sketch::hash_transform_data_t\&lt; boost::random::uniform_int_distribution, utility::rademacher_distribution_t \&gt;::build" alt="" coords="329,5,1060,35"/>
 </map>

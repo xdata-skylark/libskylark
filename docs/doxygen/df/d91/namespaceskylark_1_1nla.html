@@ -84,8 +84,148 @@ Functions</h2></td></tr>
 <tr><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="../../df/d91/namespaceskylark_1_1nla.html#aa91c121c45ca6f8601fe1bbfe373c3ce">ChebyshevLS</a> (const <a class="el" href="../../d9/da8/elemental_8cpp.html#a8a80d5c50a127fe1d06bdab3e1dfbdc2">MatrixType</a> &amp;A, const RhsType &amp;B, SolType &amp;X, double sigma_L, double sigma_U, <a class="el" href="../../d8/d27/structskylark_1_1nla_1_1iter__params__t.html">iter_params_t</a> params=<a class="el" href="../../d8/d27/structskylark_1_1nla_1_1iter__params__t.html">iter_params_t</a>(), const <a class="el" href="../../d1/dc2/structskylark_1_1nla_1_1precond__t.html">precond_t</a>&lt; SolType &gt; &amp;P=<a class="el" href="../../dd/dac/structskylark_1_1nla_1_1id__precond__t.html">id_precond_t</a>&lt; SolType &gt;())</td></tr>
 <tr><td class="memTemplParams" colspan="2">template&lt;typename MatrixType , typename RhsType , typename SolType &gt; </td></tr>
 <tr><td class="memTemplItemLeft" align="right" valign="top">int&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="../../df/d91/namespaceskylark_1_1nla.html#abe3ce813e7ca15c08aac1b67ab21222e">LSQR</a> (const <a class="el" href="../../d9/da8/elemental_8cpp.html#a8a80d5c50a127fe1d06bdab3e1dfbdc2">MatrixType</a> &amp;A, const RhsType &amp;B, SolType &amp;X, <a class="el" href="../../d8/d27/structskylark_1_1nla_1_1iter__params__t.html">iter_params_t</a> params=<a class="el" href="../../d8/d27/structskylark_1_1nla_1_1iter__params__t.html">iter_params_t</a>(), const <a class="el" href="../../d1/dc2/structskylark_1_1nla_1_1precond__t.html">precond_t</a>&lt; SolType &gt; &amp;R=<a class="el" href="../../dd/dac/structskylark_1_1nla_1_1id__precond__t.html">id_precond_t</a>&lt; SolType &gt;())</td></tr>
+<tr><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="../../df/d91/namespaceskylark_1_1nla.html#ad6897292b08233d6bf9cc4088583b932">ApproximateLeastSquares</a> (elem::Orientation orientation, const <a class="el" href="../../dc/d74/capi_8cpp.html#aa267ec3ee50656a3303b4045e7010131">elem::Matrix</a>&lt; T &gt; &amp;A, const <a class="el" href="../../dc/d74/capi_8cpp.html#aa267ec3ee50656a3303b4045e7010131">elem::Matrix</a>&lt; T &gt; &amp;B, <a class="el" href="../../dc/d74/capi_8cpp.html#aa267ec3ee50656a3303b4045e7010131">elem::Matrix</a>&lt; T &gt; &amp;X, <a class="el" href="../../de/dea/structskylark_1_1base_1_1context__t.html">base::context_t</a> &amp;context, int sketch_size=-1)</td></tr>
+<tr><td class="memTemplParams" colspan="2">template&lt;typename T , elem::Distribution CA, elem::Distribution RA, elem::Distribution CB, elem::Distribution RB, elem::Distribution CX, elem::Distribution RX&gt; </td></tr>
+<tr><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="../../df/d91/namespaceskylark_1_1nla.html#a27b140a15398b36af8206e14e96e5644">ApproximateLeastSquares</a> (elem::Orientation orientation, const <a class="el" href="../../dc/d74/capi_8cpp.html#a19350ba69c004b01dece9951a3477dc9">elem::DistMatrix</a>&lt; T, CA, RA &gt; &amp;A, const <a class="el" href="../../dc/d74/capi_8cpp.html#a19350ba69c004b01dece9951a3477dc9">elem::DistMatrix</a>&lt; T, CB, RB &gt; &amp;B, <a class="el" href="../../dc/d74/capi_8cpp.html#a19350ba69c004b01dece9951a3477dc9">elem::DistMatrix</a>&lt; T, CX, RX &gt; &amp;X, <a class="el" href="../../de/dea/structskylark_1_1base_1_1context__t.html">base::context_t</a> &amp;context, int sketch_size=-1)</td></tr>
+<tr><td class="memTemplParams" colspan="2">template&lt;typename AT , typename BT , typename XT &gt; </td></tr>
+<tr><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="../../df/d91/namespaceskylark_1_1nla.html#a67d5d429e424903d122814ec5da0c1f7">FastLeastSquares</a> (elem::Orientation orientation, const AT &amp;A, const BT &amp;B, XT &amp;X, <a class="el" href="../../de/dea/structskylark_1_1base_1_1context__t.html">base::context_t</a> &amp;context)</td></tr>
 </table>
 <hr/><h2>Function Documentation</h2>
+<a class="anchor" id="ad6897292b08233d6bf9cc4088583b932"></a><!-- doxytag: member="skylark::nla::ApproximateLeastSquares" ref="ad6897292b08233d6bf9cc4088583b932" args="(elem::Orientation orientation, const elem::Matrix&lt; T &gt; &amp;A, const elem::Matrix&lt; T &gt; &amp;B, elem::Matrix&lt; T &gt; &amp;X, base::context_t &amp;context, int sketch_size=&#45;1)" -->
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="../../df/d91/namespaceskylark_1_1nla.html#ad6897292b08233d6bf9cc4088583b932">skylark::nla::ApproximateLeastSquares</a> </td>
+          <td>(</td>
+          <td class="paramtype">elem::Orientation&#160;</td>
+          <td class="paramname"><em>orientation</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="../../dc/d74/capi_8cpp.html#aa267ec3ee50656a3303b4045e7010131">elem::Matrix</a>&lt; T &gt; &amp;&#160;</td>
+          <td class="paramname"><em>A</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="../../dc/d74/capi_8cpp.html#aa267ec3ee50656a3303b4045e7010131">elem::Matrix</a>&lt; T &gt; &amp;&#160;</td>
+          <td class="paramname"><em>B</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../dc/d74/capi_8cpp.html#aa267ec3ee50656a3303b4045e7010131">elem::Matrix</a>&lt; T &gt; &amp;&#160;</td>
+          <td class="paramname"><em>X</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../de/dea/structskylark_1_1base_1_1context__t.html">base::context_t</a> &amp;&#160;</td>
+          <td class="paramname"><em>context</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>sketch_size</em> = <code>-1</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Definition at line <a class="el" href="../../d6/db4/least__squares_8hpp_source.html#l00011">11</a> of file <a class="el" href="../../d6/db4/least__squares_8hpp_source.html">least_squares.hpp</a>.</p>
+
+<p>References <a class="el" href="../../dd/def/query_8hpp_source.html#l00009">skylark::base::Height()</a>, <a class="el" href="../../d7/d1e/exception_8hpp_source.html#l00035">SKYLARK_THROW_EXCEPTION</a>, and <a class="el" href="../../dd/def/query_8hpp_source.html#l00014">skylark::base::Width()</a>.</p>
+
+<p>Referenced by <a class="el" href="../../d1/d6a/least__squares_8cpp_source.html#l00042">main()</a>.</p>
+
+<p><div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="../../df/d91/namespaceskylark_1_1nla_ad6897292b08233d6bf9cc4088583b932_cgraph.png" border="0" usemap="#df/d91/namespaceskylark_1_1nla_ad6897292b08233d6bf9cc4088583b932_cgraph" alt=""/></div>
+<map name="df/d91/namespaceskylark_1_1nla_ad6897292b08233d6bf9cc4088583b932_cgraph" id="df/d91/namespaceskylark_1_1nla_ad6897292b08233d6bf9cc4088583b932_cgraph">
+<area shape="rect" id="node3" href="../../d3/d18/namespaceskylark_1_1base.html#a8765cb27091c3ce9e4c3b476b78a5d22" title="skylark::base::Height" alt="" coords="304,5,451,35"/><area shape="rect" id="node7" href="../../d3/d18/namespaceskylark_1_1base.html#afbb35d81fb98da3e9c6b519101ba9d2d" title="skylark::base::Width" alt="" coords="307,59,448,88"/><area shape="rect" id="node5" href="../../dc/dbf/structskylark_1_1base_1_1sparse__matrix__t.html#a7c726f818c6b38279653d087ee9cebb9" title="skylark::base::sparse_matrix_t::height" alt="" coords="500,5,743,35"/><area shape="rect" id="node9" href="../../dc/dbf/structskylark_1_1base_1_1sparse__matrix__t.html#a7de5d2d055e4526b115c804426b23ab1" title="skylark::base::sparse_matrix_t::width" alt="" coords="501,59,741,88"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a27b140a15398b36af8206e14e96e5644"></a><!-- doxytag: member="skylark::nla::ApproximateLeastSquares" ref="a27b140a15398b36af8206e14e96e5644" args="(elem::Orientation orientation, const elem::DistMatrix&lt; T, CA, RA &gt; &amp;A, const elem::DistMatrix&lt; T, CB, RB &gt; &amp;B, elem::DistMatrix&lt; T, CX, RX &gt; &amp;X, base::context_t &amp;context, int sketch_size=&#45;1)" -->
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , elem::Distribution CA, elem::Distribution RA, elem::Distribution CB, elem::Distribution RB, elem::Distribution CX, elem::Distribution RX&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="../../df/d91/namespaceskylark_1_1nla.html#ad6897292b08233d6bf9cc4088583b932">skylark::nla::ApproximateLeastSquares</a> </td>
+          <td>(</td>
+          <td class="paramtype">elem::Orientation&#160;</td>
+          <td class="paramname"><em>orientation</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="../../dc/d74/capi_8cpp.html#a19350ba69c004b01dece9951a3477dc9">elem::DistMatrix</a>&lt; T, CA, RA &gt; &amp;&#160;</td>
+          <td class="paramname"><em>A</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="../../dc/d74/capi_8cpp.html#a19350ba69c004b01dece9951a3477dc9">elem::DistMatrix</a>&lt; T, CB, RB &gt; &amp;&#160;</td>
+          <td class="paramname"><em>B</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../dc/d74/capi_8cpp.html#a19350ba69c004b01dece9951a3477dc9">elem::DistMatrix</a>&lt; T, CX, RX &gt; &amp;&#160;</td>
+          <td class="paramname"><em>X</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../de/dea/structskylark_1_1base_1_1context__t.html">base::context_t</a> &amp;&#160;</td>
+          <td class="paramname"><em>context</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>sketch_size</em> = <code>-1</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Definition at line <a class="el" href="../../d6/db4/least__squares_8hpp_source.html#l00044">44</a> of file <a class="el" href="../../d6/db4/least__squares_8hpp_source.html">least_squares.hpp</a>.</p>
+
+<p>References <a class="el" href="../../dd/def/query_8hpp_source.html#l00009">skylark::base::Height()</a>, <a class="el" href="../../d7/d1e/exception_8hpp_source.html#l00035">SKYLARK_THROW_EXCEPTION</a>, and <a class="el" href="../../dd/def/query_8hpp_source.html#l00014">skylark::base::Width()</a>.</p>
+
+<p><div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="../../df/d91/namespaceskylark_1_1nla_a27b140a15398b36af8206e14e96e5644_cgraph.png" border="0" usemap="#df/d91/namespaceskylark_1_1nla_a27b140a15398b36af8206e14e96e5644_cgraph" alt=""/></div>
+<map name="df/d91/namespaceskylark_1_1nla_a27b140a15398b36af8206e14e96e5644_cgraph" id="df/d91/namespaceskylark_1_1nla_a27b140a15398b36af8206e14e96e5644_cgraph">
+<area shape="rect" id="node3" href="../../d3/d18/namespaceskylark_1_1base.html#a8765cb27091c3ce9e4c3b476b78a5d22" title="skylark::base::Height" alt="" coords="304,5,451,35"/><area shape="rect" id="node7" href="../../d3/d18/namespaceskylark_1_1base.html#afbb35d81fb98da3e9c6b519101ba9d2d" title="skylark::base::Width" alt="" coords="307,59,448,88"/><area shape="rect" id="node5" href="../../dc/dbf/structskylark_1_1base_1_1sparse__matrix__t.html#a7c726f818c6b38279653d087ee9cebb9" title="skylark::base::sparse_matrix_t::height" alt="" coords="500,5,743,35"/><area shape="rect" id="node9" href="../../dc/dbf/structskylark_1_1base_1_1sparse__matrix__t.html#a7de5d2d055e4526b115c804426b23ab1" title="skylark::base::sparse_matrix_t::width" alt="" coords="501,59,741,88"/></map>
+</div>
+</p>
+
+</div>
+</div>
 <a class="anchor" id="aa91c121c45ca6f8601fe1bbfe373c3ce"></a><!-- doxytag: member="skylark::nla::ChebyshevLS" ref="aa91c121c45ca6f8601fe1bbfe373c3ce" args="(const MatrixType &amp;A, const RhsType &amp;B, SolType &amp;X, double sigma_L, double sigma_U, iter_params_t params=iter_params_t(), const precond_t&lt; SolType &gt; &amp;P=id_precond_t&lt; SolType &gt;())" -->
 <div class="memitem">
 <div class="memproto">
@@ -149,7 +289,7 @@ template&lt;typename MatrixType , typename RhsType , typename SolType &gt; </div
 
 <p>Definition at line <a class="el" href="../../d4/db9/Chebyshev_8hpp_source.html#l00023">23</a> of file <a class="el" href="../../d4/db9/Chebyshev_8hpp_source.html">Chebyshev.hpp</a>.</p>
 
-<p>References <a class="el" href="../../d0/d97/Gemm_8hpp_source.html#l00488">skylark::base::Gemm()</a>, <a class="el" href="../../dd/def/query_8hpp_source.html#l00009">skylark::base::Height()</a>, <a class="el" href="../../d8/d1e/regression_8cpp_source.html#l00023">m</a>, <a class="el" href="../../d8/d1e/regression_8cpp_source.html#l00024">n</a>, and <a class="el" href="../../dd/def/query_8hpp_source.html#l00014">skylark::base::Width()</a>.</p>
+<p>References <a class="el" href="../../d0/d97/Gemm_8hpp_source.html#l00488">skylark::base::Gemm()</a>, <a class="el" href="../../dd/def/query_8hpp_source.html#l00009">skylark::base::Height()</a>, <a class="el" href="../../d1/d6a/least__squares_8cpp_source.html#l00017">m</a>, <a class="el" href="../../d1/d6a/least__squares_8cpp_source.html#l00018">n</a>, and <a class="el" href="../../dd/def/query_8hpp_source.html#l00014">skylark::base::Width()</a>.</p>
 
 <p>Referenced by <a class="el" href="../../d9/d57/accelerated__linearl2__regression__solver__Elemental_8hpp_source.html#l00325">skylark::algorithms::accelerated_regression_solver_t&lt; regression_problem_t&lt; elem::DistMatrix&lt; ValueType, VD, elem::STAR &gt;, linear_tag, l2_tag, no_reg_tag &gt;, elem::DistMatrix&lt; ValueType, VD, elem::STAR &gt;, elem::DistMatrix&lt; ValueType, elem::STAR, elem::STAR &gt;, lsrn_tag&lt; PrecondTag &gt; &gt;::solve()</a>.</p>
 
@@ -159,6 +299,68 @@ Here is the call graph for this function:</div>
 <div class="center"><img src="../../df/d91/namespaceskylark_1_1nla_aa91c121c45ca6f8601fe1bbfe373c3ce_cgraph.png" border="0" usemap="#df/d91/namespaceskylark_1_1nla_aa91c121c45ca6f8601fe1bbfe373c3ce_cgraph" alt=""/></div>
 <map name="df/d91/namespaceskylark_1_1nla_aa91c121c45ca6f8601fe1bbfe373c3ce_cgraph" id="df/d91/namespaceskylark_1_1nla_aa91c121c45ca6f8601fe1bbfe373c3ce_cgraph">
 <area shape="rect" id="node3" href="../../d3/d18/namespaceskylark_1_1base.html#a8f7ed6aa7741ff54e546fa88fc706a53" title="skylark::base::Gemm" alt="" coords="232,5,379,35"/><area shape="rect" id="node7" href="../../d3/d18/namespaceskylark_1_1base.html#a8765cb27091c3ce9e4c3b476b78a5d22" title="skylark::base::Height" alt="" coords="232,59,379,88"/><area shape="rect" id="node11" href="../../d3/d18/namespaceskylark_1_1base.html#afbb35d81fb98da3e9c6b519101ba9d2d" title="skylark::base::Width" alt="" coords="235,112,376,141"/><area shape="rect" id="node5" href="../../d1/dfc/structskylark_1_1base_1_1computed__matrix__t.html#a450ee5429c4a1abaa83002f8e9b45eb5" title="skylark::base::computed_matrix_t::materialize" alt="" coords="427,5,717,35"/><area shape="rect" id="node9" href="../../dc/dbf/structskylark_1_1base_1_1sparse__matrix__t.html#a7c726f818c6b38279653d087ee9cebb9" title="skylark::base::sparse_matrix_t::height" alt="" coords="451,59,693,88"/><area shape="rect" id="node13" href="../../dc/dbf/structskylark_1_1base_1_1sparse__matrix__t.html#a7de5d2d055e4526b115c804426b23ab1" title="skylark::base::sparse_matrix_t::width" alt="" coords="452,112,692,141"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a67d5d429e424903d122814ec5da0c1f7"></a><!-- doxytag: member="skylark::nla::FastLeastSquares" ref="a67d5d429e424903d122814ec5da0c1f7" args="(elem::Orientation orientation, const AT &amp;A, const BT &amp;B, XT &amp;X, base::context_t &amp;context)" -->
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename AT , typename BT , typename XT &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void <a class="el" href="../../df/d91/namespaceskylark_1_1nla.html#a67d5d429e424903d122814ec5da0c1f7">skylark::nla::FastLeastSquares</a> </td>
+          <td>(</td>
+          <td class="paramtype">elem::Orientation&#160;</td>
+          <td class="paramname"><em>orientation</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const AT &amp;&#160;</td>
+          <td class="paramname"><em>A</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const BT &amp;&#160;</td>
+          <td class="paramname"><em>B</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">XT &amp;&#160;</td>
+          <td class="paramname"><em>X</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../de/dea/structskylark_1_1base_1_1context__t.html">base::context_t</a> &amp;&#160;</td>
+          <td class="paramname"><em>context</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>Definition at line <a class="el" href="../../d6/db4/least__squares_8hpp_source.html#l00110">110</a> of file <a class="el" href="../../d6/db4/least__squares_8hpp_source.html">least_squares.hpp</a>.</p>
+
+<p>References <a class="el" href="../../dd/def/query_8hpp_source.html#l00009">skylark::base::Height()</a>, <a class="el" href="../../d7/d1e/exception_8hpp_source.html#l00035">SKYLARK_THROW_EXCEPTION</a>, and <a class="el" href="../../dd/def/query_8hpp_source.html#l00014">skylark::base::Width()</a>.</p>
+
+<p>Referenced by <a class="el" href="../../d1/d6a/least__squares_8cpp_source.html#l00042">main()</a>.</p>
+
+<p><div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="../../df/d91/namespaceskylark_1_1nla_a67d5d429e424903d122814ec5da0c1f7_cgraph.png" border="0" usemap="#df/d91/namespaceskylark_1_1nla_a67d5d429e424903d122814ec5da0c1f7_cgraph" alt=""/></div>
+<map name="df/d91/namespaceskylark_1_1nla_a67d5d429e424903d122814ec5da0c1f7_cgraph" id="df/d91/namespaceskylark_1_1nla_a67d5d429e424903d122814ec5da0c1f7_cgraph">
+<area shape="rect" id="node3" href="../../d3/d18/namespaceskylark_1_1base.html#a8765cb27091c3ce9e4c3b476b78a5d22" title="skylark::base::Height" alt="" coords="256,5,403,35"/><area shape="rect" id="node7" href="../../d3/d18/namespaceskylark_1_1base.html#afbb35d81fb98da3e9c6b519101ba9d2d" title="skylark::base::Width" alt="" coords="259,59,400,88"/><area shape="rect" id="node5" href="../../dc/dbf/structskylark_1_1base_1_1sparse__matrix__t.html#a7c726f818c6b38279653d087ee9cebb9" title="skylark::base::sparse_matrix_t::height" alt="" coords="452,5,695,35"/><area shape="rect" id="node9" href="../../dc/dbf/structskylark_1_1base_1_1sparse__matrix__t.html#a7de5d2d055e4526b115c804426b23ab1" title="skylark::base::sparse_matrix_t::width" alt="" coords="453,59,693,88"/></map>
 </div>
 </p>
 
@@ -230,7 +432,7 @@ template&lt;typename MatrixType , typename RhsType , typename SolType &gt; </div
 
 <p>Definition at line <a class="el" href="../../d7/d75/LSQR_8hpp_source.html#l00023">23</a> of file <a class="el" href="../../d7/d75/LSQR_8hpp_source.html">LSQR.hpp</a>.</p>
 
-<p>References <a class="el" href="../../d0/d97/Gemm_8hpp_source.html#l00488">skylark::base::Gemm()</a>, <a class="el" href="../../dd/def/query_8hpp_source.html#l00009">skylark::base::Height()</a>, <a class="el" href="../../d8/d1e/regression_8cpp_source.html#l00023">m</a>, <a class="el" href="../../df/d93/utils_8hpp_source.html#l00006">max()</a>, <a class="el" href="../../df/d93/utils_8hpp_source.html#l00011">min()</a>, <a class="el" href="../../d8/d1e/regression_8cpp_source.html#l00024">n</a>, and <a class="el" href="../../dd/def/query_8hpp_source.html#l00014">skylark::base::Width()</a>.</p>
+<p>References <a class="el" href="../../d0/d97/Gemm_8hpp_source.html#l00488">skylark::base::Gemm()</a>, <a class="el" href="../../dd/def/query_8hpp_source.html#l00009">skylark::base::Height()</a>, <a class="el" href="../../d1/d6a/least__squares_8cpp_source.html#l00017">m</a>, <a class="el" href="../../df/d93/utils_8hpp_source.html#l00006">max()</a>, <a class="el" href="../../df/d93/utils_8hpp_source.html#l00011">min()</a>, <a class="el" href="../../d1/d6a/least__squares_8cpp_source.html#l00018">n</a>, and <a class="el" href="../../dd/def/query_8hpp_source.html#l00014">skylark::base::Width()</a>.</p>
 
 <p>Referenced by <a class="el" href="../../d9/d57/accelerated__linearl2__regression__solver__Elemental_8hpp_source.html#l00141">skylark::algorithms::accelerated_regression_solver_t&lt; regression_problem_t&lt; elem::DistMatrix&lt; ValueType, VD, elem::STAR &gt;, linear_tag, l2_tag, no_reg_tag &gt;, elem::DistMatrix&lt; ValueType, VD, elem::STAR &gt;, elem::DistMatrix&lt; ValueType, elem::STAR, elem::STAR &gt;, simplified_blendenpik_tag&lt; TransformType, PrecondTag &gt; &gt;::solve()</a>, <a class="el" href="../../d9/d57/accelerated__linearl2__regression__solver__Elemental_8hpp_source.html#l00244">skylark::algorithms::accelerated_regression_solver_t&lt; regression_problem_t&lt; elem::DistMatrix&lt; ValueType, VD, elem::STAR &gt;, linear_tag, l2_tag, no_reg_tag &gt;, elem::DistMatrix&lt; ValueType, VD, elem::STAR &gt;, elem::DistMatrix&lt; ValueType, elem::STAR, elem::STAR &gt;, blendenpik_tag&lt; PrecondTag &gt; &gt;::solve()</a>, and <a class="el" href="../../d9/d57/accelerated__linearl2__regression__solver__Elemental_8hpp_source.html#l00325">skylark::algorithms::accelerated_regression_solver_t&lt; regression_problem_t&lt; elem::DistMatrix&lt; ValueType, VD, elem::STAR &gt;, linear_tag, l2_tag, no_reg_tag &gt;, elem::DistMatrix&lt; ValueType, VD, elem::STAR &gt;, elem::DistMatrix&lt; ValueType, elem::STAR, elem::STAR &gt;, lsrn_tag&lt; PrecondTag &gt; &gt;::solve()</a>.</p>
 
@@ -249,7 +451,7 @@ Here is the call graph for this function:</div>
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jun 5 2014 02:49:13 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jun 5 2014 18:16:09 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

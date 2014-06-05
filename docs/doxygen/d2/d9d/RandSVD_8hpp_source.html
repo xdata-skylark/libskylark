@@ -95,14 +95,14 @@
 <a name="l00036"></a><a class="code" href="../../d6/dba/structskylark_1_1nla_1_1randsvd__t.html">00036</a> <span class="keyword">struct </span><a class="code" href="../../d6/dba/structskylark_1_1nla_1_1randsvd__t.html">randsvd_t</a> {
 <a name="l00037"></a>00037 
 <a name="l00038"></a>00038 <span class="keyword">template</span> &lt;<span class="keyword">typename</span> InputMatrixType,
-<a name="l00039"></a>00039           <span class="keyword">typename</span> OutputMatrixType1,
+<a name="l00039"></a>00039           <span class="keyword">typename</span> UMatrixType,
 <a name="l00040"></a>00040           <span class="keyword">typename</span> SingularValuesMatrixType,
-<a name="l00041"></a>00041           <span class="keyword">typename</span> OutputMatrixType2&gt;
-<a name="l00042"></a><a class="code" href="../../d6/dba/structskylark_1_1nla_1_1randsvd__t.html#aaa9d5e7da463316e9f22bdcff69e953c">00042</a> <span class="keywordtype">void</span> <a class="code" href="../../d6/dba/structskylark_1_1nla_1_1randsvd__t.html#aaa9d5e7da463316e9f22bdcff69e953c">operator()</a>(InputMatrixType &amp;A,
+<a name="l00041"></a>00041           <span class="keyword">typename</span> VMatrixType&gt;
+<a name="l00042"></a><a class="code" href="../../d6/dba/structskylark_1_1nla_1_1randsvd__t.html#ae1b6ee10a161811a3520449e73a530cd">00042</a> <span class="keywordtype">void</span> <a class="code" href="../../d6/dba/structskylark_1_1nla_1_1randsvd__t.html#ae1b6ee10a161811a3520449e73a530cd">operator()</a>(InputMatrixType &amp;A,
 <a name="l00043"></a>00043              <span class="keywordtype">int</span> target_rank,
-<a name="l00044"></a>00044              OutputMatrixType1 &amp;U,
+<a name="l00044"></a>00044              UMatrixType &amp;U,
 <a name="l00045"></a>00045              SingularValuesMatrixType &amp;SV,
-<a name="l00046"></a>00046              OutputMatrixType2 &amp;V,
+<a name="l00046"></a>00046              VMatrixType &amp;V,
 <a name="l00047"></a>00047              <a class="code" href="../../d3/d55/structskylark_1_1nla_1_1rand__svd__params__t.html">rand_svd_params_t</a> params,
 <a name="l00048"></a>00048              <a class="code" href="../../de/dea/structskylark_1_1base_1_1context__t.html">skylark::base::context_t</a>&amp; context) {
 <a name="l00049"></a>00049 
@@ -124,36 +124,36 @@
 <a name="l00072"></a>00072     }
 <a name="l00073"></a>00073 
 <a name="l00074"></a>00074 
-<a name="l00076"></a>00076     OutputMatrixType1 Q(input_height, sketch_size);
+<a name="l00076"></a>00076     UMatrixType Q(input_height, sketch_size);
 <a name="l00077"></a>00077 
-<a name="l00078"></a>00078     <span class="keyword">typedef</span> <span class="keyword">typename</span> SketchTransform&lt;InputMatrixType, OutputMatrixType1&gt;::data_type sketch_data_type;
+<a name="l00078"></a>00078     <span class="keyword">typedef</span> <span class="keyword">typename</span> SketchTransform&lt;InputMatrixType, UMatrixType&gt;::data_type sketch_data_type;
 <a name="l00079"></a>00079     sketch_data_type sketch_data(input_width, sketch_size, context);
-<a name="l00080"></a>00080     <span class="comment">//typedef typename SketchTransform&lt;InputMatrixType, OutputMatrixType1&gt; sketch_transform_type;</span>
-<a name="l00081"></a>00081     SketchTransform&lt;InputMatrixType, OutputMatrixType1&gt; sketch_transform(sketch_data);
+<a name="l00080"></a>00080     <span class="comment">//typedef typename SketchTransform&lt;InputMatrixType, UMatrixType&gt; sketch_transform_type;</span>
+<a name="l00081"></a>00081     SketchTransform&lt;InputMatrixType, UMatrixType&gt; sketch_transform(sketch_data);
 <a name="l00082"></a>00082     sketch_transform.apply(A, Q, <a class="code" href="../../d4/d9b/structskylark_1_1sketch_1_1rowwise__tag.html" title="Apply the sketch/transform to the rows. In matrix form this is A-&gt;AS^T.">skylark::sketch::rowwise_tag</a>());
 <a name="l00083"></a>00083 
 <a name="l00084"></a>00084 <span class="preprocessor">#if 0</span>
 <a name="l00085"></a>00085 <span class="preprocessor"></span>    <span class="keywordflow">if</span> (params.<a class="code" href="../../d3/d55/structskylark_1_1nla_1_1rand__svd__params__t.html#abda8ba2c478c38da0e68fe927b9a5a9c">transform</a> == <a class="code" href="../../d8/dc0/namespaceskylark_1_1sketch_1_1c.html#a31c97c70b200d7cf6a49ae99a39cf1c5a7e9e1846fa367d0305354ad3b3994f1a">sketch::c::transform_type_t::JLT</a>)
 <a name="l00086"></a>00086         {
-<a name="l00087"></a>00087           <span class="keyword">typedef</span> <span class="keyword">typename</span> <a class="code" href="../../d9/d0d/structskylark_1_1sketch_1_1JLT__data__t.html">skylark::sketch::JLT_t&lt;InputMatrixType, OutputMatrixType1&gt;::data_type</a> sketch_data_type;
+<a name="l00087"></a>00087           <span class="keyword">typedef</span> <span class="keyword">typename</span> <a class="code" href="../../d9/d0d/structskylark_1_1sketch_1_1JLT__data__t.html">skylark::sketch::JLT_t&lt;InputMatrixType, UMatrixType&gt;::data_type</a> sketch_data_type;
 <a name="l00088"></a>00088           sketch_data_type sketch_data(input_width, sketch_size, context);
-<a name="l00089"></a>00089           <span class="keyword">typedef</span> <span class="keyword">typename</span> <a class="code" href="../../d2/db6/classskylark_1_1sketch_1_1JLT__t.html">skylark::sketch::JLT_t&lt;InputMatrixType, OutputMatrixType1&gt;</a> sketch_transform_type;
+<a name="l00089"></a>00089           <span class="keyword">typedef</span> <span class="keyword">typename</span> <a class="code" href="../../d2/db6/classskylark_1_1sketch_1_1JLT__t.html">skylark::sketch::JLT_t&lt;InputMatrixType, UMatrixType&gt;</a> sketch_transform_type;
 <a name="l00090"></a>00090           sketch_transform_type sketch_transform(sketch_data);
 <a name="l00091"></a>00091           sketch_transform.apply(A, Q, <a class="code" href="../../d4/d9b/structskylark_1_1sketch_1_1rowwise__tag.html" title="Apply the sketch/transform to the rows. In matrix form this is A-&gt;AS^T.">skylark::sketch::rowwise_tag</a>());
 <a name="l00092"></a>00092         }
 <a name="l00093"></a>00093     <span class="keywordflow">else</span> <span class="keywordflow">if</span> (params.<a class="code" href="../../d3/d55/structskylark_1_1nla_1_1rand__svd__params__t.html#abda8ba2c478c38da0e68fe927b9a5a9c">transform</a> == <a class="code" href="../../d8/dc0/namespaceskylark_1_1sketch_1_1c.html#a31c97c70b200d7cf6a49ae99a39cf1c5a17c94976f98ecf254b98eed05d634a6d">sketch::c::transform_type_t::FJLT</a>)
 <a name="l00094"></a>00094         {
-<a name="l00095"></a>00095           <span class="keyword">typedef</span> <span class="keyword">typename</span> <a class="code" href="../../d6/dc7/structskylark_1_1sketch_1_1FJLT__data__t.html">skylark::sketch::FJLT_t&lt;InputMatrixType, OutputMatrixType1&gt;::data_type</a> sketch_data_type;
+<a name="l00095"></a>00095           <span class="keyword">typedef</span> <span class="keyword">typename</span> <a class="code" href="../../d6/dc7/structskylark_1_1sketch_1_1FJLT__data__t.html">skylark::sketch::FJLT_t&lt;InputMatrixType, UMatrixType&gt;::data_type</a> sketch_data_type;
 <a name="l00096"></a>00096           sketch_data_type sketch_data(input_width, sketch_size, context);
-<a name="l00097"></a>00097           <span class="keyword">typedef</span> <span class="keyword">typename</span> <a class="code" href="../../d5/dfc/structskylark_1_1sketch_1_1FJLT__t.html">skylark::sketch::FJLT_t&lt;InputMatrixType, OutputMatrixType1&gt;</a> sketch_transform_type;
+<a name="l00097"></a>00097           <span class="keyword">typedef</span> <span class="keyword">typename</span> <a class="code" href="../../d5/dfc/structskylark_1_1sketch_1_1FJLT__t.html">skylark::sketch::FJLT_t&lt;InputMatrixType, UMatrixType&gt;</a> sketch_transform_type;
 <a name="l00098"></a>00098           sketch_transform_type sketch_transform(sketch_data);
 <a name="l00099"></a>00099           sketch_transform.apply(A, Q, <a class="code" href="../../d4/d9b/structskylark_1_1sketch_1_1rowwise__tag.html" title="Apply the sketch/transform to the rows. In matrix form this is A-&gt;AS^T.">skylark::sketch::rowwise_tag</a>());
 <a name="l00100"></a>00100         }
 <a name="l00101"></a>00101     <span class="keywordflow">else</span> <span class="keywordflow">if</span> (params.<a class="code" href="../../d3/d55/structskylark_1_1nla_1_1rand__svd__params__t.html#abda8ba2c478c38da0e68fe927b9a5a9c">transform</a> == <a class="code" href="../../d8/dc0/namespaceskylark_1_1sketch_1_1c.html#a31c97c70b200d7cf6a49ae99a39cf1c5ac25b2b0d5535e50ea4ae04a9894eef39">sketch::c::transform_type_t::CWT</a>)
 <a name="l00102"></a>00102         {
-<a name="l00103"></a>00103           <span class="comment">/*typedef typename skylark::sketch::CWT_t&lt;InputMatrixType, OutputMatrixType1&gt;::data_type sketch_data_type;</span>
+<a name="l00103"></a>00103           <span class="comment">/*typedef typename skylark::sketch::CWT_t&lt;InputMatrixType, UMatrixType&gt;::data_type sketch_data_type;</span>
 <a name="l00104"></a>00104 <span class="comment">          sketch_data_type sketch_data(input_width, sketch_size, context);</span>
-<a name="l00105"></a>00105 <span class="comment">          typedef typename skylark::sketch::CWT_t&lt;InputMatrixType, OutputMatrixType1&gt; sketch_transform_type;</span>
+<a name="l00105"></a>00105 <span class="comment">          typedef typename skylark::sketch::CWT_t&lt;InputMatrixType, UMatrixType&gt; sketch_transform_type;</span>
 <a name="l00106"></a>00106 <span class="comment">          sketch_transform_type sketch_transform(sketch_data);</span>
 <a name="l00107"></a>00107 <span class="comment">          sketch_transform.apply(A, Q, skylark::sketch::rowwise_tag());*/</span>
 <a name="l00108"></a>00108         }
@@ -168,7 +168,7 @@
 <a name="l00117"></a>00117         }
 <a name="l00118"></a>00118 <span class="preprocessor">#endif</span>
 <a name="l00119"></a>00119 <span class="preprocessor"></span>
-<a name="l00127"></a>00127     OutputMatrixType1 Y;
+<a name="l00127"></a>00127     UMatrixType Y;
 <a name="l00128"></a>00128 
 <a name="l00130"></a>00130     skylark::base::qr::Explicit(Q);
 <a name="l00131"></a>00131 
@@ -184,7 +184,7 @@
 <a name="l00143"></a>00143     }
 <a name="l00144"></a>00144 
 <a name="l00145"></a>00145 
-<a name="l00147"></a>00147     OutputMatrixType1 B;
+<a name="l00147"></a>00147     UMatrixType B;
 <a name="l00148"></a>00148     <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a8f7ed6aa7741ff54e546fa88fc706a53">skylark::base::Gemm</a>(elem::ADJOINT, elem::NORMAL,
 <a name="l00149"></a>00149                     <span class="keywordtype">double</span>(1), Q, A, B);
 <a name="l00150"></a>00150     skylark::base::SVD(B, SV, V);
@@ -201,7 +201,7 @@
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jun 5 2014 02:49:11 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jun 5 2014 18:16:07 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

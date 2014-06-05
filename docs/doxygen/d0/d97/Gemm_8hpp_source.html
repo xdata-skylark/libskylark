@@ -252,8 +252,8 @@
 <a name="l00206"></a>00206     <span class="keyword">const</span> T *values = B.<a class="code" href="../../dc/dbf/structskylark_1_1base_1_1sparse__matrix__t.html#ac947ffd541302ec87ba32c392ac00aca">locked_values</a>();
 <a name="l00207"></a>00207 
 <a name="l00208"></a>00208     <span class="keywordtype">int</span> k = A.Width();
-<a name="l00209"></a>00209     <span class="keywordtype">int</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a> = B.<a class="code" href="../../dc/dbf/structskylark_1_1base_1_1sparse__matrix__t.html#a7de5d2d055e4526b115c804426b23ab1">width</a>();
-<a name="l00210"></a>00210     <span class="keywordtype">int</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a> = A.Height();
+<a name="l00209"></a>00209     <span class="keywordtype">int</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a> = B.<a class="code" href="../../dc/dbf/structskylark_1_1base_1_1sparse__matrix__t.html#a7de5d2d055e4526b115c804426b23ab1">width</a>();
+<a name="l00210"></a>00210     <span class="keywordtype">int</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a> = A.Height();
 <a name="l00211"></a>00211 
 <a name="l00212"></a>00212     <span class="comment">// NN</span>
 <a name="l00213"></a>00213     <span class="keywordflow">if</span> (oA == elem::NORMAL &amp;&amp; oB == elem::NORMAL) {
@@ -266,7 +266,7 @@
 <a name="l00220"></a>00220 <span class="preprocessor">#       if SKYLARK_HAVE_OPENMP</span>
 <a name="l00221"></a>00221 <span class="preprocessor"></span><span class="preprocessor">#       pragma omp parallel for private(Cc, Ac)</span>
 <a name="l00222"></a>00222 <span class="preprocessor"></span><span class="preprocessor">#       endif</span>
-<a name="l00223"></a>00223 <span class="preprocessor"></span>        <span class="keywordflow">for</span>(<span class="keywordtype">int</span> col = 0; col &lt; <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>; col++) {
+<a name="l00223"></a>00223 <span class="preprocessor"></span>        <span class="keywordflow">for</span>(<span class="keywordtype">int</span> col = 0; col &lt; <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>; col++) {
 <a name="l00224"></a>00224             elem::View(Cc, C, 0, col, m, 1);
 <a name="l00225"></a>00225             <span class="keywordflow">for</span> (<span class="keywordtype">int</span> j = indptr[col]; j &lt; indptr[col + 1]; j++) {
 <a name="l00226"></a>00226                 <span class="keywordtype">int</span> row = indices[j];
@@ -287,7 +287,7 @@
 <a name="l00241"></a>00241 
 <a name="l00242"></a>00242         <span class="comment">// Now, we simply think of B has being in CSR mode...</span>
 <a name="l00243"></a>00243         <span class="keywordtype">int</span> row = 0;
-<a name="l00244"></a>00244         <span class="keywordflow">for</span>(<span class="keywordtype">int</span> row = 0; row &lt; <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>; row++) {
+<a name="l00244"></a>00244         <span class="keywordflow">for</span>(<span class="keywordtype">int</span> row = 0; row &lt; <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>; row++) {
 <a name="l00245"></a>00245             elem::LockedView(Ac, A, 0, row, m, 1);
 <a name="l00246"></a>00246 <span class="preprocessor">#           if SKYLARK_HAVE_OPENMP</span>
 <a name="l00247"></a>00247 <span class="preprocessor"></span><span class="preprocessor">#           pragma omp parallel for private(Cc)</span>
@@ -313,7 +313,7 @@
 <a name="l00267"></a>00267 <span class="preprocessor">#       if SKYLARK_HAVE_OPENMP</span>
 <a name="l00268"></a>00268 <span class="preprocessor"></span><span class="preprocessor">#       pragma omp parallel for collapse(2)</span>
 <a name="l00269"></a>00269 <span class="preprocessor"></span><span class="preprocessor">#       endif</span>
-<a name="l00270"></a>00270 <span class="preprocessor"></span>        <span class="keywordflow">for</span> (<span class="keywordtype">int</span> j = 0; j &lt; <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>; j++)
+<a name="l00270"></a>00270 <span class="preprocessor"></span>        <span class="keywordflow">for</span> (<span class="keywordtype">int</span> j = 0; j &lt; <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>; j++)
 <a name="l00271"></a>00271             <span class="keywordflow">for</span>(<span class="keywordtype">int</span> row = 0; row &lt; k; row++) {
 <a name="l00272"></a>00272                 c[j * ldc + row] *= beta;
 <a name="l00273"></a>00273                  <span class="keywordflow">for</span> (<span class="keywordtype">int</span> l = indptr[j]; l &lt; indptr[j + 1]; l++) {
@@ -338,7 +338,7 @@
 <a name="l00292"></a>00292 <span class="preprocessor"></span><span class="preprocessor">#       pragma omp parallel for</span>
 <a name="l00293"></a>00293 <span class="preprocessor"></span><span class="preprocessor">#       endif</span>
 <a name="l00294"></a>00294 <span class="preprocessor"></span>        <span class="keywordflow">for</span>(<span class="keywordtype">int</span> row = 0; row &lt; k; row++)
-<a name="l00295"></a>00295             <span class="keywordflow">for</span>(<span class="keywordtype">int</span> rb = 0; rb &lt; <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>; rb++)
+<a name="l00295"></a>00295             <span class="keywordflow">for</span>(<span class="keywordtype">int</span> rb = 0; rb &lt; <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>; rb++)
 <a name="l00296"></a>00296                 <span class="keywordflow">for</span> (<span class="keywordtype">int</span> l = indptr[rb]; l &lt; indptr[rb + 1]; l++) {
 <a name="l00297"></a>00297                     <span class="keywordtype">int</span> col = indices[l];
 <a name="l00298"></a>00298                     c[col * ldc + row] += values[l] * a[row * lda + rb];
@@ -374,7 +374,7 @@
 <a name="l00328"></a>00328 <span class="preprocessor">#       if SKYLARK_HAVE_OPENMP</span>
 <a name="l00329"></a>00329 <span class="preprocessor"></span><span class="preprocessor">#       pragma omp parallel for</span>
 <a name="l00330"></a>00330 <span class="preprocessor"></span><span class="preprocessor">#       endif</span>
-<a name="l00331"></a>00331 <span class="preprocessor"></span>        <span class="keywordflow">for</span>(<span class="keywordtype">int</span> i = 0; i &lt; <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>; i++)
+<a name="l00331"></a>00331 <span class="preprocessor"></span>        <span class="keywordflow">for</span>(<span class="keywordtype">int</span> i = 0; i &lt; <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>; i++)
 <a name="l00332"></a>00332             <span class="keywordflow">for</span>(<span class="keywordtype">int</span> col = 0; col &lt; k; col++)
 <a name="l00333"></a>00333                  <span class="keywordflow">for</span> (<span class="keywordtype">int</span> j = indptr[col]; j &lt; indptr[col + 1]; j++) {
 <a name="l00334"></a>00334                      <span class="keywordtype">int</span> row = indices[j];
@@ -418,7 +418,7 @@
 <a name="l00372"></a>00372 <span class="preprocessor">#       if SKYLARK_HAVE_OPENMP</span>
 <a name="l00373"></a>00373 <span class="preprocessor"></span><span class="preprocessor">#       pragma omp parallel for collapse(2)</span>
 <a name="l00374"></a>00374 <span class="preprocessor"></span><span class="preprocessor">#       endif</span>
-<a name="l00375"></a>00375 <span class="preprocessor"></span>        <span class="keywordflow">for</span> (<span class="keywordtype">int</span> j = 0; j &lt; <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>; j++)
+<a name="l00375"></a>00375 <span class="preprocessor"></span>        <span class="keywordflow">for</span> (<span class="keywordtype">int</span> j = 0; j &lt; <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>; j++)
 <a name="l00376"></a>00376             <span class="keywordflow">for</span>(<span class="keywordtype">int</span> row = 0; row &lt; k; row++) {
 <a name="l00377"></a>00377                 c[j * ldc + row] *= beta;
 <a name="l00378"></a>00378                  <span class="keywordflow">for</span> (<span class="keywordtype">int</span> l = indptr[row]; l &lt; indptr[row + 1]; l++) {
@@ -576,7 +576,7 @@
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jun 5 2014 02:49:11 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jun 5 2014 18:16:07 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

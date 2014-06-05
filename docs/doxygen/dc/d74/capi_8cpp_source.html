@@ -273,7 +273,7 @@
 <a name="l00216"></a>00216 }
 <a name="l00217"></a>00217 
 <a name="l00219"></a><a class="code" href="../../dd/df1/sketchc_8hpp.html#acea4ae8db7b7b896515c4f58dddaabd2">00219</a> SKYLARK_EXTERN_API <span class="keywordtype">int</span> <a class="code" href="../../dc/d74/capi_8cpp.html#aeeda2fb04a52537c34a03b27b110e54c">sl_create_sketch_transform</a>(<a class="code" href="../../de/dea/structskylark_1_1base_1_1context__t.html">base::context_t</a> *ctxt,
-<a name="l00220"></a>00220     <span class="keywordtype">char</span> *type_, <span class="keywordtype">int</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, <span class="keywordtype">int</span> s,
+<a name="l00220"></a>00220     <span class="keywordtype">char</span> *type_, <span class="keywordtype">int</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, <span class="keywordtype">int</span> s,
 <a name="l00221"></a>00221     <a class="code" href="../../d6/dab/structskylark_1_1sketch_1_1c_1_1sketch__transform__t.html">sketchc::sketch_transform_t</a> **sketch, ...) {
 <a name="l00222"></a>00222 
 <a name="l00223"></a>00223     <a class="code" href="../../d8/dc0/namespaceskylark_1_1sketch_1_1c.html#a31c97c70b200d7cf6a49ae99a39cf1c5">sketchc::transform_type_t</a> type = str2transform_type(type_);
@@ -766,7 +766,7 @@
 <a name="l00710"></a>00710     <span class="keywordflow">return</span> 0;
 <a name="l00711"></a>00711 }
 <a name="l00712"></a>00712 
-<a name="l00713"></a><a class="code" href="../../dd/df1/sketchc_8hpp.html#ac1c152ad174556a9dccf0fa69b5c2ccf">00713</a> SKYLARK_EXTERN_API <span class="keywordtype">int</span> <a class="code" href="../../dc/d74/capi_8cpp.html#ac1c152ad174556a9dccf0fa69b5c2ccf">sl_wrap_raw_matrix</a>(<span class="keywordtype">double</span> *data, <span class="keywordtype">int</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>, <span class="keywordtype">int</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, <span class="keywordtype">void</span> **A)
+<a name="l00713"></a><a class="code" href="../../dd/df1/sketchc_8hpp.html#ac1c152ad174556a9dccf0fa69b5c2ccf">00713</a> SKYLARK_EXTERN_API <span class="keywordtype">int</span> <a class="code" href="../../dc/d74/capi_8cpp.html#ac1c152ad174556a9dccf0fa69b5c2ccf">sl_wrap_raw_matrix</a>(<span class="keywordtype">double</span> *data, <span class="keywordtype">int</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>, <span class="keywordtype">int</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, <span class="keywordtype">void</span> **A)
 <a name="l00714"></a>00714 {
 <a name="l00715"></a>00715 <span class="preprocessor">#if SKYLARK_HAVE_ELEMENTAL</span>
 <a name="l00716"></a>00716 <span class="preprocessor"></span>    <a class="code" href="../../dc/d74/capi_8cpp.html#aa267ec3ee50656a3303b4045e7010131">Matrix</a> *tmp = <span class="keyword">new</span> <a class="code" href="../../dc/d74/capi_8cpp.html#aa267ec3ee50656a3303b4045e7010131">Matrix</a>();
@@ -830,7 +830,7 @@
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jun 5 2014 02:49:11 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jun 5 2014 18:16:07 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

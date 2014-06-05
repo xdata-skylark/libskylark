@@ -131,10 +131,10 @@
 <a name="l00072"></a>00072     <span class="keyword">virtual</span> <span class="keywordtype">double</span> <a class="code" href="../../df/de6/classlogisticloss.html#a9c5eab77750597b653c5eb604b5f6f80">evaluate</a>(<a class="code" href="../../de/d75/FunctionProx_8hpp.html#a26511354ab3b1ea428a1b98b89d06191">LocalDenseMatrixType</a>&amp; O, <a class="code" href="../../de/d75/FunctionProx_8hpp.html#aebbd692c9c12e31f3048a65914bb2f68">LocalTargetMatrixType</a>&amp; T);
 <a name="l00073"></a>00073     <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="../../df/de6/classlogisticloss.html#a55665284b434d34e6732bb0dccbe01aa">proxoperator</a>(<a class="code" href="../../de/d75/FunctionProx_8hpp.html#a26511354ab3b1ea428a1b98b89d06191">LocalDenseMatrixType</a>&amp; X, <span class="keywordtype">double</span> lambda, <a class="code" href="../../de/d75/FunctionProx_8hpp.html#aebbd692c9c12e31f3048a65914bb2f68">LocalTargetMatrixType</a>&amp; T, <a class="code" href="../../de/d75/FunctionProx_8hpp.html#a26511354ab3b1ea428a1b98b89d06191">LocalDenseMatrixType</a>&amp; Y);
 <a name="l00074"></a>00074 <span class="keyword">private</span>:
-<a name="l00075"></a>00075     <span class="keywordtype">double</span> logsumexp(<span class="keywordtype">double</span>* x, <span class="keywordtype">int</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>);
-<a name="l00076"></a>00076     <span class="keywordtype">double</span> normsquare(<span class="keywordtype">double</span>* x, <span class="keywordtype">double</span>* y, <span class="keywordtype">int</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>);
-<a name="l00077"></a>00077     <span class="keywordtype">double</span> objective(<span class="keywordtype">int</span> index, <span class="keywordtype">double</span>* x, <span class="keywordtype">double</span>* v, <span class="keywordtype">int</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, <span class="keywordtype">double</span> lambda);
-<a name="l00078"></a>00078     <span class="keywordtype">int</span> logexp(<span class="keywordtype">int</span> index, <span class="keywordtype">double</span>* v, <span class="keywordtype">int</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, <span class="keywordtype">double</span> lambda, <span class="keywordtype">double</span>* x, <span class="keywordtype">int</span> MAXITER, <span class="keywordtype">double</span> epsilon, <span class="keywordtype">int</span> DISPLAY);
+<a name="l00075"></a>00075     <span class="keywordtype">double</span> logsumexp(<span class="keywordtype">double</span>* x, <span class="keywordtype">int</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>);
+<a name="l00076"></a>00076     <span class="keywordtype">double</span> normsquare(<span class="keywordtype">double</span>* x, <span class="keywordtype">double</span>* y, <span class="keywordtype">int</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>);
+<a name="l00077"></a>00077     <span class="keywordtype">double</span> objective(<span class="keywordtype">int</span> index, <span class="keywordtype">double</span>* x, <span class="keywordtype">double</span>* v, <span class="keywordtype">int</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, <span class="keywordtype">double</span> lambda);
+<a name="l00078"></a>00078     <span class="keywordtype">int</span> logexp(<span class="keywordtype">int</span> index, <span class="keywordtype">double</span>* v, <span class="keywordtype">int</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, <span class="keywordtype">double</span> lambda, <span class="keywordtype">double</span>* x, <span class="keywordtype">int</span> MAXITER, <span class="keywordtype">double</span> epsilon, <span class="keywordtype">int</span> DISPLAY);
 <a name="l00079"></a>00079 
 <a name="l00080"></a>00080     <span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">int</span> MAXITER = 100;
 <a name="l00081"></a>00081     <span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">int</span> DISPLAY = 0;
@@ -159,7 +159,7 @@
 <a name="l00100"></a><a class="code" href="../../d8/d45/classladloss.html#a70c828e6c02d87e9f3b1f6d3cd45108a">00100</a> <span class="keywordtype">double</span> <a class="code" href="../../d8/d45/classladloss.html#a70c828e6c02d87e9f3b1f6d3cd45108a">ladloss::evaluate</a>(<a class="code" href="../../de/d75/FunctionProx_8hpp.html#a26511354ab3b1ea428a1b98b89d06191">LocalDenseMatrixType</a>&amp; O, <a class="code" href="../../de/d75/FunctionProx_8hpp.html#aebbd692c9c12e31f3048a65914bb2f68">LocalTargetMatrixType</a>&amp; T) {
 <a name="l00101"></a>00101                 <span class="keywordtype">double</span> loss = 0.0;
 <a name="l00102"></a>00102                 <span class="keywordtype">int</span> k = O.Height();
-<a name="l00103"></a>00103                 <span class="keywordtype">int</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a> = O.Width();
+<a name="l00103"></a>00103                 <span class="keywordtype">int</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a> = O.Width();
 <a name="l00104"></a>00104 
 <a name="l00105"></a>00105                 <span class="comment">// check for size compatability</span>
 <a name="l00106"></a>00106 
@@ -172,7 +172,7 @@
 <a name="l00113"></a>00113 <span class="preprocessor">#ifdef SKYLARK_HAVE_OPENMP</span>
 <a name="l00114"></a>00114 <span class="preprocessor"></span><span class="preprocessor">                        #pragma omp parallel for reduction(+:loss) private(i, x)</span>
 <a name="l00115"></a>00115 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00116"></a>00116 <span class="preprocessor"></span>                        <span class="keywordflow">for</span>(i=0; i&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>; i++) {
+<a name="l00116"></a>00116 <span class="preprocessor"></span>                        <span class="keywordflow">for</span>(i=0; i&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>; i++) {
 <a name="l00117"></a>00117                                 x = Obuf[i] - Tbuf[i];
 <a name="l00118"></a>00118                                 loss += std::abs(x);
 <a name="l00119"></a>00119                         }
@@ -182,7 +182,7 @@
 <a name="l00123"></a>00123 <span class="preprocessor">#ifdef SKYLARK_HAVE_OPENMP</span>
 <a name="l00124"></a>00124 <span class="preprocessor"></span><span class="preprocessor">                        #pragma omp parallel for reduction(+:loss) private(i,j, x, label)</span>
 <a name="l00125"></a>00125 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00126"></a>00126 <span class="preprocessor"></span>                        <span class="keywordflow">for</span>(i=0; i&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>; i++) {
+<a name="l00126"></a>00126 <span class="preprocessor"></span>                        <span class="keywordflow">for</span>(i=0; i&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>; i++) {
 <a name="l00127"></a>00127                                 label = (int) Tbuf[i];
 <a name="l00128"></a>00128                                 <span class="keywordflow">for</span>(j=0;j&lt;k;j++) {
 <a name="l00129"></a>00129                                      x = O.Get(j,i) - (j==label ? 1.0:-1.0);
@@ -197,7 +197,7 @@
 <a name="l00138"></a>00138         <span class="comment">//solution to Y = prox[X] = argmin_Y 0.5*||X-Y||^2_{fro} + lambda ||Y-T||_1</span>
 <a name="l00139"></a><a class="code" href="../../d8/d45/classladloss.html#ab4413f703728389d46f1218583e7bb11">00139</a> <span class="keywordtype">void</span> <a class="code" href="../../d8/d45/classladloss.html#ab4413f703728389d46f1218583e7bb11">ladloss::proxoperator</a>(<a class="code" href="../../de/d75/FunctionProx_8hpp.html#a26511354ab3b1ea428a1b98b89d06191">LocalDenseMatrixType</a>&amp; X, <span class="keywordtype">double</span> lambda, <a class="code" href="../../de/d75/FunctionProx_8hpp.html#aebbd692c9c12e31f3048a65914bb2f68">LocalTargetMatrixType</a>&amp; T, <a class="code" href="../../de/d75/FunctionProx_8hpp.html#a26511354ab3b1ea428a1b98b89d06191">LocalDenseMatrixType</a>&amp; Y) {
 <a name="l00140"></a>00140                 <span class="keywordtype">int</span> k = X.Height();
-<a name="l00141"></a>00141                 <span class="keywordtype">int</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a> = X.Width();
+<a name="l00141"></a>00141                 <span class="keywordtype">int</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a> = X.Width();
 <a name="l00142"></a>00142 
 <a name="l00143"></a>00143                                 <span class="comment">// check for size compatability</span>
 <a name="l00144"></a>00144 
@@ -214,7 +214,7 @@
 <a name="l00155"></a>00155 <span class="preprocessor">#ifdef SKYLARK_HAVE_OPENMP</span>
 <a name="l00156"></a>00156 <span class="preprocessor"></span><span class="preprocessor">            #pragma omp parallel for private(i)</span>
 <a name="l00157"></a>00157 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00158"></a>00158 <span class="preprocessor"></span>                        <span class="keywordflow">for</span>(<span class="keywordtype">int</span> i=0; i&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>; i++) {
+<a name="l00158"></a>00158 <span class="preprocessor"></span>                        <span class="keywordflow">for</span>(<span class="keywordtype">int</span> i=0; i&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>; i++) {
 <a name="l00159"></a>00159                                 Ybuf[i] = Tbuf[i];
 <a name="l00160"></a>00160                                 <span class="keywordflow">if</span> (Xbuf[i] &gt; (Tbuf[i]+lambda))
 <a name="l00161"></a>00161                                         Ybuf[i] = Xbuf[i] - lambda;
@@ -227,7 +227,7 @@
 <a name="l00168"></a>00168 <span class="preprocessor">#ifdef SKYLARK_HAVE_OPENMP</span>
 <a name="l00169"></a>00169 <span class="preprocessor"></span><span class="preprocessor">            #pragma omp parallel for private(i,j, label, t, x)</span>
 <a name="l00170"></a>00170 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00171"></a>00171 <span class="preprocessor"></span>                        <span class="keywordflow">for</span>(<span class="keywordtype">int</span> i=0; i&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>; i++) {
+<a name="l00171"></a>00171 <span class="preprocessor"></span>                        <span class="keywordflow">for</span>(<span class="keywordtype">int</span> i=0; i&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>; i++) {
 <a name="l00172"></a>00172                                 label = (int) Tbuf[i];
 <a name="l00173"></a>00173                                 <span class="keywordflow">for</span>(j=0;j&lt;k;j++) {
 <a name="l00174"></a>00174                                          t = (j==label ? 1.0:-1.0);
@@ -247,7 +247,7 @@
 <a name="l00188"></a><a class="code" href="../../da/d85/classsquaredloss.html#abb4a00df1764c6960b754de952e45c71">00188</a> <span class="keywordtype">double</span> <a class="code" href="../../da/d85/classsquaredloss.html#abb4a00df1764c6960b754de952e45c71">squaredloss::evaluate</a>(<a class="code" href="../../de/d75/FunctionProx_8hpp.html#a26511354ab3b1ea428a1b98b89d06191">LocalDenseMatrixType</a>&amp; O, <a class="code" href="../../de/d75/FunctionProx_8hpp.html#aebbd692c9c12e31f3048a65914bb2f68">LocalTargetMatrixType</a>&amp; T) {
 <a name="l00189"></a>00189                 <span class="keywordtype">double</span> loss = 0.0;
 <a name="l00190"></a>00190                 <span class="keywordtype">int</span> k = O.Height();
-<a name="l00191"></a>00191                 <span class="keywordtype">int</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a> = O.Width();
+<a name="l00191"></a>00191                 <span class="keywordtype">int</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a> = O.Width();
 <a name="l00192"></a>00192 
 <a name="l00193"></a>00193                 <span class="comment">// check for size compatability</span>
 <a name="l00194"></a>00194 
@@ -260,7 +260,7 @@
 <a name="l00201"></a>00201 <span class="preprocessor">#ifdef SKYLARK_HAVE_OPENMP</span>
 <a name="l00202"></a>00202 <span class="preprocessor"></span><span class="preprocessor">                        #pragma omp parallel for reduction(+:loss) private(i, x)</span>
 <a name="l00203"></a>00203 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00204"></a>00204 <span class="preprocessor"></span>                        <span class="keywordflow">for</span>(i=0; i&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>; i++) {
+<a name="l00204"></a>00204 <span class="preprocessor"></span>                        <span class="keywordflow">for</span>(i=0; i&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>; i++) {
 <a name="l00205"></a>00205                                 x = Obuf[i] - Tbuf[i];
 <a name="l00206"></a>00206                                 loss += x*x;
 <a name="l00207"></a>00207                         }
@@ -270,7 +270,7 @@
 <a name="l00211"></a>00211 <span class="preprocessor">#ifdef SKYLARK_HAVE_OPENMP</span>
 <a name="l00212"></a>00212 <span class="preprocessor"></span><span class="preprocessor">                        #pragma omp parallel for reduction(+:loss) private(i,j, x, label)</span>
 <a name="l00213"></a>00213 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00214"></a>00214 <span class="preprocessor"></span>                        <span class="keywordflow">for</span>(i=0; i&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>; i++) {
+<a name="l00214"></a>00214 <span class="preprocessor"></span>                        <span class="keywordflow">for</span>(i=0; i&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>; i++) {
 <a name="l00215"></a>00215                                 label = (int) Tbuf[i];
 <a name="l00216"></a>00216                                 <span class="keywordflow">for</span>(j=0;j&lt;k;j++) {
 <a name="l00217"></a>00217                                      x = O.Get(j,i) - (j==label ? 1.0:-1.0);
@@ -285,7 +285,7 @@
 <a name="l00226"></a>00226         <span class="comment">//solution to Y = prox[X] = argmin_Y 0.5*||X-Y||^2_{fro} + lambda 0.5 ||Y-T||^2_{fro}</span>
 <a name="l00227"></a><a class="code" href="../../da/d85/classsquaredloss.html#a2edf37856b5877234b766555c6dcb302">00227</a> <span class="keywordtype">void</span> <a class="code" href="../../da/d85/classsquaredloss.html#a2edf37856b5877234b766555c6dcb302">squaredloss::proxoperator</a>(<a class="code" href="../../de/d75/FunctionProx_8hpp.html#a26511354ab3b1ea428a1b98b89d06191">LocalDenseMatrixType</a>&amp; X, <span class="keywordtype">double</span> lambda, <a class="code" href="../../de/d75/FunctionProx_8hpp.html#aebbd692c9c12e31f3048a65914bb2f68">LocalTargetMatrixType</a>&amp; T, <a class="code" href="../../de/d75/FunctionProx_8hpp.html#a26511354ab3b1ea428a1b98b89d06191">LocalDenseMatrixType</a>&amp; Y) {
 <a name="l00228"></a>00228                 <span class="keywordtype">int</span> k = X.Height();
-<a name="l00229"></a>00229                 <span class="keywordtype">int</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a> = X.Width();
+<a name="l00229"></a>00229                 <span class="keywordtype">int</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a> = X.Width();
 <a name="l00230"></a>00230 
 <a name="l00231"></a>00231                                 <span class="comment">// check for size compatability</span>
 <a name="l00232"></a>00232 
@@ -301,7 +301,7 @@
 <a name="l00242"></a>00242 <span class="preprocessor">#ifdef SKYLARK_HAVE_OPENMP</span>
 <a name="l00243"></a>00243 <span class="preprocessor"></span><span class="preprocessor">            #pragma omp parallel for private(i)</span>
 <a name="l00244"></a>00244 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00245"></a>00245 <span class="preprocessor"></span>                        <span class="keywordflow">for</span>(<span class="keywordtype">int</span> i=0; i&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>; i++)
+<a name="l00245"></a>00245 <span class="preprocessor"></span>                        <span class="keywordflow">for</span>(<span class="keywordtype">int</span> i=0; i&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>; i++)
 <a name="l00246"></a>00246                                 Ybuf[i] = ilambda*(Xbuf[i] + lambda*Tbuf[i]);
 <a name="l00247"></a>00247                 }
 <a name="l00248"></a>00248 
@@ -309,7 +309,7 @@
 <a name="l00250"></a>00250 <span class="preprocessor">#ifdef SKYLARK_HAVE_OPENMP</span>
 <a name="l00251"></a>00251 <span class="preprocessor"></span><span class="preprocessor">            #pragma omp parallel for private(i,j, label)</span>
 <a name="l00252"></a>00252 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00253"></a>00253 <span class="preprocessor"></span>                        <span class="keywordflow">for</span>(<span class="keywordtype">int</span> i=0; i&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>; i++) {
+<a name="l00253"></a>00253 <span class="preprocessor"></span>                        <span class="keywordflow">for</span>(<span class="keywordtype">int</span> i=0; i&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>; i++) {
 <a name="l00254"></a>00254                                 label = (int) Tbuf[i];
 <a name="l00255"></a>00255                                 <span class="keywordflow">for</span>(j=0;j&lt;k;j++) {
 <a name="l00256"></a>00256                                      Y.Set(j, i,  ilambda*(X.Get(j,i) + lambda*(j==label ? 1.0:-1.0)));
@@ -323,7 +323,7 @@
 <a name="l00264"></a><a class="code" href="../../d8/d29/classhingeloss.html#ab015501589ae81b59bec13f1e58c2b23">00264</a> <span class="keywordtype">double</span> <a class="code" href="../../d8/d29/classhingeloss.html#ab015501589ae81b59bec13f1e58c2b23">hingeloss::evaluate</a>(<a class="code" href="../../de/d75/FunctionProx_8hpp.html#a26511354ab3b1ea428a1b98b89d06191">LocalDenseMatrixType</a>&amp; O, <a class="code" href="../../de/d75/FunctionProx_8hpp.html#aebbd692c9c12e31f3048a65914bb2f68">LocalTargetMatrixType</a>&amp; T) {
 <a name="l00265"></a>00265                 <span class="keywordtype">double</span> loss = 0.0;
 <a name="l00266"></a>00266                 <span class="keywordtype">int</span> k = O.Height();
-<a name="l00267"></a>00267                 <span class="keywordtype">int</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a> = O.Width();
+<a name="l00267"></a>00267                 <span class="keywordtype">int</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a> = O.Width();
 <a name="l00268"></a>00268                 <span class="keywordtype">int</span> kn = O.Height()*O.Width();
 <a name="l00269"></a>00269                 <span class="keywordtype">int</span> label, i, j;
 <a name="l00270"></a>00270                 <span class="comment">// check for size compatability</span>
@@ -339,7 +339,7 @@
 <a name="l00280"></a>00280 <span class="preprocessor">#ifdef SKYLARK_HAVE_OPENMP</span>
 <a name="l00281"></a>00281 <span class="preprocessor"></span><span class="preprocessor">               #pragma omp parallel for reduction(+:obj) private(i, yx)</span>
 <a name="l00282"></a>00282 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00283"></a>00283 <span class="preprocessor"></span>                       <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;i++) {
+<a name="l00283"></a>00283 <span class="preprocessor"></span>                       <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;i++) {
 <a name="l00284"></a>00284                                         yx = Obuf[i]*Tbuf[i];
 <a name="l00285"></a>00285                                         <span class="keywordflow">if</span>(yx&lt;1.0)
 <a name="l00286"></a>00286                                                 obj += (1.0 - yx);
@@ -352,7 +352,7 @@
 <a name="l00293"></a>00293 <span class="preprocessor">#ifdef SKYLARK_HAVE_OPENMP</span>
 <a name="l00294"></a>00294 <span class="preprocessor"></span><span class="preprocessor">               #pragma omp parallel for reduction(+:obj) private(i, j, label, yx)</span>
 <a name="l00295"></a>00295 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00296"></a>00296 <span class="preprocessor"></span>                       <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;i++) {
+<a name="l00296"></a>00296 <span class="preprocessor"></span>                       <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;i++) {
 <a name="l00297"></a>00297                                 label = (int) Tbuf[i];
 <a name="l00298"></a>00298                                 <span class="keywordflow">for</span>(j=0;j&lt;k;j++) {
 <a name="l00299"></a>00299                                      yx = O.Get(j,i)* (j==label ? 1.0:-1.0);
@@ -373,7 +373,7 @@
 <a name="l00314"></a>00314         <span class="keywordtype">double</span>* Xbuf = X.Buffer();
 <a name="l00315"></a>00315         <span class="keywordtype">double</span>* Ybuf = Y.Buffer();
 <a name="l00316"></a>00316         <span class="keywordtype">int</span> k = X.Height();
-<a name="l00317"></a>00317         <span class="keywordtype">int</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a> = X.Width();
+<a name="l00317"></a>00317         <span class="keywordtype">int</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a> = X.Width();
 <a name="l00318"></a>00318     <span class="keywordtype">double</span> yv, yy;
 <a name="l00319"></a>00319     <span class="keywordtype">int</span> label;
 <a name="l00320"></a>00320 
@@ -383,7 +383,7 @@
 <a name="l00324"></a>00324 <span class="preprocessor">#ifdef SKYLARK_HAVE_OPENMP</span>
 <a name="l00325"></a>00325 <span class="preprocessor"></span><span class="preprocessor">                        #pragma omp parallel for private(i,yv)</span>
 <a name="l00326"></a>00326 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00327"></a>00327 <span class="preprocessor"></span>                                <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>;i++) {
+<a name="l00327"></a>00327 <span class="preprocessor"></span>                                <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>;i++) {
 <a name="l00328"></a>00328                                         yv = Tbuf[i]*Xbuf[i];
 <a name="l00329"></a>00329 
 <a name="l00330"></a>00330                                         <span class="keywordflow">if</span> (yv &gt; 1.0) {
@@ -404,7 +404,7 @@
 <a name="l00345"></a>00345 <span class="preprocessor">#ifdef SKYLARK_HAVE_OPENMP</span>
 <a name="l00346"></a>00346 <span class="preprocessor"></span><span class="preprocessor">                        #pragma omp parallel for private(i,j,yv, yy, label)</span>
 <a name="l00347"></a>00347 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00348"></a>00348 <span class="preprocessor"></span>                                <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>;i++) {
+<a name="l00348"></a>00348 <span class="preprocessor"></span>                                <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>;i++) {
 <a name="l00349"></a>00349                                         label = (int) Tbuf[i];
 <a name="l00350"></a>00350                                         <span class="keywordflow">for</span>(j=0;j&lt;k;j++) {
 <a name="l00351"></a>00351                                                 yv = X.Get(j,i);
@@ -431,8 +431,8 @@
 <a name="l00372"></a>00372 
 <a name="l00373"></a><a class="code" href="../../df/de6/classlogisticloss.html#a9c5eab77750597b653c5eb604b5f6f80">00373</a> <span class="keywordtype">double</span> <a class="code" href="../../df/de6/classlogisticloss.html#a9c5eab77750597b653c5eb604b5f6f80">logisticloss::evaluate</a>(<a class="code" href="../../de/d75/FunctionProx_8hpp.html#a26511354ab3b1ea428a1b98b89d06191">LocalDenseMatrixType</a>&amp; O, <a class="code" href="../../de/d75/FunctionProx_8hpp.html#aebbd692c9c12e31f3048a65914bb2f68">LocalTargetMatrixType</a>&amp; T) {
 <a name="l00374"></a>00374         <span class="keywordtype">double</span> obj = 0.0;
-<a name="l00375"></a>00375         <span class="keywordtype">int</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a> = O.Width();
-<a name="l00376"></a>00376         <span class="keywordtype">int</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a> = O.Height();
+<a name="l00375"></a>00375         <span class="keywordtype">int</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a> = O.Width();
+<a name="l00376"></a>00376         <span class="keywordtype">int</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a> = O.Height();
 <a name="l00377"></a>00377         <span class="keywordtype">double</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#a9d8bf90e74fd38c19ef18649b5613d7f">t</a>;
 <a name="l00378"></a>00378         <span class="keywordtype">int</span> i;
 <a name="l00379"></a>00379         <span class="comment">//double start = omp_get_wtime( );</span>
@@ -440,9 +440,9 @@
 <a name="l00381"></a>00381 <span class="preprocessor">#ifdef SKYLARK_HAVE_OPENMP</span>
 <a name="l00382"></a>00382 <span class="preprocessor"></span><span class="preprocessor">        #pragma omp parallel for reduction(+:obj) private(i,t)</span>
 <a name="l00383"></a>00383 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00384"></a>00384 <span class="preprocessor"></span>        <span class="keywordflow">for</span>(<span class="keywordtype">int</span> i=0;i&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>;i++) {
+<a name="l00384"></a>00384 <span class="preprocessor"></span>        <span class="keywordflow">for</span>(<span class="keywordtype">int</span> i=0;i&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>;i++) {
 <a name="l00385"></a>00385                 t = (int) T.Get(i, 0);
-<a name="l00386"></a>00386             obj += -O.Get(t, i) + logsumexp(O.Buffer(0, i), <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>);
+<a name="l00386"></a>00386             obj += -O.Get(t, i) + logsumexp(O.Buffer(0, i), <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>);
 <a name="l00387"></a>00387         }
 <a name="l00388"></a>00388 
 <a name="l00389"></a>00389         <span class="comment">//double end = omp_get_wtime( );</span>
@@ -454,29 +454,29 @@
 <a name="l00395"></a>00395 
 <a name="l00396"></a>00396 
 <a name="l00397"></a><a class="code" href="../../df/de6/classlogisticloss.html#a55665284b434d34e6732bb0dccbe01aa">00397</a> <span class="keywordtype">void</span> <a class="code" href="../../df/de6/classlogisticloss.html#a55665284b434d34e6732bb0dccbe01aa">logisticloss::proxoperator</a>(<a class="code" href="../../de/d75/FunctionProx_8hpp.html#a26511354ab3b1ea428a1b98b89d06191">LocalDenseMatrixType</a>&amp; X, <span class="keywordtype">double</span> lambda, <a class="code" href="../../de/d75/FunctionProx_8hpp.html#aebbd692c9c12e31f3048a65914bb2f68">LocalTargetMatrixType</a>&amp; T, <a class="code" href="../../de/d75/FunctionProx_8hpp.html#a26511354ab3b1ea428a1b98b89d06191">LocalDenseMatrixType</a>&amp; Y) {
-<a name="l00398"></a>00398     <span class="keywordtype">int</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a> = X.Width();
-<a name="l00399"></a>00399     <span class="keywordtype">int</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a> = X.Height();
+<a name="l00398"></a>00398     <span class="keywordtype">int</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a> = X.Width();
+<a name="l00399"></a>00399     <span class="keywordtype">int</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a> = X.Height();
 <a name="l00400"></a>00400     <span class="keywordtype">int</span> i;
 <a name="l00401"></a>00401 
 <a name="l00402"></a>00402 <span class="preprocessor">#ifdef SKYLARK_HAVE_OPENMP</span>
 <a name="l00403"></a>00403 <span class="preprocessor"></span><span class="preprocessor">    #pragma omp parallel for private(i)</span>
 <a name="l00404"></a>00404 <span class="preprocessor"></span><span class="preprocessor">#endif</span>
-<a name="l00405"></a>00405 <span class="preprocessor"></span>    <span class="keywordflow">for</span>(<span class="keywordtype">int</span> i=0;i&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>;i++) {
-<a name="l00406"></a>00406                 logexp((<span class="keywordtype">int</span>) T.Get(i, 0), X.Buffer(0, i), <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, 1.0/lambda, Y.Buffer(0, i), MAXITER, epsilon, DISPLAY);
+<a name="l00405"></a>00405 <span class="preprocessor"></span>    <span class="keywordflow">for</span>(<span class="keywordtype">int</span> i=0;i&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>;i++) {
+<a name="l00406"></a>00406                 logexp((<span class="keywordtype">int</span>) T.Get(i, 0), X.Buffer(0, i), <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, 1.0/lambda, Y.Buffer(0, i), MAXITER, epsilon, DISPLAY);
 <a name="l00407"></a>00407     }
 <a name="l00408"></a>00408 
 <a name="l00409"></a>00409 }
 <a name="l00410"></a>00410 
-<a name="l00411"></a>00411 <span class="keywordtype">double</span> logisticloss::logsumexp(<span class="keywordtype">double</span>* x, <span class="keywordtype">int</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>) {
+<a name="l00411"></a>00411 <span class="keywordtype">double</span> logisticloss::logsumexp(<span class="keywordtype">double</span>* x, <span class="keywordtype">int</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>) {
 <a name="l00412"></a>00412         <span class="keywordtype">int</span> i;
 <a name="l00413"></a>00413         <span class="keywordtype">double</span> <a class="code" href="../../df/d93/utils_8hpp.html#a5b8922aac97383a6bdcf7fd777f6ea85">max</a>=x[0];
 <a name="l00414"></a>00414         <span class="keywordtype">double</span> f = 0.0;
-<a name="l00415"></a>00415         <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;i++) {
+<a name="l00415"></a>00415         <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;i++) {
 <a name="l00416"></a>00416                 <span class="keywordflow">if</span> (x[i]&gt;max) {
 <a name="l00417"></a>00417                         max = x[i];
 <a name="l00418"></a>00418                 }
 <a name="l00419"></a>00419         }
-<a name="l00420"></a>00420         <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;i++)
+<a name="l00420"></a>00420         <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;i++)
 <a name="l00421"></a>00421                 f +=  exp(x[i] - max);
 <a name="l00422"></a>00422         f = max + log(f);
 <a name="l00423"></a>00423 
@@ -492,7 +492,7 @@
 <a name="l00433"></a>00433 <span class="keywordtype">double</span> logisticloss::normsquare(<span class="keywordtype">double</span>* x, <span class="keywordtype">double</span>* y, <span class="keywordtype">int</span> n){
 <a name="l00434"></a>00434         <span class="keywordtype">double</span> nrm = 0.0;
 <a name="l00435"></a>00435         <span class="keywordtype">int</span> i;
-<a name="l00436"></a>00436         <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;i++)
+<a name="l00436"></a>00436         <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;i++)
 <a name="l00437"></a>00437                 nrm+= pow(x[i] - y[i], 2);
 <a name="l00438"></a>00438         <span class="keywordflow">return</span> nrm;
 <a name="l00439"></a>00439 }
@@ -517,7 +517,7 @@
 <a name="l00458"></a>00458             printf(<span class="stringliteral">&quot;iter=%d, obj=%f\n&quot;</span>, iter, obj);
 <a name="l00459"></a>00459         pu = 0.0;
 <a name="l00460"></a>00460         pptil = 0.0;
-<a name="l00461"></a>00461         <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;i++) {
+<a name="l00461"></a>00461         <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;i++) {
 <a name="l00462"></a>00462             p = exp(x[i] - logsum);
 <a name="l00463"></a>00463             grad[i] = p + lambda*(x[i] - v[i]);
 <a name="l00464"></a>00464             <span class="keywordflow">if</span>(i==index)
@@ -529,7 +529,7 @@
 <a name="l00470"></a>00470         }
 <a name="l00471"></a>00471         pptil = 1 - pptil;
 <a name="l00472"></a>00472         decrement = 0.0;
-<a name="l00473"></a>00473         <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;i++) {
+<a name="l00473"></a>00473         <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;i++) {
 <a name="l00474"></a>00474             u[i] -= (pu/pptil)*z[i];
 <a name="l00475"></a>00475             decrement += grad[i]*u[i];
 <a name="l00476"></a>00476         }
@@ -542,14 +542,14 @@
 <a name="l00483"></a>00483         }
 <a name="l00484"></a>00484         t = 1.0;
 <a name="l00485"></a>00485         <span class="keywordflow">while</span>(1) {
-<a name="l00486"></a>00486             <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;i++)
+<a name="l00486"></a>00486             <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;i++)
 <a name="l00487"></a>00487                 z[i] = x[i] - t*u[i];
 <a name="l00488"></a>00488             newobj = objective(index, z, v, n, lambda);
 <a name="l00489"></a>00489             <span class="keywordflow">if</span> (newobj &lt;= obj + alpha*t*decrement)
 <a name="l00490"></a>00490                 <span class="keywordflow">break</span>;
 <a name="l00491"></a>00491             t = beta*<a class="code" href="../../d8/d1e/regression_8cpp.html#a9d8bf90e74fd38c19ef18649b5613d7f">t</a>;
 <a name="l00492"></a>00492         }
-<a name="l00493"></a>00493         <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;i++)
+<a name="l00493"></a>00493         <span class="keywordflow">for</span>(i=0;i&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;i++)
 <a name="l00494"></a>00494             x[i] = z[i];
 <a name="l00495"></a>00495             obj = newobj;
 <a name="l00496"></a>00496     }
@@ -608,7 +608,7 @@
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jun 5 2014 02:49:11 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jun 5 2014 18:16:07 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

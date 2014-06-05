@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
-<title>Skylark (Sketching Library): /var/lib/jenkins/jobs/Skylark/workspace/nla/LSQR.hpp Source File</title>
+<title>Skylark (Sketching Library): /var/lib/jenkins/jobs/Skylark/workspace/algorithms/Krylov/LSQR.hpp Source File</title>
 
 <link href="../../tabs.css" rel="stylesheet" type="text/css"/>
 <link href="../../doxygen.css" rel="stylesheet" type="text/css" />
@@ -54,16 +54,16 @@
 </div>
 <div class="header">
   <div class="headertitle">
-<div class="title">/var/lib/jenkins/jobs/Skylark/workspace/nla/LSQR.hpp</div>  </div>
+<div class="title">/var/lib/jenkins/jobs/Skylark/workspace/algorithms/Krylov/LSQR.hpp</div>  </div>
 </div><!--header-->
 <div class="contents">
 <a href="../../d7/d75/LSQR_8hpp.html">Go to the documentation of this file.</a><div class="fragment"><pre class="fragment"><a name="l00001"></a>00001 <span class="preprocessor">#ifndef SKYLARK_LSQR_HPP</span>
 <a name="l00002"></a>00002 <span class="preprocessor"></span><span class="preprocessor">#define SKYLARK_LSQR_HPP</span>
 <a name="l00003"></a>00003 <span class="preprocessor"></span>
-<a name="l00004"></a>00004 <span class="preprocessor">#include &quot;../base/base.hpp&quot;</span>
-<a name="l00005"></a>00005 <span class="preprocessor">#include &quot;../utility/elem_extender.hpp&quot;</span>
-<a name="l00006"></a>00006 <span class="preprocessor">#include &quot;../utility/typer.hpp&quot;</span>
-<a name="l00007"></a>00007 <span class="preprocessor">#include &quot;../utility/external/print.hpp&quot;</span>
+<a name="l00004"></a>00004 <span class="preprocessor">#include &quot;../../base/base.hpp&quot;</span>
+<a name="l00005"></a>00005 <span class="preprocessor">#include &quot;../../utility/elem_extender.hpp&quot;</span>
+<a name="l00006"></a>00006 <span class="preprocessor">#include &quot;../../utility/typer.hpp&quot;</span>
+<a name="l00007"></a>00007 <span class="preprocessor">#include &quot;../../utility/external/print.hpp&quot;</span>
 <a name="l00008"></a>00008 <span class="preprocessor">#include &quot;<a class="code" href="../../d1/d10/precond_8hpp.html">precond.hpp</a>&quot;</span>
 <a name="l00009"></a>00009 
 <a name="l00010"></a>00010 <span class="keyword">namespace </span>skylark { <span class="keyword">namespace </span>nla {
@@ -81,9 +81,9 @@
 <a name="l00027"></a>00027     <span class="keyword">typedef</span> <span class="keyword">typename</span> <a class="code" href="../../d4/d11/structskylark_1_1utility_1_1typer__t.html#a75eaa6c10e55af07fbe940fceb611639">utility::typer_t&lt;MatrixType&gt;::value_type</a> value_t;
 <a name="l00028"></a>00028     <span class="keyword">typedef</span> <span class="keyword">typename</span> <a class="code" href="../../d4/d11/structskylark_1_1utility_1_1typer__t.html#ade88a1c34f1e2b57548a0087c6f2c8f0">utility::typer_t&lt;MatrixType&gt;::index_type</a> index_t;
 <a name="l00029"></a>00029 
-<a name="l00030"></a>00030     <span class="keyword">typedef</span> <a class="code" href="../../d9/da8/elemental_8cpp.html#a8a80d5c50a127fe1d06bdab3e1dfbdc2">MatrixType</a> <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>;
-<a name="l00031"></a>00031     <span class="keyword">typedef</span> RhsType <a class="code" href="../../d8/d1e/regression_8cpp.html#a2fc464ae64ca81fffc2b0034a28790d4">rhs_type</a>;        <span class="comment">// Also serves as &quot;long&quot; vector type.</span>
-<a name="l00032"></a>00032     <span class="keyword">typedef</span> SolType <a class="code" href="../../d8/d1e/regression_8cpp.html#a0ccbceff43e70b9bf68fc4b0d4a07e49">sol_type</a>;        <span class="comment">// Also serves as &quot;short&quot; vector type.</span>
+<a name="l00030"></a>00030     <span class="keyword">typedef</span> <a class="code" href="../../d9/da8/elemental_8cpp.html#a8a80d5c50a127fe1d06bdab3e1dfbdc2">MatrixType</a> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>;
+<a name="l00031"></a>00031     <span class="keyword">typedef</span> RhsType <a class="code" href="../../d1/d6a/least__squares_8cpp.html#a2fc464ae64ca81fffc2b0034a28790d4">rhs_type</a>;        <span class="comment">// Also serves as &quot;long&quot; vector type.</span>
+<a name="l00032"></a>00032     <span class="keyword">typedef</span> SolType <a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0ccbceff43e70b9bf68fc4b0d4a07e49">sol_type</a>;        <span class="comment">// Also serves as &quot;short&quot; vector type.</span>
 <a name="l00033"></a>00033 
 <a name="l00034"></a>00034     <span class="keyword">typedef</span> <a class="code" href="../../d5/da3/structskylark_1_1utility_1_1print__t.html">utility::print_t&lt;rhs_type&gt;</a> rhs_print_t;
 <a name="l00035"></a>00035     <span class="keyword">typedef</span> <a class="code" href="../../d5/da3/structskylark_1_1utility_1_1print__t.html">utility::print_t&lt;sol_type&gt;</a> sol_print_t;
@@ -95,8 +95,8 @@
 <a name="l00041"></a>00041     <span class="keywordtype">bool</span> log_lev1 = params.am_i_printing &amp;&amp; params.log_level &gt;= 1;
 <a name="l00042"></a>00042     <span class="keywordtype">bool</span> log_lev2 = params.am_i_printing &amp;&amp; params.log_level &gt;= 2;
 <a name="l00043"></a>00043 
-<a name="l00045"></a>00045     index_t <a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a> = <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a8765cb27091c3ce9e4c3b476b78a5d22">base::Height</a>(A);
-<a name="l00046"></a>00046     index_t <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a> = <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#afbb35d81fb98da3e9c6b519101ba9d2d">base::Width</a>(A);
+<a name="l00045"></a>00045     index_t <a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a> = <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a8765cb27091c3ce9e4c3b476b78a5d22">base::Height</a>(A);
+<a name="l00046"></a>00046     index_t <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a> = <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#afbb35d81fb98da3e9c6b519101ba9d2d">base::Width</a>(A);
 <a name="l00047"></a>00047     index_t k = <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#afbb35d81fb98da3e9c6b519101ba9d2d">base::Width</a>(B);
 <a name="l00048"></a>00048 
 <a name="l00050"></a>00050     <span class="keyword">const</span> value_t eps = 32*std::numeric_limits&lt;value_t&gt;::epsilon();
@@ -283,7 +283,7 @@
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jun 5 2014 02:49:11 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jun 5 2014 18:16:07 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

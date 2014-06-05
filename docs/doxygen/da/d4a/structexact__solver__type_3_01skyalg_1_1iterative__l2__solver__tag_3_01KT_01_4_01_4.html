@@ -83,13 +83,13 @@ Public Types</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">typedef <br class="typebreak"/>
 <a class="el" href="../../d9/dfc/classskylark_1_1algorithms_1_1regression__solver__t.html">skyalg::regression_solver_t</a><br class="typebreak"/>
 &lt; <a class="el" href="../../d8/d1e/regression_8cpp.html#a4f7eb0f37772b0473aa6003fc422ace8">regression_problem_type</a>, <br class="typebreak"/>
-<a class="el" href="../../d8/d1e/regression_8cpp.html#a2fc464ae64ca81fffc2b0034a28790d4">rhs_type</a>, <a class="el" href="../../d8/d1e/regression_8cpp.html#a0ccbceff43e70b9bf68fc4b0d4a07e49">sol_type</a>, <br class="typebreak"/>
+<a class="el" href="../../d1/d6a/least__squares_8cpp.html#a2fc464ae64ca81fffc2b0034a28790d4">rhs_type</a>, <a class="el" href="../../d1/d6a/least__squares_8cpp.html#a0ccbceff43e70b9bf68fc4b0d4a07e49">sol_type</a>, <br class="typebreak"/>
 <a class="el" href="../../d0/dce/structskylark_1_1algorithms_1_1iterative__l2__solver__tag.html">skyalg::iterative_l2_solver_tag</a><br class="typebreak"/>
 &lt; KT &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d4a/structexact__solver__type_3_01skyalg_1_1iterative__l2__solver__tag_3_01KT_01_4_01_4.html#a34cdd9edb2345ef943387836920dec64">base_type</a></td></tr>
 <tr><td colspan="2"><h2><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d4a/structexact__solver__type_3_01skyalg_1_1iterative__l2__solver__tag_3_01KT_01_4_01_4.html#a0ad9970c9bf7bb708d1a79aedc1908eb">exact_solver_type</a> (const <a class="el" href="../../d8/d1e/regression_8cpp.html#a4f7eb0f37772b0473aa6003fc422ace8">regression_problem_type</a> &amp;problem, <a class="el" href="../../d8/d27/structskylark_1_1nla_1_1iter__params__t.html">skynla::iter_params_t</a> iter_params)</td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d4a/structexact__solver__type_3_01skyalg_1_1iterative__l2__solver__tag_3_01KT_01_4_01_4.html#aa644b4c3c79fb0a9a1d59e44161e52d5">exact_solver_type</a> (const <a class="el" href="../../d8/d1e/regression_8cpp.html#a4f7eb0f37772b0473aa6003fc422ace8">regression_problem_type</a> &amp;problem, const <a class="el" href="../../d1/dc2/structskylark_1_1nla_1_1precond__t.html">skynla::precond_t</a>&lt; <a class="el" href="../../d8/d1e/regression_8cpp.html#a0ccbceff43e70b9bf68fc4b0d4a07e49">sol_type</a> &gt; &amp;R, <a class="el" href="../../d8/d27/structskylark_1_1nla_1_1iter__params__t.html">skynla::iter_params_t</a> iter_params)</td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d4a/structexact__solver__type_3_01skyalg_1_1iterative__l2__solver__tag_3_01KT_01_4_01_4.html#aa644b4c3c79fb0a9a1d59e44161e52d5">exact_solver_type</a> (const <a class="el" href="../../d8/d1e/regression_8cpp.html#a4f7eb0f37772b0473aa6003fc422ace8">regression_problem_type</a> &amp;problem, const <a class="el" href="../../d1/dc2/structskylark_1_1nla_1_1precond__t.html">skynla::precond_t</a>&lt; <a class="el" href="../../d1/d6a/least__squares_8cpp.html#a0ccbceff43e70b9bf68fc4b0d4a07e49">sol_type</a> &gt; &amp;R, <a class="el" href="../../d8/d27/structskylark_1_1nla_1_1iter__params__t.html">skynla::iter_params_t</a> iter_params)</td></tr>
 </table>
 <hr/><a name="details" id="details"></a><h2>Detailed Description</h2>
 <div class="textblock"><h3>template&lt;&gt;<br/>
@@ -103,7 +103,7 @@ struct exact_solver_type&lt; skyalg::iterative_l2_solver_tag&lt; KT &gt; &gt;</h
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">typedef <a class="el" href="../../d9/dfc/classskylark_1_1algorithms_1_1regression__solver__t.html">skyalg::regression_solver_t</a>&lt; <a class="el" href="../../d8/d1e/regression_8cpp.html#a4f7eb0f37772b0473aa6003fc422ace8">regression_problem_type</a>, <a class="el" href="../../d8/d1e/regression_8cpp.html#a2fc464ae64ca81fffc2b0034a28790d4">rhs_type</a>, <a class="el" href="../../d8/d1e/regression_8cpp.html#a0ccbceff43e70b9bf68fc4b0d4a07e49">sol_type</a>, <a class="el" href="../../d0/dce/structskylark_1_1algorithms_1_1iterative__l2__solver__tag.html">skyalg::iterative_l2_solver_tag</a>&lt;KT&gt; &gt; <a class="el" href="../../d9/da1/structexact__solver__type.html">exact_solver_type</a>&lt; <a class="el" href="../../d0/dce/structskylark_1_1algorithms_1_1iterative__l2__solver__tag.html">skyalg::iterative_l2_solver_tag</a>&lt; KT &gt; &gt;::<a class="el" href="../../da/d4a/structexact__solver__type_3_01skyalg_1_1iterative__l2__solver__tag_3_01KT_01_4_01_4.html#a34cdd9edb2345ef943387836920dec64">base_type</a></td>
+          <td class="memname">typedef <a class="el" href="../../d9/dfc/classskylark_1_1algorithms_1_1regression__solver__t.html">skyalg::regression_solver_t</a>&lt; <a class="el" href="../../d8/d1e/regression_8cpp.html#a4f7eb0f37772b0473aa6003fc422ace8">regression_problem_type</a>, <a class="el" href="../../d1/d6a/least__squares_8cpp.html#a2fc464ae64ca81fffc2b0034a28790d4">rhs_type</a>, <a class="el" href="../../d1/d6a/least__squares_8cpp.html#a0ccbceff43e70b9bf68fc4b0d4a07e49">sol_type</a>, <a class="el" href="../../d0/dce/structskylark_1_1algorithms_1_1iterative__l2__solver__tag.html">skyalg::iterative_l2_solver_tag</a>&lt;KT&gt; &gt; <a class="el" href="../../d9/da1/structexact__solver__type.html">exact_solver_type</a>&lt; <a class="el" href="../../d0/dce/structskylark_1_1algorithms_1_1iterative__l2__solver__tag.html">skyalg::iterative_l2_solver_tag</a>&lt; KT &gt; &gt;::<a class="el" href="../../da/d4a/structexact__solver__type_3_01skyalg_1_1iterative__l2__solver__tag_3_01KT_01_4_01_4.html#a34cdd9edb2345ef943387836920dec64">base_type</a></td>
         </tr>
       </table>
 </div>
@@ -156,7 +156,7 @@ struct exact_solver_type&lt; skyalg::iterative_l2_solver_tag&lt; KT &gt; &gt;</h
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="../../d1/dc2/structskylark_1_1nla_1_1precond__t.html">skynla::precond_t</a>&lt; <a class="el" href="../../d8/d1e/regression_8cpp.html#a0ccbceff43e70b9bf68fc4b0d4a07e49">sol_type</a> &gt; &amp;&#160;</td>
+          <td class="paramtype">const <a class="el" href="../../d1/dc2/structskylark_1_1nla_1_1precond__t.html">skynla::precond_t</a>&lt; <a class="el" href="../../d1/d6a/least__squares_8cpp.html#a0ccbceff43e70b9bf68fc4b0d4a07e49">sol_type</a> &gt; &amp;&#160;</td>
           <td class="paramname"><em>R</em>, </td>
         </tr>
         <tr>
@@ -185,7 +185,7 @@ struct exact_solver_type&lt; skyalg::iterative_l2_solver_tag&lt; KT &gt; &gt;</h
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jun 5 2014 02:49:12 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jun 5 2014 18:16:09 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

@@ -1,10 +1,10 @@
 <map id="G" name="G">
 <area shape="rect" id="node3" href="$dd/def/query_8hpp.html" title="../../base/query.hpp" alt="" coords="215,315,348,344"/>
 <area shape="rect" id="node5" href="$d3/daa/typer_8hpp.html" title="../../utility/typer.hpp" alt="" coords="2278,547,2411,576"/>
-<area shape="rect" id="node11" href="$d7/d75/LSQR_8hpp.html" title="../../nla/LSQR.hpp" alt="" coords="1096,83,1224,112"/>
-<area shape="rect" id="node13" href="$dd/d3c/base_8hpp.html" title="../base/base.hpp" alt="" coords="1018,237,1135,267"/>
-<area shape="rect" id="node107" href="$d5/dd8/elem__extender_8hpp.html" title="../utility/elem_extender.hpp" alt="" coords="2379,469,2558,499"/>
-<area shape="rect" id="node112" href="$de/d76/print_8hpp.html" title="../utility/external/print.hpp" alt="" coords="94,392,262,421"/>
+<area shape="rect" id="node11" href="$d7/d75/LSQR_8hpp.html" title="../Krylov/LSQR.hpp" alt="" coords="1092,83,1228,112"/>
+<area shape="rect" id="node13" href="$dd/d3c/base_8hpp.html" title="../../base/base.hpp" alt="" coords="1011,237,1142,267"/>
+<area shape="rect" id="node107" href="$d5/dd8/elem__extender_8hpp.html" title="../../utility/elem_extender.hpp" alt="" coords="2379,469,2568,499"/>
+<area shape="rect" id="node112" href="$de/d76/print_8hpp.html" title="../../utility/external/print.hpp" alt="" coords="87,392,268,421"/>
 <area shape="rect" id="node122" href="$d1/d10/precond_8hpp.html" title="precond.hpp" alt="" coords="1114,160,1207,189"/>
 <area shape="rect" id="node15" href="$db/d16/config_8h.html" title="../config.h" alt="" coords="528,469,608,499"/>
 <area shape="rect" id="node19" href="$d7/d1e/exception_8hpp.html" title="exception.hpp" alt="" coords="632,469,734,499"/>
@@ -16,7 +16,7 @@
 <area shape="rect" id="node47" href="$d0/d3f/Trsm_8hpp.html" title="Trsm.hpp" alt="" coords="1428,315,1506,344"/>
 <area shape="rect" id="node49" href="$d0/d97/Gemm_8hpp.html" title="Gemm.hpp" alt="" coords="1699,392,1784,421"/>
 <area shape="rect" id="node78" href="$df/df1/Gemv_8hpp.html" title="Gemv.hpp" alt="" coords="642,392,724,421"/>
-<area shape="rect" id="node82" href="$dc/d10/Norm_8hpp.html" title="Norm.hpp" alt="" coords="303,392,380,421"/>
+<area shape="rect" id="node82" href="$dc/d10/Norm_8hpp.html" title="Norm.hpp" alt="" coords="307,392,384,421"/>
 <area shape="rect" id="node85" href="$df/d1a/svd_8hpp.html" title="svd.hpp" alt="" coords="1708,315,1775,344"/>
 <area shape="rect" id="node89" href="$d2/da3/context_8hpp.html" title="context.hpp" alt="" coords="898,392,988,421"/>
 <area shape="rect" id="node57" href="$d8/d96/Gemm__detail_8hpp.html" title="Gemm_detail.hpp" alt="" coords="1808,469,1931,499"/>

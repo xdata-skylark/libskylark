@@ -62,7 +62,7 @@
 <a name="l00003"></a>00003 <span class="preprocessor"></span>
 <a name="l00004"></a>00004 <span class="preprocessor">#include &quot;../../base/query.hpp&quot;</span>
 <a name="l00005"></a>00005 <span class="preprocessor">#include &quot;../../utility/typer.hpp&quot;</span>
-<a name="l00006"></a>00006 <span class="preprocessor">#include &quot;../../nla/LSQR.hpp&quot;</span>
+<a name="l00006"></a>00006 <span class="preprocessor">#include &quot;../Krylov/LSQR.hpp&quot;</span>
 <a name="l00007"></a>00007 
 <a name="l00008"></a>00008 <span class="keyword">namespace </span>skylark { <span class="keyword">namespace </span>algorithms {
 <a name="l00009"></a>00009 
@@ -82,7 +82,7 @@
 <a name="l00028"></a><a class="code" href="../../df/dba/structskylark_1_1algorithms_1_1regression__solver__t_3_01regression__problem__t_3_01MatrixType_001903581389a14e0e822954f5e336bac.html#a200a60c247f799e594887d11d94f8dde">00028</a>     <span class="keyword">typedef</span> RhsType <a class="code" href="../../df/dba/structskylark_1_1algorithms_1_1regression__solver__t_3_01regression__problem__t_3_01MatrixType_001903581389a14e0e822954f5e336bac.html#a200a60c247f799e594887d11d94f8dde">rhs_type</a>;
 <a name="l00029"></a><a class="code" href="../../df/dba/structskylark_1_1algorithms_1_1regression__solver__t_3_01regression__problem__t_3_01MatrixType_001903581389a14e0e822954f5e336bac.html#a2d8daceb8d426972f3a20ac1bb519ad2">00029</a>     <span class="keyword">typedef</span> SolType <a class="code" href="../../df/dba/structskylark_1_1algorithms_1_1regression__solver__t_3_01regression__problem__t_3_01MatrixType_001903581389a14e0e822954f5e336bac.html#a2d8daceb8d426972f3a20ac1bb519ad2">sol_type</a>;
 <a name="l00030"></a>00030 
-<a name="l00031"></a>00031     <span class="keyword">typedef</span> <a class="code" href="../../db/d5b/structskylark_1_1algorithms_1_1regression__problem__t.html">regression_problem_t</a>&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>,
+<a name="l00031"></a>00031     <span class="keyword">typedef</span> <a class="code" href="../../db/d5b/structskylark_1_1algorithms_1_1regression__problem__t.html">regression_problem_t</a>&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>,
 <a name="l00032"></a><a class="code" href="../../df/dba/structskylark_1_1algorithms_1_1regression__solver__t_3_01regression__problem__t_3_01MatrixType_001903581389a14e0e822954f5e336bac.html#a18d609c2676de42d9361a60d392ed63b">00032</a>                                  <a class="code" href="../../de/d2a/structskylark_1_1algorithms_1_1linear__tag.html" title="Tag for specifying a linear regression.">linear_tag</a>, <a class="code" href="../../d9/d41/structskylark_1_1algorithms_1_1l2__tag.html" title="Tag for specifying a L2 norm.">l2_tag</a>, <a class="code" href="../../d1/d64/structskylark_1_1algorithms_1_1no__reg__tag.html">no_reg_tag</a>&gt; <a class="code" href="../../df/dba/structskylark_1_1algorithms_1_1regression__solver__t_3_01regression__problem__t_3_01MatrixType_001903581389a14e0e822954f5e336bac.html#a18d609c2676de42d9361a60d392ed63b">problem_type</a>;
 <a name="l00033"></a>00033 
 <a name="l00034"></a>00034 <span class="keyword">private</span>:
@@ -97,14 +97,14 @@
 <a name="l00043"></a>00043 
 <a name="l00044"></a><a class="code" href="../../df/dba/structskylark_1_1algorithms_1_1regression__solver__t_3_01regression__problem__t_3_01MatrixType_001903581389a14e0e822954f5e336bac.html#a074dbe36fb7790bb3c6948af6b6270e1">00044</a>     <a class="code" href="../../d9/dfc/classskylark_1_1algorithms_1_1regression__solver__t.html">regression_solver_t</a> (<span class="keyword">const</span> <a class="code" href="../../db/d5b/structskylark_1_1algorithms_1_1regression__problem__t.html">problem_type</a>&amp; problem,
 <a name="l00045"></a>00045         <a class="code" href="../../d8/d27/structskylark_1_1nla_1_1iter__params__t.html">nla::iter_params_t</a> iter_params = <a class="code" href="../../d8/d27/structskylark_1_1nla_1_1iter__params__t.html">nla::iter_params_t</a>()) :
-<a name="l00046"></a>00046         <a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>(problem.<a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>), <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>(problem.<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>), A(problem.input_matrix),
+<a name="l00046"></a>00046         <a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>(problem.<a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>), <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>(problem.<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>), A(problem.input_matrix),
 <a name="l00047"></a>00047         R(_id_precond_obj), iter_params(iter_params)
 <a name="l00048"></a>00048     { <span class="comment">/* Check if m&lt;n? */</span> }
 <a name="l00049"></a>00049 
 <a name="l00050"></a><a class="code" href="../../df/dba/structskylark_1_1algorithms_1_1regression__solver__t_3_01regression__problem__t_3_01MatrixType_001903581389a14e0e822954f5e336bac.html#aaca099e133f01cfbc1ddd35dcd636a65">00050</a>     <a class="code" href="../../d9/dfc/classskylark_1_1algorithms_1_1regression__solver__t.html">regression_solver_t</a> (<span class="keyword">const</span> <a class="code" href="../../db/d5b/structskylark_1_1algorithms_1_1regression__problem__t.html">problem_type</a>&amp; problem,
 <a name="l00051"></a>00051         <span class="keyword">const</span> <a class="code" href="../../d1/dc2/structskylark_1_1nla_1_1precond__t.html">nla::precond_t&lt;sol_type&gt;</a>&amp; R,
 <a name="l00052"></a>00052         <a class="code" href="../../d8/d27/structskylark_1_1nla_1_1iter__params__t.html">nla::iter_params_t</a> iter_params = <a class="code" href="../../d8/d27/structskylark_1_1nla_1_1iter__params__t.html">nla::iter_params_t</a>()) :
-<a name="l00053"></a>00053         <a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>(problem.<a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>), <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>(problem.<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>), A(problem.input_matrix), R(R),
+<a name="l00053"></a>00053         <a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>(problem.<a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>), <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>(problem.<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>), A(problem.input_matrix), R(R),
 <a name="l00054"></a>00054         iter_params(iter_params)
 <a name="l00055"></a>00055     { <span class="comment">/* Check if m&lt;n? */</span> }
 <a name="l00056"></a>00056 
@@ -112,15 +112,15 @@
 <a name="l00058"></a>00058 
 <a name="l00059"></a><a class="code" href="../../df/dba/structskylark_1_1algorithms_1_1regression__solver__t_3_01regression__problem__t_3_01MatrixType_001903581389a14e0e822954f5e336bac.html#a2ab5b3acf4a8233a47d06952880f15d7">00059</a>     <span class="keywordtype">int</span> <a class="code" href="../../df/dba/structskylark_1_1algorithms_1_1regression__solver__t_3_01regression__problem__t_3_01MatrixType_001903581389a14e0e822954f5e336bac.html#a2ab5b3acf4a8233a47d06952880f15d7">solve</a>(<span class="keyword">const</span> <a class="code" href="../../df/dba/structskylark_1_1algorithms_1_1regression__solver__t_3_01regression__problem__t_3_01MatrixType_001903581389a14e0e822954f5e336bac.html#a200a60c247f799e594887d11d94f8dde">rhs_type</a>&amp; b, <a class="code" href="../../df/dba/structskylark_1_1algorithms_1_1regression__solver__t_3_01regression__problem__t_3_01MatrixType_001903581389a14e0e822954f5e336bac.html#a2d8daceb8d426972f3a20ac1bb519ad2">sol_type</a>&amp; x) {
 <a name="l00060"></a>00060 
-<a name="l00061"></a>00061         <span class="keywordflow">if</span> (<a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a> != <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a8765cb27091c3ce9e4c3b476b78a5d22">base::Height</a>(b)) { <span class="comment">/* error */</span> <span class="keywordflow">return</span> -1; }
-<a name="l00062"></a>00062         <span class="keywordflow">if</span> (<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a> != <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a8765cb27091c3ce9e4c3b476b78a5d22">base::Height</a>(x)) { <span class="comment">/* error */</span> <span class="keywordflow">return</span> -1; }
+<a name="l00061"></a>00061         <span class="keywordflow">if</span> (<a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a> != <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a8765cb27091c3ce9e4c3b476b78a5d22">base::Height</a>(b)) { <span class="comment">/* error */</span> <span class="keywordflow">return</span> -1; }
+<a name="l00062"></a>00062         <span class="keywordflow">if</span> (<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a> != <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a8765cb27091c3ce9e4c3b476b78a5d22">base::Height</a>(x)) { <span class="comment">/* error */</span> <span class="keywordflow">return</span> -1; }
 <a name="l00063"></a>00063         <span class="keywordflow">if</span> (<a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#afbb35d81fb98da3e9c6b519101ba9d2d">base::Width</a>(b) != <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#afbb35d81fb98da3e9c6b519101ba9d2d">base::Width</a>(x)) { <span class="comment">/* error */</span> <span class="keywordflow">return</span> -1; }
 <a name="l00064"></a>00064 
 <a name="l00072"></a>00072         <span class="keywordflow">return</span> solve_impl (b, x, KrylovMethod());
 <a name="l00073"></a>00073     }
 <a name="l00074"></a>00074 
 <a name="l00075"></a>00075 <span class="keyword">private</span>:
-<a name="l00077"></a>00077     <span class="keywordtype">int</span> solve_impl (<span class="keyword">const</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#a2fc464ae64ca81fffc2b0034a28790d4">rhs_type</a>&amp; b, <a class="code" href="../../d8/d1e/regression_8cpp.html#a0ccbceff43e70b9bf68fc4b0d4a07e49">sol_type</a>&amp; x, <a class="code" href="../../d2/db8/structskylark_1_1algorithms_1_1lsqr__tag.html" title="Tag for using LSQR.">lsqr_tag</a>) {
+<a name="l00077"></a>00077     <span class="keywordtype">int</span> solve_impl (<span class="keyword">const</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#a2fc464ae64ca81fffc2b0034a28790d4">rhs_type</a>&amp; b, <a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0ccbceff43e70b9bf68fc4b0d4a07e49">sol_type</a>&amp; x, <a class="code" href="../../d2/db8/structskylark_1_1algorithms_1_1lsqr__tag.html" title="Tag for using LSQR.">lsqr_tag</a>) {
 <a name="l00078"></a>00078 
 <a name="l00079"></a>00079         <span class="keywordflow">return</span> <a class="code" href="../../df/d91/namespaceskylark_1_1nla.html#abe3ce813e7ca15c08aac1b67ab21222e">LSQR</a>(A, b, x, iter_params, R);
 <a name="l00080"></a>00080     }
@@ -133,7 +133,7 @@
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jun 5 2014 02:49:11 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jun 5 2014 18:16:07 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

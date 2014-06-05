@@ -74,7 +74,7 @@
 <a name="l00019"></a>00019     <span class="comment">// Typedef value, matrix, transform, distribution and transform data types</span>
 <a name="l00020"></a>00020     <span class="comment">// so that we can use them regularly and consistently.</span>
 <a name="l00021"></a>00021     <span class="keyword">typedef</span> ValueType value_type;
-<a name="l00022"></a>00022     <span class="keyword">typedef</span> InputType&lt;value_type&gt; <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>;
+<a name="l00022"></a>00022     <span class="keyword">typedef</span> InputType&lt;value_type&gt; <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>;
 <a name="l00023"></a>00023     <span class="keyword">typedef</span> elem::Matrix&lt;value_type&gt; output_matrix_type;
 <a name="l00024"></a>00024     <span class="keyword">typedef</span> FastRFT_data_t data_type;
 <a name="l00025"></a>00025 
@@ -82,7 +82,7 @@
 <a name="l00027"></a>00027 
 <a name="l00028"></a>00028     <span class="comment">// No regular contructor, since need to be subclassed.</span>
 <a name="l00029"></a>00029 
-<a name="l00033"></a>00033     FastRFT_t(<span class="keyword">const</span> FastRFT_t&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>,
+<a name="l00033"></a>00033     FastRFT_t(<span class="keyword">const</span> FastRFT_t&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>,
 <a name="l00034"></a>00034                       output_matrix_type&gt;&amp; other)
 <a name="l00035"></a>00035         : data_type(other), _fut(data_type::_N) {
 <a name="l00036"></a>00036 
@@ -94,7 +94,7 @@
 <a name="l00045"></a>00045     }
 <a name="l00046"></a>00046 
 <a name="l00050"></a>00050     <span class="keyword">template</span> &lt;<span class="keyword">typename</span> Dimension&gt;
-<a name="l00051"></a>00051     <span class="keywordtype">void</span> apply (<span class="keyword">const</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
+<a name="l00051"></a>00051     <span class="keywordtype">void</span> apply (<span class="keyword">const</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
 <a name="l00052"></a>00052                 output_matrix_type&amp; sketch_of_A,
 <a name="l00053"></a>00053                 Dimension dimension)<span class="keyword"> const </span>{
 <a name="l00054"></a>00054         <span class="keywordflow">try</span> {
@@ -111,7 +111,7 @@
 <a name="l00065"></a>00065     }
 <a name="l00066"></a>00066 
 <a name="l00067"></a>00067 <span class="keyword">private</span>:
-<a name="l00072"></a>00072     <span class="keywordtype">void</span> apply_impl(<span class="keyword">const</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
+<a name="l00072"></a>00072     <span class="keywordtype">void</span> apply_impl(<span class="keyword">const</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
 <a name="l00073"></a>00073         output_matrix_type&amp; sketch_of_A,
 <a name="l00074"></a>00074         <a class="code" href="../../df/d8f/structskylark_1_1sketch_1_1columnwise__tag.html" title="Apply the sketch/transform to the columns. In matrix form this is A-&gt;SA.">skylark::sketch::columnwise_tag</a> tag)<span class="keyword"> const </span>{
 <a name="l00075"></a>00075 
@@ -141,7 +141,7 @@
 <a name="l00099"></a>00099 <span class="preprocessor"></span><span class="preprocessor">#       pragma omp for</span>
 <a name="l00100"></a>00100 <span class="preprocessor"></span><span class="preprocessor">#       endif</span>
 <a name="l00101"></a>00101 <span class="preprocessor"></span>        <span class="keywordflow">for</span>(<span class="keywordtype">int</span> c = 0; c &lt; <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#afbb35d81fb98da3e9c6b519101ba9d2d">base::Width</a>(A); c++) {
-<a name="l00102"></a>00102             <span class="keyword">const</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a> Acs = <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a457ad85ebbf08f632ab03562e9253977">base::ColumnView</a>(A, c, 1);
+<a name="l00102"></a>00102             <span class="keyword">const</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a> Acs = <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a457ad85ebbf08f632ab03562e9253977">base::ColumnView</a>(A, c, 1);
 <a name="l00103"></a>00103             base::DenseCopy(Acs, Acv);
 <a name="l00104"></a>00104             std::fill(ac + data_type::_N, ac + data_type::_NB, 0);
 <a name="l00105"></a>00105 
@@ -199,7 +199,7 @@
 <a name="l00157"></a>00157         }
 <a name="l00158"></a>00158     }
 <a name="l00159"></a>00159 
-<a name="l00164"></a>00164     <span class="keywordtype">void</span> apply_impl(<span class="keyword">const</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
+<a name="l00164"></a>00164     <span class="keywordtype">void</span> apply_impl(<span class="keyword">const</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
 <a name="l00165"></a>00165         output_matrix_type&amp; sketch_of_A,
 <a name="l00166"></a>00166         <a class="code" href="../../d4/d9b/structskylark_1_1sketch_1_1rowwise__tag.html" title="Apply the sketch/transform to the rows. In matrix form this is A-&gt;AS^T.">skylark::sketch::rowwise_tag</a> tag)<span class="keyword"> const </span>{
 <a name="l00167"></a>00167 
@@ -299,7 +299,7 @@
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jun 5 2014 02:49:11 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jun 5 2014 18:16:08 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

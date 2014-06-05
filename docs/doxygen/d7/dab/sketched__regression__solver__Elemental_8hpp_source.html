@@ -109,7 +109,7 @@
 <a name="l00054"></a><a class="code" href="../../db/dbc/classskylark_1_1algorithms_1_1sketched__regression__solver__t_3_01regression__problem__t_3_01Inp14fed98ab02db9c5e0c1c54c1949b471.html#a3eaa4cccf7620bc2c27cd8be3c5c2a8e">00054</a>     <span class="keyword">typedef</span> RegularizationType <a class="code" href="../../db/dbc/classskylark_1_1algorithms_1_1sketched__regression__solver__t_3_01regression__problem__t_3_01Inp14fed98ab02db9c5e0c1c54c1949b471.html#a3eaa4cccf7620bc2c27cd8be3c5c2a8e">regularization_type</a>;
 <a name="l00055"></a><a class="code" href="../../db/dbc/classskylark_1_1algorithms_1_1sketched__regression__solver__t_3_01regression__problem__t_3_01Inp14fed98ab02db9c5e0c1c54c1949b471.html#af3beb0c17da74a89ecc62532391678d1">00055</a>     <span class="keyword">typedef</span> SketchedRegressionType <a class="code" href="../../db/dbc/classskylark_1_1algorithms_1_1sketched__regression__solver__t_3_01regression__problem__t_3_01Inp14fed98ab02db9c5e0c1c54c1949b471.html#af3beb0c17da74a89ecc62532391678d1">sketched_regression_type</a>;
 <a name="l00056"></a>00056 
-<a name="l00057"></a>00057     <span class="keyword">typedef</span> <a class="code" href="../../db/d5b/structskylark_1_1algorithms_1_1regression__problem__t.html">regression_problem_t</a>&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>,
+<a name="l00057"></a>00057     <span class="keyword">typedef</span> <a class="code" href="../../db/d5b/structskylark_1_1algorithms_1_1regression__problem__t.html">regression_problem_t</a>&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>,
 <a name="l00058"></a>00058                                  <a class="code" href="../../db/dbc/classskylark_1_1algorithms_1_1sketched__regression__solver__t_3_01regression__problem__t_3_01Inp14fed98ab02db9c5e0c1c54c1949b471.html#a9014d041487e11e72bdeeffef880e65d">regression_type</a>, <a class="code" href="../../db/dbc/classskylark_1_1algorithms_1_1sketched__regression__solver__t_3_01regression__problem__t_3_01Inp14fed98ab02db9c5e0c1c54c1949b471.html#ae79f9f7be09df684169397927e9628e3">penalty_type</a>,
 <a name="l00059"></a><a class="code" href="../../db/dbc/classskylark_1_1algorithms_1_1sketched__regression__solver__t_3_01regression__problem__t_3_01Inp14fed98ab02db9c5e0c1c54c1949b471.html#a75a698a37b9f57e3c13b46376b2f219f">00059</a>                                  <a class="code" href="../../db/dbc/classskylark_1_1algorithms_1_1sketched__regression__solver__t_3_01regression__problem__t_3_01Inp14fed98ab02db9c5e0c1c54c1949b471.html#a3eaa4cccf7620bc2c27cd8be3c5c2a8e">regularization_type</a>&gt; <a class="code" href="../../db/dbc/classskylark_1_1algorithms_1_1sketched__regression__solver__t_3_01regression__problem__t_3_01Inp14fed98ab02db9c5e0c1c54c1949b471.html#a75a698a37b9f57e3c13b46376b2f219f">problem_type</a>;
 <a name="l00060"></a>00060     <span class="keyword">typedef</span> <a class="code" href="../../db/d5b/structskylark_1_1algorithms_1_1regression__problem__t.html">regression_problem_t</a>&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#a41d201c05ab3b84647ff4f478e92fa8c">sketch_type</a>,
@@ -119,7 +119,7 @@
 <a name="l00064"></a>00064 
 <a name="l00065"></a>00065     <span class="keyword">typedef</span> <a class="code" href="../../d9/dfc/classskylark_1_1algorithms_1_1regression__solver__t.html">regression_solver_t</a>&lt;<a class="code" href="../../db/d5b/structskylark_1_1algorithms_1_1regression__problem__t.html">sketched_problem_type</a>,
 <a name="l00066"></a>00066                               <a class="code" href="../../db/dbc/classskylark_1_1algorithms_1_1sketched__regression__solver__t_3_01regression__problem__t_3_01Inp14fed98ab02db9c5e0c1c54c1949b471.html#a66bf17a7682958ddfab236fc16cb5929">sketch_rhs_type</a>,
-<a name="l00067"></a>00067                               <a class="code" href="../../d8/d1e/regression_8cpp.html#a0ccbceff43e70b9bf68fc4b0d4a07e49">sol_type</a>,
+<a name="l00067"></a>00067                               <a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0ccbceff43e70b9bf68fc4b0d4a07e49">sol_type</a>,
 <a name="l00068"></a><a class="code" href="../../db/dbc/classskylark_1_1algorithms_1_1sketched__regression__solver__t_3_01regression__problem__t_3_01Inp14fed98ab02db9c5e0c1c54c1949b471.html#a2b44068799ac359128099170538aa105">00068</a>                               ExactAlgTag&gt; <a class="code" href="../../db/dbc/classskylark_1_1algorithms_1_1sketched__regression__solver__t_3_01regression__problem__t_3_01Inp14fed98ab02db9c5e0c1c54c1949b471.html#a2b44068799ac359128099170538aa105">underlying_solver_type</a>;
 <a name="l00069"></a>00069 
 <a name="l00070"></a>00070 <span class="keyword">private</span>:
@@ -136,7 +136,7 @@
 <a name="l00081"></a>00081         <a class="code" href="../../de/dea/structskylark_1_1base_1_1context__t.html">base::context_t</a>&amp; context) :
 <a name="l00082"></a>00082         _my_rank(utility::<a class="code" href="../../db/d39/namespaceskylark_1_1utility.html#a603e0fe4127da3887ceed891a58b3d38">get_communicator</a>(problem.input_matrix)),
 <a name="l00083"></a>00083         _sketch_size(sketch_size),
-<a name="l00084"></a>00084         _sketch(problem.<a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>, sketch_size, context) {
+<a name="l00084"></a>00084         _sketch(problem.<a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>, sketch_size, context) {
 <a name="l00085"></a>00085 
 <a name="l00086"></a>00086         <span class="comment">// TODO m &lt; n</span>
 <a name="l00087"></a>00087         TransformType&lt;matrix_type, sketch_type&gt; S(_sketch);
@@ -209,7 +209,7 @@
 <a name="l00157"></a><a class="code" href="../../d8/dda/classskylark_1_1algorithms_1_1sketched__regression__solver__t_3_01regression__problem__t_3_01Inp594f89caace61ff17cdf283e4ce6b760.html#af2dfffe7b8a7d2c04b1c026102f46917">00157</a>     <span class="keyword">typedef</span> RegularizationType <a class="code" href="../../d8/dda/classskylark_1_1algorithms_1_1sketched__regression__solver__t_3_01regression__problem__t_3_01Inp594f89caace61ff17cdf283e4ce6b760.html#af2dfffe7b8a7d2c04b1c026102f46917">regularization_type</a>;
 <a name="l00158"></a><a class="code" href="../../d8/dda/classskylark_1_1algorithms_1_1sketched__regression__solver__t_3_01regression__problem__t_3_01Inp594f89caace61ff17cdf283e4ce6b760.html#a8e8a2b8b69ce6e9bf5645baab8e8c131">00158</a>     <span class="keyword">typedef</span> SketchedRegressionType <a class="code" href="../../d8/dda/classskylark_1_1algorithms_1_1sketched__regression__solver__t_3_01regression__problem__t_3_01Inp594f89caace61ff17cdf283e4ce6b760.html#a8e8a2b8b69ce6e9bf5645baab8e8c131">sketched_regression_type</a>;
 <a name="l00159"></a>00159 
-<a name="l00160"></a>00160     <span class="keyword">typedef</span> <a class="code" href="../../db/d5b/structskylark_1_1algorithms_1_1regression__problem__t.html">regression_problem_t</a>&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>,
+<a name="l00160"></a>00160     <span class="keyword">typedef</span> <a class="code" href="../../db/d5b/structskylark_1_1algorithms_1_1regression__problem__t.html">regression_problem_t</a>&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>,
 <a name="l00161"></a>00161                                  <a class="code" href="../../d8/dda/classskylark_1_1algorithms_1_1sketched__regression__solver__t_3_01regression__problem__t_3_01Inp594f89caace61ff17cdf283e4ce6b760.html#af8d12ffe2f3460ee9fa00b135561e0de">regression_type</a>, <a class="code" href="../../d8/dda/classskylark_1_1algorithms_1_1sketched__regression__solver__t_3_01regression__problem__t_3_01Inp594f89caace61ff17cdf283e4ce6b760.html#ae0b34e49766ad5f7fcb1dddf5350d4d8">penalty_type</a>,
 <a name="l00162"></a><a class="code" href="../../d8/dda/classskylark_1_1algorithms_1_1sketched__regression__solver__t_3_01regression__problem__t_3_01Inp594f89caace61ff17cdf283e4ce6b760.html#a2352fac57aa45736d637e984a1781a45">00162</a>                                  <a class="code" href="../../d8/dda/classskylark_1_1algorithms_1_1sketched__regression__solver__t_3_01regression__problem__t_3_01Inp594f89caace61ff17cdf283e4ce6b760.html#af2dfffe7b8a7d2c04b1c026102f46917">regularization_type</a>&gt; <a class="code" href="../../d8/dda/classskylark_1_1algorithms_1_1sketched__regression__solver__t_3_01regression__problem__t_3_01Inp594f89caace61ff17cdf283e4ce6b760.html#a2352fac57aa45736d637e984a1781a45">problem_type</a>;
 <a name="l00163"></a>00163     <span class="keyword">typedef</span> <a class="code" href="../../db/d5b/structskylark_1_1algorithms_1_1regression__problem__t.html">regression_problem_t</a>&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#a41d201c05ab3b84647ff4f478e92fa8c">sketch_type</a>,
@@ -218,7 +218,7 @@
 <a name="l00166"></a>00166 
 <a name="l00167"></a>00167     <span class="keyword">typedef</span> <a class="code" href="../../d9/dfc/classskylark_1_1algorithms_1_1regression__solver__t.html">regression_solver_t</a>&lt;<a class="code" href="../../db/d5b/structskylark_1_1algorithms_1_1regression__problem__t.html">sketched_problem_type</a>,
 <a name="l00168"></a>00168                                 <a class="code" href="../../d8/dda/classskylark_1_1algorithms_1_1sketched__regression__solver__t_3_01regression__problem__t_3_01Inp594f89caace61ff17cdf283e4ce6b760.html#ad2f4a9b656cf1d51faa45f424fb9749f">sketch_rhs_type</a>,
-<a name="l00169"></a>00169                                 <a class="code" href="../../d8/d1e/regression_8cpp.html#a0ccbceff43e70b9bf68fc4b0d4a07e49">sol_type</a>,
+<a name="l00169"></a>00169                                 <a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0ccbceff43e70b9bf68fc4b0d4a07e49">sol_type</a>,
 <a name="l00170"></a><a class="code" href="../../d8/dda/classskylark_1_1algorithms_1_1sketched__regression__solver__t_3_01regression__problem__t_3_01Inp594f89caace61ff17cdf283e4ce6b760.html#ad8106a770f276bb991c94f3a98cc4a03">00170</a>                                 ExactAlgTag&gt; <a class="code" href="../../d8/dda/classskylark_1_1algorithms_1_1sketched__regression__solver__t_3_01regression__problem__t_3_01Inp594f89caace61ff17cdf283e4ce6b760.html#ad8106a770f276bb991c94f3a98cc4a03">underlying_solver_type</a>;
 <a name="l00171"></a>00171 
 <a name="l00172"></a>00172 <span class="keyword">private</span>:
@@ -233,7 +233,7 @@
 <a name="l00181"></a><a class="code" href="../../d8/dda/classskylark_1_1algorithms_1_1sketched__regression__solver__t_3_01regression__problem__t_3_01Inp594f89caace61ff17cdf283e4ce6b760.html#ac9b76bc18b3e68afe15b369ff88d3403">00181</a>     <a class="code" href="../../d0/d9f/classskylark_1_1algorithms_1_1sketched__regression__solver__t.html">sketched_regression_solver_t</a>(<span class="keyword">const</span> <a class="code" href="../../db/d5b/structskylark_1_1algorithms_1_1regression__problem__t.html">problem_type</a>&amp; problem, <span class="keywordtype">int</span> sketch_size,
 <a name="l00182"></a>00182         <a class="code" href="../../de/dea/structskylark_1_1base_1_1context__t.html">base::context_t</a>&amp; context) :
 <a name="l00183"></a>00183         _sketch_size(sketch_size),
-<a name="l00184"></a>00184         _sketch(problem.<a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>, sketch_size, context) {
+<a name="l00184"></a>00184         _sketch(problem.<a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>, sketch_size, context) {
 <a name="l00185"></a>00185 
 <a name="l00186"></a>00186         <span class="comment">// TODO m &lt; n</span>
 <a name="l00187"></a>00187         TransformType&lt;matrix_type, sketch_type&gt; S(_sketch);
@@ -274,7 +274,7 @@
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jun 5 2014 02:49:11 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jun 5 2014 18:16:07 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

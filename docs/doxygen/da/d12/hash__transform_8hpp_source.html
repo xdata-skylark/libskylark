@@ -78,77 +78,79 @@
 <a name="l00019"></a>00019            <span class="keyword">template</span> &lt;<span class="keyword">typename</span>&gt; <span class="keyword">class </span>IdxDistributionType,
 <a name="l00020"></a>00020            <span class="keyword">template</span> &lt;<span class="keyword">typename</span>&gt; <span class="keyword">class </span>ValueDistribution
 <a name="l00021"></a>00021         &gt;
-<a name="l00022"></a><a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html">00022</a> <span class="keyword">struct </span><a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html">hash_transform_t</a> {
-<a name="l00023"></a>00023     <span class="comment">// To be specialized and derived. Just some guards here.</span>
-<a name="l00024"></a><a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#ab341bda48512988efbb337f9e4345f7d">00024</a>     <span class="keyword">typedef</span> InputMatrixType <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#ab341bda48512988efbb337f9e4345f7d">matrix_type</a>;
-<a name="l00025"></a><a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a4d90fe83e2669e836dacfa17e1b29213">00025</a>     <span class="keyword">typedef</span> OutputMatrixType <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a4d90fe83e2669e836dacfa17e1b29213">output_matrix_type</a>;
-<a name="l00026"></a>00026     <span class="keyword">typedef</span> <a class="code" href="../../da/dbf/structskylark_1_1sketch_1_1hash__transform__data__t.html">hash_transform_data_t&lt;IdxDistributionType, ValueDistribution&gt;</a>
-<a name="l00027"></a><a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a766d3cd6e434f939f992e24abe40e666">00027</a>     <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a766d3cd6e434f939f992e24abe40e666">data_type</a>;
-<a name="l00028"></a>00028 
-<a name="l00029"></a><a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a170fc8a64798cd59452b2a703348143e">00029</a>     <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a170fc8a64798cd59452b2a703348143e">hash_transform_t</a>(<span class="keywordtype">int</span> N, <span class="keywordtype">int</span> S, <a class="code" href="../../de/dea/structskylark_1_1base_1_1context__t.html">base::context_t</a>&amp; context)
-<a name="l00030"></a>00030         : <a class="code" href="../../da/dbf/structskylark_1_1sketch_1_1hash__transform__data__t.html">data_type</a>(N, S, context) {
-<a name="l00031"></a>00031         <a class="code" href="../../d7/d1e/exception_8hpp.html#abedcc0a2ddc8fa567e3edcaa3fc1d62c" title="throw a skylark exception including file/line information">SKYLARK_THROW_EXCEPTION</a> (
-<a name="l00032"></a>00032           <a class="code" href="../../df/de2/structskylark_1_1base_1_1sketch__exception.html" title="exceptions in the sketch layer">base::sketch_exception</a>()
-<a name="l00033"></a>00033               &lt;&lt; <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a797044780de82fcf917d87e0888763c3" title="predefined structure for error msg">base::error_msg</a>(
-<a name="l00034"></a>00034                  <span class="stringliteral">&quot;This combination has not yet been implemented for HashTransform&quot;</span>));
-<a name="l00035"></a>00035     }
-<a name="l00036"></a>00036 
-<a name="l00037"></a><a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#ae4fdc64f1a1bfbac260041ccb412c62a">00037</a>     <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a170fc8a64798cd59452b2a703348143e">hash_transform_t</a>(<span class="keyword">const</span> <a class="code" href="../../da/dbf/structskylark_1_1sketch_1_1hash__transform__data__t.html">data_type</a>&amp; other_data)
-<a name="l00038"></a>00038         : <a class="code" href="../../da/dbf/structskylark_1_1sketch_1_1hash__transform__data__t.html">data_type</a>(other_data) {
-<a name="l00039"></a>00039         <a class="code" href="../../d7/d1e/exception_8hpp.html#abedcc0a2ddc8fa567e3edcaa3fc1d62c" title="throw a skylark exception including file/line information">SKYLARK_THROW_EXCEPTION</a> (
-<a name="l00040"></a>00040           <a class="code" href="../../df/de2/structskylark_1_1base_1_1sketch__exception.html" title="exceptions in the sketch layer">base::sketch_exception</a>()
-<a name="l00041"></a>00041               &lt;&lt; <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a797044780de82fcf917d87e0888763c3" title="predefined structure for error msg">base::error_msg</a>(
-<a name="l00042"></a>00042                  <span class="stringliteral">&quot;This combination has not yet been implemented for HashTransform&quot;</span>));
-<a name="l00043"></a>00043     }
-<a name="l00044"></a>00044 
-<a name="l00045"></a><a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a12a65d6d0dfcd94de51786e9a6d915db">00045</a>     <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a170fc8a64798cd59452b2a703348143e">hash_transform_t</a>(<span class="keyword">const</span> boost::property_tree::ptree &amp;pt)
-<a name="l00046"></a>00046         : <a class="code" href="../../da/dbf/structskylark_1_1sketch_1_1hash__transform__data__t.html">data_type</a>(pt) {
-<a name="l00047"></a>00047         <a class="code" href="../../d7/d1e/exception_8hpp.html#abedcc0a2ddc8fa567e3edcaa3fc1d62c" title="throw a skylark exception including file/line information">SKYLARK_THROW_EXCEPTION</a> (
-<a name="l00048"></a>00048           <a class="code" href="../../df/de2/structskylark_1_1base_1_1sketch__exception.html" title="exceptions in the sketch layer">base::sketch_exception</a>()
-<a name="l00049"></a>00049               &lt;&lt; <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a797044780de82fcf917d87e0888763c3" title="predefined structure for error msg">base::error_msg</a>(
-<a name="l00050"></a>00050                  <span class="stringliteral">&quot;This combination has not yet been implemented for HashTransform&quot;</span>));
-<a name="l00051"></a>00051     }
-<a name="l00052"></a>00052 
-<a name="l00053"></a><a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#ac899bcbff87aa859ada4b0e2f7705205">00053</a>     <span class="keywordtype">void</span> <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#ac899bcbff87aa859ada4b0e2f7705205">apply</a> (<span class="keyword">const</span> <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#ab341bda48512988efbb337f9e4345f7d">matrix_type</a>&amp; A,
-<a name="l00054"></a>00054                 <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a4d90fe83e2669e836dacfa17e1b29213">output_matrix_type</a>&amp; sketch_of_A,
-<a name="l00055"></a>00055                 <a class="code" href="../../df/d8f/structskylark_1_1sketch_1_1columnwise__tag.html" title="Apply the sketch/transform to the columns. In matrix form this is A-&gt;SA.">columnwise_tag</a> dimension)<span class="keyword"> const </span>{
-<a name="l00056"></a>00056         <a class="code" href="../../d7/d1e/exception_8hpp.html#abedcc0a2ddc8fa567e3edcaa3fc1d62c" title="throw a skylark exception including file/line information">SKYLARK_THROW_EXCEPTION</a> (
-<a name="l00057"></a>00057           <a class="code" href="../../df/de2/structskylark_1_1base_1_1sketch__exception.html" title="exceptions in the sketch layer">base::sketch_exception</a>()
-<a name="l00058"></a>00058               &lt;&lt; <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a797044780de82fcf917d87e0888763c3" title="predefined structure for error msg">base::error_msg</a>(
-<a name="l00059"></a>00059                  <span class="stringliteral">&quot;This combination has not yet been implemented for HashTransform&quot;</span>));
-<a name="l00060"></a>00060     }
-<a name="l00061"></a>00061 
-<a name="l00062"></a><a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#af7cea487021e2836ac25359cb4ed04e5">00062</a>     <span class="keywordtype">void</span> <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#ac899bcbff87aa859ada4b0e2f7705205">apply</a> (<span class="keyword">const</span> <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#ab341bda48512988efbb337f9e4345f7d">matrix_type</a>&amp; A,
-<a name="l00063"></a>00063                 <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a4d90fe83e2669e836dacfa17e1b29213">output_matrix_type</a>&amp; sketch_of_A,
-<a name="l00064"></a>00064                 <a class="code" href="../../d4/d9b/structskylark_1_1sketch_1_1rowwise__tag.html" title="Apply the sketch/transform to the rows. In matrix form this is A-&gt;AS^T.">rowwise_tag</a> dimension)<span class="keyword"> const </span>{
-<a name="l00065"></a>00065         <a class="code" href="../../d7/d1e/exception_8hpp.html#abedcc0a2ddc8fa567e3edcaa3fc1d62c" title="throw a skylark exception including file/line information">SKYLARK_THROW_EXCEPTION</a> (
-<a name="l00066"></a>00066           <a class="code" href="../../df/de2/structskylark_1_1base_1_1sketch__exception.html" title="exceptions in the sketch layer">base::sketch_exception</a>()
-<a name="l00067"></a>00067               &lt;&lt; <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a797044780de82fcf917d87e0888763c3" title="predefined structure for error msg">base::error_msg</a>(
-<a name="l00068"></a>00068                  <span class="stringliteral">&quot;This combination has not yet been implemented for HashTransform&quot;</span>));
-<a name="l00069"></a>00069     }
-<a name="l00070"></a>00070 };
-<a name="l00071"></a>00071 
-<a name="l00072"></a>00072 } } 
-<a name="l00074"></a>00074 <span class="preprocessor">#if SKYLARK_HAVE_ELEMENTAL</span>
-<a name="l00075"></a>00075 <span class="preprocessor"></span><span class="preprocessor">#include &quot;<a class="code" href="../../dd/d20/hash__transform__Elemental_8hpp.html">hash_transform_Elemental.hpp</a>&quot;</span>
-<a name="l00076"></a>00076 <span class="preprocessor">#endif</span>
-<a name="l00077"></a>00077 <span class="preprocessor"></span>
-<a name="l00078"></a>00078 <span class="preprocessor">#if SKYLARK_HAVE_COMBBLAS</span>
-<a name="l00079"></a>00079 <span class="preprocessor"></span><span class="preprocessor">#include &quot;<a class="code" href="../../d6/dd9/hash__transform__CombBLAS_8hpp.html">hash_transform_CombBLAS.hpp</a>&quot;</span>
-<a name="l00080"></a>00080 <span class="preprocessor">#endif</span>
-<a name="l00081"></a>00081 <span class="preprocessor"></span>
-<a name="l00082"></a>00082 <span class="preprocessor">#if SKYLARK_HAVE_ELEMENTAL and SKYLARK_HAVE_COMBBLAS</span>
-<a name="l00083"></a>00083 <span class="preprocessor"></span><span class="preprocessor">#include &quot;<a class="code" href="../../da/da9/hash__transform__Mixed_8hpp.html">hash_transform_Mixed.hpp</a>&quot;</span>
-<a name="l00084"></a>00084 <span class="preprocessor">#endif</span>
-<a name="l00085"></a>00085 <span class="preprocessor"></span>
-<a name="l00086"></a>00086 <span class="preprocessor">#include &quot;<a class="code" href="../../d2/d46/hash__transform__local__sparse_8hpp.html">hash_transform_local_sparse.hpp</a>&quot;</span>
-<a name="l00087"></a>00087 
-<a name="l00088"></a>00088 <span class="preprocessor">#endif // SKYLARK_HASH_TRANSFORM_HPP</span>
+<a name="l00022"></a><a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html">00022</a> <span class="keyword">struct </span><a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html">hash_transform_t</a> :
+<a name="l00023"></a>00023         <span class="keyword">public</span> <a class="code" href="../../da/dbf/structskylark_1_1sketch_1_1hash__transform__data__t.html">hash_transform_data_t</a>&lt;IdxDistributionType,
+<a name="l00024"></a>00024                                      ValueDistribution&gt; {
+<a name="l00025"></a>00025     <span class="comment">// To be specialized and derived. Just some guards here.</span>
+<a name="l00026"></a><a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#ab341bda48512988efbb337f9e4345f7d">00026</a>     <span class="keyword">typedef</span> InputMatrixType <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#ab341bda48512988efbb337f9e4345f7d">matrix_type</a>;
+<a name="l00027"></a><a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a4d90fe83e2669e836dacfa17e1b29213">00027</a>     <span class="keyword">typedef</span> OutputMatrixType <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a4d90fe83e2669e836dacfa17e1b29213">output_matrix_type</a>;
+<a name="l00028"></a>00028     <span class="keyword">typedef</span> <a class="code" href="../../da/dbf/structskylark_1_1sketch_1_1hash__transform__data__t.html">hash_transform_data_t&lt;IdxDistributionType, ValueDistribution&gt;</a>
+<a name="l00029"></a><a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a766d3cd6e434f939f992e24abe40e666">00029</a>     <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a766d3cd6e434f939f992e24abe40e666">data_type</a>;
+<a name="l00030"></a>00030 
+<a name="l00031"></a><a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a170fc8a64798cd59452b2a703348143e">00031</a>     <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a170fc8a64798cd59452b2a703348143e">hash_transform_t</a>(<span class="keywordtype">int</span> N, <span class="keywordtype">int</span> S, <a class="code" href="../../de/dea/structskylark_1_1base_1_1context__t.html">base::context_t</a>&amp; context)
+<a name="l00032"></a>00032         : <a class="code" href="../../da/dbf/structskylark_1_1sketch_1_1hash__transform__data__t.html">data_type</a>(N, S, context) {
+<a name="l00033"></a>00033         <a class="code" href="../../d7/d1e/exception_8hpp.html#abedcc0a2ddc8fa567e3edcaa3fc1d62c" title="throw a skylark exception including file/line information">SKYLARK_THROW_EXCEPTION</a> (
+<a name="l00034"></a>00034           <a class="code" href="../../df/de2/structskylark_1_1base_1_1sketch__exception.html" title="exceptions in the sketch layer">base::sketch_exception</a>()
+<a name="l00035"></a>00035               &lt;&lt; <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a797044780de82fcf917d87e0888763c3" title="predefined structure for error msg">base::error_msg</a>(
+<a name="l00036"></a>00036                  <span class="stringliteral">&quot;This combination has not yet been implemented for HashTransform&quot;</span>));
+<a name="l00037"></a>00037     }
+<a name="l00038"></a>00038 
+<a name="l00039"></a><a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#ae4fdc64f1a1bfbac260041ccb412c62a">00039</a>     <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a170fc8a64798cd59452b2a703348143e">hash_transform_t</a>(<span class="keyword">const</span> <a class="code" href="../../da/dbf/structskylark_1_1sketch_1_1hash__transform__data__t.html">data_type</a>&amp; other_data)
+<a name="l00040"></a>00040         : <a class="code" href="../../da/dbf/structskylark_1_1sketch_1_1hash__transform__data__t.html">data_type</a>(other_data) {
+<a name="l00041"></a>00041         <a class="code" href="../../d7/d1e/exception_8hpp.html#abedcc0a2ddc8fa567e3edcaa3fc1d62c" title="throw a skylark exception including file/line information">SKYLARK_THROW_EXCEPTION</a> (
+<a name="l00042"></a>00042           <a class="code" href="../../df/de2/structskylark_1_1base_1_1sketch__exception.html" title="exceptions in the sketch layer">base::sketch_exception</a>()
+<a name="l00043"></a>00043               &lt;&lt; <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a797044780de82fcf917d87e0888763c3" title="predefined structure for error msg">base::error_msg</a>(
+<a name="l00044"></a>00044                  <span class="stringliteral">&quot;This combination has not yet been implemented for HashTransform&quot;</span>));
+<a name="l00045"></a>00045     }
+<a name="l00046"></a>00046 
+<a name="l00047"></a><a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a12a65d6d0dfcd94de51786e9a6d915db">00047</a>     <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a170fc8a64798cd59452b2a703348143e">hash_transform_t</a>(<span class="keyword">const</span> boost::property_tree::ptree &amp;pt)
+<a name="l00048"></a>00048         : <a class="code" href="../../da/dbf/structskylark_1_1sketch_1_1hash__transform__data__t.html">data_type</a>(pt) {
+<a name="l00049"></a>00049         <a class="code" href="../../d7/d1e/exception_8hpp.html#abedcc0a2ddc8fa567e3edcaa3fc1d62c" title="throw a skylark exception including file/line information">SKYLARK_THROW_EXCEPTION</a> (
+<a name="l00050"></a>00050           <a class="code" href="../../df/de2/structskylark_1_1base_1_1sketch__exception.html" title="exceptions in the sketch layer">base::sketch_exception</a>()
+<a name="l00051"></a>00051               &lt;&lt; <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a797044780de82fcf917d87e0888763c3" title="predefined structure for error msg">base::error_msg</a>(
+<a name="l00052"></a>00052                  <span class="stringliteral">&quot;This combination has not yet been implemented for HashTransform&quot;</span>));
+<a name="l00053"></a>00053     }
+<a name="l00054"></a>00054 
+<a name="l00055"></a><a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#ac899bcbff87aa859ada4b0e2f7705205">00055</a>     <span class="keywordtype">void</span> <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#ac899bcbff87aa859ada4b0e2f7705205">apply</a> (<span class="keyword">const</span> <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#ab341bda48512988efbb337f9e4345f7d">matrix_type</a>&amp; A,
+<a name="l00056"></a>00056                 <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a4d90fe83e2669e836dacfa17e1b29213">output_matrix_type</a>&amp; sketch_of_A,
+<a name="l00057"></a>00057                 <a class="code" href="../../df/d8f/structskylark_1_1sketch_1_1columnwise__tag.html" title="Apply the sketch/transform to the columns. In matrix form this is A-&gt;SA.">columnwise_tag</a> dimension)<span class="keyword"> const </span>{
+<a name="l00058"></a>00058         <a class="code" href="../../d7/d1e/exception_8hpp.html#abedcc0a2ddc8fa567e3edcaa3fc1d62c" title="throw a skylark exception including file/line information">SKYLARK_THROW_EXCEPTION</a> (
+<a name="l00059"></a>00059           <a class="code" href="../../df/de2/structskylark_1_1base_1_1sketch__exception.html" title="exceptions in the sketch layer">base::sketch_exception</a>()
+<a name="l00060"></a>00060               &lt;&lt; <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a797044780de82fcf917d87e0888763c3" title="predefined structure for error msg">base::error_msg</a>(
+<a name="l00061"></a>00061                  <span class="stringliteral">&quot;This combination has not yet been implemented for HashTransform&quot;</span>));
+<a name="l00062"></a>00062     }
+<a name="l00063"></a>00063 
+<a name="l00064"></a><a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#af7cea487021e2836ac25359cb4ed04e5">00064</a>     <span class="keywordtype">void</span> <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#ac899bcbff87aa859ada4b0e2f7705205">apply</a> (<span class="keyword">const</span> <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#ab341bda48512988efbb337f9e4345f7d">matrix_type</a>&amp; A,
+<a name="l00065"></a>00065                 <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a4d90fe83e2669e836dacfa17e1b29213">output_matrix_type</a>&amp; sketch_of_A,
+<a name="l00066"></a>00066                 <a class="code" href="../../d4/d9b/structskylark_1_1sketch_1_1rowwise__tag.html" title="Apply the sketch/transform to the rows. In matrix form this is A-&gt;AS^T.">rowwise_tag</a> dimension)<span class="keyword"> const </span>{
+<a name="l00067"></a>00067         <a class="code" href="../../d7/d1e/exception_8hpp.html#abedcc0a2ddc8fa567e3edcaa3fc1d62c" title="throw a skylark exception including file/line information">SKYLARK_THROW_EXCEPTION</a> (
+<a name="l00068"></a>00068           <a class="code" href="../../df/de2/structskylark_1_1base_1_1sketch__exception.html" title="exceptions in the sketch layer">base::sketch_exception</a>()
+<a name="l00069"></a>00069               &lt;&lt; <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a797044780de82fcf917d87e0888763c3" title="predefined structure for error msg">base::error_msg</a>(
+<a name="l00070"></a>00070                  <span class="stringliteral">&quot;This combination has not yet been implemented for HashTransform&quot;</span>));
+<a name="l00071"></a>00071     }
+<a name="l00072"></a>00072 };
+<a name="l00073"></a>00073 
+<a name="l00074"></a>00074 } } 
+<a name="l00076"></a>00076 <span class="preprocessor">#if SKYLARK_HAVE_ELEMENTAL</span>
+<a name="l00077"></a>00077 <span class="preprocessor"></span><span class="preprocessor">#include &quot;<a class="code" href="../../dd/d20/hash__transform__Elemental_8hpp.html">hash_transform_Elemental.hpp</a>&quot;</span>
+<a name="l00078"></a>00078 <span class="preprocessor">#endif</span>
+<a name="l00079"></a>00079 <span class="preprocessor"></span>
+<a name="l00080"></a>00080 <span class="preprocessor">#if SKYLARK_HAVE_COMBBLAS</span>
+<a name="l00081"></a>00081 <span class="preprocessor"></span><span class="preprocessor">#include &quot;<a class="code" href="../../d6/dd9/hash__transform__CombBLAS_8hpp.html">hash_transform_CombBLAS.hpp</a>&quot;</span>
+<a name="l00082"></a>00082 <span class="preprocessor">#endif</span>
+<a name="l00083"></a>00083 <span class="preprocessor"></span>
+<a name="l00084"></a>00084 <span class="preprocessor">#if SKYLARK_HAVE_ELEMENTAL and SKYLARK_HAVE_COMBBLAS</span>
+<a name="l00085"></a>00085 <span class="preprocessor"></span><span class="preprocessor">#include &quot;<a class="code" href="../../da/da9/hash__transform__Mixed_8hpp.html">hash_transform_Mixed.hpp</a>&quot;</span>
+<a name="l00086"></a>00086 <span class="preprocessor">#endif</span>
+<a name="l00087"></a>00087 <span class="preprocessor"></span>
+<a name="l00088"></a>00088 <span class="preprocessor">#include &quot;<a class="code" href="../../d2/d46/hash__transform__local__sparse_8hpp.html">hash_transform_local_sparse.hpp</a>&quot;</span>
+<a name="l00089"></a>00089 
+<a name="l00090"></a>00090 <span class="preprocessor">#endif // SKYLARK_HASH_TRANSFORM_HPP</span>
 </pre></div></div><!-- contents -->
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jun 5 2014 02:49:11 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jun 5 2014 18:16:08 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

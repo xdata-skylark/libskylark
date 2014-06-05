@@ -103,7 +103,7 @@
 <a name="l00044"></a>00044 <span class="keyword">inline</span> <span class="keywordtype">void</span> ColumnNrm2(<span class="keyword">const</span> elem::DistMatrix&lt;T, elem::STAR, elem::STAR&gt;&amp; A,
 <a name="l00045"></a>00045     <a class="code" href="../../dc/d74/capi_8cpp.html#a19350ba69c004b01dece9951a3477dc9">elem::DistMatrix</a>&lt;elem::Base&lt;T&gt;, elem::STAR, elem::STAR&gt;&amp; N) {
 <a name="l00046"></a>00046 
-<a name="l00047"></a>00047     <span class="keywordtype">double</span> *<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a> = N.Buffer();
+<a name="l00047"></a>00047     <span class="keywordtype">double</span> *<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a> = N.Buffer();
 <a name="l00048"></a>00048     <span class="keyword">const</span> <span class="keywordtype">double</span> *a = A.LockedBuffer();
 <a name="l00049"></a>00049     <span class="keywordflow">for</span>(<span class="keywordtype">int</span> j = 0; j &lt; A.Width(); j++) {
 <a name="l00050"></a>00050         n[j] = 0.0;
@@ -117,7 +117,7 @@
 <a name="l00058"></a>00058 <span class="keyword">inline</span> <span class="keywordtype">void</span> ColumnNrm2(<span class="keyword">const</span> elem::DistMatrix&lt;T, elem::VC, elem::STAR&gt;&amp; A,
 <a name="l00059"></a>00059     <a class="code" href="../../dc/d74/capi_8cpp.html#a19350ba69c004b01dece9951a3477dc9">elem::DistMatrix</a>&lt;elem::Base&lt;T&gt;, elem::STAR, elem::STAR&gt;&amp; N) {
 <a name="l00060"></a>00060 
-<a name="l00061"></a>00061     std::vector&lt;T&gt; <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>(A.Width(), 1);
+<a name="l00061"></a>00061     std::vector&lt;T&gt; <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>(A.Width(), 1);
 <a name="l00062"></a>00062     <span class="keyword">const</span> elem::Matrix&lt;T&gt; &amp;Al = A.LockedMatrix();
 <a name="l00063"></a>00063     <span class="keyword">const</span> <span class="keywordtype">double</span> *a = Al.LockedBuffer();
 <a name="l00064"></a>00064     <span class="keywordflow">for</span>(<span class="keywordtype">int</span> j = 0; j &lt; Al.Width(); j++) {
@@ -142,7 +142,7 @@
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jun 5 2014 02:49:11 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jun 5 2014 18:16:07 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

@@ -72,21 +72,21 @@
 <a name="l00013"></a>00013 <span class="keyword">extern</span> <span class="stringliteral">&quot;C&quot;</span> {
 <a name="l00014"></a>00014 
 <a name="l00015"></a>00015 <span class="keywordtype">void</span> BLAS(<a class="code" href="../../d4/d8c/namespaceskylark_1_1algorithms_1_1flinl2__internal.html#af2a0edff3a309c0f2a870e3aaa7e42e4">dtrcon</a>)(<span class="keyword">const</span> <span class="keywordtype">char</span>* norm, <span class="keyword">const</span> <span class="keywordtype">char</span>* uplo, <span class="keyword">const</span> <span class="keywordtype">char</span>* diag,
-<a name="l00016"></a>00016     <span class="keyword">const</span> <span class="keywordtype">int</span>* <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, <span class="keyword">const</span> <span class="keywordtype">double</span>* A, <span class="keyword">const</span> <span class="keywordtype">int</span> *lda, <span class="keywordtype">double</span> *rcond,
+<a name="l00016"></a>00016     <span class="keyword">const</span> <span class="keywordtype">int</span>* <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, <span class="keyword">const</span> <span class="keywordtype">double</span>* A, <span class="keyword">const</span> <span class="keywordtype">int</span> *lda, <span class="keywordtype">double</span> *rcond,
 <a name="l00017"></a>00017     <span class="keywordtype">double</span> *work, <span class="keywordtype">int</span> *iwork, <span class="keywordtype">int</span> *info);
 <a name="l00018"></a>00018 
 <a name="l00019"></a>00019 <span class="keywordtype">void</span> BLAS(<a class="code" href="../../d4/d8c/namespaceskylark_1_1algorithms_1_1flinl2__internal.html#a1ecaa590ea30ea2954f9ab43f0aba7de">strcon</a>)(<span class="keyword">const</span> <span class="keywordtype">char</span>* norm, <span class="keyword">const</span> <span class="keywordtype">char</span>* uplo, <span class="keyword">const</span> <span class="keywordtype">char</span>* diag,
-<a name="l00020"></a>00020     <span class="keyword">const</span> <span class="keywordtype">int</span>* <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, <span class="keyword">const</span> <span class="keywordtype">float</span>* A, <span class="keyword">const</span> <span class="keywordtype">int</span> *lda, <span class="keywordtype">float</span> *rcond,
+<a name="l00020"></a>00020     <span class="keyword">const</span> <span class="keywordtype">int</span>* <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, <span class="keyword">const</span> <span class="keywordtype">float</span>* A, <span class="keyword">const</span> <span class="keywordtype">int</span> *lda, <span class="keywordtype">float</span> *rcond,
 <a name="l00021"></a>00021     <span class="keywordtype">float</span> *work, <span class="keywordtype">int</span> *iwork, <span class="keywordtype">int</span> *info);
 <a name="l00022"></a>00022 
 <a name="l00023"></a>00023 }
 <a name="l00024"></a>00024 
 <a name="l00025"></a><a class="code" href="../../d4/d8c/namespaceskylark_1_1algorithms_1_1flinl2__internal.html#ac9a7065c18ecff7f7c503ca16c97275c">00025</a> <span class="keyword">inline</span> <span class="keywordtype">double</span> <a class="code" href="../../d4/d8c/namespaceskylark_1_1algorithms_1_1flinl2__internal.html#ac9a7065c18ecff7f7c503ca16c97275c">utcondest</a>(<span class="keyword">const</span> elem::Matrix&lt;double&gt;&amp; A) {
-<a name="l00026"></a>00026     <span class="keywordtype">int</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a> = A.Height(), ld = A.LDim(), info;
-<a name="l00027"></a>00027     <span class="keywordtype">double</span> *work = <span class="keyword">new</span> <span class="keywordtype">double</span>[3 * <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>];
-<a name="l00028"></a>00028     <span class="keywordtype">int</span> *iwork = <span class="keyword">new</span> <span class="keywordtype">int</span>[<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>];
+<a name="l00026"></a>00026     <span class="keywordtype">int</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a> = A.Height(), ld = A.LDim(), info;
+<a name="l00027"></a>00027     <span class="keywordtype">double</span> *work = <span class="keyword">new</span> <span class="keywordtype">double</span>[3 * <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>];
+<a name="l00028"></a>00028     <span class="keywordtype">int</span> *iwork = <span class="keyword">new</span> <span class="keywordtype">int</span>[<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>];
 <a name="l00029"></a>00029     <span class="keywordtype">double</span> rcond;
-<a name="l00030"></a>00030     BLAS(<a class="code" href="../../d4/d8c/namespaceskylark_1_1algorithms_1_1flinl2__internal.html#af2a0edff3a309c0f2a870e3aaa7e42e4">dtrcon</a>)(<span class="stringliteral">&quot;1&quot;</span>, <span class="stringliteral">&quot;U&quot;</span>, <span class="stringliteral">&quot;N&quot;</span>, &amp;<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, A.LockedBuffer(), &amp;ld, &amp;rcond, work,
+<a name="l00030"></a>00030     BLAS(<a class="code" href="../../d4/d8c/namespaceskylark_1_1algorithms_1_1flinl2__internal.html#af2a0edff3a309c0f2a870e3aaa7e42e4">dtrcon</a>)(<span class="stringliteral">&quot;1&quot;</span>, <span class="stringliteral">&quot;U&quot;</span>, <span class="stringliteral">&quot;N&quot;</span>, &amp;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, A.LockedBuffer(), &amp;ld, &amp;rcond, work,
 <a name="l00031"></a>00031         iwork, &amp;info); <span class="comment">// TODO check info</span>
 <a name="l00032"></a>00032     <span class="keyword">delete</span>[] work;
 <a name="l00033"></a>00033     <span class="keyword">delete</span>[] iwork;
@@ -94,11 +94,11 @@
 <a name="l00035"></a>00035 }
 <a name="l00036"></a>00036 
 <a name="l00037"></a><a class="code" href="../../d4/d8c/namespaceskylark_1_1algorithms_1_1flinl2__internal.html#a88ba20c3ea0f71d6f65e32417916e056">00037</a> <span class="keyword">inline</span> <span class="keywordtype">double</span> <a class="code" href="../../d4/d8c/namespaceskylark_1_1algorithms_1_1flinl2__internal.html#ac9a7065c18ecff7f7c503ca16c97275c">utcondest</a>(<span class="keyword">const</span> elem::Matrix&lt;float&gt;&amp; A) {
-<a name="l00038"></a>00038     <span class="keywordtype">int</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a> = A.Height(), ld = A.LDim(), info;
-<a name="l00039"></a>00039     <span class="keywordtype">float</span> *work  = <span class="keyword">new</span> <span class="keywordtype">float</span>[3 * <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>];
-<a name="l00040"></a>00040     <span class="keywordtype">int</span> *iwork = <span class="keyword">new</span> <span class="keywordtype">int</span>[<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>];
+<a name="l00038"></a>00038     <span class="keywordtype">int</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a> = A.Height(), ld = A.LDim(), info;
+<a name="l00039"></a>00039     <span class="keywordtype">float</span> *work  = <span class="keyword">new</span> <span class="keywordtype">float</span>[3 * <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>];
+<a name="l00040"></a>00040     <span class="keywordtype">int</span> *iwork = <span class="keyword">new</span> <span class="keywordtype">int</span>[<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>];
 <a name="l00041"></a>00041     <span class="keywordtype">float</span> rcond;
-<a name="l00042"></a>00042     BLAS(<a class="code" href="../../d4/d8c/namespaceskylark_1_1algorithms_1_1flinl2__internal.html#a1ecaa590ea30ea2954f9ab43f0aba7de">strcon</a>)(<span class="stringliteral">&quot;1&quot;</span>, <span class="stringliteral">&quot;U&quot;</span>, <span class="stringliteral">&quot;N&quot;</span>, &amp;<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, A.LockedBuffer(), &amp;ld, &amp;rcond, work,
+<a name="l00042"></a>00042     BLAS(<a class="code" href="../../d4/d8c/namespaceskylark_1_1algorithms_1_1flinl2__internal.html#a1ecaa590ea30ea2954f9ab43f0aba7de">strcon</a>)(<span class="stringliteral">&quot;1&quot;</span>, <span class="stringliteral">&quot;U&quot;</span>, <span class="stringliteral">&quot;N&quot;</span>, &amp;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, A.LockedBuffer(), &amp;ld, &amp;rcond, work,
 <a name="l00043"></a>00043         iwork, &amp;info);  <span class="comment">// TODO check info</span>
 <a name="l00044"></a>00044     <span class="keyword">delete</span>[] work;
 <a name="l00045"></a>00045     <span class="keyword">delete</span>[] iwork;
@@ -124,11 +124,11 @@
 <a name="l00065"></a><a class="code" href="../../d4/d8c/namespaceskylark_1_1algorithms_1_1flinl2__internal.html#a2d7b254d021d9fc54fde02d90cb329af">00065</a> <span class="keywordtype">double</span> <a class="code" href="../../d4/d8c/namespaceskylark_1_1algorithms_1_1flinl2__internal.html#a4cb4447e2ad3a03ba28f1c70b801a150">build_precond</a>(SketchType&amp; SA,
 <a name="l00066"></a>00066     PrecondType&amp; V, <a class="code" href="../../d1/dc2/structskylark_1_1nla_1_1precond__t.html">nla::precond_t&lt;SolType&gt;</a> *&amp;P, <a class="code" href="../../d6/d44/structskylark_1_1algorithms_1_1svd__precond__tag.html">svd_precond_tag</a>) {
 <a name="l00067"></a>00067 
-<a name="l00068"></a>00068     <span class="keywordtype">int</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a> = SA.Width();
+<a name="l00068"></a>00068     <span class="keywordtype">int</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a> = SA.Width();
 <a name="l00069"></a>00069     PrecondType s(SA);
 <a name="l00070"></a>00070     s.Resize(n, 1);
 <a name="l00071"></a>00071     elem::SVD(SA.Matrix(), s.Matrix(), V.Matrix()); <span class="comment">// TODO</span>
-<a name="l00072"></a>00072     <span class="keywordflow">for</span>(<span class="keywordtype">int</span> i = 0; i &lt; <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>; i++)
+<a name="l00072"></a>00072     <span class="keywordflow">for</span>(<span class="keywordtype">int</span> i = 0; i &lt; <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>; i++)
 <a name="l00073"></a>00073         s.Set(i, 0, 1 / s.Get(i, 0));
 <a name="l00074"></a>00074     base::DiagonalScale(elem::RIGHT, elem::NORMAL, s, V);
 <a name="l00075"></a>00075     P =
@@ -156,7 +156,7 @@
 <a name="l00098"></a><a class="code" href="../../d8/d28/classskylark_1_1algorithms_1_1accelerated__regression__solver__t_3_01regression__problem__t_3_015dbab94d4f8330d11d0794080bc7e79c.html#aa14db22c1d507281a247abf2f72637b1">00098</a>     <span class="keyword">typedef</span> elem::DistMatrix&lt;ValueType, VD, elem::STAR&gt; <a class="code" href="../../d8/d28/classskylark_1_1algorithms_1_1accelerated__regression__solver__t_3_01regression__problem__t_3_015dbab94d4f8330d11d0794080bc7e79c.html#aa14db22c1d507281a247abf2f72637b1">rhs_type</a>;
 <a name="l00099"></a><a class="code" href="../../d8/d28/classskylark_1_1algorithms_1_1accelerated__regression__solver__t_3_01regression__problem__t_3_015dbab94d4f8330d11d0794080bc7e79c.html#aee16a34bf22af3098085f494a9e010bd">00099</a>     <span class="keyword">typedef</span> elem::DistMatrix&lt;ValueType, elem::STAR, elem::STAR&gt; <a class="code" href="../../d8/d28/classskylark_1_1algorithms_1_1accelerated__regression__solver__t_3_01regression__problem__t_3_015dbab94d4f8330d11d0794080bc7e79c.html#aee16a34bf22af3098085f494a9e010bd">sol_type</a>;
 <a name="l00100"></a>00100 
-<a name="l00101"></a>00101     <span class="keyword">typedef</span> <a class="code" href="../../db/d5b/structskylark_1_1algorithms_1_1regression__problem__t.html">regression_problem_t</a>&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>,
+<a name="l00101"></a>00101     <span class="keyword">typedef</span> <a class="code" href="../../db/d5b/structskylark_1_1algorithms_1_1regression__problem__t.html">regression_problem_t</a>&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>,
 <a name="l00102"></a><a class="code" href="../../d8/d28/classskylark_1_1algorithms_1_1accelerated__regression__solver__t_3_01regression__problem__t_3_015dbab94d4f8330d11d0794080bc7e79c.html#a95edcb8c53ad7c1b08d182288e659fd9">00102</a>                                  <a class="code" href="../../de/d2a/structskylark_1_1algorithms_1_1linear__tag.html" title="Tag for specifying a linear regression.">linear_tag</a>, <a class="code" href="../../d9/d41/structskylark_1_1algorithms_1_1l2__tag.html" title="Tag for specifying a L2 norm.">l2_tag</a>, <a class="code" href="../../d1/d64/structskylark_1_1algorithms_1_1no__reg__tag.html">no_reg_tag</a>&gt; <a class="code" href="../../d8/d28/classskylark_1_1algorithms_1_1accelerated__regression__solver__t_3_01regression__problem__t_3_015dbab94d4f8330d11d0794080bc7e79c.html#a95edcb8c53ad7c1b08d182288e659fd9">problem_type</a>;
 <a name="l00103"></a>00103 
 <a name="l00104"></a>00104 <span class="keyword">private</span>:
@@ -174,7 +174,7 @@
 <a name="l00116"></a>00116 
 <a name="l00117"></a>00117 <span class="keyword">public</span>:
 <a name="l00123"></a><a class="code" href="../../d8/d28/classskylark_1_1algorithms_1_1accelerated__regression__solver__t_3_01regression__problem__t_3_015dbab94d4f8330d11d0794080bc7e79c.html#ad2ace85f5837a47891870698d34ad0d7">00123</a>     <a class="code" href="../../dc/d2d/classskylark_1_1algorithms_1_1accelerated__regression__solver__t.html">accelerated_regression_solver_t</a>(<span class="keyword">const</span> <a class="code" href="../../db/d5b/structskylark_1_1algorithms_1_1regression__problem__t.html">problem_type</a>&amp; problem, <a class="code" href="../../de/dea/structskylark_1_1base_1_1context__t.html">base::context_t</a>&amp; context) :
-<a name="l00124"></a>00124         _m(problem.<a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>), _n(problem.<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>), _A(problem.input_matrix),
+<a name="l00124"></a>00124         _m(problem.<a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>), _n(problem.<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>), _A(problem.input_matrix),
 <a name="l00125"></a>00125         _R(_n, _n, problem.input_matrix.Grid()) {
 <a name="l00126"></a>00126         <span class="comment">// TODO n &lt; m ???</span>
 <a name="l00127"></a>00127 
@@ -213,7 +213,7 @@
 <a name="l00161"></a><a class="code" href="../../d2/d63/classskylark_1_1algorithms_1_1accelerated__regression__solver__t_3_01regression__problem__t_3_01a2d9d837a861bf72f44a7c17ea157d01.html#a4180bea62c0e9845c9f9f58cbb92a70b">00161</a>     <span class="keyword">typedef</span> elem::DistMatrix&lt;ValueType, VD, elem::STAR&gt; <a class="code" href="../../d2/d63/classskylark_1_1algorithms_1_1accelerated__regression__solver__t_3_01regression__problem__t_3_01a2d9d837a861bf72f44a7c17ea157d01.html#a4180bea62c0e9845c9f9f58cbb92a70b">rhs_type</a>;
 <a name="l00162"></a><a class="code" href="../../d2/d63/classskylark_1_1algorithms_1_1accelerated__regression__solver__t_3_01regression__problem__t_3_01a2d9d837a861bf72f44a7c17ea157d01.html#a2c86b4c21ecaa46cbaa732ef4ebf1db3">00162</a>     <span class="keyword">typedef</span> elem::DistMatrix&lt;ValueType, elem::STAR, elem::STAR&gt; <a class="code" href="../../d2/d63/classskylark_1_1algorithms_1_1accelerated__regression__solver__t_3_01regression__problem__t_3_01a2d9d837a861bf72f44a7c17ea157d01.html#a2c86b4c21ecaa46cbaa732ef4ebf1db3">sol_type</a>;
 <a name="l00163"></a>00163 
-<a name="l00164"></a>00164     <span class="keyword">typedef</span> <a class="code" href="../../db/d5b/structskylark_1_1algorithms_1_1regression__problem__t.html">regression_problem_t</a>&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>,
+<a name="l00164"></a>00164     <span class="keyword">typedef</span> <a class="code" href="../../db/d5b/structskylark_1_1algorithms_1_1regression__problem__t.html">regression_problem_t</a>&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>,
 <a name="l00165"></a><a class="code" href="../../d2/d63/classskylark_1_1algorithms_1_1accelerated__regression__solver__t_3_01regression__problem__t_3_01a2d9d837a861bf72f44a7c17ea157d01.html#a644994382f5c54e95a34c5532bf47417">00165</a>                                  <a class="code" href="../../de/d2a/structskylark_1_1algorithms_1_1linear__tag.html" title="Tag for specifying a linear regression.">linear_tag</a>, <a class="code" href="../../d9/d41/structskylark_1_1algorithms_1_1l2__tag.html" title="Tag for specifying a L2 norm.">l2_tag</a>, <a class="code" href="../../d1/d64/structskylark_1_1algorithms_1_1no__reg__tag.html">no_reg_tag</a>&gt; <a class="code" href="../../d2/d63/classskylark_1_1algorithms_1_1accelerated__regression__solver__t_3_01regression__problem__t_3_01a2d9d837a861bf72f44a7c17ea157d01.html#a644994382f5c54e95a34c5532bf47417">problem_type</a>;
 <a name="l00166"></a>00166 
 <a name="l00167"></a>00167 <span class="keyword">private</span>:
@@ -234,7 +234,7 @@
 <a name="l00182"></a>00182 
 <a name="l00183"></a>00183 <span class="keyword">public</span>:
 <a name="l00189"></a><a class="code" href="../../d2/d63/classskylark_1_1algorithms_1_1accelerated__regression__solver__t_3_01regression__problem__t_3_01a2d9d837a861bf72f44a7c17ea157d01.html#ab0fc469eac5397bd5bba206f35fc8539">00189</a>     <a class="code" href="../../dc/d2d/classskylark_1_1algorithms_1_1accelerated__regression__solver__t.html">accelerated_regression_solver_t</a>(<span class="keyword">const</span> <a class="code" href="../../db/d5b/structskylark_1_1algorithms_1_1regression__problem__t.html">problem_type</a>&amp; problem, <a class="code" href="../../de/dea/structskylark_1_1base_1_1context__t.html">base::context_t</a>&amp; context) :
-<a name="l00190"></a>00190         _m(problem.<a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>), _n(problem.<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>), _A(problem.input_matrix),
+<a name="l00190"></a>00190         _m(problem.<a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>), _n(problem.<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>), _A(problem.input_matrix),
 <a name="l00191"></a>00191         _R(_n, _n, problem.input_matrix.Grid()) {
 <a name="l00192"></a>00192         <span class="comment">// TODO n &lt; m ???</span>
 <a name="l00193"></a>00193 
@@ -274,8 +274,8 @@
 <a name="l00227"></a>00227         <span class="keywordflow">else</span> {
 <a name="l00228"></a>00228             _alt_solver =
 <a name="l00229"></a>00229                 <span class="keyword">new</span> <a class="code" href="../../d9/dfc/classskylark_1_1algorithms_1_1regression__solver__t.html">regression_solver_t</a>&lt;<a class="code" href="../../db/d5b/structskylark_1_1algorithms_1_1regression__problem__t.html">problem_type</a>,
-<a name="l00230"></a>00230                                       <a class="code" href="../../d8/d1e/regression_8cpp.html#a2fc464ae64ca81fffc2b0034a28790d4">rhs_type</a>,
-<a name="l00231"></a>00231                                       <a class="code" href="../../d8/d1e/regression_8cpp.html#a0ccbceff43e70b9bf68fc4b0d4a07e49">sol_type</a>, <a class="code" href="../../d7/d06/structskylark_1_1algorithms_1_1svd__l2__solver__tag.html" title="Tag for using SVD to solve L2 linear regression problems.">svd_l2_solver_tag</a>&gt;(problem);
+<a name="l00230"></a>00230                                       <a class="code" href="../../d1/d6a/least__squares_8cpp.html#a2fc464ae64ca81fffc2b0034a28790d4">rhs_type</a>,
+<a name="l00231"></a>00231                                       <a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0ccbceff43e70b9bf68fc4b0d4a07e49">sol_type</a>, <a class="code" href="../../d7/d06/structskylark_1_1algorithms_1_1svd__l2__solver__tag.html" title="Tag for using SVD to solve L2 linear regression problems.">svd_l2_solver_tag</a>&gt;(problem);
 <a name="l00232"></a>00232             <span class="keyword">delete</span> _precond_R;
 <a name="l00233"></a>00233             _precond_R = <span class="keyword">nullptr</span>;
 <a name="l00234"></a>00234         }
@@ -310,7 +310,7 @@
 <a name="l00264"></a><a class="code" href="../../d2/d12/classskylark_1_1algorithms_1_1accelerated__regression__solver__t_3_01regression__problem__t_3_014f5078beec3554ea5be37edd21ac9dba.html#a7ec6613ceaa43dbf104b022113a3cbda">00264</a>     <span class="keyword">typedef</span> elem::DistMatrix&lt;ValueType, VD, elem::STAR&gt; <a class="code" href="../../d2/d12/classskylark_1_1algorithms_1_1accelerated__regression__solver__t_3_01regression__problem__t_3_014f5078beec3554ea5be37edd21ac9dba.html#a7ec6613ceaa43dbf104b022113a3cbda">rhs_type</a>;
 <a name="l00265"></a><a class="code" href="../../d2/d12/classskylark_1_1algorithms_1_1accelerated__regression__solver__t_3_01regression__problem__t_3_014f5078beec3554ea5be37edd21ac9dba.html#a3ab3e6c1e30a0d8a04a783b2243d36c4">00265</a>     <span class="keyword">typedef</span> elem::DistMatrix&lt;ValueType, elem::STAR, elem::STAR&gt; <a class="code" href="../../d2/d12/classskylark_1_1algorithms_1_1accelerated__regression__solver__t_3_01regression__problem__t_3_014f5078beec3554ea5be37edd21ac9dba.html#a3ab3e6c1e30a0d8a04a783b2243d36c4">sol_type</a>;
 <a name="l00266"></a>00266 
-<a name="l00267"></a>00267     <span class="keyword">typedef</span> <a class="code" href="../../db/d5b/structskylark_1_1algorithms_1_1regression__problem__t.html">regression_problem_t</a>&lt;<a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>,
+<a name="l00267"></a>00267     <span class="keyword">typedef</span> <a class="code" href="../../db/d5b/structskylark_1_1algorithms_1_1regression__problem__t.html">regression_problem_t</a>&lt;<a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>,
 <a name="l00268"></a><a class="code" href="../../d2/d12/classskylark_1_1algorithms_1_1accelerated__regression__solver__t_3_01regression__problem__t_3_014f5078beec3554ea5be37edd21ac9dba.html#a32c4e1eb00e3bf76ad65aa0ce185dab8">00268</a>                                  <a class="code" href="../../de/d2a/structskylark_1_1algorithms_1_1linear__tag.html" title="Tag for specifying a linear regression.">linear_tag</a>, <a class="code" href="../../d9/d41/structskylark_1_1algorithms_1_1l2__tag.html" title="Tag for specifying a L2 norm.">l2_tag</a>, <a class="code" href="../../d1/d64/structskylark_1_1algorithms_1_1no__reg__tag.html">no_reg_tag</a>&gt; <a class="code" href="../../d2/d12/classskylark_1_1algorithms_1_1accelerated__regression__solver__t_3_01regression__problem__t_3_014f5078beec3554ea5be37edd21ac9dba.html#a32c4e1eb00e3bf76ad65aa0ce185dab8">problem_type</a>;
 <a name="l00269"></a>00269 
 <a name="l00270"></a>00270 <span class="keyword">private</span>:
@@ -331,7 +331,7 @@
 <a name="l00285"></a>00285 
 <a name="l00286"></a>00286 <span class="keyword">public</span>:
 <a name="l00292"></a><a class="code" href="../../d2/d12/classskylark_1_1algorithms_1_1accelerated__regression__solver__t_3_01regression__problem__t_3_014f5078beec3554ea5be37edd21ac9dba.html#a8c137e716388a2a11748420017d6366c">00292</a>     <a class="code" href="../../dc/d2d/classskylark_1_1algorithms_1_1accelerated__regression__solver__t.html">accelerated_regression_solver_t</a>(<span class="keyword">const</span> <a class="code" href="../../db/d5b/structskylark_1_1algorithms_1_1regression__problem__t.html">problem_type</a>&amp; problem, <a class="code" href="../../de/dea/structskylark_1_1base_1_1context__t.html">base::context_t</a>&amp; context) :
-<a name="l00293"></a>00293         _m(problem.<a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>), _n(problem.<a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>), _A(problem.input_matrix),
+<a name="l00293"></a>00293         _m(problem.<a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>), _n(problem.<a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>), _A(problem.input_matrix),
 <a name="l00294"></a>00294         _R(_n, _n, problem.input_matrix.Grid()) {
 <a name="l00295"></a>00295         <span class="comment">// TODO n &lt; m ???</span>
 <a name="l00296"></a>00296 
@@ -384,7 +384,7 @@
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jun 5 2014 02:49:11 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jun 5 2014 18:16:07 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

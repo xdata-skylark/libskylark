@@ -145,13 +145,13 @@
 <a name="l00095"></a>00095 
 <a name="l00096"></a>00096 <span class="keyword">private</span>:
 <a name="l00100"></a>00100     <span class="keyword">template</span> &lt;<span class="keyword">typename</span> Dimension&gt;
-<a name="l00101"></a>00101     <span class="keywordtype">void</span> apply_impl (<span class="keyword">const</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a> &amp;A_,
+<a name="l00101"></a>00101     <span class="keywordtype">void</span> apply_impl (<span class="keyword">const</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a> &amp;A_,
 <a name="l00102"></a>00102         <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a4d90fe83e2669e836dacfa17e1b29213">output_matrix_type</a> &amp;sketch_of_A,
 <a name="l00103"></a>00103         Dimension dist)<span class="keyword"> const </span>{
 <a name="l00104"></a>00104 
 <a name="l00105"></a>00105         <span class="comment">// We are essentially doing a &#39;const&#39; access to A, but the necessary,</span>
 <a name="l00106"></a>00106         <span class="comment">// &#39;const&#39; option is missing from the interface</span>
-<a name="l00107"></a>00107         <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a> &amp;A = <span class="keyword">const_cast&lt;</span><a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp;<span class="keyword">&gt;</span>(A_);
+<a name="l00107"></a>00107         <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a> &amp;A = <span class="keyword">const_cast&lt;</span><a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp;<span class="keyword">&gt;</span>(A_);
 <a name="l00108"></a>00108 
 <a name="l00109"></a>00109         <span class="keyword">const</span> <span class="keywordtype">size_t</span> rank = A.getcommgrid()-&gt;GetRank();
 <a name="l00110"></a>00110 
@@ -377,13 +377,13 @@
 <a name="l00339"></a>00339 
 <a name="l00340"></a>00340 <span class="keyword">private</span>:
 <a name="l00344"></a>00344     <span class="keyword">template</span> &lt;<span class="keyword">typename</span> Dimension&gt;
-<a name="l00345"></a>00345     <span class="keywordtype">void</span> apply_impl (<span class="keyword">const</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a> &amp;A_,
+<a name="l00345"></a>00345     <span class="keywordtype">void</span> apply_impl (<span class="keyword">const</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a> &amp;A_,
 <a name="l00346"></a>00346         <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a4d90fe83e2669e836dacfa17e1b29213">output_matrix_type</a> &amp;sketch_of_A,
 <a name="l00347"></a>00347         Dimension dist)<span class="keyword"> const </span>{
 <a name="l00348"></a>00348 
 <a name="l00349"></a>00349         <span class="comment">// We are essentially doing a &#39;const&#39; access to A, but the necessary,</span>
 <a name="l00350"></a>00350         <span class="comment">// &#39;const&#39; option is missing from the interface</span>
-<a name="l00351"></a>00351         <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a> &amp;A = <span class="keyword">const_cast&lt;</span><a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp;<span class="keyword">&gt;</span>(A_);
+<a name="l00351"></a>00351         <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a> &amp;A = <span class="keyword">const_cast&lt;</span><a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp;<span class="keyword">&gt;</span>(A_);
 <a name="l00352"></a>00352 
 <a name="l00353"></a>00353         <span class="keyword">const</span> <span class="keywordtype">size_t</span> rank = A.getcommgrid()-&gt;GetRank();
 <a name="l00354"></a>00354 
@@ -434,134 +434,136 @@
 <a name="l00399"></a>00399 };
 <a name="l00400"></a>00400 
 <a name="l00401"></a>00401 
-<a name="l00402"></a>00402 <span class="comment">/* Specialization: SpParMat for input, Elemental[* / *] output */</span>
-<a name="l00403"></a>00403 <span class="keyword">template</span> &lt;<span class="keyword">typename</span> IndexType,
-<a name="l00404"></a>00404           <span class="keyword">typename</span> ValueType,
-<a name="l00405"></a>00405           <span class="keyword">template</span> &lt;<span class="keyword">typename</span>&gt; <span class="keyword">class </span>IdxDistributionType,
-<a name="l00406"></a>00406           <span class="keyword">template</span> &lt;<span class="keyword">typename</span>&gt; <span class="keyword">class </span>ValueDistribution&gt;
-<a name="l00407"></a><a class="code" href="../../de/d4b/structskylark_1_1sketch_1_1hash__transform__t_3_01SpParMat_3_01IndexType_00_01ValueType_00_01SpD8725c73535fb9acfb69b6acf001afdd4.html">00407</a> <span class="keyword">struct </span><a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html">hash_transform_t</a> &lt;
-<a name="l00408"></a>00408     SpParMat&lt;IndexType, ValueType, SpDCCols&lt;IndexType, ValueType&gt; &gt;,
-<a name="l00409"></a>00409     elem::<a class="code" href="../../dc/d74/capi_8cpp.html#a19350ba69c004b01dece9951a3477dc9">DistMatrix</a>&lt;ValueType, elem::STAR, elem::STAR&gt;,
-<a name="l00410"></a>00410     IdxDistributionType,
-<a name="l00411"></a>00411     ValueDistribution &gt; :
-<a name="l00412"></a>00412         <span class="keyword">public</span> <a class="code" href="../../da/dbf/structskylark_1_1sketch_1_1hash__transform__data__t.html">hash_transform_data_t</a>&lt;IdxDistributionType,
-<a name="l00413"></a>00413                                      ValueDistribution&gt; {
-<a name="l00414"></a><a class="code" href="../../de/d4b/structskylark_1_1sketch_1_1hash__transform__t_3_01SpParMat_3_01IndexType_00_01ValueType_00_01SpD8725c73535fb9acfb69b6acf001afdd4.html#a80bbe3baa132606adb6271ff1a34104d">00414</a>     <span class="keyword">typedef</span> IndexType <a class="code" href="../../de/d4b/structskylark_1_1sketch_1_1hash__transform__t_3_01SpParMat_3_01IndexType_00_01ValueType_00_01SpD8725c73535fb9acfb69b6acf001afdd4.html#a80bbe3baa132606adb6271ff1a34104d">index_type</a>;
-<a name="l00415"></a><a class="code" href="../../de/d4b/structskylark_1_1sketch_1_1hash__transform__t_3_01SpParMat_3_01IndexType_00_01ValueType_00_01SpD8725c73535fb9acfb69b6acf001afdd4.html#a816acf24fc6925a9c3c906f343c8a737">00415</a>     <span class="keyword">typedef</span> ValueType <a class="code" href="../../de/d4b/structskylark_1_1sketch_1_1hash__transform__t_3_01SpParMat_3_01IndexType_00_01ValueType_00_01SpD8725c73535fb9acfb69b6acf001afdd4.html#a816acf24fc6925a9c3c906f343c8a737">value_type</a>;
-<a name="l00416"></a><a class="code" href="../../de/d4b/structskylark_1_1sketch_1_1hash__transform__t_3_01SpParMat_3_01IndexType_00_01ValueType_00_01SpD8725c73535fb9acfb69b6acf001afdd4.html#afdcdbfb278aae499cc1291c7d4a8001b">00416</a>     <span class="keyword">typedef</span> SpDCCols&lt; index_type, value_type &gt; <a class="code" href="../../de/d4b/structskylark_1_1sketch_1_1hash__transform__t_3_01SpParMat_3_01IndexType_00_01ValueType_00_01SpD8725c73535fb9acfb69b6acf001afdd4.html#afdcdbfb278aae499cc1291c7d4a8001b">col_t</a>;
-<a name="l00417"></a><a class="code" href="../../de/d4b/structskylark_1_1sketch_1_1hash__transform__t_3_01SpParMat_3_01IndexType_00_01ValueType_00_01SpD8725c73535fb9acfb69b6acf001afdd4.html#a1c83f5e7b9ec56dd9323dca9b93f1818">00417</a>     <span class="keyword">typedef</span> FullyDistVec&lt; index_type, value_type&gt; <a class="code" href="../../de/d4b/structskylark_1_1sketch_1_1hash__transform__t_3_01SpParMat_3_01IndexType_00_01ValueType_00_01SpD8725c73535fb9acfb69b6acf001afdd4.html#a1c83f5e7b9ec56dd9323dca9b93f1818">mpi_vector_t</a>;
-<a name="l00418"></a><a class="code" href="../../de/d4b/structskylark_1_1sketch_1_1hash__transform__t_3_01SpParMat_3_01IndexType_00_01ValueType_00_01SpD8725c73535fb9acfb69b6acf001afdd4.html#ad45dff311c9ec6fcf0311284240a99e1">00418</a>     <span class="keyword">typedef</span> SpParMat&lt; index_type, value_type, col_t &gt; <a class="code" href="../../de/d4b/structskylark_1_1sketch_1_1hash__transform__t_3_01SpParMat_3_01IndexType_00_01ValueType_00_01SpD8725c73535fb9acfb69b6acf001afdd4.html#ad45dff311c9ec6fcf0311284240a99e1">matrix_type</a>;
-<a name="l00419"></a><a class="code" href="../../de/d4b/structskylark_1_1sketch_1_1hash__transform__t_3_01SpParMat_3_01IndexType_00_01ValueType_00_01SpD8725c73535fb9acfb69b6acf001afdd4.html#a9b7ec08a088415ea9d4adced1d8eb3d9">00419</a>     <span class="keyword">typedef</span> elem::DistMatrix&lt; value_type, elem::STAR, elem::STAR &gt; <a class="code" href="../../de/d4b/structskylark_1_1sketch_1_1hash__transform__t_3_01SpParMat_3_01IndexType_00_01ValueType_00_01SpD8725c73535fb9acfb69b6acf001afdd4.html#a9b7ec08a088415ea9d4adced1d8eb3d9">output_matrix_type</a>;
-<a name="l00420"></a>00420     <span class="keyword">typedef</span> <a class="code" href="../../da/dbf/structskylark_1_1sketch_1_1hash__transform__data__t.html">hash_transform_data_t</a>&lt;IdxDistributionType,
-<a name="l00421"></a><a class="code" href="../../de/d4b/structskylark_1_1sketch_1_1hash__transform__t_3_01SpParMat_3_01IndexType_00_01ValueType_00_01SpD8725c73535fb9acfb69b6acf001afdd4.html#a52e7b83672b4bdc3113e8c643106a8b0">00421</a>                                   ValueDistribution&gt; <a class="code" href="../../de/d4b/structskylark_1_1sketch_1_1hash__transform__t_3_01SpParMat_3_01IndexType_00_01ValueType_00_01SpD8725c73535fb9acfb69b6acf001afdd4.html#a52e7b83672b4bdc3113e8c643106a8b0">data_type</a>;
-<a name="l00422"></a>00422 
+<a name="l00402"></a>00402 <span class="preprocessor">#if 0</span>
+<a name="l00403"></a>00403 <span class="preprocessor"></span><span class="comment">/* Specialization: SpParMat for input, Elemental[* / *] output */</span>
+<a name="l00404"></a>00404 <span class="keyword">template</span> &lt;<span class="keyword">typename</span> IndexType,
+<a name="l00405"></a>00405           <span class="keyword">typename</span> ValueType,
+<a name="l00406"></a>00406           <span class="keyword">template</span> &lt;<span class="keyword">typename</span>&gt; <span class="keyword">class </span>IdxDistributionType,
+<a name="l00407"></a>00407           <span class="keyword">template</span> &lt;<span class="keyword">typename</span>&gt; <span class="keyword">class </span>ValueDistribution&gt;
+<a name="l00408"></a>00408 <span class="keyword">struct </span>hash_transform_t &lt;
+<a name="l00409"></a>00409     SpParMat&lt;IndexType, ValueType, SpDCCols&lt;IndexType, ValueType&gt; &gt;,
+<a name="l00410"></a>00410     elem::<a class="code" href="../../dc/d74/capi_8cpp.html#a19350ba69c004b01dece9951a3477dc9">DistMatrix</a>&lt;ValueType, elem::STAR, elem::STAR&gt;,
+<a name="l00411"></a>00411     IdxDistributionType,
+<a name="l00412"></a>00412     ValueDistribution &gt; :
+<a name="l00413"></a>00413         <span class="keyword">public</span> hash_transform_data_t&lt;IdxDistributionType,
+<a name="l00414"></a>00414                                      ValueDistribution&gt; {
+<a name="l00415"></a>00415     <span class="keyword">typedef</span> IndexType index_type;
+<a name="l00416"></a>00416     <span class="keyword">typedef</span> ValueType value_type;
+<a name="l00417"></a>00417     <span class="keyword">typedef</span> SpDCCols&lt; index_type, value_type &gt; <a class="code" href="../../dc/d74/capi_8cpp.html#ac21a17a4a9d7c56130fbacaeaf5b44c8">col_t</a>;
+<a name="l00418"></a>00418     <span class="keyword">typedef</span> FullyDistVec&lt; index_type, value_type&gt; <a class="code" href="../../d4/dad/SparseSketchApplyCombBLASTest_8cpp.html#a3f9c296f4f1ee969fba677a109b8a45f">mpi_vector_t</a>;
+<a name="l00419"></a>00419     <span class="keyword">typedef</span> SpParMat&lt; index_type, value_type, col_t &gt; <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#ab341bda48512988efbb337f9e4345f7d">matrix_type</a>;
+<a name="l00420"></a>00420     <span class="keyword">typedef</span> elem::DistMatrix&lt; value_type, elem::STAR, elem::STAR &gt; <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a4d90fe83e2669e836dacfa17e1b29213">output_matrix_type</a>;
+<a name="l00421"></a>00421     <span class="keyword">typedef</span> <a class="code" href="../../da/dbf/structskylark_1_1sketch_1_1hash__transform__data__t.html#a3534280942371994312dc69412e1221d">hash_transform_data_t</a>&lt;IdxDistributionType,
+<a name="l00422"></a>00422                                   ValueDistribution&gt; <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a766d3cd6e434f939f992e24abe40e666">data_type</a>;
 <a name="l00423"></a>00423 
-<a name="l00427"></a><a class="code" href="../../de/d4b/structskylark_1_1sketch_1_1hash__transform__t_3_01SpParMat_3_01IndexType_00_01ValueType_00_01SpD8725c73535fb9acfb69b6acf001afdd4.html#a9315a73ee6a8d62bff8c5e4fc91d08fa">00427</a>     <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a170fc8a64798cd59452b2a703348143e">hash_transform_t</a> (<span class="keywordtype">int</span> N, <span class="keywordtype">int</span> S, <a class="code" href="../../de/dea/structskylark_1_1base_1_1context__t.html">base::context_t</a>&amp; context) :
-<a name="l00428"></a>00428         <a class="code" href="../../da/dbf/structskylark_1_1sketch_1_1hash__transform__data__t.html">data_type</a>(N, S, context) {
-<a name="l00429"></a>00429 
-<a name="l00430"></a>00430     }
-<a name="l00431"></a>00431 
-<a name="l00435"></a>00435     <span class="keyword">template</span> &lt;<span class="keyword">typename</span> InputMatrixType,
-<a name="l00436"></a>00436               <span class="keyword">typename</span> OutputMatrixType&gt;
-<a name="l00437"></a><a class="code" href="../../de/d4b/structskylark_1_1sketch_1_1hash__transform__t_3_01SpParMat_3_01IndexType_00_01ValueType_00_01SpD8725c73535fb9acfb69b6acf001afdd4.html#a1ff0056102b8293f070f836b3ddfc8d7">00437</a>     <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a170fc8a64798cd59452b2a703348143e">hash_transform_t</a> (<a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html">hash_transform_t</a>&lt;InputMatrixType,
-<a name="l00438"></a>00438                                        OutputMatrixType,
-<a name="l00439"></a>00439                                        IdxDistributionType,
-<a name="l00440"></a>00440                                        ValueDistribution&gt;&amp; other) :
-<a name="l00441"></a>00441         <a class="code" href="../../da/dbf/structskylark_1_1sketch_1_1hash__transform__data__t.html">data_type</a>(other) {}
-<a name="l00442"></a>00442 
-<a name="l00446"></a><a class="code" href="../../de/d4b/structskylark_1_1sketch_1_1hash__transform__t_3_01SpParMat_3_01IndexType_00_01ValueType_00_01SpD8725c73535fb9acfb69b6acf001afdd4.html#a1ad40bfedfb8c46a281553f38ecd10ae">00446</a>     <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a170fc8a64798cd59452b2a703348143e">hash_transform_t</a> (<a class="code" href="../../da/dbf/structskylark_1_1sketch_1_1hash__transform__data__t.html">hash_transform_data_t</a>&lt;IdxDistributionType,
-<a name="l00447"></a>00447                                             ValueDistribution&gt;&amp; other_data) :
-<a name="l00448"></a>00448         <a class="code" href="../../da/dbf/structskylark_1_1sketch_1_1hash__transform__data__t.html">data_type</a>(other_data) {}
-<a name="l00449"></a>00449 
-<a name="l00450"></a>00450     <span class="keyword">template</span> &lt;<span class="keyword">typename</span> Dimension&gt;
-<a name="l00451"></a><a class="code" href="../../de/d4b/structskylark_1_1sketch_1_1hash__transform__t_3_01SpParMat_3_01IndexType_00_01ValueType_00_01SpD8725c73535fb9acfb69b6acf001afdd4.html#a3cf8318f0251413eb87e9381720047bc">00451</a>     <span class="keywordtype">void</span> <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#ac899bcbff87aa859ada4b0e2f7705205">apply</a> (<span class="keyword">const</span> <a class="code" href="../../de/d4b/structskylark_1_1sketch_1_1hash__transform__t_3_01SpParMat_3_01IndexType_00_01ValueType_00_01SpD8725c73535fb9acfb69b6acf001afdd4.html#ad45dff311c9ec6fcf0311284240a99e1">matrix_type</a> &amp;A, <a class="code" href="../../de/d4b/structskylark_1_1sketch_1_1hash__transform__t_3_01SpParMat_3_01IndexType_00_01ValueType_00_01SpD8725c73535fb9acfb69b6acf001afdd4.html#a9b7ec08a088415ea9d4adced1d8eb3d9">output_matrix_type</a> &amp;sketch_of_A,
-<a name="l00452"></a>00452                 Dimension dimension)<span class="keyword"> const </span>{
-<a name="l00453"></a>00453         <span class="keywordflow">try</span> {
-<a name="l00454"></a>00454             apply_impl (A, sketch_of_A, dimension);
-<a name="l00455"></a>00455         } <span class="keywordflow">catch</span>(boost::mpi::exception e) {
-<a name="l00456"></a>00456             <a class="code" href="../../d7/d1e/exception_8hpp.html#abedcc0a2ddc8fa567e3edcaa3fc1d62c" title="throw a skylark exception including file/line information">SKYLARK_THROW_EXCEPTION</a> (
-<a name="l00457"></a>00457                 <a class="code" href="../../dc/d20/structskylark_1_1base_1_1mpi__exception.html" title="exceptions thrown by Boost MPI">base::mpi_exception</a>()
-<a name="l00458"></a>00458                     &lt;&lt; <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a797044780de82fcf917d87e0888763c3" title="predefined structure for error msg">base::error_msg</a>(e.what()) );
-<a name="l00459"></a>00459         } <span class="keywordflow">catch</span> (std::string e) {
-<a name="l00460"></a>00460             <a class="code" href="../../d7/d1e/exception_8hpp.html#abedcc0a2ddc8fa567e3edcaa3fc1d62c" title="throw a skylark exception including file/line information">SKYLARK_THROW_EXCEPTION</a> (
-<a name="l00461"></a>00461                 <a class="code" href="../../de/dbd/structskylark_1_1base_1_1combblas__exception.html" title="exceptions thrown by CombBLAS">base::combblas_exception</a>()
-<a name="l00462"></a>00462                     &lt;&lt; <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a797044780de82fcf917d87e0888763c3" title="predefined structure for error msg">base::error_msg</a>(e) );
-<a name="l00463"></a>00463         } <span class="keywordflow">catch</span> (std::logic_error e) {
-<a name="l00464"></a>00464             <a class="code" href="../../d7/d1e/exception_8hpp.html#abedcc0a2ddc8fa567e3edcaa3fc1d62c" title="throw a skylark exception including file/line information">SKYLARK_THROW_EXCEPTION</a> (
-<a name="l00465"></a>00465                 <a class="code" href="../../de/dbd/structskylark_1_1base_1_1combblas__exception.html" title="exceptions thrown by CombBLAS">base::combblas_exception</a>()
-<a name="l00466"></a>00466                     &lt;&lt; <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a797044780de82fcf917d87e0888763c3" title="predefined structure for error msg">base::error_msg</a>(e.what()) );
-<a name="l00467"></a>00467         } <span class="keywordflow">catch</span> (std::bad_alloc e) {
-<a name="l00468"></a>00468             <a class="code" href="../../d7/d1e/exception_8hpp.html#abedcc0a2ddc8fa567e3edcaa3fc1d62c" title="throw a skylark exception including file/line information">SKYLARK_THROW_EXCEPTION</a> (
-<a name="l00469"></a>00469                 <a class="code" href="../../d4/d8e/structskylark_1_1base_1_1skylark__exception.html" title="define a base exception">base::skylark_exception</a>()
-<a name="l00470"></a>00470                     &lt;&lt; <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a797044780de82fcf917d87e0888763c3" title="predefined structure for error msg">base::error_msg</a>(<span class="stringliteral">&quot;bad_alloc: out of memory&quot;</span>) );
-<a name="l00471"></a>00471         }
-<a name="l00472"></a>00472     }
-<a name="l00473"></a>00473 
+<a name="l00424"></a>00424 
+<a name="l00428"></a>00428     <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a170fc8a64798cd59452b2a703348143e">hash_transform_t</a> (<span class="keywordtype">int</span> N, <span class="keywordtype">int</span> S, <a class="code" href="../../de/dea/structskylark_1_1base_1_1context__t.html">base::context_t</a>&amp; context) :
+<a name="l00429"></a>00429         <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a766d3cd6e434f939f992e24abe40e666">data_type</a>(N, S, context) {
+<a name="l00430"></a>00430 
+<a name="l00431"></a>00431     }
+<a name="l00432"></a>00432 
+<a name="l00436"></a>00436     <span class="keyword">template</span> &lt;<span class="keyword">typename</span> InputMatrixType,
+<a name="l00437"></a>00437               <span class="keyword">typename</span> OutputMatrixType&gt;
+<a name="l00438"></a>00438     <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a170fc8a64798cd59452b2a703348143e">hash_transform_t</a> (<a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a170fc8a64798cd59452b2a703348143e">hash_transform_t</a>&lt;InputMatrixType,
+<a name="l00439"></a>00439                                        OutputMatrixType,
+<a name="l00440"></a>00440                                        IdxDistributionType,
+<a name="l00441"></a>00441                                        ValueDistribution&gt;&amp; other) :
+<a name="l00442"></a>00442         <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a766d3cd6e434f939f992e24abe40e666">data_type</a>(other) {}
+<a name="l00443"></a>00443 
+<a name="l00447"></a>00447     <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a170fc8a64798cd59452b2a703348143e">hash_transform_t</a> (<a class="code" href="../../da/dbf/structskylark_1_1sketch_1_1hash__transform__data__t.html#a3534280942371994312dc69412e1221d">hash_transform_data_t</a>&lt;IdxDistributionType,
+<a name="l00448"></a>00448                                             ValueDistribution&gt;&amp; other_data) :
+<a name="l00449"></a>00449         <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a766d3cd6e434f939f992e24abe40e666">data_type</a>(other_data) {}
+<a name="l00450"></a>00450 
+<a name="l00451"></a>00451     <span class="keyword">template</span> &lt;<span class="keyword">typename</span> Dimension&gt;
+<a name="l00452"></a>00452     <span class="keywordtype">void</span> <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#ac899bcbff87aa859ada4b0e2f7705205">apply</a> (<span class="keyword">const</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a> &amp;A, <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a4d90fe83e2669e836dacfa17e1b29213">output_matrix_type</a> &amp;sketch_of_A,
+<a name="l00453"></a>00453                 Dimension dimension)<span class="keyword"> const </span>{
+<a name="l00454"></a>00454         <span class="keywordflow">try</span> {
+<a name="l00455"></a>00455             apply_impl (A, sketch_of_A, dimension);
+<a name="l00456"></a>00456         } <span class="keywordflow">catch</span>(boost::mpi::exception e) {
+<a name="l00457"></a>00457             <a class="code" href="../../d7/d1e/exception_8hpp.html#abedcc0a2ddc8fa567e3edcaa3fc1d62c" title="throw a skylark exception including file/line information">SKYLARK_THROW_EXCEPTION</a> (
+<a name="l00458"></a>00458                 <a class="code" href="../../dc/d20/structskylark_1_1base_1_1mpi__exception.html" title="exceptions thrown by Boost MPI">base::mpi_exception</a>()
+<a name="l00459"></a>00459                     &lt;&lt; <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a797044780de82fcf917d87e0888763c3" title="predefined structure for error msg">base::error_msg</a>(e.what()) );
+<a name="l00460"></a>00460         } <span class="keywordflow">catch</span> (std::string e) {
+<a name="l00461"></a>00461             <a class="code" href="../../d7/d1e/exception_8hpp.html#abedcc0a2ddc8fa567e3edcaa3fc1d62c" title="throw a skylark exception including file/line information">SKYLARK_THROW_EXCEPTION</a> (
+<a name="l00462"></a>00462                 <a class="code" href="../../de/dbd/structskylark_1_1base_1_1combblas__exception.html" title="exceptions thrown by CombBLAS">base::combblas_exception</a>()
+<a name="l00463"></a>00463                     &lt;&lt; <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a797044780de82fcf917d87e0888763c3" title="predefined structure for error msg">base::error_msg</a>(e) );
+<a name="l00464"></a>00464         } <span class="keywordflow">catch</span> (std::logic_error e) {
+<a name="l00465"></a>00465             <a class="code" href="../../d7/d1e/exception_8hpp.html#abedcc0a2ddc8fa567e3edcaa3fc1d62c" title="throw a skylark exception including file/line information">SKYLARK_THROW_EXCEPTION</a> (
+<a name="l00466"></a>00466                 <a class="code" href="../../de/dbd/structskylark_1_1base_1_1combblas__exception.html" title="exceptions thrown by CombBLAS">base::combblas_exception</a>()
+<a name="l00467"></a>00467                     &lt;&lt; <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a797044780de82fcf917d87e0888763c3" title="predefined structure for error msg">base::error_msg</a>(e.what()) );
+<a name="l00468"></a>00468         } <span class="keywordflow">catch</span> (std::bad_alloc e) {
+<a name="l00469"></a>00469             <a class="code" href="../../d7/d1e/exception_8hpp.html#abedcc0a2ddc8fa567e3edcaa3fc1d62c" title="throw a skylark exception including file/line information">SKYLARK_THROW_EXCEPTION</a> (
+<a name="l00470"></a>00470                 <a class="code" href="../../d4/d8e/structskylark_1_1base_1_1skylark__exception.html" title="define a base exception">base::skylark_exception</a>()
+<a name="l00471"></a>00471                     &lt;&lt; <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a797044780de82fcf917d87e0888763c3" title="predefined structure for error msg">base::error_msg</a>(<span class="stringliteral">&quot;bad_alloc: out of memory&quot;</span>) );
+<a name="l00472"></a>00472         }
+<a name="l00473"></a>00473     }
 <a name="l00474"></a>00474 
-<a name="l00475"></a>00475 <span class="keyword">private</span>:
-<a name="l00479"></a>00479     <span class="keyword">template</span> &lt;<span class="keyword">typename</span> Dimension&gt;
-<a name="l00480"></a>00480     <span class="keywordtype">void</span> apply_impl (<span class="keyword">const</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a> &amp;A_,
-<a name="l00481"></a>00481         <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a4d90fe83e2669e836dacfa17e1b29213">output_matrix_type</a> &amp;sketch_of_A,
-<a name="l00482"></a>00482         Dimension dist)<span class="keyword"> const </span>{
-<a name="l00483"></a>00483 
-<a name="l00484"></a>00484         <span class="comment">// We are essentially doing a &#39;const&#39; access to A, but the necessary,</span>
-<a name="l00485"></a>00485         <span class="comment">// &#39;const&#39; option is missing from the interface</span>
-<a name="l00486"></a>00486         <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a> &amp;A = <span class="keyword">const_cast&lt;</span><a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp;<span class="keyword">&gt;</span>(A_);
-<a name="l00487"></a>00487 
-<a name="l00488"></a>00488         <span class="keyword">const</span> <span class="keywordtype">size_t</span> rank = A.getcommgrid()-&gt;GetRank();
-<a name="l00489"></a>00489 
-<a name="l00490"></a>00490         <span class="comment">// extract columns of matrix</span>
-<a name="l00491"></a>00491         <a class="code" href="../../dc/d74/capi_8cpp.html#ac21a17a4a9d7c56130fbacaeaf5b44c8">col_t</a> &amp;data = A.seq();
-<a name="l00492"></a>00492 
-<a name="l00493"></a>00493         <span class="keyword">const</span> <span class="keywordtype">size_t</span> my_row_offset = utility::cb_my_row_offset(A);
-<a name="l00494"></a>00494         <span class="keyword">const</span> <span class="keywordtype">size_t</span> my_col_offset = utility::cb_my_col_offset(A);
-<a name="l00495"></a>00495 
-<a name="l00496"></a>00496         <span class="keywordtype">int</span> n_res_cols = A.getncol();
-<a name="l00497"></a>00497         <span class="keywordtype">int</span> n_res_rows = A.getnrow();
-<a name="l00498"></a>00498         <a class="code" href="../../da/dbf/structskylark_1_1sketch_1_1hash__transform__data__t.html#a9099e9c54fa7c096926dbfa5bd2c3416">data_type::get_res_size</a>(n_res_rows, n_res_cols, dist);
-<a name="l00499"></a>00499 
-<a name="l00500"></a>00500         <span class="comment">// Apply sketch for all local values. Subsequently, all values are</span>
-<a name="l00501"></a>00501         <span class="comment">// gathered on all processor and the &quot;local&quot; matrix is populated.</span>
-<a name="l00502"></a>00502         <span class="keyword">typedef</span> std::map&lt;index_type, value_type&gt; col_values_t;
-<a name="l00503"></a>00503         col_values_t col_values;
-<a name="l00504"></a>00504         <span class="keywordflow">for</span>(<span class="keyword">typename</span> col_t::SpColIter col = data.begcol();
-<a name="l00505"></a>00505             col != data.endcol(); col++) {
-<a name="l00506"></a>00506             <span class="keywordflow">for</span>(<span class="keyword">typename</span> col_t::SpColIter::NzIter nz = data.begnz(col);
-<a name="l00507"></a>00507                 nz != data.endnz(col); nz++) {
-<a name="l00508"></a>00508 
-<a name="l00509"></a>00509                 index_type rowid = nz.rowid()  + my_row_offset;
-<a name="l00510"></a>00510                 index_type colid = col.colid() + my_col_offset;
-<a name="l00511"></a>00511 
-<a name="l00512"></a>00512                 <span class="keyword">const</span> value_type value =
-<a name="l00513"></a>00513                     nz.value() * <a class="code" href="../../da/dbf/structskylark_1_1sketch_1_1hash__transform__data__t.html#a67da8cff5cfd14ff5b993f5c4b33e9dc">data_type::getValue</a>(rowid, colid, dist);
-<a name="l00514"></a>00514                 <a class="code" href="../../da/dbf/structskylark_1_1sketch_1_1hash__transform__data__t.html#a2bc8b5d90f2ee4df005edc19cc2ee9fc">data_type::finalPos</a>(rowid, colid, dist);
-<a name="l00515"></a>00515                 col_values[colid * n_res_rows + rowid] += value;
-<a name="l00516"></a>00516             }
-<a name="l00517"></a>00517         }
-<a name="l00518"></a>00518 
-<a name="l00519"></a>00519         std::vector&lt; std::map&lt;index_type, value_type &gt; &gt; result;
-<a name="l00520"></a>00520         boost::mpi::all_gather(
-<a name="l00521"></a>00521                 <a class="code" href="../../db/d39/namespaceskylark_1_1utility.html#a603e0fe4127da3887ceed891a58b3d38">utility::get_communicator</a>(A), col_values, result);
-<a name="l00522"></a>00522 
-<a name="l00523"></a>00523         <span class="keyword">typedef</span> <span class="keyword">typename</span> std::map&lt;index_type, value_type&gt;::iterator itr_t;
-<a name="l00524"></a>00524         <span class="keywordflow">for</span>(<span class="keywordtype">size_t</span> i = 0; i &lt; result.size(); ++i) {
-<a name="l00525"></a>00525             itr_t proc_itr = result[i].begin();
-<a name="l00526"></a>00526             <span class="keywordflow">for</span>(; proc_itr != result[i].end(); proc_itr++) {
-<a name="l00527"></a>00527                 <span class="keywordtype">int</span> row = proc_itr-&gt;first % n_res_rows;
-<a name="l00528"></a>00528                 <span class="keywordtype">int</span> col = proc_itr-&gt;first / n_res_rows;
-<a name="l00529"></a>00529                 sketch_of_A.Update(row, col, proc_itr-&gt;second);
-<a name="l00530"></a>00530             }
-<a name="l00531"></a>00531         }
-<a name="l00532"></a>00532     }
-<a name="l00533"></a>00533 };
-<a name="l00534"></a>00534 
-<a name="l00535"></a>00535 } } 
-<a name="l00537"></a>00537 <span class="preprocessor">#endif // SKYLARK_HASH_TRANSFORM_MIXED_HPP</span>
+<a name="l00475"></a>00475 
+<a name="l00476"></a>00476 <span class="keyword">private</span>:
+<a name="l00480"></a>00480     <span class="keyword">template</span> &lt;<span class="keyword">typename</span> Dimension&gt;
+<a name="l00481"></a>00481     <span class="keywordtype">void</span> apply_impl (<span class="keyword">const</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a> &amp;A_,
+<a name="l00482"></a>00482         <a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#a4d90fe83e2669e836dacfa17e1b29213">output_matrix_type</a> &amp;sketch_of_A,
+<a name="l00483"></a>00483         Dimension dist)<span class="keyword"> const </span>{
+<a name="l00484"></a>00484 
+<a name="l00485"></a>00485         <span class="comment">// We are essentially doing a &#39;const&#39; access to A, but the necessary,</span>
+<a name="l00486"></a>00486         <span class="comment">// &#39;const&#39; option is missing from the interface</span>
+<a name="l00487"></a>00487         <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a> &amp;A = <span class="keyword">const_cast&lt;</span><a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp;<span class="keyword">&gt;</span>(A_);
+<a name="l00488"></a>00488 
+<a name="l00489"></a>00489         <span class="keyword">const</span> <span class="keywordtype">size_t</span> rank = A.getcommgrid()-&gt;GetRank();
+<a name="l00490"></a>00490 
+<a name="l00491"></a>00491         <span class="comment">// extract columns of matrix</span>
+<a name="l00492"></a>00492         <a class="code" href="../../dc/d74/capi_8cpp.html#ac21a17a4a9d7c56130fbacaeaf5b44c8">col_t</a> &amp;data = A.seq();
+<a name="l00493"></a>00493 
+<a name="l00494"></a>00494         <span class="keyword">const</span> <span class="keywordtype">size_t</span> my_row_offset = utility::cb_my_row_offset(A);
+<a name="l00495"></a>00495         <span class="keyword">const</span> <span class="keywordtype">size_t</span> my_col_offset = utility::cb_my_col_offset(A);
+<a name="l00496"></a>00496 
+<a name="l00497"></a>00497         <span class="keywordtype">int</span> n_res_cols = A.getncol();
+<a name="l00498"></a>00498         <span class="keywordtype">int</span> n_res_rows = A.getnrow();
+<a name="l00499"></a>00499         <a class="code" href="../../da/dbf/structskylark_1_1sketch_1_1hash__transform__data__t.html#a9099e9c54fa7c096926dbfa5bd2c3416">data_type::get_res_size</a>(n_res_rows, n_res_cols, dist);
+<a name="l00500"></a>00500 
+<a name="l00501"></a>00501         <span class="comment">// Apply sketch for all local values. Subsequently, all values are</span>
+<a name="l00502"></a>00502         <span class="comment">// gathered on all processor and the &quot;local&quot; matrix is populated.</span>
+<a name="l00503"></a>00503         <span class="keyword">typedef</span> std::map&lt;index_type, value_type&gt; col_values_t;
+<a name="l00504"></a>00504         col_values_t col_values;
+<a name="l00505"></a>00505         <span class="keywordflow">for</span>(<span class="keyword">typename</span> col_t::SpColIter col = data.begcol();
+<a name="l00506"></a>00506             col != data.endcol(); col++) {
+<a name="l00507"></a>00507             <span class="keywordflow">for</span>(<span class="keyword">typename</span> col_t::SpColIter::NzIter nz = data.begnz(col);
+<a name="l00508"></a>00508                 nz != data.endnz(col); nz++) {
+<a name="l00509"></a>00509 
+<a name="l00510"></a>00510                 index_type rowid = nz.rowid()  + my_row_offset;
+<a name="l00511"></a>00511                 index_type colid = col.colid() + my_col_offset;
+<a name="l00512"></a>00512 
+<a name="l00513"></a>00513                 <span class="keyword">const</span> value_type value =
+<a name="l00514"></a>00514                     nz.value() * <a class="code" href="../../da/dbf/structskylark_1_1sketch_1_1hash__transform__data__t.html#a67da8cff5cfd14ff5b993f5c4b33e9dc">data_type::getValue</a>(rowid, colid, dist);
+<a name="l00515"></a>00515                 <a class="code" href="../../da/dbf/structskylark_1_1sketch_1_1hash__transform__data__t.html#a2bc8b5d90f2ee4df005edc19cc2ee9fc">data_type::finalPos</a>(rowid, colid, dist);
+<a name="l00516"></a>00516                 col_values[colid * n_res_rows + rowid] += value;
+<a name="l00517"></a>00517             }
+<a name="l00518"></a>00518         }
+<a name="l00519"></a>00519 
+<a name="l00520"></a>00520         std::vector&lt; std::map&lt;index_type, value_type &gt; &gt; result;
+<a name="l00521"></a>00521         boost::mpi::all_gather(
+<a name="l00522"></a>00522                 <a class="code" href="../../db/d39/namespaceskylark_1_1utility.html#a603e0fe4127da3887ceed891a58b3d38">utility::get_communicator</a>(A), col_values, result);
+<a name="l00523"></a>00523 
+<a name="l00524"></a>00524         <span class="keyword">typedef</span> <span class="keyword">typename</span> std::map&lt;index_type, value_type&gt;::iterator itr_t;
+<a name="l00525"></a>00525         <span class="keywordflow">for</span>(<span class="keywordtype">size_t</span> i = 0; i &lt; result.size(); ++i) {
+<a name="l00526"></a>00526             itr_t proc_itr = result[i].begin();
+<a name="l00527"></a>00527             <span class="keywordflow">for</span>(; proc_itr != result[i].end(); proc_itr++) {
+<a name="l00528"></a>00528                 <span class="keywordtype">int</span> row = proc_itr-&gt;first % n_res_rows;
+<a name="l00529"></a>00529                 <span class="keywordtype">int</span> col = proc_itr-&gt;first / n_res_rows;
+<a name="l00530"></a>00530                 sketch_of_A.Update(row, col, proc_itr-&gt;second);
+<a name="l00531"></a>00531             }
+<a name="l00532"></a>00532         }
+<a name="l00533"></a>00533     }
+<a name="l00534"></a>00534 };
+<a name="l00535"></a>00535 <span class="preprocessor">#endif</span>
+<a name="l00536"></a>00536 <span class="preprocessor"></span>
+<a name="l00537"></a>00537 } } 
+<a name="l00539"></a>00539 <span class="preprocessor">#endif // SKYLARK_HASH_TRANSFORM_MIXED_HPP</span>
 </pre></div></div><!-- contents -->
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jun 5 2014 02:49:11 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jun 5 2014 18:16:08 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

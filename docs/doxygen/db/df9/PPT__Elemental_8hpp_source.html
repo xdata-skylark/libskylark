@@ -179,7 +179,7 @@
 <a name="l00127"></a>00127         internal::fftw&lt;value_type&gt;::destroyfun(_fftw_bplan);
 <a name="l00128"></a>00128     }
 <a name="l00129"></a>00129 
-<a name="l00134"></a>00134     <span class="keywordtype">void</span> <a class="code" href="../../da/d10/structskylark_1_1sketch_1_1PPT__t.html#aa3bf1525a0986ac4be0d4d312af94687">apply</a> (<span class="keyword">const</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
+<a name="l00134"></a>00134     <span class="keywordtype">void</span> <a class="code" href="../../da/d10/structskylark_1_1sketch_1_1PPT__t.html#aa3bf1525a0986ac4be0d4d312af94687">apply</a> (<span class="keyword">const</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
 <a name="l00135"></a>00135                 <a class="code" href="../../da/d10/structskylark_1_1sketch_1_1PPT__t.html#a7921726f304bc8bf2caa6d68d7589e0f">output_matrix_type</a>&amp; sketch_of_A,
 <a name="l00136"></a>00136                 columnwise_tag dimension)<span class="keyword"> const </span>{
 <a name="l00137"></a>00137 
@@ -191,9 +191,9 @@
 <a name="l00143"></a>00143 <span class="preprocessor"></span><span class="preprocessor">#       pragma omp parallel</span>
 <a name="l00144"></a>00144 <span class="preprocessor"></span><span class="preprocessor">#       endif</span>
 <a name="l00145"></a>00145 <span class="preprocessor"></span>        {
-<a name="l00146"></a>00146         <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a> W(S, 1);
-<a name="l00147"></a>00147         <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a> SAv;
-<a name="l00148"></a>00148         <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a> Av;
+<a name="l00146"></a>00146         <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a> W(S, 1);
+<a name="l00147"></a>00147         <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a> SAv;
+<a name="l00148"></a>00148         <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a> Av;
 <a name="l00149"></a>00149 
 <a name="l00150"></a>00150         std::complex&lt;value_type&gt; *FW = <span class="keyword">new</span> std::complex&lt;value_type&gt;[S];
 <a name="l00151"></a>00151         std::complex&lt;value_type&gt; *P = <span class="keyword">new</span> std::complex&lt;value_type&gt;[S];
@@ -237,7 +237,7 @@
 <a name="l00189"></a>00189         }
 <a name="l00190"></a>00190     }
 <a name="l00191"></a>00191 
-<a name="l00196"></a>00196     <span class="keywordtype">void</span> <a class="code" href="../../da/d10/structskylark_1_1sketch_1_1PPT__t.html#aa3bf1525a0986ac4be0d4d312af94687">apply</a> (<span class="keyword">const</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
+<a name="l00196"></a>00196     <span class="keywordtype">void</span> <a class="code" href="../../da/d10/structskylark_1_1sketch_1_1PPT__t.html#aa3bf1525a0986ac4be0d4d312af94687">apply</a> (<span class="keyword">const</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
 <a name="l00197"></a>00197                 <a class="code" href="../../da/d10/structskylark_1_1sketch_1_1PPT__t.html#a7921726f304bc8bf2caa6d68d7589e0f">output_matrix_type</a>&amp; sketch_of_A,
 <a name="l00198"></a>00198                 rowwise_tag dimension)<span class="keyword"> const </span>{
 <a name="l00199"></a>00199         <span class="comment">// TODO verify sizes etc.</span>
@@ -249,10 +249,10 @@
 <a name="l00205"></a>00205 <span class="preprocessor"></span><span class="preprocessor">#       endif</span>
 <a name="l00206"></a>00206 <span class="preprocessor"></span>        {
 <a name="l00207"></a>00207 
-<a name="l00208"></a>00208         <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a> W(S, 1);
-<a name="l00209"></a>00209         <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a> ASv, SATv(S, 1);
+<a name="l00208"></a>00208         <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a> W(S, 1);
+<a name="l00209"></a>00209         <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a> ASv, SATv(S, 1);
 <a name="l00210"></a>00210 
-<a name="l00211"></a>00211         <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a> Av, ATv;
+<a name="l00211"></a>00211         <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a> Av, ATv;
 <a name="l00212"></a>00212 
 <a name="l00213"></a>00213         std::complex&lt;value_type&gt; *FW = <span class="keyword">new</span> std::complex&lt;value_type&gt;[S];
 <a name="l00214"></a>00214         std::complex&lt;value_type&gt; *P = <span class="keyword">new</span> std::complex&lt;value_type&gt;[S];
@@ -384,7 +384,7 @@
 <a name="l00344"></a>00344         internal::fftw&lt;value_type&gt;::destroyfun(_fftw_fplan);
 <a name="l00345"></a>00345         internal::fftw&lt;value_type&gt;::destroyfun(_fftw_bplan);
 <a name="l00346"></a>00346     }
-<a name="l00351"></a>00351     <span class="keywordtype">void</span> <a class="code" href="../../da/d10/structskylark_1_1sketch_1_1PPT__t.html#aa3bf1525a0986ac4be0d4d312af94687">apply</a> (<span class="keyword">const</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
+<a name="l00351"></a>00351     <span class="keywordtype">void</span> <a class="code" href="../../da/d10/structskylark_1_1sketch_1_1PPT__t.html#aa3bf1525a0986ac4be0d4d312af94687">apply</a> (<span class="keyword">const</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
 <a name="l00352"></a>00352                 <a class="code" href="../../da/d10/structskylark_1_1sketch_1_1PPT__t.html#a7921726f304bc8bf2caa6d68d7589e0f">output_matrix_type</a>&amp; sketch_of_A,
 <a name="l00353"></a>00353                 columnwise_tag dimension)<span class="keyword"> const </span>{
 <a name="l00354"></a>00354 
@@ -411,7 +411,7 @@
 <a name="l00375"></a>00375 <span class="preprocessor"></span><span class="preprocessor">#       pragma omp for</span>
 <a name="l00376"></a>00376 <span class="preprocessor"></span><span class="preprocessor">#       endif</span>
 <a name="l00377"></a>00377 <span class="preprocessor"></span>        <span class="keywordflow">for</span>(<span class="keywordtype">int</span> i = 0; i &lt; <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#afbb35d81fb98da3e9c6b519101ba9d2d">base::Width</a>(A); i++) {
-<a name="l00378"></a>00378             <span class="keyword">const</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a> Av = <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a457ad85ebbf08f632ab03562e9253977">base::ColumnView</a>(A, i, 1);
+<a name="l00378"></a>00378             <span class="keyword">const</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a> Av = <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a457ad85ebbf08f632ab03562e9253977">base::ColumnView</a>(A, i, 1);
 <a name="l00379"></a>00379 
 <a name="l00380"></a>00380             <span class="keywordflow">for</span>(<span class="keywordtype">int</span> j = 0; j &lt; S; j++)
 <a name="l00381"></a>00381                 P[j] = 1.0;
@@ -446,11 +446,11 @@
 <a name="l00410"></a>00410         }
 <a name="l00411"></a>00411     }
 <a name="l00412"></a>00412 
-<a name="l00417"></a>00417     <span class="keywordtype">void</span> <a class="code" href="../../da/d10/structskylark_1_1sketch_1_1PPT__t.html#aa3bf1525a0986ac4be0d4d312af94687">apply</a> (<span class="keyword">const</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
+<a name="l00417"></a>00417     <span class="keywordtype">void</span> <a class="code" href="../../da/d10/structskylark_1_1sketch_1_1PPT__t.html#aa3bf1525a0986ac4be0d4d312af94687">apply</a> (<span class="keyword">const</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
 <a name="l00418"></a>00418                 <a class="code" href="../../da/d10/structskylark_1_1sketch_1_1PPT__t.html#a7921726f304bc8bf2caa6d68d7589e0f">output_matrix_type</a>&amp; sketch_of_A,
 <a name="l00419"></a>00419                 rowwise_tag dimension)<span class="keyword"> const </span>{
 <a name="l00420"></a>00420         <span class="comment">// TODO perhaps not the best way to do this...</span>
-<a name="l00421"></a>00421         <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a> AT;
+<a name="l00421"></a>00421         <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a> AT;
 <a name="l00422"></a>00422         <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a196ed6c0750756f0cceb23da13df7fea">base::Transpose</a>(A, AT);
 <a name="l00423"></a>00423         <a class="code" href="../../da/d10/structskylark_1_1sketch_1_1PPT__t.html#a7921726f304bc8bf2caa6d68d7589e0f">output_matrix_type</a> SAT(sketch_of_A.Width(), sketch_of_A.Height());
 <a name="l00424"></a>00424         <a class="code" href="../../da/d10/structskylark_1_1sketch_1_1PPT__t.html#aa3bf1525a0986ac4be0d4d312af94687">apply</a>(AT, SAT, columnwise_tag());
@@ -500,7 +500,7 @@
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jun 5 2014 02:49:12 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jun 5 2014 18:16:08 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

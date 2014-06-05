@@ -86,7 +86,7 @@
 <a name="l00030"></a><a class="code" href="../../d6/df4/structskylark_1_1sketch_1_1dense__transform__t_3_01elem_1_1DistMatrix_3_01ValueType_00_01elem_1_318f1030876f7fd0179ab92d08039759.html#aa060d47953c3ea9158a61d7054d18e65">00030</a>     <span class="keyword">typedef</span> ValueDistribution&lt;value_type&gt; <a class="code" href="../../d6/df4/structskylark_1_1sketch_1_1dense__transform__t_3_01elem_1_1DistMatrix_3_01ValueType_00_01elem_1_318f1030876f7fd0179ab92d08039759.html#aa060d47953c3ea9158a61d7054d18e65">value_distribution_type</a>;
 <a name="l00031"></a><a class="code" href="../../d6/df4/structskylark_1_1sketch_1_1dense__transform__t_3_01elem_1_1DistMatrix_3_01ValueType_00_01elem_1_318f1030876f7fd0179ab92d08039759.html#a6958ecfe9ffa90560a3938a0ddbb7709">00031</a>     <span class="keyword">typedef</span> <a class="code" href="../../d1/dd1/structskylark_1_1sketch_1_1dense__transform__data__t.html">dense_transform_data_t&lt;ValueDistribution&gt;</a> <a class="code" href="../../d6/df4/structskylark_1_1sketch_1_1dense__transform__t_3_01elem_1_1DistMatrix_3_01ValueType_00_01elem_1_318f1030876f7fd0179ab92d08039759.html#a6958ecfe9ffa90560a3938a0ddbb7709">data_type</a>;
 <a name="l00032"></a>00032 
-<a name="l00036"></a><a class="code" href="../../d6/df4/structskylark_1_1sketch_1_1dense__transform__t_3_01elem_1_1DistMatrix_3_01ValueType_00_01elem_1_318f1030876f7fd0179ab92d08039759.html#ab9b543127de8a36b029edddcd56b407b">00036</a>     <a class="code" href="../../d4/de7/classskylark_1_1sketch_1_1dense__transform__t.html">dense_transform_t</a> (<span class="keywordtype">int</span> N, <span class="keywordtype">int</span> S, <span class="keywordtype">double</span> scale, <a class="code" href="../../de/dea/structskylark_1_1base_1_1context__t.html">base::context_t</a>&amp; context)
+<a name="l00036"></a><a class="code" href="../../d6/df4/structskylark_1_1sketch_1_1dense__transform__t_3_01elem_1_1DistMatrix_3_01ValueType_00_01elem_1_318f1030876f7fd0179ab92d08039759.html#ab9b543127de8a36b029edddcd56b407b">00036</a>     <a class="code" href="../../d4/de7/classskylark_1_1sketch_1_1dense__transform__t.html">dense_transform_t</a> (<span class="keywordtype">int</span> N, <span class="keywordtype">int</span> S, <span class="keywordtype">double</span> <a class="code" href="../../d1/dd1/structskylark_1_1sketch_1_1dense__transform__data__t.html#a791dca8cca513f2309226a7df1df9e23">scale</a>, <a class="code" href="../../de/dea/structskylark_1_1base_1_1context__t.html">base::context_t</a>&amp; context)
 <a name="l00037"></a>00037         : <a class="code" href="../../d1/dd1/structskylark_1_1sketch_1_1dense__transform__data__t.html">data_type</a> (N, S, scale, context) {
 <a name="l00038"></a>00038 
 <a name="l00039"></a>00039     }
@@ -110,7 +110,7 @@
 <a name="l00066"></a>00066         <span class="keywordflow">case</span> elem::VR:
 <a name="l00067"></a>00067         <span class="keywordflow">case</span> elem::VC:
 <a name="l00068"></a>00068             <span class="keywordflow">try</span> {
-<a name="l00069"></a>00069                 sketch_gemm(A, sketch_of_A, dimension);
+<a name="l00069"></a>00069                 apply_impl_vdist (A, sketch_of_A, dimension);
 <a name="l00070"></a>00070             } <span class="keywordflow">catch</span> (std::logic_error e) {
 <a name="l00071"></a>00071                 <a class="code" href="../../d7/d1e/exception_8hpp.html#abedcc0a2ddc8fa567e3edcaa3fc1d62c" title="throw a skylark exception including file/line information">SKYLARK_THROW_EXCEPTION</a> (
 <a name="l00072"></a>00072                     <a class="code" href="../../da/ddf/structskylark_1_1base_1_1elemental__exception.html" title="exceptions thrown by Elemental">base::elemental_exception</a>()
@@ -129,15 +129,15 @@
 <a name="l00085"></a>00085         }
 <a name="l00086"></a>00086     }
 <a name="l00087"></a>00087 
-<a name="l00088"></a><a class="code" href="../../d6/df4/structskylark_1_1sketch_1_1dense__transform__t_3_01elem_1_1DistMatrix_3_01ValueType_00_01elem_1_318f1030876f7fd0179ab92d08039759.html#a44b6077df0a5eb46b1dcd9911c46023d">00088</a>     <span class="keywordtype">int</span> <a class="code" href="../../d6/df4/structskylark_1_1sketch_1_1dense__transform__t_3_01elem_1_1DistMatrix_3_01ValueType_00_01elem_1_318f1030876f7fd0179ab92d08039759.html#a44b6077df0a5eb46b1dcd9911c46023d">get_N</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> this-&gt;_N; } 
-<a name="l00089"></a><a class="code" href="../../d6/df4/structskylark_1_1sketch_1_1dense__transform__t_3_01elem_1_1DistMatrix_3_01ValueType_00_01elem_1_318f1030876f7fd0179ab92d08039759.html#a3a2118327e7a4f180e27645727e0869b">00089</a>     <span class="keywordtype">int</span> <a class="code" href="../../d6/df4/structskylark_1_1sketch_1_1dense__transform__t_3_01elem_1_1DistMatrix_3_01ValueType_00_01elem_1_318f1030876f7fd0179ab92d08039759.html#a3a2118327e7a4f180e27645727e0869b">get_S</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> this-&gt;_S; } 
+<a name="l00088"></a><a class="code" href="../../d6/df4/structskylark_1_1sketch_1_1dense__transform__t_3_01elem_1_1DistMatrix_3_01ValueType_00_01elem_1_318f1030876f7fd0179ab92d08039759.html#a44b6077df0a5eb46b1dcd9911c46023d">00088</a>     <span class="keywordtype">int</span> <a class="code" href="../../d6/df4/structskylark_1_1sketch_1_1dense__transform__t_3_01elem_1_1DistMatrix_3_01ValueType_00_01elem_1_318f1030876f7fd0179ab92d08039759.html#a44b6077df0a5eb46b1dcd9911c46023d">get_N</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> this-&gt;<a class="code" href="../../d3/dc2/structskylark_1_1sketch_1_1sketch__transform__data__t.html#a14e65da6ca93c86695b5ed4295db4611">_N</a>; } 
+<a name="l00089"></a><a class="code" href="../../d6/df4/structskylark_1_1sketch_1_1dense__transform__t_3_01elem_1_1DistMatrix_3_01ValueType_00_01elem_1_318f1030876f7fd0179ab92d08039759.html#a3a2118327e7a4f180e27645727e0869b">00089</a>     <span class="keywordtype">int</span> <a class="code" href="../../d6/df4/structskylark_1_1sketch_1_1dense__transform__t_3_01elem_1_1DistMatrix_3_01ValueType_00_01elem_1_318f1030876f7fd0179ab92d08039759.html#a3a2118327e7a4f180e27645727e0869b">get_S</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> this-&gt;<a class="code" href="../../d3/dc2/structskylark_1_1sketch_1_1sketch__transform__data__t.html#a5f6518e8b02aa7ae60aa7985130c0194">_S</a>; } 
 <a name="l00091"></a><a class="code" href="../../d6/df4/structskylark_1_1sketch_1_1dense__transform__t_3_01elem_1_1DistMatrix_3_01ValueType_00_01elem_1_318f1030876f7fd0179ab92d08039759.html#ab834cef450e7e87e8ebe46755e4afff0">00091</a>     <span class="keyword">const</span> <a class="code" href="../../d3/dc2/structskylark_1_1sketch_1_1sketch__transform__data__t.html">sketch_transform_data_t</a>* <a class="code" href="../../d6/df4/structskylark_1_1sketch_1_1dense__transform__t_3_01elem_1_1DistMatrix_3_01ValueType_00_01elem_1_318f1030876f7fd0179ab92d08039759.html#ab834cef450e7e87e8ebe46755e4afff0">get_data</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> <span class="keyword">this</span>; }
 <a name="l00092"></a>00092 
 <a name="l00093"></a>00093 <span class="keyword">private</span>:
 <a name="l00094"></a>00094 
 <a name="l00095"></a>00095     <span class="comment">// Communication demanding scenario: Memory-oblivious mode</span>
 <a name="l00096"></a>00096     <span class="comment">// TODO: Block-by-block mode</span>
-<a name="l00097"></a>00097     <span class="keywordtype">void</span> inner_panel_gemm(<span class="keyword">const</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
+<a name="l00097"></a>00097     <span class="keywordtype">void</span> inner_panel_gemm(<span class="keyword">const</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
 <a name="l00098"></a>00098                           output_matrix_type&amp; sketch_of_A,
 <a name="l00099"></a>00099                           <a class="code" href="../../d4/d9b/structskylark_1_1sketch_1_1rowwise__tag.html" title="Apply the sketch/transform to the rows. In matrix form this is A-&gt;AS^T.">skylark::sketch::rowwise_tag</a>)<span class="keyword"> const </span>{
 <a name="l00100"></a>00100 
@@ -147,7 +147,7 @@
 <a name="l00104"></a>00104         elem::DistMatrix&lt;value_type, elem::STAR, elem::STAR&gt;
 <a name="l00105"></a>00105             sketch_of_A_STAR_STAR(grid);
 <a name="l00106"></a>00106 
-<a name="l00107"></a>00107         <a class="code" href="../../d1/dd1/structskylark_1_1sketch_1_1dense__transform__data__t.html#aed2f673b17ae1ecd2eff4926272194f6">data_type::realize_matrix_view</a>(R);
+<a name="l00107"></a>00107         <a class="code" href="../../d1/dd1/structskylark_1_1sketch_1_1dense__transform__data__t.html#a6ef915480e08e8a45a2c20fde2ae640c">data_type::realize_matrix_view</a>(R);
 <a name="l00108"></a>00108 
 <a name="l00109"></a>00109         <span class="comment">// TODO: is alignment necessary?</span>
 <a name="l00110"></a>00110 
@@ -158,7 +158,7 @@
 <a name="l00115"></a>00115         <span class="comment">// Local Gemm</span>
 <a name="l00116"></a>00116         <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a8f7ed6aa7741ff54e546fa88fc706a53">base::Gemm</a>(elem::NORMAL,
 <a name="l00117"></a>00117                    elem::TRANSPOSE,
-<a name="l00118"></a>00118                    value_type(1),
+<a name="l00118"></a>00118                    <a class="code" href="../../d1/dd1/structskylark_1_1sketch_1_1dense__transform__data__t.html#af70cce35184c8ace000b8136883715d0">value_type</a>(1),
 <a name="l00119"></a>00119                    A.LockedMatrix(),
 <a name="l00120"></a>00120                    R.LockedMatrix(),
 <a name="l00121"></a>00121                    sketch_of_A_STAR_STAR.Matrix());
@@ -168,7 +168,7 @@
 <a name="l00125"></a>00125     }
 <a name="l00126"></a>00126 
 <a name="l00127"></a>00127 
-<a name="l00131"></a>00131     <span class="keywordtype">void</span> inner_panel_gemm(<span class="keyword">const</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
+<a name="l00131"></a>00131     <span class="keywordtype">void</span> inner_panel_gemm(<span class="keyword">const</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
 <a name="l00132"></a>00132                           output_matrix_type&amp; sketch_of_A,
 <a name="l00133"></a>00133                           <a class="code" href="../../df/d8f/structskylark_1_1sketch_1_1columnwise__tag.html" title="Apply the sketch/transform to the columns. In matrix form this is A-&gt;SA.">skylark::sketch::columnwise_tag</a>)<span class="keyword"> const </span>{
 <a name="l00134"></a>00134 
@@ -208,7 +208,7 @@
 <a name="l00168"></a>00168         <span class="keywordflow">while</span> (sketch_of_A_Bottom.Height() &gt; 0) {
 <a name="l00169"></a>00169 
 <a name="l00170"></a>00170             <span class="keywordtype">int</span> b = <a class="code" href="../../df/d93/utils_8hpp.html#a3f9599c9c447625449f078e770cf9f37">std::min</a>(sketch_of_A_Bottom.Height(), <a class="code" href="../../de/dfe/namespaceskylark_1_1sketch.html#abc5afa5c1004c4145ab3c2afca80ee38">blocksize</a>);
-<a name="l00171"></a>00171             <a class="code" href="../../d1/dd1/structskylark_1_1sketch_1_1dense__transform__data__t.html#aed2f673b17ae1ecd2eff4926272194f6">data_type::realize_matrix_view</a>(R1, base, 0,
+<a name="l00171"></a>00171             <a class="code" href="../../d1/dd1/structskylark_1_1sketch_1_1dense__transform__data__t.html#a6ef915480e08e8a45a2c20fde2ae640c">data_type::realize_matrix_view</a>(R1, base, 0,
 <a name="l00172"></a>00172                                                b,    A.Height());
 <a name="l00173"></a>00173 
 <a name="l00174"></a>00174             elem::RepartitionDown
@@ -239,7 +239,7 @@
 <a name="l00199"></a>00199                 <span class="comment">// Local Gemm</span>
 <a name="l00200"></a>00200                 <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a8f7ed6aa7741ff54e546fa88fc706a53">base::Gemm</a>(elem::NORMAL,
 <a name="l00201"></a>00201                            elem::NORMAL,
-<a name="l00202"></a>00202                            value_type(1),
+<a name="l00202"></a>00202                            <a class="code" href="../../d1/dd1/structskylark_1_1sketch_1_1dense__transform__data__t.html#af70cce35184c8ace000b8136883715d0">value_type</a>(1),
 <a name="l00203"></a>00203                            R1.LockedMatrix(),
 <a name="l00204"></a>00204                            A1.LockedMatrix(),
 <a name="l00205"></a>00205                            sketch_of_A11.Matrix());
@@ -266,7 +266,7 @@
 <a name="l00226"></a>00226 
 <a name="l00231"></a>00231     <span class="comment">// Communication demanding scenario: Memory-oblivious mode</span>
 <a name="l00232"></a>00232     <span class="comment">// TODO: Block-by-block mode</span>
-<a name="l00233"></a>00233     <span class="keywordtype">void</span> outer_panel_gemm(<span class="keyword">const</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
+<a name="l00233"></a>00233     <span class="keywordtype">void</span> outer_panel_gemm(<span class="keyword">const</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
 <a name="l00234"></a>00234                           output_matrix_type&amp; sketch_of_A,
 <a name="l00235"></a>00235                           <a class="code" href="../../d4/d9b/structskylark_1_1sketch_1_1rowwise__tag.html" title="Apply the sketch/transform to the rows. In matrix form this is A-&gt;AS^T.">skylark::sketch::rowwise_tag</a>)<span class="keyword"> const </span>{
 <a name="l00236"></a>00236 
@@ -280,7 +280,7 @@
 <a name="l00244"></a>00244         R.AlignWith(sketch_of_A);
 <a name="l00245"></a>00245         A_STAR_STAR.AlignWith(sketch_of_A);
 <a name="l00246"></a>00246 
-<a name="l00247"></a>00247         <a class="code" href="../../d1/dd1/structskylark_1_1sketch_1_1dense__transform__data__t.html#aed2f673b17ae1ecd2eff4926272194f6">data_type::realize_matrix_view</a>(R);
+<a name="l00247"></a>00247         <a class="code" href="../../d1/dd1/structskylark_1_1sketch_1_1dense__transform__data__t.html#a6ef915480e08e8a45a2c20fde2ae640c">data_type::realize_matrix_view</a>(R);
 <a name="l00248"></a>00248 
 <a name="l00249"></a>00249         <span class="comment">// Allgather within process grid</span>
 <a name="l00250"></a>00250         A_STAR_STAR = A;
@@ -291,16 +291,16 @@
 <a name="l00255"></a>00255         <span class="comment">// Local Gemm</span>
 <a name="l00256"></a>00256         <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a8f7ed6aa7741ff54e546fa88fc706a53">base::Gemm</a>(elem::NORMAL,
 <a name="l00257"></a>00257                    elem::TRANSPOSE,
-<a name="l00258"></a>00258                    value_type(1),
+<a name="l00258"></a>00258                    <a class="code" href="../../d1/dd1/structskylark_1_1sketch_1_1dense__transform__data__t.html#af70cce35184c8ace000b8136883715d0">value_type</a>(1),
 <a name="l00259"></a>00259                    A_STAR_STAR.LockedMatrix(),
 <a name="l00260"></a>00260                    R.LockedMatrix(),
-<a name="l00261"></a>00261                    value_type(1),
+<a name="l00261"></a>00261                    <a class="code" href="../../d1/dd1/structskylark_1_1sketch_1_1dense__transform__data__t.html#af70cce35184c8ace000b8136883715d0">value_type</a>(1),
 <a name="l00262"></a>00262                    sketch_of_A.Matrix());
 <a name="l00263"></a>00263 
 <a name="l00264"></a>00264     }
 <a name="l00265"></a>00265 
 <a name="l00266"></a>00266 
-<a name="l00270"></a>00270     <span class="keywordtype">void</span> outer_panel_gemm(<span class="keyword">const</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
+<a name="l00270"></a>00270     <span class="keywordtype">void</span> outer_panel_gemm(<span class="keyword">const</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
 <a name="l00271"></a>00271                           output_matrix_type&amp; sketch_of_A,
 <a name="l00272"></a>00272                           <a class="code" href="../../df/d8f/structskylark_1_1sketch_1_1columnwise__tag.html" title="Apply the sketch/transform to the columns. In matrix form this is A-&gt;SA.">skylark::sketch::columnwise_tag</a>)<span class="keyword"> const </span>{
 <a name="l00273"></a>00273 
@@ -332,7 +332,7 @@
 <a name="l00299"></a>00299         <span class="keywordflow">while</span> (A_Bottom.Height() &gt; 0) {
 <a name="l00300"></a>00300 
 <a name="l00301"></a>00301             <span class="keywordtype">int</span> b = <a class="code" href="../../df/d93/utils_8hpp.html#a3f9599c9c447625449f078e770cf9f37">std::min</a>(A_Bottom.Height(), <a class="code" href="../../de/dfe/namespaceskylark_1_1sketch.html#abc5afa5c1004c4145ab3c2afca80ee38">blocksize</a>);
-<a name="l00302"></a>00302             <a class="code" href="../../d1/dd1/structskylark_1_1sketch_1_1dense__transform__data__t.html#aed2f673b17ae1ecd2eff4926272194f6">data_type::realize_matrix_view</a>(R1, 0,                   base,
+<a name="l00302"></a>00302             <a class="code" href="../../d1/dd1/structskylark_1_1sketch_1_1dense__transform__data__t.html#a6ef915480e08e8a45a2c20fde2ae640c">data_type::realize_matrix_view</a>(R1, 0,                   base,
 <a name="l00303"></a>00303                                                sketch_of_A.Height(), b);
 <a name="l00304"></a>00304 
 <a name="l00305"></a>00305             elem::RepartitionDown
@@ -344,10 +344,10 @@
 <a name="l00311"></a>00311             <span class="comment">// Local Gemm</span>
 <a name="l00312"></a>00312             <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a8f7ed6aa7741ff54e546fa88fc706a53">base::Gemm</a>(elem::NORMAL,
 <a name="l00313"></a>00313                        elem::NORMAL,
-<a name="l00314"></a>00314                        value_type(1),
+<a name="l00314"></a>00314                        <a class="code" href="../../d1/dd1/structskylark_1_1sketch_1_1dense__transform__data__t.html#af70cce35184c8ace000b8136883715d0">value_type</a>(1),
 <a name="l00315"></a>00315                        R1.LockedMatrix(),
 <a name="l00316"></a>00316                        A1.LockedMatrix(),
-<a name="l00317"></a>00317                        value_type(1),
+<a name="l00317"></a>00317                        <a class="code" href="../../d1/dd1/structskylark_1_1sketch_1_1dense__transform__data__t.html#af70cce35184c8ace000b8136883715d0">value_type</a>(1),
 <a name="l00318"></a>00318                        sketch_of_A.Matrix());
 <a name="l00319"></a>00319 
 <a name="l00320"></a>00320             base = base + b;
@@ -363,7 +363,7 @@
 <a name="l00330"></a>00330 
 <a name="l00335"></a>00335     <span class="comment">// Communication demanding scenario: Memory-oblivious mode</span>
 <a name="l00336"></a>00336     <span class="comment">// TODO: Block-by-block mode</span>
-<a name="l00337"></a>00337     <span class="keywordtype">void</span> matrix_panel_gemm(<span class="keyword">const</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
+<a name="l00337"></a>00337     <span class="keywordtype">void</span> matrix_panel_gemm(<span class="keyword">const</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
 <a name="l00338"></a>00338                           output_matrix_type&amp; sketch_of_A,
 <a name="l00339"></a>00339                           <a class="code" href="../../d4/d9b/structskylark_1_1sketch_1_1rowwise__tag.html" title="Apply the sketch/transform to the rows. In matrix form this is A-&gt;AS^T.">skylark::sketch::rowwise_tag</a>)<span class="keyword"> const </span>{
 <a name="l00340"></a>00340 
@@ -377,7 +377,7 @@
 <a name="l00348"></a>00348         R.AlignWith(sketch_of_A);
 <a name="l00349"></a>00349         sketch_of_A_STAR_STAR.AlignWith(sketch_of_A);
 <a name="l00350"></a>00350 
-<a name="l00351"></a>00351         <a class="code" href="../../d1/dd1/structskylark_1_1sketch_1_1dense__transform__data__t.html#aed2f673b17ae1ecd2eff4926272194f6">data_type::realize_matrix_view</a>(R);
+<a name="l00351"></a>00351         <a class="code" href="../../d1/dd1/structskylark_1_1sketch_1_1dense__transform__data__t.html#a6ef915480e08e8a45a2c20fde2ae640c">data_type::realize_matrix_view</a>(R);
 <a name="l00352"></a>00352 
 <a name="l00353"></a>00353         <span class="comment">// Global size of the result of the Local Gemm that follows</span>
 <a name="l00354"></a>00354         sketch_of_A_STAR_STAR.Resize(sketch_of_A.Height(),
@@ -386,7 +386,7 @@
 <a name="l00357"></a>00357         <span class="comment">// Local Gemm</span>
 <a name="l00358"></a>00358         <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a8f7ed6aa7741ff54e546fa88fc706a53">base::Gemm</a>(elem::NORMAL,
 <a name="l00359"></a>00359                    elem::TRANSPOSE,
-<a name="l00360"></a>00360                    value_type(1),
+<a name="l00360"></a>00360                    <a class="code" href="../../d1/dd1/structskylark_1_1sketch_1_1dense__transform__data__t.html#af70cce35184c8ace000b8136883715d0">value_type</a>(1),
 <a name="l00361"></a>00361                    A.LockedMatrix(),
 <a name="l00362"></a>00362                    R.LockedMatrix(),
 <a name="l00363"></a>00363                    sketch_of_A_STAR_STAR.Matrix());
@@ -397,7 +397,7 @@
 <a name="l00368"></a>00368     }
 <a name="l00369"></a>00369 
 <a name="l00370"></a>00370 
-<a name="l00374"></a>00374     <span class="keywordtype">void</span> panel_matrix_gemm(<span class="keyword">const</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
+<a name="l00374"></a>00374     <span class="keywordtype">void</span> panel_matrix_gemm(<span class="keyword">const</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
 <a name="l00375"></a>00375                           output_matrix_type&amp; sketch_of_A,
 <a name="l00376"></a>00376                           <a class="code" href="../../df/d8f/structskylark_1_1sketch_1_1columnwise__tag.html" title="Apply the sketch/transform to the columns. In matrix form this is A-&gt;SA.">skylark::sketch::columnwise_tag</a>)<span class="keyword"> const </span>{
 <a name="l00377"></a>00377 
@@ -426,7 +426,7 @@
 <a name="l00400"></a>00400         <span class="keywordflow">while</span> (sketch_of_A_Bottom.Height() &gt; 0) {
 <a name="l00401"></a>00401 
 <a name="l00402"></a>00402             <span class="keywordtype">int</span> b = <a class="code" href="../../df/d93/utils_8hpp.html#a3f9599c9c447625449f078e770cf9f37">std::min</a>(sketch_of_A_Bottom.Height(), <a class="code" href="../../de/dfe/namespaceskylark_1_1sketch.html#abc5afa5c1004c4145ab3c2afca80ee38">blocksize</a>);
-<a name="l00403"></a>00403             <a class="code" href="../../d1/dd1/structskylark_1_1sketch_1_1dense__transform__data__t.html#aed2f673b17ae1ecd2eff4926272194f6">data_type::realize_matrix_view</a>(R1, base, 0,
+<a name="l00403"></a>00403             <a class="code" href="../../d1/dd1/structskylark_1_1sketch_1_1dense__transform__data__t.html#a6ef915480e08e8a45a2c20fde2ae640c">data_type::realize_matrix_view</a>(R1, base, 0,
 <a name="l00404"></a>00404                                                b,    A.Height());
 <a name="l00405"></a>00405 
 <a name="l00406"></a>00406             elem::RepartitionDown
@@ -438,7 +438,7 @@
 <a name="l00412"></a>00412             <span class="comment">// Local Gemm</span>
 <a name="l00413"></a>00413             <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a8f7ed6aa7741ff54e546fa88fc706a53">base::Gemm</a>(elem::NORMAL,
 <a name="l00414"></a>00414                        elem::NORMAL,
-<a name="l00415"></a>00415                        value_type(1),
+<a name="l00415"></a>00415                        <a class="code" href="../../d1/dd1/structskylark_1_1sketch_1_1dense__transform__data__t.html#af70cce35184c8ace000b8136883715d0">value_type</a>(1),
 <a name="l00416"></a>00416                        R1.LockedMatrix(),
 <a name="l00417"></a>00417                        A.LockedMatrix(),
 <a name="l00418"></a>00418                        sketch_of_A1.Matrix());
@@ -454,7 +454,7 @@
 <a name="l00428"></a>00428     }
 <a name="l00429"></a>00429 
 <a name="l00430"></a>00430 
-<a name="l00431"></a>00431     <span class="keywordtype">void</span> sketch_gemm(<span class="keyword">const</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
+<a name="l00431"></a>00431     <span class="keywordtype">void</span> sketch_gemm(<span class="keyword">const</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
 <a name="l00432"></a>00432         output_matrix_type&amp; sketch_of_A,
 <a name="l00433"></a>00433         <a class="code" href="../../d4/d9b/structskylark_1_1sketch_1_1rowwise__tag.html" title="Apply the sketch/transform to the rows. In matrix form this is A-&gt;AS^T.">skylark::sketch::rowwise_tag</a> tag)<span class="keyword"> const </span>{
 <a name="l00434"></a>00434 
@@ -475,7 +475,7 @@
 <a name="l00449"></a>00449     }
 <a name="l00450"></a>00450 
 <a name="l00451"></a>00451 
-<a name="l00452"></a>00452     <span class="keywordtype">void</span> sketch_gemm(<span class="keyword">const</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
+<a name="l00452"></a>00452     <span class="keywordtype">void</span> sketch_gemm(<span class="keyword">const</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
 <a name="l00453"></a>00453         output_matrix_type&amp; sketch_of_A,
 <a name="l00454"></a>00454         <a class="code" href="../../df/d8f/structskylark_1_1sketch_1_1columnwise__tag.html" title="Apply the sketch/transform to the columns. In matrix form this is A-&gt;SA.">skylark::sketch::columnwise_tag</a> tag)<span class="keyword"> const </span>{
 <a name="l00455"></a>00455 
@@ -496,15 +496,30 @@
 <a name="l00470"></a>00470     }
 <a name="l00471"></a>00471 
 <a name="l00472"></a>00472 
-<a name="l00473"></a>00473 };
-<a name="l00474"></a>00474 
-<a name="l00475"></a>00475 } } 
-<a name="l00477"></a>00477 <span class="preprocessor">#endif // SKYLARK_DENSE_TRANSFORM_ELEMENTAL_STAR_ROWDIST_HPP</span>
+<a name="l00473"></a>00473     <span class="keywordtype">void</span> apply_impl_vdist (<span class="keyword">const</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
+<a name="l00474"></a>00474                           output_matrix_type&amp; sketch_of_A,
+<a name="l00475"></a>00475                           <a class="code" href="../../d4/d9b/structskylark_1_1sketch_1_1rowwise__tag.html" title="Apply the sketch/transform to the rows. In matrix form this is A-&gt;AS^T.">skylark::sketch::rowwise_tag</a> tag)<span class="keyword"> const </span>{
+<a name="l00476"></a>00476 
+<a name="l00477"></a>00477         sketch_gemm(A, sketch_of_A, tag);
+<a name="l00478"></a>00478     }
+<a name="l00479"></a>00479 
+<a name="l00480"></a>00480 
+<a name="l00481"></a>00481     <span class="keywordtype">void</span> apply_impl_vdist (<span class="keyword">const</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#ab8e88f4957c67881617f8fd9ba9099e6">matrix_type</a>&amp; A,
+<a name="l00482"></a>00482                           output_matrix_type&amp; sketch_of_A,
+<a name="l00483"></a>00483                           <a class="code" href="../../df/d8f/structskylark_1_1sketch_1_1columnwise__tag.html" title="Apply the sketch/transform to the columns. In matrix form this is A-&gt;SA.">skylark::sketch::columnwise_tag</a> tag)<span class="keyword"> const </span>{
+<a name="l00484"></a>00484 
+<a name="l00485"></a>00485         sketch_gemm(A, sketch_of_A, tag);
+<a name="l00486"></a>00486     }
+<a name="l00487"></a>00487 
+<a name="l00488"></a>00488 };
+<a name="l00489"></a>00489 
+<a name="l00490"></a>00490 } } 
+<a name="l00492"></a>00492 <span class="preprocessor">#endif // SKYLARK_DENSE_TRANSFORM_ELEMENTAL_STAR_ROWDIST_HPP</span>
 </pre></div></div><!-- contents -->
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jun 5 2014 02:49:11 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jun 5 2014 18:16:07 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

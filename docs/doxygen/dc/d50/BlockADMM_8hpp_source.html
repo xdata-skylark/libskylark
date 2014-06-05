@@ -125,7 +125,7 @@
 <a name="l00066"></a>00066     <a class="code" href="../../db/d89/classBlockADMMSolver.html#a5b927df1b487d809104bd5b89f2b76f9">~BlockADMMSolver</a>();
 <a name="l00067"></a>00067 
 <a name="l00068"></a>00068     <span class="keywordtype">void</span> <a class="code" href="../../db/d89/classBlockADMMSolver.html#a2857444656af8beaa83dc49845ce2471">InitializeFactorizationCache</a>();
-<a name="l00069"></a>00069     <span class="keywordtype">void</span> <a class="code" href="../../db/d89/classBlockADMMSolver.html#a396132205913b719fa711da0811b9a53">InitializeTransformCache</a>(<span class="keywordtype">int</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>);
+<a name="l00069"></a>00069     <span class="keywordtype">void</span> <a class="code" href="../../db/d89/classBlockADMMSolver.html#a396132205913b719fa711da0811b9a53">InitializeTransformCache</a>(<span class="keywordtype">int</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>);
 <a name="l00070"></a>00070 
 <a name="l00071"></a>00071     <a class="code" href="../../d6/d68/structskylark_1_1ml_1_1model__t.html">skylark::ml::model_t&lt;T, LocalMatrixType&gt;</a>* <a class="code" href="../../db/d89/classBlockADMMSolver.html#a2c8d4458d5d4fe485ac81f2677c65f89">train</a>(T&amp; X,
 <a name="l00072"></a>00072         <a class="code" href="../../dc/d50/BlockADMM_8hpp.html#ab5e5d823b1b14674e6d95a80dda6dcca">LocalMatrixType</a>&amp; Y, T&amp; Xv, <a class="code" href="../../dc/d50/BlockADMM_8hpp.html#ab5e5d823b1b14674e6d95a80dda6dcca">LocalMatrixType</a>&amp; Yv,
@@ -169,13 +169,13 @@
 <a name="l00110"></a>00110 }
 <a name="l00111"></a>00111 
 <a name="l00112"></a>00112 <span class="keyword">template</span> &lt;<span class="keyword">class</span> T&gt;
-<a name="l00113"></a><a class="code" href="../../db/d89/classBlockADMMSolver.html#a396132205913b719fa711da0811b9a53">00113</a> <span class="keywordtype">void</span> <a class="code" href="../../db/d89/classBlockADMMSolver.html#a396132205913b719fa711da0811b9a53">BlockADMMSolver&lt;T&gt;::InitializeTransformCache</a>(<span class="keywordtype">int</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>) {
+<a name="l00113"></a><a class="code" href="../../db/d89/classBlockADMMSolver.html#a396132205913b719fa711da0811b9a53">00113</a> <span class="keywordtype">void</span> <a class="code" href="../../db/d89/classBlockADMMSolver.html#a396132205913b719fa711da0811b9a53">BlockADMMSolver&lt;T&gt;::InitializeTransformCache</a>(<span class="keywordtype">int</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>) {
 <a name="l00114"></a>00114     TransformCache = <span class="keyword">new</span> <a class="code" href="../../dc/d50/BlockADMM_8hpp.html#ab5e5d823b1b14674e6d95a80dda6dcca">LocalMatrixType</a>* [NumFeaturePartitions];
 <a name="l00115"></a>00115     <span class="keywordflow">for</span>(<span class="keywordtype">int</span> j=0; j&lt;NumFeaturePartitions; j++) {
 <a name="l00116"></a>00116         <span class="keywordtype">int</span> start = starts[j];
 <a name="l00117"></a>00117         <span class="keywordtype">int</span> finish = finishes[j];
 <a name="l00118"></a>00118         <span class="keywordtype">int</span> sj = finish - start  + 1;
-<a name="l00119"></a>00119         TransformCache[j]  = <span class="keyword">new</span> elem::Matrix&lt;double&gt;(sj, <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>);
+<a name="l00119"></a>00119         TransformCache[j]  = <span class="keyword">new</span> elem::Matrix&lt;double&gt;(sj, <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>);
 <a name="l00120"></a>00120     }
 <a name="l00121"></a>00121 }
 <a name="l00122"></a>00122 
@@ -596,7 +596,7 @@
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jun 5 2014 02:49:11 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jun 5 2014 18:16:07 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

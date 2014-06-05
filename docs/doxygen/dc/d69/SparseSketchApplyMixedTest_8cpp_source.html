@@ -98,8 +98,8 @@
 <a name="l00050"></a>00050           skylark::utility::rademacher_distribution_t&gt;(N, S, context)
 <a name="l00051"></a>00051     {}
 <a name="l00052"></a>00052 
-<a name="l00053"></a><a class="code" href="../../d1/d98/structDummy__t.html#a79ebaae525d354043b53460d5f15e31c">00053</a>     std::vector&lt;size_t&gt; <a class="code" href="../../d1/d98/structDummy__t.html#a79ebaae525d354043b53460d5f15e31c">getRowIdx</a>() { <span class="keywordflow">return</span> hash_t::row_idx; }
-<a name="l00054"></a><a class="code" href="../../d1/d98/structDummy__t.html#a22a2724d34da8a5410e96e289779619d">00054</a>     std::vector&lt;double&gt; <a class="code" href="../../d1/d98/structDummy__t.html#a22a2724d34da8a5410e96e289779619d">getRowValues</a>() { <span class="keywordflow">return</span> hash_t::row_value; }
+<a name="l00053"></a><a class="code" href="../../d1/d98/structDummy__t.html#a79ebaae525d354043b53460d5f15e31c">00053</a>     std::vector&lt;size_t&gt; <a class="code" href="../../d1/d98/structDummy__t.html#a79ebaae525d354043b53460d5f15e31c">getRowIdx</a>() { <span class="keywordflow">return</span> <a class="code" href="../../da/dbf/structskylark_1_1sketch_1_1hash__transform__data__t.html#ac156c21c1adaeadc91f204d4556ba9c5">hash_t::row_idx</a>; }
+<a name="l00054"></a><a class="code" href="../../d1/d98/structDummy__t.html#a22a2724d34da8a5410e96e289779619d">00054</a>     std::vector&lt;double&gt; <a class="code" href="../../d1/d98/structDummy__t.html#a22a2724d34da8a5410e96e289779619d">getRowValues</a>() { <span class="keywordflow">return</span> <a class="code" href="../../da/dbf/structskylark_1_1sketch_1_1hash__transform__data__t.html#af461e3c57e5cd5f6cc829e33869fdf18">hash_t::row_value</a>; }
 <a name="l00055"></a>00055 };
 <a name="l00056"></a>00056 
 <a name="l00057"></a>00057 
@@ -162,8 +162,8 @@
 <a name="l00115"></a>00115     <span class="comment">//[&gt; Parameters &lt;]</span>
 <a name="l00116"></a>00116 
 <a name="l00117"></a>00117     <span class="comment">//FIXME: use random sizes?</span>
-<a name="l00118"></a>00118     <span class="keyword">const</span> <span class="keywordtype">size_t</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>   = 100;
-<a name="l00119"></a>00119     <span class="keyword">const</span> <span class="keywordtype">size_t</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>   = 50;
+<a name="l00118"></a>00118     <span class="keyword">const</span> <span class="keywordtype">size_t</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>   = 100;
+<a name="l00119"></a>00119     <span class="keyword">const</span> <span class="keywordtype">size_t</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>   = 50;
 <a name="l00120"></a>00120     <span class="keyword">const</span> <span class="keywordtype">size_t</span> n_s = 60;
 <a name="l00121"></a>00121     <span class="keyword">const</span> <span class="keywordtype">size_t</span> m_s = 30;
 <a name="l00122"></a>00122 
@@ -187,7 +187,7 @@
 <a name="l00141"></a>00141 
 <a name="l00142"></a>00142     <span class="keywordtype">double</span> count = 1.0;
 <a name="l00143"></a>00143 
-<a name="l00144"></a>00144     <span class="keyword">const</span> <span class="keywordtype">size_t</span> matrix_full = n * <a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>;
+<a name="l00144"></a>00144     <span class="keyword">const</span> <span class="keywordtype">size_t</span> matrix_full = n * <a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>;
 <a name="l00145"></a>00145     <a class="code" href="../../d4/dad/SparseSketchApplyCombBLASTest_8cpp.html#a3f9c296f4f1ee969fba677a109b8a45f">mpi_vector_t</a> colsf(matrix_full);
 <a name="l00146"></a>00146     <a class="code" href="../../d4/dad/SparseSketchApplyCombBLASTest_8cpp.html#a3f9c296f4f1ee969fba677a109b8a45f">mpi_vector_t</a> rowsf(matrix_full);
 <a name="l00147"></a>00147     <a class="code" href="../../d4/dad/SparseSketchApplyCombBLASTest_8cpp.html#a3f9c296f4f1ee969fba677a109b8a45f">mpi_vector_t</a> valsf(matrix_full);
@@ -258,153 +258,159 @@
 <a name="l00214"></a>00214 
 <a name="l00215"></a>00215     <a class="code" href="../../dc/d69/SparseSketchApplyMixedTest_8cpp.html#a1fbb7315f4ecdc9da1e3205db974dd30">compare_result</a>(rank, expected_A, result);
 <a name="l00216"></a>00216 
-<a name="l00218"></a>00218     <span class="comment">//[&gt; Column wise application DistSparseMatrix -&gt; DistMatrix[*/*] &lt;]</span>
-<a name="l00219"></a>00219 
-<a name="l00220"></a>00220     <span class="keyword">typedef</span> elem::DistMatrix&lt;double, elem::STAR, elem::STAR&gt; st_target_t;
-<a name="l00221"></a>00221 
-<a name="l00222"></a>00222     <span class="comment">//[&gt; 1. Create the sketching matrix &lt;]</span>
-<a name="l00223"></a>00223     <a class="code" href="../../d1/d98/structDummy__t.html">Dummy_t&lt;DistMatrixType, st_target_t&gt;</a> SparseST(n, n_s, context);
-<a name="l00224"></a>00224 
-<a name="l00225"></a>00225     <span class="comment">//[&gt; 2. Create space for the sketched matrix &lt;]</span>
-<a name="l00226"></a>00226     st_target_t sketch_A_st(n, n_s, grid);
-<a name="l00227"></a>00227     elem::Zero(sketch_A_st);
-<a name="l00228"></a>00228 
-<a name="l00229"></a>00229     <span class="comment">//[&gt; 3. Apply the transform &lt;]</span>
-<a name="l00230"></a>00230     SparseST.<a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#ac899bcbff87aa859ada4b0e2f7705205">apply</a>(A, sketch_A_st, <a class="code" href="../../df/d8f/structskylark_1_1sketch_1_1columnwise__tag.html" title="Apply the sketch/transform to the columns. In matrix form this is A-&gt;SA.">skylark::sketch::columnwise_tag</a>());
-<a name="l00231"></a>00231 
-<a name="l00232"></a>00232     <span class="comment">//[&gt; 4. Compare &lt;]</span>
-<a name="l00233"></a>00233     <a class="code" href="../../d4/dad/SparseSketchApplyCombBLASTest_8cpp.html#aaf27124015450762176dbd30a09a0451">compute_sketch_matrix</a>(SparseST, A, pi_sketch);
-<a name="l00234"></a>00234     expected_A = Mult_AnXBn_Synch&lt;PTDD, double, col_t&gt;(
-<a name="l00235"></a>00235             pi_sketch, A, <span class="keyword">false</span>, <span class="keyword">false</span>);
+<a name="l00217"></a>00217 <span class="preprocessor">#if 0</span>
+<a name="l00218"></a>00218 <span class="preprocessor"></span>
+<a name="l00219"></a>00219     <span class="comment">//[&gt; Column wise application DistSparseMatrix -&gt; DistMatrix[*/*] &lt;]</span>
+<a name="l00220"></a>00220 
+<a name="l00221"></a>00221     <span class="keyword">typedef</span> elem::DistMatrix&lt;double, elem::STAR, elem::STAR&gt; st_target_t;
+<a name="l00222"></a>00222 
+<a name="l00223"></a>00223     <span class="comment">//[&gt; 1. Create the sketching matrix &lt;]</span>
+<a name="l00224"></a>00224     <a class="code" href="../../d1/d98/structDummy__t.html">Dummy_t&lt;DistMatrixType, st_target_t&gt;</a> SparseST(n, n_s, context);
+<a name="l00225"></a>00225 
+<a name="l00226"></a>00226     <span class="comment">//[&gt; 2. Create space for the sketched matrix &lt;]</span>
+<a name="l00227"></a>00227     st_target_t sketch_A_st(n, n_s, grid);
+<a name="l00228"></a>00228     elem::Zero(sketch_A_st);
+<a name="l00229"></a>00229 
+<a name="l00230"></a>00230     <span class="comment">//[&gt; 3. Apply the transform &lt;]</span>
+<a name="l00231"></a>00231     SparseST.<a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#ac899bcbff87aa859ada4b0e2f7705205">apply</a>(A, sketch_A_st, <a class="code" href="../../df/d8f/structskylark_1_1sketch_1_1columnwise__tag.html" title="Apply the sketch/transform to the columns. In matrix form this is A-&gt;SA.">skylark::sketch::columnwise_tag</a>());
+<a name="l00232"></a>00232 
+<a name="l00233"></a>00233     <span class="comment">//[&gt; 4. Build structure to compare &lt;]</span>
+<a name="l00234"></a>00234     <span class="comment">// easier to check if all processors own result</span>
+<a name="l00235"></a>00235     result = sketch_A_st;
 <a name="l00236"></a>00236 
-<a name="l00237"></a>00237     <a class="code" href="../../dc/d69/SparseSketchApplyMixedTest_8cpp.html#a1fbb7315f4ecdc9da1e3205db974dd30">compare_result</a>(rank, expected_A, sketch_A_st);
-<a name="l00238"></a>00238 
-<a name="l00240"></a>00240     <span class="comment">//[&gt; Column wise application DistSparseMatrix -&gt; LocalDenseMatrix &lt;]</span>
-<a name="l00241"></a>00241 
-<a name="l00242"></a>00242     <a class="code" href="../../d1/d98/structDummy__t.html">Dummy_t&lt;DistMatrixType, elem::Matrix&lt;double&gt;</a>&gt; LocalSparse(n, n_s, context);
-<a name="l00243"></a>00243     elem::Matrix&lt;double&gt; local_sketch_A(n, n_s);
-<a name="l00244"></a>00244     elem::Zero(local_sketch_A);
-<a name="l00245"></a>00245     LocalSparse.<a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#ac899bcbff87aa859ada4b0e2f7705205">apply</a>(A, local_sketch_A, <a class="code" href="../../df/d8f/structskylark_1_1sketch_1_1columnwise__tag.html" title="Apply the sketch/transform to the columns. In matrix form this is A-&gt;SA.">skylark::sketch::columnwise_tag</a>());
+<a name="l00237"></a>00237     <a class="code" href="../../d4/dad/SparseSketchApplyCombBLASTest_8cpp.html#aaf27124015450762176dbd30a09a0451">compute_sketch_matrix</a>(SparseVC, A, pi_sketch);
+<a name="l00238"></a>00238     expected_A = Mult_AnXBn_Synch&lt;PTDD, double, col_t&gt;(
+<a name="l00239"></a>00239             pi_sketch, A, <span class="keyword">false</span>, <span class="keyword">false</span>);
+<a name="l00240"></a>00240 
+<a name="l00241"></a>00241     <a class="code" href="../../dc/d69/SparseSketchApplyMixedTest_8cpp.html#a1fbb7315f4ecdc9da1e3205db974dd30">compare_result</a>(rank, expected_A, result);
+<a name="l00242"></a>00242 <span class="preprocessor">#endif</span>
+<a name="l00243"></a>00243 <span class="preprocessor"></span>
+<a name="l00245"></a>00245     <span class="comment">//[&gt; Column wise application DistSparseMatrix -&gt; LocalDenseMatrix &lt;]</span>
 <a name="l00246"></a>00246 
-<a name="l00247"></a>00247     elem::Matrix&lt;double&gt; pi_sketch_l(n_s, n);
-<a name="l00248"></a>00248     elem::Zero(pi_sketch_l);
-<a name="l00249"></a>00249     elem::Matrix&lt;double&gt; expected_A_l(n_s, m);
-<a name="l00250"></a>00250     elem::Zero(expected_A_l);
+<a name="l00247"></a>00247     <a class="code" href="../../d1/d98/structDummy__t.html">Dummy_t&lt;DistMatrixType, elem::Matrix&lt;double&gt;</a>&gt; LocalSparse(n, n_s, context);
+<a name="l00248"></a>00248     elem::Matrix&lt;double&gt; local_sketch_A(n, n_s);
+<a name="l00249"></a>00249     elem::Zero(local_sketch_A);
+<a name="l00250"></a>00250     LocalSparse.<a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#ac899bcbff87aa859ada4b0e2f7705205">apply</a>(A, local_sketch_A, <a class="code" href="../../df/d8f/structskylark_1_1sketch_1_1columnwise__tag.html" title="Apply the sketch/transform to the columns. In matrix form this is A-&gt;SA.">skylark::sketch::columnwise_tag</a>());
 <a name="l00251"></a>00251 
-<a name="l00252"></a>00252     <span class="keywordflow">if</span>(rank == 0) {
-<a name="l00253"></a>00253         <span class="comment">// PI generated by random number gen</span>
-<a name="l00254"></a>00254         std::vector&lt;size_t&gt; row_idx = LocalSparse.<a class="code" href="../../d1/d98/structDummy__t.html#a79ebaae525d354043b53460d5f15e31c">getRowIdx</a>();
-<a name="l00255"></a>00255         std::vector&lt;double&gt; row_val = LocalSparse.<a class="code" href="../../d1/d98/structDummy__t.html#a22a2724d34da8a5410e96e289779619d">getRowValues</a>();
+<a name="l00252"></a>00252     elem::Matrix&lt;double&gt; pi_sketch_l(n_s, n);
+<a name="l00253"></a>00253     elem::Zero(pi_sketch_l);
+<a name="l00254"></a>00254     elem::Matrix&lt;double&gt; expected_A_l(n_s, m);
+<a name="l00255"></a>00255     elem::Zero(expected_A_l);
 <a name="l00256"></a>00256 
-<a name="l00257"></a>00257         <span class="keywordtype">int</span> sketch_size = row_val.size();
-<a name="l00258"></a>00258         <span class="keyword">typename</span> LocalMatrixType::coords_t coords;
-<a name="l00259"></a>00259 
-<a name="l00260"></a>00260         <span class="keywordflow">for</span>(<span class="keywordtype">int</span> i = 0; i &lt; sketch_size; ++i)
-<a name="l00261"></a>00261             pi_sketch_l.Set(row_idx[i], i, row_val[i]);
-<a name="l00262"></a>00262 
-<a name="l00263"></a>00263         <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a8f7ed6aa7741ff54e546fa88fc706a53">elem::Gemm</a>(elem::NORMAL, elem::NORMAL, 1.0, pi_sketch_l, local_A,
-<a name="l00264"></a>00264                    0.0, expected_A_l);
-<a name="l00265"></a>00265 
-<a name="l00266"></a>00266         <span class="keywordflow">for</span>(<span class="keywordtype">int</span> col = 0; col &lt; expected_A_l.Width(); col++) {
-<a name="l00267"></a>00267             <span class="keywordflow">for</span>(<span class="keywordtype">int</span> row = 0; row &lt; expected_A_l.Height(); row++) {
-<a name="l00268"></a>00268                 <span class="keywordflow">if</span>(local_sketch_A.Get(row, col) !=
-<a name="l00269"></a>00269                         expected_A_l.Get(row, col))
-<a name="l00270"></a>00270                     BOOST_FAIL(<span class="stringliteral">&quot;Result of local colwise application not as expected&quot;</span>);
-<a name="l00271"></a>00271             }
-<a name="l00272"></a>00272         }
-<a name="l00273"></a>00273     }
-<a name="l00274"></a>00274 
-<a name="l00275"></a>00275 
-<a name="l00277"></a>00277     <span class="comment">//[&gt; Row wise application DistSparseMatrix -&gt; DistMatrix[MC/MR] &lt;]</span>
-<a name="l00278"></a>00278 
-<a name="l00279"></a>00279     <span class="comment">//[&gt; 1. Create the sketching matrix &lt;]</span>
-<a name="l00280"></a>00280     <a class="code" href="../../d1/d98/structDummy__t.html">Dummy_t&lt;DistMatrixType, mcmr_target_t&gt;</a> Sparse_r(m, m_s, context);
-<a name="l00281"></a>00281 
-<a name="l00282"></a>00282     <span class="comment">//[&gt; 2. Create space for the sketched matrix &lt;]</span>
-<a name="l00283"></a>00283     mcmr_target_t sketch_A_r(n, m_s, grid);
-<a name="l00284"></a>00284     elem::Zero(sketch_A_r);
-<a name="l00285"></a>00285 
-<a name="l00286"></a>00286     <span class="comment">//[&gt; 3. Apply the transform &lt;]</span>
-<a name="l00287"></a>00287     Sparse_r.<a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#ac899bcbff87aa859ada4b0e2f7705205">apply</a>(A, sketch_A_r, <a class="code" href="../../d4/d9b/structskylark_1_1sketch_1_1rowwise__tag.html" title="Apply the sketch/transform to the rows. In matrix form this is A-&gt;AS^T.">skylark::sketch::rowwise_tag</a>());
-<a name="l00288"></a>00288 
-<a name="l00289"></a>00289     <span class="comment">//[&gt; 4. Build structure to compare &lt;]</span>
-<a name="l00290"></a>00290     <span class="comment">// easier to check if all processors own result</span>
-<a name="l00291"></a>00291     result = sketch_A_r;
-<a name="l00292"></a>00292 
-<a name="l00293"></a>00293     <a class="code" href="../../d9/da8/elemental_8cpp.html#ad77edd6af85ca2be77fc3d3e15b43b48">DistMatrixType</a> pi_sketch_r(m_s, m, zero, zero, zero);
-<a name="l00294"></a>00294     <a class="code" href="../../d4/dad/SparseSketchApplyCombBLASTest_8cpp.html#aaf27124015450762176dbd30a09a0451">compute_sketch_matrix</a>(Sparse_r, A, pi_sketch_r);
-<a name="l00295"></a>00295     pi_sketch_r.Transpose();
-<a name="l00296"></a>00296     <a class="code" href="../../d9/da8/elemental_8cpp.html#ad77edd6af85ca2be77fc3d3e15b43b48">DistMatrixType</a> expected_AR = Mult_AnXBn_Synch&lt;PTDD, double, col_t&gt;(
-<a name="l00297"></a>00297             A, pi_sketch_r, <span class="keyword">false</span>, <span class="keyword">false</span>);
-<a name="l00298"></a>00298 
-<a name="l00299"></a>00299     <a class="code" href="../../dc/d69/SparseSketchApplyMixedTest_8cpp.html#a1fbb7315f4ecdc9da1e3205db974dd30">compare_result</a>(rank, expected_AR, result);
-<a name="l00300"></a>00300 
-<a name="l00302"></a>00302     <span class="comment">//[&gt; Row wise application DistSparseMatrix -&gt; DistMatrix[VC/*] &lt;]</span>
+<a name="l00257"></a>00257     <span class="keywordflow">if</span>(rank == 0) {
+<a name="l00258"></a>00258         <span class="comment">// PI generated by random number gen</span>
+<a name="l00259"></a>00259         std::vector&lt;size_t&gt; row_idx = LocalSparse.<a class="code" href="../../d1/d98/structDummy__t.html#a79ebaae525d354043b53460d5f15e31c">getRowIdx</a>();
+<a name="l00260"></a>00260         std::vector&lt;double&gt; row_val = LocalSparse.<a class="code" href="../../d1/d98/structDummy__t.html#a22a2724d34da8a5410e96e289779619d">getRowValues</a>();
+<a name="l00261"></a>00261 
+<a name="l00262"></a>00262         <span class="keywordtype">int</span> sketch_size = row_val.size();
+<a name="l00263"></a>00263         <span class="keyword">typename</span> LocalMatrixType::coords_t coords;
+<a name="l00264"></a>00264 
+<a name="l00265"></a>00265         <span class="keywordflow">for</span>(<span class="keywordtype">int</span> i = 0; i &lt; sketch_size; ++i)
+<a name="l00266"></a>00266             pi_sketch_l.Set(row_idx[i], i, row_val[i]);
+<a name="l00267"></a>00267 
+<a name="l00268"></a>00268         <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a8f7ed6aa7741ff54e546fa88fc706a53">elem::Gemm</a>(elem::NORMAL, elem::NORMAL, 1.0, pi_sketch_l, local_A,
+<a name="l00269"></a>00269                    0.0, expected_A_l);
+<a name="l00270"></a>00270 
+<a name="l00271"></a>00271         <span class="keywordflow">for</span>(<span class="keywordtype">int</span> col = 0; col &lt; expected_A_l.Width(); col++) {
+<a name="l00272"></a>00272             <span class="keywordflow">for</span>(<span class="keywordtype">int</span> row = 0; row &lt; expected_A_l.Height(); row++) {
+<a name="l00273"></a>00273                 <span class="keywordflow">if</span>(local_sketch_A.Get(row, col) !=
+<a name="l00274"></a>00274                         expected_A_l.Get(row, col))
+<a name="l00275"></a>00275                     BOOST_FAIL(<span class="stringliteral">&quot;Result of local colwise application not as expected&quot;</span>);
+<a name="l00276"></a>00276             }
+<a name="l00277"></a>00277         }
+<a name="l00278"></a>00278     }
+<a name="l00279"></a>00279 
+<a name="l00280"></a>00280 
+<a name="l00282"></a>00282     <span class="comment">//[&gt; Row wise application DistSparseMatrix -&gt; DistMatrix[MC/MR] &lt;]</span>
+<a name="l00283"></a>00283 
+<a name="l00284"></a>00284     <span class="comment">//[&gt; 1. Create the sketching matrix &lt;]</span>
+<a name="l00285"></a>00285     <a class="code" href="../../d1/d98/structDummy__t.html">Dummy_t&lt;DistMatrixType, mcmr_target_t&gt;</a> Sparse_r(m, m_s, context);
+<a name="l00286"></a>00286 
+<a name="l00287"></a>00287     <span class="comment">//[&gt; 2. Create space for the sketched matrix &lt;]</span>
+<a name="l00288"></a>00288     mcmr_target_t sketch_A_r(n, m_s, grid);
+<a name="l00289"></a>00289     elem::Zero(sketch_A_r);
+<a name="l00290"></a>00290 
+<a name="l00291"></a>00291     <span class="comment">//[&gt; 3. Apply the transform &lt;]</span>
+<a name="l00292"></a>00292     Sparse_r.<a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#ac899bcbff87aa859ada4b0e2f7705205">apply</a>(A, sketch_A_r, <a class="code" href="../../d4/d9b/structskylark_1_1sketch_1_1rowwise__tag.html" title="Apply the sketch/transform to the rows. In matrix form this is A-&gt;AS^T.">skylark::sketch::rowwise_tag</a>());
+<a name="l00293"></a>00293 
+<a name="l00294"></a>00294     <span class="comment">//[&gt; 4. Build structure to compare &lt;]</span>
+<a name="l00295"></a>00295     <span class="comment">// easier to check if all processors own result</span>
+<a name="l00296"></a>00296     result = sketch_A_r;
+<a name="l00297"></a>00297 
+<a name="l00298"></a>00298     <a class="code" href="../../d9/da8/elemental_8cpp.html#ad77edd6af85ca2be77fc3d3e15b43b48">DistMatrixType</a> pi_sketch_r(m_s, m, zero, zero, zero);
+<a name="l00299"></a>00299     <a class="code" href="../../d4/dad/SparseSketchApplyCombBLASTest_8cpp.html#aaf27124015450762176dbd30a09a0451">compute_sketch_matrix</a>(Sparse_r, A, pi_sketch_r);
+<a name="l00300"></a>00300     pi_sketch_r.Transpose();
+<a name="l00301"></a>00301     <a class="code" href="../../d9/da8/elemental_8cpp.html#ad77edd6af85ca2be77fc3d3e15b43b48">DistMatrixType</a> expected_AR = Mult_AnXBn_Synch&lt;PTDD, double, col_t&gt;(
+<a name="l00302"></a>00302             A, pi_sketch_r, <span class="keyword">false</span>, <span class="keyword">false</span>);
 <a name="l00303"></a>00303 
-<a name="l00304"></a>00304     <span class="comment">//[&gt; 1. Create the sketching matrix &lt;]</span>
-<a name="l00305"></a>00305     <a class="code" href="../../d1/d98/structDummy__t.html">Dummy_t&lt;DistMatrixType, vcs_target_t&gt;</a> Sparse_r_vcs(m, m_s, context);
-<a name="l00306"></a>00306 
-<a name="l00307"></a>00307     <span class="comment">//[&gt; 2. Create space for the sketched matrix &lt;]</span>
-<a name="l00308"></a>00308     vcs_target_t sketch_A_r_vcs(n, m_s, grid);
-<a name="l00309"></a>00309     elem::Zero(sketch_A_r_vcs);
-<a name="l00310"></a>00310 
-<a name="l00311"></a>00311     <span class="comment">//[&gt; 3. Apply the transform &lt;]</span>
-<a name="l00312"></a>00312     Sparse_r_vcs.<a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#ac899bcbff87aa859ada4b0e2f7705205">apply</a>(A, sketch_A_r_vcs, <a class="code" href="../../d4/d9b/structskylark_1_1sketch_1_1rowwise__tag.html" title="Apply the sketch/transform to the rows. In matrix form this is A-&gt;AS^T.">skylark::sketch::rowwise_tag</a>());
-<a name="l00313"></a>00313 
-<a name="l00314"></a>00314     <span class="comment">//[&gt; 4. Build structure to compare &lt;]</span>
-<a name="l00315"></a>00315     <span class="comment">// easier to check if all processors own result</span>
-<a name="l00316"></a>00316     result = sketch_A_r_vcs;
-<a name="l00317"></a>00317 
-<a name="l00318"></a>00318     pi_sketch_r.Transpose();
-<a name="l00319"></a>00319     <a class="code" href="../../d4/dad/SparseSketchApplyCombBLASTest_8cpp.html#aaf27124015450762176dbd30a09a0451">compute_sketch_matrix</a>(Sparse_r_vcs, A, pi_sketch_r);
-<a name="l00320"></a>00320     pi_sketch_r.Transpose();
-<a name="l00321"></a>00321     expected_AR = Mult_AnXBn_Synch&lt;PTDD, double, col_t&gt;(
-<a name="l00322"></a>00322             A, pi_sketch_r, <span class="keyword">false</span>, <span class="keyword">false</span>);
-<a name="l00323"></a>00323 
-<a name="l00324"></a>00324     <a class="code" href="../../dc/d69/SparseSketchApplyMixedTest_8cpp.html#a1fbb7315f4ecdc9da1e3205db974dd30">compare_result</a>(rank, expected_AR, result);
-<a name="l00325"></a>00325 
-<a name="l00327"></a>00327     <span class="comment">//[&gt; Row wise application DistSparseMatrix -&gt; LocalDenseMatrix &lt;]</span>
+<a name="l00304"></a>00304     <a class="code" href="../../dc/d69/SparseSketchApplyMixedTest_8cpp.html#a1fbb7315f4ecdc9da1e3205db974dd30">compare_result</a>(rank, expected_AR, result);
+<a name="l00305"></a>00305 
+<a name="l00307"></a>00307     <span class="comment">//[&gt; Row wise application DistSparseMatrix -&gt; DistMatrix[VC/*] &lt;]</span>
+<a name="l00308"></a>00308 
+<a name="l00309"></a>00309     <span class="comment">//[&gt; 1. Create the sketching matrix &lt;]</span>
+<a name="l00310"></a>00310     <a class="code" href="../../d1/d98/structDummy__t.html">Dummy_t&lt;DistMatrixType, vcs_target_t&gt;</a> Sparse_r_vcs(m, m_s, context);
+<a name="l00311"></a>00311 
+<a name="l00312"></a>00312     <span class="comment">//[&gt; 2. Create space for the sketched matrix &lt;]</span>
+<a name="l00313"></a>00313     vcs_target_t sketch_A_r_vcs(n, m_s, grid);
+<a name="l00314"></a>00314     elem::Zero(sketch_A_r_vcs);
+<a name="l00315"></a>00315 
+<a name="l00316"></a>00316     <span class="comment">//[&gt; 3. Apply the transform &lt;]</span>
+<a name="l00317"></a>00317     Sparse_r_vcs.<a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#ac899bcbff87aa859ada4b0e2f7705205">apply</a>(A, sketch_A_r_vcs, <a class="code" href="../../d4/d9b/structskylark_1_1sketch_1_1rowwise__tag.html" title="Apply the sketch/transform to the rows. In matrix form this is A-&gt;AS^T.">skylark::sketch::rowwise_tag</a>());
+<a name="l00318"></a>00318 
+<a name="l00319"></a>00319     <span class="comment">//[&gt; 4. Build structure to compare &lt;]</span>
+<a name="l00320"></a>00320     <span class="comment">// easier to check if all processors own result</span>
+<a name="l00321"></a>00321     result = sketch_A_r_vcs;
+<a name="l00322"></a>00322 
+<a name="l00323"></a>00323     pi_sketch_r.Transpose();
+<a name="l00324"></a>00324     <a class="code" href="../../d4/dad/SparseSketchApplyCombBLASTest_8cpp.html#aaf27124015450762176dbd30a09a0451">compute_sketch_matrix</a>(Sparse_r_vcs, A, pi_sketch_r);
+<a name="l00325"></a>00325     pi_sketch_r.Transpose();
+<a name="l00326"></a>00326     expected_AR = Mult_AnXBn_Synch&lt;PTDD, double, col_t&gt;(
+<a name="l00327"></a>00327             A, pi_sketch_r, <span class="keyword">false</span>, <span class="keyword">false</span>);
 <a name="l00328"></a>00328 
-<a name="l00329"></a>00329     <a class="code" href="../../d1/d98/structDummy__t.html">Dummy_t&lt;DistMatrixType, elem::Matrix&lt;double&gt;</a>&gt; LocalSparse_r(m, m_s, context);
-<a name="l00330"></a>00330     elem::Matrix&lt;double&gt; local_sketch_A_r(n, m_s);
-<a name="l00331"></a>00331     elem::Zero(local_sketch_A_r);
-<a name="l00332"></a>00332     LocalSparse_r.<a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#ac899bcbff87aa859ada4b0e2f7705205">apply</a>(A, local_sketch_A_r, <a class="code" href="../../d4/d9b/structskylark_1_1sketch_1_1rowwise__tag.html" title="Apply the sketch/transform to the rows. In matrix form this is A-&gt;AS^T.">skylark::sketch::rowwise_tag</a>());
+<a name="l00329"></a>00329     <a class="code" href="../../dc/d69/SparseSketchApplyMixedTest_8cpp.html#a1fbb7315f4ecdc9da1e3205db974dd30">compare_result</a>(rank, expected_AR, result);
+<a name="l00330"></a>00330 
+<a name="l00332"></a>00332     <span class="comment">//[&gt; Row wise application DistSparseMatrix -&gt; LocalDenseMatrix &lt;]</span>
 <a name="l00333"></a>00333 
-<a name="l00334"></a>00334     elem::Matrix&lt;double&gt; local_pi_sketch_r(m_s, m);
-<a name="l00335"></a>00335     elem::Zero(local_pi_sketch_r);
-<a name="l00336"></a>00336     elem::Matrix&lt;double&gt; expected_A_r(n, m_s);
-<a name="l00337"></a>00337     elem::Zero(expected_A_r);
+<a name="l00334"></a>00334     <a class="code" href="../../d1/d98/structDummy__t.html">Dummy_t&lt;DistMatrixType, elem::Matrix&lt;double&gt;</a>&gt; LocalSparse_r(m, m_s, context);
+<a name="l00335"></a>00335     elem::Matrix&lt;double&gt; local_sketch_A_r(n, m_s);
+<a name="l00336"></a>00336     elem::Zero(local_sketch_A_r);
+<a name="l00337"></a>00337     LocalSparse_r.<a class="code" href="../../d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#ac899bcbff87aa859ada4b0e2f7705205">apply</a>(A, local_sketch_A_r, <a class="code" href="../../d4/d9b/structskylark_1_1sketch_1_1rowwise__tag.html" title="Apply the sketch/transform to the rows. In matrix form this is A-&gt;AS^T.">skylark::sketch::rowwise_tag</a>());
 <a name="l00338"></a>00338 
-<a name="l00339"></a>00339     <span class="keywordflow">if</span>(rank == 0) {
-<a name="l00340"></a>00340         <span class="comment">// PI generated by random number gen</span>
-<a name="l00341"></a>00341         std::vector&lt;size_t&gt; row_idx = LocalSparse_r.<a class="code" href="../../d1/d98/structDummy__t.html#a79ebaae525d354043b53460d5f15e31c">getRowIdx</a>();
-<a name="l00342"></a>00342         std::vector&lt;double&gt; row_val = LocalSparse_r.<a class="code" href="../../d1/d98/structDummy__t.html#a22a2724d34da8a5410e96e289779619d">getRowValues</a>();
+<a name="l00339"></a>00339     elem::Matrix&lt;double&gt; local_pi_sketch_r(m_s, m);
+<a name="l00340"></a>00340     elem::Zero(local_pi_sketch_r);
+<a name="l00341"></a>00341     elem::Matrix&lt;double&gt; expected_A_r(n, m_s);
+<a name="l00342"></a>00342     elem::Zero(expected_A_r);
 <a name="l00343"></a>00343 
-<a name="l00344"></a>00344         <span class="keywordtype">int</span> sketch_size = row_val.size();
-<a name="l00345"></a>00345         <span class="keyword">typename</span> LocalMatrixType::coords_t coords;
-<a name="l00346"></a>00346 
-<a name="l00347"></a>00347         <span class="keywordflow">for</span>(<span class="keywordtype">int</span> i = 0; i &lt; sketch_size; ++i)
-<a name="l00348"></a>00348             local_pi_sketch_r.Set(row_idx[i], i, row_val[i]);
-<a name="l00349"></a>00349 
-<a name="l00350"></a>00350         <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a8f7ed6aa7741ff54e546fa88fc706a53">elem::Gemm</a>(elem::NORMAL, elem::TRANSPOSE, 1.0, local_A, local_pi_sketch_r,
-<a name="l00351"></a>00351                    0.0, expected_A_r);
-<a name="l00352"></a>00352 
-<a name="l00353"></a>00353         <span class="keywordflow">for</span>(<span class="keywordtype">int</span> col = 0; col &lt; expected_A_r.Width(); col++) {
-<a name="l00354"></a>00354             <span class="keywordflow">for</span>(<span class="keywordtype">int</span> row = 0; row &lt; expected_A_r.Height(); row++) {
-<a name="l00355"></a>00355                 <span class="keywordflow">if</span>(local_sketch_A_r.Get(row, col) !=
-<a name="l00356"></a>00356                         expected_A_r.Get(row, col))
-<a name="l00357"></a>00357                     BOOST_FAIL(<span class="stringliteral">&quot;Result of local rowwise application not as expected&quot;</span>);
-<a name="l00358"></a>00358             }
-<a name="l00359"></a>00359         }
-<a name="l00360"></a>00360     }
-<a name="l00361"></a>00361 
-<a name="l00362"></a>00362     <span class="keywordflow">return</span> 0;
-<a name="l00363"></a>00363 }
+<a name="l00344"></a>00344     <span class="keywordflow">if</span>(rank == 0) {
+<a name="l00345"></a>00345         <span class="comment">// PI generated by random number gen</span>
+<a name="l00346"></a>00346         std::vector&lt;size_t&gt; row_idx = LocalSparse_r.<a class="code" href="../../d1/d98/structDummy__t.html#a79ebaae525d354043b53460d5f15e31c">getRowIdx</a>();
+<a name="l00347"></a>00347         std::vector&lt;double&gt; row_val = LocalSparse_r.<a class="code" href="../../d1/d98/structDummy__t.html#a22a2724d34da8a5410e96e289779619d">getRowValues</a>();
+<a name="l00348"></a>00348 
+<a name="l00349"></a>00349         <span class="keywordtype">int</span> sketch_size = row_val.size();
+<a name="l00350"></a>00350         <span class="keyword">typename</span> LocalMatrixType::coords_t coords;
+<a name="l00351"></a>00351 
+<a name="l00352"></a>00352         <span class="keywordflow">for</span>(<span class="keywordtype">int</span> i = 0; i &lt; sketch_size; ++i)
+<a name="l00353"></a>00353             local_pi_sketch_r.Set(row_idx[i], i, row_val[i]);
+<a name="l00354"></a>00354 
+<a name="l00355"></a>00355         <a class="code" href="../../d3/d18/namespaceskylark_1_1base.html#a8f7ed6aa7741ff54e546fa88fc706a53">elem::Gemm</a>(elem::NORMAL, elem::TRANSPOSE, 1.0, local_A, local_pi_sketch_r,
+<a name="l00356"></a>00356                    0.0, expected_A_r);
+<a name="l00357"></a>00357 
+<a name="l00358"></a>00358         <span class="keywordflow">for</span>(<span class="keywordtype">int</span> col = 0; col &lt; expected_A_r.Width(); col++) {
+<a name="l00359"></a>00359             <span class="keywordflow">for</span>(<span class="keywordtype">int</span> row = 0; row &lt; expected_A_r.Height(); row++) {
+<a name="l00360"></a>00360                 <span class="keywordflow">if</span>(local_sketch_A_r.Get(row, col) !=
+<a name="l00361"></a>00361                         expected_A_r.Get(row, col))
+<a name="l00362"></a>00362                     BOOST_FAIL(<span class="stringliteral">&quot;Result of local rowwise application not as expected&quot;</span>);
+<a name="l00363"></a>00363             }
+<a name="l00364"></a>00364         }
+<a name="l00365"></a>00365     }
+<a name="l00366"></a>00366 
+<a name="l00367"></a>00367     <span class="keywordflow">return</span> 0;
+<a name="l00368"></a>00368 }
 </pre></div></div><!-- contents -->
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jun 5 2014 02:49:12 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jun 5 2014 18:16:08 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

@@ -88,8 +88,8 @@
 <a name="l00029"></a>00029     std::string fName, elem::Matrix&lt;double&gt;&amp; X,
 <a name="l00030"></a>00030     elem::Matrix&lt;double&gt;&amp; Y) {
 <a name="l00031"></a>00031 
-<a name="l00032"></a>00032     <span class="keywordtype">int</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, d;
-<a name="l00033"></a>00033     boost::mpi::reduce(comm, X.Width(), <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, std::plus&lt;int&gt;(), 0);
+<a name="l00032"></a>00032     <span class="keywordtype">int</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, d;
+<a name="l00033"></a>00033     boost::mpi::reduce(comm, X.Width(), <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>, std::plus&lt;int&gt;(), 0);
 <a name="l00034"></a>00034     d = X.Height();
 <a name="l00035"></a>00035 
 <a name="l00036"></a>00036 
@@ -104,12 +104,12 @@
 <a name="l00045"></a>00045             datatype.setOrder( H5T_ORDER_LE );
 <a name="l00046"></a>00046 
 <a name="l00047"></a>00047             hsize_t dimsf[2]; <span class="comment">// dataset dimensions</span>
-<a name="l00048"></a>00048             dimsf[0] = <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;
+<a name="l00048"></a>00048             dimsf[0] = <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;
 <a name="l00049"></a>00049             dimsf[1] = d;
 <a name="l00050"></a>00050             H5::DataSpace dataspaceX(2, dimsf);
 <a name="l00051"></a>00051             H5::DataSet datasetX = file.createDataSet(<span class="stringliteral">&quot;X&quot;</span>, datatype, dataspaceX);
 <a name="l00052"></a>00052 
-<a name="l00053"></a>00053             dimsf[0] = <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;
+<a name="l00053"></a>00053             dimsf[0] = <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;
 <a name="l00054"></a>00054             H5::DataSpace dataspaceY(1, dimsf);
 <a name="l00055"></a>00055             H5::DataSet datasetY = file.createDataSet(<span class="stringliteral">&quot;Y&quot;</span>, datatype, dataspaceY);
 <a name="l00056"></a>00056 
@@ -341,7 +341,7 @@
 <a name="l00282"></a>00282         read_hdf5_dataset(file, <span class="stringliteral">&quot;dimensions&quot;</span>, dimensions, 0, 3);
 <a name="l00283"></a>00283 
 <a name="l00284"></a>00284         <span class="keywordtype">int</span> d = dimensions[0];
-<a name="l00285"></a>00285         <span class="keywordtype">int</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a> = dimensions[1];
+<a name="l00285"></a>00285         <span class="keywordtype">int</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a> = dimensions[1];
 <a name="l00286"></a>00286         <span class="keywordtype">int</span> nnz = dimensions[3];
 <a name="l00287"></a>00287 
 <a name="l00288"></a>00288         <span class="keywordflow">if</span> (min_d &gt; 0)
@@ -962,7 +962,7 @@
 <a name="l00903"></a>00903         std::string prefix = <span class="stringliteral">&quot;# Dimensions&quot;</span>;
 <a name="l00904"></a>00904         <span class="keywordtype">int</span> i=0;
 <a name="l00905"></a>00905         <span class="keywordtype">int</span> j;
-<a name="l00906"></a>00906         <span class="keywordtype">int</span> <a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>, <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;
+<a name="l00906"></a>00906         <span class="keywordtype">int</span> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a>, <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a>;
 <a name="l00907"></a>00907         <span class="keywordflow">while</span>(!file.eof()) {
 <a name="l00908"></a>00908                         getline(file, line);
 <a name="l00909"></a>00909                         <span class="keywordflow">if</span>(line.compare(0, prefix.size(), prefix) == 0) {
@@ -1010,7 +1010,7 @@
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jun 5 2014 02:49:11 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jun 5 2014 18:16:07 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

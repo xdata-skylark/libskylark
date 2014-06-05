@@ -1,3 +1,5 @@
 <map id="G" name="G">
-<area shape="rect" id="node2" href="$d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html" title="skylark::sketch::hash_transform_t\&lt; InputMatrixType, OutputMatrixType, boost::random::uniform_int_distribution, skylark::utility::rademacher_distribution_t \&gt;" alt="" coords="7,18,935,47"/>
+<area shape="rect" id="node2" href="$d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html" title="skylark::sketch::hash_transform_t\&lt; InputMatrixType, OutputMatrixType, boost::random::uniform_int_distribution, skylark::utility::rademacher_distribution_t \&gt;" alt="" coords="1113,18,2041,47"/>
+<area shape="rect" id="node4" href="$da/dbf/structskylark_1_1sketch_1_1hash__transform__data__t.html" title="skylark::sketch::hash_transform_data_t\&lt; boost::random::uniform_int_distribution, skylark::utility::rademacher_distribution_t \&gt;" alt="" coords="317,18,1064,47"/>
+<area shape="rect" id="node6" href="$d3/dc2/structskylark_1_1sketch_1_1sketch__transform__data__t.html" title="skylark::sketch::sketch_transform_data_t" alt="" coords="7,18,268,47"/>
 </map>

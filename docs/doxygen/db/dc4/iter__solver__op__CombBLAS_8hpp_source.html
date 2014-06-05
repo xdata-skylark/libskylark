@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
-<title>Skylark (Sketching Library): /var/lib/jenkins/jobs/Skylark/workspace/nla/iter_solver_op_CombBLAS.hpp Source File</title>
+<title>Skylark (Sketching Library): /var/lib/jenkins/jobs/Skylark/workspace/algorithms/Krylov/iter_solver_op_CombBLAS.hpp Source File</title>
 
 <link href="../../tabs.css" rel="stylesheet" type="text/css"/>
 <link href="../../doxygen.css" rel="stylesheet" type="text/css" />
@@ -54,7 +54,7 @@
 </div>
 <div class="header">
   <div class="headertitle">
-<div class="title">/var/lib/jenkins/jobs/Skylark/workspace/nla/iter_solver_op_CombBLAS.hpp</div>  </div>
+<div class="title">/var/lib/jenkins/jobs/Skylark/workspace/algorithms/Krylov/iter_solver_op_CombBLAS.hpp</div>  </div>
 </div><!--header-->
 <div class="contents">
 <a href="../../db/dc4/iter__solver__op__CombBLAS_8hpp.html">Go to the documentation of this file.</a><div class="fragment"><pre class="fragment"><a name="l00001"></a>00001 <span class="preprocessor">#ifndef SKYLARK_ITER_SOLVER_OP_COMBBLAS_HPP</span>
@@ -159,8 +159,8 @@
 <a name="l00102"></a><a class="code" href="../../db/d41/structskylark_1_1nla_1_1iter__solver__op__t_3_01SpParMat_3_01IndexType_00_01ValueType_00_01SpDCC14178344ba2736d163d86a71ca75e63f.html#a2e8731beea0781b0b0fd456af404387a">00102</a>   <span class="keyword">static</span> <span class="keywordtype">void</span> mat_vec (<span class="keyword">const</span> <a class="code" href="../../db/d41/structskylark_1_1nla_1_1iter__solver__op__t_3_01SpParMat_3_01IndexType_00_01ValueType_00_01SpDCC14178344ba2736d163d86a71ca75e63f.html#a91d47b102cfe895659b60de09a231416">mpi_matrix_t</a>&amp; A, 
 <a name="l00103"></a>00103                        <span class="keyword">const</span> <a class="code" href="../../d9/d04/structFullyDistMultiVec.html">mpi_multi_vector_t</a>&amp; X,
 <a name="l00104"></a>00104                        <a class="code" href="../../d9/d04/structFullyDistMultiVec.html">mpi_multi_vector_t</a>&amp; AX) {
-<a name="l00106"></a>00106     <a class="code" href="../../db/d41/structskylark_1_1nla_1_1iter__solver__op__t_3_01SpParMat_3_01IndexType_00_01ValueType_00_01SpDCC14178344ba2736d163d86a71ca75e63f.html#a7bb2fcab79c5c0ab5cfb3f6a611aa333">index_t</a> <a class="code" href="../../d8/d1e/regression_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a> = A.getnrow();
-<a name="l00107"></a>00107     <a class="code" href="../../db/d41/structskylark_1_1nla_1_1iter__solver__op__t_3_01SpParMat_3_01IndexType_00_01ValueType_00_01SpDCC14178344ba2736d163d86a71ca75e63f.html#a7bb2fcab79c5c0ab5cfb3f6a611aa333">index_t</a> <a class="code" href="../../d8/d1e/regression_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a> = A.getncol();
+<a name="l00106"></a>00106     <a class="code" href="../../db/d41/structskylark_1_1nla_1_1iter__solver__op__t_3_01SpParMat_3_01IndexType_00_01ValueType_00_01SpDCC14178344ba2736d163d86a71ca75e63f.html#a7bb2fcab79c5c0ab5cfb3f6a611aa333">index_t</a> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#a0d2d8836216fc94b61aa0824eb239db2">m</a> = A.getnrow();
+<a name="l00107"></a>00107     <a class="code" href="../../db/d41/structskylark_1_1nla_1_1iter__solver__op__t_3_01SpParMat_3_01IndexType_00_01ValueType_00_01SpDCC14178344ba2736d163d86a71ca75e63f.html#a7bb2fcab79c5c0ab5cfb3f6a611aa333">index_t</a> <a class="code" href="../../d1/d6a/least__squares_8cpp.html#acfc02ec89670db29251fda6a66602ce2">n</a> = A.getncol();
 <a name="l00108"></a>00108 
 <a name="l00109"></a>00109     <span class="keywordflow">if</span> (n != X.<a class="code" href="../../d9/d04/structFullyDistMultiVec.html#a1e418195055e502c52c672873c53bc59">dim</a>) { <span class="comment">/* error */</span> }
 <a name="l00110"></a>00110 
@@ -228,7 +228,7 @@
 
 
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Jun 5 2014 02:49:11 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Jun 5 2014 18:16:07 for Skylark (Sketching Library) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="../../doxygen.png" alt="doxygen"/>
 </a> 1.7.6.1
 </small></address>

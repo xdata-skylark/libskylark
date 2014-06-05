@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -13,7 +15,7 @@
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
+        URL_ROOT:    '',
         VERSION:     '0.0.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -75,8 +77,8 @@ nonlinear modeling (i.e., kernelized regularized least squares and support vecto
 statistical dimensionality reduction techniques. The implementations are guided by error
 and sensitivity analyses, to give users a high confidence assurance for the accuracy of the
 output of the software stack. Sketching techniques, when used in a straight-forward fashion and on their own, can deliver
-relatively crude, i.e. low accuracy results, since the work to achieve an error of <img class="math" src="_images/math/eaf4418fbe935c15a606516d8f55dc380cd8e822.png" alt="\epsilon"/> can be
-proportional to <img class="math" src="_images/math/e979c0589d93fa6802636f6db4f3f645a247d310.png" alt="1/\epsilon^2"/>. Such crude results can be relevant in themselves: in ranking applications
+relatively crude, i.e. low accuracy results, since the work to achieve an error of <span class="math">\epsilon</span> can be
+proportional to <span class="math">1/\epsilon^2</span>. Such crude results can be relevant in themselves: in ranking applications
 where only an ordinal rank is required rather than the exact value (PageRank, recommender
 systems); in situations where data noise dominates algorithmic error; or where the tradeoff
 between speed and accuracy favors “quick and dirty” results that can be readily refined. Also,
@@ -123,7 +125,7 @@ by essentially replacing calls to traditional NLA kernels with their sketching c
 <p>Skylark builds on distributed Numerical Linear Algebra libraries for Dense and Sparse Matrices, with an MPI backend.
 Organizationally, it comprises of three layers. The core is a library of sketching transforms whose main functionality
 is to enable a variety of input matrix types to be sketched, using transforms specialized for various NLA kernels such as
-least squares (<img class="math" src="_images/math/1d69232050ab0ada641e7e2035f6e7c795795b65.png" alt="l_2"/>) regression, robust regression (<img class="math" src="_images/math/6ee61fd6e8a1926a802b97fc99b66b8687d8f620.png" alt="l_1"/>) and low-rank matrix approximations.
+least squares (<span class="math">l_2</span>) regression, robust regression (<span class="math">l_1</span>) and low-rank matrix approximations.
 These kernels are being implemented in the Numerical Linear Algebra (NLA) layer.</p>
 <p>Skylark uses external libraries to represent distributed input matrices. For
 dense distributed matrices it uses <a class="reference external" href="http://libelemental.org/">Elemental</a>.
@@ -136,7 +138,7 @@ sketching design space for optimal performance in a given domain.  Input matrice
 for single node execution of Skylark.  We use Python bindings for Elemental and Combinatorial BLAS (through <a class="reference external" href="http://kdt.sourceforge.net/wiki/index.php/Main_Page">KDT</a>).</p>
 <p>We also plan to support a streaming interface for out-of-core sketching and matrix computations.</p>
 <p>Currently, a number of distributed sketching transforms are supported in Skylark. The first seven transforms below are implemented, and form the basis of faster
-<img class="math" src="_images/math/c822e194967a4d7e252ddb96ffd993fe9740986c.png" alt="l_2, l_1"/> regression and randomized SVD.</p>
+<span class="math">l_2, l_1</span> regression and randomized SVD.</p>
 <blockquote>
 <div><ul class="simple">
 <li>JLT - Johnson–Lindenstrauss Transform</li>
@@ -250,7 +252,7 @@ which is available at <a class="reference external" href="http://www.apache.org/
     </div>
     <div class="footer">
         &copy; Copyright IBM Corporation 2012-2014.  All Rights Reserved.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

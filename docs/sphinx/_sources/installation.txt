@@ -1,0 +1,667 @@
+.. highlight:: rst
+
+Installation Instructions
+**************************
+
+Getting the source code
+========================
+
+The source code is hosted on github. The libskylark git repository can be cloned using the following command.
+
+::
+
+	git clone git@github.com:xdata-skylark/libskylark.git
+
+Software Dependencies
+======================
+
+ Skylark uses several open-source software packages that are essential for Skylark's operation (build, install, and run). In this section, we give instructions to install these software packages on Ubuntu machines. Installing the required software packages on other operating systems should be very similar.
+
+We can build Skylark in one or more of four possible configurations:
+
+    * Skylark C++ bindings with support for dense (Elemental) matrices skylark-c++-dense
+    * Skylark C++ bindings with support for sparse (CombBLAS) matrices skylark-c++-sparse
+    * Skylark python and C++ bindings with support for dense (Elemental) matrices skylark-python-dense
+    * Skylark python and C++ bindings with support for sparse (CombBLAS) matrices skylark-python-sparse
+
+Please refer to the graph of dependencies for realizing these configurations. Note that nodes with version information within brackets refer to software packages while nodes containing no brackets refer to Skylark build targets. The versions denote the ones that we have tested with, but apart from Elemental, CombBLAS, and KDT versions, which need to be strictly followed, other software (CMake, gfortran, etc) may work just as well with other versions as well. Orange colored components denote C++ dependencies and the color green is used for Python dependencies.
+
+.. image:: skylark-dependencies-mm.png
+
+python-setuptools
+------------------
+
+To get easy_install and others.
+
+*Installation*
+
+::
+
+	sudo apt-get install python-setuptools
+
+g++ (>=4.7.1 for Elemental support)
+------------------------------------
+
+The C++ compiler in the GNU Compiler Collection (GCC).
+
+*Installation:*
+
+::
+
+	sudo apt-get install g++
+
+In case your ubuntu repository does not contain a GCC/G++ version 4.7 use the following:
+
+::
+
+	sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+	sudo apt-get update
+	sudo apt-get install gcc-4.7 g++-4.7
+
+and (optionally) use 4.7 as default compiler:
+
+::
+
+	sudo update-alternatives --remove gcc /usr/bin/gcc-4.6
+	sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.7 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.7
+	sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.6 40 --slave /usr/bin/g++ g++ /usr/bin/g++-4.6
+
+gfortran compiler
+------------------
+
+gfortran is the name of the  GNU  Fortran  compiler, which is part of the  GNU Compiler Collection (GCC).
+
+*Installation:*
+
+::
+
+	sudo apt-get install gfortran
+
+CMake (>= 2.8.8 for Elemental support)
+---------------------------------------
+
+CMake is a cross-platform free software program managing the build process of software using a compiler-independent method. It is designed to support directory hierarchies and applications that depend on multiple libraries, and for use in conjunction with native build environments such as make.
+
+*Installation:*
+
+::
+
+	sudo apt-get install cmake
+
+If the available version is too old, compile CMake by hand (TODO).
+
+BLAS and LAPACK
+----------------
+
+Basic Linear Algebra Subroutine (BLAS) is a de facto application
+programming interface standard for publishing libraries to perform basic
+linear algebra operations such as vector</a> and matrix multiplication.
+LAPACK (Linear Algebra PACKage) is a software library for numerical linear
+algebra. It provides routines systems of linear equations and linear least
+squares, eigenvalue problems, and singular value decomposition. It also
+includes routines to implement the associated QR, Cholesky and Schur
+decomposition.
+
+We provide instructions for using Ubuntu's repository and using OpenBLAS.
+
+*Installation:*
+
+::
+
+	sudo apt-get install libblas-dev libblas-doc libblas3gf liblapack-dev liblapack-doc liblapack3gf
+
+Experiments show good speedups with using OpenBLAS.
+
+::
+
+	wget http://github.com/xianyi/OpenBLAS/tarball/v0.2.8
+
+*Installation (to enable OpenMP support in OpenBLAS):*
+
+::
+
+	make USE_OPENMP=1 FC=gfortran; make install PREFIX=/path/to/install-directory
+
+MPICH2
+--------
+
+MPICH is a freely available, portable implementation of MPI, a standard for
+message-passing for distributed-memory applications used in parallel
+computing. MPICH is free software and is available for most flavors of
+Unix-like OS (including Linux).
+
+*Installation:*
+
+::
+
+	sudo apt-get install libcr-dev mpich2 mpich2-doc
+
+NumPy and SciPy
+----------------
+
+NumPy is an extension to the Python programming language, adding support
+for large, multi-dimensional arrays and matrices, along with a large
+library of high-level mathematica functions to operate on these arrays.
+SciPy is an open source library of algorithms and mathematical tools for
+the Python programming language that grew out of Travis Oliphant's original
+collection of extension modules for Python which he released in 1999 under
+the name Multipack (named for the netlib packages that it brought together
+such as ODEPACK, QUADPACK, and MINPACK).
+
+*Installation:*
+
+::
+
+	sudo apt-get install python-numpy python-scipy
+
+Note: Elemental-0.83 requires a NumPy version >= 1.7. On Ubuntu Precise the
+deb sources only contain version 1.6.x. To upgrade use either:
+
+::
+
+	sudo apt-get install swig
+
+# update numpy on Ubuntu Precise (only 1.6.x installed)
+::
+
+	wget https://launchpad.net/~tukss/+archive/ppa/+build/4055943/+files/python-numpy_1.7.0~b2-1~precise1_amd64.deb
+	sudo dpkg -i python-numpy_1.7.0~b2-1~precise1_amd64.deb
+
+or
+
+::
+
+	sudo easy_install -U scipy
+
+mpi4py
+-------
+
+MPI for Python (mpi4py) provides bindings of the Message Passing Interface
+(MPI) standard for the Python programming language, allowing any Python
+program to exploit multiple processors.
+
+*Installation:*
+
+::
+
+	sudo easy_install mpi4py
+
+hdf5
+----
+
+hdf5 is a portable data model, library and file format for storing and
+managing data.
+
+*Installation:*
+
+::
+
+	wget http://www.hdfgroup.org/ftp/HDF5/current/src/hdf5-1.8.12.tar
+	tar -xvf hdf5-1.8.12.tar
+	cd hdf5-1.8.12
+	./configure --enable-cxx --prefix=<location for HDF5 software>
+	make >& make.out
+	make check >& check.out
+	make install
+
+h5py
+-----
+
+h5py (h5py) provides Python bindings to hdf5, which is a data model,
+library, and file format for storing and managing data.
+
+*Installation:*
+
+::
+
+	sudo apt-get install libhdf5-serial-dev
+	sudo easy_install h5py
+
+Boost C++ 1.53.0
+-----------------
+
+
+Boost is a set of libraries for the C++ programming language that provide
+support for tasks and structures such as linear algebra, pseudorandom
+number generation, multithreading, image processing, regular expressions,
+and unit testing.
+
+*Installation:*
+
+::
+
+	wget http://sourceforge.net/projects/boost/files/boost/1.53.0/boost_1_53_0.tar.gz
+	tar xvfz boost_1_53_0.tar.gz
+	cd boost_1_53_0
+	./bootstrap.sh --with-libraries=mpi,serialization,program_options
+	echo "using mpi ;" >> project-config.jam
+	./b2 link=static,shared
+	sudo ./b2 install
+
+*Compiling with XLC (here on BG/Q)*
+
+This section is inspired by (
+http://www.alcf.anl.gov/user-guides/bgp-boost). First, as usual we call
+bootstrap.
+
+::
+
+	./bootstrap.sh --with-libraries=mpi,serialization,program_options
+
+In a next step, download the attached attachment:bgq.jam Download (based on
+bgp.jam) file and copy to tools/build/v2/tools/. Subsequently, executing
+
+::
+
+	echo "using bgq ;" >> project-config.jam
+	echo "using mpi : /bgsys/drivers/ppcfloor/comm/bin/xl/mpixlcxx ;" >> project-config.jam
+	./b2 link=static,shared toolset=bgq
+
+compiles the selected boost libraries (you might need to adapt the path to mpixlcxx). In case all versions (debug, mt) are required, use --build-type=complete.
+
+Note: Make sure to only use -O2 because -O3 and higher will result in a segfault in the compiler for some packages (e.g. program_options),  see here.
+
+Elemental 0.83
+---------------
+
+Elemental is a framework for distributed-memory dense linear algebra that
+strives to be both fast and convenient. It combines ideas including:
+element-wise matrix distributions ( Hendrickson et al.), object-oriented
+submatrix tracking ( FLAME, van de Geijn et al.), and first-class matrix
+distributions ( PLAPACK, van de Geijn et al.).
+
+We support version 0.83. Elemental's API is a moving target, so new version
+might not work as-is. In order to build the Swig bindings you need a NumPy
+version >= 1.7 (see NumPy installation above) and the Swig toolchain
+
+::
+
+	sudo apt-get install swig
+
+*Installation: (make sure to use a compiler with c++11 support)*
+
+::
+
+	wget http://libelemental.org/pub/releases/elemental-0.83.tgz
+	tar xvfz elemental-0.83.tgz
+	cd elemental-0.83/
+	mkdir build
+	cd build
+	cmake -D USE_SWIG=ON ..
+
+With OpenBLAS, run cmake along the following lines:
+
+::
+
+	cmake -D CMAKE_INSTALL_PREFIX=$HOME/software/elemental-0.81/install -D MATH_LIBS="$HOME/software/xianyi-OpenBLAS-9c51cdf/libopenblas.so;-lm" -D SHARED_LIBRARIES=ON -D CMAKE_BUILD_TYPE=HybridRelease -D ELEM_EXAMPLES=ON ..
+
+Note that the cmake comamnd above may require additional options for
+non-standard Python installations, e.g. Anaconda,
+``*-D  PYTHON_LIBRARY=/path/to/libpython2.7.so  -D PYTHON_INCLUDE_DIR=/path/to/include/python2.7``
+
+Note: Swig needs >= 1024 MB of memory otherwise the compiler crashes while generating the Swig Python interface (make sure to have enough memory available if you compile in a VM).
+
+This installs the main Elemental library. However, we still need to install the Python interface:
+
+::
+
+	sudo cp *.py /usr/local/lib/python2.7/dist-packages/
+	sudo cp _*.so /usr/local/lib/python2.7/dist-packages/
+
+Note: the location of the python library changes between versions of Ubuntu, and obviously across distributions. In case you do not want to copy the python interface around, append the build directory to the $PYTHONPATH environment variable.
+
+Combinatorial BLAS (CombBLAS) 1.4
+----------------------------------
+
+The Combinatorial BLAS is an extensible distributed-memory parallel graph
+library offering a small but powerful set of linear algebra primitives
+specifically targeting graph analytics. We use it in Skylark to represent
+sparse matrices.
+
+*Installation:*
+
+::
+
+	wget http://gauss.cs.ucsb.edu/~aydin/CombBLAS_FILES/CombBLAS_beta_14_0.tgz
+	tar xvfz CombBLAS_beta_14_0.tgz
+	cd CombBLAS/
+	cmake .
+	make
+
+*Shared Libs*
+
+In order to use Skylark through Python, make sure compile and append the
+directory containing the *.so files to your LD_LIBRARY_PATH.
+
+::
+
+	cd CombBLAS/
+	rm CMakeCache.txt
+	cmake -DBUILD_SHARED_LIBS:BOOL=ON .
+	make
+
+KDT
+----
+
+The Knowledge Discovery Toolbox (KDT) provides a Python interface (amongst
+other things) to CombBLAS. Skylark requires this package to handle sparse
+matrices through the Python interface.
+
+To install kdt you need python and python-dev libs:
+
+::
+
+	sudo apt-get install python
+	sudo apt-get install python-dev
+
+Head over to http://kdt.sourceforge.net/wiki/index.php/Download and
+download kdt-0.3.tar.gz. Then execute:
+
+::
+
+	tar xzf kdt-0.3.tar.gz
+	cd kdt-0.3
+	export CC=mpicxx
+	export CXX=mpicxx
+	python setup.py build
+	sudo python setup.py install
+
+See  http://kdt.sourceforge.net/wiki/index.php/Installation for further information.
+
+FFTW 3.3.3
+-----------
+
+FFTW is a C subroutine library for computing the discrete Fourier transform (DFT) in one or more dimensions, of arbitrary input size, and of both real and complex data (as well as of even/odd data, i.e. the discrete cosine/sine transforms or DCT/DST).
+
+*Installation:*
+
+::
+
+	wget http://www.fftw.org/fftw-3.3.3.tar.gz
+	tar xvfz fftw-3.3.3.tar.gz
+	cd fftw-3.3.3/
+	./configure --enable-shared
+	make -j4
+	sudo make install
+
+
+Random123 1.08
+---------------
+
+Random123 is a library of "counter-based" random number generators
+(CBRNGs). We use them in Skylark to generate independent random number
+streams.
+
+*Installation:*
+
+::
+
+	wget http://www.thesalmons.org/john/random123/releases/1.08/Random123-1.08.tar.gz
+	tar xvfz Random123-1.08.tar.gz
+	sudo cp -r Random123-1.08/include/Random123 /usr/local/include
+
+Doxygen
+--------
+
+Doxygen is a documentation generator, a tool for writing software reference
+documentation. The documentation is written within code, and is thus
+relatively easy to keep up to date. Doxygen can cross reference
+documentation and code, so that the reader of a document can easily refer
+to the actual code.
+
+*Installation:*
+
+::
+
+	sudo apt-get install doxygen
+
+Graphviz
+----------
+
+
+Graphviz (short for Graph Visualization Software) is a package of
+open-source tools initiated by AT&T Labs Research for drawing graphs
+specified in DOT language scripts.
+
+*Installation:*
+
+::
+
+	sudo apt-get install graphviz
+
+Building libskylark
+====================
+
+Skylark is relying on Cmake as a build system. Before you start please make
+sure to check out the Section "Installing software dependencies for
+skylark" to learn about the required dependencies.
+
+**Quick guide**: In many situation the default configuration and settings
+should work out of the box. To that end execute
+
+::
+
+	cd $BUILD_DIR
+	CC=mpicc CXX=mpicxx cmake $SRC_DIR
+	make
+	make install
+
+Note: If you have MPI compilers in your PATH environment variable, Cmake
+may overwrite the compiler specified in the CXX flag.
+
+In case you have a more specific setup or this does not work on your
+machine continue reading the next sections.
+
+Directory setup
+----------------
+
+For the rest of this section let's keep the following conventions:
+
+    * the source code is checked out and $SRC_DIR points to the Skylark directory in the XDATA repository, e.g.
+
+	::
+
+		export SRC_DIR=/home/user/workspace/xdata/tools/analytics/ibm/skylark
+
+    * you created a **separate** (do not build in the $SRC_DIR$) build directory $BUILD_DIR` that is used to generate object files, libraries and executables, e.g.
+
+	::
+
+		export BUILD_DIR=/home/user/build/skylark
+
+Build options
+--------------
+
+Skylark accepts build options in order to customize components. The
+following table summarizes all currently available build options: Name
+Default Description USE_ELEMENTAL ON Build with Elemental matrix support
+USE_FFTW ON Build with fftw support USE_COMBBLAS OFF Build with CombBLAS
+sparse matrix support USE_PROFILER OFF Build with internal profiler
+USE_HYBRID OFF Build in hybrid mode OpenMP and MPI (if Elemental was
+compiled in hybrid mode, activate) BUILD_PYTHON ON Build Python interface
+BUILD_EXAMPLES ON Build Skylark examples (see examples directory) BUILD_ML
+ON Build Skylark with machine learning sovlers Build type
+
+You can specify the desired build type with -DCMAKE_BUILD_TYPE=STRING, where STRING is any of
+
++----------------+-------+
+| Name 	         | Flags |
++================+=======+
+| RELWITHDEBINFO |-O3 -g |
++----------------+-------+
+| RELEASE        |-O3    |
++----------------+-------+
+| DEBUG          |-O0 -g |
++----------------+-------+
+
+The default is RELWITHDEBINFO.
+
+Environment variables
+----------------------
+
+The installation of Skylark can be influenced with two variables:
+
+    * the Cmake parameter CMAKE_INSTALL_PREFIX (i.e. pass -DCMAKE_INSTALL_PREFIX=/home/user/software when calling cmake), and
+    * the environment variable $PYTHON_SITE_PACKAGES to determine the installation location for python packages. Don't forget to adapt the $PYTHONPATH environment variable as well. Example: If $PYTHON_SITE_PACKAGES is set to /home/user/local, Cmake will install the Python bindings under /home/user/local/lib/python2.7/site-packages/skylark. At this point, you will have to append $PYTHONPATH with /home/user/local/lib/python2.7/site-packages!
+
+To help Cmake to locate installed dependencies (system-wide installed dependencies should be found automatically), you should set the following environment variables:
+
++----------------------+-----------------------------------------------------------------------------+
+| Name 	               |Description                                                                  |
++======================+=============================================================================+
+| ELEMENTAL_ROOT       |Looks for headers in $ELEMENTAL_ROOT/include and libs in $ELEMENTAL_ROOT/lib |
++----------------------+-----------------------------------------------------------------------------+
+| COMBBLAS_ROOT        |Looks for headers in $COMBBLAS_ROOT/ and libs in $COMBBLAS_ROOT/lib          |
++----------------------+-----------------------------------------------------------------------------+
+| FFTW_ROOT            |Looks for headers in $FFTW_ROOT/include and libs in $FFTW_ROOT/lib           |
++----------------------+-----------------------------------------------------------------------------+
+| BOOST_ROOT           |For non system-wide boost installations                                      |
++----------------------+-----------------------------------------------------------------------------+
+| RANDOM123_ROOT       |Looks for headers in $RANDOM_123_ROOT/include                                |
++----------------------+-----------------------------------------------------------------------------+
+| HDF5_ROOT            |Looks for headers in $HDF5_ROOT/include and libs in $HDF5_ROOT/lib           |
++----------------------+-----------------------------------------------------------------------------+
+
+Configuring, compiling and installing Skylark
+----------------------------------------------
+
+Finally we are ready to configure, compile and install Skylark. The default configuration (compiling Elemental and Python
+support, installed system-wide) can be compiled and installed with:
+
+::
+
+	cd $BUILD_DIR
+	CC=mpicc CXX=mpicxx cmake $SRC_DIR
+	make
+	make install
+
+Note: If you have MPI compilers in your PATH Cmake will use the most generic (e.g. mpicxx) version ( see here). This may
+overwrite the compiler specified in the CXX flag.
+
+The Python packages will most likely be installed under /usr/lib/pythonX.Y/dist-packages (OS and version dependent). Check the
+configure output for more details about default installation paths on your machine.
+
+For the sake of illustration let's assume you want to enable CombBLAS support and install everything in ~/local:
+
+::
+
+	cd $BUILD_DIR
+	export PYTHON_SITE_PACKAGES=~/local/
+	CC=mpicc CXX=mpicxx cmake -DCMAKE_INSTALL_PREFIX=~/local -DWITH_COMBBLAS=ON $SRC_DIR
+	make
+	make install
+
+Notice that we set the PYTHON_SITE_PACKAGES and passed a CMAKE_INSTALL_PREFIX to the cmake command above. Additionally we
+enabled CombBLAS support. Note that you have to make sure that the required libraries are compiled and the environment
+variables correctly point to the installation locations (i.e. export COMBBLAS_ROOT=~/software/combblas/).
+
+Note: If a specific linking type wants to be enforced, check out the CMake variable CMAKE_FIND_LIBRARY_SUFFIXES (e.g. use
+SET(CMAKE_FIND_LIBRARY_SUFFIXES ".so"). Code documentation Doxygen
+
+To generate the documentation (see dependency section for Doxygen installation), run
+
+::
+
+	cd $BUILD_DIR
+	make doc
+
+This will generate the Doxygen documentation under $BUILD_DIR/Documentation. To read the documentation open
+$BUILD_DIR/Documentation/html/index.html in a browser. Sphinx
+
+Make sure to install the Sphinx extensions before you run make sphinx-doc:
+
+::
+
+	cd /tmp
+	svn co https://svn.code.sf.net/p/matplotlib/code/trunk/sampledoc_tut
+	mkdir $HOME/.sphinx_ext
+	cp sampledoc_tut/sphinxext/*.py $HOME/.sphinx_ext
+	rm -rf /tmp/sampledoc_tut
+
+	export SPHINXEXT=$HOME/.sphinx_ext
+
+Then run
+
+::
+
+	cd $BUILD_DIR
+	make sphinx-doc
+
+For latex equations to show up correctly in the sphinx documentation, you may need to install latex.
+
+::
+
+	sudo apt-get install texlive-latex-base
+	sudo apt-get install texlive-latex-extra
+
+and point your browser to $BUILD_DIR/Documentation/sphinx/index.html.
+
+Testing
+-----------
+
+In order to run unit tests, execute
+
+::
+
+	cd $BUILD_DIR
+	make test
+
+Running examples
+-----------------
+
+There are two examples in the example folder (for more see python-skylark). The elemental.cpp shows how C++ code can utilize
+skylark. Run
+
+::
+
+	examples/elemental -help
+
+in the $BUILD_DIR to get a list of available command line options.
+
+Linking against Skylark
+------------------------
+
+If you plan to use Skylark as a library in your project, the following steps are necessary to build and link your application:
+
+    * add the include path of all Skylark headers: ${SKYLARK_INSTALL_DIR}/include (if configured with -DCMAKE_INSTALL_PREFIX=${SKYLARK_INSTALL_DIR),
+    * link against all external libraries used when building Skylark (take a look and maybe reuse the find modules in ${SRC_DIR}/CMakeModules):
+        * FFTW: fftw3.h
+        * Elemental: header files, libelemental, libpmrrr
+        * CombBLAS: header files, libMPITypelib, libCommGridlib, libMemoryPoollib
+        * Random123: threefry.h, MicroURNG.hpp
+        * HDF5: hdf5.h, libhdf5, libhdf5_cpp
+
+
+Using Cmake
+-------------
+
+If you are using Cmake to build your application you can use the Cmake configuration file
+${SKYLARK_INSTALL_DIR}/lib/SKYLARK/SKYLARKConfig.cmake in your CMakeLists.txt to find SKYLARK. After that you can simply
+include ${SKYLARK_INCLUDE_DIRS} and ${SKYLARK_LIBRARIES} when you build and link your application. A very basic Cmake file for
+your project could look like:
+
+::
+
+	cmake_minimum_required (VERSION 2.8.2)
+	project (SAMPLE)
+
+	find_package (SKYLARK REQUIRED HINT ${SKYLARK_INSTALL_DIR}/lib)
+
+	include_directories ( ${SKYLARK_INCLUDE_DIRS} )
+	add_definitions(${SKYLARK_DEFS})
+
+	add_executable(ex_code elemental.cpp)
+	target_link_libraries(ex_code ${SKYLARK_LIBRARIES} )
+	set_target_properties(ex_code PROPERTIES COMPILE_FLAGS "${SKYLARK_CXX_FLAGS}" )
+
+This will pull all the required libs and add all include paths for Skylark and its dependencies. You should be able to compile
+your application painless by following the above recipe. Using XYZ Build System
+
+Take a look at the file in ${SKYLARK_INSTALL_DIR}/lib/SKYLARK/SKYLARKConfig.cmake to see which include directories libraries
+you have to include when using the Skylark library.
+
+Using XYZ Build System
+-----------------------
+
+Take a look at the file in ${SKYLARK_INSTALL_DIR}/lib/SKYLARK/SKYLARKConfig.cmake to see which include directories libraries
+you have to include when using the Skylark library.

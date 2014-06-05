@@ -36,14 +36,14 @@ template < template <typename, typename> class SketchTransform >
 struct randsvd_t {
 
 template <typename InputMatrixType,
-          typename OutputMatrixType1,
+          typename UMatrixType,
           typename SingularValuesMatrixType,
-	  typename OutputMatrixType2>
+	  typename VMatrixType>
 void operator()(InputMatrixType &A,
              int target_rank,
-             OutputMatrixType1 &U,
+             UMatrixType &U,
 	     SingularValuesMatrixType &SV,
-             OutputMatrixType2 &V,
+             VMatrixType &V,
 	     rand_svd_params_t params,
 	     skylark::base::context_t& context) {
 
@@ -73,36 +73,36 @@ void operator()(InputMatrixType &A,
 
 
     /** Apply sketch transformation on the input matrix */
-    OutputMatrixType1 Q(input_height, sketch_size);
+    UMatrixType Q(input_height, sketch_size);
 
-    typedef typename SketchTransform<InputMatrixType, OutputMatrixType1>::data_type sketch_data_type;
+    typedef typename SketchTransform<InputMatrixType, UMatrixType>::data_type sketch_data_type;
     sketch_data_type sketch_data(input_width, sketch_size, context);
-    //typedef typename SketchTransform<InputMatrixType, OutputMatrixType1> sketch_transform_type;
-    SketchTransform<InputMatrixType, OutputMatrixType1> sketch_transform(sketch_data);
+    //typedef typename SketchTransform<InputMatrixType, UMatrixType> sketch_transform_type;
+    SketchTransform<InputMatrixType, UMatrixType> sketch_transform(sketch_data);
     sketch_transform.apply(A, Q, skylark::sketch::rowwise_tag());
 
 #if 0
     if (params.transform == sketch::c::transform_type_t::JLT)
 	{
-	  typedef typename skylark::sketch::JLT_t<InputMatrixType, OutputMatrixType1>::data_type sketch_data_type;
+	  typedef typename skylark::sketch::JLT_t<InputMatrixType, UMatrixType>::data_type sketch_data_type;
 	  sketch_data_type sketch_data(input_width, sketch_size, context);
-    	  typedef typename skylark::sketch::JLT_t<InputMatrixType, OutputMatrixType1> sketch_transform_type;
+    	  typedef typename skylark::sketch::JLT_t<InputMatrixType, UMatrixType> sketch_transform_type;
 	  sketch_transform_type sketch_transform(sketch_data);
     	  sketch_transform.apply(A, Q, skylark::sketch::rowwise_tag());
 	}
     else if (params.transform == sketch::c::transform_type_t::FJLT)
 	{
-	  typedef typename skylark::sketch::FJLT_t<InputMatrixType, OutputMatrixType1>::data_type sketch_data_type;
+	  typedef typename skylark::sketch::FJLT_t<InputMatrixType, UMatrixType>::data_type sketch_data_type;
 	  sketch_data_type sketch_data(input_width, sketch_size, context);
-    	  typedef typename skylark::sketch::FJLT_t<InputMatrixType, OutputMatrixType1> sketch_transform_type;
+    	  typedef typename skylark::sketch::FJLT_t<InputMatrixType, UMatrixType> sketch_transform_type;
 	  sketch_transform_type sketch_transform(sketch_data);
     	  sketch_transform.apply(A, Q, skylark::sketch::rowwise_tag());
 	}
     else if (params.transform == sketch::c::transform_type_t::CWT)
 	{
-	  /*typedef typename skylark::sketch::CWT_t<InputMatrixType, OutputMatrixType1>::data_type sketch_data_type;
+	  /*typedef typename skylark::sketch::CWT_t<InputMatrixType, UMatrixType>::data_type sketch_data_type;
 	  sketch_data_type sketch_data(input_width, sketch_size, context);
-    	  typedef typename skylark::sketch::CWT_t<InputMatrixType, OutputMatrixType1> sketch_transform_type;
+    	  typedef typename skylark::sketch::CWT_t<InputMatrixType, UMatrixType> sketch_transform_type;
 	  sketch_transform_type sketch_transform(sketch_data);
     	  sketch_transform.apply(A, Q, skylark::sketch::rowwise_tag());*/
 	}
@@ -124,7 +124,7 @@ void operator()(InputMatrixType &A,
      */
 
 
-    OutputMatrixType1 Y;
+    UMatrixType Y;
 
     /** Q = QR(Q) */
     skylark::base::qr::Explicit(Q);
@@ -144,7 +144,7 @@ void operator()(InputMatrixType &A,
 
 
     /** SVD of projected A and then project-back left singular vectors */
-    OutputMatrixType1 B;
+    UMatrixType B;
     skylark::base::Gemm(elem::ADJOINT, elem::NORMAL,
 		    double(1), Q, A, B);
     skylark::base::SVD(B, SV, V);

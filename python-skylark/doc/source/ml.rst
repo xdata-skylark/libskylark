@@ -15,13 +15,13 @@ The implementations combine two ideas:
 	* Constructing randomized approximations to Kernel functions *on the fly*
         * Using a distributed optimization solver based on Alternating Directions Method of Multipliers (ADMM)
  
-The full implementation is described in the following paper:
+The full implementation (under *libskylark/ml*) is described in the following paper:
 	* Sindhwani V. and Avron H., High-performance Kernel Machines with Implicit Distributed Optimization and Randomization, 2014
 
 Standalone Usage 
 ----------------- 
 
-Building libskylark creates an executable called skylark_ml under CMAKE_PREFIX_INSTALL/bin. This executable can be 
+Building libskylark creates an executable called **skylark_ml** under CMAKE_PREFIX_INSTALL/bin. This executable can be 
 used out-of-the-box for large-scale applications involving kernel-based modeling.
  
 Input Data Format
@@ -40,14 +40,14 @@ sparse format.
 We also support `HDF5 <http://www.hdfgroup.org/HDF5/>`_ data files. 
 
 	* Dense training data can be described using HDF5 files containing two `HDF5 datasets <http://www.hdfgroup.org/HDF5/Tutor/crtdat.html>`_: 
-		* X -- n x d matrix  (examples-by-features)
-		* Y -- n x 1 matrix of labels. 
+		* *X* -- n x d matrix  (examples-by-features)
+		* *Y* -- n x 1 matrix of labels. 
 	* Sparse training data can be described using HDF5 files containing five `HDF5 datasets <http://www.hdfgroup.org/HDF5/Tutor/crtdat.html>`_ specifying a Compressed Row Storage Sparse matrix: 
-		* dimensions: 3 x 1 matrix [number of features, number of examples, number of nonzeros (nnz)]
-                * indices: nnz x 1 matrix column indices of non-zero values for CRS datastructure representing the examples-by-features sparse matrix
-		* values: nnz x 1 non-zero values corresponding to indices
- 		* indptr: (n+1) x 1 - pointer into indices, values specifying rows
-		* Y: n x 1 matrix of labels
+		* *dimensions*: 3 x 1 matrix [number of features, number of examples, number of nonzeros (nnz)]
+                * *indices*: nnz x 1 matrix column indices of non-zero values for CRS datastructure representing the examples-by-features sparse matrix
+		* *values*: nnz x 1 non-zero values corresponding to indices
+ 		* *indptr*: (n+1) x 1 - pointer into indices, values specifying rows
+		* *Y*: n x 1 matrix of labels
 
 *Note*: For all fileformats described above, the current implementation is geared towards classification problems and 
 requires the label to assume values from 0 to (K-1) for a K-class problem, or +1/-1 for binary classification problems.

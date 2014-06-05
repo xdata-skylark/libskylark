@@ -15,7 +15,7 @@ The implementations combine two ideas:
 	* Constructing randomized approximations to Kernel functions *on the fly*
         * Using a distributed optimization solver based on Alternating Directions Method of Multipliers (ADMM)
  
-The full implementation is described in the following papers:
+The full implementation is described in the following paper:
 	* Sindhwani V. and Avron H., High-performance Kernel Machines with Implicit Distributed Optimization and Randomization, 2014
 
 Standalone Usage 
@@ -23,7 +23,6 @@ Standalone Usage
 
 Building libskylark creates an executable called skylark_ml under CMAKE_PREFIX_INSTALL/bin. This executable can be 
 used out-of-the-box for large-scale applications involving kernel-based modeling.
-
  
 Input Data Format
 ------------------
@@ -53,15 +52,32 @@ We also support `HDF5 <http://www.hdfgroup.org/HDF5/>`_ data files.
 *Note*: For all fileformats described above, the current implementation is geared towards classification problems and 
 requires the label to assume values from 0 to (K-1) for a K-class problem, or +1/-1 for binary classification problems.
 
+
+
 Quick Example
 ===============
+ 
+**Download USPS digit recognition dataset.**
 
 ::
+
  	wget http://vikas.sindhwani.org/usps.tar.gz
 	tar -xvzf usps.tar.gz
-	
-	
+  
+**Train a randomized SVM with Gaussian Kernel**
 
+:: 
+
+	./skylark_ml -g 10 -k 1 -l 2 -i 20 --trainfile usps.train --valfile usps.test --modelfile model
+
+**Test with the generated model**
+
+::
+
+	./skylark_ml --testfile usps.test --modelfile model
+
+
+The above executable can be passed to mpiexec for distributed execution.	
 
 Commandline Usage
 ==================

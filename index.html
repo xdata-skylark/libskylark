@@ -80,7 +80,7 @@
             </tbody>
         </table>
 
-        <h3><a name="libskylark" class="anchor" href="#libskylark">
+        <h3 style="margin-top: 20px;"><a name="libskylark" class="anchor" href="#libskylark">
             <span class="octicon octicon-link"></span></a>Quick Install Guide</h3>
 
         <p>Skylark is relying on Cmake as a build system. Before you start please
@@ -91,10 +91,12 @@
         <p>In many situation the default configuration and settings should work
         out of the box. To that end execute</p>
 
+        <pre><code>
             cd $BUILD_DIR
             CC=mpicc CXX=mpicxx cmake $SRC_DIR
             make
             make install
+        </code></pre>
 
         <p>Note: If you have MPI compilers in your PATH environment variable,
         Cmake may overwrite the compiler specified in the CXX flag.</p>

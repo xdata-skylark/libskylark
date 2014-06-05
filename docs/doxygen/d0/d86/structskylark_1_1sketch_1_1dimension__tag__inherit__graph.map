@@ -1,0 +1,4 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$df/d8f/structskylark_1_1sketch_1_1columnwise__tag.html" title="Apply the sketch/transform to the columns. In matrix form this is A&#45;&gt;SA." alt="" coords="5,83,219,112"/>
+<area shape="rect" id="node5" href="$d4/d9b/structskylark_1_1sketch_1_1rowwise__tag.html" title="Apply the sketch/transform to the rows. In matrix form this is A&#45;&gt;AS^T." alt="" coords="243,83,435,112"/>
+</map>

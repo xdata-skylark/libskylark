@@ -79,6 +79,29 @@
                 </tr>
             </tbody>
         </table>
+
+        <h3><a name="libskylark" class="anchor" href="#libskylark">
+            <span class="octicon octicon-link"></span></a>Quick Install Guide</h3>
+
+        <p>Skylark is relying on Cmake as a build system. Before you start please
+        make sure to check out the Section
+        <a href="docs/sphinx/installation.html#software-dependencies">Installing software dependencies for skylark</a>
+        to learn about the required dependencies.</p>
+
+        <p>In many situation the default configuration and settings should work
+        out of the box. To that end execute</p>
+
+            cd $BUILD_DIR
+            CC=mpicc CXX=mpicxx cmake $SRC_DIR
+            make
+            make install
+
+        <p>Note: If you have MPI compilers in your PATH environment variable,
+        Cmake may overwrite the compiler specified in the CXX flag.</p>
+
+        In case you have a more specific setup or this does not work on your
+        machine continue reading the next
+        <a href="docs/sphinx/installation.html#building-libskylark">installation documentation</a>.
         </section>
 
         <footer>

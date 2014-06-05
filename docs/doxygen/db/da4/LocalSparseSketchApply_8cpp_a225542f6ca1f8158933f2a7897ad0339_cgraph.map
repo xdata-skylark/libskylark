@@ -1,0 +1,5 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#ac899bcbff87aa859ada4b0e2f7705205" title="skylark::sketch::hash_transform_t\&lt; InputMatrixType, OutputMatrixType, boost::random::uniform_int_distribution, skylark::utility::rademacher_distribution_t \&gt;::apply" alt="" coords="133,5,1101,35"/>
+<area shape="rect" id="node5" href="$d1/d98/structDummy__t.html#a79ebaae525d354043b53460d5f15e31c" title="Dummy_t::getRowIdx" alt="" coords="543,59,692,88"/>
+<area shape="rect" id="node7" href="$d1/d98/structDummy__t.html#a22a2724d34da8a5410e96e289779619d" title="Dummy_t::getRowValues" alt="" coords="532,112,703,141"/>
+</map>

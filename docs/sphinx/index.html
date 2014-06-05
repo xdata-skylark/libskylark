@@ -1,0 +1,211 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>libskylark: Sketching-based Matrix Computations for Machine Learning &mdash; LIBSKYLARK 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="LIBSKYLARK 0.0.1 documentation" href="#" />
+    <link rel="next" title="Introduction" href="introduction.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="introduction.html" title="Introduction"
+             accesskey="N">next</a> |</li>
+        <li><a href="#">LIBSKYLARK 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="libskylark-sketching-based-matrix-computations-for-machine-learning">
+<h1>libskylark: Sketching-based Matrix Computations for Machine Learning<a class="headerlink" href="#libskylark-sketching-based-matrix-computations-for-machine-learning" title="Permalink to this headline">¶</a></h1>
+<p><strong>Contents:</strong></p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#goals">Goals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#sketching-and-sampling-methods">Sketching and Sampling Methods</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="introduction.html#more-technical-details">More Technical Details</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#implementation-plan-and-current-status">Implementation Plan and Current Status</a></li>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#license-and-copyright">License and Copyright</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation Instructions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#getting-the-source-code">Getting the source code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#software-dependencies">Software Dependencies</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#python-setuptools">python-setuptools</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#g-4-7-1-for-elemental-support">g++ (&gt;=4.7.1 for Elemental support)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#gfortran-compiler">gfortran compiler</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#cmake-2-8-8-for-elemental-support">CMake (&gt;= 2.8.8 for Elemental support)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#blas-and-lapack">BLAS and LAPACK</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#mpich2">MPICH2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#numpy-and-scipy">NumPy and SciPy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#mpi4py">mpi4py</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#hdf5">hdf5</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#h5py">h5py</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#boost-c-1-53-0">Boost C++ 1.53.0</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#elemental-0-83">Elemental 0.83</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#combinatorial-blas-combblas-1-4">Combinatorial BLAS (CombBLAS) 1.4</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#kdt">KDT</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#fftw-3-3-3">FFTW 3.3.3</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#random123-1-08">Random123 1.08</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#doxygen">Doxygen</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#graphviz">Graphviz</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#building-libskylark">Building libskylark</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#directory-setup">Directory setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#build-options">Build options</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#environment-variables">Environment variables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#configuring-compiling-and-installing-skylark">Configuring, compiling and installing Skylark</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#testing">Testing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#running-examples">Running examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#linking-against-skylark">Linking against Skylark</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#using-cmake">Using Cmake</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#using-xyz-build-system">Using XYZ Build System</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="sketching.html">Sketching Layer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="sketching.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sketching.html#overview-of-high-performance-distributed-sketching-implementation">Overview of High-performance Distributed Sketching Implementation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sketching.html#libskylark-s-sketching-layer">Libskylark&#8217;s Sketching Layer</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="sketching.html#sketching-transforms">Sketching Transforms</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sketching.html#sketching-layer-in-c">Sketching Layer in C++</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="sketching.html#using-the-c-sketching-layer">Using the C++ Sketching layer</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="sketching.html#python-sketching-interface">Python Sketching Interface</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="sketching.html#supported-sketching-transforms-in-python">Supported Sketching Transforms in Python</a></li>
+<li class="toctree-l4"><a class="reference internal" href="sketching.html#using-the-python-interface">Using the Python interface</a></li>
+<li class="toctree-l4"><a class="reference internal" href="sketching.html#sketchtransform-class">SketchTransform Class</a></li>
+<li class="toctree-l4"><a class="reference internal" href="sketching.html#python-sketch-classes">Python Sketch Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="sketching.html#python-examples">Python Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="sketching.html#sketching-dense-distributed-matrices">Sketching Dense Distributed Matrices</a></li>
+<li class="toctree-l4"><a class="reference internal" href="sketching.html#python-example-sketching-sparse-distributed-matrices">Python Example: Sketching Sparse Distributed Matrices</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ml.html">Machine Learning</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ml.html#randomized-kernel-methods">Randomized Kernel Methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ml.html#commandline-usage">Commandline Usage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ml.html#statistical-dimensionality-reduction">Statistical Dimensionality Reduction</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="io.html">IO in Skylark</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="io.html#example">Example</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference internal" href="py-modindex.html"><em>Module Index</em></a></li>
+<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">libskylark: Sketching-based Matrix Computations for Machine Learning</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+  <h4>Next topic</h4>
+  <p class="topless"><a href="introduction.html"
+                        title="next chapter">Introduction</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="introduction.html" title="Introduction"
+             >next</a> |</li>
+        <li><a href="#">LIBSKYLARK 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright IBM Corporation 2012-2014.  All Rights Reserved.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

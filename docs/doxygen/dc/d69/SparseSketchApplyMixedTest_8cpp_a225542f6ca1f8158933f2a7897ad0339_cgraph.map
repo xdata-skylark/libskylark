@@ -1,0 +1,9 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$d0/dca/structskylark_1_1sketch_1_1hash__transform__t.html#ac899bcbff87aa859ada4b0e2f7705205" title="skylark::sketch::hash_transform_t\&lt; InputMatrixType, OutputMatrixType, boost::random::uniform_int_distribution, skylark::utility::rademacher_distribution_t \&gt;::apply" alt="" coords="133,16,1101,45"/>
+<area shape="rect" id="node5" href="$dc/d69/SparseSketchApplyMixedTest_8cpp.html#a1fbb7315f4ecdc9da1e3205db974dd30" title="compare_result" alt="" coords="563,69,672,99"/>
+<area shape="rect" id="node7" href="$d4/dad/SparseSketchApplyCombBLASTest_8cpp.html#aaf27124015450762176dbd30a09a0451" title="compute_sketch_matrix" alt="" coords="537,123,697,152"/>
+<area shape="rect" id="node9" href="$d3/d18/namespaceskylark_1_1base.html#a8f7ed6aa7741ff54e546fa88fc706a53" title="skylark::base::Gemm" alt="" coords="544,176,691,205"/>
+<area shape="rect" id="node13" href="$d1/d98/structDummy__t.html#a79ebaae525d354043b53460d5f15e31c" title="Dummy_t::getRowIdx" alt="" coords="543,229,692,259"/>
+<area shape="rect" id="node15" href="$d1/d98/structDummy__t.html#a22a2724d34da8a5410e96e289779619d" title="Dummy_t::getRowValues" alt="" coords="532,283,703,312"/>
+<area shape="rect" id="node11" href="$d1/dfc/structskylark_1_1base_1_1computed__matrix__t.html#a450ee5429c4a1abaa83002f8e9b45eb5" title="skylark::base::computed_matrix_t::materialize" alt="" coords="1149,176,1440,205"/>
+</map>

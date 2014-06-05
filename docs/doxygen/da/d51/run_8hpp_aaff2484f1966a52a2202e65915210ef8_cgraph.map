@@ -1,0 +1,7 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$db/d89/classBlockADMMSolver.html#ad81becc2e8641c30b922ebaa72b9f169" title="BlockADMMSolver::set_cache_transform" alt="" coords="135,5,396,35"/>
+<area shape="rect" id="node5" href="$db/d89/classBlockADMMSolver.html#aaf49b7e6ce45d6756e40fcd6a2b49c43" title="BlockADMMSolver::set_maxiter" alt="" coords="161,59,369,88"/>
+<area shape="rect" id="node7" href="$db/d89/classBlockADMMSolver.html#a3106326d339e9a76ca1bfa9199f579a2" title="BlockADMMSolver::set_nthreads" alt="" coords="157,112,373,141"/>
+<area shape="rect" id="node9" href="$db/d89/classBlockADMMSolver.html#ac1a0bb583fd91bce7197c3b6027969a7" title="BlockADMMSolver::set_rho" alt="" coords="173,165,357,195"/>
+<area shape="rect" id="node11" href="$db/d89/classBlockADMMSolver.html#ae318b4baa3482eb8707a62f3baaee6b1" title="BlockADMMSolver::set_tol" alt="" coords="176,219,355,248"/>
+</map>

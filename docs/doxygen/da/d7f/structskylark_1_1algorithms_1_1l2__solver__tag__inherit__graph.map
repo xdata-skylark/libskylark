@@ -1,0 +1,7 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$d0/dce/structskylark_1_1algorithms_1_1iterative__l2__solver__tag.html" title="skylark::algorithms::iterative_l2_solver_tag\&lt; KrylovMethod \&gt;" alt="" coords="273,5,647,35"/>
+<area shape="rect" id="node5" href="$d8/d82/structskylark_1_1algorithms_1_1ne__l2__solver__tag.html" title="Tag for using normal equations to solve L2 linear regression problems." alt="" coords="341,59,579,88"/>
+<area shape="rect" id="node7" href="$db/d5a/structskylark_1_1algorithms_1_1qr__l2__solver__tag.html" title="Tag for using QR to solve L2 linear regression problems." alt="" coords="343,112,577,141"/>
+<area shape="rect" id="node9" href="$d9/dd9/structskylark_1_1algorithms_1_1sne__l2__solver__tag.html" title="Tag for using semi&#45;normal equations to solve L2 linear regression problems." alt="" coords="337,165,583,195"/>
+<area shape="rect" id="node11" href="$d7/d06/structskylark_1_1algorithms_1_1svd__l2__solver__tag.html" title="Tag for using SVD to solve L2 linear regression problems." alt="" coords="337,219,583,248"/>
+</map>

@@ -1,0 +1,8 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$d3/d18/namespaceskylark_1_1base.html#a8f7ed6aa7741ff54e546fa88fc706a53" title="skylark::base::Gemm" alt="" coords="232,5,379,35"/>
+<area shape="rect" id="node7" href="$d3/d18/namespaceskylark_1_1base.html#a8765cb27091c3ce9e4c3b476b78a5d22" title="skylark::base::Height" alt="" coords="232,59,379,88"/>
+<area shape="rect" id="node11" href="$d3/d18/namespaceskylark_1_1base.html#afbb35d81fb98da3e9c6b519101ba9d2d" title="skylark::base::Width" alt="" coords="235,112,376,141"/>
+<area shape="rect" id="node5" href="$d1/dfc/structskylark_1_1base_1_1computed__matrix__t.html#a450ee5429c4a1abaa83002f8e9b45eb5" title="skylark::base::computed_matrix_t::materialize" alt="" coords="427,5,717,35"/>
+<area shape="rect" id="node9" href="$dc/dbf/structskylark_1_1base_1_1sparse__matrix__t.html#a7c726f818c6b38279653d087ee9cebb9" title="skylark::base::sparse_matrix_t::height" alt="" coords="451,59,693,88"/>
+<area shape="rect" id="node13" href="$dc/dbf/structskylark_1_1base_1_1sparse__matrix__t.html#a7de5d2d055e4526b115c804426b23ab1" title="skylark::base::sparse_matrix_t::width" alt="" coords="452,112,692,141"/>
+</map>

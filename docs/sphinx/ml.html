@@ -1,0 +1,186 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Machine Learning &mdash; LIBSKYLARK 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="LIBSKYLARK 0.0.1 documentation" href="index.html" />
+    <link rel="next" title="IO in Skylark" href="io.html" />
+    <link rel="prev" title="Sketching Layer" href="sketching.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="io.html" title="IO in Skylark"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="sketching.html" title="Sketching Layer"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">LIBSKYLARK 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="machine-learning">
+<h1>Machine Learning<a class="headerlink" href="#machine-learning" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="randomized-kernel-methods">
+<h2>Randomized Kernel Methods<a class="headerlink" href="#randomized-kernel-methods" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="commandline-usage">
+<h2>Commandline Usage<a class="headerlink" href="#commandline-usage" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><pre>./hilbert
+Running Hilbert...
+the option '--modelfile' is required but missing
+Usage: hilbert [options] --trainfile trainfile --modelfile modelfile
+Usage: hilbert --modelfile modelfile --testfile testfile :
+  -h [ --help ]                         produce a help message
+  -l [ --lossfunction ] arg (=0)        Loss function (0:SQUARED, 1:LAD,
+                                        2:HINGE, 3:LOGISTIC
+  -r [ --regularizer ] arg (=0)         Regularizer (0:L2, 1:L1)
+  -k [ --kernel ] arg (=0)              Kernel (0:LINEAR, 1:GAUSSIAN,
+                                        2:POLYNOMIAL, 3:LAPLACIAN,
+                                        4:EXPSEMIGROUP)
+  -g [ --kernelparam ] arg (=1)         Kernel Parameter
+  -x [ --kernelparam2 ] arg (=0)        If Applicable - Second Kernel Parameter
+                                        (Polynomial Kernel: c)
+  -y [ --kernelparam3 ] arg (=1)        If Applicable - Third Kernel Parameter
+                                        (Polynomial Kernel: gamma)
+  -c [ --lambda ] arg (=0)              Regularization Parameter
+  -e [ --tolerance ] arg (=0.001)       Tolerance
+  --rho arg (=1)                        ADMM rho parameter
+  -s [ --seed ] arg (=12345)            Seed for Random Number Generator
+  -f [ --randomfeatures ] arg (=100)    Number of Random Features (default:
+                                        100)
+  -n [ --numfeaturepartitions ] arg (=1)
+                                        Number of Feature Partitions (default:
+                                        1)
+  -t [ --numthreads ] arg (=1)          Number of Threads (default: 1)
+  --regular arg (=1)                    Default is to use 'fast' feature
+                                        mapping, if available.Use this flag to
+                                        force regular mapping (default: false)
+  --cachetransforms arg (=0)            Default is to not cache feature
+                                        transforms per iteration, but generate
+                                        on flyUse this flag to force transform
+                                        caching if you have enough memory
+                                        (default: false)
+  --fileformat arg (=0)                 Fileformat (default: 0 (libsvm-&gt;dense),
+                                        1 (libsvm-&gt;sparse), 2 (hdf5-&gt;dense), 3
+                                        (hdf5-&gt;sparse)
+  -i [ --MAXITER ] arg (=100)           Maximum Number of Iterations (default:
+                                        100)
+  --trainfile arg                       Training data file (required in
+                                        training mode)
+  --modelfile arg                       Model output file
+  --valfile arg                         Validation file (optional)
+  --testfile arg                        Test file (optional in training mode;
+                                        required in testing mode)</pre>
+</div>
+<div class="section" id="statistical-dimensionality-reduction">
+<h3>Statistical Dimensionality Reduction<a class="headerlink" href="#statistical-dimensionality-reduction" title="Permalink to this headline">¶</a></h3>
+<p>Principal Component Analysis and Canonical Component Analysis. Dependency on randomized low-rank approximations (SVD)
+implementation in the NLA layer.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Machine Learning</a><ul>
+<li><a class="reference internal" href="#randomized-kernel-methods">Randomized Kernel Methods</a></li>
+<li><a class="reference internal" href="#commandline-usage">Commandline Usage</a><ul>
+<li><a class="reference internal" href="#statistical-dimensionality-reduction">Statistical Dimensionality Reduction</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="sketching.html"
+                        title="previous chapter">Sketching Layer</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="io.html"
+                        title="next chapter">IO in Skylark</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/ml.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="io.html" title="IO in Skylark"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="sketching.html" title="Sketching Layer"
+             >previous</a> |</li>
+        <li><a href="index.html">LIBSKYLARK 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright IBM Corporation 2012-2014.  All Rights Reserved.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

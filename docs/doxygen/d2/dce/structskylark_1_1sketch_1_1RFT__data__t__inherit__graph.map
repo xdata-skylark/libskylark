@@ -1,0 +1,5 @@
+<map id="G" name="G">
+<area shape="rect" id="node5" href="$d4/def/structskylark_1_1sketch_1_1RFT__t_3_01elem_1_1DistMatrix_3_01ValueType_00_01ColDist_00_01elem_1_465bf6c27c8b76a5dd5410cb0d70314b.html" title="skylark::sketch::RFT_t\&lt; elem::DistMatrix\&lt; ValueType, ColDist, elem::STAR \&gt;, elem::DistMatrix\&lt; ValueType, ColDist, elem::STAR \&gt;, KernelDistribution \&gt;" alt="" coords="681,5,1607,35"/>
+<area shape="rect" id="node7" href="$d8/d36/structskylark_1_1sketch_1_1RFT__t_3_01InputType_3_01ValueType_01_4_00_01elem_1_1Matrix_3_01Value5b8014629159152e0a0419d5d82d2231.html" title="skylark::sketch::RFT_t\&lt; InputType\&lt; ValueType \&gt;, elem::Matrix\&lt; ValueType \&gt;, KernelDistribution \&gt;" alt="" coords="844,59,1444,88"/>
+<area shape="rect" id="node2" href="$d3/dc2/structskylark_1_1sketch_1_1sketch__transform__data__t.html" title="skylark::sketch::sketch_transform_data_t" alt="" coords="7,32,268,61"/>
+</map>

@@ -1,0 +1,36 @@
+<map id="G" name="G">
+<area shape="rect" id="node5" href="$d9/da3/skylark_8hpp.html" title="skylark.hpp" alt="" coords="1119,315,1207,344"/>
+<area shape="rect" id="node64" href="$d2/da3/context_8hpp.html" title="context.hpp" alt="" coords="816,624,907,653"/>
+<area shape="rect" id="node106" href="$d2/dcb/kernels_8hpp.html" title="kernels.hpp" alt="" coords="1439,315,1527,344"/>
+<area shape="rect" id="node111" href="$dd/d14/hilbert_8hpp.html" title="hilbert.hpp" alt="" coords="1737,83,1820,112"/>
+<area shape="rect" id="node11" href="$db/d16/config_8h.html" title="config.h" alt="" coords="552,701,619,731"/>
+<area shape="rect" id="node13" href="$d1/d4e/utility_8hpp.html" title="utility/utility.hpp" alt="" coords="636,392,748,421"/>
+<area shape="rect" id="node32" href="$dd/d3c/base_8hpp.html" title="../base/base.hpp" alt="" coords="1256,547,1373,576"/>
+<area shape="rect" id="node86" href="$d7/d36/sketch_8hpp.html" title="sketch/sketch.hpp" alt="" coords="1251,392,1379,421"/>
+<area shape="rect" id="node89" href="$d8/d0a/nla_8hpp.html" title="nla/nla.hpp" alt="" coords="845,392,931,421"/>
+<area shape="rect" id="node91" href="$d5/d81/algorithms_8hpp.html" title="algorithms/algorithms.hpp" alt="" coords="955,392,1125,421"/>
+<area shape="rect" id="node15" href="$d2/d90/comm_8hpp.html" title="comm.hpp" alt="" coords="608,624,691,653"/>
+<area shape="rect" id="node22" href="$d0/df9/distributions_8hpp.html" title="distributions.hpp" alt="" coords="301,469,419,499"/>
+<area shape="rect" id="node25" href="$d6/d95/randgen_8hpp.html" title="randgen.hpp" alt="" coords="643,701,736,731"/>
+<area shape="rect" id="node29" href="$d8/d34/get__communicator_8hpp.html" title="get_communicator.hpp" alt="" coords="711,469,865,499"/>
+<area shape="rect" id="node43" href="$d3/daa/typer_8hpp.html" title="../utility/typer.hpp" alt="" coords="304,779,427,808"/>
+<area shape="rect" id="node79" href="$d5/dd8/elem__extender_8hpp.html" title="elem_extender.hpp" alt="" coords="296,701,427,731"/>
+<area shape="rect" id="node83" href="$d8/d68/external_8hpp.html" title="external/external.hpp" alt="" coords="545,469,687,499"/>
+<area shape="rect" id="node18" href="$d7/d1e/exception_8hpp.html" title="../base/exception.hpp" alt="" coords="1613,701,1760,731"/>
+<area shape="rect" id="node39" href="$d7/df8/sparse__matrix_8hpp.html" title="sparse_matrix.hpp" alt="" coords="1784,701,1912,731"/>
+<area shape="rect" id="node41" href="$d0/d05/computed__matrix_8hpp.html" title="computed_matrix.hpp" alt="" coords="1392,701,1539,731"/>
+<area shape="rect" id="node47" href="$d2/d24/basic_8hpp.html" title="basic.hpp" alt="" coords="1192,624,1269,653"/>
+<area shape="rect" id="node49" href="$dd/def/query_8hpp.html" title="query.hpp" alt="" coords="1293,624,1371,653"/>
+<area shape="rect" id="node51" href="$d0/d3e/viewing_8hpp.html" title="viewing.hpp" alt="" coords="1395,624,1485,653"/>
+<area shape="rect" id="node53" href="$d7/deb/copy_8hpp.html" title="copy.hpp" alt="" coords="1509,624,1584,653"/>
+<area shape="rect" id="node55" href="$d0/d3f/Trsm_8hpp.html" title="Trsm.hpp" alt="" coords="1608,624,1685,653"/>
+<area shape="rect" id="node57" href="$d0/d97/Gemm_8hpp.html" title="Gemm.hpp" alt="" coords="981,624,1067,653"/>
+<area shape="rect" id="node109" href="$da/d33/feature__transform__tags_8hpp.html" title="feature_transform_tags.hpp" alt="" coords="1403,392,1584,421"/>
+<area shape="rect" id="node113" href="$de/d75/FunctionProx_8hpp.html" title="FunctionProx.hpp" alt="" coords="1825,237,1948,267"/>
+<area shape="rect" id="node116" href="$db/d95/options_8hpp.html" title="options.hpp" alt="" coords="1927,315,2015,344"/>
+<area shape="rect" id="node120" href="$df/d93/utils_8hpp.html" title="utils.hpp" alt="" coords="1445,160,1515,189"/>
+<area shape="rect" id="node123" href="$dc/ddc/model_8hpp.html" title="model.hpp" alt="" coords="1668,237,1751,267"/>
+<area shape="rect" id="node137" href="$d2/dc6/io_8hpp.html" title="io.hpp" alt="" coords="2117,237,2173,267"/>
+<area shape="rect" id="node146" href="$dc/d50/BlockADMM_8hpp.html" title="BlockADMM.hpp" alt="" coords="1473,237,1593,267"/>
+<area shape="rect" id="node153" href="$da/d51/run_8hpp.html" title="run.hpp" alt="" coords="1677,160,1741,189"/>
+</map>

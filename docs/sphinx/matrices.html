@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>&lt;no title&gt; &mdash; LIBSKYLARK 0.0.1 documentation</title>
+    <title>Matrices in libskylark &mdash; LIBSKYLARK 0.0.1 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -44,7 +44,16 @@
         <div class="bodywrapper">
           <div class="body">
             
-  
+  <div class="section" id="matrices-in-libskylark">
+<h1>Matrices in libskylark<a class="headerlink" href="#matrices-in-libskylark" title="Permalink to this headline">¶</a></h1>
+<p>Libskylark is being written to support a variety of local and distributed, dense and sparse
+matrices. Libskylark relies on the <a class="reference external" href="http://libelemental.org">Elemental</a> library for dense matrices
+and <a class="reference external" href="http://gauss.cs.ucsb.edu/~aydin/CombBLAS/html/">Combinatorial BLAS</a> for Sparse matrices.
+Elemental provides a variety of 2D and 1D distributed matrix types, while CombBLAS uses 2D block
+cyclic distribution with underlying data structures optimized to exploit sparsity. In addition,
+libskylark also provides support for local sparse matrices, and local numpy arrays.</p>
+</div>
+
 
           </div>
         </div>
@@ -53,7 +62,7 @@
         <div class="sphinxsidebarwrapper">
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="_sources/tasks.txt"
+    <li><a href="_sources/matrices.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">

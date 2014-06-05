@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -15,7 +13,7 @@
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
+        URL_ROOT:    './',
         VERSION:     '0.0.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -628,6 +626,219 @@ you have to include when using the Skylark library.</p>
 you have to include when using the Skylark library.</p>
 </div>
 </div>
+<div class="section" id="software-pitfalls">
+<h2>Software Pitfalls<a class="headerlink" href="#software-pitfalls" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="combblas-installation-notes">
+<h3>CombBLAS Installation Notes<a class="headerlink" href="#combblas-installation-notes" title="Permalink to this headline">¶</a></h3>
+<p>The general steps to use CombBLAS with Skylark:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Download KDT, build and install the python package (generated with SWIG), then</li>
+<li>Download CombBLAS, build and install libs and include files, and finally</li>
+<li>When configuring Skylark, use -DWITH_COMBBLAS=ON in the CMake configure call</li>
+</ul>
+</div></blockquote>
+<p><strong>Issues with CombBLAS &gt;= 1.4.0</strong></p>
+<p>Unfortunately there are some issues when using CombBLAS with Skylark. Check the subsections below if you have problem compiling or linking CombBLAS.</p>
+<p><strong>UINT32_MAX not declared</strong></p>
+<p>Additionally a CombBLAS header causes the compiler to produce an error (UINT32_MAX not declared). There are two possible ways to fix that:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Edit the header (RefGen21.h) and replace UINT32_MAX with std::numeric_limits&lt;unit32_t&gt;::max(), or</li>
+<li>add the -D__STDC_LIMIT_MACROS compile flag in the CMake file when CombBLAS is enabled.</li>
+</ul>
+</div></blockquote>
+<p><strong>Compiler Warning: *enumeral* and *non-enumeral* type in conditional expression</strong></p>
+<p>To fix the following warning (appearing when compiling with -Werror):</p>
+<div class="highlight-rst"><div class="highlight"><pre>CombBLAS_beta_13_0/psort-1.0/driver/MersenneTwister.h: In member function ‘void MTRand::seed(MTRand::uint32*, MTRand::uint32)’:
+        CombBLAS_beta_13_0/psort-1.0/driver/MersenneTwister.h:234:42: error: enumeral and non-enumeral type in conditional expression [-Werror]
+</pre></div>
+</div>
+<p>apply the following patch:</p>
+<div class="highlight-rst"><div class="highlight"><pre>diff --git a/psort-1.0/driver/MersenneTwister.h b/psort-1.0/driver/MersenneTwister.h
+index 16e6458..1363423 100644
+--- a/psort-1.0/driver/MersenneTwister.h
++++ b/psort-1.0/driver/MersenneTwister.h
+@@ -231,7 +231,7 @@ inline void MTRand::seed( uint32 *const bigSeed, const uint32 seedLength )
+        initialize(19650218UL);
+        register int i = 1;
+        register uint32 j = 0;
+<span class="m">-</span>       register int k = ( N &gt; seedLength ? N : seedLength );
+<span class="m">+</span>       register int k = ( static_cast&lt;uint32&gt;(N) &gt; seedLength ? static_cast&lt;uint32&gt;(N) : seedLength );
+        for( ; k; --k )
+        {
+                state[i] =
+</pre></div>
+</div>
+<p><strong>Note</strong>: This should be fixed upstream in the next CombBLAS release (most likely 1.3.1).</p>
+<p><strong>Compiling Skylark/CombBLAS with CLANG</strong></p>
+<p>To be able to compile and link using the CLANG compiler (&gt;=3.0.x), the following patch has to be
+applied to CombBLAS (&lt;= 1.3.0):</p>
+<div class="highlight-rst"><div class="highlight"><pre>diff --git a/DistEdgeList.cpp b/DistEdgeList.cpp
+index 5ae9301..61cf16f 100644
+--- a/DistEdgeList.cpp
++++ b/DistEdgeList.cpp
+@@ -102,7 +102,7 @@ void DistEdgeList&lt;IT&gt;::Dump64bit(string filename)
+        MPI_Comm_rank(World, &amp;rank);
+        MPI_Comm_size(World, &amp;nprocs);
+        MPI_File thefile;
+<span class="m">-</span>       MPI_File_open(World, filename.c_str(), MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &amp;thefile);
+<span class="m">+</span>       MPI_File_open(World, const_cast&lt;char*&gt;(filename.c_str()), MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &amp;thefile);
+
+        IT * prelens = new IT[nprocs];
+        prelens[rank] = 2*nedges;
+@@ -125,7 +125,7 @@ void DistEdgeList&lt;IT&gt;::Dump32bit(string filename)
+        MPI_Comm_rank(World, &amp;rank);
+        MPI_Comm_size(World, &amp;nprocs);
+        MPI_File thefile;
+<span class="m">-</span>       MPI_File_open(World, filename.c_str(), MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &amp;thefile);
+<span class="m">+</span>       MPI_File_open(World, const_cast&lt;char*&gt;(filename.c_str()), MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &amp;thefile);
+
+        IT * prelens = new IT[nprocs];
+        prelens[rank] = 2*nedges;
+diff --git a/SpParMat.cpp b/SpParMat.cpp
+index ca553e8..2ef88d6 100644
+--- a/SpParMat.cpp
++++ b/SpParMat.cpp
+@@ -109,7 +109,7 @@ void SpParMat&lt; IT,NT,DER &gt;::Dump(string filename) const
+        int nprocs = commGrid-&gt;GetSize();
+
+        MPI_File thefile;
+<span class="m">-</span>       MPI_File_open(World, filename.c_str(), MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &amp;thefile);
+<span class="m">+</span>       MPI_File_open(World, const_cast&lt;char*&gt;(filename.c_str()), MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &amp;thefile);
+
+        int rankinrow = commGrid-&gt;GetRankInProcRow();
+        int rankincol = commGrid-&gt;GetRankInProcCol();
+</pre></div>
+</div>
+<p><strong>Note</strong>: The issues in the above patch were addressed (source lines commented) in the 1.4.0 CombBLAS release (January 2014).</p>
+<p><strong>Warning: variable ‘XYZ’ set but not used</strong></p>
+<p>CombBLAS (&lt;=1.4.0) has set but not used variables. To remove the warning apply the following patch.</p>
+<div class="highlight-rst"><div class="highlight"><pre>diff --git a/SpMat.cpp b/SpMat.cpp
+index d00f37c..6ae6050 100644
+--- a/SpMat.cpp
++++ b/SpMat.cpp
+@@ -108,27 +108,28 @@ SpTuples&lt;IU, NUO&gt; * MultiplyReturnTuples
+                                bool clearA = false, bool clearB = false)
+
+{
+<span class="m">-</span>       IU A_m, A_n, B_m, B_n;
+<span class="m">+</span>       //IU A_m, A_n, B_m, B_n;
+<span class="m">+</span>       IU A_n, B_m;
+
+        if(isAT)
+        {
+<span class="m">-</span>               A_m = A.getncol();
+<span class="m">+</span>               //A_m = A.getncol();
+                A_n = A.getnrow();
+        }
+        else
+        {
+<span class="m">-</span>               A_m = A.getnrow();
+<span class="m">+</span>               //A_m = A.getnrow();
+                A_n = A.getncol();
+        }
+        if(isBT)
+        {
+                B_m = B.getncol();
+<span class="m">-</span>               B_n = B.getnrow();
+<span class="m">+</span>               //B_n = B.getnrow();
+        }
+        else
+        {
+                B_m = B.getnrow();
+<span class="m">-</span>               B_n = B.getncol();
+<span class="m">+</span>               //B_n = B.getncol();
+        }
+
+        if(A_n == B_m)
+</pre></div>
+</div>
+<p><strong>Disable KDT Log</strong></p>
+<p>To disable the KDT log use the following patch:</p>
+<div class="highlight-rst"><div class="highlight"><pre>diff --git a/kdt/Graph.py b/kdt/Graph.py
+index 51c55b2..e61e9cf 100644
+--- a/kdt/Graph.py
++++ b/kdt/Graph.py
+@@ -1,7 +1,7 @@
+ import math
+ #import numpy as np # Adam: TRY TO AVOID THIS IF AT ALL POSSIBLE.
+import pyCombBLAS as pcb
+-import feedback
++#import feedback
+import UFget as uf
+
+from Util import info, master, version, revision
+diff --git a/kdt/Vec.py b/kdt/Vec.py
+index 00b7c1c..50aaa73 100644
+--- a/kdt/Vec.py
++++ b/kdt/Vec.py
+@@ -1,6 +1,6 @@
+import math
+import kdt.pyCombBLAS as pcb
+-import feedback
++#import feedback
+import UFget as uf
+import Mat as Mat
+import ctypes
+diff --git a/kdt/__init__.py b/kdt/__init__.py
+index 7f0992f..6c3a10f 100644
+--- a/kdt/__init__.py
++++ b/kdt/__init__.py
+@@ -10,7 +10,7 @@ from Vec import Vec
+from Mat import Mat
+#from SpVec import SpVec, info
+#from DeVec import DeVec
+-from feedback import sendFeedback
++#from feedback import sendFeedback
+from UFget import UFget, UFdownload
+try:
+        import kdt.pyCombBLAS as pcb
+diff --git a/setup.py b/setup.py
+index a2813e3..10f5bdf 100644
+--- a/setup.py
++++ b/setup.py
+@@ -369,7 +369,7 @@ pyCombBLAS_ext = Extension(&#39;kdt._pyCombBLAS&#39;,
+        extra_link_args = extra_link_args, extra_compile_args = extra_compile_args,
+        define_macros=[(&#39;GRAPH_GENERATOR_SEQ&#39;, &#39;1&#39;)] + headerDefs + define_macros)
+
+-py_modules = [&#39;kdt.pyCombBLAS&#39;, &#39;kdt.Graph&#39;, &#39;kdt.DiGraph&#39;, &#39;kdt.HyGraph&#39;, &#39;kdt.feedback&#39;, &#39;kdt.UFget&#39;, &#39;kdt.Mat&#39;, &#39;kdt.Vec&#39;, &#39;kdt.ObjMethods&#39;, &#39;kdt.Algorithms&#39;, &#39;kdt.Util&#39;, &#39;kdt.SpectralClustering&#39;, &#39;kdt.eig&#39;]
++py_modules = [&#39;kdt.pyCombBLAS&#39;, &#39;kdt.Graph&#39;, &#39;kdt.DiGraph&#39;, &#39;kdt.HyGraph&#39;, &#39;kdt.UFget&#39;, &#39;kdt.Mat&#39;, &#39;kdt.Vec&#39;, &#39;kdt.ObjMethods&#39;, &#39;kdt.Algorithms&#39;, &#39;kdt.Util&#39;, &#39;kdt.SpectralClustering&#39;, &#39;kdt.eig&#39;]
+# SEJITS modules:
+py_modules.extend([&#39;kdt.specializer.__init__&#39;, &#39;kdt.specializer.parsetab&#39;, &#39;kdt.specializer.pcb_function&#39;, &#39;kdt.specializer.pcb_function_frontend&#39;, &#39;kdt.specializer.pcb_function_sm&#39;, &#39;kdt.specializer.pcb_operator_convert&#39;, &#39;kdt.specializer.pcb_predicate&#39;, &#39;kdt.specializer.pcb_predicate_frontend&#39;, &#39;kdt.specializer.pcb_predicate_sm&#39;])
+</pre></div>
+</div>
+</div>
+<div class="section" id="issues-with-combblas-1-4-0">
+<h3>Issues with CombBLAS &lt; 1.4.0<a class="headerlink" href="#issues-with-combblas-1-4-0" title="Permalink to this headline">¶</a></h3>
+<p><strong>std:: namespace clash (CombBLAS &lt;= 1.3.0)</strong></p>
+<p>Depending on your compiler version (and if you installed CombBLAS &lt;= 1.3.0) you might need to apply the following patch:</p>
+<div class="highlight-rst"><div class="highlight"><pre>diff --git a/psort-1.0/src/psort_merge.h b/psort-1.0/src/psort_merge.h
+index 858580b..256c3db 100644
+--- a/psort-1.0/src/psort_merge.h
++++ b/psort-1.0/src/psort_merge.h
+@@ -163,11 +163,11 @@ namespace vpsort {
+                    out, comp);
+       } else if (locs[next] == 0) {
+        // 10 =&gt; backwards out of place
+<span class="m">-</span>       std::merge (reverse_iterator&lt;_RandomAccessIter&gt; (in + disps[nproc]),
+<span class="m">-</span>                   reverse_iterator&lt;_RandomAccessIter&gt; (in + disps[next]),
+<span class="m">-</span>                   reverse_iterator&lt;_RandomAccessIter&gt; (out + disps[next]),
+<span class="m">-</span>                   reverse_iterator&lt;_RandomAccessIter&gt; (out),
+<span class="m">-</span>                   reverse_iterator&lt;_RandomAccessIter&gt; (out + disps[nproc]),
+<span class="m">+</span>       std::merge (std::reverse_iterator&lt;_RandomAccessIter&gt; (in + disps[nproc]),
+<span class="m">+</span>                   std::reverse_iterator&lt;_RandomAccessIter&gt; (in + disps[next]),
+<span class="m">+</span>                   std::reverse_iterator&lt;_RandomAccessIter&gt; (out + disps[next]),
+<span class="m">+</span>                   std::reverse_iterator&lt;_RandomAccessIter&gt; (out),
+<span class="m">+</span>                   std::reverse_iterator&lt;_RandomAccessIter&gt; (out + disps[nproc]),
+                    not2 (comp));
+       } else {
+        // 11 =&gt; in-place
+</pre></div>
+</div>
+<p>Note: This was fixed upstream in the 1.4.0 CombBLAS release (January 2014).</p>
+</div>
+</div>
 </div>
 
 
@@ -671,6 +882,11 @@ you have to include when using the Skylark library.</p>
 <li><a class="reference internal" href="#linking-against-skylark">Linking against Skylark</a></li>
 <li><a class="reference internal" href="#using-cmake">Using Cmake</a></li>
 <li><a class="reference internal" href="#using-xyz-build-system">Using XYZ Build System</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#software-pitfalls">Software Pitfalls</a><ul>
+<li><a class="reference internal" href="#combblas-installation-notes">CombBLAS Installation Notes</a></li>
+<li><a class="reference internal" href="#issues-with-combblas-1-4-0">Issues with CombBLAS &lt; 1.4.0</a></li>
 </ul>
 </li>
 </ul>
@@ -725,7 +941,7 @@ you have to include when using the Skylark library.</p>
     </div>
     <div class="footer">
         &copy; Copyright IBM Corporation 2012-2014.  All Rights Reserved.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div>
   </body>
 </html>

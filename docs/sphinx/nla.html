@@ -1,0 +1,188 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Numerical Linear Algebra &mdash; LIBSKYLARK 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="LIBSKYLARK 0.0.1 documentation" href="index.html" />
+    <link rel="next" title="Machine Learning" href="ml.html" />
+    <link rel="prev" title="Sketching Layer" href="sketching.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ml.html" title="Machine Learning"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="sketching.html" title="Sketching Layer"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">LIBSKYLARK 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="numerical-linear-algebra">
+<h1>Numerical Linear Algebra<a class="headerlink" href="#numerical-linear-algebra" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="randomized-least-squares-regression">
+<h2>Randomized Least Squares Regression<a class="headerlink" href="#randomized-least-squares-regression" title="Permalink to this headline">¶</a></h2>
+<p>The randomized regression functionality provides distributed implementation of algorithms described in</p>
+<blockquote>
+<div><ul class="simple">
+<li>Avron, H., Maymounkov, P. and Toledo, S., <a class="reference external" href="http://dl.acm.org/citation.cfm?id=1958633">Supercharging LAPACK&#8217;s Least Squares Solver</a></li>
+<li>Meng, X., Saunders, M.A. and Mahoney, M. W, <a class="reference external" href="http://arxiv.org/abs/1109.5981">LSRN: A Paralllel Iterative Solver for Strongly Over- or Under-Determined Systems</a></li>
+</ul>
+</div></blockquote>
+<p>A flavor of usage is given in the code snippet below. The usage mirrors Elemental&#8217;s <a class="reference external" href="http://libelemental.org/documentation/0.83/lapack-like/solve.html">LeastSquares</a> function, but the solve is accelerated using sketching (specified internally).</p>
+<div class="highlight-cpp"><div class="highlight"><pre><span class="cp">#include &lt;elemental.hpp&gt;</span>
+<span class="cp">#include &lt;skylark.hpp&gt;</span>
+<span class="p">...</span>
+<span class="c1">// Setup regression problem with coefficient matrix A and target matrix B</span>
+<span class="p">...</span>
+
+<span class="n">skybase</span><span class="o">::</span><span class="n">context_t</span> <span class="n">context</span><span class="p">(</span><span class="mi">23234</span><span class="p">);</span>
+
+<span class="c1">// Solve the Least Squres problem of minimizing || AX - B||_2 over X</span>
+<span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="n">FastLeastSquares</span><span class="p">(</span><span class="n">elem</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Please see <em>libskylark/examples/least_squares.cpp</em> for a running example.</p>
+</div>
+<div class="section" id="randomized-singular-value-decomposition">
+<h2>Randomized Singular Value Decomposition<a class="headerlink" href="#randomized-singular-value-decomposition" title="Permalink to this headline">¶</a></h2>
+<p>The randomized SVD functionality provides a distributed implementation of algorithms described in</p>
+<blockquote>
+<div><ul class="simple">
+<li>Halko, N. and Martinsson, P.G, and Tropp J., <a class="reference external" href="http://arxiv.org/abs/0909.4061">Finding structure with randomness: Probabilistic algorithms for constructing approximate matrix decompositions</a> , SIAM Rev., Survey and Review section, Vol. 53, num. 2, pp. 217-288, 2011</li>
+</ul>
+</div></blockquote>
+<dl class="docutils">
+<dt>The prototypical algorithm involves the following steps, given a matrix <strong>A</strong></dt>
+<dd><ul class="first last simple">
+<li>Compute an approximate orthonormal basis for the range of <strong>A</strong>, as specified by the columns of an orthonormal matrix <strong>Q</strong>.</li>
+<li>Use <strong>Q</strong> to compute a standard factorization of <strong>A</strong></li>
+</ul>
+</dd>
+</dl>
+<p>The first step is accelerated using sketching.</p>
+<p>A flavor of usage is given in the code snippet below.</p>
+<div class="highlight-cpp"><div class="highlight"><pre><span class="cp">#include &lt;elemental.hpp&gt;</span>
+<span class="cp">#include &lt;skylark.hpp&gt;</span>
+<span class="p">...</span>
+<span class="cm">/* params structure contains parameters of the randomized SVD algorithm */</span>
+<span class="cm">/* These parameters include oversampling, number of power iterations and</span>
+<span class="cm">whether repeated QR iterations should be skipped */</span>
+
+<span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="n">rand_svd_params_t</span> <span class="n">params</span><span class="p">(</span><span class="n">oversampling_parameter</span><span class="p">);</span>
+
+<span class="cm">/* create a rand_svd object parameterized by the Sketch */</span>
+<span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="n">randsvd_t</span><span class="o">&lt;</span><span class="n">skylark</span><span class="o">::</span><span class="n">sketch</span><span class="o">::</span><span class="n">JLT_t</span><span class="o">&gt;</span> <span class="n">rand_svd</span><span class="p">;</span>
+
+<span class="p">...</span>
+<span class="cm">/* Call the randomized SVD algorithm on Elemental or CombBLAS matrix A */</span>
+<span class="n">rand_svd</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">target_rank</span><span class="p">,</span> <span class="n">U</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>The <strong>rand_svd</strong> function accepts certain combinations of matrix types for the input A and the SVD factors:
+U, S and V. Currently, the matrix types are Elemental MC/MR or elem::Matrix types.</p>
+<p>For a running example, please see <em>libskylark/examples/rand_svd.cpp</em>.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Numerical Linear Algebra</a><ul>
+<li><a class="reference internal" href="#randomized-least-squares-regression">Randomized Least Squares Regression</a></li>
+<li><a class="reference internal" href="#randomized-singular-value-decomposition">Randomized Singular Value Decomposition</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="sketching.html"
+                        title="previous chapter">Sketching Layer</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="ml.html"
+                        title="next chapter">Machine Learning</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/nla.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ml.html" title="Machine Learning"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="sketching.html" title="Sketching Layer"
+             >previous</a> |</li>
+        <li><a href="index.html">LIBSKYLARK 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright IBM Corporation 2012-2014.  All Rights Reserved.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

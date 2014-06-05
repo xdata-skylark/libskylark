@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -15,7 +13,7 @@
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
+        URL_ROOT:    './',
         VERSION:     '0.0.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -58,42 +56,44 @@
 <h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="goals">
 <h2>Goals<a class="headerlink" href="#goals" title="Permalink to this headline">¶</a></h2>
-<p>Matrix algorithms are the foundation for most methods in data analysis, scientific computing,
-and engineering applications, and Numerical Linear Algebra (NLA) kernels are the key enabling technology for implementing
-matrix algorithms on different hardware platforms. Without highly efficient and scalable NLA kernels, the challenge of big data cannot be met.</p>
-<p>The goal of Skylark is to implement sketching-based NLA kernels for distributed computing platforms. Sketching reduces dimensionality
-through randomization, and is one of only a few paradigms that have the
-potential to deliver a true boost in performance in the presence of massive data, for an extensive
-class of applications. Sketching methods have been developed, for over ten years now, mainly by the theoretical
-computer science community. Sketching techniques are simple to implement, readily
-parallelizable, and often robust to matrix sparsity patterns and other properties. Most of all,
-they have fast asymptotic time and space complexity. Applications in population genetics, circuit testing, social network analysis, text classification, pattern matching and other domains, have demonstrated
-the promise of sketching methods in practice.</p>
-<p>Skylark is a software stack, being designed to be composed of distributed sketching-based NLA kernels, for fundamental
-statistical and machine learning algorithms.</p>
-<p>The NLA kernels consist of matrix multiplication, regression, and low-rank approximation
-algorithms, as well as acceleration methods for matrix completion, missing data imputation,
-nonlinear modeling (i.e., kernelized regularized least squares and support vector machines), and
-statistical dimensionality reduction techniques. The implementations are guided by error
-and sensitivity analyses, to give users a high confidence assurance for the accuracy of the
-output of the software stack. Sketching techniques, when used in a straight-forward fashion and on their own, can deliver
-relatively crude, i.e. low accuracy results, since the work to achieve an error of <span class="math">\epsilon</span> can be
-proportional to <span class="math">1/\epsilon^2</span>. Such crude results can be relevant in themselves: in ranking applications
-where only an ordinal rank is required rather than the exact value (PageRank, recommender
-systems); in situations where data noise dominates algorithmic error; or where the tradeoff
-between speed and accuracy favors “quick and dirty” results that can be readily refined. Also,
-in statistical and Machine Learning (ML) settings, approximate solutions can be regarded as
-a formal mechanism to avoid overfitting, that is, a form of regularization.</p>
-<p>However, sketching techniques can also be used to precondition standard methods, so that
-they accelerate computations but do not suffer from loss of accuracy. Skylark will also provide
-sketching techniques as preconditioners, or accelerators, to a large variety of NLA computations.</p>
-<p>Another central goal of Skylark is to serve as a workbench with which to determine the best sketching
-techniques in practice from among the many that have been proposed in the theoretical
-literature. This is challenging, because many sketching techniques come with error bounds that
-are asymptotic only, and contain unknown constants. Furthermore, a combination of criteria
-needs to considered: error due to randomization, numerical robustness and accuracy, matrix
-access patterns (rows, columns, submatrices), arithmetic operation count and communication
-requirements.</p>
+<p>Matrix algorithms are the foundation for most methods in machine learning, data analysis, scientific
+computing, and engineering applications. Numerical Linear Algebra (NLA) kernels are the key enabling
+technology for implementing matrix algorithms across different computing platforms. Without highly
+efficient and scalable NLA kernels, the challenge of big data cannot be met.</p>
+<p>The goal of Libskylark (interchageably referred to as Skylark below) is to implement sketching-based
+NLA kernels for distributed computing platforms, primarily with large-scale machine learning
+applications in mind. Sketching reduces dimensionality through randomization, and is one of only a
+few paradigms that have the potential to deliver a true boost in performance in the presence of
+massive data, for an extensive class of applications. Sketching methods have been developed, for
+over ten years now, mainly by the theoretical computer science community. Sketching techniques are
+simple to implement, readily parallelizable, and often robust to matrix sparsity patterns and other
+properties. Most of all, they have fast asymptotic time and space complexity. Applications in
+population genetics, circuit testing, social network analysis, text classification, pattern matching
+and other domains, have demonstrated the promise of sketching methods in practice.</p>
+<p>Skylark is a software stack, being designed to be composed of distributed sketching-based NLA
+kernels, for fundamental statistical and machine learning algorithms.</p>
+<p>The NLA kernels consist of matrix multiplication, regression, and low-rank approximation algorithms,
+as well as acceleration methods for nonlinear modeling (i.e., kernelized regularized least squares,
+multinomial logistic regression, robust regression and support vector machines), and statistical
+dimensionality reduction techniques. The implementations are guided by error and sensitivity
+analyses, to give users a high confidence assurance for the accuracy of the output of the software
+stack. Sketching techniques, when used in a straight-forward fashion and on their own, can deliver
+relatively crude, i.e. low accuracy results, since the work to achieve an error of <img class="math" src="_images/math/eaf4418fbe935c15a606516d8f55dc380cd8e822.png" alt="\epsilon"/>
+can be proportional to <img class="math" src="_images/math/e979c0589d93fa6802636f6db4f3f645a247d310.png" alt="1/\epsilon^2"/>. Such crude results can be relevant in themselves: in
+ranking applications where only an ordinal rank is required rather than the exact value (PageRank,
+recommender systems); in situations where data noise dominates algorithmic error; or where the
+tradeoff between speed and accuracy favors “quick and dirty” results that can be readily refined.
+Also, in statistical and Machine Learning (ML) settings, approximate solutions can be regarded as a
+formal mechanism to avoid overfitting, that is, a form of regularization.</p>
+<p>However, sketching techniques can also be used to precondition standard methods, so that they
+accelerate computations but do not suffer from loss of accuracy. Skylark will also provide sketching
+techniques as preconditioners, or accelerators, to a large variety of NLA computations.</p>
+<p>Another central goal of Skylark is to serve as a research platform with which to determine the best
+sketching techniques in practice from among the many that have been proposed in the theoretical
+literature. This is challenging, because many sketching techniques come with error bounds that are
+asymptotic only, and contain unknown constants. Furthermore, a combination of criteria needs to
+considered: error due to randomization, numerical robustness and accuracy, matrix access patterns
+(rows, columns, submatrices), arithmetic operation count and communication requirements.</p>
 </div>
 <div class="section" id="sketching-and-sampling-methods">
 <h2>Sketching and Sampling Methods<a class="headerlink" href="#sketching-and-sampling-methods" title="Permalink to this headline">¶</a></h2>
@@ -103,78 +103,37 @@ combinations of rows and columns. For brevity all these techniques will be colle
 here sketching. Sketching yields “compressed” or “down-sized” versions of the input matrix,
 that retain enough information to either yield approximate solutions, or to speed up methods
 for finding high precision solutions, as discussed above.</p>
-<p>In many situations we can represent the application of a sketching method to an n × d
-matrix A as a product SA, where S has s x n rows. In general, accuracy or other sketch
-properties vary with s. For some sketching approaches the matrix S is quite sparse, while in
-others it is highly structured, so that computing SA involves an FFT or similar fast transform
-per row of SA, and not much more. When each row of S has a single entry equal to one and all others zero, then SA represents
-a subset of the rows of A. That is, S is a sampling matrix. Samples SA have very desirable
-properties: under appropriate conditions, SA represents a collection of representative, “prototypical” rows of A, which is useful in certain data analytics applications; and if A is sparse,
-then SA tends to be so as well, at least heuristically.</p>
-<p>By reducing dimensionality while still preserving structure, sketching can be used for approximately solving a whole host of NLA problems,
-with substantial speedups in computation time. Other benefits include reduced memory requirements, communication costs and IO overheads.
-This, in turn, offers the potential to significantly improve the computational efficiency of solving higher-level statistical modeling and machine learning tasks,
-by essentially replacing calls to traditional NLA kernels with their sketching counterparts.</p>
-<div class="section" id="more-technical-details">
-<h3>More Technical Details<a class="headerlink" href="#more-technical-details" title="Permalink to this headline">¶</a></h3>
-<p>For more details, we refer the user to our whitepaper and references therein.</p>
-</div>
-</div>
-<div class="section" id="implementation-plan-and-current-status">
-<h2>Implementation Plan and Current Status<a class="headerlink" href="#implementation-plan-and-current-status" title="Permalink to this headline">¶</a></h2>
-<p>Skylark builds on distributed Numerical Linear Algebra libraries for Dense and Sparse Matrices, with an MPI backend.
-Organizationally, it comprises of three layers. The core is a library of sketching transforms whose main functionality
-is to enable a variety of input matrix types to be sketched, using transforms specialized for various NLA kernels such as
-least squares (<span class="math">l_2</span>) regression, robust regression (<span class="math">l_1</span>) and low-rank matrix approximations.
-These kernels are being implemented in the Numerical Linear Algebra (NLA) layer.</p>
-<p>Skylark uses external libraries to represent distributed input matrices. For
-dense distributed matrices it uses <a class="reference external" href="http://libelemental.org/">Elemental</a>.
-Currently it uses the c-types interface of Elemental. For sparse distributed matrices it uses
-<a class="reference external" href="http://gauss.cs.ucsb.edu/~aydin/CombBLAS/html/">ComboBLAS</a>.</p>
-<p>The accelerated NLA kernels are then used to accelerate higher level machine learning algorithms, e.g., kernel-based
-nonlinear regression, matrix completion and statistical dimensionality reduction techniques such as Principal Component Analysis.
-We also provide Python bindings to Skylark lower layers to enable rapid prototyping of data analysis algorithms, and exploration of the
-sketching design space for optimal performance in a given domain.  Input matrices can also be local numpy or scipy arrays
-for single node execution of Skylark.  We use Python bindings for Elemental and Combinatorial BLAS (through <a class="reference external" href="http://kdt.sourceforge.net/wiki/index.php/Main_Page">KDT</a>).</p>
-<p>We also plan to support a streaming interface for out-of-core sketching and matrix computations.</p>
-<p>Currently, a number of distributed sketching transforms are supported in Skylark. The first seven transforms below are implemented, and form the basis of faster
-<span class="math">l_2, l_1</span> regression and randomized SVD.</p>
+<p>In many situations we can represent the application of a sketching method to an n × d matrix A as a
+product SA, where S has s x n rows. In general, accuracy or other sketch properties vary with s. For
+some sketching approaches the matrix S is quite sparse, while in others it is highly structured, so
+that computing SA involves an FFT or similar fast transform per row of SA, and not much more. When
+each row of S has a single entry equal to one and all others zero, then SA represents a subset of
+the rows of A. That is, S is a sampling matrix. Samples SA have very desirable properties: under
+appropriate conditions, SA represents a collection of representative, “prototypical” rows of A,
+which is useful in certain data analytics applications; and if A is sparse, then SA tends to be so
+as well, at least heuristically.</p>
+<p>By reducing dimensionality while still preserving structure, sketching can be used for approximately
+solving a whole host of NLA problems, with substantial speedups in computation time. Other benefits
+include reduced memory requirements, communication costs and IO overheads. This, in turn, offers the
+potential to significantly improve the computational efficiency of solving higher-level statistical
+modeling and machine learning tasks, by essentially replacing calls to traditional NLA kernels with
+their sketching counterparts.</p>
 <blockquote>
-<div><ul class="simple">
-<li>JLT - Johnson–Lindenstrauss Transform</li>
-<li>FJLT - Fast Johnson–Lindenstrauss Transform</li>
-<li>CT - Cauchy Transform</li>
-<li>MMT - Meng-Mahoney Transform</li>
-<li>CWT - Clarkson-Woodruff Transform</li>
-<li>WZT - Woodruff-Zhang Transform</li>
-<li>SRFUT - Subsampled Randomized Fast Unitary Transform</li>
-</ul>
-</div></blockquote>
-<dl class="docutils">
-<dt>The following transforms are to be implemented soon:</dt>
-<dd><ul class="first last simple">
-<li>FJLTp - &#8220;FJLT plus&#8221;, that is SFD as usual but with S an hashing matrix (CWT, MMT, ...)/OSNAP instead of just sampling.</li>
-<li>FCT - Fast Cauchy Transform</li>
-<li>OSNAP - Oblivious Sparse Norm-Approximating Projection ( <a class="reference external" href="http://http://arxiv.org/abs/1211.1002">http://http://arxiv.org/abs/1211.1002</a>)</li>
-<li>PPT - Pahm-Pagh Transform (fast sketching of polynomial kernel/tensor sketch,  <a class="reference external" href="http://www.itu.dk/people/pagh/papers/tensorsketch.pdf">http://www.itu.dk/people/pagh/papers/tensorsketch.pdf</a>)</li>
-<li>RKP - Random Kronecker Product ( <a class="reference external" href="http://nuit-blanche.blogspot.fr/2008/05/cs-new-cs-measurement-matrices-some.html">http://nuit-blanche.blogspot.fr/2008/05/cs-new-cs-measurement-matrices-some.html</a>)</li>
-<li>RBT - Random Butterfly Transform ( <a class="reference external" href="http://hal.inria.fr/docs/00/72/40/59/PDF/RR-8043.pdf">http://hal.inria.fr/docs/00/72/40/59/PDF/RR-8043.pdf</a>)</li>
-</ul>
-</dd>
-</dl>
-<img alt="_images/skylark_status.png" src="_images/skylark_status.png" />
-<dl class="docutils">
-<dt>Notes:</dt>
-<dd><ul class="first last simple">
-<li>Dense distributed matrices can have 1D or 2D decomposition. Currently we support 1D distribution, which fits tall-and-skinny matrices</li>
-</ul>
-</dd>
-<dt>(one of the primary use-cases). We plan to extend to 2D distribution as well.</dt>
-<dd><ul class="first last simple">
-<li>Currently, Python interface uses ctypes. We may switch to SWIG to be consistent with Elemental and CVX.</li>
-</ul>
-</dd>
-</dl>
+<div>Skylark builds on distributed Numerical Linear Algebra libraries for Dense and Sparse Matrices, with</div></blockquote>
+<p>an MPI backend. Organizationally, it comprises of three layers. The core is a library of sketching
+transforms whose main functionality is to enable a variety of input matrix types to be sketched,
+using transforms specialized for various NLA kernels such as least squares (<img class="math" src="_images/math/1d69232050ab0ada641e7e2035f6e7c795795b65.png" alt="l_2"/>) regression,
+robust regression (<img class="math" src="_images/math/6ee61fd6e8a1926a802b97fc99b66b8687d8f620.png" alt="l_1"/>) and low-rank matrix approximations. These kernels are being
+implemented in the Numerical Linear Algebra (NLA) layer.</p>
+<p>The accelerated NLA kernels are then used to accelerate higher level machine learning algorithms,
+e.g., kernel-based nonlinear regression, matrix completion and statistical dimensionality reduction
+techniques such as Principal Component Analysis. We also provide Python bindings to Skylark lower
+layers to enable rapid prototyping of data analysis algorithms, and exploration of the sketching
+design space for optimal performance in a given domain.  Input matrices can also be local numpy or
+scipy arrays for single node execution of Skylark.  We use Python bindings for Elemental and
+Combinatorial BLAS (through <a class="reference external" href="http://kdt.sourceforge.net/wiki/index.php/Main_Page">KDT</a>).</p>
+<p>In the future, we also plan to support a streaming interface for out-of-core sketching and matrix
+computations.</p>
 </div>
 <div class="section" id="license-and-copyright">
 <h2>License and Copyright<a class="headerlink" href="#license-and-copyright" title="Permalink to this headline">¶</a></h2>
@@ -194,11 +153,7 @@ which is available at <a class="reference external" href="http://www.apache.org/
   <ul>
 <li><a class="reference internal" href="#">Introduction</a><ul>
 <li><a class="reference internal" href="#goals">Goals</a></li>
-<li><a class="reference internal" href="#sketching-and-sampling-methods">Sketching and Sampling Methods</a><ul>
-<li><a class="reference internal" href="#more-technical-details">More Technical Details</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#implementation-plan-and-current-status">Implementation Plan and Current Status</a></li>
+<li><a class="reference internal" href="#sketching-and-sampling-methods">Sketching and Sampling Methods</a></li>
 <li><a class="reference internal" href="#license-and-copyright">License and Copyright</a></li>
 </ul>
 </li>
@@ -252,7 +207,7 @@ which is available at <a class="reference external" href="http://www.apache.org/
     </div>
     <div class="footer">
         &copy; Copyright IBM Corporation 2012-2014.  All Rights Reserved.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div>
   </body>
 </html>

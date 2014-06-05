@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -15,7 +13,7 @@
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
+        URL_ROOT:    './',
         VERSION:     '0.0.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -26,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="LIBSKYLARK 0.0.1 documentation" href="index.html" />
-    <link rel="next" title="Machine Learning" href="ml.html" />
+    <link rel="next" title="Numerical Linear Algebra" href="nla.html" />
     <link rel="prev" title="Installation Instructions" href="installation.html" /> 
   </head>
   <body>
@@ -40,7 +38,7 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="ml.html" title="Machine Learning"
+          <a href="nla.html" title="Numerical Linear Algebra"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="installation.html" title="Installation Instructions"
@@ -62,37 +60,38 @@
 able to deliver faster NLA kernels and ML algorithmic.</p>
 <p>Dimensionality reduction in NLA and ML is often based on building an oblivious
 subspace embedding (OSE). An OSE can be thought of as a data-independent random
-“sketching” matrix <span class="math">S \in R^{s\times n}</span> whose approximate isometry
-properties (with respect to a norm <span class="math">\|\cdot\|_p</span>) over a subspace (e.g.,
+“sketching” matrix <img class="math" src="_images/math/f7820991469af0efa3f8f7e0fed83fbbc3d8aabc.png" alt="S \in R^{s\times n}"/> whose approximate isometry
+properties (with respect to a norm <img class="math" src="_images/math/cf364412dffd6244a11a7cce949985a0d81a9194.png" alt="\|\cdot\|_p"/>) over a subspace (e.g.,
 over the column space of a data input matrix A, and regression target vector b)
 imply that,</p>
 <div class="math">
-<p><span class="math">\|S(A x - b)\|\approx\|A x-b\|</span></p>
-</div><p>which in turn allows the regression coefficients, x,  to be optimized over a
-“sketched”  dataset - namely S*A - of much smaller size without losing solution quality.
-Sketching matrices include Gaussian random matrices, structured random matrices
-which admit fast matrix multiplication via FFT-like operations, hashing-based
-transforms, among others.</p>
+<p><img src="_images/math/6a964459d708b233c97340ce4e1c824c9e5644c0.png" alt="\|S(A x - b)\|\approx\|A x-b\|"/></p>
+</div><p>which in turn allows the regression coefficients, <img class="math" src="_images/math/26eeb5258ca5099acf8fe96b2a1049c48c89a5e6.png" alt="x"/>, to be optimized over a “sketched”
+dataset - namely <img class="math" src="_images/math/078c007344421ceee265ccf4543efe3325e803c8.png" alt="S*A"/> and <img class="math" src="_images/math/bb20b78777cd902b54ef550f2d75d58a798f69d0.png" alt="S*b"/> - of much smaller size without losing solution quality
+significantly. Sketching matrices include Gaussian random matrices, structured random matrices which
+admit fast matrix multiplication via FFT-like operations, hashing-based transforms, among others.</p>
 </div>
 <div class="section" id="overview-of-high-performance-distributed-sketching-implementation">
 <h2>Overview of High-performance Distributed Sketching Implementation<a class="headerlink" href="#overview-of-high-performance-distributed-sketching-implementation" title="Permalink to this headline">¶</a></h2>
-<p>Sketching a dense matrix A typically amounts to multiplying it by a matrix of random samples S: A *
-S for compressing the size of its rows (row-wise sketching) or S * A for compressing the size of its
-columns (column-wise sketching). In a distributed setting, this matrix-matrix multiplication
-primitive (sketching GEMM operation) is special in the sense that any part of matrix R can be
-locally constructed in communication-free mode. In addition, depending on the relative sizes of A, S
-and the sketched matrix (output), we can organize the distributed GEMM so that no part of the
-largest-size matrix is communicated (SUMMA approach), thus resulting in communication savings.
-Further optimizing, we can perform local computations over blocks of A, S, and also assume
-transposed views of the operands for memory and cache use efficiency.</p>
+<p>Sketching a dense matrix A typically amounts to multiplying it by a random matrix S, i.e., A * S for
+compressing the size of its rows (row-wise sketching) or S * A for compressing the size of its
+columns (column-wise sketching).</p>
+<p>In a distributed setting, this matrix-matrix multiplication primitive (sketching GEMM operation) is
+special in the sense that any part of matrix S can be locally constructed in communication-free
+mode. In addition, depending on the relative sizes of A, S and the sketched matrix (output), we can
+organize the distributed GEMM so that no part of the largest-size matrix is communicated (SUMMA
+approach), thus resulting in communication savings. Further optimizing, we can perform local
+computations over blocks of A, S, and also assume transposed views of the operands for memory and
+cache use efficiency.</p>
 <p>In particular when both A and S are distributed dense matrices we represent them as Elemental
 matrices and support sketching over a rich set of combinations of vector and matrix-oriented data
 distributions: in vector distributions different processes own complete rows of columns of the
 matrix that are p apart (p is the number of processes) while in matrix distributions each process
 owns a strided view of the matrix with strides along rows and columns being equal to the dimensions
-of the process grid. In our sketching GEMM:</p>
-<p>Local S entries are computed independently by indexing into a global stream of random values
-provided by Random123 library. No computed S entries are communicated since they can be locally
+of the process grid.</p>
+<p>In our sketching GEMM, local entries of the random matrix S are computed independently by indexing
+into a global stream of random values provided by a counter-based Parallel random number generator
+(supplied by <a class="reference external" href="http://www.deshawresearch.com/resources_random123.html">Random123 library</a>). No computed S entries are communicated since they can be locally
 generated instead. A can be squarish (aka &#8220;matrix&#8221;) or tall-and-thin or short-and-fat (aka &#8220;panel&#8221;).
 In multiplying with S, matrix-panel, panel-matrix, inner-panel-panel or outer-panel-panel products
 may arise. We provide separate implementations for these cases organized around the principle of
@@ -114,6 +113,10 @@ The majority of the sketching library is implemented in C++, but it is
 accessible in Python through <tt class="xref py py-mod docutils literal"><span class="pre">skylark.sketch</span></tt>.</p>
 <div class="section" id="sketching-transforms">
 <h3>Sketching Transforms<a class="headerlink" href="#sketching-transforms" title="Permalink to this headline">¶</a></h3>
+<p>The following table lists the sketching transforms currently provided by LibSkylark. These
+transforms are appropriate for specific downstream tasks, e.g. <img class="math" src="_images/math/10b13e0812882e9b560de09656e69c9d42c706d5.png" alt="l2"/>-regression,
+<img class="math" src="_images/math/d89a5fe07fe3854a174b684785a2d0eb36f2b232.png" alt="l1"/>-regression, or kernel methods.</p>
+<p>The implementations are provided under <em>libskylark/sketch</em>.</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="9%" />
@@ -176,9 +179,26 @@ accessible in Python through <tt class="xref py py-mod docutils literal"><span c
 </div>
 <div class="section" id="sketching-layer-in-c">
 <h3>Sketching Layer in C++<a class="headerlink" href="#sketching-layer-in-c" title="Permalink to this headline">¶</a></h3>
-<p>Th following input-output combinations are currently implemented in the C++ layer.</p>
+<p>The above sketch transforms can be instantiated for various combinations of distributed and local,
+sparse and dense input matrices and output sketches.  The following table lists the input-output
+combinations currently implemented in the C++ sketching layer.</p>
+<p>In the table below, <em>LocalDense</em> refers to Elemental <a class="reference external" href="http://libelemental.org/documentation/0.83/core/matrix.html">sequential matrix</a> type, while <em>/</em>, VR/<em>, VC/</em>, <a href="#id2"><span class="problematic" id="id3">*</span></a>/VR, <a href="#id4"><span class="problematic" id="id5">*</span></a>VC, MC/MR refer to
+specializations of <a class="reference external" href="http://libelemental.org/documentation/0.83/core/dist_matrix/DM.html">Elemental distributed matrices</a>.
+Each specialization involves choosing a sensical pairing of distributions for the rows and columns of the matrix:</p>
+<blockquote>
+<div><ul class="simple">
+<li>CIRC : Only give the data to a single process</li>
+<li>STAR : Give the data to every process</li>
+<li>MC : Distribute round-robin within each column of the 2D process grid (M atrix C olumn)</li>
+<li>MR: Distribute round-robin within each row of the 2D process grid (M atrix R ow)</li>
+<li>VC: Distribute round-robin within a column-major ordering of the entire 2D process grid (V ector C olumn)</li>
+<li>VR: Distribute round-robin within a row-major ordering of the entire 2D process grid (V ector R ow)</li>
+</ul>
+</div></blockquote>
+<p><em>LocalSparse</em> refers to a libskylark-provided class for representing local sparse matrices, while <em>DistSparse</em> refers to
+Combinatorial BLAS sparse matrices.</p>
 <div class="math">
-<p><span class="math">\begin{tabular}{|c|p{3cm}|p{3cm}|c|c|c|c|c|c|c|}
+<p><img src="_images/math/56d9b951584a6999786e5b76433b990adda19e6f.png" alt="\begin{tabular}{|c|p{3cm}|p{3cm}|c|c|c|c|c|c|c|}
  \hline
  {\large input$\downarrow$ output$\rightarrow$} &amp; {\large LocalDense} &amp; \large{*/*} &amp; {\large MC/MR} &amp; {\large VR/*} &amp; {\large VC/*} &amp; {\large */VR} &amp; {\large */VC} &amp; {\large LocalSparse} &amp; {\large DistSparse}\\
  \hline
@@ -192,14 +212,12 @@ accessible in Python through <tt class="xref py py-mod docutils literal"><span c
  {\large DistSparse} &amp; \small{JLT, CT, CWT, MMT, WZT} &amp; \small{CWT, MMT, WZT} &amp; &amp; \small{CWT, MMT, WZT} &amp; \small{CWT, MMT, WZT} &amp; \small{CWT, MMT, WZT} &amp; \small{CWT, MMT, WZT} &amp; \small{CWT, MMT, WZT} &amp; \small{CWT, MMT, WZT}\\
 \hline
 \hline
-\end{tabular}</span></p>
+\end{tabular}"/></p>
 </div><div class="section" id="using-the-c-sketching-layer">
 <h4>Using the C++ Sketching layer<a class="headerlink" href="#using-the-c-sketching-layer" title="Permalink to this headline">¶</a></h4>
-<p>To get a flavour of using the sketching layer, we provide a C++ code snippet here where an <strong>Elemental
-row-distributed matrix</strong> is sketched to reduce the column dimensionality</p>
-<blockquote>
-<div>(number of rows). The sketched matrix &#8211; the output of the sketching operation &#8211; is a local matrix. The sketching is done using</div></blockquote>
-<p><strong>Johnson-Lindenstrauss (JLT)</strong> transform.</p>
+<p>To get a flavour of using the sketching layer, we provide a C++ code snippet here where an Elemental 1D-distributed matrix is
+sketched to reduce the column dimensionality (number of rows). The sketched matrix &#8211; the output of the sketching operation &#8211;
+is a local matrix. The sketching is done using <em>Johnson-Lindenstrauss (JLT)</em> transform.</p>
 <div class="highlight-cpp"><div class="highlight"><pre><span class="cp">#include &lt;elemental.hpp&gt;</span>
 <span class="cp">#include &lt;skylark.hpp&gt;</span>
 <span class="p">...</span>
@@ -213,9 +231,9 @@ row-distributed matrix</strong> is sketched to reduce the column dimensionality<
  <span class="cm">/* Initialize skylark context with a seed */</span>
 <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">context_t</span> <span class="n">context</span> <span class="p">(</span><span class="mi">12345</span><span class="p">);</span>
 
-<span class="cm">/* Row distributed Elemental Matrix A of size N x M</span>
-<span class="cm">elem::DistMatrix&lt;double, elem::VR, elem::STAR&gt; A(grid);</span>
-<span class="cm">elem::Uniform (A, N, M);</span>
+<span class="cm">/* Row distributed Elemental Matrix A of size N x M */</span>
+<span class="n">elem</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">VR</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="n">A</span><span class="p">(</span><span class="n">grid</span><span class="p">);</span>
+<span class="n">elem</span><span class="o">::</span><span class="n">Uniform</span> <span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">M</span><span class="p">);</span>
 
 <span class="cm">/* Create the Johnson-Lindenstrauss Sketch object to map R^N to R^S*/</span>
 <span class="n">skys</span><span class="o">::</span><span class="n">JLT_t</span><span class="o">&lt;</span><span class="n">DistMatrixType</span><span class="p">,</span> <span class="n">MatrixType</span><span class="o">&gt;</span> <span class="n">JLT</span> <span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="n">S</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
@@ -227,30 +245,21 @@ row-distributed matrix</strong> is sketched to reduce the column dimensionality<
 <span class="n">JLT</span><span class="p">.</span><span class="n">apply</span> <span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">sketch_A</span><span class="p">,</span> <span class="n">skys</span><span class="o">::</span><span class="n">columnwise_tag</span><span class="p">());</span>
 </pre></div>
 </div>
-<p>Here we describe access to the sketching layer only through the Python
-interface (<tt class="xref py py-mod docutils literal"><span class="pre">skylark.sketch</span></tt>). For description of access through
-C++ we refer the reader to the C++ documentation.</p>
 </div>
 </div>
 <div class="section" id="python-sketching-interface">
 <h3>Python Sketching Interface<a class="headerlink" href="#python-sketching-interface" title="Permalink to this headline">¶</a></h3>
-<p>Skylark also provides <cite>pure Python</cite> implementations of the various transforms, which it will
-default in case the C++ layers of Skylark are not compiled. Some transforms
-are currently implemented only in Python, but there are plans to
-implement them in C++ as well. Likewise, some transforms currently implemented in the C++ layer
-will be extended to Python in near-term releases.</p>
-<p>Skylark uses external libraries to represent distributed matrices. For
-dense distributed matrices it uses <a class="reference external" href="http://libelemental.org/">Elemental</a>.
-Currently it uses the c-types interface of Elemental, so be sure install
-that as well. For sparse distributed matrices it uses
-<a class="reference external" href="http://gauss.cs.ucsb.edu/~aydin/CombBLAS/html/">CombBLAS</a> interfaced
-through <a class="reference external" href="http://kdt.sourceforge.net/wiki/index.php/Main_Page">KDT</a>.</p>
+<p>Skylark also provides <cite>pure Python</cite> implementations of the various transforms, which it will default in case the C++ layers of
+Skylark are not compiled. Some transforms are currently implemented only in Python, but there are plans to implement them in
+C++ as well. Likewise, some transforms currently implemented in the C++ layer will be extended to Python in near-term
+releases.</p>
+<p>Skylark uses external libraries to represent distributed matrices. For dense distributed matrices it uses <a class="reference external" href="http://libelemental.org/">Elemental</a>. Currently it uses the c-types interface of Elemental, so be sure install that as well. For
+sparse distributed matrices it uses <a class="reference external" href="http://gauss.cs.ucsb.edu/~aydin/CombBLAS/html/">CombBLAS</a> interfaced through <a class="reference external" href="http://kdt.sourceforge.net/wiki/index.php/Main_Page">KDT</a>.</p>
 <p>The lower layers use MPI so it is advisable an MPI interface to Python be
 installed. One option is to use <a class="reference external" href="http://mpi4py.scipy.org/">mpi4py</a>.</p>
-<div class="section" id="supported-sketching-transforms-in-python">
-<h4>Supported Sketching Transforms in Python<a class="headerlink" href="#supported-sketching-transforms-in-python" title="Permalink to this headline">¶</a></h4>
+<p>The following table lists currently supported sketching transforms available through Python.</p>
 <div class="math">
-<p><span class="math">\begin{tabular}{|c|p{3cm}|p{3cm}|c|c|c|c|c|c|c|}
+<p><img src="_images/math/a964850a085b75732588e76d49a276b30be89399.png" alt="\begin{tabular}{|c|p{3cm}|p{3cm}|c|c|c|c|c|c|c|}
  \hline
  {\large input$\downarrow$ output$\rightarrow$} &amp; {\large LocalDense} &amp; \large{*/*} &amp; {\large MC/MR} &amp; {\large VR/*} &amp; {\large VC/*} &amp; {\large */VR} &amp; {\large */VC} &amp; {\large LocalSparse} &amp; {\large DistSparse}\\
  \hline
@@ -264,9 +273,8 @@ installed. One option is to use <a class="reference external" href="http://mpi4p
  {\large DistSparse} &amp; \small{JLT, CT, CWT, MMT, WZT} &amp; \small{CWT, MMT, WZT} &amp; &amp; \small{CWT, MMT, WZT} &amp; \small{CWT, MMT, WZT} &amp; \small{CWT, MMT, WZT} &amp; \small{CWT, MMT} &amp; \small{CWT, MMT} &amp; \small{CWT, MMT}\\
 \hline
 \hline
-\end{tabular}</span></p>
-</div></div>
-<div class="section" id="using-the-python-interface">
+\end{tabular}"/></p>
+</div><div class="section" id="using-the-python-interface">
 <h4>Using the Python interface<a class="headerlink" href="#using-the-python-interface" title="Permalink to this headline">¶</a></h4>
 <p>Skylark is automatically initialized with a random seed when you import
 sketch. However, you can reinitialize it to a specific seed by calling
@@ -289,9 +297,7 @@ allocated objects (e.g. sketch transforms) to be freed. They are freed by
 the garbage collector when detected as garbage (no references).</p>
 </dd></dl>
 
-</div>
-<div class="section" id="sketchtransform-class">
-<h4>SketchTransform Class<a class="headerlink" href="#sketchtransform-class" title="Permalink to this headline">¶</a></h4>
+<p>Python sketch classes inherit from the <em>SketchTransform</em> class.</p>
 <dl class="class">
 <dt id="skylark.sketch._SketchTransform">
 <em class="property">class </em><tt class="descclassname">skylark.sketch.</tt><tt class="descname">_SketchTransform</tt><big>(</big><em>ttype</em>, <em>n</em>, <em>s</em>, <em>defouttype=None</em>, <em>forceppy=False</em>, <em>sketch_transform=None</em><big>)</big><a class="headerlink" href="#skylark.sketch._SketchTransform" title="Permalink to this definition">¶</a></dt>
@@ -382,9 +388,7 @@ function.</p>
 
 </dd></dl>
 
-</div>
-<div class="section" id="python-sketch-classes">
-<h4>Python Sketch Classes<a class="headerlink" href="#python-sketch-classes" title="Permalink to this headline">¶</a></h4>
+<p>Specific python sketch classes are documented below.</p>
 <dl class="class">
 <dt id="skylark.sketch.JLT">
 <em class="property">class </em><tt class="descclassname">skylark.sketch.</tt><tt class="descname">JLT</tt><big>(</big><em>n</em>, <em>s</em>, <em>defouttype=None</em>, <em>forceppy=False</em>, <em>sketch_transform=None</em><big>)</big><a class="headerlink" href="#skylark.sketch.JLT" title="Permalink to this definition">¶</a></dt>
@@ -659,8 +663,7 @@ For now, only Pure Python implementation, and only sampling with replacement.</p
 </div>
 <div class="section" id="python-examples">
 <h3>Python Examples<a class="headerlink" href="#python-examples" title="Permalink to this headline">¶</a></h3>
-<div class="section" id="sketching-dense-distributed-matrices">
-<h4>Sketching Dense Distributed Matrices<a class="headerlink" href="#sketching-dense-distributed-matrices" title="Permalink to this headline">¶</a></h4>
+<p><strong>Sketching Dense Distributed Matrices</strong></p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c">#!/usr/bin/env python</span>
 <span class="c"># MPI usage: </span>
 <span class="c"># mpiexec -np 2 python skylark/examples/example_sketch.py</span>
@@ -764,9 +767,7 @@ For now, only Pure Python implementation, and only sampling with replacement.</p
 <span class="n">sketch</span><span class="o">.</span><span class="n">finalize</span><span class="p">()</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="python-example-sketching-sparse-distributed-matrices">
-<h4>Python Example: Sketching Sparse Distributed Matrices<a class="headerlink" href="#python-example-sketching-sparse-distributed-matrices" title="Permalink to this headline">¶</a></h4>
+<p><strong>Sketching Sparse Distributed Matrices</strong></p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c">#!/usr/bin/env python</span>
 <span class="c"># MPI usage: </span>
 <span class="c"># mpiexec -np 2 python skylark/examples/example_sparse_sketch.py</span>
@@ -832,7 +833,6 @@ For now, only Pure Python implementation, and only sampling with replacement.</p
 </div>
 </div>
 </div>
-</div>
 
 
           </div>
@@ -852,17 +852,10 @@ For now, only Pure Python implementation, and only sampling with replacement.</p
 </ul>
 </li>
 <li><a class="reference internal" href="#python-sketching-interface">Python Sketching Interface</a><ul>
-<li><a class="reference internal" href="#supported-sketching-transforms-in-python">Supported Sketching Transforms in Python</a></li>
 <li><a class="reference internal" href="#using-the-python-interface">Using the Python interface</a></li>
-<li><a class="reference internal" href="#sketchtransform-class">SketchTransform Class</a></li>
-<li><a class="reference internal" href="#python-sketch-classes">Python Sketch Classes</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#python-examples">Python Examples</a><ul>
-<li><a class="reference internal" href="#sketching-dense-distributed-matrices">Sketching Dense Distributed Matrices</a></li>
-<li><a class="reference internal" href="#python-example-sketching-sparse-distributed-matrices">Python Example: Sketching Sparse Distributed Matrices</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#python-examples">Python Examples</a></li>
 </ul>
 </li>
 </ul>
@@ -873,8 +866,8 @@ For now, only Pure Python implementation, and only sampling with replacement.</p
   <p class="topless"><a href="installation.html"
                         title="previous chapter">Installation Instructions</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="ml.html"
-                        title="next chapter">Machine Learning</a></p>
+  <p class="topless"><a href="nla.html"
+                        title="next chapter">Numerical Linear Algebra</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/sketching.txt"
@@ -907,7 +900,7 @@ For now, only Pure Python implementation, and only sampling with replacement.</p
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="ml.html" title="Machine Learning"
+          <a href="nla.html" title="Numerical Linear Algebra"
              >next</a> |</li>
         <li class="right" >
           <a href="installation.html" title="Installation Instructions"
@@ -917,7 +910,7 @@ For now, only Pure Python implementation, and only sampling with replacement.</p
     </div>
     <div class="footer">
         &copy; Copyright IBM Corporation 2012-2014.  All Rights Reserved.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div>
   </body>
 </html>

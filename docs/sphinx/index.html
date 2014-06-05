@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -7,27 +5,26 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-
+    
     <title>libskylark: Sketching-based Matrix Computations for Machine Learning &mdash; LIBSKYLARK 0.0.1 documentation</title>
-
+    
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
+        URL_ROOT:    './',
         VERSION:     '0.0.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
       };
-
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="LIBSKYLARK 0.0.1 documentation" href="#" />
-    <link rel="next" title="Introduction" href="introduction.html" />
+    <link rel="next" title="Introduction" href="introduction.html" /> 
   </head>
   <body>
     <div class="related">
@@ -42,15 +39,15 @@
         <li class="right" >
           <a href="introduction.html" title="Introduction"
              accesskey="N">next</a> |</li>
-        <li><a href="#">LIBSKYLARK 0.0.1 documentation</a> &raquo;</li>
+        <li><a href="#">LIBSKYLARK 0.0.1 documentation</a> &raquo;</li> 
       </ul>
-    </div>
+    </div>  
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
           <div class="body">
-
+            
   <div class="section" id="libskylark-sketching-based-matrix-computations-for-machine-learning">
 <h1>libskylark: Sketching-based Matrix Computations for Machine Learning<a class="headerlink" href="#libskylark-sketching-based-matrix-computations-for-machine-learning" title="Permalink to this headline">¶</a></h1>
 <p><strong>Contents:</strong></p>
@@ -58,11 +55,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="introduction.html#goals">Goals</a></li>
-<li class="toctree-l2"><a class="reference internal" href="introduction.html#sketching-and-sampling-methods">Sketching and Sampling Methods</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="introduction.html#more-technical-details">More Technical Details</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="introduction.html#implementation-plan-and-current-status">Implementation Plan and Current Status</a></li>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#sketching-and-sampling-methods">Sketching and Sampling Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="introduction.html#license-and-copyright">License and Copyright</a></li>
 </ul>
 </li>
@@ -101,6 +94,11 @@
 <li class="toctree-l3"><a class="reference internal" href="installation.html#using-xyz-build-system">Using XYZ Build System</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#software-pitfalls">Software Pitfalls</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#combblas-installation-notes">CombBLAS Installation Notes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#issues-with-combblas-1-4-0">Issues with CombBLAS &lt; 1.4.0</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="sketching.html">Sketching Layer</a><ul>
@@ -113,31 +111,36 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="sketching.html#python-sketching-interface">Python Sketching Interface</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="sketching.html#supported-sketching-transforms-in-python">Supported Sketching Transforms in Python</a></li>
 <li class="toctree-l4"><a class="reference internal" href="sketching.html#using-the-python-interface">Using the Python interface</a></li>
-<li class="toctree-l4"><a class="reference internal" href="sketching.html#sketchtransform-class">SketchTransform Class</a></li>
-<li class="toctree-l4"><a class="reference internal" href="sketching.html#python-sketch-classes">Python Sketch Classes</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="sketching.html#python-examples">Python Examples</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="sketching.html#sketching-dense-distributed-matrices">Sketching Dense Distributed Matrices</a></li>
-<li class="toctree-l4"><a class="reference internal" href="sketching.html#python-example-sketching-sparse-distributed-matrices">Python Example: Sketching Sparse Distributed Matrices</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sketching.html#python-examples">Python Examples</a></li>
 </ul>
 </li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="nla.html">Numerical Linear Algebra</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="nla.html#randomized-least-squares-regression">Randomized Least Squares Regression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nla.html#randomized-singular-value-decomposition">Randomized Singular Value Decomposition</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="ml.html">Machine Learning</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="ml.html#randomized-kernel-methods">Randomized Kernel Methods</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ml.html#commandline-usage">Commandline Usage</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="ml.html#statistical-dimensionality-reduction">Statistical Dimensionality Reduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ml.html#randomized-kernel-methods">Randomized Kernel Methods</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ml.html#standalone-usage">Standalone Usage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ml.html#input-data-format">Input Data Format</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="ml.html#quick-example">Quick Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ml.html#commandline-usage">Commandline Usage</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="io.html">IO in Skylark</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="io.html#example">Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="io.html#io-from-c">IO from C++</a></li>
+<li class="toctree-l2"><a class="reference internal" href="io.html#module-skylark.io">IO from Python</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="io.html#example">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="io.html#sketch-serialization">Sketch Serialization</a></li>
 </ul>
 </li>
 </ul>
@@ -203,12 +206,12 @@
         <li class="right" >
           <a href="introduction.html" title="Introduction"
              >next</a> |</li>
-        <li><a href="#">LIBSKYLARK 0.0.1 documentation</a> &raquo;</li>
+        <li><a href="#">LIBSKYLARK 0.0.1 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright IBM Corporation 2012-2014.  All Rights Reserved.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div>
   </body>
 </html>

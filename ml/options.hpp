@@ -101,7 +101,7 @@ struct hilbert_options_t {
 #ifndef SKYLARK_AVOID_BOOST_PO
 
         po::options_description desc
-            ("Usage: hilbert [options] --trainfile trainfile --modelfile modelfile\nUsage: hilbert --modelfile modelfile --testfile testfile ");
+            ("Usage: skylark_ml [options] --trainfile trainfile --modelfile modelfile\nUsage: skylark_ml --modelfile modelfile --testfile testfile ");
 
         desc.add_options()
             ("help,h", "produce a help message")

@@ -1,11 +1,66 @@
 Machine Learning
 *****************
 
-
-
 Randomized Kernel Methods
 ==========================
+ 
+libskylark provides distributed implementations of kernel-based nonlinear models for 
+ 
+	* Regularized Least Squares Regression and Classification
+	* Regularized Robust Regression (Least Absolute Deviation loss)
+	* Support Vector Machines
+        * Multinomial Logistic Regression. 
 
+The implementations combine two ideas:
+	* Constructing randomized approximations to Kernel functions *on the fly*
+        * Using a distributed optimization solver based on Alternating Directions Method of Multipliers (ADMM)
+ 
+The full implementation is described in the following papers:
+	* Sindhwani V. and Avron H., High-performance Kernel Machines with Implicit Distributed Optimization and Randomization, 2014
+
+Standalone Usage 
+----------------- 
+
+Building libskylark creates an executable called skylark_ml under CMAKE_PREFIX_INSTALL/bin. This executable can be 
+used out-of-the-box for large-scale applications involving kernel-based modeling.
+
+ 
+Input Data Format
+------------------
+The implementation supports `LIBSVM <http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/>`_ file format, where 
+feature vectors and labels are specified as
+
+::
+
+	0 1:0.2 4:0.5 10:0.3
+        5 3:0.3 6:0.1 
+
+Each line begins with a label and followed by index (starting with 1)-value pairs describing the feature vector in 
+sparse format. 
+  
+We also support `HDF5 <http://www.hdfgroup.org/HDF5/>`_ data files. 
+
+	* Dense training data can be described using HDF5 files containing two `HDF5 datasets <http://www.hdfgroup.org/HDF5/Tutor/crtdat.html>`_: 
+		* X -- n x d matrix  (examples-by-features)
+		* Y -- n x 1 matrix of labels. 
+	* Sparse training data can be described using HDF5 files containing five `HDF5 datasets <http://www.hdfgroup.org/HDF5/Tutor/crtdat.html>`_ specifying a Compressed Row Storage Sparse matrix: 
+		* dimensions: 3 x 1 matrix [number of features, number of examples, number of nonzeros (nnz)]
+                * indices: nnz x 1 matrix column indices of non-zero values for CRS datastructure representing the examples-by-features sparse matrix
+		* values: nnz x 1 non-zero values corresponding to indices
+ 		* indptr: (n+1) x 1 - pointer into indices, values specifying rows
+		* Y: n x 1 matrix of labels
+
+*Note*: For all fileformats described above, the current implementation is geared towards classification problems and 
+requires the label to assume values from 0 to (K-1) for a K-class problem, or +1/-1 for binary classification problems.
+
+Quick Example
+===============
+
+::
+ 	wget http://vikas.sindhwani.org/usps.tar.gz
+	tar -xvzf usps.tar.gz
+	
+	
 
 
 Commandline Usage
@@ -19,7 +74,7 @@ Commandline Usage
       -l [ --lossfunction ] arg (=0)        Loss function (0:SQUARED (L2), 1:LAD 
 					    (L1), 2:HINGE, 3:LOGISTIC)
       -r [ --regularizer ] arg (=0)         Regularizer (0:L2, 1:L1)
-      -k [ --kernel ] arg (=0)              Kernel (0:LINEAR, 1:GAUSSIAN, 
+      -k [ --kernel ] arg (=0)              Kernel (1:GAUSSIAN, 
 					    2:POLYNOMIAL, 3:LAPLACIAN, 
 					    4:EXPSEMIGROUP)
       -g [ --kernelparam ] arg (=1)         Kernel Parameter

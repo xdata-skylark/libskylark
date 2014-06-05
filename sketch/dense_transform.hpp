@@ -10,7 +10,8 @@ namespace skylark { namespace sketch {
 template < typename InputMatrixType,
            typename OutputMatrixType,
            template <typename> class ValueDistribution>
-class dense_transform_t {
+class dense_transform_t :
+        public dense_transform_data_t<ValueDistribution> {
 
     typedef InputMatrixType matrix_type;
     typedef OutputMatrixType output_matrix_type;

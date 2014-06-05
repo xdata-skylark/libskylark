@@ -13,6 +13,7 @@ const char* const skylark_errmsg[] = {
     , "Skylark failed due to a unsupported matrix distribution"
     , "Skylark failed in a call to CombBLAS"
     , "Skylark failed in sketching a matrix"
+    , "Skylark failed in nla operation"
     , "Skylark failed when allocating memory in a sketch"
     , "Skylark failed in a call into the Random123 layer"
     , "Skylark failed in I/O calls"
@@ -131,13 +132,24 @@ public:
     }
 };
 
+/// exceptions in the nla layer
+struct nla_exception : virtual skylark_exception {
+public:
+    using skylark_exception::operator<<;
+
+    nla_exception() {
+        *this << error_code(106);
+    }
+};
+
+
 /// exceptions in the Random123 layer
 struct random123_exception : virtual skylark_exception {
 public:
     using skylark_exception::operator<<;
 
     random123_exception() {
-        *this << error_code(107);
+        *this << error_code(108);
     }
 };
 
@@ -157,7 +169,7 @@ public:
     using sketch_exception::operator<<;
 
     allocation_exception() {
-        *this << error_code(106);
+        *this << error_code(107);
     }
 };
 
@@ -177,7 +189,7 @@ public:
     using skylark_exception::operator<<;
 
     unsupported_base_operation() {
-        *this << error_code(103);
+        *this << error_code(109);
     }
 };
 

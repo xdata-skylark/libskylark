@@ -57,10 +57,14 @@
 /** Include all the sketching primitives */
 #include "sketch/sketch.hpp"
 
-/** Include all NLA primitives */
+/** Include all basic algorithms provided */
+#include "algorithms/algorithms.hpp"
+
+/** Include all NLA routines */
 #include "nla/nla.hpp"
 
-/** Include all NLA/ML algorithms provided */
-#include "algorithms/algorithms.hpp"
+/** TODO: add include to ML routines */
+
+
 
 #endif // SKYLARK_HPP

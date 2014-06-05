@@ -1,7 +1,7 @@
 #ifndef SKYLARK_PRECOND_HPP
 #define SKYLARK_PRECOND_HPP
 
-#include "../base/base.hpp"
+#include "../../base/base.hpp"
 
 namespace skylark { namespace nla {
 

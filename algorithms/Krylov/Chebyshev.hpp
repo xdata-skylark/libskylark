@@ -1,10 +1,10 @@
 #ifndef SKYLARK_CHEBYSHEV_HPP
 #define SKYLARK_CHEBYSHEV_HPP
 
-#include "../base/base.hpp"
-#include "../utility/elem_extender.hpp"
-#include "../utility/typer.hpp"
-#include "../utility/external/print.hpp"
+#include "../../base/base.hpp"
+#include "../../utility/elem_extender.hpp"
+#include "../../utility/typer.hpp"
+#include "../../utility/external/print.hpp"
 #include "precond.hpp"
 
 namespace skylark { namespace nla {

@@ -3,7 +3,7 @@
 
 #include "../../base/query.hpp"
 #include "../../utility/typer.hpp"
-#include "../../nla/LSQR.hpp"
+#include "../Krylov/LSQR.hpp"
 
 namespace skylark { namespace algorithms {
 

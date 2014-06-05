@@ -19,7 +19,9 @@ template < typename InputMatrixType,
            template <typename> class IdxDistributionType,
            template <typename> class ValueDistribution
         >
-struct hash_transform_t {
+struct hash_transform_t :
+        public hash_transform_data_t<IdxDistributionType,
+                                     ValueDistribution> {
     // To be specialized and derived. Just some guards here.
     typedef InputMatrixType matrix_type;
     typedef OutputMatrixType output_matrix_type;

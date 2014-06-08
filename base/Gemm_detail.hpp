@@ -12,6 +12,7 @@
 
 #include "../utility/external/view.hpp"
 #include "../utility/external/combblas_comm_grid.hpp"
+#include "../utility/external/elemental_comm_grid.hpp"
 
 namespace skylark { namespace base { namespace detail {
 
@@ -98,7 +99,7 @@ inline void inner_panel_mixed_gemm_impl_nn(
         size_t row = local_row + cb_row_offset;
 
         // the owner for VR/* and VC/* matrices is independent of the column
-        size_t target_proc = C.Owner(row, 0);
+        size_t target_proc = utility::owner(C, row, static_cast<size_t>(0));
 
         // if the target processor is not in the current row communicator, get
         // the value in the processor grid sharing the same row.
@@ -120,7 +121,7 @@ inline void inner_panel_mixed_gemm_impl_nn(
 
         // processor stores result directly if it is the owning rank of that
         // row, save for subsequent communication along rows otherwise
-        if(rank == C.Owner(row, 0)) {
+        if(rank == utility::owner(C, row, static_cast<size_t>(0))) {
             int elem_lrow = C.LocalRow(row);
             for(size_t idx = 0; idx < local_width; ++idx) {
                 int elem_lcol = C.LocalCol(idx);
@@ -129,7 +130,7 @@ inline void inner_panel_mixed_gemm_impl_nn(
             }
         } else if (rank == target_proc) {
             // store for later comm across rows
-            for_rank[C.Owner(row, 0) / n_proc_side].push_back(
+            for_rank[utility::owner(C, row, static_cast<size_t>(0)) / n_proc_side].push_back(
                     std::make_pair(row, new_values));
         }
     }

@@ -24,6 +24,8 @@
 
 #include "../../base/sparse_matrix.hpp"
 
+#include "../../utility/external/combblas_comm_grid.hpp"
+
 typedef FullyDistVec<size_t, double> mpi_vector_t;
 typedef SpDCCols<size_t, double> col_t;
 typedef SpParMat<size_t, double, col_t> DistMatrixType;
@@ -82,16 +84,9 @@ void compare_result(size_t rank, DistMatrixType &expected_A,
                     elem::DistMatrix<double, elem::STAR, elem::STAR> &result) {
 
     col_t &data = expected_A.seq();
-    //FIXME: use comm_grid
-    const size_t my_row_offset =
-        static_cast<int>((static_cast<double>(expected_A.getnrow()) /
-                expected_A.getcommgrid()->GetGridRows())) *
-                expected_A.getcommgrid()->GetRankInProcCol(rank);
 
-    const size_t my_col_offset =
-        static_cast<int>((static_cast<double>(expected_A.getncol()) /
-                expected_A.getcommgrid()->GetGridCols())) *
-                expected_A.getcommgrid()->GetRankInProcRow(rank);
+    const size_t my_row_offset = skylark::utility::cb_my_row_offset(expected_A);
+    const size_t my_col_offset = skylark::utility::cb_my_col_offset(expected_A);
 
     for(typename col_t::SpColIter col = data.begcol();
         col != data.endcol(); col++) {
@@ -102,11 +97,16 @@ void compare_result(size_t rank, DistMatrixType &expected_A,
             const size_t colid = col.colid() + my_col_offset;
             const double value = nz.value();
 
-            if(value != result.GetLocal(rowid, colid))
-                BOOST_FAIL("Result of colwise (dist -> dist) application not as expected");
+            if(value != result.GetLocal(rowid, colid)) {
+                std::ostringstream os;
+                os << rank << ": " << rowid << ", " << colid << ": "
+                   << value << " != "
+                   << result.GetLocal(rowid, colid) << std::endl;
+                std::cout << os.str() << std::flush;
+                BOOST_FAIL("Result application not as expected");
+            }
         }
     }
-
 }
 
 int test_main(int argc, char *argv[]) {
@@ -163,6 +163,16 @@ int test_main(int argc, char *argv[]) {
             local_A.Set(j, i, count++);
 
 
+    elem::DistMatrix<double, elem::STAR, elem::STAR> result;
+
+    // columnwise application
+    DistMatrixType expected_A;
+    DistMatrixType pi_sketch(n_s, n, zero, zero, zero);
+
+    // rowwise application
+    DistMatrixType expected_AR;
+    DistMatrixType pi_sketch_r(m_s, m, zero, zero, zero);
+
     //////////////////////////////////////////////////////////////////////////
     //[> Column wise application DistSparseMatrix -> DistMatrix[MC/MR] <]
 
@@ -180,11 +190,11 @@ int test_main(int argc, char *argv[]) {
 
     //[> 4. Build structure to compare <]
     // easier to check if all processors own result
-    elem::DistMatrix<double, elem::STAR, elem::STAR> result = sketch_A;
+    result = sketch_A;
+    elem::Display(result);
 
-    DistMatrixType pi_sketch(n_s, n, zero, zero, zero);
     compute_sketch_matrix(Sparse, A, pi_sketch);
-    DistMatrixType expected_A = Mult_AnXBn_Synch<PTDD, double, col_t>(
+    expected_A = Mult_AnXBn_Synch<PTDD, double, col_t>(
             pi_sketch, A, false, false);
 
     compare_result(rank, expected_A, result);
@@ -198,7 +208,7 @@ int test_main(int argc, char *argv[]) {
     Dummy_t<DistMatrixType, vcs_target_t> SparseVC(n, n_s, context);
 
     //[> 2. Create space for the sketched matrix <]
-    vcs_target_t sketch_A_vcs(n, n_s, grid);
+    vcs_target_t sketch_A_vcs(n_s, m, grid);
     elem::Zero(sketch_A_vcs);
 
     //[> 3. Apply the transform <]
@@ -214,7 +224,31 @@ int test_main(int argc, char *argv[]) {
 
     compare_result(rank, expected_A, result);
 
-#if 0
+    //////////////////////////////////////////////////////////////////////////
+    //[> Column wise application DistSparseMatrix -> DistMatrix[*/VR] <]
+
+    typedef elem::DistMatrix<double, elem::STAR, elem::VR> svr_target_t;
+
+    //[> 1. Create the sketching matrix <]
+    Dummy_t<DistMatrixType, svr_target_t> SparseVR(n, n_s, context);
+
+    //[> 2. Create space for the sketched matrix <]
+    svr_target_t sketch_A_svr(n_s, m, grid);
+    elem::Zero(sketch_A_svr);
+
+    //[> 3. Apply the transform <]
+    SparseVR.apply(A, sketch_A_svr, skylark::sketch::columnwise_tag());
+
+    //[> 4. Build structure to compare <]
+    // easier to check if all processors own result
+    result = sketch_A_svr;
+
+    compute_sketch_matrix(SparseVR, A, pi_sketch);
+    expected_A = Mult_AnXBn_Synch<PTDD, double, col_t>(
+            pi_sketch, A, false, false);
+
+    compare_result(rank, expected_A, result);
+
     //////////////////////////////////////////////////////////////////////////
     //[> Column wise application DistSparseMatrix -> DistMatrix[*/*] <]
 
@@ -224,28 +258,24 @@ int test_main(int argc, char *argv[]) {
     Dummy_t<DistMatrixType, st_target_t> SparseST(n, n_s, context);
 
     //[> 2. Create space for the sketched matrix <]
-    st_target_t sketch_A_st(n, n_s, grid);
+    st_target_t sketch_A_st(n_s, m, grid);
     elem::Zero(sketch_A_st);
 
     //[> 3. Apply the transform <]
     SparseST.apply(A, sketch_A_st, skylark::sketch::columnwise_tag());
 
-    //[> 4. Build structure to compare <]
-    // easier to check if all processors own result
-    result = sketch_A_st;
-
-    compute_sketch_matrix(SparseVC, A, pi_sketch);
+    //[> 4. Compare <]
+    compute_sketch_matrix(SparseST, A, pi_sketch);
     expected_A = Mult_AnXBn_Synch<PTDD, double, col_t>(
             pi_sketch, A, false, false);
 
-    compare_result(rank, expected_A, result);
-#endif
+    compare_result(rank, expected_A, sketch_A_st);
 
     //////////////////////////////////////////////////////////////////////////
     //[> Column wise application DistSparseMatrix -> LocalDenseMatrix <]
 
     Dummy_t<DistMatrixType, elem::Matrix<double>> LocalSparse(n, n_s, context);
-    elem::Matrix<double> local_sketch_A(n, n_s);
+    elem::Matrix<double> local_sketch_A(n_s, m);
     elem::Zero(local_sketch_A);
     LocalSparse.apply(A, local_sketch_A, skylark::sketch::columnwise_tag());
 
@@ -295,10 +325,9 @@ int test_main(int argc, char *argv[]) {
     // easier to check if all processors own result
     result = sketch_A_r;
 
-    DistMatrixType pi_sketch_r(m_s, m, zero, zero, zero);
     compute_sketch_matrix(Sparse_r, A, pi_sketch_r);
     pi_sketch_r.Transpose();
-    DistMatrixType expected_AR = Mult_AnXBn_Synch<PTDD, double, col_t>(
+    expected_AR = Mult_AnXBn_Synch<PTDD, double, col_t>(
             A, pi_sketch_r, false, false);
 
     compare_result(rank, expected_AR, result);

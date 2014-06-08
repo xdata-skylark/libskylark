@@ -5,6 +5,7 @@
 #include <boost/serialization/map.hpp>
 
 #include "../utility/external/combblas_comm_grid.hpp"
+#include "../utility/external/elemental_comm_grid.hpp"
 
 namespace skylark { namespace sketch {
 
@@ -132,8 +133,8 @@ private:
                 const size_t pos       = getPos(rowid, colid, ncols, dist);
 
                 // compute target processor for this target index
-                const size_t target =
-                    sketch_of_A.Owner(pos / ncols, pos % ncols);
+                const size_t target = utility::owner(
+                        sketch_of_A, pos / ncols, pos % ncols);
 
                 if(proc_set[target].count(pos) == 0) {
                     assert(target < comm_size);
@@ -168,7 +169,8 @@ private:
                 const size_t pos       = getPos(rowid, colid, ncols, dist);
 
                 // compute target processor for this target index
-                const size_t proc = sketch_of_A.Owner(pos / ncols, pos % ncols);
+                const size_t proc = utility::owner(
+                        sketch_of_A, pos / ncols, pos % ncols);
 
                 // get offset in array for current element
                 const size_t ar_idx = proc_start_idx[proc] +
@@ -399,7 +401,6 @@ private:
 };
 
 
-#if 0
 /* Specialization: SpParMat for input, Elemental[* / *] output */
 template <typename IndexType,
           typename ValueType,
@@ -532,7 +533,6 @@ private:
         }
     }
 };
-#endif
 
 } } /** namespace skylark::sketch */
 

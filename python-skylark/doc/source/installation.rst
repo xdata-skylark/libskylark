@@ -15,7 +15,9 @@ The source code is hosted on github. The libskylark git repository can be cloned
 Software Dependencies
 ======================
 
- Skylark uses several open-source software packages that are essential for Skylark's operation (build, install, and run). In this section, we give instructions to install these software packages on Ubuntu machines. Installing the required software packages on other operating systems should be very similar.
+Skylark uses several open-source software packages that are essential for its operation (build, install, and run). In 
+this section, we give instructions to install these software packages on Ubuntu machines. Installing the required 
+software packages on other operating systems should be very similar.
 
 We can build Skylark in one or more of four possible configurations:
 
@@ -24,9 +26,14 @@ We can build Skylark in one or more of four possible configurations:
     * Skylark python and C++ bindings with support for dense (Elemental) matrices skylark-python-dense
     * Skylark python and C++ bindings with support for sparse (CombBLAS) matrices skylark-python-sparse
 
-Please refer to the graph of dependencies for realizing these configurations. Note that nodes with version information within brackets refer to software packages while nodes containing no brackets refer to Skylark build targets. The versions denote the ones that we have tested with, but apart from Elemental, CombBLAS, and KDT versions, which need to be strictly followed, other software (CMake, gfortran, etc) may work just as well with other versions as well. Orange colored components denote C++ dependencies and the color green is used for Python dependencies.
+Please refer to the graph of dependencies for realizing these configurations. Note that nodes with version 
+information within brackets refer to software packages while nodes containing no brackets refer to Skylark 
+build targets. The versions denote the ones that we have tested with, but apart from Elemental, CombBLAS, 
+and KDT versions, which need to be strictly followed, other software (CMake, gfortran, etc) may work just 
+as well with other versions as well. Orange colored components denote C++ dependencies and the color green 
+is used for Python dependencies.
 
-.. image:: skylark-dependencies-mm.png
+.. image:: skylark-dependencies.png
 
 python-setuptools
 ------------------

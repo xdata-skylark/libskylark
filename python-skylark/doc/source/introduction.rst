@@ -73,9 +73,9 @@ solving a whole host of NLA problems, with substantial speedups in computation t
 include reduced memory requirements, communication costs and IO overheads. This, in turn, offers the 
 potential to significantly improve the computational efficiency of solving higher-level statistical 
 modeling and machine learning tasks, by essentially replacing calls to traditional NLA kernels with 
-their sketching counterparts.
- 
- Skylark builds on distributed Numerical Linear Algebra libraries for Dense and Sparse Matrices, with 
+their sketching counterparts. 
+
+Skylark builds on distributed Numerical Linear Algebra libraries for Dense and Sparse Matrices, with 
 an MPI backend. Organizationally, it comprises of three layers. The core is a library of sketching 
 transforms whose main functionality is to enable a variety of input matrix types to be sketched, 
 using transforms specialized for various NLA kernels such as least squares (:math:`l_2`) regression, 
@@ -93,12 +93,15 @@ Combinatorial BLAS (through `KDT <http://kdt.sourceforge.net/wiki/index.php/Main
 In the future, we also plan to support a streaming interface for out-of-core sketching and matrix 
 computations.
 
+Note that some of the features mentioned above are under active development and/or currently being 
+benchmarked for performance improvements, and as such some of the features in the current stack should be 
+considered experimental.
 
 License and Copyright
 ----------------------
 
 Copyright IBM Corporation, 2012-2014 ::
 
-This program and the accompanying materials are made available under the terms of the Apache License, Version 2.0
-which is available at `<http://www.apache.org/licenses/LICENSE-2.0>`_
+This program and the accompanying materials are made available under the terms of the Apache License, 
+Version 2.0 which is available at `<http://www.apache.org/licenses/LICENSE-2.0>`_
 

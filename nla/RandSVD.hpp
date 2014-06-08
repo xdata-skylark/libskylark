@@ -20,8 +20,8 @@ namespace skylark { namespace nla {
 struct rand_svd_params_t {
 
     int oversampling;
-    int num_iterations;
     sketch::c::transform_type_t	transform;
+    int num_iterations;
     bool skip_qr;
 
     rand_svd_params_t(int oversampling, sketch::c::transform_type_t transform = sketch::c::transform_type_t::JLT,

@@ -9,7 +9,14 @@ libskylark provides distributed implementations of kernel-based nonlinear models
 	* Regularized Least Squares Regression and Classification
 	* Regularized Robust Regression (Least Absolute Deviation loss)
 	* Support Vector Machines
-        * Multinomial Logistic Regression. 
+        * Multinomial Logistic Regression (classes > 2). 
+
+The following kernels are supported:
+	
+	* Gaussian and Laplacian Kernels via Random Fourier Transform (`Rahimi and Recht, 2007 <http://www.eecs.berkeley.edu/~brecht/papers/07.rah.rec.nips.pdf>`_)
+	* Gaussian and Laplacian Kernels via Fast Random Fourier Transform (`Le, Sarlos and Smola, 2013 <http://jmlr.org/proceedings/papers/v28/le13.html>`_)
+	* Polynomial Kernels via Tensor Sketch (`Pahm and Pagh, 2013 <http://www.itu.dk/people/ndap/TensorSketch.pdf>`_) 
+	* Exponential Semigroup Kernels via Random Laplace Transform (`Yang et al, 2014 <http://vikas.sindhwani.org/RandomLaplace.pdf>`_)
 
 The implementations combine two ideas:
 	* Constructing randomized approximations to Kernel functions *on the fly*

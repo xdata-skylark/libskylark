@@ -8,8 +8,8 @@ Randomized Least Squares Regression
 
 The randomized regression functionality provides distributed implementation of algorithms described in 
 	
-	* Avron, H., Maymounkov, P. and Toledo, S., `Supercharging LAPACK's Least Squares Solver <http://dl.acm.org/citation.cfm?id=1958633>`_
-	* Meng, X., Saunders, M.A. and Mahoney, M. W, `LSRN: A Paralllel Iterative Solver for Strongly Over- or Under-Determined Systems <http://arxiv.org/abs/1109.5981>`_
+	* Avron, H., Maymounkov, P. and Toledo, S., `Supercharging LAPACK's Least Squares Solver <http://dl.acm.org/citation.cfm?id=1958633>`_ , 2010
+	* Meng, X., Saunders, M.A. and Mahoney, M. W, `LSRN: A Paralllel Iterative Solver for Strongly Over- or Under-Determined Systems <http://arxiv.org/abs/1109.5981>`_ , 2012
 
 A flavor of usage is given in the code snippet below. The usage mirrors Elemental's `LeastSquares <http://libelemental.org/documentation/0.83/lapack-like/solve.html>`_ function, but the solve is accelerated using sketching (specified internally). 
 

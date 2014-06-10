@@ -118,9 +118,8 @@ include reduced memory requirements, communication costs and IO overheads. This,
 potential to significantly improve the computational efficiency of solving higher-level statistical
 modeling and machine learning tasks, by essentially replacing calls to traditional NLA kernels with
 their sketching counterparts.</p>
-<blockquote>
-<div>Skylark builds on distributed Numerical Linear Algebra libraries for Dense and Sparse Matrices, with</div></blockquote>
-<p>an MPI backend. Organizationally, it comprises of three layers. The core is a library of sketching
+<p>Skylark builds on distributed Numerical Linear Algebra libraries for Dense and Sparse Matrices, with
+an MPI backend. Organizationally, it comprises of three layers. The core is a library of sketching
 transforms whose main functionality is to enable a variety of input matrix types to be sketched,
 using transforms specialized for various NLA kernels such as least squares (<img class="math" src="_images/math/1d69232050ab0ada641e7e2035f6e7c795795b65.png" alt="l_2"/>) regression,
 robust regression (<img class="math" src="_images/math/6ee61fd6e8a1926a802b97fc99b66b8687d8f620.png" alt="l_1"/>) and low-rank matrix approximations. These kernels are being
@@ -134,12 +133,15 @@ scipy arrays for single node execution of Skylark.  We use Python bindings for E
 Combinatorial BLAS (through <a class="reference external" href="http://kdt.sourceforge.net/wiki/index.php/Main_Page">KDT</a>).</p>
 <p>In the future, we also plan to support a streaming interface for out-of-core sketching and matrix
 computations.</p>
+<p>Note that some of the features mentioned above are under active development and/or currently being
+benchmarked for performance improvements, and as such some of the features in the current stack should be
+considered experimental.</p>
 </div>
 <div class="section" id="license-and-copyright">
 <h2>License and Copyright<a class="headerlink" href="#license-and-copyright" title="Permalink to this headline">¶</a></h2>
 <p>Copyright IBM Corporation, 2012-2014</p>
-<p>This program and the accompanying materials are made available under the terms of the Apache License, Version 2.0
-which is available at <a class="reference external" href="http://www.apache.org/licenses/LICENSE-2.0">http://www.apache.org/licenses/LICENSE-2.0</a></p>
+<p>This program and the accompanying materials are made available under the terms of the Apache License,
+Version 2.0 which is available at <a class="reference external" href="http://www.apache.org/licenses/LICENSE-2.0">http://www.apache.org/licenses/LICENSE-2.0</a></p>
 </div>
 </div>
 

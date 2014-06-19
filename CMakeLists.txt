@@ -24,6 +24,9 @@ execute_process (
 if (GIT_REPO EQUAL 0)
   message (STATUS "Building git version ${GIT_REV}")
   set (GIT_REVISION \"${GIT_REV}\")
+else (GIT_REPO EQUAL 0)
+  message (STATUS "No git repository found.")
+  set (GIT_REVISION 0)
 endif (GIT_REPO EQUAL 0)
 
 set (BUILD_DATE 0)

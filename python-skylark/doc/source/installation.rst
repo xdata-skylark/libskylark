@@ -15,8 +15,8 @@ The source code is hosted on github. The libskylark git repository can be cloned
 Software Dependencies
 ======================
 
-Skylark uses several open-source software packages that are essential for its operation (build, install, and run). In 
-this section, we give instructions to install these software packages on Ubuntu machines. Installing the required 
+Skylark uses several open-source software packages that are essential for its operation (build, install, and run). In
+this section, we give instructions to install these software packages on Ubuntu machines. Installing the required
 software packages on other operating systems should be very similar.
 
 We can build Skylark in one or more of four possible configurations:
@@ -26,11 +26,11 @@ We can build Skylark in one or more of four possible configurations:
     * Skylark python and C++ bindings with support for dense (Elemental) matrices skylark-python-dense
     * Skylark python and C++ bindings with support for sparse (CombBLAS) matrices skylark-python-sparse
 
-Please refer to the graph of dependencies for realizing these configurations. Note that nodes with version 
-information within brackets refer to software packages while nodes containing no brackets refer to Skylark 
-build targets. The versions denote the ones that we have tested with, but apart from Elemental, CombBLAS, 
-and KDT versions, which need to be strictly followed, other software (CMake, gfortran, etc) may work just 
-as well with other versions as well. Orange colored components denote C++ dependencies and the color green 
+Please refer to the graph of dependencies for realizing these configurations. Note that nodes with version
+information within brackets refer to software packages while nodes containing no brackets refer to Skylark
+build targets. The versions denote the ones that we have tested with, but apart from Elemental, CombBLAS,
+and KDT versions, which need to be strictly followed, other software (CMake, gfortran, etc) may work just
+as well with other versions as well. Orange colored components denote C++ dependencies and the color green
 is used for Python dependencies.
 
 .. image:: skylark-dependencies.png
@@ -245,11 +245,10 @@ and unit testing.
 	./b2 link=static,shared
 	sudo ./b2 install
 
-*Compiling with XLC (here on BG/Q)*
+*Compiling with the XLC (for example on a BG/Q architecture)*
 
-This section is inspired by (
-http://www.alcf.anl.gov/user-guides/bgp-boost). First, as usual we call
-bootstrap.
+This section is inspired by the Argonne Boost configuration. First, as usual
+we call bootstrap.
 
 ::
 
@@ -267,6 +266,8 @@ bgp.jam) file and copy to tools/build/v2/tools/. Subsequently, executing
 compiles the selected boost libraries (you might need to adapt the path to mpixlcxx). In case all versions (debug, mt) are required, use --build-type=complete.
 
 Note: Make sure to only use -O2 because -O3 and higher will result in a segfault in the compiler for some packages (e.g. program_options),  see here.
+
+.. file:: bgq.jam
 
 Elemental 0.83
 ---------------
@@ -295,18 +296,28 @@ version >= 1.7 (see NumPy installation above) and the Swig toolchain
 	mkdir build
 	cd build
 	cmake -D USE_SWIG=ON ..
+	make
+	sudo make install
 
-With OpenBLAS, run cmake along the following lines:
+The installation prefix can be set using the :envvar:`CMAKE_INSTALL_PREFIX`.
+
+If you want to use non-default math libraries specify the :envvar:`MATH_LIBS`
+variable.
+For example for OpenBLAS, run cmake along the following lines:
 
 ::
 
-	cmake -D CMAKE_INSTALL_PREFIX=$HOME/software/elemental-0.81/install -D MATH_LIBS="$HOME/software/xianyi-OpenBLAS-9c51cdf/libopenblas.so;-lm" -D SHARED_LIBRARIES=ON -D CMAKE_BUILD_TYPE=HybridRelease -D ELEM_EXAMPLES=ON ..
+	cmake -D CMAKE_INSTALL_PREFIX=$HOME/software/elemental-0.81/install \
+	   -D MATH_LIBS="$HOME/software/xianyi-OpenBLAS-9c51cdf/libopenblas.so;-lm" \
+	   -D SHARED_LIBRARIES=ON -D CMAKE_BUILD_TYPE=HybridRelease -D ELEM_EXAMPLES=ON ..
 
 Note that the cmake comamnd above may require additional options for
 non-standard Python installations, e.g. Anaconda,
 ``*-D  PYTHON_LIBRARY=/path/to/libpython2.7.so  -D PYTHON_INCLUDE_DIR=/path/to/include/python2.7``
 
-Note: Swig needs >= 1024 MB of memory otherwise the compiler crashes while generating the Swig Python interface (make sure to have enough memory available if you compile in a VM).
+Note: Swig needs > 1024 MB of memory otherwise the compiler crashes while
+generating the Swig Python interface (make sure to have enough memory available
+if you compile in a VM and increase if the compiler crashes).
 
 This installs the main Elemental library. However, we still need to install the Python interface:
 
@@ -315,7 +326,9 @@ This installs the main Elemental library. However, we still need to install the 
 	sudo cp *.py /usr/local/lib/python2.7/dist-packages/
 	sudo cp _*.so /usr/local/lib/python2.7/dist-packages/
 
-Note: the location of the python library changes between versions of Ubuntu, and obviously across distributions. In case you do not want to copy the python interface around, append the build directory to the $PYTHONPATH environment variable.
+Note: the location of the python library changes between versions of Ubuntu, and
+obviously across distributions. In case you do not want to copy the python
+interface around, append the build directory to the $PYTHONPATH environment variable.
 
 Combinatorial BLAS (CombBLAS) 1.4
 ----------------------------------
@@ -684,8 +697,8 @@ The general steps to use CombBLAS with Skylark:
 
     * Download KDT, build and install the python package (generated with SWIG), then
     * Download CombBLAS, build and install libs and include files, and finally
-    * When configuring Skylark, use -DWITH_COMBBLAS=ON in the CMake configure call 
- 
+    * When configuring Skylark, use -DWITH_COMBBLAS=ON in the CMake configure call
+
 **Issues with CombBLAS >= 1.4.0**
 
 Unfortunately there are some issues when using CombBLAS with Skylark. Check the subsections below if you have problem compiling or linking CombBLAS.
@@ -695,15 +708,15 @@ Unfortunately there are some issues when using CombBLAS with Skylark. Check the 
 Additionally a CombBLAS header causes the compiler to produce an error (UINT32_MAX not declared). There are two possible ways to fix that:
 
     * Edit the header (RefGen21.h) and replace UINT32_MAX with std::numeric_limits<unit32_t>::max(), or
-    * add the -D__STDC_LIMIT_MACROS compile flag in the CMake file when CombBLAS is enabled. 
- 
+    * add the -D__STDC_LIMIT_MACROS compile flag in the CMake file when CombBLAS is enabled.
+
 **Compiler Warning: *enumeral* and *non-enumeral* type in conditional expression**
 
 To fix the following warning (appearing when compiling with -Werror):
 
 ::
 
-	CombBLAS_beta_13_0/psort-1.0/driver/MersenneTwister.h: In member function ‘void MTRand::seed(MTRand::uint32*, MTRand::uint32)’: 
+	CombBLAS_beta_13_0/psort-1.0/driver/MersenneTwister.h: In member function ‘void MTRand::seed(MTRand::uint32*, MTRand::uint32)’:
     		CombBLAS_beta_13_0/psort-1.0/driver/MersenneTwister.h:234:42: error: enumeral and non-enumeral type in conditional expression [-Werror]
 
 apply the following patch:
@@ -723,13 +736,13 @@ apply the following patch:
         	for( ; k; --k )
         	{
                 	state[i] =
- 
+
 **Note**: This should be fixed upstream in the next CombBLAS release (most likely 1.3.1).
 
 
 **Compiling Skylark/CombBLAS with CLANG**
 
-To be able to compile and link using the CLANG compiler (>=3.0.x), the following patch has to be 
+To be able to compile and link using the CLANG compiler (>=3.0.x), the following patch has to be
 applied to CombBLAS (<= 1.3.0):
 
 ::
@@ -753,7 +766,7 @@ applied to CombBLAS (<= 1.3.0):
         	MPI_File thefile;
 	-       MPI_File_open(World, filename.c_str(), MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &thefile);
 	+       MPI_File_open(World, const_cast<char*>(filename.c_str()), MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &thefile);
- 
+
         	IT * prelens = new IT[nprocs];
         	prelens[rank] = 2*nedges;
 	diff --git a/SpParMat.cpp b/SpParMat.cpp
@@ -762,14 +775,14 @@ applied to CombBLAS (<= 1.3.0):
 	+++ b/SpParMat.cpp
 	@@ -109,7 +109,7 @@ void SpParMat< IT,NT,DER >::Dump(string filename) const
         	int nprocs = commGrid->GetSize();
- 
+
         	MPI_File thefile;
 	-       MPI_File_open(World, filename.c_str(), MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &thefile);
 	+       MPI_File_open(World, const_cast<char*>(filename.c_str()), MPI_MODE_CREATE | MPI_MODE_WRONLY, MPI_INFO_NULL, &thefile);
 
         	int rankinrow = commGrid->GetRankInProcRow();
         	int rankincol = commGrid->GetRankInProcCol();
- 
+
 **Note**: The issues in the above patch were addressed (source lines commented) in the 1.4.0 CombBLAS release (January 2014).
 
 **Warning: variable ‘XYZ’ set but not used**
@@ -834,7 +847,7 @@ To disable the KDT log use the following patch:
 	-import feedback
 	+#import feedback
  	import UFget as uf
- 
+
  	from Util import info, master, version, revision
 	diff --git a/kdt/Vec.py b/kdt/Vec.py
 	index 00b7c1c..50aaa73 100644
@@ -876,7 +889,7 @@ To disable the KDT log use the following patch:
 
 Issues with CombBLAS < 1.4.0
 -----------------------------
- 
+
 **std:: namespace clash (CombBLAS <= 1.3.0)**
 
 Depending on your compiler version (and if you installed CombBLAS <= 1.3.0) you might need to apply the following patch:
@@ -905,4 +918,4 @@ Depending on your compiler version (and if you installed CombBLAS <= 1.3.0) you 
 	   } else {
 	    // 11 => in-place
 
-Note: This was fixed upstream in the 1.4.0 CombBLAS release (January 2014). 
+Note: This was fixed upstream in the 1.4.0 CombBLAS release (January 2014).

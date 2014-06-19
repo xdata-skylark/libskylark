@@ -254,8 +254,13 @@ we call bootstrap.
 
 	./bootstrap.sh --with-libraries=mpi,serialization,program_options
 
-In a next step, download the attached attachment:bgq.jam Download (based on
-bgp.jam) file and copy to tools/build/v2/tools/. Subsequently, executing
+In a next step, download :download:`jam file <./bgq.jam>` and
+copy the Boost jam file to :envvar:`tools/build/v2/tools/`.
+
+.. literalinclude:: bgq.jam
+
+
+Subsequently, executing
 
 ::
 

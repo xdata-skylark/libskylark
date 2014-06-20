@@ -691,7 +691,7 @@ Linking against Skylark
 If you plan to use Skylark as a library in your project, the following steps
 are necessary to build and link your application:
 
-    * add the include path of all Skylark headers: :file:`${SKYLARK_INSTALL_DIR}/include` (if configured with ``-DCMAKE_INSTALL_PREFIX=${SKYLARK_INSTALL_DIR}`,
+    * add the include path of all Skylark headers: :file:`${SKYLARK_INSTALL_DIR}/include` (if configured with ``-DCMAKE_INSTALL_PREFIX=${SKYLARK_INSTALL_DIR}``,
     * link against all external libraries used when building libSkylark (take a look and maybe reuse the find modules in :file:`${SRC_DIR}/CMakeModules`:
         * FFTW: fftw3.h
         * Elemental: header files, libelemental, libpmrrr
@@ -746,27 +746,29 @@ The general steps to use CombBLAS with Skylark:
 
     * Download KDT, build and install the python package (generated with SWIG), then
     * Download CombBLAS, build and install libs and include files, and finally
-    * When configuring Skylark, use -DWITH_COMBBLAS=ON in the CMake configure call
+    * When configuring Skylark, use ``-DWITH_COMBBLAS=ON`` in the CMake configure call
 
 **Issues with CombBLAS >= 1.4.0**
 
-Unfortunately there are some issues when using CombBLAS with Skylark. Check the subsections below if you have problem compiling or linking CombBLAS.
+Unfortunately there are some issues when using CombBLAS with libSkylark. Check
+the subsections below if you have problem compiling or linking CombBLAS.
 
 **UINT32_MAX not declared**
 
-Additionally a CombBLAS header causes the compiler to produce an error (UINT32_MAX not declared). There are two possible ways to fix that:
+Additionally a CombBLAS header causes the compiler to produce an error
+(``UINT32_MAX not declared``). There are two possible ways to fix that:
 
-    * Edit the header (RefGen21.h) and replace UINT32_MAX with std::numeric_limits<unit32_t>::max(), or
-    * add the -D__STDC_LIMIT_MACROS compile flag in the CMake file when CombBLAS is enabled.
+    * Edit the header (RefGen21.h) and replace ``UINT32_MAX`` with ``std::numeric_limits<unit32_t>::max()``, or
+    * add the ``-D__STDC_LIMIT_MACROS`` compile flag in the CMake file when CombBLAS is enabled.
 
 **Compiler Warning: *enumeral* and *non-enumeral* type in conditional expression**
 
-To fix the following warning (appearing when compiling with -Werror):
+To fix the following warning (appearing when compiling with ``-Werror``):
 
 ::
 
-	CombBLAS_beta_13_0/psort-1.0/driver/MersenneTwister.h: In member function ‘void MTRand::seed(MTRand::uint32*, MTRand::uint32)’:
-    		CombBLAS_beta_13_0/psort-1.0/driver/MersenneTwister.h:234:42: error: enumeral and non-enumeral type in conditional expression [-Werror]
+    CombBLAS_beta_13_0/psort-1.0/driver/MersenneTwister.h: In member function ‘void MTRand::seed(MTRand::uint32*, MTRand::uint32)’:
+    CombBLAS_beta_13_0/psort-1.0/driver/MersenneTwister.h:234:42: error: enumeral and non-enumeral type in conditional expression [-Werror]
 
 apply the following patch:
 
@@ -791,8 +793,8 @@ apply the following patch:
 
 **Compiling Skylark/CombBLAS with CLANG**
 
-To be able to compile and link using the CLANG compiler (>=3.0.x), the following patch has to be
-applied to CombBLAS (<= 1.3.0):
+To be able to compile and link using the CLANG compiler (>=3.0.x), the
+following patch has to be applied to CombBLAS (<= 1.3.0):
 
 ::
 
@@ -832,11 +834,13 @@ applied to CombBLAS (<= 1.3.0):
         	int rankinrow = commGrid->GetRankInProcRow();
         	int rankincol = commGrid->GetRankInProcCol();
 
-**Note**: The issues in the above patch were addressed (source lines commented) in the 1.4.0 CombBLAS release (January 2014).
+**Note**: The issues in the above patch were addressed (source lines
+commented) in the 1.4.0 CombBLAS release (January 2014).
 
 **Warning: variable ‘XYZ’ set but not used**
 
-CombBLAS (<=1.4.0) has set but not used variables. To remove the warning apply the following patch.
+CombBLAS (<=1.4.0) has set but not used variables. To remove the warning apply
+the following patch.
 
 ::
 
@@ -941,7 +945,8 @@ Issues with CombBLAS < 1.4.0
 
 **std:: namespace clash (CombBLAS <= 1.3.0)**
 
-Depending on your compiler version (and if you installed CombBLAS <= 1.3.0) you might need to apply the following patch:
+Depending on your compiler version (and if you installed CombBLAS <= 1.3.0)
+you might need to apply the following patch:
 
 ::
 

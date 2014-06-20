@@ -159,7 +159,6 @@ sparse matrices, while *DistSparse* refers to CombBLAS sparse matrices.
 
 .. math::
        \begin{tabular}{|c|p{3cm}|p{3cm}|c|c|c|c|c|c|c|}
-        \tiny
         \hline
         {\large input$\downarrow$ output$\rightarrow$} & {\large LocalDense} & \large{STAR/STAR} & {\large MC/MR} & {\large VR/STAR} & {\large VC/STAR} & {\large STAR/VR} & {\large STAR/VC} & {\large LocalSparse} & {\large DistSparse}\\
         \hline
@@ -172,33 +171,39 @@ sparse matrices, while *DistSparse* refers to CombBLAS sparse matrices.
         {\large STAR/VC} & \small{JLT, CT, CWT, MMZ, WZT} & \small{CWT, MMT, WZT} & & & & & \small{JLT, CT} && \\\hline
         {\large DistSparse} & \small{JLT, CT, CWT, MMT, WZT} & \small{CWT, MMT, WZT} & & \small{CWT, MMT, WZT} & \small{CWT, MMT, WZT} & \small{CWT, MMT, WZT} & \small{CWT, MMT, WZT} & \small{CWT, MMT, WZT} & \small{CWT, MMT, WZT}\\
        \hline
-       \hline
        \end{tabular}
 
 
-The C++ Sketching Transfroms
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Sketching Transfroms
+^^^^^^^^^^^^^^^^^^^^^
 
-The basic functionality of a sketch transform consists of the following
-methods:
+.. cpp:function:: void apply (const InputMatrixType& A, OutputMatrixType& sketch_of_A, columnwise_tag dimension) const
 
-    void ``apply (const InputMatrixType& A, OutputMatrixType& sketch_of_A, columnwise_tag dimension) const``
-        Apply the sketch transform in column dimension
+    Apply the sketch transform in column dimension.
 
-    void ``apply (const InputMatrixType& A, OutputMatrixType& sketch_of_A, rowwise_tag dimension) const``
-        Apply the sketch transform in row dimension
+.. cpp:function:: void apply (const InputMatrixType& A, OutputMatrixType& sketch_of_A, rowwise_tag dimension) const
 
-    int ``get_N() const``
-        Get input dimension
+    Apply the sketch transform in row dimension.
 
-    int ``get_S() const``
-        Get output dimension
+.. cpp:function:: int get_N() const
 
-    const sketch_transform_data_t* ``get_data()``
+    Get input dimension.
 
-    boost::property_tree::ptree ``to_ptree() const``
+.. cpp:function:: int get_S() const
 
-    static sketch_transform_t* ``from_ptree(const boost::property_tree::ptree& pt)``
+    Get output dimension.
+
+.. cpp:function:: const sketch_transform_data_t* get_data()
+
+    Get the underlaying transform data.
+
+.. cpp:function:: boost::property_tree::ptree to_ptree() const
+
+    Serialize the sketch transform to a ptree structure.
+
+.. cpp:function:: static sketch_transform_t* from_ptree(const boost::property_tree::ptree& pt)
+
+    Create a sketch transform from a ptree structure.
 
 
 

@@ -182,24 +182,18 @@ such as ODEPACK, QUADPACK, and MINPACK).
 
 	sudo apt-get install python-numpy python-scipy
 
-Note: Elemental-0.83 requires a NumPy version >= 1.7. On Ubuntu Precise the
-deb sources only contain version 1.6.x. To upgrade use either:
+.. note:: Elemental-0.83 requires a NumPy version >= 1.7. On Ubuntu Precise the deb sources only contain version 1.6.x. To upgrade use either:
 
-::
+    ::
 
-	sudo apt-get install swig
+    	wget https://launchpad.net/~tukss/+archive/ppa/+build/4055943/+files/python-numpy_1.7.0~b2-1~precise1_amd64.deb
+    	sudo dpkg -i python-numpy_1.7.0~b2-1~precise1_amd64.deb
 
-# update numpy on Ubuntu Precise (only 1.6.x installed)
-::
+    or
 
-	wget https://launchpad.net/~tukss/+archive/ppa/+build/4055943/+files/python-numpy_1.7.0~b2-1~precise1_amd64.deb
-	sudo dpkg -i python-numpy_1.7.0~b2-1~precise1_amd64.deb
+    ::
 
-or
-
-::
-
-	sudo easy_install -U scipy
+    	sudo easy_install -U scipy
 
 mpi4py
 -------
@@ -289,9 +283,9 @@ compiles the selected boost libraries (you might need to adapt the path to
 ``mpixlcxx``). In case all versions (debug, mt) are required, use
 ``--build-type=complete``.
 
-Note: Make sure to only use -O2 because -O3 and higher will result in a
-segfault in the compiler for some packages (e.g. :command:`program_options`),
-see http://www-01.ibm.com/support/docview.wss?uid=swg1LI77249.
+.. note:: Make sure to only use -O2 because -O3 and higher will result in a
+    segfault in the compiler for some packages (e.g. :command:`program_options`),
+    see http://www-01.ibm.com/support/docview.wss?uid=swg1LI77249.
 
 
 Elemental 0.83
@@ -336,13 +330,13 @@ For example for OpenBLAS, run cmake along the following lines:
 	   -D MATH_LIBS="$HOME/software/xianyi-OpenBLAS-9c51cdf/libopenblas.so;-lm" \
 	   -D SHARED_LIBRARIES=ON -D CMAKE_BUILD_TYPE=HybridRelease -D ELEM_EXAMPLES=ON ..
 
-Note that the cmake comamnd above may require additional options for
-non-standard Python installations, e.g. Anaconda,
-``-D  PYTHON_LIBRARY=/path/to/libpython2.7.so  -D PYTHON_INCLUDE_DIR=/path/to/include/python2.7``
+.. note:: Note that the cmake comamnd above may require additional options for
+    non-standard Python installations, e.g. Anaconda,
+    ``-D  PYTHON_LIBRARY=/path/to/libpython2.7.so  -D PYTHON_INCLUDE_DIR=/path/to/include/python2.7``
 
-Note: Swig needs > 1024 MB of memory otherwise the compiler crashes while
-generating the Swig Python interface (make sure to have enough memory available
-if you compile in a VM and increase if the compiler crashes).
+.. note:: Swig needs > 1024 MB of memory otherwise the compiler crashes while
+    generating the Swig Python interface (make sure to have enough memory available
+    if you compile in a VM and increase if the compiler crashes).
 
 This installs the main Elemental library. However, we still need to install the Python interface:
 
@@ -351,10 +345,10 @@ This installs the main Elemental library. However, we still need to install the 
 	sudo cp *.py /usr/local/lib/python2.7/dist-packages/
 	sudo cp _*.so /usr/local/lib/python2.7/dist-packages/
 
-Note: the location of the python library changes between versions of Ubuntu, and
-obviously across distributions. In case you do not want to copy the python
-interface around, append the build directory to the :envvar:`$PYTHONPATH`
-environment variable.
+.. note:: The location of the python library changes between versions of Ubuntu, and
+    obviously across distributions. In case you do not want to copy the python
+    interface around, append the build directory to the :envvar:`$PYTHONPATH`
+    environment variable.
 
 Combinatorial BLAS (CombBLAS) 1.4
 ----------------------------------
@@ -496,8 +490,8 @@ should work out of the box. To that end execute
 	make
 	make install
 
-Note: If you have MPI compilers in your PATH environment variable, Cmake
-may overwrite the compiler specified in the CXX flag.
+.. note:: If you have MPI compilers in your PATH environment variable, CMake
+    may overwrite the compiler specified in the CXX flag.
 
 In case you have a more specific setup or this does not work on your
 machine continue reading the next sections.
@@ -586,10 +580,10 @@ support, installed system-wide) can be compiled and installed with:
 	make
 	make install
 
-Note: If you have MPI compilers in your PATH CMake will use the most generic
-(e.g. :command:`mpicxx`) version
-(see https://github.com/Kitware/CMake/blob/master/Modules/FindMPI.cmake#L113).
-This may overwrite the compiler specified in the CXX flag.
+.. note:: If you have MPI compilers in your PATH CMake will use the most generic
+    (e.g. :command:`mpicxx`) version
+    (see https://github.com/Kitware/CMake/blob/master/Modules/FindMPI.cmake#L113).
+    This may overwrite the compiler specified in the CXX flag.
 
 The Python packages will most likely be installed under
 :file:`/usr/lib/pythonX.Y/dist-packages` (OS and version dependent). Check the
@@ -612,9 +606,9 @@ enabled CombBLAS support. Note that you have to make sure that the required
 libraries are compiled and the environment variables correctly point to the
 installation locations (i.e. ``export COMBBLAS_ROOT=~/software/combblas/``).
 
-Note: If a specific linking type wants to be enforced, check out the CMake
-variable ``CMAKE_FIND_LIBRARY_SUFFIXES`` (e.g. use
-``SET(CMAKE_FIND_LIBRARY_SUFFIXES ".so"``).
+.. note:: If a specific linking type wants to be enforced, check out the CMake
+    variable ``CMAKE_FIND_LIBRARY_SUFFIXES`` (e.g. use
+    ``SET(CMAKE_FIND_LIBRARY_SUFFIXES ".so"``).
 
 
 Code documentation Doxygen
@@ -788,7 +782,7 @@ apply the following patch:
         	{
                 	state[i] =
 
-**Note**: This should be fixed upstream in the next CombBLAS release (most likely 1.3.1).
+.. note:: This should be fixed upstream in the next CombBLAS release (most likely 1.3.1).
 
 
 **Compiling Skylark/CombBLAS with CLANG**
@@ -834,8 +828,8 @@ following patch has to be applied to CombBLAS (<= 1.3.0):
         	int rankinrow = commGrid->GetRankInProcRow();
         	int rankincol = commGrid->GetRankInProcCol();
 
-**Note**: The issues in the above patch were addressed (source lines
-commented) in the 1.4.0 CombBLAS release (January 2014).
+.. note:: The issues in the above patch were addressed (source lines
+    commented) in the 1.4.0 CombBLAS release (January 2014).
 
 **Warning: variable ‘XYZ’ set but not used**
 
@@ -972,4 +966,4 @@ you might need to apply the following patch:
 	   } else {
 	    // 11 => in-place
 
-Note: This was fixed upstream in the 1.4.0 CombBLAS release (January 2014).
+.. note:: This was fixed upstream in the 1.4.0 CombBLAS release (January 2014).

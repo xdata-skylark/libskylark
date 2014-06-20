@@ -6,11 +6,13 @@ Installation Instructions
 Getting the source code
 ========================
 
-The source code is hosted on github. The libskylark git repository can be cloned using the following command.
+The source code is hosted on github. The libskylark git repository can be
+cloned using the following command.
 
 ::
 
 	git clone git@github.com:xdata-skylark/libskylark.git
+
 
 Software Dependencies
 ======================
@@ -90,7 +92,10 @@ gfortran is the name of the  GNU  Fortran  compiler, which is part of the  GNU C
 CMake (>= 2.8.8 for Elemental support)
 ---------------------------------------
 
-CMake is a cross-platform free software program managing the build process of software using a compiler-independent method. It is designed to support directory hierarchies and applications that depend on multiple libraries, and for use in conjunction with native build environments such as make.
+CMake is a cross-platform free software program managing the build process of
+software using a compiler-independent method. It is designed to support
+directory hierarchies and applications that depend on multiple libraries, and
+for use in conjunction with native build environments such as make.
 
 *Installation:*
 
@@ -98,14 +103,27 @@ CMake is a cross-platform free software program managing the build process of so
 
 	sudo apt-get install cmake
 
-If the available version is too old, compile CMake by hand (TODO).
+If the available version is too old, compile CMake by hand.
+Head to http://www.cmake.org/cmake/resources/software.html and download the
+latest version.
+
+::
+
+    ./bootstrap --prefix=$CMAKE_INSTALL_DIR
+    make
+    make install
+
+By specifying a :envvar:`CMAKE_INSTALL_DIR` the install target for CMake can be
+set. If no ``--prefix`` is set, CMake will be installed in :path:`/usr/local`.
+Make sure to add the install path to your :envvar:`PATH` environment variable.
+
 
 BLAS and LAPACK
 ----------------
 
 Basic Linear Algebra Subroutine (BLAS) is a de facto application
 programming interface standard for publishing libraries to perform basic
-linear algebra operations such as vector</a> and matrix multiplication.
+linear algebra operations such as vector and matrix multiplication.
 LAPACK (Linear Algebra PACKage) is a software library for numerical linear
 algebra. It provides routines systems of linear equations and linear least
 squares, eigenvalue problems, and singular value decomposition. It also
@@ -258,7 +276,7 @@ we call bootstrap.
 	./bootstrap.sh --with-libraries=mpi,serialization,program_options
 
 In a next step, download :download:`jam file <./bgq.jam>` and
-copy the Boost jam file to :envvar:`tools/build/v2/tools/`.
+copy the Boost jam file to ``tools/build/v2/tools/``.
 Subsequently, executing
 
 ::
@@ -268,8 +286,8 @@ Subsequently, executing
 	./b2 link=static,shared toolset=bgq
 
 compiles the selected boost libraries (you might need to adapt the path to
-:command:`mpixlcxx`). In case all versions (debug, mt) are required, use
-:command:`--build-type=complete`.
+``mpixlcxx``). In case all versions (debug, mt) are required, use
+``--build-type=complete``.
 
 Note: Make sure to only use -O2 because -O3 and higher will result in a
 segfault in the compiler for some packages (e.g. :command:`program_options`),
@@ -306,9 +324,9 @@ version >= 1.7 (see NumPy installation above) and the Swig toolchain
 	make
 	sudo make install
 
-The installation prefix can be set using the :envvar:`CMAKE_INSTALL_PREFIX`.
+The installation prefix can be set using the ``CMAKE_INSTALL_PREFIX``.
 
-If you want to use non-default math libraries specify the :envvar:`MATH_LIBS`
+If you want to use non-default math libraries specify the ``MATH_LIBS``
 variable.
 For example for OpenBLAS, run cmake along the following lines:
 
@@ -320,7 +338,7 @@ For example for OpenBLAS, run cmake along the following lines:
 
 Note that the cmake comamnd above may require additional options for
 non-standard Python installations, e.g. Anaconda,
-``*-D  PYTHON_LIBRARY=/path/to/libpython2.7.so  -D PYTHON_INCLUDE_DIR=/path/to/include/python2.7``
+``-D  PYTHON_LIBRARY=/path/to/libpython2.7.so  -D PYTHON_INCLUDE_DIR=/path/to/include/python2.7``
 
 Note: Swig needs > 1024 MB of memory otherwise the compiler crashes while
 generating the Swig Python interface (make sure to have enough memory available
@@ -335,7 +353,8 @@ This installs the main Elemental library. However, we still need to install the 
 
 Note: the location of the python library changes between versions of Ubuntu, and
 obviously across distributions. In case you do not want to copy the python
-interface around, append the build directory to the $PYTHONPATH environment variable.
+interface around, append the build directory to the :envvar:`$PYTHONPATH`
+environment variable.
 
 Combinatorial BLAS (CombBLAS) 1.4
 ----------------------------------
@@ -358,7 +377,7 @@ sparse matrices.
 *Shared Libs*
 
 In order to use Skylark through Python, make sure compile and append the
-directory containing the *.so files to your LD_LIBRARY_PATH.
+directory containing the ``*.so`` files to your :envvar:`LD_LIBRARY_PATH`.
 
 ::
 
@@ -393,12 +412,16 @@ download kdt-0.3.tar.gz. Then execute:
 	python setup.py build
 	sudo python setup.py install
 
-See  http://kdt.sourceforge.net/wiki/index.php/Installation for further information.
+See http://kdt.sourceforge.net/wiki/index.php/Installation for further
+information.
 
 FFTW 3.3.3
 -----------
 
-FFTW is a C subroutine library for computing the discrete Fourier transform (DFT) in one or more dimensions, of arbitrary input size, and of both real and complex data (as well as of even/odd data, i.e. the discrete cosine/sine transforms or DCT/DST).
+FFTW is a C subroutine library for computing the discrete Fourier transform
+(DFT) in one or more dimensions, of arbitrary input size, and of both real and
+complex data (as well as of even/odd data, i.e. the discrete cosine/sine
+transforms or DCT/DST).
 
 *Installation:*
 
@@ -484,17 +507,17 @@ Directory setup
 
 For the rest of this section let's keep the following conventions:
 
-    * the source code is checked out and $SRC_DIR points to the Skylark directory in the XDATA repository, e.g.
+    * the source code is checked out and :envvar:`$SRC_DIR` points to the base directory in the libSkylark repository, e.g.
 
 	::
 
-		export SRC_DIR=/home/user/workspace/xdata/tools/analytics/ibm/skylark
+		export SRC_DIR=/home/user/workspace/libskylark
 
-    * you created a **separate** (do not build in the $SRC_DIR$) build directory $BUILD_DIR` that is used to generate object files, libraries and executables, e.g.
+    * you created a **separate** (do not build in the $SRC_DIR$) build directory :envvar:`$BUILD_DIR` that is used to generate object files, libraries and executables, e.g.
 
 	::
 
-		export BUILD_DIR=/home/user/build/skylark
+		export BUILD_DIR=/home/user/build/libskylark
 
 Build options
 --------------
@@ -509,7 +532,8 @@ compiled in hybrid mode, activate) BUILD_PYTHON ON Build Python interface
 BUILD_EXAMPLES ON Build Skylark examples (see examples directory) BUILD_ML
 ON Build Skylark with machine learning sovlers Build type
 
-You can specify the desired build type with -DCMAKE_BUILD_TYPE=STRING, where STRING is any of
+You can specify the desired build type with ``-DCMAKE_BUILD_TYPE=STRING``,
+where ``STRING`` is any of
 
 +----------------+-------+
 | Name 	         | Flags |
@@ -528,10 +552,10 @@ Environment variables
 
 The installation of Skylark can be influenced with two variables:
 
-    * the Cmake parameter CMAKE_INSTALL_PREFIX (i.e. pass -DCMAKE_INSTALL_PREFIX=/home/user/software when calling cmake), and
-    * the environment variable $PYTHON_SITE_PACKAGES to determine the installation location for python packages. Don't forget to adapt the $PYTHONPATH environment variable as well. Example: If $PYTHON_SITE_PACKAGES is set to /home/user/local, Cmake will install the Python bindings under /home/user/local/lib/python2.7/site-packages/skylark. At this point, you will have to append $PYTHONPATH with /home/user/local/lib/python2.7/site-packages!
+    * the CMake parameter ``CMAKE_INSTALL_PREFIX`` (i.e. pass ``-DCMAKE_INSTALL_PREFIX=/home/user/software`` when calling :command:`cmake`), and
+    * the environment variable :envvar:`$PYTHON_SITE_PACKAGES` to determine the installation location for python packages. Don't forget to adapt the :envvar:`$PYTHONPATH` environment variable as well. Example: If :envvar:`$PYTHON_SITE_PACKAGES` is set to :path:`/home/user/local`, CMake will install the Python bindings under :path:`/home/user/local/lib/python2.7/site-packages/skylark`. At this point, you will have to append :envvar:`$PYTHONPATH` with :path:`/home/user/local/lib/python2.7/site-packages`!
 
-To help Cmake to locate installed dependencies (system-wide installed dependencies should be found automatically), you should set the following environment variables:
+To help CMake to locate installed dependencies (system-wide installed dependencies should be found automatically), you should set the following environment variables:
 
 +----------------------+-----------------------------------------------------------------------------+
 | Name 	               |Description                                                                  |
@@ -562,13 +586,17 @@ support, installed system-wide) can be compiled and installed with:
 	make
 	make install
 
-Note: If you have MPI compilers in your PATH Cmake will use the most generic (e.g. mpicxx) version ( see here). This may
-overwrite the compiler specified in the CXX flag.
+Note: If you have MPI compilers in your PATH CMake will use the most generic
+(e.g. :command:`mpicxx`) version
+(see https://github.com/Kitware/CMake/blob/master/Modules/FindMPI.cmake#L113).
+This may overwrite the compiler specified in the CXX flag.
 
-The Python packages will most likely be installed under /usr/lib/pythonX.Y/dist-packages (OS and version dependent). Check the
+The Python packages will most likely be installed under
+:path:`/usr/lib/pythonX.Y/dist-packages` (OS and version dependent). Check the
 configure output for more details about default installation paths on your machine.
 
-For the sake of illustration let's assume you want to enable CombBLAS support and install everything in ~/local:
+For the sake of illustration let's assume you want to enable CombBLAS support
+and install everything in :path:`~/local`:
 
 ::
 
@@ -578,12 +606,19 @@ For the sake of illustration let's assume you want to enable CombBLAS support an
 	make
 	make install
 
-Notice that we set the PYTHON_SITE_PACKAGES and passed a CMAKE_INSTALL_PREFIX to the cmake command above. Additionally we
-enabled CombBLAS support. Note that you have to make sure that the required libraries are compiled and the environment
-variables correctly point to the installation locations (i.e. export COMBBLAS_ROOT=~/software/combblas/).
+Notice that we set the :envvar:`PYTHON_SITE_PACKAGES` and passed a
+``CMAKE_INSTALL_PREFIX`` to the :command:`cmake` command above. Additionally we
+enabled CombBLAS support. Note that you have to make sure that the required
+libraries are compiled and the environment variables correctly point to the
+installation locations (i.e. ``export COMBBLAS_ROOT=~/software/combblas/``).
 
-Note: If a specific linking type wants to be enforced, check out the CMake variable CMAKE_FIND_LIBRARY_SUFFIXES (e.g. use
-SET(CMAKE_FIND_LIBRARY_SUFFIXES ".so"). Code documentation Doxygen
+Note: If a specific linking type wants to be enforced, check out the CMake
+variable ``CMAKE_FIND_LIBRARY_SUFFIXES`` (e.g. use
+``SET(CMAKE_FIND_LIBRARY_SUFFIXES ".so"``).
+
+
+Code documentation Doxygen
+---------------------------
 
 To generate the documentation (see dependency section for Doxygen installation), run
 
@@ -592,8 +627,12 @@ To generate the documentation (see dependency section for Doxygen installation),
 	cd $BUILD_DIR
 	make doc
 
-This will generate the Doxygen documentation under $BUILD_DIR/Documentation. To read the documentation open
-$BUILD_DIR/Documentation/html/index.html in a browser. Sphinx
+This will generate the Doxygen documentation under :path:`$BUILD_DIR/Documentation`.
+To read the documentation open :path:`$BUILD_DIR/Documentation/html/index.html` in a browser.
+
+
+Sphinx
+-------
 
 Make sure to install the Sphinx extensions before you run make sphinx-doc:
 
@@ -614,14 +653,15 @@ Then run
 	cd $BUILD_DIR
 	make sphinx-doc
 
-For latex equations to show up correctly in the sphinx documentation, you may need to install latex.
+For latex equations to show up correctly in the sphinx documentation, you may
+need to install latex.
 
 ::
 
 	sudo apt-get install texlive-latex-base
 	sudo apt-get install texlive-latex-extra
 
-and point your browser to $BUILD_DIR/Documentation/sphinx/index.html.
+and point your browser to :path:`$BUILD_DIR/Documentation/sphinx/index.html`.
 
 Testing
 -----------
@@ -636,22 +676,23 @@ In order to run unit tests, execute
 Running examples
 -----------------
 
-There are two examples in the example folder (for more see python-skylark). The elemental.cpp shows how C++ code can utilize
-skylark. Run
+There are two examples in the example folder (for more see python-skylark).
+The elemental.cpp shows how C++ code can utilize skylark. Run
 
 ::
 
 	examples/elemental -help
 
-in the $BUILD_DIR to get a list of available command line options.
+in the :envvar:`$BUILD_DIR` to get a list of available command line options.
 
 Linking against Skylark
 ------------------------
 
-If you plan to use Skylark as a library in your project, the following steps are necessary to build and link your application:
+If you plan to use Skylark as a library in your project, the following steps
+are necessary to build and link your application:
 
-    * add the include path of all Skylark headers: ${SKYLARK_INSTALL_DIR}/include (if configured with -DCMAKE_INSTALL_PREFIX=${SKYLARK_INSTALL_DIR),
-    * link against all external libraries used when building Skylark (take a look and maybe reuse the find modules in ${SRC_DIR}/CMakeModules):
+    * add the include path of all Skylark headers: :path:`${SKYLARK_INSTALL_DIR}/include` (if configured with ``-DCMAKE_INSTALL_PREFIX=${SKYLARK_INSTALL_DIR}`,
+    * link against all external libraries used when building libSkylark (take a look and maybe reuse the find modules in :path:`${SRC_DIR}/CMakeModules`:
         * FFTW: fftw3.h
         * Elemental: header files, libelemental, libpmrrr
         * CombBLAS: header files, libMPITypelib, libCommGridlib, libMemoryPoollib
@@ -662,10 +703,13 @@ If you plan to use Skylark as a library in your project, the following steps are
 Using Cmake
 -------------
 
-If you are using Cmake to build your application you can use the Cmake configuration file
-${SKYLARK_INSTALL_DIR}/lib/SKYLARK/SKYLARKConfig.cmake in your CMakeLists.txt to find SKYLARK. After that you can simply
-include ${SKYLARK_INCLUDE_DIRS} and ${SKYLARK_LIBRARIES} when you build and link your application. A very basic Cmake file for
-your project could look like:
+If you are using Cmake to build your application you can use the CMake
+configuration file
+:path:`${SKYLARK_INSTALL_DIR}/lib/SKYLARK/SKYLARKConfig.cmake` in your
+``CMakeLists.txt`` to find ``SKYLARK``. After that you can simply
+include ``${SKYLARK_INCLUDE_DIRS}`` and ``${SKYLARK_LIBRARIES}`` when you
+build and link your application. A very basic CMake file for your project could
+look like:
 
 ::
 
@@ -681,17 +725,15 @@ your project could look like:
 	target_link_libraries(ex_code ${SKYLARK_LIBRARIES} )
 	set_target_properties(ex_code PROPERTIES COMPILE_FLAGS "${SKYLARK_CXX_FLAGS}" )
 
-This will pull all the required libs and add all include paths for Skylark and its dependencies. You should be able to compile
-your application painless by following the above recipe. Using XYZ Build System
-
-Take a look at the file in ${SKYLARK_INSTALL_DIR}/lib/SKYLARK/SKYLARKConfig.cmake to see which include directories libraries
-you have to include when using the Skylark library.
+This will pull all the required libs and add all include paths for Skylark and
+its dependencies. You should be able to compile
+your application painless by following the above recipe.
 
 Using XYZ Build System
 -----------------------
 
-Take a look at the file in ${SKYLARK_INSTALL_DIR}/lib/SKYLARK/SKYLARKConfig.cmake to see which include directories libraries
-you have to include when using the Skylark library.
+Take a look at the file in :path:`${SKYLARK_INSTALL_DIR}/lib/SKYLARK/SKYLARKConfig.cmake`
+to see which include directories libraries you have to include when using libSkylark.
 
 
 Software Pitfalls

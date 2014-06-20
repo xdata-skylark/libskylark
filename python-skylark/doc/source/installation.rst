@@ -34,6 +34,7 @@ as well with other versions as well. Orange colored components denote C++ depend
 is used for Python dependencies.
 
 .. image:: skylark-dependencies.png
+    :width: 450 px
 
 python-setuptools
 ------------------
@@ -256,10 +257,6 @@ we call bootstrap.
 
 In a next step, download :download:`jam file <./bgq.jam>` and
 copy the Boost jam file to :envvar:`tools/build/v2/tools/`.
-
-.. literalinclude:: bgq.jam
-
-
 Subsequently, executing
 
 ::

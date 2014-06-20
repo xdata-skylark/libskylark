@@ -34,7 +34,9 @@ as well with other versions as well. Orange colored components denote C++ depend
 is used for Python dependencies.
 
 .. image:: skylark-dependencies.png
-    :width: 450 px
+    :width: 650 px
+    :align: center
+
 
 python-setuptools
 ------------------
@@ -246,7 +248,7 @@ and unit testing.
 	./b2 link=static,shared
 	sudo ./b2 install
 
-*Compiling with the XLC (for example on a BG/Q architecture)*
+*Compiling with the XL compiler*
 
 This section is inspired by the Argonne Boost configuration. First, as usual
 we call bootstrap.
@@ -265,11 +267,14 @@ Subsequently, executing
 	echo "using mpi : /bgsys/drivers/ppcfloor/comm/bin/xl/mpixlcxx ;" >> project-config.jam
 	./b2 link=static,shared toolset=bgq
 
-compiles the selected boost libraries (you might need to adapt the path to mpixlcxx). In case all versions (debug, mt) are required, use --build-type=complete.
+compiles the selected boost libraries (you might need to adapt the path to
+:command:`mpixlcxx`). In case all versions (debug, mt) are required, use
+:command:`--build-type=complete`.
 
-Note: Make sure to only use -O2 because -O3 and higher will result in a segfault in the compiler for some packages (e.g. program_options),  see here.
+Note: Make sure to only use -O2 because -O3 and higher will result in a
+segfault in the compiler for some packages (e.g. :command:`program_options`),
+see http://www-01.ibm.com/support/docview.wss?uid=swg1LI77249.
 
-.. file:: bgq.jam
 
 Elemental 0.83
 ---------------

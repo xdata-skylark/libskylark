@@ -114,7 +114,7 @@ latest version.
     make install
 
 By specifying a :envvar:`CMAKE_INSTALL_DIR` the install target for CMake can be
-set. If no ``--prefix`` is set, CMake will be installed in :path:`/usr/local`.
+set. If no ``--prefix`` is set, CMake will be installed in :file:`/usr/local`.
 Make sure to add the install path to your :envvar:`PATH` environment variable.
 
 
@@ -553,7 +553,7 @@ Environment variables
 The installation of Skylark can be influenced with two variables:
 
     * the CMake parameter ``CMAKE_INSTALL_PREFIX`` (i.e. pass ``-DCMAKE_INSTALL_PREFIX=/home/user/software`` when calling :command:`cmake`), and
-    * the environment variable :envvar:`$PYTHON_SITE_PACKAGES` to determine the installation location for python packages. Don't forget to adapt the :envvar:`$PYTHONPATH` environment variable as well. Example: If :envvar:`$PYTHON_SITE_PACKAGES` is set to :path:`/home/user/local`, CMake will install the Python bindings under :path:`/home/user/local/lib/python2.7/site-packages/skylark`. At this point, you will have to append :envvar:`$PYTHONPATH` with :path:`/home/user/local/lib/python2.7/site-packages`!
+    * the environment variable :envvar:`$PYTHON_SITE_PACKAGES` to determine the installation location for python packages. Don't forget to adapt the :envvar:`$PYTHONfile` environment variable as well. Example: If :envvar:`$PYTHON_SITE_PACKAGES` is set to :file:`/home/user/local`, CMake will install the Python bindings under :file:`/home/user/local/lib/python2.7/site-packages/skylark`. At this point, you will have to append :envvar:`$PYTHONPATH` with :file:`/home/user/local/lib/python2.7/site-packages`!
 
 To help CMake to locate installed dependencies (system-wide installed dependencies should be found automatically), you should set the following environment variables:
 
@@ -592,11 +592,11 @@ Note: If you have MPI compilers in your PATH CMake will use the most generic
 This may overwrite the compiler specified in the CXX flag.
 
 The Python packages will most likely be installed under
-:path:`/usr/lib/pythonX.Y/dist-packages` (OS and version dependent). Check the
+:file:`/usr/lib/pythonX.Y/dist-packages` (OS and version dependent). Check the
 configure output for more details about default installation paths on your machine.
 
 For the sake of illustration let's assume you want to enable CombBLAS support
-and install everything in :path:`~/local`:
+and install everything in :file:`~/local`:
 
 ::
 
@@ -627,8 +627,8 @@ To generate the documentation (see dependency section for Doxygen installation),
 	cd $BUILD_DIR
 	make doc
 
-This will generate the Doxygen documentation under :path:`$BUILD_DIR/Documentation`.
-To read the documentation open :path:`$BUILD_DIR/Documentation/html/index.html` in a browser.
+This will generate the Doxygen documentation under :file:`$BUILD_DIR/Documentation`.
+To read the documentation open :file:`$BUILD_DIR/Documentation/html/index.html` in a browser.
 
 
 Sphinx
@@ -661,7 +661,7 @@ need to install latex.
 	sudo apt-get install texlive-latex-base
 	sudo apt-get install texlive-latex-extra
 
-and point your browser to :path:`$BUILD_DIR/Documentation/sphinx/index.html`.
+and point your browser to :file:`$BUILD_DIR/Documentation/sphinx/index.html`.
 
 Testing
 -----------
@@ -691,8 +691,8 @@ Linking against Skylark
 If you plan to use Skylark as a library in your project, the following steps
 are necessary to build and link your application:
 
-    * add the include path of all Skylark headers: :path:`${SKYLARK_INSTALL_DIR}/include` (if configured with ``-DCMAKE_INSTALL_PREFIX=${SKYLARK_INSTALL_DIR}`,
-    * link against all external libraries used when building libSkylark (take a look and maybe reuse the find modules in :path:`${SRC_DIR}/CMakeModules`:
+    * add the include path of all Skylark headers: :file:`${SKYLARK_INSTALL_DIR}/include` (if configured with ``-DCMAKE_INSTALL_PREFIX=${SKYLARK_INSTALL_DIR}`,
+    * link against all external libraries used when building libSkylark (take a look and maybe reuse the find modules in :file:`${SRC_DIR}/CMakeModules`:
         * FFTW: fftw3.h
         * Elemental: header files, libelemental, libpmrrr
         * CombBLAS: header files, libMPITypelib, libCommGridlib, libMemoryPoollib
@@ -705,7 +705,7 @@ Using Cmake
 
 If you are using Cmake to build your application you can use the CMake
 configuration file
-:path:`${SKYLARK_INSTALL_DIR}/lib/SKYLARK/SKYLARKConfig.cmake` in your
+:file:`${SKYLARK_INSTALL_DIR}/lib/SKYLARK/SKYLARKConfig.cmake` in your
 ``CMakeLists.txt`` to find ``SKYLARK``. After that you can simply
 include ``${SKYLARK_INCLUDE_DIRS}`` and ``${SKYLARK_LIBRARIES}`` when you
 build and link your application. A very basic CMake file for your project could
@@ -732,7 +732,7 @@ your application painless by following the above recipe.
 Using XYZ Build System
 -----------------------
 
-Take a look at the file in :path:`${SKYLARK_INSTALL_DIR}/lib/SKYLARK/SKYLARKConfig.cmake`
+Take a look at the file in :file:`${SKYLARK_INSTALL_DIR}/lib/SKYLARK/SKYLARKConfig.cmake`
 to see which include directories libraries you have to include when using libSkylark.
 
 

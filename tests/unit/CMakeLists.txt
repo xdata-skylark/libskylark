@@ -85,7 +85,7 @@ target_link_libraries( local_sparse_apply
 add_test( local_sparse_apply_test local_sparse_apply )
 
 find_package(PythonInterp REQUIRED)
-message (STATUS "Using Python interpreter to run tests: {PYTHON_EXECUTABLE}")
+message (STATUS "Using Python interpreter to run tests: ${PYTHON_EXECUTABLE}")
 #FIXME: Because of mpi4py/kdt MPI initialization issue we cannot run the test
 #       in hybrid mode when we need to call MPI.Init_thread().
 if(!USE_HYBRID)

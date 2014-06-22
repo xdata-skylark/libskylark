@@ -361,7 +361,7 @@ if (BUILD_PYTHON)
     set (PYTHON_SYSTEM_WIDE_INSTALL 0)
   else (DEFINED ENV{PYTHON_SITE_PACKAGES})
     execute_process (
-      COMMAND python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"
+      COMMAND python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib(1))"
       OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE
     )
     set (PYTHON_SYSTEM_WIDE_INSTALL 1)

@@ -64,11 +64,6 @@ The vagrant box can be stopped by issuing the following command:
     See also ``vagrant ssh-config`` command.
 
 
-.. note::
-
-    On a fresh Ubuntu you can use the provided bootstrap script
-    ``vagrant/precise64/boostrap.sh`` to install libSkylark from scratch.
-
 Cluster of vagrant-controlled VMs
 ---------------------------------
 
@@ -172,6 +167,13 @@ for Python dependencies.
 .. image:: skylark-dependencies.png
     :width: 650 px
     :align: center
+
+
+.. note::
+
+    On a fresh 64-bit Ubuntu-based (release 12.04 LTS, aka precise) you can
+    use the provided bootstrap script ``vagrant/precise64/boostrap.sh`` to
+    install libSkylark dependencies.
 
 
 python-setuptools

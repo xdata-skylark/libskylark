@@ -175,7 +175,7 @@ One of the core parts of sketch transformations are random values. The library
 provides and tracks the state of the random number streams in the `context`
 class.
 
-.. cpp:type:: context_t
+.. cpp:type:: struct skylark::base::context_t
 
     **Constructor**
 
@@ -226,7 +226,7 @@ class.
 Sketching Transforms
 ^^^^^^^^^^^^^^^^^^^^^
 
-.. cpp:type:: class sketch_transform_t<InputMatrixType, OutputMatrixType>
+.. cpp:type:: class skylark::sketch::sketch_transform_t<InputMatrixType, OutputMatrixType>
 
     **Query dimensions**
 
@@ -269,6 +269,12 @@ The sketch transformation class is coupled to a data class that is responsible
 to initialize and provide a lazy view on the random data required when
 applying the sketch transform.
 
+The sketching direction is specified using the following types:
+
+    .. cpp:type:: skylark::sketch::columnwise_tag
+
+    .. cpp:type:: skylark::sketch::rowwise_tag
+
 
 Random Values
 ^^^^^^^^^^^^^^
@@ -277,9 +283,7 @@ Random values are generated in a lazy fashion using
 `Random123 library <http://www.deshawresearch.com/resources_random123.html>`_.
 The access to the random streams is wrapped in two classes.
 
-.. cpp:type:: class random_samples_array_t<Distribution>
-
-    **Constructor**
+.. cpp:type:: struct skylark::utility::random_samples_array_t<Distribution>
 
     .. cpp:function:: random_samples_array_t(size_t base, size_t size, int seed, Distribution& distribution)
 

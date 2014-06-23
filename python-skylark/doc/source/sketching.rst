@@ -168,37 +168,135 @@ sparse matrices, while *DistSparse* refers to CombBLAS sparse matrices.
     transforms.</i>
 
 
-Sketching Transfroms
+libSkylark Context
+^^^^^^^^^^^^^^^^^^^
+
+One of the core parts of sketch transformations are random values. The library
+provides and tracks the state of the random number streams in the `context`
+class.
+
+.. cpp:type:: context_t
+
+    **Constructor**
+
+    .. cpp:function:: context_t (int seed, int counter=0)
+
+        Initialize a context with a seed that is used for all computations.
+
+    **Serialization**
+
+    .. cpp:function:: context_t (const boost::property_tree::ptree& json)
+
+        Load a context from a serialized `ptree` structure.
+
+    .. cpp:function:: boost::property_tree::ptree to_ptree() const
+
+        Serialize the context to a Boost `ptree`.
+
+    **Query**
+
+    .. cpp:function:: size_t get_counter()
+
+        Returns the current position in the random stream.
+
+    **Accessors**
+
+    .. cpp:function:: skylark::utility::random_samples_array_t<Distribution> allocate_random_samples_array(size_t size, Distribution& distribution)
+
+        Returns a container of samples drawn from a distribution to be accessed
+        as an array. The container contains `size` samples drawn from the
+        specified `distribution`.
+
+    .. cpp:function:: std::vector<typename Distribution::result_type> generate_random_samples_array(size_t size, Distribution& distribution)
+
+        Returns a vector of samples drawn from a distribution. The vector
+        contains `size` samples drawn from the specified `distribution`.
+
+    .. cpp:function:: skylark::utility::random_array_t allocate_random_array(size_t size)
+
+        Returns a container of random numbers to be accessed as an array. The
+        container lazily provides `size` samples.
+
+    .. cpp:function:: int random_int()
+
+        Returns an integer random number.
+
+
+
+Sketching Transforms
 ^^^^^^^^^^^^^^^^^^^^^
 
-.. cpp:function:: void apply (const InputMatrixType& A, OutputMatrixType& sketch_of_A, columnwise_tag dimension) const
+.. cpp:type:: class sketch_transform_t<InputMatrixType, OutputMatrixType>
 
-    Apply the sketch transform in column dimension.
+    **Query dimensions**
 
-.. cpp:function:: void apply (const InputMatrixType& A, OutputMatrixType& sketch_of_A, rowwise_tag dimension) const
+    .. cpp:function:: int get_N() const
 
-    Apply the sketch transform in row dimension.
+        Get input dimension.
 
-.. cpp:function:: int get_N() const
+    .. cpp:function:: int get_S() const
 
-    Get input dimension.
+        Get output dimension.
 
-.. cpp:function:: int get_S() const
+    **Sketch application**
 
-    Get output dimension.
+    .. cpp:function:: void apply (const InputMatrixType& A, OutputMatrixType& sketch_of_A, columnwise_tag dimension) const
 
-.. cpp:function:: const sketch_transform_data_t* get_data()
+        Apply the sketch transform in column dimension.
 
-    Get the underlaying transform data.
+    .. cpp:function:: void apply (const InputMatrixType& A, OutputMatrixType& sketch_of_A, rowwise_tag dimension) const
 
-.. cpp:function:: boost::property_tree::ptree to_ptree() const
+        Apply the sketch transform in row dimension.
 
-    Serialize the sketch transform to a ptree structure.
+    **Serialization**
 
-.. cpp:function:: static sketch_transform_t* from_ptree(const boost::property_tree::ptree& pt)
+    .. cpp:function:: boost::property_tree::ptree to_ptree() const
 
-    Create a sketch transform from a ptree structure.
+        Serialize the sketch transform to a ptree structure.
 
+    .. cpp:function:: static sketch_transform_t* from_ptree(const boost::property_tree::ptree& pt)
+
+        Load a sketch transform from a ptree structure.
+
+    **Accessors**
+
+    .. cpp:function:: const sketch_transform_data_t* get_data()
+
+        Get the underlaying transform data.
+
+
+The sketch transformation class is coupled to a data class that is responsible
+to initialize and provide a lazy view on the random data required when
+applying the sketch transform.
+
+
+Random Values
+^^^^^^^^^^^^^^
+
+Random values are generated in a lazy fashion using
+`Random123 library <http://www.deshawresearch.com/resources_random123.html>`_.
+The access to the random streams is wrapped in two classes.
+
+.. cpp:type:: class random_samples_array_t<Distribution>
+
+    **Constructor**
+
+    .. cpp:function:: random_samples_array_t(size_t base, size_t size, int seed, Distribution& distribution)
+
+        Random-access array of samples drawn from a distribution starting from
+        `base` up to a total of `size` samples. The `distribution` determines
+        how samples are drawn.
+
+    .. cpp:function:: random_samples_array_t(const random_samples_array_t& other)
+
+    .. cpp:function:: random_samples_array_t& operator=(const random_samples_array_t& other)
+
+    **Accessors**
+
+    .. cpp:function:: value_type operator[](size_t index) const
+
+        Returns the random value (following the specified distribution) at
+        position `index` in the random stream.
 
 
 Using the C++ Sketching layer

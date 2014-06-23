@@ -156,22 +156,16 @@ the rows and columns of the matrix:
 *LocalSparse* refers to a libskylark-provided class for representing local
 sparse matrices, while *DistSparse* refers to CombBLAS sparse matrices.
 
+.. image:: files/sketch_transf_in_out_cpp.png
+    :width: 750 px
+    :align: center
 
-.. math::
-       \begin{tabular}{|c|p{3cm}|p{3cm}|c|c|c|c|c|c|c|}
-        \hline
-        {\large input$\downarrow$ output$\rightarrow$} & {\large LocalDense} & \large{STAR/STAR} & {\large MC/MR} & {\large VR/STAR} & {\large VC/STAR} & {\large STAR/VR} & {\large STAR/VC} & {\large LocalSparse} & {\large DistSparse}\\
-        \hline
-        {\large LocalDense} & \small{JLT, CT, CWT, MMT, WZT, ESRLT, PPT, GRFT, LRFT, FGRFT} & & & & & & & &  \\ \hline
-        {\large LocalSparse} & \small{JLT, CT, CWT, MMT, WZT, ESRLT, PPT, GRFT, LRFT, FGRFT} & & & & & & & \small{CWT,MMT,WZT} &\\ \hline
-        {\large MC/MR} & \small{JLT, CT, CWT, MMZ, WZT} & & \small{JLT, CT, CWT, MMT, WZT} & & & & & &\\ \hline
-        {\large VR/STAR} & \small{JLT, CT, CWT, MMZ, WZT, FJLT} & \small{CWT, MMT, WZT, JLT, CT, FJLT} & & \small{JLT, CT, GRFT, LRFT} &&&&&\\ \hline
-        {\large VC/STAR} & \small{JLT, CT, CWT, MMZ, WZT, FJLT} & \small{CWT, MMT, WZT, JLT, CT, FJLT} & & &  \small{JLT, CT, GRFT, LRFT} &&&&\\\hline
-        {\large STAR/VR} & \small{JLT, CT, CWT, MMZ, WZT} & \small{CWT, MMT, WZT} & & & & \small{JLT, CT} &&& \\\hline
-        {\large STAR/VC} & \small{JLT, CT, CWT, MMZ, WZT} & \small{CWT, MMT, WZT} & & & & & \small{JLT, CT} && \\\hline
-        {\large DistSparse} & \small{JLT, CT, CWT, MMT, WZT} & \small{CWT, MMT, WZT} & & \small{CWT, MMT, WZT} & \small{CWT, MMT, WZT} & \small{CWT, MMT, WZT} & \small{CWT, MMT, WZT} & \small{CWT, MMT, WZT} & \small{CWT, MMT, WZT}\\
-       \hline
-       \end{tabular}
+.. raw:: html
+
+    <i>Schematic views of input and output types for various sketch transforms.
+    The <font color="#154685">blue</font> color marks sparse matrix or
+    transforms, <font color="#ee9428">orange</font> is used for dense matrix or
+    transforms.</i>
 
 
 Sketching Transfroms
@@ -266,23 +260,16 @@ installed. One option is to use `mpi4py <http://mpi4py.scipy.org/>`_.
 
 The following table lists currently supported sketching transforms available through Python.
 
-.. math::
-       \begin{tabular}{|c|p{3cm}|p{3cm}|c|c|c|c|c|c|c|}
-        \hline
-        {\large input$\downarrow$ output$\rightarrow$} & {\large LocalDense} & \large{STAR/STAR} & {\large MC/MR} & {\large VR/STAR} & {\large VC/STAR} & {\large STAR/VR} & {\large STAR/VC} & {\large LocalSparse} & {\large DistSparse}\\
-        \hline
-        {\large LocalDense} & \small{JLT, CT, CWT, MMT, WZT, ESRLT, PPT, GRFT, LRFT, FGRFT} & & & & & & & &  \\ \hline
-        {\large LocalSparse} & \small{JLT, CT, CWT, MMT, WZT, ESRLT, PPT, GRFT, LRFT, FGRFT} & & & & & & & \small{CWT,MMT,WZT} &\\ \hline
-        {\large MC/MR} & \small{JLT, CT, CWT, MMZ, WZT} & & \small{JLT, CT} & & & & & &\\ \hline
-        {\large VR/STAR} & \small{JLT, CT, CWT, MMZ, WZT, FJLT} & \small{JLT,CT} & & \small{JLT, CT, GRFT, LRFT} &&&&&\\ \hline
-        {\large VC/STAR} & \small{JLT, CT, CWT, MMZ, WZT, FJLT} & \small{JLT,CT} & & &  \small{JLT, CT, GRFT, LRFT} &&&&\\\hline
-        {\large STAR/VR} & \small{JLT, CT, CWT, MMZ, WZT} & \small{CWT, MMT, WZT} & & & & \small{JLT, CT} &&& \\\hline
-        {\large STAR/VC} & \small{JLT, CT, CWT, MMZ, WZT} & \small{CWT, MMT, WZT} & & & & & \small{JLT, CT} && \\\hline
-        {\large DistSparse} & \small{JLT, CT, CWT, MMT, WZT} & \small{CWT, MMT, WZT} & & \small{CWT, MMT, WZT} & \small{CWT, MMT, WZT} & \small{CWT, MMT, WZT} & \small{CWT, MMT} & \small{CWT, MMT} & \small{CWT, MMT}\\
-       \hline
-       \hline
-       \end{tabular}
+.. image:: files/sketch_transf_in_out_py.png
+    :width: 750 px
+    :align: center
 
+.. raw:: html
+
+    <i>Schematic views of input and output types for various sketch transforms.
+    The <font color="#154685">blue</font> color marks sparse matrix or
+    transforms, <font color="#ee9428">orange</font> is used for dense matrix or
+    transforms.</i>
 
 
 Using the Python interface

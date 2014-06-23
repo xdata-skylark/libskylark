@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>libskylark: Sketching-based Matrix Computations for Machine Learning &mdash; LIBSKYLARK 0.0.1 documentation</title>
+    <title>Sketching-based Matrix Computations for Machine Learning &mdash; libSkylark  documentation</title>
     
     <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.0.1',
+        VERSION:     '',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,13 +25,13 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/theme_extras.js"></script>
-    <link rel="top" title="LIBSKYLARK 0.0.1 documentation" href="#" />
+    <link rel="top" title="libSkylark  documentation" href="#" />
     <link rel="next" title="Introduction" href="introduction.html" /> 
   </head>
   <body>
       <div class="header"><h1 class="heading"><a href="#">
-          <span>LIBSKYLARK 0.0.1 documentation</span></a></h1>
-        <h2 class="heading"><span>libskylark: Sketching-based Matrix Computations for Machine Learning</span></h2>
+          <span>libSkylark  documentation</span></a></h1>
+        <h2 class="heading"><span>Sketching-based Matrix Computations for Machine Learning</span></h2>
       </div>
       <div class="topnav">
       
@@ -45,8 +45,8 @@
       <div class="content">
         
         
-  <div class="section" id="libskylark-sketching-based-matrix-computations-for-machine-learning">
-<h1>libskylark: Sketching-based Matrix Computations for Machine Learning<a class="headerlink" href="#libskylark-sketching-based-matrix-computations-for-machine-learning" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="sketching-based-matrix-computations-for-machine-learning">
+<h1>Sketching-based Matrix Computations for Machine Learning<a class="headerlink" href="#sketching-based-matrix-computations-for-machine-learning" title="Permalink to this headline">¶</a></h1>
 <p><strong>Contents:</strong></p>
 <div class="toctree-wrapper compound">
 <ul>
@@ -58,65 +58,15 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation Instructions</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#getting-the-source-code">Getting the source code</a></li>
-<li class="toctree-l2"><a class="reference internal" href="installation.html#software-dependencies">Software Dependencies</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="installation.html#python-setuptools">python-setuptools</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installation.html#g-4-7-1-for-elemental-support">g++ (&gt;=4.7.1 for Elemental support)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installation.html#gfortran-compiler">gfortran compiler</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installation.html#cmake-2-8-8-for-elemental-support">CMake (&gt;= 2.8.8 for Elemental support)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installation.html#blas-and-lapack">BLAS and LAPACK</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installation.html#mpich2">MPICH2</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installation.html#numpy-and-scipy">NumPy and SciPy</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installation.html#mpi4py">mpi4py</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installation.html#hdf5">hdf5</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installation.html#h5py">h5py</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installation.html#boost-c-1-53-0">Boost C++ 1.53.0</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installation.html#elemental-0-83">Elemental 0.83</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installation.html#combinatorial-blas-combblas-1-4">Combinatorial BLAS (CombBLAS) 1.4</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installation.html#kdt">KDT</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installation.html#fftw-3-3-3">FFTW 3.3.3</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installation.html#random123-1-08">Random123 1.08</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installation.html#doxygen">Doxygen</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installation.html#graphviz">Graphviz</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="installation.html#building-libskylark">Building libskylark</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="installation.html#directory-setup">Directory setup</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installation.html#build-options">Build options</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installation.html#environment-variables">Environment variables</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installation.html#configuring-compiling-and-installing-skylark">Configuring, compiling and installing Skylark</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installation.html#code-documentation-doxygen">Code documentation Doxygen</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installation.html#sphinx">Sphinx</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installation.html#testing">Testing</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installation.html#running-examples">Running examples</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installation.html#linking-against-skylark">Linking against Skylark</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installation.html#using-cmake">Using Cmake</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installation.html#using-xyz-build-system">Using XYZ Build System</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="installation.html#software-pitfalls">Software Pitfalls</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="installation.html#combblas-installation-notes">CombBLAS Installation Notes</a></li>
-<li class="toctree-l3"><a class="reference internal" href="installation.html#issues-with-combblas-1-4-0">Issues with CombBLAS &lt; 1.4.0</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#software-dependencies">Software Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#building-libskylark">Building libskylark</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#software-pitfalls">Software Pitfalls</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="sketching.html">Sketching Layer</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="sketching.html#introduction">Introduction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="sketching.html#overview-of-high-performance-distributed-sketching-implementation">Overview of High-performance Distributed Sketching Implementation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="sketching.html#libskylark-s-sketching-layer">Libskylark&#8217;s Sketching Layer</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="sketching.html#sketching-transforms">Sketching Transforms</a></li>
-<li class="toctree-l3"><a class="reference internal" href="sketching.html#sketching-layer-in-c">Sketching Layer in C++</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="sketching.html#sketching-transfroms">Sketching Transfroms</a></li>
-<li class="toctree-l4"><a class="reference internal" href="sketching.html#using-the-c-sketching-layer">Using the C++ Sketching layer</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="sketching.html#python-sketching-interface">Python Sketching Interface</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="sketching.html#using-the-python-interface">Using the Python interface</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="sketching.html#python-examples">Python Examples</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="sketching.html#libskylark-s-sketching-layer">Libskylark&#8217;s Sketching Layer</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="nla.html">Numerical Linear Algebra</a><ul>
@@ -125,21 +75,14 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="ml.html">Machine Learning</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="ml.html#randomized-kernel-methods">Randomized Kernel Methods</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="ml.html#standalone-usage">Standalone Usage</a></li>
-<li class="toctree-l3"><a class="reference internal" href="ml.html#input-data-format">Input Data Format</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="ml.html#randomized-kernel-methods">Randomized Kernel Methods</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ml.html#quick-example">Quick Example</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ml.html#commandline-usage">Commandline Usage</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="io.html">IO in Skylark</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="io.html#io-from-c">IO from C++</a></li>
-<li class="toctree-l2"><a class="reference internal" href="io.html#module-skylark.io">IO from Python</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="io.html#example">Example</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="io.html#module-skylark.io">IO from Python</a></li>
 <li class="toctree-l2"><a class="reference internal" href="io.html#sketch-serialization">Sketch Serialization</a></li>
 </ul>
 </li>

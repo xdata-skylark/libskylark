@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Installation Instructions &mdash; LIBSKYLARK 0.0.1 documentation</title>
+    <title>Installation Instructions &mdash; libSkylark  documentation</title>
     
     <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.0.1',
+        VERSION:     '',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,13 +25,13 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/theme_extras.js"></script>
-    <link rel="top" title="LIBSKYLARK 0.0.1 documentation" href="index.html" />
+    <link rel="top" title="libSkylark  documentation" href="index.html" />
     <link rel="next" title="Sketching Layer" href="sketching.html" />
     <link rel="prev" title="Introduction" href="introduction.html" /> 
   </head>
   <body>
       <div class="header"><h1 class="heading"><a href="index.html">
-          <span>LIBSKYLARK 0.0.1 documentation</span></a></h1>
+          <span>libSkylark  documentation</span></a></h1>
         <h2 class="heading"><span>Installation Instructions</span></h2>
       </div>
       <div class="topnav">
@@ -515,7 +515,7 @@ where <tt class="docutils literal"><span class="pre">STRING</span></tt> is any o
 <blockquote>
 <div><ul class="simple">
 <li>the CMake parameter <tt class="docutils literal"><span class="pre">CMAKE_INSTALL_PREFIX</span></tt> (i.e. pass <tt class="docutils literal"><span class="pre">-DCMAKE_INSTALL_PREFIX=/home/user/software</span></tt> when calling <strong class="command">cmake</strong>), and</li>
-<li>the environment variable <span class="target" id="index-6"></span><tt class="xref std std-envvar docutils literal"><span class="pre">$PYTHON_SITE_PACKAGES</span></tt> to determine the installation location for python packages. Don&#8217;t forget to adapt the <span class="target" id="index-7"></span><tt class="xref std std-envvar docutils literal"><span class="pre">$PYTHONfile</span></tt> environment variable as well. Example: If <span class="target" id="index-8"></span><tt class="xref std std-envvar docutils literal"><span class="pre">$PYTHON_SITE_PACKAGES</span></tt> is set to <tt class="file docutils literal"><span class="pre">/home/user/local</span></tt>, CMake will install the Python bindings under <tt class="file docutils literal"><span class="pre">/home/user/local/lib/python2.7/site-packages/skylark</span></tt>. At this point, you will have to append <span class="target" id="index-9"></span><tt class="xref std std-envvar docutils literal"><span class="pre">$PYTHONPATH</span></tt> with <tt class="file docutils literal"><span class="pre">/home/user/local/lib/python2.7/site-packages</span></tt>!</li>
+<li>the environment variable <span class="target" id="index-6"></span><tt class="xref std std-envvar docutils literal"><span class="pre">$PYTHON_SITE_PACKAGES</span></tt> to determine the installation location for python packages. Don&#8217;t forget to adapt the <span class="target" id="index-7"></span><tt class="xref std std-envvar docutils literal"><span class="pre">$PYTHONPATH</span></tt> environment variable as well. Example: If <span class="target" id="index-8"></span><tt class="xref std std-envvar docutils literal"><span class="pre">$PYTHON_SITE_PACKAGES</span></tt> is set to <tt class="file docutils literal"><span class="pre">/home/user/local</span></tt>, CMake will install the Python bindings under <tt class="file docutils literal"><span class="pre">/home/user/local/lib/python2.7/site-packages/skylark</span></tt>. At this point, you will have to append <span class="target" id="index-9"></span><tt class="xref std std-envvar docutils literal"><span class="pre">$PYTHONPATH</span></tt> with <tt class="file docutils literal"><span class="pre">/home/user/local/lib/python2.7/site-packages</span></tt>!</li>
 </ul>
 </div></blockquote>
 <p>To help CMake to locate installed dependencies (system-wide installed dependencies should be found automatically), you should set the following environment variables:</p>

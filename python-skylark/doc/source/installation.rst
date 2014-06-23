@@ -547,7 +547,7 @@ Environment variables
 The installation of Skylark can be influenced with two variables:
 
     * the CMake parameter ``CMAKE_INSTALL_PREFIX`` (i.e. pass ``-DCMAKE_INSTALL_PREFIX=/home/user/software`` when calling :command:`cmake`), and
-    * the environment variable :envvar:`$PYTHON_SITE_PACKAGES` to determine the installation location for python packages. Don't forget to adapt the :envvar:`$PYTHONfile` environment variable as well. Example: If :envvar:`$PYTHON_SITE_PACKAGES` is set to :file:`/home/user/local`, CMake will install the Python bindings under :file:`/home/user/local/lib/python2.7/site-packages/skylark`. At this point, you will have to append :envvar:`$PYTHONPATH` with :file:`/home/user/local/lib/python2.7/site-packages`!
+    * the environment variable :envvar:`$PYTHON_SITE_PACKAGES` to determine the installation location for python packages. Don't forget to adapt the :envvar:`$PYTHONPATH` environment variable as well. Example: If :envvar:`$PYTHON_SITE_PACKAGES` is set to :file:`/home/user/local`, CMake will install the Python bindings under :file:`/home/user/local/lib/python2.7/site-packages/skylark`. At this point, you will have to append :envvar:`$PYTHONPATH` with :file:`/home/user/local/lib/python2.7/site-packages`!
 
 To help CMake to locate installed dependencies (system-wide installed dependencies should be found automatically), you should set the following environment variables:
 

@@ -9,16 +9,16 @@ libskylark: Sketching-based Matrix Computations for Machine Learning
 **Contents:**
 
 .. toctree::
-   :maxdepth: 4
-  
+   :maxdepth: 2
+
    introduction
    installation
    sketching
    nla
    ml
    io
-  
-   
+
+
 Indices and tables
 ==================
 

@@ -36,7 +36,7 @@ apt-get update
 apt-get install -y python-setuptools
 
 # compilers
-apt-get install -y g++ 
+apt-get install -y g++
 apt-get install -y gfortran
 
 # source control
@@ -54,13 +54,13 @@ make install
 cd ../..
 
 # BLAS and LAPACK
-apt-get install -y libblas-dev 
-apt-get install -y libblas-doc 
-apt-get install -y libblas3gf 
-apt-get install -y liblapack-dev 
-apt-get install -y liblapack-doc 
+apt-get install -y libblas-dev
+apt-get install -y libblas-doc
+apt-get install -y libblas3gf
+apt-get install -y liblapack-dev
+apt-get install -y liblapack-doc
 apt-get install -y liblapack3gf
- 
+
 # OpenBLAS
 # XXX as alternative to plain vanilla BLAS; now also built
 wget -O OpenBLAS.tgz http://github.com/xianyi/OpenBLAS/tarball/v0.2.8
@@ -71,8 +71,8 @@ make PREFIX=/usr/local install
 cd ..
 
 # Message Passing Interface
-apt-get install -y libcr-dev 
-apt-get install -y mpich2 
+apt-get install -y libcr-dev
+apt-get install -y mpich2
 apt-get install -y mpich2-doc
 
 # numpy
@@ -96,10 +96,10 @@ cp ../numpy-1.7.0/site.cfg .
 cd ..
 
 # SWIG
-apt-get install -y swig 
-apt-get install -y swig-doc 
-apt-get install -y swig-examples 
-apt-get install -y swig2.0-examples 
+apt-get install -y swig
+apt-get install -y swig-doc
+apt-get install -y swig-examples
+apt-get install -y swig2.0-examples
 apt-get install -y swig2.0-doc
 
 # mpi4py
@@ -187,7 +187,7 @@ apt-get install -y doxygen
 apt-get install -y graphviz
 
 # sphinx
-apt-get install -y python-sphinx 
+apt-get install -y python-sphinx
 
 # matplotlib
 apt-get install -y python-matplotlib
@@ -201,12 +201,9 @@ apt-get install -y dvipng
 
 # To build skylark (with CombBLAS support):
 #
-# copy public/private keys pair under ~/.ssh
-#
-# git clone git@azmodan.watson.ibm.com:skylark.git
+# git clone git@github.com:xdata-skylark/libskylark.git
 # chown -R vagrant ../skylark
 # cd skylark
-# git checkout skylark-development
 #
 # mkdir ${SKYLARK_BUILD_DIR}
 # mkdir ${SKYLARK_INSTALL_DIR}

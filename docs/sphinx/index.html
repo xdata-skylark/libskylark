@@ -8,8 +8,9 @@
     
     <title>libskylark: Sketching-based Matrix Computations for Machine Learning &mdash; LIBSKYLARK 0.0.1 documentation</title>
     
-    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/print.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -23,31 +24,27 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/theme_extras.js"></script>
     <link rel="top" title="LIBSKYLARK 0.0.1 documentation" href="#" />
     <link rel="next" title="Introduction" href="introduction.html" /> 
   </head>
   <body>
-    <div class="related">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="introduction.html" title="Introduction"
-             accesskey="N">next</a> |</li>
-        <li><a href="#">LIBSKYLARK 0.0.1 documentation</a> &raquo;</li> 
-      </ul>
-    </div>  
+      <div class="header"><h1 class="heading"><a href="#">
+          <span>LIBSKYLARK 0.0.1 documentation</span></a></h1>
+        <h2 class="heading"><span>libskylark: Sketching-based Matrix Computations for Machine Learning</span></h2>
+      </div>
+      <div class="topnav">
+      
+        <p>
+        <a class="uplink" href="#">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="introduction.html">Introduction</a>&#160;&#160;»
+        </p>
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body">
-            
+      </div>
+      <div class="content">
+        
+        
   <div class="section" id="libskylark-sketching-based-matrix-computations-for-machine-learning">
 <h1>libskylark: Sketching-based Matrix Computations for Machine Learning<a class="headerlink" href="#libskylark-sketching-based-matrix-computations-for-machine-learning" title="Permalink to this headline">¶</a></h1>
 <p><strong>Contents:</strong></p>
@@ -87,6 +84,8 @@
 <li class="toctree-l3"><a class="reference internal" href="installation.html#build-options">Build options</a></li>
 <li class="toctree-l3"><a class="reference internal" href="installation.html#environment-variables">Environment variables</a></li>
 <li class="toctree-l3"><a class="reference internal" href="installation.html#configuring-compiling-and-installing-skylark">Configuring, compiling and installing Skylark</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#code-documentation-doxygen">Code documentation Doxygen</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#sphinx">Sphinx</a></li>
 <li class="toctree-l3"><a class="reference internal" href="installation.html#testing">Testing</a></li>
 <li class="toctree-l3"><a class="reference internal" href="installation.html#running-examples">Running examples</a></li>
 <li class="toctree-l3"><a class="reference internal" href="installation.html#linking-against-skylark">Linking against Skylark</a></li>
@@ -107,6 +106,7 @@
 <li class="toctree-l2"><a class="reference internal" href="sketching.html#libskylark-s-sketching-layer">Libskylark&#8217;s Sketching Layer</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="sketching.html#sketching-transforms">Sketching Transforms</a></li>
 <li class="toctree-l3"><a class="reference internal" href="sketching.html#sketching-layer-in-c">Sketching Layer in C++</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="sketching.html#sketching-transfroms">Sketching Transfroms</a></li>
 <li class="toctree-l4"><a class="reference internal" href="sketching.html#using-the-c-sketching-layer">Using the C++ Sketching layer</a></li>
 </ul>
 </li>
@@ -156,59 +156,17 @@
 </div>
 
 
-          </div>
-        </div>
       </div>
-      <div class="sphinxsidebar">
-        <div class="sphinxsidebarwrapper">
-  <h3><a href="#">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">libskylark: Sketching-based Matrix Computations for Machine Learning</a><ul>
-</ul>
-</li>
-<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
-</ul>
+      <div class="bottomnav">
+      
+        <p>
+        <a class="uplink" href="#">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="introduction.html">Introduction</a>&#160;&#160;»
+        </p>
 
-  <h4>Next topic</h4>
-  <p class="topless"><a href="introduction.html"
-                        title="next chapter">Introduction</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/index.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
-  <h3>Quick search</h3>
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-        </div>
       </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="related">
-      <h3>Navigation</h3>
-      <ul>
-        <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
-             >index</a></li>
-        <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
-          <a href="introduction.html" title="Introduction"
-             >next</a> |</li>
-        <li><a href="#">LIBSKYLARK 0.0.1 documentation</a> &raquo;</li> 
-      </ul>
-    </div>
+
     <div class="footer">
         &copy; Copyright IBM Corporation 2012-2014.  All Rights Reserved.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.

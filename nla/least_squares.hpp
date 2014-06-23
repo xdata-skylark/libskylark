@@ -137,11 +137,12 @@ void ApproximateLeastSquares(elem::Orientation orientation,
  *
  *   argmin_X ||A * X - B||_F
  *
- * using a sketching-accelerated sketching. This algorithm uses sketching
- * to build a preconditioner, and then uses the preconditioner in an interative
+ * using a sketching-accelerated algorithm. This algorithm uses sketching
+ * to build a preconditioner, and then uses the preconditioner in an iterative
  * method. While technically the solution found is approximate (due to the use
  * of an iterative method), the threshold is set close to machine precision
- * so the solution enjoys close to the full accuracy possible on a machine.
+ * so the solution's accuracy is close to the full accuracy possible on a
+ * machine.
  *
  * The algorithm implemented is the one described in:
  *
@@ -149,7 +150,7 @@ void ApproximateLeastSquares(elem::Orientation orientation,
  * Blendenpik: Supercharging LAPACK's Least-Squares Solver
  * SIAM Journal on Scientific Computing 32(3), 1217-1236, 2010
  *
- * Note: it is assume that a sketch_size x Width(A) matrix can fit in memory
+ * Note: it is assume that a 4*Width(A)^2 matrix can fit in memory
  * of a single node.
  *
  * \param orientation If elem::NORMAL will approximate 

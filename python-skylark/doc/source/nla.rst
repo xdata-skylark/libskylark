@@ -119,16 +119,47 @@ A flavor of usage is given in the code snippet below.
 
 Randomized Singular Value Decomposition
 ========================================
-
 The randomized SVD functionality provides a distributed implementation of algorithms described in
     
 	* Halko, N. and Martinsson, P.G, and Tropp J., `Finding structure with randomness: Probabilistic algorithms for constructing approximate matrix decompositions <http://arxiv.org/abs/0909.4061>`_ , SIAM Rev., Survey and Review section, Vol. 53, num. 2, pp. 217-288, 2011
 
-The prototypical algorithm involves the following steps, given a matrix **A**
+ The prototypical algorithm involves the following steps, given a matrix **A**
 	* Compute an approximate orthonormal basis for the range of **A**, as specified by the columns of an orthonormal matrix **Q**.
         * Use **Q** to compute a standard factorization of **A**    
 
 The first step is accelerated using sketching.
+
+Rand SVD
+^^^^^^^^^^^^^^^^^^^
+
+Randomized SVD is implemented by the use of functors which are first initialized to the type of transform and then the arguments are passed
+to the constructed functor. 
+
+.. cpp:type:: struct skylark::nla::randsvd_t<skylark::sketch::sketch_transform_t<InputMatrixType, OutputMatrixType>>
+
+    **Constructor**
+
+    .. cpp:function:: randsvd_t (skylark::sketch::sketch_transform_t& st)
+
+        Initialize the functor with the sketching transform desired. 
+
+    **Accessors**
+
+    .. cpp:function:: void operator<typename InputMatrixType, typename UMatrixType, typename SingularValuesMatrixType, typename VMatrixType> (InputMatrixType &A, int target_rank, UMatrixType &U, SingularValuesMatrixType &SV, VMatrixType &V, rand_svd_params_t params, skylark::base::context_t& context)
+
+      The overloaded operator takes the input matrix A and produces the output matrices U, SV and V. In addition, a params object is passed which contains the parameters shown below.  
+
+.. cpp:type:: struct skylark::nla::rand_svd_params_t
+
+    **Constructor**
+
+    .. cpp:function:: rand_svd_params_t (int oversampling,int num_iterations = 0, bool skip_qr = 0)
+	
+	The arguments include how much oversampling needs to be performed (oversampling), the number of subspace iterations needed (num_iterations)
+	and an optimization flag (skip_qr) to skip a step in the algorithm.
+
+*****
+
 
 A flavor of usage is given in the code snippet below. 
 

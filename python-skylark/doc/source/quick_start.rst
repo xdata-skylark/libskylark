@@ -14,7 +14,7 @@ Simply follow the required steps below.
 
     .. code-block:: sh
 
-        git clone git@github.com:xdata-skylark/libskylark.git
+        git clone https://github.com/xdata-skylark/libskylark.git
         cd libskylark/vagrant/precise64
         vagrant up
         vagrant ssh

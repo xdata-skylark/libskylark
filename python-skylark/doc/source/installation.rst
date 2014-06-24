@@ -11,7 +11,7 @@ cloned using the following command.
 
 .. code-block:: sh
 
-    git clone git@github.com:xdata-skylark/libskylark.git
+    git clone https://github.com/xdata-skylark/libskylark.git
 
 
 libSkylark Software Dependencies

@@ -99,6 +99,18 @@ subsets of the process grid take place to produce the resulting sketched matrix
         C[MC, MR]         = reduce_scatter_within_process_rows(C_hat[MC, STAR))
         return C[MC, MR] 
 
+Quite interestingly and depending on the distribution format of the input and sketched 
+matrices, sketching can be *communication free*. The following snippet illustrates this
+remark when both input and sketched matrices are in `[VC, STAR]` or `[VR, STAR]`
+distribution formats - same scenario as before, rowwise sketching of a squarish input matrix:
+
+.. code-block:: python
+
+    def matrix_panel(A[VC/VR, STAR], S):
+        S[STAR, STAR]     = realize(S)
+        C[VC/VR, STAR]    = local_gemm(A[VC/VR, STAR], S[STAR, STAR])
+        return C[VC/VR, STAR]
+
 
 Sparse matrices :math:`A` are currently represented as
 :abbr:`CombBLAS (Combinatorial BLAS)` matrices.

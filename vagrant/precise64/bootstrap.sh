@@ -3,17 +3,17 @@
 # export to sudo environment
 # XXX need to clean environment variables export
 export SKYLARK_INSTALL_DIR=/home/vagrant/install
-export COMBBLAS_ROOT=/home/vagrant/CombBLAS_beta_13_0
+export COMBBLAS_ROOT=/home/vagrant/CombBLAS_beta_14_0
 export PYTHON_SITE_PACKAGES=${SKYLARK_INSTALL_DIR}
 export PYTHONPATH=${SKYLARK_INSTALL_DIR}/lib/python2.7/site-packages:${PYTHONPATH}
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib
 
 # populate .bashrc
 # XXX need to clean environment variables export
-echo "SKYLARK_SRC_DIR=/home/vagrant/skylark/tools/analytics/ibm/skylark" > ./.bashrc
+echo "SKYLARK_SRC_DIR=/home/vagrant/libskylark" > ./.bashrc
 echo "SKYLARK_BUILD_DIR=/home/vagrant/build" >> ./.bashrc
 echo "SKYLARK_INSTALL_DIR=/home/vagrant/install" >> ./.bashrc
-echo "COMBBLAS_ROOT=/home/vagrant/CombBLAS_beta_13_0" >> ./.bashrc
+echo "COMBBLAS_ROOT=/home/vagrant/CombBLAS_beta_14_0" >> ./.bashrc
 echo "PYTHON_SITE_PACKAGES=${SKYLARK_INSTALL_DIR}" >> ./.bashrc
 echo "PYTHONPATH=${SKYLARK_INSTALL_DIR}/lib/python2.7/site-packages:${PYTHONPATH}" >> ./.bashrc
 echo "LD_LIBRARY_PATH=${SKYLARK_INSTALL_DIR}/lib:${COMBBLAS_ROOT}/lib:/usr/local/lib" >> ./.bashrc
@@ -38,6 +38,14 @@ apt-get install -y python-setuptools
 # compilers
 apt-get install -y g++
 apt-get install -y gfortran
+
+# install new g++ > 4.7.1
+sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+sudo apt-get update
+sudo apt-get install gcc-4.7 g++-4.7
+sudo update-alternatives --remove gcc /usr/bin/gcc-4.6
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.7 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.7
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.6 40 --slave /usr/bin/g++ g++ /usr/bin/g++-4.6
 
 # source control
 apt-get install -y git
@@ -113,16 +121,16 @@ easy_install h5py
 wget http://sourceforge.net/projects/boost/files/boost/1.53.0/boost_1_53_0.tar.gz
 tar xvfz boost_1_53_0.tar.gz
 cd boost_1_53_0
-./bootstrap.sh --with-libraries=mpi,python,random,serialization
+./bootstrap.sh --with-libraries=mpi,python,random,serialization,program_options
 echo "using mpi ;" >> project-config.jam
 ./b2 link=static,shared
 ./b2 install
 cd ..
 
 # Elemental
-wget http://libelemental.org/pub/releases/elemental-0.81.tgz
-tar xvfz elemental-0.81.tgz
-cd elemental-0.81/
+wget http://libelemental.org/pub/releases/elemental-0.83.tgz
+tar xvfz elemental-0.83.tgz
+cd elemental-0.83/
 mkdir build
 cd build
 cmake -D USE_SWIG=ON ..
@@ -133,9 +141,9 @@ cp _*.so /usr/local/lib/python2.7/dist-packages/
 cd ../..
 
 # CombBLAS
-wget http://gauss.cs.ucsb.edu/~aydin/CombBLAS_FILES/CombBLAS_beta_13_0.tgz
-tar xvfz CombBLAS_beta_13_0.tgz
-cd CombBLAS_beta_13_0/
+wget http://gauss.cs.ucsb.edu/~aydin/CombBLAS_FILES/CombBLAS_beta_14_0.tgz
+tar xvfz CombBLAS_beta_14_0.tgz
+cd CombBLAS/
 cp /vagrant/combblas.patch .
 git apply --ignore-space-change --ignore-whitespace combblas.patch
 rm combblas.patch

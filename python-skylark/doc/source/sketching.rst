@@ -70,14 +70,35 @@ involved in the GEMM, for each of the input/output matrix-data distribution
 combinations.
 The user can optionally set the relative sizes that differentiate between these
 cases.
-Local R entries can be incrementally realized in a distribution format that
+Local :math:`S` entries can be incrementally realized in a distribution format that
 best matches the matrix indices of the local GEMM operation that follows
 it.
-Resulting R blocks typically traverse the smallest of matrix sizes in
+Resulting :math:`S` blocks typically traverse the smallest of matrix sizes in
 increments that can optionally be specified by the user.
 This has the extra benefit of minimizing the communication volume of a
 collective operation that generally follows this local GEMM - essentially to
 compensate for the stride-indexed matrix entries in the factors.
+
+As an example we provide a *pseudocode* snippet (in Python syntax) that describes
+the rowwise sketching of a squarish input matrix :math:`A`, initially distributed
+across the process grid in `[MC, MR]` format (please refer 
+`here <http://libelemental.org/documentation/0.83/core/dist_matrix/DM.html>`_ for a
+comprehensive documentation of distribution formats, here appearing in brackets): 
+:math:`S` is first realized (its random entries are actually computed in the desired
+distribution format - in embarrassingly parallel mode) and then the local parts of 
+:math:`A` and :math:`S` are multiplied together. Finally collective communications within
+subsets of the process grid take place to produce the resulting sketched matrix 
+(`C[MC, MR]`). The corresponding C++ code (allowing also for incremental realization of 
+:math:`S`) can be found in libskylark/sketch/dense_transform_Elemental_mc_mr.hpp.
+
+.. code-block:: python
+
+    def matrix_panel(A[MC, MR], S):
+        S[MR, STAR]       = realize(S)
+        C_hat[MC, STAR]   = local_gemm(A[MC, MR], S[MR, STAR])
+        C[MC, MR]         = reduce_scatter_within_process_rows(C_hat[MC, STAR))
+        return C[MC, MR] 
+
 
 Sparse matrices :math:`A` are currently represented as
 :abbr:`CombBLAS (Combinatorial BLAS)` matrices.

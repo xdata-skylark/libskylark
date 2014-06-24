@@ -16,22 +16,22 @@ index 6c3a362..bd79ff2 100644
 @@ -53,9 +53,9 @@ else (NOT C11)
  	endif (CMAKE_COMPILER_IS_GNUCXX)
  endif (NOT C11)
- 
+
 -ADD_LIBRARY( CommGridlib CommGrid.cpp  )
 -ADD_LIBRARY( MPITypelib MPIType.cpp )
 -ADD_LIBRARY( MemoryPoollib MemoryPool.cpp )
 +ADD_LIBRARY( CommGridlib SHARED CommGrid.cpp  )
 +ADD_LIBRARY( MPITypelib SHARED MPIType.cpp )
 +ADD_LIBRARY( MemoryPoollib SHARED MemoryPool.cpp )
- 
+
  ADD_SUBDIRECTORY( ReleaseTests )
- ADD_SUBDIRECTORY( Applications ) 
+ ADD_SUBDIRECTORY( Applications )
 diff --git a/RefGen21.h b/RefGen21.h
 index d5425cd..90df1b7 100644
 --- a/RefGen21.h
 +++ b/RefGen21.h
 @@ -134,7 +134,7 @@ public:
- 
+
    		/* 32-bit code */
   		uint32_t h = (uint32_t)(x >> 32);
 -  		uint32_t l = (uint32_t)(x & UINT32_MAX);
@@ -39,27 +39,6 @@ index d5425cd..90df1b7 100644
  		#ifdef USE_GCC_BYTESWAP
    		 h = __builtin_bswap32(h);
    		 l = __builtin_bswap32(l);
-diff --git a/psort-1.0/src/psort_merge.h b/psort-1.0/src/psort_merge.h
-index 858580b..775562b 100644
---- a/psort-1.0/src/psort_merge.h
-+++ b/psort-1.0/src/psort_merge.h
-@@ -163,11 +163,11 @@ namespace vpsort {
- 		    out, comp);
-       } else if (locs[next] == 0) {
- 	// 10 => backwards out of place
--	std::merge (reverse_iterator<_RandomAccessIter> (in + disps[nproc]),
--		    reverse_iterator<_RandomAccessIter> (in + disps[next]),
--		    reverse_iterator<_RandomAccessIter> (out + disps[next]),
--		    reverse_iterator<_RandomAccessIter> (out),
--		    reverse_iterator<_RandomAccessIter> (out + disps[nproc]),
-+	std::merge (std::reverse_iterator<_RandomAccessIter> (in + disps[nproc]),
-+		    std::reverse_iterator<_RandomAccessIter> (in + disps[next]),
-+		    std::reverse_iterator<_RandomAccessIter> (out + disps[next]),
-+		    std::reverse_iterator<_RandomAccessIter> (out),
-+		    std::reverse_iterator<_RandomAccessIter> (out + disps[nproc]),
- 		    not2 (comp));
-       } else {
- 	// 11 => in-place
--- 
+--
 1.7.9.5
 

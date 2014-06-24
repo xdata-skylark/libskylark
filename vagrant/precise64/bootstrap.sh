@@ -13,7 +13,7 @@ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib
 echo "SKYLARK_SRC_DIR=/home/vagrant/libskylark" > ./.bashrc
 echo "SKYLARK_BUILD_DIR=/home/vagrant/build" >> ./.bashrc
 echo "SKYLARK_INSTALL_DIR=/home/vagrant/install" >> ./.bashrc
-echo "COMBBLAS_ROOT=/home/vagrant/CombBLAS_beta_14_0" >> ./.bashrc
+echo "COMBBLAS_ROOT=/home/vagrant/CombBLAS" >> ./.bashrc
 echo "PYTHON_SITE_PACKAGES=${SKYLARK_INSTALL_DIR}" >> ./.bashrc
 echo "PYTHONPATH=${SKYLARK_INSTALL_DIR}/lib/python2.7/site-packages:${PYTHONPATH}" >> ./.bashrc
 echo "LD_LIBRARY_PATH=${SKYLARK_INSTALL_DIR}/lib:${COMBBLAS_ROOT}/lib:/usr/local/lib" >> ./.bashrc
@@ -208,17 +208,13 @@ apt-get install -y dvipng
 
 
 # To build skylark (with CombBLAS support):
-#
-# git clone git@github.com:xdata-skylark/libskylark.git
-# chown -R vagrant ../skylark
-# cd skylark
-#
-# mkdir ${SKYLARK_BUILD_DIR}
-# mkdir ${SKYLARK_INSTALL_DIR}
-# cd ${SKYLARK_BUILD_DIR}
-# CXX=mpicc cmake -DCMAKE_INSTALL_PREFIX=${SKYLARK_INSTALL_DIR} -DUSE_COMBBLAS=ON ${SKYLARK_SRC_DIR}
-# make
-# make install
+yes | git clone https://github.com/xdata-skylark/libskylark.git
+chown -R vagrant libskylark
 
-
+mkdir ${SKYLARK_BUILD_DIR}
+mkdir ${SKYLARK_INSTALL_DIR}
+cd ${SKYLARK_BUILD_DIR}
+CXX=mpicc cmake -DCMAKE_INSTALL_PREFIX=${SKYLARK_INSTALL_DIR} -DUSE_COMBBLAS=ON ${SKYLARK_SRC_DIR}
+make
+make install
 

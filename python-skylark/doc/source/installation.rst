@@ -643,22 +643,36 @@ Sphinx
 
 Make sure to install the Sphinx extensions before you run make sphinx-doc:
 
-::
+.. code-block:: sh
 
-	cd /tmp
-	svn co https://svn.code.sf.net/p/matplotlib/code/trunk/sampledoc_tut
-	mkdir $HOME/.sphinx_ext
-	cp sampledoc_tut/sphinxext/*.py $HOME/.sphinx_ext
-	rm -rf /tmp/sampledoc_tut
+    cd /tmp
+    svn co https://svn.code.sf.net/p/matplotlib/code/trunk/sampledoc_tut
+    mkdir $HOME/.sphinx_ext
+    cp sampledoc_tut/sphinxext/*.py $HOME/.sphinx_ext
+    rm -rf /tmp/sampledoc_tut
 
-	export SPHINXEXT=$HOME/.sphinx_ext
+    export SPHINXEXT=$HOME/.sphinx_ext
+
+.. note:
+
+    Sphinx can also be installed using apt-get: "apt-get install python-sphinx"
+
+.. note:
+
+    Sphinx requires some dependencies
+
+    .. code-block:: sh
+
+        apt-get python-dateutil
+        apt-get libfreetype6-dev libpng-dev
+        easy-install matplotlib
 
 Then run
 
-::
+.. code-block:: sh
 
-	cd $BUILD_DIR
-	make sphinx-doc
+    cd $BUILD_DIR
+    make sphinx-doc
 
 For latex equations to show up correctly in the sphinx documentation, you may
 need to install latex.

@@ -34,6 +34,7 @@ Finally, to see how the library can be used consult the
 
 
 .. _vagrant-label:
+
 Vagrant
 ========
 

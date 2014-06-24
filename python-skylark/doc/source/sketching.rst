@@ -222,6 +222,7 @@ class.
         Returns an integer random number.
 
 
+.. _sketching-transforms-label:
 
 Sketching Transforms
 ^^^^^^^^^^^^^^^^^^^^^

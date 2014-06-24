@@ -24,11 +24,13 @@ Simply follow the required steps below.
     everything.
 
 
-If you want to know more about the details continue reading the next section.
-We provide additional information on how to install on a cluster
+In the next section we provide more in depth information and additional
+details on how the Vagrant setup works.
+Additionally we provide instruction on how to install on a cluster
 (see :ref:`cluster-label`) and running on AWS (see :ref:`aws-label`).
 
-Finally, to see the code in action head for the :ref:`examples-label` section.
+Finally, to see how the library can be used consult the
+:ref:`examples-label` section.
 
 
 .. _vagrant-label:
@@ -39,7 +41,7 @@ Under ``vagrant/precise64`` we provide an easy way to materialize an
 64-bit Ubuntu-based virtual machine (release 12.04 LTS, aka precise) with all
 software dependencies required for a fresh build of Skylark.
 
-The ``Vagrantfile`` is the input to `vagrant <http://www.vagrantup.com/>`_, a
+The ``Vagrantfile`` is the input to `Vagrant <http://www.vagrantup.com/>`_, a
 program that facilitates the management of virtual machines.
 Using `VirtualBox <https://www.virtualbox.org/>`_ as the backend virtualization
 software (provider) we can launch a libSkylark environment indpendent of the

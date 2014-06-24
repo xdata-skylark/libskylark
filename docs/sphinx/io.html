@@ -50,6 +50,90 @@
 <div class="section" id="io-from-c">
 <h2>IO from C++<a class="headerlink" href="#io-from-c" title="Permalink to this headline">¶</a></h2>
 <p>Currently, IO from the C++ layer is implemented in libskylark/ml/io.hpp.</p>
+<div class="section" id="reading">
+<h3>Reading<a class="headerlink" href="#reading" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="read__boost::mpi::communicatorCR.i.ss.InputTypeR.LabelTypeR.i">
+void <tt class="descname">read</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, int <em>fileformat</em>, std::string <em>filename</em>, InputType&amp; <em>X</em>, LabelType&amp; <em>Y</em>, int <em>d</em><em>=0</em><big>)</big><a class="headerlink" href="#read__boost::mpi::communicatorCR.i.ss.InputTypeR.LabelTypeR.i" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads data from <cite>filename</cite> as a pair of matrices <cite>X</cite> and <cite>Y</cite>. Data are in the form of instances each carrying a label; an instance in turn consists of a series of feature/value pairs. Feature/value pairs are the column indices/entries for matrix <cite>X</cite> with its row indices coming from a running index of the instances. Matrix <cite>Y</cite> carries the vector of successive labels corresponding to this running index. <cite>fileformat</cite> can be any of the following:</p>
+<ul class="simple">
+<li>HDF5_DENSE</li>
+<li>HDF5_SPARSE</li>
+<li>LIBSVM_DENSE</li>
+<li>LIBSVM_SPARSE</li>
+</ul>
+</dd></dl>
+
+<p><cite>*_DENSE</cite> correspond to the case of elem::Matrix&lt;T&gt; (dense) matrix <cite>X</cite> (<cite>*_SPARSE</cite> is for skylark::base::sparse_matrix_t&lt;T&gt; (sparse) matrix <cite>X</cite>).
+<cite>HDF5_*</cite> are for HDF5-formatted files  while <cite>LIBSVM_*</cite> are for LIBSVM ones.</p>
+<p><strong>HDF5-specific routines</strong></p>
+<dl class="function">
+<dt id="read_hdf5__boost::mpi::communicatorCR.ss.LocalMatrixTypeR.LocalMatrixTypeR.i">
+void <tt class="descname">read_hdf5</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>fName</em>, LocalMatrixType&amp; <em>Xlocal</em>, LocalMatrixType&amp; <em>Ylocal</em>, int <em>blocksize</em><em>=10000</em><big>)</big><a class="headerlink" href="#read_hdf5__boost::mpi::communicatorCR.ss.LocalMatrixTypeR.LocalMatrixTypeR.i" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="read_hdf5__boost::mpi::communicatorCR.ss.sparse_matrix_tR.elem::Matrix:double:R.i">
+void <tt class="descname">read_hdf5</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>fName</em>, sparse_matrix_t&amp; <em>X</em>, elem::Matrix&lt;double&gt;&amp; <em>Y</em>, int <em>min_d</em><em>=0</em><big>)</big><a class="headerlink" href="#read_hdf5__boost::mpi::communicatorCR.ss.sparse_matrix_tR.elem::Matrix:double:R.i" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads data from datasets <cite>X</cite> and <cite>Y</cite> in Hierarchical Data Format (HDF5) file <cite>fName</cite> as a pair of matrices <cite>Xlocal</cite>, <cite>Ylocal</cite> (<cite>X</cite>, <cite>Y</cite>). Instances are read in bunches of <cite>blocksize</cite> each.</p>
+</dd></dl>
+
+<p><strong>LIBSVM-specific routines</strong></p>
+<dl class="function">
+<dt id="read_libsvm__boost::mpi::communicatorCR.ss.elem::Matrix:T:R.elem::Matrix:T:R.i.i">
+void <tt class="descname">read_libsvm</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>fName</em>, elem::Matrix&lt;T&gt;&amp; <em>Xlocal</em>, elem::Matrix&lt;T&gt;&amp; <em>Ylocal</em>, int <em>min_d</em><em>=0</em>, int <em>blocksize</em><em>=10000</em><big>)</big><a class="headerlink" href="#read_libsvm__boost::mpi::communicatorCR.ss.elem::Matrix:T:R.elem::Matrix:T:R.i.i" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="read_libsvm__boost::mpi::communicatorCR.ss.skylark::base::sparse_matrix_t:T:R.elem::Matrix:T:R.i">
+void <tt class="descname">read_libsvm</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>fName</em>, skylark::base::sparse_matrix_t&lt;T&gt;&amp; <em>X</em>, elem::Matrix&lt;T&gt;&amp; <em>Y</em>, int <em>min_d</em><em>=0</em><big>)</big><a class="headerlink" href="#read_libsvm__boost::mpi::communicatorCR.ss.skylark::base::sparse_matrix_t:T:R.elem::Matrix:T:R.i" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads data from Library for Support Vector Machines (LIBSVM) formatted file <cite>fName</cite> as a pair of matrices <cite>Xlocal</cite>, <cite>Ylocal</cite> (<cite>X</cite>, <cite>Y</cite>). Instances are read in bunches of <cite>blocksize</cite> each.</p>
+</dd></dl>
+
+<p><strong>Utility routines</strong></p>
+<dl class="function">
+<dt id="read_hdf5_dataset__H5::H5FileR.ss.iP.i.i">
+void <tt class="descname">read_hdf5_dataset</tt><big>(</big>H5::H5File&amp; <em>file</em>, std::string <em>name</em>, int* <em>buf</em>, int <em>offset</em>, int <em>count</em><big>)</big><a class="headerlink" href="#read_hdf5_dataset__H5::H5FileR.ss.iP.i.i" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="read_hdf5_dataset__H5::H5FileR.ss.doubleP.i.i">
+void <tt class="descname">read_hdf5_dataset</tt><big>(</big>H5::H5File&amp; <em>file</em>, std::string <em>name</em>, double* <em>buf</em>, int <em>offset</em>, int <em>count</em><big>)</big><a class="headerlink" href="#read_hdf5_dataset__H5::H5FileR.ss.doubleP.i.i" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads <cite>count</cite> entries from the <cite>name</cite> dataset in HDF5 <cite>file</cite> starting at <cite>offset</cite> and collects them into buffer <cite>buf</cite>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="read_model_file__ss.elem::Matrix:double:R">
+void <tt class="descname">read_model_file</tt><big>(</big>std::string <em>fName</em>, elem::Matrix&lt;double&gt;&amp; <em>W</em><big>)</big><a class="headerlink" href="#read_model_file__ss.elem::Matrix:double:R" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads the values from model file <cite>fName</cite> into matrix <cite>W</cite>; model file is expected to start with a line of the form:
+<cite># Dimensions m n</cite> for an <cite>m x n</cite> matrix <cite>W</cite> followed by lines containing the values of successive rows of the matrix.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="read_header__boost::mpi::communicatorCR.ss">
+std::string <tt class="descname">read_header</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>fName</em><big>)</big><a class="headerlink" href="#read_header__boost::mpi::communicatorCR.ss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the first line of file <cite>fName</cite>.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="writing">
+<h3>Writing<a class="headerlink" href="#writing" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="write_hdf5__boost::mpi::communicatorCR.ss.elem::Matrix:double:R.elem::Matrix:double:R">
+int <tt class="descname">write_hdf5</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>fName</em>, elem::Matrix&lt;double&gt;&amp; <em>X</em>, elem::Matrix&lt;double&gt;&amp; <em>Y</em><big>)</big><a class="headerlink" href="#write_hdf5__boost::mpi::communicatorCR.ss.elem::Matrix:double:R.elem::Matrix:double:R" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="write_hdf5__ss.sparse_matrix_tR.elem::Matrix:double:R">
+int <tt class="descname">write_hdf5</tt><big>(</big>std::string <em>fName</em>, sparse_matrix_t&amp; <em>X</em>, elem::Matrix&lt;double&gt;&amp; <em>Y</em><big>)</big><a class="headerlink" href="#write_hdf5__ss.sparse_matrix_tR.elem::Matrix:double:R" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes feature/value pairs (in matrix <cite>X</cite>) and labels (in matrix <cite>Y</cite>) to the HDF5 file <cite>fName</cite> and returns 0 to signal successfully completed operation.For the case of dense matrix input <cite>X</cite> (of elem::Matrix&lt;double&gt; type) two datasets named <cite>X</cite> and <cite>Y</cite> are created in the file for all data. For the case of sparse matrix <cite>X</cite> (of sparse_matrix_t type, aka  skylark::base::sparse_matrix_t&lt;T&gt;) five datasets are created: <cite>dimensions</cite> (matrix size), <cite>indptr</cite>, <cite>indices</cite>, <cite>values</cite> (<cite>X</cite> matrix) and <cite>Y</cite> (<cite>Y</cite> matrix).</p>
+</dd></dl>
+
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Currently IO from C++ and Python layers are not in sync; we expect a convergence of offerings from these layers as depending libraries (most notably Elemental) freeze their IO facilities and typical/common application IO scenaria are clearly identified.</p>
+</div>
+</div>
 </div>
 <div class="section" id="module-skylark.io">
 <span id="io-from-python"></span><h2>IO from Python<a class="headerlink" href="#module-skylark.io" title="Permalink to this headline">¶</a></h2>
@@ -624,7 +708,52 @@ objects of <cite>kdt.Mat</cite> type.</li>
 </div>
 <div class="section" id="sketch-serialization">
 <h2>Sketch Serialization<a class="headerlink" href="#sketch-serialization" title="Permalink to this headline">¶</a></h2>
-<p>To be documented.</p>
+<p>As mentioned in Section <a class="reference internal" href="sketching.html#sketching-transforms-label"><em>Sketching Transforms</em></a> sketches can be
+serialized using the following API:</p>
+<dl class="function">
+<dt id="to_ptreeC">
+boost::property_tree::ptree <tt class="descname">to_ptree</tt><big>(</big><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#to_ptreeC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Serialize the sketch transform to a ptree structure.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="from_ptree__boost::property_tree::ptreeCR">
+<em class="property">static</em> sketch_transform_t* <tt class="descname">from_ptree</tt><big>(</big>const boost::property_tree::ptree&amp; <em>pt</em><big>)</big><a class="headerlink" href="#from_ptree__boost::property_tree::ptreeCR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a sketch transform from a ptree structure.</p>
+</dd></dl>
+
+<p>The following small snippet shows how a sketch can be serialized and loaded in
+C++.</p>
+<div class="highlight-cpp"><div class="highlight"><pre><span class="c1">//[&gt; 1. Create the sketching matrix and dump JSON &lt;]</span>
+<span class="n">skylark</span><span class="o">::</span><span class="n">sketch</span><span class="o">::</span><span class="n">CWT_t</span><span class="o">&lt;</span><span class="n">DistMatrixType</span><span class="p">,</span> <span class="n">DistMatrixType</span><span class="o">&gt;</span>
+    <span class="n">Sparse</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">n_s</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+
+<span class="c1">// dump to property tree</span>
+<span class="n">boost</span><span class="o">::</span><span class="n">property_tree</span><span class="o">::</span><span class="n">ptree</span> <span class="n">pt</span> <span class="o">=</span> <span class="n">Sparse</span><span class="p">.</span><span class="n">get_data</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">to_ptree</span><span class="p">();</span>
+
+<span class="c1">//[&gt; 2. Dump the JSON string to file &lt;]</span>
+<span class="n">std</span><span class="o">::</span><span class="n">ofstream</span> <span class="n">out</span><span class="p">(</span><span class="s">&quot;sketch.json&quot;</span><span class="p">);</span>
+<span class="n">write_json</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">pt</span><span class="p">);</span>
+<span class="n">out</span><span class="p">.</span><span class="n">close</span><span class="p">();</span>
+
+<span class="c1">//[&gt; 3. Create a sketch from the JSON file. &lt;]</span>
+<span class="n">std</span><span class="o">::</span><span class="n">ifstream</span> <span class="n">file</span><span class="p">;</span>
+<span class="n">std</span><span class="o">::</span><span class="n">stringstream</span> <span class="n">json</span><span class="p">;</span>
+<span class="n">file</span><span class="p">.</span><span class="n">open</span><span class="p">(</span><span class="s">&quot;sketch.json&quot;</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">ios</span><span class="o">::</span><span class="n">in</span><span class="p">);</span>
+
+<span class="n">boost</span><span class="o">::</span><span class="n">property_tree</span><span class="o">::</span><span class="n">ptree</span> <span class="n">json_tree</span><span class="p">;</span>
+<span class="n">boost</span><span class="o">::</span><span class="n">property_tree</span><span class="o">::</span><span class="n">read_json</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">json_tree</span><span class="p">);</span>
+
+<span class="n">skylark</span><span class="o">::</span><span class="n">sketch</span><span class="o">::</span><span class="n">CWT_t</span><span class="o">&lt;</span><span class="n">DistMatrixType</span><span class="p">,</span> <span class="n">DistMatrixType</span><span class="o">&gt;</span> <span class="n">tmp</span><span class="p">(</span><span class="n">json_tree</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>This functionality is also exposed to the Python layer.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">S</span> <span class="o">=</span> <span class="n">sketch</span><span class="o">.</span><span class="n">CWT</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+<span class="n">sketch_dict</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">serialize</span><span class="p">()</span>
+
+<span class="n">S_clone</span> <span class="o">=</span> <span class="n">deserialize_sketch</span><span class="p">(</span><span class="n">sketch_dict</span><span class="p">)</span>
+</pre></div>
+</div>
 </div>
 </div>
 

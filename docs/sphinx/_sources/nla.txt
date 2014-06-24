@@ -1,17 +1,67 @@
 .. highlight:: rst
 
-Numerical Linear Algebra
-**************************
+Numerical Linear Algebra Primitives
+***********************************
+
+This layer implements various numerical linear algebra primitives that are 
+accelerated using sketching.
 
 Randomized Least Squares Regression
 ====================================
 
-The randomized regression functionality provides distributed implementation of algorithms described in 
-	
-	* Avron, H., Maymounkov, P. and Toledo, S., `Supercharging LAPACK's Least Squares Solver <http://dl.acm.org/citation.cfm?id=1958633>`_ , 2010
-	* Meng, X., Saunders, M.A. and Mahoney, M. W, `LSRN: A Paralllel Iterative Solver for Strongly Over- or Under-Determined Systems <http://arxiv.org/abs/1109.5981>`_ , 2012
+Based on the regression framework in the algorithms layer, this functionality
+provides sketching based linear least-squares regression routines. That is,
+solve equations of the form:
 
-A flavor of usage is given in the code snippet below. The usage mirrors Elemental's `LeastSquares <http://libelemental.org/documentation/0.83/lapack-like/solve.html>`_ function, but the solve is accelerated using sketching (specified internally). 
+.. math::
+   \arg\min_X \|A * X - B\|_F
+
+Note that the various algorithms can be executed directly using the regression API. 
+This layer just provides an easy-to-use functional interface that mirror Elemental's 
+`LeastSquares <http://libelemental.org/documentation/0.83/lapack-like/solve.html>`_ 
+function, but uses sketching to accelerate the computation.
+
+A running example is provided in *libskylark/examples/least_squares.cpp*.
+
+Approximate Least-squares
+-------------------------
+
+Solve the problem approximately using a sktech-and-solve strategy.
+Specifically, solve :math:`\arg\min_X \|S A X -  S B\|_F` where :math:`S \in R^{s\times n}`
+is a Fast Johnson-Lindenstrauss Transform matrix 
+(`Ailon and Chazelle, 2009 <http://www.cs.princeton.edu/~chazelle/pubs/FJLT-sicomp09.pdf>`_). 
+It can be shown that if :math:`s` is large enough (as a function of :math:`\epsilon`), then 
+
+.. math::
+   \|A * X_{approx} - B\|_F \leq (1+\epsilon) \|A * X - B\|_F
+
+where :math:`X=\arg\min_X \|A * X - B\|_F` and :math:`X_{approx}` is the approximate solution.
+For the best known bounds see `Boutsidis and Gittens (2013) <http://arxiv.org/abs/1204.0062>`_.
+
+The algorithm used is the one described in:
+ * | P. Drineas, M. W. Mahoney, S. Muthukrishnan, and T. Sarlos
+   | `Faster Least Squares Approximation <http://arxiv.org/abs/0710.1435>`_
+   | Numerische Mathematik, 117, 219-249 (2011).
+ 
+Unlike the algorithm described in the paper we allow the user to set the size of :math:`s`.
+There is also a default value, but it is much lower than the one suggested by that paper.
+ 
+Note: it is assume that a :math:`s \times n` matrix can fit in the memory of a single node
+(:math:`n` is the number of columns in :math:`A`).
+
+*****
+
+.. cpp:function:: void ApproximateLeastSquares(elem::Orientation orientation, const elem::Matrix<T>& A, const elem::Matrix<T>& B, elem::Matrix<T>& X, base::context_t& context, int sketch_size = -1) 
+.. cpp:function:: void ApproximateLeastSquares(elem::Orientation orientation, const elem::DistMatrix<T, CA, RA>& A, const elem::DistMatrix<T, CB, RB>& B, elem::DistMatrix<T, CX, RX>& X, base::context_t& context, int sketch_size = -1)
+
+If `orientation` is set to ``NORMAL``, then approximate :math:`\arg\min_X \|A * X - B\|_F`, otherwise 
+`orientation` must be equal to ``ADJOINT`` and :math:`\arg\min_X \|A^H * X - B\|_F` is approximated. 
+
+sketch_size controls the number of rows in :math:`S`.
+
+*****
+
+A flavor of usage is given in the code snippet below. 
 
 .. code-block:: cpp
 
@@ -24,9 +74,48 @@ A flavor of usage is given in the code snippet below. The usage mirrors Elementa
      skybase::context_t context(23234);
 
      // Solve the Least Squres problem of minimizing || AX - B||_2 over X
-     skylark::nla::FastLeastSquares(elem::NORMAL, A, X, B, context);
+     skylark::nla::ApproximateLeastSquares(elem::NORMAL, A, X, B, context);
 
-Please see *libskylark/examples/least_squares.cpp* for a running example.
+Faster Least-squares
+--------------------
+
+Solve the linear least-squares problem using a sketching-accelerated algorithm.
+This algorithm uses sketching to build a preconditioner, and then uses the preconditioner 
+in an iterative method. While technically the solution found is approximate (due to the use
+of an iterative method), the threshold is set close to machine precision
+so the solution's accuracy is close to the full accuracy possible on a machine.
+
+The algorithm used is the one described in:
+ * | Haim Avron, Petar Maymounkov, and Sivan Toledo
+   | `Blendenpik: Supercharging LAPACK's Least-Squares Solver <http://epubs.siam.org/doi/abs/10.1137/090767911>`_
+   | SIAM Journal on Scientific Computing 32(3), 1217-1236, 2010
+
+Note: it is assume that a :math:`4 n^2` matrix can fit in the memory of a single node
+(:math:`n` is the number of columns in :math:`A`).
+
+*****
+
+.. cpp:function:: void FastLeastSquares(elem::Orientation orientation, const AT& A, const BT& B, XT& X, base::context_t& context)
+
+If `orientation` is set to ``NORMAL``, then approximate :math:`\arg\min_X \|A * X - B\|_F`, otherwise 
+`orientation` must be equal to ``ADJOINT`` and :math:`\arg\min_X \|A^H * X - B\|_F` is approximated. 
+
+*****
+
+A flavor of usage is given in the code snippet below. 
+
+.. code-block:: cpp
+
+     #include <elemental.hpp>
+     #include <skylark.hpp>
+     ...
+     // Setup regression problem with coefficient matrix A and target matrix B
+     ...
+     
+     skybase::context_t context(23234);
+
+     // Solve the Least Squres problem of minimizing || AX - B||_2 over X
+     skylark::nla::FasterLeastSquares(elem::NORMAL, A, X, B, context);
 
 Randomized Singular Value Decomposition
 ========================================

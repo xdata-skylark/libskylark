@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Installation Instructions &mdash; libSkylark  documentation</title>
+    <title>Building from Source &mdash; libSkylark  documentation</title>
     
     <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -27,17 +27,17 @@
     <script type="text/javascript" src="_static/theme_extras.js"></script>
     <link rel="top" title="libSkylark  documentation" href="index.html" />
     <link rel="next" title="Sketching Layer" href="sketching.html" />
-    <link rel="prev" title="Introduction" href="introduction.html" /> 
+    <link rel="prev" title="Quick Start Guide" href="quick_start.html" /> 
   </head>
   <body>
       <div class="header"><h1 class="heading"><a href="index.html">
           <span>libSkylark  documentation</span></a></h1>
-        <h2 class="heading"><span>Installation Instructions</span></h2>
+        <h2 class="heading"><span>Building from Source</span></h2>
       </div>
       <div class="topnav">
       
         <p>
-        «&#160;&#160;<a href="introduction.html">Introduction</a>
+        «&#160;&#160;<a href="quick_start.html">Quick Start Guide</a>
         &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
         &#160;&#160;::&#160;&#160;
@@ -48,20 +48,21 @@
       <div class="content">
         
         
-  <div class="section" id="installation-instructions">
-<h1>Installation Instructions<a class="headerlink" href="#installation-instructions" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="building-from-source">
+<h1>Building from Source<a class="headerlink" href="#building-from-source" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="getting-the-source-code">
 <h2>Getting the source code<a class="headerlink" href="#getting-the-source-code" title="Permalink to this headline">¶</a></h2>
 <p>The source code is hosted on github. The libskylark git repository can be
 cloned using the following command.</p>
-<div class="highlight-rst"><div class="highlight"><pre>git clone git@github.com:xdata-skylark/libskylark.git
+<div class="highlight-sh"><div class="highlight"><pre>git clone https://github.com/xdata-skylark/libskylark.git
 </pre></div>
 </div>
 </div>
-<div class="section" id="software-dependencies">
-<h2>Software Dependencies<a class="headerlink" href="#software-dependencies" title="Permalink to this headline">¶</a></h2>
-<p>Skylark uses several open-source software packages that are essential for its operation (build, install, and run). In
-this section, we give instructions to install these software packages on Ubuntu machines. Installing the required
+<div class="section" id="libskylark-software-dependencies">
+<h2>libSkylark Software Dependencies<a class="headerlink" href="#libskylark-software-dependencies" title="Permalink to this headline">¶</a></h2>
+<p>Skylark uses several open-source software packages that are essential for its
+operation (build, install, and run). In this section, we give instructions to
+install these software packages on Ubuntu machines. Installing the required
 software packages on other operating systems should be very similar.</p>
 <p>We can build Skylark in one or more of four possible configurations:</p>
 <blockquote>
@@ -72,13 +73,21 @@ software packages on other operating systems should be very similar.</p>
 <li>Skylark python and C++ bindings with support for sparse (CombBLAS) matrices skylark-python-sparse</li>
 </ul>
 </div></blockquote>
-<p>Please refer to the graph of dependencies for realizing these configurations. Note that nodes with version
-information within brackets refer to software packages while nodes containing no brackets refer to Skylark
-build targets. The versions denote the ones that we have tested with, but apart from Elemental, CombBLAS,
-and KDT versions, which need to be strictly followed, other software (CMake, gfortran, etc) may work just
-as well with other versions as well. Orange colored components denote C++ dependencies and the color green
-is used for Python dependencies.</p>
+<p>Please refer to the graph of dependencies for realizing these configurations.
+Note that nodes with version information within brackets refer to software
+packages while nodes containing no brackets refer to Skylark build targets.
+The versions denote the ones that we have tested with, but apart from Elemental,
+CombBLAS, and KDT versions, which need to be strictly followed, other software
+(CMake, gfortran, etc) may work just as well with other versions as well.
+Orange colored components denote C++ dependencies and the color green is used
+for Python dependencies.</p>
 <a class="reference internal image-reference" href="_images/skylark-dependencies.png"><img alt="_images/skylark-dependencies.png" class="align-center" src="_images/skylark-dependencies.png" style="width: 650px;" /></a>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">On a fresh 64-bit Ubuntu-based (release 12.04 LTS, aka precise) you can
+use the provided bootstrap script <tt class="docutils literal"><span class="pre">vagrant/precise64/boostrap.sh</span></tt> to
+install libSkylark dependencies.</p>
+</div>
 <div class="section" id="python-setuptools">
 <h3>python-setuptools<a class="headerlink" href="#python-setuptools" title="Permalink to this headline">¶</a></h3>
 <p>To get easy_install and others.</p>
@@ -431,7 +440,7 @@ specified in DOT language scripts.</p>
 </div>
 </div>
 <div class="section" id="building-libskylark">
-<h2>Building libskylark<a class="headerlink" href="#building-libskylark" title="Permalink to this headline">¶</a></h2>
+<span id="build-libskylark-label"></span><h2>Building libskylark<a class="headerlink" href="#building-libskylark" title="Permalink to this headline">¶</a></h2>
 <p>Skylark is relying on Cmake as a build system. Before you start please make
 sure to check out the Section &#8220;Installing software dependencies for
 skylark&#8221; to learn about the required dependencies.</p>
@@ -475,14 +484,54 @@ machine continue reading the next sections.</p>
 <div class="section" id="build-options">
 <h3>Build options<a class="headerlink" href="#build-options" title="Permalink to this headline">¶</a></h3>
 <p>Skylark accepts build options in order to customize components. The
-following table summarizes all currently available build options: Name
-Default Description USE_ELEMENTAL ON Build with Elemental matrix support
-USE_FFTW ON Build with fftw support USE_COMBBLAS OFF Build with CombBLAS
-sparse matrix support USE_PROFILER OFF Build with internal profiler
-USE_HYBRID OFF Build in hybrid mode OpenMP and MPI (if Elemental was
-compiled in hybrid mode, activate) BUILD_PYTHON ON Build Python interface
-BUILD_EXAMPLES ON Build Skylark examples (see examples directory) BUILD_ML
-ON Build Skylark with machine learning sovlers Build type</p>
+following table summarizes all currently available build options:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="9%" />
+<col width="77%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Default</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>USE_ELEMENTAL</td>
+<td>ON</td>
+<td>Build with Elemental matrix support</td>
+</tr>
+<tr class="row-odd"><td>USE_FFTW</td>
+<td>ON</td>
+<td>Build with fftw support</td>
+</tr>
+<tr class="row-even"><td>USE_COMBBLAS</td>
+<td>OFF</td>
+<td>Build with CombBLAS sparse matrix support</td>
+</tr>
+<tr class="row-odd"><td>USE_PROFILER</td>
+<td>OFF</td>
+<td>Build with internal profiler</td>
+</tr>
+<tr class="row-even"><td>USE_HYBRID</td>
+<td>OFF</td>
+<td>Build in hybrid mode OpenMP and MPI (if Elemental was compiled in hybrid mode, activate)</td>
+</tr>
+<tr class="row-odd"><td>BUILD_PYTHON</td>
+<td>ON</td>
+<td>Build Python interface</td>
+</tr>
+<tr class="row-even"><td>BUILD_EXAMPLES</td>
+<td>ON</td>
+<td>Build Skylark examples (see examples directory)</td>
+</tr>
+<tr class="row-odd"><td>BUILD_ML</td>
+<td>ON</td>
+<td>Build Skylark with machine learning solvers Build type</td>
+</tr>
+</tbody>
+</table>
 <p>You can specify the desired build type with <tt class="docutils literal"><span class="pre">-DCMAKE_BUILD_TYPE=STRING</span></tt>,
 where <tt class="docutils literal"><span class="pre">STRING</span></tt> is any of</p>
 <table border="1" class="docutils">
@@ -521,8 +570,8 @@ where <tt class="docutils literal"><span class="pre">STRING</span></tt> is any o
 <p>To help CMake to locate installed dependencies (system-wide installed dependencies should be found automatically), you should set the following environment variables:</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="22%" />
-<col width="78%" />
+<col width="19%" />
+<col width="81%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Name</th>
@@ -531,22 +580,22 @@ where <tt class="docutils literal"><span class="pre">STRING</span></tt> is any o
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>ELEMENTAL_ROOT</td>
-<td>Looks for headers in $ELEMENTAL_ROOT/include and libs in $ELEMENTAL_ROOT/lib</td>
+<td>Looks for headers in <span class="target" id="index-10"></span><tt class="xref std std-envvar docutils literal"><span class="pre">$ELEMENTAL_ROOT</span></tt>/include and libs in <span class="target" id="index-11"></span><tt class="xref std std-envvar docutils literal"><span class="pre">$ELEMENTAL_ROOT</span></tt>/lib</td>
 </tr>
 <tr class="row-odd"><td>COMBBLAS_ROOT</td>
-<td>Looks for headers in $COMBBLAS_ROOT/ and libs in $COMBBLAS_ROOT/lib</td>
+<td>Looks for headers in <span class="target" id="index-12"></span><tt class="xref std std-envvar docutils literal"><span class="pre">$COMBBLAS_ROOT</span></tt>/ and libs in <span class="target" id="index-13"></span><tt class="xref std std-envvar docutils literal"><span class="pre">$COMBBLAS_ROOT</span></tt>/lib</td>
 </tr>
-<tr class="row-even"><td>FFTW_ROOT</td>
-<td>Looks for headers in $FFTW_ROOT/include and libs in $FFTW_ROOT/lib</td>
+<tr class="row-even"><td>FTW_ROOT</td>
+<td>Looks for headers in <span class="target" id="index-14"></span><tt class="xref std std-envvar docutils literal"><span class="pre">$FFTW_ROOT</span></tt>/include and libs in <span class="target" id="index-15"></span><tt class="xref std std-envvar docutils literal"><span class="pre">$FFTW_ROOT</span></tt>/lib</td>
 </tr>
 <tr class="row-odd"><td>BOOST_ROOT</td>
 <td>For non system-wide boost installations</td>
 </tr>
 <tr class="row-even"><td>RANDOM123_ROOT</td>
-<td>Looks for headers in $RANDOM_123_ROOT/include</td>
+<td>Looks for headers in <span class="target" id="index-16"></span><tt class="xref std std-envvar docutils literal"><span class="pre">$RANDOM_123_ROOT</span></tt>/include</td>
 </tr>
 <tr class="row-odd"><td>HDF5_ROOT</td>
-<td>Looks for headers in $HDF5_ROOT/include and libs in $HDF5_ROOT/lib</td>
+<td>Looks for headers in <span class="target" id="index-17"></span><tt class="xref std std-envvar docutils literal"><span class="pre">$HDF5_ROOT</span></tt>/include and libs in <span class="target" id="index-18"></span><tt class="xref std std-envvar docutils literal"><span class="pre">$HDF5_ROOT</span></tt>/lib</td>
 </tr>
 </tbody>
 </table>
@@ -580,7 +629,7 @@ make
 make install
 </pre></div>
 </div>
-<p>Notice that we set the <span class="target" id="index-10"></span><tt class="xref std std-envvar docutils literal"><span class="pre">PYTHON_SITE_PACKAGES</span></tt> and passed a
+<p>Notice that we set the <span class="target" id="index-19"></span><tt class="xref std std-envvar docutils literal"><span class="pre">PYTHON_SITE_PACKAGES</span></tt> and passed a
 <tt class="docutils literal"><span class="pre">CMAKE_INSTALL_PREFIX</span></tt> to the <strong class="command">cmake</strong> command above. Additionally we
 enabled CombBLAS support. Note that you have to make sure that the required
 libraries are compiled and the environment variables correctly point to the
@@ -605,24 +654,33 @@ To read the documentation open <tt class="file docutils literal"><span class="pr
 <div class="section" id="sphinx">
 <h3>Sphinx<a class="headerlink" href="#sphinx" title="Permalink to this headline">¶</a></h3>
 <p>Make sure to install the Sphinx extensions before you run make sphinx-doc:</p>
-<div class="highlight-rst"><div class="highlight"><pre>cd /tmp
+<div class="highlight-sh"><div class="highlight"><pre><span class="nb">cd</span> /tmp
 svn co https://svn.code.sf.net/p/matplotlib/code/trunk/sampledoc_tut
-mkdir $HOME/.sphinx_ext
-cp sampledoc_tut/sphinxext/*.py $HOME/.sphinx_ext
+mkdir <span class="nv">$HOME</span>/.sphinx_ext
+cp sampledoc_tut/sphinxext/*.py <span class="nv">$HOME</span>/.sphinx_ext
 rm -rf /tmp/sampledoc_tut
 
-export SPHINXEXT=$HOME/.sphinx_ext
+<span class="nb">export </span><span class="nv">SPHINXEXT</span><span class="o">=</span><span class="nv">$HOME</span>/.sphinx_ext
 </pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Sphinx can also be installed using apt-get: &#8220;apt-get install python-sphinx&#8221;</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>Sphinx requires some dependencies, e.g. plots and latex equations.</p>
+<div class="last highlight-sh"><div class="highlight"><pre>apt-get python-dateutil
+apt-get libfreetype6-dev libpng-dev
+easy-install matplotlib
+apt-get install texlive-latex-base
+apt-get install texlive-latex-extra
+</pre></div>
+</div>
 </div>
 <p>Then run</p>
-<div class="highlight-rst"><div class="highlight"><pre>cd $BUILD_DIR
+<div class="highlight-sh"><div class="highlight"><pre><span class="nb">cd</span> <span class="nv">$BUILD_DIR</span>
 make sphinx-doc
-</pre></div>
-</div>
-<p>For latex equations to show up correctly in the sphinx documentation, you may
-need to install latex.</p>
-<div class="highlight-rst"><div class="highlight"><pre>sudo apt-get install texlive-latex-base
-sudo apt-get install texlive-latex-extra
 </pre></div>
 </div>
 <p>and point your browser to <tt class="file docutils literal"><span class="pre">$BUILD_DIR/Documentation/sphinx/index.html</span></tt>.</p>
@@ -642,7 +700,7 @@ The elemental.cpp shows how C++ code can utilize skylark. Run</p>
 <div class="highlight-rst"><div class="highlight"><pre>examples/elemental -help
 </pre></div>
 </div>
-<p>in the <span class="target" id="index-11"></span><tt class="xref std std-envvar docutils literal"><span class="pre">$BUILD_DIR</span></tt> to get a list of available command line options.</p>
+<p>in the <span class="target" id="index-20"></span><tt class="xref std std-envvar docutils literal"><span class="pre">$BUILD_DIR</span></tt> to get a list of available command line options.</p>
 </div>
 <div class="section" id="linking-against-skylark">
 <h3>Linking against Skylark<a class="headerlink" href="#linking-against-skylark" title="Permalink to this headline">¶</a></h3>
@@ -933,7 +991,7 @@ index 858580b..256c3db 100644
       <div class="bottomnav">
       
         <p>
-        «&#160;&#160;<a href="introduction.html">Introduction</a>
+        «&#160;&#160;<a href="quick_start.html">Quick Start Guide</a>
         &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
         &#160;&#160;::&#160;&#160;

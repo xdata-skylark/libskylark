@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Numerical Linear Algebra &mdash; libSkylark  documentation</title>
+    <title>Numerical Linear Algebra Primitives &mdash; libSkylark  documentation</title>
     
     <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -32,7 +32,7 @@
   <body>
       <div class="header"><h1 class="heading"><a href="index.html">
           <span>libSkylark  documentation</span></a></h1>
-        <h2 class="heading"><span>Numerical Linear Algebra</span></h2>
+        <h2 class="heading"><span>Numerical Linear Algebra Primitives</span></h2>
       </div>
       <div class="topnav">
       
@@ -48,18 +48,65 @@
       <div class="content">
         
         
-  <div class="section" id="numerical-linear-algebra">
-<h1>Numerical Linear Algebra<a class="headerlink" href="#numerical-linear-algebra" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="numerical-linear-algebra-primitives">
+<h1>Numerical Linear Algebra Primitives<a class="headerlink" href="#numerical-linear-algebra-primitives" title="Permalink to this headline">¶</a></h1>
+<p>This layer implements various numerical linear algebra primitives that are
+accelerated using sketching.</p>
 <div class="section" id="randomized-least-squares-regression">
 <h2>Randomized Least Squares Regression<a class="headerlink" href="#randomized-least-squares-regression" title="Permalink to this headline">¶</a></h2>
-<p>The randomized regression functionality provides distributed implementation of algorithms described in</p>
-<blockquote>
-<div><ul class="simple">
-<li>Avron, H., Maymounkov, P. and Toledo, S., <a class="reference external" href="http://dl.acm.org/citation.cfm?id=1958633">Supercharging LAPACK&#8217;s Least Squares Solver</a> , 2010</li>
-<li>Meng, X., Saunders, M.A. and Mahoney, M. W, <a class="reference external" href="http://arxiv.org/abs/1109.5981">LSRN: A Paralllel Iterative Solver for Strongly Over- or Under-Determined Systems</a> , 2012</li>
+<p>Based on the regression framework in the algorithms layer, this functionality
+provides sketching based linear least-squares regression routines. That is,
+solve equations of the form:</p>
+<div class="math">
+<p><img src="_images/math/8edb9c5ee6bcfc8ad76243c7d1f80e35410ba10f.png" alt="\arg\min_X \|A * X - B\|_F"/></p>
+</div><p>Note that the various algorithms can be executed directly using the regression API.
+This layer just provides an easy-to-use functional interface that mirror Elemental&#8217;s
+<a class="reference external" href="http://libelemental.org/documentation/0.83/lapack-like/solve.html">LeastSquares</a>
+function, but uses sketching to accelerate the computation.</p>
+<p>A running example is provided in <em>libskylark/examples/least_squares.cpp</em>.</p>
+<div class="section" id="approximate-least-squares">
+<h3>Approximate Least-squares<a class="headerlink" href="#approximate-least-squares" title="Permalink to this headline">¶</a></h3>
+<p>Solve the problem approximately using a sktech-and-solve strategy.
+Specifically, solve <img class="math" src="_images/math/9e84d84840bea4bd69d19a8315bf6f3b5cab7204.png" alt="\arg\min_X \|S A X -  S B\|_F"/> where <img class="math" src="_images/math/f7820991469af0efa3f8f7e0fed83fbbc3d8aabc.png" alt="S \in R^{s\times n}"/>
+is a Fast Johnson-Lindenstrauss Transform matrix
+(<a class="reference external" href="http://www.cs.princeton.edu/~chazelle/pubs/FJLT-sicomp09.pdf">Ailon and Chazelle, 2009</a>).
+It can be shown that if <img class="math" src="_images/math/f37bba504894945c07a32f5496d74299a37aa51c.png" alt="s"/> is large enough (as a function of <img class="math" src="_images/math/eaf4418fbe935c15a606516d8f55dc380cd8e822.png" alt="\epsilon"/>), then</p>
+<div class="math">
+<p><img src="_images/math/8da82870e8328bf142f8067dd8cd78300a1192e0.png" alt="\|A * X_{approx} - B\|_F \leq (1+\epsilon) \|A * X - B\|_F"/></p>
+</div><p>where <img class="math" src="_images/math/df772ce5d20d3132b569f9a55597986a31b53a4f.png" alt="X=\arg\min_X \|A * X - B\|_F"/> and <img class="math" src="_images/math/48c750fdbce2f99e76d1c2e40bd5454a83d85d8f.png" alt="X_{approx}"/> is the approximate solution.
+For the best known bounds see <a class="reference external" href="http://arxiv.org/abs/1204.0062">Boutsidis and Gittens (2013)</a>.</p>
+<dl class="docutils">
+<dt>The algorithm used is the one described in:</dt>
+<dd><ul class="first last">
+<li><div class="first line-block">
+<div class="line">P. Drineas, M. W. Mahoney, S. Muthukrishnan, and T. Sarlos</div>
+<div class="line"><a class="reference external" href="http://arxiv.org/abs/0710.1435">Faster Least Squares Approximation</a></div>
+<div class="line">Numerische Mathematik, 117, 219-249 (2011).</div>
+</div>
+</li>
 </ul>
-</div></blockquote>
-<p>A flavor of usage is given in the code snippet below. The usage mirrors Elemental&#8217;s <a class="reference external" href="http://libelemental.org/documentation/0.83/lapack-like/solve.html">LeastSquares</a> function, but the solve is accelerated using sketching (specified internally).</p>
+</dd>
+</dl>
+<p>Unlike the algorithm described in the paper we allow the user to set the size of <img class="math" src="_images/math/f37bba504894945c07a32f5496d74299a37aa51c.png" alt="s"/>.
+There is also a default value, but it is much lower than the one suggested by that paper.</p>
+<p>Note: it is assume that a <img class="math" src="_images/math/5eae43ba51c87560a28c4fa2fcf54234ebe9e75a.png" alt="s \times n"/> matrix can fit in the memory of a single node
+(<img class="math" src="_images/math/174fadd07fd54c9afe288e96558c92e0c1da733a.png" alt="n"/> is the number of columns in <img class="math" src="_images/math/019e9892786e493964e145e7c5cf7b700314e53b.png" alt="A"/>).</p>
+<hr class="docutils" />
+<dl class="function">
+<dt id="ApproximateLeastSquares__elem::Orientation.elem::Matrix:T:CR.elem::Matrix:T:CR.elem::Matrix:T:R.base::context_tR.i">
+void <tt class="descname">ApproximateLeastSquares</tt><big>(</big>elem::Orientation <em>orientation</em>, const elem::Matrix&lt;T&gt;&amp; <em>A</em>, const elem::Matrix&lt;T&gt;&amp; <em>B</em>, elem::Matrix&lt;T&gt;&amp; <em>X</em>, base::context_t&amp; <em>context</em>, int <em>sketch_size</em><em>=-1</em><big>)</big><a class="headerlink" href="#ApproximateLeastSquares__elem::Orientation.elem::Matrix:T:CR.elem::Matrix:T:CR.elem::Matrix:T:R.base::context_tR.i" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ApproximateLeastSquares__elem::Orientation.elem::DistMatrix:T.CA.RA:CR.elem::DistMatrix:T.CB.RB:CR.elem::DistMatrix:T.CX.RX:R.base::context_tR.i">
+void <tt class="descname">ApproximateLeastSquares</tt><big>(</big>elem::Orientation <em>orientation</em>, const elem::DistMatrix&lt;T, CA, RA&gt;&amp; <em>A</em>, const elem::DistMatrix&lt;T, CB, RB&gt;&amp; <em>B</em>, elem::DistMatrix&lt;T, CX, RX&gt;&amp; <em>X</em>, base::context_t&amp; <em>context</em>, int <em>sketch_size</em><em>=-1</em><big>)</big><a class="headerlink" href="#ApproximateLeastSquares__elem::Orientation.elem::DistMatrix:T.CA.RA:CR.elem::DistMatrix:T.CB.RB:CR.elem::DistMatrix:T.CX.RX:R.base::context_tR.i" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>If <cite>orientation</cite> is set to <tt class="docutils literal"><span class="pre">NORMAL</span></tt>, then approximate <img class="math" src="_images/math/4afb92869ffda8d5f95fe1bd39d151e61969934c.png" alt="\arg\min_X \|A * X - B\|_F"/>, otherwise
+<cite>orientation</cite> must be equal to <tt class="docutils literal"><span class="pre">ADJOINT</span></tt> and <img class="math" src="_images/math/9dafb0a1d4dbf744b40906bb80dbe16f097e41f9.png" alt="\arg\min_X \|A^H * X - B\|_F"/> is approximated.</p>
+<p>sketch_size controls the number of rows in <img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/>.</p>
+<hr class="docutils" />
+<p>A flavor of usage is given in the code snippet below.</p>
 <div class="highlight-cpp"><div class="highlight"><pre><span class="cp">#include &lt;elemental.hpp&gt;</span>
 <span class="cp">#include &lt;skylark.hpp&gt;</span>
 <span class="p">...</span>
@@ -69,10 +116,54 @@
 <span class="n">skybase</span><span class="o">::</span><span class="n">context_t</span> <span class="n">context</span><span class="p">(</span><span class="mi">23234</span><span class="p">);</span>
 
 <span class="c1">// Solve the Least Squres problem of minimizing || AX - B||_2 over X</span>
-<span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="n">FastLeastSquares</span><span class="p">(</span><span class="n">elem</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+<span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="n">ApproximateLeastSquares</span><span class="p">(</span><span class="n">elem</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
 </pre></div>
 </div>
-<p>Please see <em>libskylark/examples/least_squares.cpp</em> for a running example.</p>
+</div>
+<div class="section" id="faster-least-squares">
+<h3>Faster Least-squares<a class="headerlink" href="#faster-least-squares" title="Permalink to this headline">¶</a></h3>
+<p>Solve the linear least-squares problem using a sketching-accelerated algorithm.
+This algorithm uses sketching to build a preconditioner, and then uses the preconditioner
+in an iterative method. While technically the solution found is approximate (due to the use
+of an iterative method), the threshold is set close to machine precision
+so the solution&#8217;s accuracy is close to the full accuracy possible on a machine.</p>
+<dl class="docutils">
+<dt>The algorithm used is the one described in:</dt>
+<dd><ul class="first last">
+<li><div class="first line-block">
+<div class="line">Haim Avron, Petar Maymounkov, and Sivan Toledo</div>
+<div class="line"><a class="reference external" href="http://epubs.siam.org/doi/abs/10.1137/090767911">Blendenpik: Supercharging LAPACK&#8217;s Least-Squares Solver</a></div>
+<div class="line">SIAM Journal on Scientific Computing 32(3), 1217-1236, 2010</div>
+</div>
+</li>
+</ul>
+</dd>
+</dl>
+<p>Note: it is assume that a <img class="math" src="_images/math/1fcabf5d4e40896f23c792895f8a29a5dcb121ba.png" alt="4 n^2"/> matrix can fit in the memory of a single node
+(<img class="math" src="_images/math/174fadd07fd54c9afe288e96558c92e0c1da733a.png" alt="n"/> is the number of columns in <img class="math" src="_images/math/019e9892786e493964e145e7c5cf7b700314e53b.png" alt="A"/>).</p>
+<hr class="docutils" />
+<dl class="function">
+<dt id="FastLeastSquares__elem::Orientation.ATCR.BTCR.XTR.base::context_tR">
+void <tt class="descname">FastLeastSquares</tt><big>(</big>elem::Orientation <em>orientation</em>, const AT&amp; <em>A</em>, const BT&amp; <em>B</em>, XT&amp; <em>X</em>, base::context_t&amp; <em>context</em><big>)</big><a class="headerlink" href="#FastLeastSquares__elem::Orientation.ATCR.BTCR.XTR.base::context_tR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>If <cite>orientation</cite> is set to <tt class="docutils literal"><span class="pre">NORMAL</span></tt>, then approximate <img class="math" src="_images/math/4afb92869ffda8d5f95fe1bd39d151e61969934c.png" alt="\arg\min_X \|A * X - B\|_F"/>, otherwise
+<cite>orientation</cite> must be equal to <tt class="docutils literal"><span class="pre">ADJOINT</span></tt> and <img class="math" src="_images/math/9dafb0a1d4dbf744b40906bb80dbe16f097e41f9.png" alt="\arg\min_X \|A^H * X - B\|_F"/> is approximated.</p>
+<hr class="docutils" />
+<p>A flavor of usage is given in the code snippet below.</p>
+<div class="highlight-cpp"><div class="highlight"><pre><span class="cp">#include &lt;elemental.hpp&gt;</span>
+<span class="cp">#include &lt;skylark.hpp&gt;</span>
+<span class="p">...</span>
+<span class="c1">// Setup regression problem with coefficient matrix A and target matrix B</span>
+<span class="p">...</span>
+
+<span class="n">skybase</span><span class="o">::</span><span class="n">context_t</span> <span class="n">context</span><span class="p">(</span><span class="mi">23234</span><span class="p">);</span>
+
+<span class="c1">// Solve the Least Squres problem of minimizing || AX - B||_2 over X</span>
+<span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="n">FasterLeastSquares</span><span class="p">(</span><span class="n">elem</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
 </div>
 <div class="section" id="randomized-singular-value-decomposition">
 <h2>Randomized Singular Value Decomposition<a class="headerlink" href="#randomized-singular-value-decomposition" title="Permalink to this headline">¶</a></h2>

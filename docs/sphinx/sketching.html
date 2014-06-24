@@ -26,8 +26,8 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/theme_extras.js"></script>
     <link rel="top" title="libSkylark  documentation" href="index.html" />
-    <link rel="next" title="Numerical Linear Algebra" href="nla.html" />
-    <link rel="prev" title="Installation Instructions" href="installation.html" /> 
+    <link rel="next" title="Numerical Linear Algebra Primitives" href="nla.html" />
+    <link rel="prev" title="Building from Source" href="installation.html" /> 
   </head>
   <body>
       <div class="header"><h1 class="heading"><a href="index.html">
@@ -37,11 +37,11 @@
       <div class="topnav">
       
         <p>
-        «&#160;&#160;<a href="installation.html">Installation Instructions</a>
+        «&#160;&#160;<a href="installation.html">Building from Source</a>
         &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
         &#160;&#160;::&#160;&#160;
-        <a href="nla.html">Numerical Linear Algebra</a>&#160;&#160;»
+        <a href="nla.html">Numerical Linear Algebra Primitives</a>&#160;&#160;»
         </p>
 
       </div>
@@ -218,63 +218,181 @@ the rows and columns of the matrix:</p>
 </div></blockquote>
 <p><em>LocalSparse</em> refers to a libskylark-provided class for representing local
 sparse matrices, while <em>DistSparse</em> refers to CombBLAS sparse matrices.</p>
-<div class="math">
-<p><img src="_images/math/b3735185813f474cfc31868127216baa02896ee0.png" alt="\begin{tabular}{|c|p{3cm}|p{3cm}|c|c|c|c|c|c|c|}
- \hline
- {\large input$\downarrow$ output$\rightarrow$} &amp; {\large LocalDense} &amp; \large{STAR/STAR} &amp; {\large MC/MR} &amp; {\large VR/STAR} &amp; {\large VC/STAR} &amp; {\large STAR/VR} &amp; {\large STAR/VC} &amp; {\large LocalSparse} &amp; {\large DistSparse}\\
- \hline
- {\large LocalDense} &amp; \small{JLT, CT, CWT, MMT, WZT, ESRLT, PPT, GRFT, LRFT, FGRFT} &amp; &amp; &amp; &amp; &amp; &amp; &amp; &amp;  \\ \hline
- {\large LocalSparse} &amp; \small{JLT, CT, CWT, MMT, WZT, ESRLT, PPT, GRFT, LRFT, FGRFT} &amp; &amp; &amp; &amp; &amp; &amp; &amp; \small{CWT,MMT,WZT} &amp;\\ \hline
- {\large MC/MR} &amp; \small{JLT, CT, CWT, MMZ, WZT} &amp; &amp; \small{JLT, CT, CWT, MMT, WZT} &amp; &amp; &amp; &amp; &amp; &amp;\\ \hline
- {\large VR/STAR} &amp; \small{JLT, CT, CWT, MMZ, WZT, FJLT} &amp; \small{CWT, MMT, WZT, JLT, CT, FJLT} &amp; &amp; \small{JLT, CT, GRFT, LRFT} &amp;&amp;&amp;&amp;&amp;\\ \hline
- {\large VC/STAR} &amp; \small{JLT, CT, CWT, MMZ, WZT, FJLT} &amp; \small{CWT, MMT, WZT, JLT, CT, FJLT} &amp; &amp; &amp;  \small{JLT, CT, GRFT, LRFT} &amp;&amp;&amp;&amp;\\\hline
- {\large STAR/VR} &amp; \small{JLT, CT, CWT, MMZ, WZT} &amp; \small{CWT, MMT, WZT} &amp; &amp; &amp; &amp; \small{JLT, CT} &amp;&amp;&amp; \\\hline
- {\large STAR/VC} &amp; \small{JLT, CT, CWT, MMZ, WZT} &amp; \small{CWT, MMT, WZT} &amp; &amp; &amp; &amp; &amp; \small{JLT, CT} &amp;&amp; \\\hline
- {\large DistSparse} &amp; \small{JLT, CT, CWT, MMT, WZT} &amp; \small{CWT, MMT, WZT} &amp; &amp; \small{CWT, MMT, WZT} &amp; \small{CWT, MMT, WZT} &amp; \small{CWT, MMT, WZT} &amp; \small{CWT, MMT, WZT} &amp; \small{CWT, MMT, WZT} &amp; \small{CWT, MMT, WZT}\\
-\hline
-\end{tabular}"/></p>
-</div><div class="section" id="sketching-transfroms">
-<h4>Sketching Transfroms<a class="headerlink" href="#sketching-transfroms" title="Permalink to this headline">¶</a></h4>
+<a class="reference internal image-reference" href="_images/sketch_transf_in_out_cpp.png"><img alt="_images/sketch_transf_in_out_cpp.png" class="align-center" src="_images/sketch_transf_in_out_cpp.png" style="width: 750px;" /></a>
+<i>Schematic views of input and output types for various sketch transforms.
+The <font color="#154685">blue</font> color marks sparse matrix or
+transforms, <font color="#ee9428">orange</font> is used for dense matrix or
+transforms.</i><div class="section" id="libskylark-context">
+<h4>libSkylark Context<a class="headerlink" href="#libskylark-context" title="Permalink to this headline">¶</a></h4>
+<p>One of the core parts of sketch transformations are random values. The library
+provides and tracks the state of the random number streams in the <cite>context</cite>
+class.</p>
+<dl class="type">
+<dt id="skylark::base::context_t__struct">
+<em class="property">type </em>struct <tt class="descclassname">skylark::base::</tt><tt class="descname">context_t</tt><a class="headerlink" href="#skylark::base::context_t__struct" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>Constructor</strong></p>
 <dl class="function">
-<dt id="apply__InputMatrixTypeCR.OutputMatrixTypeR.columnwise_tagC">
-void <tt class="descname">apply</tt><big>(</big>const InputMatrixType&amp; <em>A</em>, OutputMatrixType&amp; <em>sketch_of_A</em>, columnwise_tag <em>dimension</em><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#apply__InputMatrixTypeCR.OutputMatrixTypeR.columnwise_tagC" title="Permalink to this definition">¶</a></dt>
-<dd><p>Apply the sketch transform in column dimension.</p>
+<dt id="skylark::base::context_t::context_t__i.i">
+ <tt class="descname">context_t</tt><big>(</big>int <em>seed</em>, int <em>counter</em><em>=0</em><big>)</big><a class="headerlink" href="#skylark::base::context_t::context_t__i.i" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a context with a seed that is used for all computations.</p>
+</dd></dl>
+
+<p><strong>Serialization</strong></p>
+<dl class="function">
+<dt id="skylark::base::context_t::context_t__boost::property_tree::ptreeCR">
+ <tt class="descname">context_t</tt><big>(</big>const boost::property_tree::ptree&amp; <em>json</em><big>)</big><a class="headerlink" href="#skylark::base::context_t::context_t__boost::property_tree::ptreeCR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a context from a serialized <cite>ptree</cite> structure.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="apply__InputMatrixTypeCR.OutputMatrixTypeR.rowwise_tagC">
-void <tt class="descname">apply</tt><big>(</big>const InputMatrixType&amp; <em>A</em>, OutputMatrixType&amp; <em>sketch_of_A</em>, rowwise_tag <em>dimension</em><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#apply__InputMatrixTypeCR.OutputMatrixTypeR.rowwise_tagC" title="Permalink to this definition">¶</a></dt>
-<dd><p>Apply the sketch transform in row dimension.</p>
+<dt id="skylark::base::context_t::to_ptreeC">
+boost::property_tree::ptree <tt class="descname">to_ptree</tt><big>(</big><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#skylark::base::context_t::to_ptreeC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Serialize the context to a Boost <cite>ptree</cite>.</p>
+</dd></dl>
+
+<p><strong>Query</strong></p>
+<dl class="function">
+<dt id="skylark::base::context_t::get_counter">
+size_t <tt class="descname">get_counter</tt><big>(</big><big>)</big><a class="headerlink" href="#skylark::base::context_t::get_counter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the current position in the random stream.</p>
+</dd></dl>
+
+<p><strong>Accessors</strong></p>
+<dl class="function">
+<dt id="skylark::base::context_t::allocate_random_samples_array__s.DistributionR">
+<a class="reference internal" href="#skylark::utility::random_samples_array_t:Distribution:__struct" title="skylark::utility::random_samples_array_t&lt;Distribution&gt;">skylark::utility::random_samples_array_t&lt;Distribution&gt;</a> <tt class="descname">allocate_random_samples_array</tt><big>(</big>size_t <em>size</em>, Distribution&amp; <em>distribution</em><big>)</big><a class="headerlink" href="#skylark::base::context_t::allocate_random_samples_array__s.DistributionR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a container of samples drawn from a distribution to be accessed
+as an array. The container contains <cite>size</cite> samples drawn from the
+specified <cite>distribution</cite>.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="get_NC">
-int <tt class="descname">get_N</tt><big>(</big><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#get_NC" title="Permalink to this definition">¶</a></dt>
+<dt id="skylark::base::context_t::generate_random_samples_array__s.DistributionR">
+std::vector&lt;typename Distribution::result_type&gt; <tt class="descname">generate_random_samples_array</tt><big>(</big>size_t <em>size</em>, Distribution&amp; <em>distribution</em><big>)</big><a class="headerlink" href="#skylark::base::context_t::generate_random_samples_array__s.DistributionR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a vector of samples drawn from a distribution. The vector
+contains <cite>size</cite> samples drawn from the specified <cite>distribution</cite>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="skylark::base::context_t::allocate_random_array__s">
+skylark::utility::random_array_t <tt class="descname">allocate_random_array</tt><big>(</big>size_t <em>size</em><big>)</big><a class="headerlink" href="#skylark::base::context_t::allocate_random_array__s" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a container of random numbers to be accessed as an array. The
+container lazily provides <cite>size</cite> samples.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="skylark::base::context_t::random_int">
+int <tt class="descname">random_int</tt><big>(</big><big>)</big><a class="headerlink" href="#skylark::base::context_t::random_int" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an integer random number.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="sketching-transforms-label">
+<span id="id2"></span><h4>Sketching Transforms<a class="headerlink" href="#sketching-transforms-label" title="Permalink to this headline">¶</a></h4>
+<dl class="type">
+<dt id="skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:__class">
+<em class="property">type </em>class <tt class="descclassname">skylark::sketch::</tt><tt class="descname">sketch_transform_t&lt;InputMatrixType, OutputMatrixType&gt;</tt><a class="headerlink" href="#skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:__class" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>Query dimensions</strong></p>
+<dl class="function">
+<dt id="skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::get_NC">
+int <tt class="descname">get_N</tt><big>(</big><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::get_NC" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get input dimension.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="get_SC">
-int <tt class="descname">get_S</tt><big>(</big><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#get_SC" title="Permalink to this definition">¶</a></dt>
+<dt id="skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::get_SC">
+int <tt class="descname">get_S</tt><big>(</big><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::get_SC" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get output dimension.</p>
 </dd></dl>
 
+<p><strong>Sketch application</strong></p>
 <dl class="function">
-<dt id="get_data">
-const sketch_transform_data_t* <tt class="descname">get_data</tt><big>(</big><big>)</big><a class="headerlink" href="#get_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get the underlaying transform data.</p>
+<dt id="skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::apply__InputMatrixTypeCR.OutputMatrixTypeR.columnwise_tagC">
+void <tt class="descname">apply</tt><big>(</big>const InputMatrixType&amp; <em>A</em>, OutputMatrixType&amp; <em>sketch_of_A</em>, <a class="reference internal" href="#skylark::sketch::columnwise_tag" title="skylark::sketch::columnwise_tag">columnwise_tag</a> <em>dimension</em><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::apply__InputMatrixTypeCR.OutputMatrixTypeR.columnwise_tagC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the sketch transform in column dimension.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="to_ptreeC">
-boost::property_tree::ptree <tt class="descname">to_ptree</tt><big>(</big><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#to_ptreeC" title="Permalink to this definition">¶</a></dt>
+<dt id="skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::apply__InputMatrixTypeCR.OutputMatrixTypeR.rowwise_tagC">
+void <tt class="descname">apply</tt><big>(</big>const InputMatrixType&amp; <em>A</em>, OutputMatrixType&amp; <em>sketch_of_A</em>, <a class="reference internal" href="#skylark::sketch::rowwise_tag" title="skylark::sketch::rowwise_tag">rowwise_tag</a> <em>dimension</em><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::apply__InputMatrixTypeCR.OutputMatrixTypeR.rowwise_tagC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the sketch transform in row dimension.</p>
+</dd></dl>
+
+<p><strong>Serialization</strong></p>
+<dl class="function">
+<dt id="skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::to_ptreeC">
+boost::property_tree::ptree <tt class="descname">to_ptree</tt><big>(</big><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::to_ptreeC" title="Permalink to this definition">¶</a></dt>
 <dd><p>Serialize the sketch transform to a ptree structure.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="from_ptree__boost::property_tree::ptreeCR">
-<em class="property">static</em> sketch_transform_t* <tt class="descname">from_ptree</tt><big>(</big>const boost::property_tree::ptree&amp; <em>pt</em><big>)</big><a class="headerlink" href="#from_ptree__boost::property_tree::ptreeCR" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a sketch transform from a ptree structure.</p>
+<dt id="skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::from_ptree__boost::property_tree::ptreeCR">
+<em class="property">static</em> sketch_transform_t* <tt class="descname">from_ptree</tt><big>(</big>const boost::property_tree::ptree&amp; <em>pt</em><big>)</big><a class="headerlink" href="#skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::from_ptree__boost::property_tree::ptreeCR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a sketch transform from a ptree structure.</p>
+</dd></dl>
+
+<p><strong>Accessors</strong></p>
+<dl class="function">
+<dt id="skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::get_data">
+const sketch_transform_data_t* <tt class="descname">get_data</tt><big>(</big><big>)</big><a class="headerlink" href="#skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::get_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the underlaying transform data.</p>
+</dd></dl>
+
+</dd></dl>
+
+<p>The sketch transformation class is coupled to a data class that is responsible
+to initialize and provide a lazy view on the random data required when
+applying the sketch transform.</p>
+<p>The sketching direction is specified using the following types:</p>
+<blockquote>
+<div><dl class="type">
+<dt id="skylark::sketch::columnwise_tag">
+<em class="property">type </em><tt class="descclassname">skylark::sketch::</tt><tt class="descname">columnwise_tag</tt><a class="headerlink" href="#skylark::sketch::columnwise_tag" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="type">
+<dt id="skylark::sketch::rowwise_tag">
+<em class="property">type </em><tt class="descclassname">skylark::sketch::</tt><tt class="descname">rowwise_tag</tt><a class="headerlink" href="#skylark::sketch::rowwise_tag" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div></blockquote>
+</div>
+<div class="section" id="random-values">
+<h4>Random Values<a class="headerlink" href="#random-values" title="Permalink to this headline">¶</a></h4>
+<p>Random values are generated in a lazy fashion using
+<a class="reference external" href="http://www.deshawresearch.com/resources_random123.html">Random123 library</a>.
+The access to the random streams is wrapped in two classes.</p>
+<dl class="type">
+<dt id="skylark::utility::random_samples_array_t:Distribution:__struct">
+<em class="property">type </em>struct <tt class="descclassname">skylark::utility::</tt><tt class="descname">random_samples_array_t&lt;Distribution&gt;</tt><a class="headerlink" href="#skylark::utility::random_samples_array_t:Distribution:__struct" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="function">
+<dt id="skylark::utility::random_samples_array_t:Distribution:::random_samples_array_t__s.s.i.DistributionR">
+ <tt class="descname">random_samples_array_t</tt><big>(</big>size_t <em>base</em>, size_t <em>size</em>, int <em>seed</em>, Distribution&amp; <em>distribution</em><big>)</big><a class="headerlink" href="#skylark::utility::random_samples_array_t:Distribution:::random_samples_array_t__s.s.i.DistributionR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Random-access array of samples drawn from a distribution starting from
+<cite>base</cite> up to a total of <cite>size</cite> samples. The <cite>distribution</cite> determines
+how samples are drawn.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="skylark::utility::random_samples_array_t:Distribution:::random_samples_array_t__random_samples_array_tCR">
+ <tt class="descname">random_samples_array_t</tt><big>(</big>const random_samples_array_t&amp; <em>other</em><big>)</big><a class="headerlink" href="#skylark::utility::random_samples_array_t:Distribution:::random_samples_array_t__random_samples_array_tCR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="skylark::utility::random_samples_array_t:Distribution:::assign-operator__random_samples_array_tCR">
+random_samples_array_t&amp; <tt class="descname">operator=</tt><big>(</big>const random_samples_array_t&amp; <em>other</em><big>)</big><a class="headerlink" href="#skylark::utility::random_samples_array_t:Distribution:::assign-operator__random_samples_array_tCR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p><strong>Accessors</strong></p>
+<dl class="function">
+<dt id="skylark::utility::random_samples_array_t:Distribution:::subscript-operator__sC">
+value_type <tt class="descname">operator[]</tt><big>(</big>size_t <em>index</em><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#skylark::utility::random_samples_array_t:Distribution:::subscript-operator__sC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the random value (following the specified distribution) at
+position <cite>index</cite> in the random stream.</p>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -326,23 +444,11 @@ sparse distributed matrices it uses <a class="reference external" href="http://g
 <p>The lower layers use MPI so it is advisable an MPI interface to Python be
 installed. One option is to use <a class="reference external" href="http://mpi4py.scipy.org/">mpi4py</a>.</p>
 <p>The following table lists currently supported sketching transforms available through Python.</p>
-<div class="math">
-<p><img src="_images/math/eca7af954a42da2031e36380e9774269e2aafb34.png" alt="\begin{tabular}{|c|p{3cm}|p{3cm}|c|c|c|c|c|c|c|}
- \hline
- {\large input$\downarrow$ output$\rightarrow$} &amp; {\large LocalDense} &amp; \large{STAR/STAR} &amp; {\large MC/MR} &amp; {\large VR/STAR} &amp; {\large VC/STAR} &amp; {\large STAR/VR} &amp; {\large STAR/VC} &amp; {\large LocalSparse} &amp; {\large DistSparse}\\
- \hline
- {\large LocalDense} &amp; \small{JLT, CT, CWT, MMT, WZT, ESRLT, PPT, GRFT, LRFT, FGRFT} &amp; &amp; &amp; &amp; &amp; &amp; &amp; &amp;  \\ \hline
- {\large LocalSparse} &amp; \small{JLT, CT, CWT, MMT, WZT, ESRLT, PPT, GRFT, LRFT, FGRFT} &amp; &amp; &amp; &amp; &amp; &amp; &amp; \small{CWT,MMT,WZT} &amp;\\ \hline
- {\large MC/MR} &amp; \small{JLT, CT, CWT, MMZ, WZT} &amp; &amp; \small{JLT, CT} &amp; &amp; &amp; &amp; &amp; &amp;\\ \hline
- {\large VR/STAR} &amp; \small{JLT, CT, CWT, MMZ, WZT, FJLT} &amp; \small{JLT,CT} &amp; &amp; \small{JLT, CT, GRFT, LRFT} &amp;&amp;&amp;&amp;&amp;\\ \hline
- {\large VC/STAR} &amp; \small{JLT, CT, CWT, MMZ, WZT, FJLT} &amp; \small{JLT,CT} &amp; &amp; &amp;  \small{JLT, CT, GRFT, LRFT} &amp;&amp;&amp;&amp;\\\hline
- {\large STAR/VR} &amp; \small{JLT, CT, CWT, MMZ, WZT} &amp; \small{CWT, MMT, WZT} &amp; &amp; &amp; &amp; \small{JLT, CT} &amp;&amp;&amp; \\\hline
- {\large STAR/VC} &amp; \small{JLT, CT, CWT, MMZ, WZT} &amp; \small{CWT, MMT, WZT} &amp; &amp; &amp; &amp; &amp; \small{JLT, CT} &amp;&amp; \\\hline
- {\large DistSparse} &amp; \small{JLT, CT, CWT, MMT, WZT} &amp; \small{CWT, MMT, WZT} &amp; &amp; \small{CWT, MMT, WZT} &amp; \small{CWT, MMT, WZT} &amp; \small{CWT, MMT, WZT} &amp; \small{CWT, MMT} &amp; \small{CWT, MMT} &amp; \small{CWT, MMT}\\
-\hline
-\hline
-\end{tabular}"/></p>
-</div><div class="section" id="using-the-python-interface">
+<a class="reference internal image-reference" href="_images/sketch_transf_in_out_py.png"><img alt="_images/sketch_transf_in_out_py.png" class="align-center" src="_images/sketch_transf_in_out_py.png" style="width: 750px;" /></a>
+<i>Schematic views of input and output types for various sketch transforms.
+The <font color="#154685">blue</font> color marks sparse matrix or
+transforms, <font color="#ee9428">orange</font> is used for dense matrix or
+transforms.</i><div class="section" id="using-the-python-interface">
 <h4>Using the Python interface<a class="headerlink" href="#using-the-python-interface" title="Permalink to this headline">¶</a></h4>
 <p>Skylark is automatically initialized with a random seed when you import
 sketch. However, you can reinitialize it to a specific seed by calling
@@ -907,11 +1013,11 @@ For now, only Pure Python implementation, and only sampling with replacement.</p
       <div class="bottomnav">
       
         <p>
-        «&#160;&#160;<a href="installation.html">Installation Instructions</a>
+        «&#160;&#160;<a href="installation.html">Building from Source</a>
         &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
         &#160;&#160;::&#160;&#160;
-        <a href="nla.html">Numerical Linear Algebra</a>&#160;&#160;»
+        <a href="nla.html">Numerical Linear Algebra Primitives</a>&#160;&#160;»
         </p>
 
       </div>

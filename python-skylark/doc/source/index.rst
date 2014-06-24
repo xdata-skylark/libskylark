@@ -12,6 +12,7 @@ Sketching-based Matrix Computations for Machine Learning
    :maxdepth: 2
 
    introduction
+   quick_start
    installation
    sketching
    nla

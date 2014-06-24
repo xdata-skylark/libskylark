@@ -6,10 +6,12 @@ Numerical Linear Algebra Primitives
 This layer implements various numerical linear algebra primitives that are 
 accelerated using sketching.
 
-Randomized Least Squares Regression
-====================================
+.. _simple-linearls:
 
-Based on the regression framework in the algorithms layer, this functionality
+Randomized Linear Least-Squares
+===============================
+
+Based on the regression framework in the algorithmic layer, this functionality
 provides sketching based linear least-squares regression routines. That is,
 solve equations of the form:
 

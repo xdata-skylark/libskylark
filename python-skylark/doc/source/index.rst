@@ -14,7 +14,9 @@ Sketching-based Matrix Computations for Machine Learning
    introduction
    quick_start
    installation
+   base
    sketching
+   algorithmic
    nla
    ml
    io

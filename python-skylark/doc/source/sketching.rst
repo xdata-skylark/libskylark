@@ -130,7 +130,7 @@ The majority of the sketching library is implemented in C++, but it is
 accessible in Python through :mod:`skylark.sketch`.
 
 Sketching Transforms
---------------------------------
+--------------------
 
 The following table lists the sketching transforms currently provided by LibSkylark.
 These transforms are appropriate for specific downstream tasks, e.g.
@@ -179,12 +179,12 @@ specializations of `Elemental distributed matrices
 <http://libelemental.org/documentation/0.83/core/dist_matrix/DM.html>`_.
 Each specialization involves choosing a sensical pairing of distributions for
 the rows and columns of the matrix:
-	* CIRC : Only give the data to a single process
-	* STAR : Give the data to every process
-	* MC : Distribute round-robin within each column of the 2D process grid (M atrix C olumn)
-	* MR : Distribute round-robin within each row of the 2D process grid (M atrix R ow)
-	* VC : Distribute round-robin within a column-major ordering of the entire 2D process grid (V ector C olumn)
-	* VR : Distribute round-robin within a row-major ordering of the entire 2D process grid (V ector R ow)
+* CIRC : Only give the data to a single process
+* STAR : Give the data to every process
+* MC : Distribute round-robin within each column of the 2D process grid (M atrix C olumn)
+* MR : Distribute round-robin within each row of the 2D process grid (M atrix R ow)
+* VC : Distribute round-robin within a column-major ordering of the entire 2D process grid (V ector C olumn)
+* VR : Distribute round-robin within a row-major ordering of the entire 2D process grid (V ector R ow)
 
 *LocalSparse* refers to a libskylark-provided class for representing local
 sparse matrices, while *DistSparse* refers to CombBLAS sparse matrices.
@@ -199,60 +199,6 @@ sparse matrices, while *DistSparse* refers to CombBLAS sparse matrices.
     The <font color="#154685">blue</font> color marks sparse matrix or
     transforms, <font color="#ee9428">orange</font> is used for dense matrix or
     transforms.</i>
-
-
-libSkylark Context
-^^^^^^^^^^^^^^^^^^^
-
-One of the core parts of sketch transformations are random values. The library
-provides and tracks the state of the random number streams in the `context`
-class.
-
-.. cpp:type:: struct skylark::base::context_t
-
-    **Constructor**
-
-    .. cpp:function:: context_t (int seed, int counter=0)
-
-        Initialize a context with a seed that is used for all computations.
-
-    **Serialization**
-
-    .. cpp:function:: context_t (const boost::property_tree::ptree& json)
-
-        Load a context from a serialized `ptree` structure.
-
-    .. cpp:function:: boost::property_tree::ptree to_ptree() const
-
-        Serialize the context to a Boost `ptree`.
-
-    **Query**
-
-    .. cpp:function:: size_t get_counter()
-
-        Returns the current position in the random stream.
-
-    **Accessors**
-
-    .. cpp:function:: skylark::utility::random_samples_array_t<Distribution> allocate_random_samples_array(size_t size, Distribution& distribution)
-
-        Returns a container of samples drawn from a distribution to be accessed
-        as an array. The container contains `size` samples drawn from the
-        specified `distribution`.
-
-    .. cpp:function:: std::vector<typename Distribution::result_type> generate_random_samples_array(size_t size, Distribution& distribution)
-
-        Returns a vector of samples drawn from a distribution. The vector
-        contains `size` samples drawn from the specified `distribution`.
-
-    .. cpp:function:: skylark::utility::random_array_t allocate_random_array(size_t size)
-
-        Returns a container of random numbers to be accessed as an array. The
-        container lazily provides `size` samples.
-
-    .. cpp:function:: int random_int()
-
-        Returns an integer random number.
 
 
 .. _sketching-transforms-label:
@@ -308,33 +254,6 @@ The sketching direction is specified using the following types:
     .. cpp:type:: skylark::sketch::columnwise_tag
 
     .. cpp:type:: skylark::sketch::rowwise_tag
-
-
-Random Values
-^^^^^^^^^^^^^^
-
-Random values are generated in a lazy fashion using
-`Random123 library <http://www.deshawresearch.com/resources_random123.html>`_.
-The access to the random streams is wrapped in two classes.
-
-.. cpp:type:: struct skylark::utility::random_samples_array_t<Distribution>
-
-    .. cpp:function:: random_samples_array_t(size_t base, size_t size, int seed, Distribution& distribution)
-
-        Random-access array of samples drawn from a distribution starting from
-        `base` up to a total of `size` samples. The `distribution` determines
-        how samples are drawn.
-
-    .. cpp:function:: random_samples_array_t(const random_samples_array_t& other)
-
-    .. cpp:function:: random_samples_array_t& operator=(const random_samples_array_t& other)
-
-    **Accessors**
-
-    .. cpp:function:: value_type operator[](size_t index) const
-
-        Returns the random value (following the specified distribution) at
-        position `index` in the random stream.
 
 
 Using the C++ Sketching layer

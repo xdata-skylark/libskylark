@@ -530,27 +530,31 @@ Build options
 --------------
 
 Skylark accepts build options in order to customize components. The
-following table summarizes all currently available build options: Name
-Default Description USE_ELEMENTAL ON Build with Elemental matrix support
-USE_FFTW ON Build with fftw support USE_COMBBLAS OFF Build with CombBLAS
-sparse matrix support USE_PROFILER OFF Build with internal profiler
-USE_HYBRID OFF Build in hybrid mode OpenMP and MPI (if Elemental was
-compiled in hybrid mode, activate) BUILD_PYTHON ON Build Python interface
-BUILD_EXAMPLES ON Build Skylark examples (see examples directory) BUILD_ML
-ON Build Skylark with machine learning sovlers Build type
+following table summarizes all currently available build options:
+
+================ =========== ==========================================================================================
+Name             Default     Description
+================ =========== ==========================================================================================
+USE_ELEMENTAL     ON          Build with Elemental matrix support
+USE_FFTW          ON          Build with fftw support
+USE_COMBBLAS      OFF         Build with CombBLAS sparse matrix support
+USE_PROFILER      OFF         Build with internal profiler
+USE_HYBRID        OFF         Build in hybrid mode OpenMP and MPI (if Elemental was compiled in hybrid mode, activate)
+BUILD_PYTHON      ON          Build Python interface
+BUILD_EXAMPLES    ON          Build Skylark examples (see examples directory)
+BUILD_ML          ON          Build Skylark with machine learning solvers Build type
+================ =========== ==========================================================================================
 
 You can specify the desired build type with ``-DCMAKE_BUILD_TYPE=STRING``,
 where ``STRING`` is any of
 
-+----------------+-------+
-| Name 	         | Flags |
-+================+=======+
-| RELWITHDEBINFO |-O3 -g |
-+----------------+-------+
-| RELEASE        |-O3    |
-+----------------+-------+
-| DEBUG          |-O0 -g |
-+----------------+-------+
+================ =======
+Name             Flags
+================ =======
+RELWITHDEBINFO   -O3 -g
+RELEASE          -O3
+DEBUG            -O0 -g
+================ =======
 
 The default is RELWITHDEBINFO.
 
@@ -564,21 +568,16 @@ The installation of Skylark can be influenced with two variables:
 
 To help CMake to locate installed dependencies (system-wide installed dependencies should be found automatically), you should set the following environment variables:
 
-+----------------------+-----------------------------------------------------------------------------+
-| Name 	               |Description                                                                  |
-+======================+=============================================================================+
-| ELEMENTAL_ROOT       |Looks for headers in $ELEMENTAL_ROOT/include and libs in $ELEMENTAL_ROOT/lib |
-+----------------------+-----------------------------------------------------------------------------+
-| COMBBLAS_ROOT        |Looks for headers in $COMBBLAS_ROOT/ and libs in $COMBBLAS_ROOT/lib          |
-+----------------------+-----------------------------------------------------------------------------+
-| FFTW_ROOT            |Looks for headers in $FFTW_ROOT/include and libs in $FFTW_ROOT/lib           |
-+----------------------+-----------------------------------------------------------------------------+
-| BOOST_ROOT           |For non system-wide boost installations                                      |
-+----------------------+-----------------------------------------------------------------------------+
-| RANDOM123_ROOT       |Looks for headers in $RANDOM_123_ROOT/include                                |
-+----------------------+-----------------------------------------------------------------------------+
-| HDF5_ROOT            |Looks for headers in $HDF5_ROOT/include and libs in $HDF5_ROOT/lib           |
-+----------------------+-----------------------------------------------------------------------------+
+====================== =============================================================================
+Name                   Description
+====================== =============================================================================
+ELEMENTAL_ROOT         Looks for headers in :envvar:`$ELEMENTAL_ROOT`/include and libs in :envvar:`$ELEMENTAL_ROOT`/lib
+COMBBLAS_ROOT          Looks for headers in :envvar:`$COMBBLAS_ROOT`/ and libs in :envvar:`$COMBBLAS_ROOT`/lib
+FTW_ROOT               Looks for headers in :envvar:`$FFTW_ROOT`/include and libs in :envvar:`$FFTW_ROOT`/lib
+BOOST_ROOT             For non system-wide boost installations
+RANDOM123_ROOT         Looks for headers in :envvar:`$RANDOM_123_ROOT`/include
+HDF5_ROOT              Looks for headers in :envvar:`$HDF5_ROOT`/include and libs in :envvar:`$HDF5_ROOT`/lib
+====================== =============================================================================
 
 Configuring, compiling and installing Skylark
 ----------------------------------------------
@@ -653,19 +652,17 @@ Make sure to install the Sphinx extensions before you run make sphinx-doc:
 
     export SPHINXEXT=$HOME/.sphinx_ext
 
-.. note:
+.. note:: Sphinx can also be installed using apt-get: "apt-get install python-sphinx"
 
-    Sphinx can also be installed using apt-get: "apt-get install python-sphinx"
-
-.. note:
-
-    Sphinx requires some dependencies
+.. note:: Sphinx requires some dependencies, e.g. plots and latex equations.
 
     .. code-block:: sh
 
         apt-get python-dateutil
         apt-get libfreetype6-dev libpng-dev
         easy-install matplotlib
+        apt-get install texlive-latex-base
+        apt-get install texlive-latex-extra
 
 Then run
 
@@ -673,14 +670,6 @@ Then run
 
     cd $BUILD_DIR
     make sphinx-doc
-
-For latex equations to show up correctly in the sphinx documentation, you may
-need to install latex.
-
-::
-
-	sudo apt-get install texlive-latex-base
-	sudo apt-get install texlive-latex-extra
 
 and point your browser to :file:`$BUILD_DIR/Documentation/sphinx/index.html`.
 

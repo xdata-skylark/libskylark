@@ -52,7 +52,7 @@ Note: it is assume that a :math:`s \times n` matrix can fit in the memory of a s
 *****
 
 .. cpp:function:: void ApproximateLeastSquares(elem::Orientation orientation, const elem::Matrix<T>& A, const elem::Matrix<T>& B, elem::Matrix<T>& X, base::context_t& context, int sketch_size = -1) 
-.. cpp:function:: void ApproximateLeastSquares(elem::Orientation orientation, const elem::DistMatrix<T, CA, RA>& A, const elem::DistMatrix<T, CB, RB>& B, elem::DistMatrix<T, CX, RX>& X, base::context_t& context, int sketch_size = -1)
+.. cpp:function:: void ApproximateLeastSquares(elem::Orientation orientation, const elem::DistMatrix<T, elem::VC, elem::STAR>& A, const elem::DistMatrix<T, elem::VC, elem::STAR>& B, elem::DistMatrix<T, elem::STAR, elem::STAR>& X, base::context_t& context, int sketch_size = -1)
 
 If `orientation` is set to ``NORMAL``, then approximate :math:`\arg\min_X \|A * X - B\|_F`, otherwise 
 `orientation` must be equal to ``ADJOINT`` and :math:`\arg\min_X \|A^H * X - B\|_F` is approximated. 
@@ -95,7 +95,7 @@ Note: it is assume that a :math:`4 n^2` matrix can fit in the memory of a single
 
 *****
 
-.. cpp:function:: void FastLeastSquares(elem::Orientation orientation, const AT& A, const BT& B, XT& X, base::context_t& context)
+.. cpp:function:: void FastLeastSquares(elem::Orientation orientation, const elem::DistMatrix<T, elem::VC, elem::STAR>& A, const elem::DistMatrix<T, elem::VC, elem::STAR>& B, elem::DistMatrix<T, elem::STAR, elem::STAR>& X, base::context_t& context)
 
 If `orientation` is set to ``NORMAL``, then approximate :math:`\arg\min_X \|A * X - B\|_F`, otherwise 
 `orientation` must be equal to ``ADJOINT`` and :math:`\arg\min_X \|A^H * X - B\|_F` is approximated. 
@@ -121,16 +121,18 @@ Randomized Singular Value Decomposition
 ========================================
 The randomized SVD functionality provides a distributed implementation of algorithms described in
     
-	* Halko, N. and Martinsson, P.G, and Tropp J., `Finding structure with randomness: Probabilistic algorithms for constructing approximate matrix decompositions <http://arxiv.org/abs/0909.4061>`_ , SIAM Rev., Survey and Review section, Vol. 53, num. 2, pp. 217-288, 2011
+	* | Halko, N. and Martinsson, P.G, and Tropp J. 
+          | `Finding structure with randomness: Probabilistic algorithms for constructing approximate matrix decompositions <http://arxiv.org/abs/0909.4061>`_ 
+          | SIAM Rev., Survey and Review section, Vol. 53, num. 2, pp. 217-288, 2011
 
- The prototypical algorithm involves the following steps, given a matrix **A**
-	* Compute an approximate orthonormal basis for the range of **A**, as specified by the columns of an orthonormal matrix **Q**.
-        * Use **Q** to compute a standard factorization of **A**    
+ The prototypical algorithm involves the following steps, given a matrix :math:`A`
+	* Compute an approximate orthonormal basis for the range of :math:`A`, as specified by the columns of an orthonormal matrix :math:`Q`.
+        * Use :math:`Q` to compute a standard factorization of :math:`A`.    
 
 The first step is accelerated using sketching.
 
 Rand SVD
-^^^^^^^^^^^^^^^^^^^
+--------
 
 Randomized SVD is implemented by the use of functors which are first initialized to the type of transform and then the arguments are passed
 to the constructed functor. 

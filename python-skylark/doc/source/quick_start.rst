@@ -170,12 +170,42 @@ Examples
 Sketching
 ----------
 
+In :file:`examples/elemental.cpp` an example is provided that illustrates
+sketching.
+
+.. literalinclude:: ../../../examples/elemental.cpp
+    :language: cpp
+    :linenos:
+
+
 Least Square Regression
 ------------------------
+
+In :file:`examples/least_squares.cpp` an example is provided that illustrates
+sketching.
+
+.. literalinclude:: ../../../examples/least_squares.cpp
+    :language: cpp
+    :linenos:
 
 SVD
 ----
 
+In :file:`examples/rand_svd.cpp` an example is provided that illustrates
+sketching.
+
+.. literalinclude:: ../../../examples/rand_svd.cpp
+    :language: cpp
+    :emphasize-lines: 79,81-82
+    :linenos:
+
 ML
 ---
+
+In :file:`ml/train.cpp` an example is provided that illustrates
+sketching.
+
+.. literalinclude:: ../../../ml/train.cpp
+    :language: cpp
+    :linenos:
 

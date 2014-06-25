@@ -473,7 +473,7 @@ skylark::ml::model_t<T, LocalMatrixType>* BlockADMMSolver<T>::train(T& X, LocalM
            reduce(comm, localloss, totalloss, std::plus<double>(), 0);
            SKYLARK_TIMER_ACCUMULATE(COMMUNICATION_PROFILE);
 
-           if(rank==0) {
+           if(rank == 0) {
                obj = totalloss + lambda*regularizer->evaluate(Wbar);
                if (skylark::base::Width(Xv) <=0) {
                    std::cout << "iteration " << iter << " objective " << obj << " time " << timer.elapsed() << " seconds" << std::endl;

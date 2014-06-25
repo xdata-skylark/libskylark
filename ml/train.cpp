@@ -39,6 +39,7 @@ int main (int argc, char** argv) {
     if (comm.rank() == 0)
         std::cout << options.print();
 
+
     bool sparse = (options.fileformat == LIBSVM_SPARSE) || (options.fileformat == HDF5_SPARSE);
     int flag = 0;
 

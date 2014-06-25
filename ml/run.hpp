@@ -195,7 +195,7 @@ int run(const boost::mpi::communicator& comm, skylark::base::context_t& context,
 
     else {
 
-    	std::cout << "Testing Mode" << std::endl;
+    	std::cout << "Testing Mode (currently loads test data in memory)" << std::endl;
     	skylark::ml::model_t<InputType, LabelType> model(options.modelfile);
     	read(comm, options.fileformat, options.testfile, Xt, Yt,
             model.get_input_size());

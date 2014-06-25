@@ -89,7 +89,8 @@ distribution format - in embarrassingly parallel mode) and then the local parts 
 :math:`A` and :math:`S` are multiplied together. Finally collective communications within
 subsets of the process grid take place to produce the resulting sketched matrix
 (`C[MC, MR]`). The corresponding C++ code (allowing also for incremental realization of
-:math:`S`) can be found in libskylark/sketch/dense_transform_Elemental_mc_mr.hpp.
+:math:`S`) can be found in
+:file:`libskylark/sketch/dense_transform_Elemental_mc_mr.hpp`.
 
 .. code-block:: python
 
@@ -114,6 +115,13 @@ distribution formats - same scenario as before, rowwise sketching of a squarish 
 
 Sparse matrices :math:`A` are currently represented as
 :abbr:`CombBLAS (Combinatorial BLAS)` matrices.
+As for dense sketch matrices, any part of the sparse sketch matrix can be
+realized without communication. Since the sketch matrix is sparse, we only
+require a "sparse" realization of the sketch matrix :math:`S` and the sketching
+GEMM can be computed on the random stream directly.
+Similar to the SUMMA approach for dense matrices we select what will be
+communicated depending on input and output dimensions.
+
 It is possible to sketch from a sparse matrix to a dense (and vice versa).
 The only restriction when using CombBLAS is that total number of processors
 has to be a square number.
@@ -138,31 +146,21 @@ These transforms are appropriate for specific downstream tasks, e.g.
 
 The implementations are provided under *libskylark/sketch*.
 
-+--------------+---------------------------------------------+----------------------------------------------------------------------------------------------+
-| Abbreviation |Name                                         |Reference                                                                                     |
-+==============+=============================================+==============================================================================================+
-| JLT          |Johnson-Lindenstrauss Transform              |Johnson and Lindenstrauss, 1984                                                               |
-+--------------+---------------------------------------------+----------------------------------------------------------------------------------------------+
-| FJLT         |Fast Johnson-Lindenstrauss Transform         |`Ailon and Chazelle, 2009 <http://www.cs.princeton.edu/~chazelle/pubs/FJLT-sicomp09.pdf>`_    |
-+--------------+---------------------------------------------+----------------------------------------------------------------------------------------------+
-| CT           |Cauchy Transform                             |`Sohler and Woodruff, 2011 <http://researcher.ibm.com/files/us-dpwoodru/sw.pdf>`_             |
-+--------------+---------------------------------------------+----------------------------------------------------------------------------------------------+
-| MMT          |Meng-Mahoney Transform                       |`Meng and Mahoney, 2013 <http://arxiv.org/abs/1210.3135>`_                                    |
-+--------------+---------------------------------------------+----------------------------------------------------------------------------------------------+
-| CWT          |Clarkson-Woodruff Transform                  |`Clarkson and Woodruff, 2013 <http://arxiv.org/abs/1207.6365>`_                               |
-+--------------+---------------------------------------------+----------------------------------------------------------------------------------------------+
-| WZT          |Woodruff-Zhang Transform                     |`Woodruff and Zhang, 2013 <http://homes.soic.indiana.edu/qzhangcs/papers/subspace-full.pdf>`_ |
-+--------------+---------------------------------------------+----------------------------------------------------------------------------------------------+
-| PPT          |Pahm-Pagh Transform                          |`Pahm and Pagh, 2013 <http://www.itu.dk/people/ndap/TensorSketch.pdf>`_                       |
-+--------------+---------------------------------------------+----------------------------------------------------------------------------------------------+
-| ESRLT        |Random Laplace Transform (Exp-semigroup)     |`Yang et al, 2014 <http://vikas.sindhwani.org/RandomLaplace.pdf>`_                            |
-+--------------+---------------------------------------------+----------------------------------------------------------------------------------------------+
-| LRFT         |Laplacian Random Fourier Transform           |`Rahimi and Recht, 2007 <http://www.eecs.berkeley.edu/~brecht/papers/07.rah.rec.nips.pdf>`_   |
-+--------------+---------------------------------------------+----------------------------------------------------------------------------------------------+
-| GRFT         |Gaussian Random Fourier Transform            |`Rahimi and Recht, 2007 <http://www.eecs.berkeley.edu/~brecht/papers/07.rah.rec.nips.pdf>`_   |
-+--------------+---------------------------------------------+----------------------------------------------------------------------------------------------+
-| FGRFT        |Fast Gaussian Random Fourier Transform       |`Le, Sarlos and Smola, 2013 <http://jmlr.org/proceedings/papers/v28/le13.html>`_              |
-+--------------+---------------------------------------------+----------------------------------------------------------------------------------------------+
+============== ============================================= =================
+Abbreviation   Name                                          Reference
+============== ============================================= =================
+JLT            Johnson-Lindenstrauss Transform               Johnson and Lindenstrauss, 1984
+FJLT           Fast Johnson-Lindenstrauss Transform          `Ailon and Chazelle, 2009 <http://www.cs.princeton.edu/~chazelle/pubs/FJLT-sicomp09.pdf>`_
+CT             Cauchy Transform                              `Sohler and Woodruff, 2011 <http://researcher.ibm.com/files/us-dpwoodru/sw.pdf>`_
+MMT            Meng-Mahoney Transform                        `Meng and Mahoney, 2013 <http://arxiv.org/abs/1210.3135>`_
+CWT            Clarkson-Woodruff Transform                   `Clarkson and Woodruff, 2013 <http://arxiv.org/abs/1207.6365>`_
+WZT            Woodruff-Zhang Transform                      `Woodruff and Zhang, 2013 <http://homes.soic.indiana.edu/qzhangcs/papers/subspace-full.pdf>`_
+PPT            Pahm-Pagh Transform                           `Pahm and Pagh, 2013 <http://www.itu.dk/people/ndap/TensorSketch.pdf>`_
+ESRLT          Random Laplace Transform (Exp-semigroup)      `Yang et al, 2014 <http://vikas.sindhwani.org/RandomLaplace.pdf>`_
+LRFT           Laplacian Random Fourier Transform            `Rahimi and Recht, 2007 <http://www.eecs.berkeley.edu/~brecht/papers/07.rah.rec.nips.pdf>`_
+GRFT           Gaussian Random Fourier Transform             `Rahimi and Recht, 2007 <http://www.eecs.berkeley.edu/~brecht/papers/07.rah.rec.nips.pdf>`_
+FGRFT          Fast Gaussian Random Fourier Transform        `Le, Sarlos and Smola, 2013 <http://jmlr.org/proceedings/papers/v28/le13.html>`_
+============== ============================================= =================
 
 Sketching Layer in C++
 ------------------------
@@ -328,6 +326,9 @@ The following table lists currently supported sketching transforms available thr
     The <font color="#154685">blue</font> color marks sparse matrix or
     transforms, <font color="#ee9428">orange</font> is used for dense matrix or
     transforms.</i>
+
+.. note:: In the near future the local dense matrix will be replaced by
+    CIRC/CIRC and STAR/STAR matrices.
 
 
 Using the Python interface

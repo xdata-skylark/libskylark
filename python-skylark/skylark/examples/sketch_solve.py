@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# Usage: python sketch_solve.py libsvm_trainfile libsvm_testfile
+
 from mpi4py import MPI
 import elem
 import skylark.io
@@ -6,12 +8,13 @@ import skylark.sketch as sketch
 import skylark.elemhelper
 import numpy as np
 import urllib
-import bz2
+import sys
+#import bz2
 
-DATASET_URL = 'http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/multiclass/mnist.scale.bz2'
-TESTDATA_URL = 'http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/multiclass/mnist.scale.t.bz2'
+DATASET_URL = sys.argv[1] 
+TESTDATA_URL = sys.argv[2] 
 
-SIGMA = 10.35;
+SIGMA = 10.0;
 D = 500;
 T = 10000;
 
@@ -21,14 +24,15 @@ size = comm.Get_size()
 
 # If on rank 0 read data from the web
 if rank == 0:
-    print "Downloading dataset from web..."
-    urlfile = urllib.urlopen(DATASET_URL)
-    cmprs_data = urlfile.read()
-    print "Decompressing the data..."
-    rawdata = bz2.decompress(cmprs_data)
-    print "Parsing the data..."
-    data = skylark.io.sparselibsvm2scipy(rawdata.splitlines())
-    urlfile.close()
+    #print "Downloading dataset from web..."
+    #urlfile = urllib.urlopen(DATASET_URL)
+    #cmprs_data = urlfile.read()
+    #print "Decompressing the data..."
+    #rawdata = bz2.decompress(cmprs_data)
+    #print "Parsing the data..."
+    trnfile = skylark.io.libsvm(DATASET_URL)
+    data = trnfile.read()
+    #urlfile.close()
 
 # Now broadcast the sizes
 shape_X = data[0].shape if rank == 0 else None
@@ -88,14 +92,16 @@ W = MPI.COMM_WORLD.bcast(W, root=0)
 
 # If on rank 0 read test set from the web
 if rank == 0:
-    print "Downloading test datfrom web..."
-    urlfile = urllib.urlopen(TESTDATA_URL)
-    cmprs_data = urlfile.read()
-    print "Decompressing the data..."
-    rawdata = bz2.decompress(cmprs_data)
-    print "Parsing the data..."
-    data = skylark.io.sparselibsvm2scipy(rawdata.splitlines(), shape_X[1])
-    urlfile.close()
+    #print "Downloading test datfrom web..."
+    #urlfile = urllib.urlopen(TESTDATA_URL)
+    #cmprs_data = urlfile.read()
+    #print "Decompressing the data..."
+    #rawdata = bz2.decompress(cmprs_data)
+    #print "Parsing the data..."
+    #data = skylark.io.sparselibsvm2scipy(rawdata.splitlines(), shape_X[1])
+    #urlfile.close()
+    tstfile = skylark.io.libsvm(TESTDATA_URL)
+    data = tstfile.read()
 
 # Now broadcast the sizes
 shape_Xt = data[0].shape if rank == 0 else None

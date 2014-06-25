@@ -170,45 +170,92 @@ It will take a while to compile and install everything specified in the
 Examples
 =========
 
+Here, we provide a flavor of the library and its usage. We assume that 
+the reader is familiar with sketching and its applications in randomized 
+Numerical Linear algebra and Machine Learning. If not, we refer the 
+reader to subsequent sections which provide the necessary background and 
+references.
+
+The examples below compile to 
+
 Sketching
 ----------
 
 In :file:`examples/elemental.cpp` an example is provided that illustrates
-sketching.
+sketching. Below, three types of sketches are illustrated in the highlighted lines: 
+
+1. a 1D row-distributed `Elemental <http://libelemental.org>`_ dense matrix is sketched using the `JLT (Johnson-Lindenstrauss) Transform` into a local matrix
+2. a row-distributed `Elemental <http://libelemental.org>`_ dense matrix is sketched using  `FJLT (Fast Johnson-Lindenstrauss transform)` involving faster FFT-like operations.
+3. a 2D block-cyclic distributed `Combinatorial BLAS <http://gauss.cs.ucsb.edu/~aydin/CombBLAS/html/>`_ sparse matrix is sketched to a dense local Elemental matrix using `Clarkson-Woodruff` transform which involves hashing the rows.
 
 .. literalinclude:: ../../../examples/elemental.cpp
     :language: cpp
+    :emphasize-lines: 65,66,69,73,96,97,100,103,118,119,122,126 
     :linenos:
 
 
-Least Square Regression
-------------------------
 
-In :file:`examples/least_squares.cpp` an example is provided that illustrates
-sketching.
+
+Fast Least Square Regression
+-----------------------------
+
+In :file:`examples/least_squares.cpp` examples are provided on how least 
+squares problems can be solved faster using sketching. One approach is 
+of the flavor of ``sketch-and-solve`` geared towards lower-precision 
+solutions, while the other approach uses sketching to construct a 
+preconditioner to obtain high-precision solutions faster.
 
 .. literalinclude:: ../../../examples/least_squares.cpp
     :language: cpp
+    :emphasize-lines: 88,102
     :linenos:
 
 SVD
 ----
 
-In :file:`examples/rand_svd.cpp` an example is provided that illustrates
-sketching.
+In :file:`examples/rand_svd.cpp` an example is provided that illustrates randomized singular value decompositions.
 
 .. literalinclude:: ../../../examples/rand_svd.cpp
     :language: cpp
     :emphasize-lines: 79,81-82
     :linenos:
 
+.. _ml_example:
+
 ML
 ---
 
-In :file:`ml/train.cpp` an example is provided that illustrates
-sketching.
+In :file:`ml/train.cpp` and :file:`ml/run.hpp`, an ADMM-based solver is 
+setup to train and predict with a randomized kernel based model for 
+nonlinear classification and regression problems.
 
-.. literalinclude:: ../../../ml/train.cpp
-    :language: cpp
-    :linenos:
+Building libskylark creates an executable called ``skylark_ml`` in ``bin/ml`` under the libskylark installation folder. This executable can be used in standalone mode as follows. 
+ 
+1. Download USPS digit recognition dataset (in various supported formats).
 
+.. code-block:: sh
+
+        wget http://vikas.sindhwani.org/data.tar.gz
+        tar -xvzf data.tar.gz
+ 
+The supported fileformats are described in :ref:`ml_io`.
+
+2. Train an SVM with Randomized Gaussian Kernel 
+ 
+.. code-block:: sh
+
+        ./skylark_ml -g 10 -k 1 -l 2 -i 20 --trainfile data/usps.train --valfile data/usps.test --modelfile model
+  
+3. Test accuracy of the generated model 
+
+.. code-block:: sh
+
+        ./skylark_ml --testfile data/usps.test --modelfile model
+
+.. note::
+	
+	The above executable can be passed to ``mpiexec`` for distributed execution. We assume all nodes can see the path to the training/validation/test files.
+
+.. note:: 
+
+	In testing mode, the entire test data is currently loaded in memory. A separate file containing predictions is currently not generated. These restrictions will be relaxed.

@@ -88,9 +88,87 @@ object.
 Local sparse matrices
 ---------------------
 
-To be added...
+This implements a very crude CSC sparse matrix container only intended to
+hold local sparse matrices.
+
+* Row indices are not sorted.
+* Structure is always constants, and can only be attached by Attached.
+* Values of non-zeros can be modified.
+
+
+.. cpp:type:: struct skylark::base::sparse_matrix_t<T>
+
+    **Constructor**
+
+    .. cpp:function:: sparse_matrix_t ()
+
+        Creates a new sparse matrix.
+
+    .. cpp:function:: sparse_matrix_t sparse_matrix_t(sparse_matrix_t<ValueType>&& A)
+
+        Move constructor.
+
+
+    **Query**
+
+    .. cpp:function:: int height() const
+
+        Height of the matrix (number of rows).
+
+    .. cpp:function:: int width() const
+
+        Width of the matrix (number of cols).
+
+    .. cpp:function:: int nonzeros() const
+
+        Number of non-zeros.
+
+    .. cpp:function:: bool struct_updated() const
+
+        Flag that encodes if CSC structure has been modified.
+
+    .. cpp:function:: void reset_update_flag()
+
+        Reset the modified flag (to false).
+
+
+    **Accessors**
+
+    .. cpp:function:: const int* indptr() const
+
+        Access to indices pointer array.
+
+    .. cpp:function:: const int* indices() const
+
+        Access to non-zero column indices array.
+
+    .. cpp:function:: T* values()
+
+        Access to non-zero value array.
+
+    .. cpp:function:: const T* locked_values() const
+
+        Read only view on non-zero values.
+
+
+    **Modifiers**
+
+    .. cpp:function:: void detach<IdxType, ValType>(IdxType* indptr, IdxType* indices, ValType* values) const
+
+        Copy CSC data to external buffer.
+
+    .. cpp:function:: void attach(const int* indptr, const int* indices, double* values, int nnz, int n_rows, int n_cols, bool _own = false)
+
+        Attach CSC matrix data.
+
+    .. cpp:function:: void attach(const int* indptr, const int* indices, double* values, int nnz, int n_rows, int n_cols, bool ownindptr, bool ownindices, bool ownvalues)
+
+        Attach CSC matrix data where the caller can decide who retains the
+        ownership.
+
 
 Cross matrix-type GEMM and other linear algebra routines
 --------------------------------------------------------
 
 To be added...
+

@@ -7,6 +7,7 @@ if (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
                         ${Pmrrr_LIBRARY}
                         ${SKYLARK_LIBS}
                         ${Boost_LIBRARIES})
+  install_targets(/bin/examples hp_dense)
 
   add_executable(elemental elemental.cpp)
   target_link_libraries(elemental
@@ -15,6 +16,7 @@ if (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
                         ${Pmrrr_LIBRARY}
                         ${SKYLARK_LIBS}
                         ${Boost_LIBRARIES})
+  install_targets(/bin/examples elemental)
 
   add_executable(regression regression.cpp)
   target_link_libraries(regression
@@ -23,6 +25,7 @@ if (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
                         ${Pmrrr_LIBRARY}
                         ${SKYLARK_LIBS}
                         ${Boost_LIBRARIES})
+  install_targets(/bin/examples regression)
 
   add_executable(least_squares least_squares)
   target_link_libraries(least_squares
@@ -31,6 +34,7 @@ if (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
                         ${Pmrrr_LIBRARY}
                         ${SKYLARK_LIBS}
                         ${Boost_LIBRARIES})
+  install_targets(/bin/examples least_squares)
 
 
   add_executable(rand_svd rand_svd.cpp)
@@ -40,6 +44,7 @@ if (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
                         ${Pmrrr_LIBRARY}
                         ${SKYLARK_LIBS}
                         ${Boost_LIBRARIES})
+  install_targets(/bin/examples rand_svd)
 
 if (FALSE)
 # Commenting this out for now as we don't have a functioning

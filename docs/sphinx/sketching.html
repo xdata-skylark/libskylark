@@ -880,7 +880,7 @@ For now, only Pure Python implementation, and only sampling with replacement.</p
 </div>
 <p><strong>Sketching Sparse Distributed Matrices</strong></p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c">#!/usr/bin/env python</span>
-<span class="c"># MPI usage: </span>
+<span class="c"># MPI usage:</span>
 <span class="c"># mpiexec -np 2 python skylark/examples/example_sparse_sketch.py</span>
 
 <span class="c"># prevent mpi4py from calling MPI_Finalize()</span>
@@ -897,7 +897,7 @@ For now, only Pure Python implementation, and only sampling with replacement.</p
 <span class="n">rank</span> <span class="o">=</span> <span class="n">comm</span><span class="o">.</span><span class="n">Get_rank</span><span class="p">()</span>
 
 <span class="c"># Lower layers are automatically initilalized when you import Skylark,</span>
-<span class="c"># It will use system time to generate the seed. However, we can </span>
+<span class="c"># It will use system time to generate the seed. However, we can</span>
 <span class="c"># reinitialize for so to fix the seed.</span>
 <span class="n">sketch</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="mi">123834</span><span class="p">);</span>
 
@@ -923,7 +923,7 @@ For now, only Pure Python implementation, and only sampling with replacement.</p
 
 <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
   <span class="k">print</span><span class="p">(</span><span class="s">&quot;Sketched A (CWT sparse, columnwise)&quot;</span><span class="p">)</span>
-  <span class="k">print</span> <span class="n">SACB</span>
+<span class="k">print</span> <span class="n">SACB</span>
 
 <span class="c"># No need to free S -- it will be automatically garbage collected</span>
 <span class="c"># and the memory for the sketch reclaimed.</span>
@@ -934,7 +934,7 @@ For now, only Pure Python implementation, and only sampling with replacement.</p
 
 <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
   <span class="k">print</span><span class="p">(</span><span class="s">&quot;Sketched A (CWT sparse, rowwise)&quot;</span><span class="p">)</span>
-  <span class="k">print</span> <span class="n">SACB</span>
+<span class="k">print</span> <span class="n">SACB</span>
 
 <span class="c"># Really no need to &quot;close&quot; the lower layers -- it will do it automatically.</span>
 <span class="c"># However, if you really want to you can do it.</span>

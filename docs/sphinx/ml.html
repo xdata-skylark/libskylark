@@ -77,7 +77,10 @@
 <li>Using a distributed optimization solver based on Alternating Directions Method of Multipliers (ADMM)</li>
 </ul>
 </dd>
-<dt>The full implementation (under <em>libskylark/ml</em>) is described in the following paper:</dt>
+</dl>
+<p>The distributed optimization approach is based on a block-splitting variant of ADMM proposed in <a class="reference external" href="http://web.stanford.edu/~boyd/papers/block_splitting.html">Parikh and Boyd, 2014</a></p>
+<dl class="docutils">
+<dt>The full implementation (under <tt class="docutils literal"><span class="pre">libskylark/ml</span></tt>) is described in the following paper:</dt>
 <dd><ul class="first last simple">
 <li>Sindhwani V. and Avron H., High-performance Kernel Machines with Implicit Distributed Optimization and Randomization, 2014</li>
 </ul>
@@ -181,6 +184,10 @@ Testing mode usage: skylark_ml --modelfile modelfile --testfile testfile
   --testfile arg                        Test file (optional in training mode;
                                         required in testing mode)</pre>
 </div>
+</div>
+<div class="section" id="library-usage">
+<h2>Library Usage<a class="headerlink" href="#library-usage" title="Permalink to this headline">¶</a></h2>
+<p>To be documented (please see <tt class="docutils literal"><span class="pre">ml/run.hpp</span></tt> for a driver program).</p>
 </div>
 </div>
 

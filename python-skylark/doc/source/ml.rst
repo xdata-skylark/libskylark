@@ -22,7 +22,9 @@ The implementations combine two ideas:
 	* Constructing randomized approximations to Kernel functions *on the fly*
         * Using a distributed optimization solver based on Alternating Directions Method of Multipliers (ADMM)
  
-The full implementation (under *libskylark/ml*) is described in the following paper:
+The distributed optimization approach is based on a block-splitting variant of ADMM proposed in `Parikh and Boyd, 2014 <http://web.stanford.edu/~boyd/papers/block_splitting.html>`_
+ 
+The full implementation (under ``libskylark/ml``) is described in the following paper:
 	* Sindhwani V. and Avron H., High-performance Kernel Machines with Implicit Distributed Optimization and Randomization, 2014
 
 Standalone Usage 
@@ -127,3 +129,7 @@ Commandline Usage
 					    required in testing mode)
 
 
+Library Usage
+===============
+
+To be documented (please see ``ml/run.hpp`` for a driver program).

@@ -81,14 +81,14 @@ compensate for the stride-indexed matrix entries in the factors.
 
 As an example we provide a *pseudocode* snippet (in Python syntax) that describes
 the rowwise sketching of a squarish input matrix :math:`A`, initially distributed
-across the process grid in `[MC, MR]` format (please refer 
+across the process grid in `[MC, MR]` format (please refer
 `here <http://libelemental.org/documentation/0.83/core/dist_matrix/DM.html>`_ for a
-comprehensive documentation of distribution formats, here appearing in brackets): 
+comprehensive documentation of distribution formats, here appearing in brackets):
 :math:`S` is first realized (its random entries are actually computed in the desired
-distribution format - in embarrassingly parallel mode) and then the local parts of 
+distribution format - in embarrassingly parallel mode) and then the local parts of
 :math:`A` and :math:`S` are multiplied together. Finally collective communications within
-subsets of the process grid take place to produce the resulting sketched matrix 
-(`C[MC, MR]`). The corresponding C++ code (allowing also for incremental realization of 
+subsets of the process grid take place to produce the resulting sketched matrix
+(`C[MC, MR]`). The corresponding C++ code (allowing also for incremental realization of
 :math:`S`) can be found in libskylark/sketch/dense_transform_Elemental_mc_mr.hpp.
 
 .. code-block:: python
@@ -97,9 +97,9 @@ subsets of the process grid take place to produce the resulting sketched matrix
         S[MR, STAR]       = realize(S)
         C_hat[MC, STAR]   = local_gemm(A[MC, MR], S[MR, STAR])
         C[MC, MR]         = reduce_scatter_within_process_rows(C_hat[MC, STAR))
-        return C[MC, MR] 
+        return C[MC, MR]
 
-Quite interestingly and depending on the distribution format of the input and sketched 
+Quite interestingly and depending on the distribution format of the input and sketched
 matrices, sketching can be *communication free*. The following snippet illustrates this
 remark when both input and sketched matrices are in `[VC, STAR]` or `[VR, STAR]`
 distribution formats - same scenario as before, rowwise sketching of a squarish input matrix:
@@ -199,6 +199,9 @@ sparse matrices, while *DistSparse* refers to CombBLAS sparse matrices.
     The <font color="#154685">blue</font> color marks sparse matrix or
     transforms, <font color="#ee9428">orange</font> is used for dense matrix or
     transforms.</i>
+
+.. note:: In the near future the local dense matrix will be replaced by
+    CIRC/CIRC and STAR/STAR matrices.
 
 
 .. _sketching-transforms-label:

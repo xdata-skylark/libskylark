@@ -3,7 +3,7 @@
 # export to sudo environment
 # XXX need to clean environment variables export
 export SKYLARK_INSTALL_DIR=/home/vagrant/install
-export COMBBLAS_ROOT=/home/vagrant/CombBLAS_beta_14_0
+export COMBBLAS_ROOT=/home/vagrant/CombBLAS
 export PYTHON_SITE_PACKAGES=${SKYLARK_INSTALL_DIR}
 export PYTHONPATH=${SKYLARK_INSTALL_DIR}/lib/python2.7/site-packages:${PYTHONPATH}
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib
@@ -24,8 +24,10 @@ echo "export COMBBLAS_ROOT" >> ./.bashrc
 echo "export PYTHON_SITE_PACKAGES" >> ./.bashrc
 echo "export PYTHONPATH" >> ./.bashrc
 echo "export LD_LIBRARY_PATH" >> ./.bashrc
-echo "export LD_PRELOAD=$HOME/CombBLAS/libMPITypelib.so:$HOME/CombBLAS/libCommGridlib.so" >> ./.bashrc
+echo "export LD_PRELOAD=/home/vagrant/CombBLAS/libMPITypelib.so:/home/vagrant/CombBLAS/libCommGridlib.so" >> ./.bashrc
 chown -R vagrant /home/vagrant/.bashrc
+
+apt-get update
 
 # python development
 apt-get install -y python-dev

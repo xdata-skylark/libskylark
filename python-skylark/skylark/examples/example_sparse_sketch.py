@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# MPI usage: 
+# MPI usage:
 # mpiexec -np 2 python skylark/examples/example_sparse_sketch.py
 
 # prevent mpi4py from calling MPI_Finalize()
@@ -16,7 +16,7 @@ comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 
 # Lower layers are automatically initilalized when you import Skylark,
-# It will use system time to generate the seed. However, we can 
+# It will use system time to generate the seed. However, we can
 # reinitialize for so to fix the seed.
 sketch.initialize(123834);
 
@@ -42,7 +42,7 @@ S.apply(ACB, SACB, "columnwise")
 
 if (rank == 0):
   print("Sketched A (CWT sparse, columnwise)")
-  print SACB
+print SACB
 
 # No need to free S -- it will be automatically garbage collected
 # and the memory for the sketch reclaimed.
@@ -53,7 +53,7 @@ S.apply(ACB, SACB, "rowwise")
 
 if (rank == 0):
   print("Sketched A (CWT sparse, rowwise)")
-  print SACB
+print SACB
 
 # Really no need to "close" the lower layers -- it will do it automatically.
 # However, if you really want to you can do it.

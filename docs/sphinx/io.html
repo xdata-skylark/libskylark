@@ -55,7 +55,7 @@
 <dl class="function">
 <dt id="read__boost::mpi::communicatorCR.i.ss.InputTypeR.LabelTypeR.i">
 void <tt class="descname">read</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, int <em>fileformat</em>, std::string <em>filename</em>, InputType&amp; <em>X</em>, LabelType&amp; <em>Y</em>, int <em>d</em><em>=0</em><big>)</big><a class="headerlink" href="#read__boost::mpi::communicatorCR.i.ss.InputTypeR.LabelTypeR.i" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reads data from <cite>filename</cite> as a pair of matrices <cite>X</cite> and <cite>Y</cite>. Data are in the form of instances each carrying a label; an instance in turn consists of a series of feature/value pairs. Feature/value pairs are the column indices/entries for matrix <cite>X</cite> with its row indices coming from a running index of the instances. Matrix <cite>Y</cite> carries the vector of successive labels corresponding to this running index. <cite>fileformat</cite> can be any of the following:</p>
+<dd><p>Reads data from <cite>filename</cite> as a pair of matrices <cite>X</cite> and <cite>Y</cite>. Data are in the form of instances each carrying a label; an instance in turn consists of a series of feature/value pairs. Feature/value pairs are the column indices/entries for matrix <cite>X</cite> with its row indices coming from a running index of the instances (the minimum number of features is <cite>d</cite>). Matrix <cite>Y</cite> carries the vector of successive labels corresponding to this running index. <cite>fileformat</cite> can have any of the following values of <cite>FileFormatType</cite> enum (as defined in libskylark/ml/options.hpp):</p>
 <ul class="simple">
 <li>HDF5_DENSE</li>
 <li>HDF5_SPARSE</li>
@@ -64,55 +64,55 @@ void <tt class="descname">read</tt><big>(</big>const boost::mpi::communicator&am
 </ul>
 </dd></dl>
 
-<p><cite>*_DENSE</cite> correspond to the case of elem::Matrix&lt;T&gt; (dense) matrix <cite>X</cite> (<cite>*_SPARSE</cite> is for skylark::base::sparse_matrix_t&lt;T&gt; (sparse) matrix <cite>X</cite>).
-<cite>HDF5_*</cite> are for HDF5-formatted files  while <cite>LIBSVM_*</cite> are for LIBSVM ones.</p>
+<p><cite>*_DENSE</cite> correspond to the case of elem::Matrix&lt;T&gt; (dense) matrix <cite>X</cite>; <cite>*_SPARSE</cite> is for the skylark::base::sparse_matrix_t&lt;T&gt; (sparse) matrix <cite>X</cite>.
+<cite>HDF5_*</cite> are for <a class="reference external" href="http://www.hdfgroup.org/HDF5/">Hierarchical Data Format, version 5 (HDF5)</a> files  while <cite>LIBSVM_*</cite> are for <a class="reference external" href="http://www.csie.ntu.edu.tw/~cjlin/libsvm/">Library for Support Vector Machines (LIBSVM)</a> ones.</p>
 <p><strong>HDF5-specific routines</strong></p>
 <dl class="function">
-<dt id="read_hdf5__boost::mpi::communicatorCR.ss.LocalMatrixTypeR.LocalMatrixTypeR.i">
-void <tt class="descname">read_hdf5</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>fName</em>, LocalMatrixType&amp; <em>Xlocal</em>, LocalMatrixType&amp; <em>Ylocal</em>, int <em>blocksize</em><em>=10000</em><big>)</big><a class="headerlink" href="#read_hdf5__boost::mpi::communicatorCR.ss.LocalMatrixTypeR.LocalMatrixTypeR.i" title="Permalink to this definition">¶</a></dt>
+<dt id="read_hdf5__boost::mpi::communicatorCR.ss.elem::Matrix:double:R.elem::Matrix:double:R.i">
+void <tt class="descname">read_hdf5</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>filename</em>, elem::Matrix&lt;double&gt;&amp; <em>X</em>, elem::Matrix&lt;double&gt;&amp; <em>Y</em>, int <em>blocksize</em><em>=10000</em><big>)</big><a class="headerlink" href="#read_hdf5__boost::mpi::communicatorCR.ss.elem::Matrix:double:R.elem::Matrix:double:R.i" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="read_hdf5__boost::mpi::communicatorCR.ss.sparse_matrix_tR.elem::Matrix:double:R.i">
-void <tt class="descname">read_hdf5</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>fName</em>, sparse_matrix_t&amp; <em>X</em>, elem::Matrix&lt;double&gt;&amp; <em>Y</em>, int <em>min_d</em><em>=0</em><big>)</big><a class="headerlink" href="#read_hdf5__boost::mpi::communicatorCR.ss.sparse_matrix_tR.elem::Matrix:double:R.i" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reads data from datasets <cite>X</cite> and <cite>Y</cite> in Hierarchical Data Format (HDF5) file <cite>fName</cite> as a pair of matrices <cite>Xlocal</cite>, <cite>Ylocal</cite> (<cite>X</cite>, <cite>Y</cite>). Instances are read in bunches of <cite>blocksize</cite> each.</p>
+<dt id="read_hdf5__boost::mpi::communicatorCR.ss.skylark::base::sparse_matrix_t:double:R.elem::Matrix:double:R.i">
+void <tt class="descname">read_hdf5</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>filename</em>, skylark::base::sparse_matrix_t&lt;double&gt;&amp; <em>X</em>, elem::Matrix&lt;double&gt;&amp; <em>Y</em>, int <em>min_d</em><em>=0</em><big>)</big><a class="headerlink" href="#read_hdf5__boost::mpi::communicatorCR.ss.skylark::base::sparse_matrix_t:double:R.elem::Matrix:double:R.i" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads datasets <cite>X</cite> and <cite>Y</cite> from HDF5 <cite>filename</cite> as a pair of matrices <cite>X</cite>, <cite>Y</cite>. Instances are read in bunches of <cite>blocksize</cite> each; <cite>min_d</cite> is the minimum number of features.</p>
 </dd></dl>
 
 <p><strong>LIBSVM-specific routines</strong></p>
 <dl class="function">
 <dt id="read_libsvm__boost::mpi::communicatorCR.ss.elem::Matrix:T:R.elem::Matrix:T:R.i.i">
-void <tt class="descname">read_libsvm</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>fName</em>, elem::Matrix&lt;T&gt;&amp; <em>Xlocal</em>, elem::Matrix&lt;T&gt;&amp; <em>Ylocal</em>, int <em>min_d</em><em>=0</em>, int <em>blocksize</em><em>=10000</em><big>)</big><a class="headerlink" href="#read_libsvm__boost::mpi::communicatorCR.ss.elem::Matrix:T:R.elem::Matrix:T:R.i.i" title="Permalink to this definition">¶</a></dt>
+void <tt class="descname">read_libsvm</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>filename</em>, elem::Matrix&lt;T&gt;&amp; <em>X</em>, elem::Matrix&lt;T&gt;&amp; <em>Y</em>, int <em>min_d</em><em>=0</em>, int <em>blocksize</em><em>=10000</em><big>)</big><a class="headerlink" href="#read_libsvm__boost::mpi::communicatorCR.ss.elem::Matrix:T:R.elem::Matrix:T:R.i.i" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="read_libsvm__boost::mpi::communicatorCR.ss.skylark::base::sparse_matrix_t:T:R.elem::Matrix:T:R.i">
-void <tt class="descname">read_libsvm</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>fName</em>, skylark::base::sparse_matrix_t&lt;T&gt;&amp; <em>X</em>, elem::Matrix&lt;T&gt;&amp; <em>Y</em>, int <em>min_d</em><em>=0</em><big>)</big><a class="headerlink" href="#read_libsvm__boost::mpi::communicatorCR.ss.skylark::base::sparse_matrix_t:T:R.elem::Matrix:T:R.i" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reads data from Library for Support Vector Machines (LIBSVM) formatted file <cite>fName</cite> as a pair of matrices <cite>Xlocal</cite>, <cite>Ylocal</cite> (<cite>X</cite>, <cite>Y</cite>). Instances are read in bunches of <cite>blocksize</cite> each.</p>
+void <tt class="descname">read_libsvm</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>filename</em>, skylark::base::sparse_matrix_t&lt;T&gt;&amp; <em>X</em>, elem::Matrix&lt;T&gt;&amp; <em>Y</em>, int <em>min_d</em><em>=0</em><big>)</big><a class="headerlink" href="#read_libsvm__boost::mpi::communicatorCR.ss.skylark::base::sparse_matrix_t:T:R.elem::Matrix:T:R.i" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads data from LIBSVM <cite>filename</cite> as a pair of matrices <cite>X</cite>, <cite>Y</cite>. Instances are read in bunches of <cite>blocksize</cite> each; <cite>min_d</cite> is the minimum number of features.</p>
 </dd></dl>
 
 <p><strong>Utility routines</strong></p>
 <dl class="function">
 <dt id="read_hdf5_dataset__H5::H5FileR.ss.iP.i.i">
-void <tt class="descname">read_hdf5_dataset</tt><big>(</big>H5::H5File&amp; <em>file</em>, std::string <em>name</em>, int* <em>buf</em>, int <em>offset</em>, int <em>count</em><big>)</big><a class="headerlink" href="#read_hdf5_dataset__H5::H5FileR.ss.iP.i.i" title="Permalink to this definition">¶</a></dt>
+void <tt class="descname">read_hdf5_dataset</tt><big>(</big>H5::H5File&amp; <em>file</em>, std::string <em>name</em>, int* <em>buffer</em>, int <em>offset</em>, int <em>count</em><big>)</big><a class="headerlink" href="#read_hdf5_dataset__H5::H5FileR.ss.iP.i.i" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="read_hdf5_dataset__H5::H5FileR.ss.doubleP.i.i">
-void <tt class="descname">read_hdf5_dataset</tt><big>(</big>H5::H5File&amp; <em>file</em>, std::string <em>name</em>, double* <em>buf</em>, int <em>offset</em>, int <em>count</em><big>)</big><a class="headerlink" href="#read_hdf5_dataset__H5::H5FileR.ss.doubleP.i.i" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reads <cite>count</cite> entries from the <cite>name</cite> dataset in HDF5 <cite>file</cite> starting at <cite>offset</cite> and collects them into buffer <cite>buf</cite>.</p>
+void <tt class="descname">read_hdf5_dataset</tt><big>(</big>H5::H5File&amp; <em>file</em>, std::string <em>name</em>, double* <em>buffer</em>, int <em>offset</em>, int <em>count</em><big>)</big><a class="headerlink" href="#read_hdf5_dataset__H5::H5FileR.ss.doubleP.i.i" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads <cite>count</cite> entries from the <cite>name</cite> dataset in HDF5 <cite>file</cite> starting at <cite>offset</cite> and collects them into <cite>buffer</cite>.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="read_model_file__ss.elem::Matrix:double:R">
-void <tt class="descname">read_model_file</tt><big>(</big>std::string <em>fName</em>, elem::Matrix&lt;double&gt;&amp; <em>W</em><big>)</big><a class="headerlink" href="#read_model_file__ss.elem::Matrix:double:R" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reads the values from model file <cite>fName</cite> into matrix <cite>W</cite>; model file is expected to start with a line of the form:
+void <tt class="descname">read_model_file</tt><big>(</big>std::string <em>filename</em>, elem::Matrix&lt;double&gt;&amp; <em>W</em><big>)</big><a class="headerlink" href="#read_model_file__ss.elem::Matrix:double:R" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads the values from model file <cite>filename</cite> into matrix <cite>W</cite>; model file is expected to start with a line of the form:
 <cite># Dimensions m n</cite> for an <cite>m x n</cite> matrix <cite>W</cite> followed by lines containing the values of successive rows of the matrix.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="read_header__boost::mpi::communicatorCR.ss">
-std::string <tt class="descname">read_header</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>fName</em><big>)</big><a class="headerlink" href="#read_header__boost::mpi::communicatorCR.ss" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the first line of file <cite>fName</cite>.</p>
+std::string <tt class="descname">read_header</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>filename</em><big>)</big><a class="headerlink" href="#read_header__boost::mpi::communicatorCR.ss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the first line of <cite>filename</cite>.</p>
 </dd></dl>
 
 </div>
@@ -120,13 +120,19 @@ std::string <tt class="descname">read_header</tt><big>(</big>const boost::mpi::c
 <h3>Writing<a class="headerlink" href="#writing" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
 <dt id="write_hdf5__boost::mpi::communicatorCR.ss.elem::Matrix:double:R.elem::Matrix:double:R">
-int <tt class="descname">write_hdf5</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>fName</em>, elem::Matrix&lt;double&gt;&amp; <em>X</em>, elem::Matrix&lt;double&gt;&amp; <em>Y</em><big>)</big><a class="headerlink" href="#write_hdf5__boost::mpi::communicatorCR.ss.elem::Matrix:double:R.elem::Matrix:double:R" title="Permalink to this definition">¶</a></dt>
+int <tt class="descname">write_hdf5</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>filename</em>, elem::Matrix&lt;double&gt;&amp; <em>X</em>, elem::Matrix&lt;double&gt;&amp; <em>Y</em><big>)</big><a class="headerlink" href="#write_hdf5__boost::mpi::communicatorCR.ss.elem::Matrix:double:R.elem::Matrix:double:R" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="write_hdf5__ss.sparse_matrix_tR.elem::Matrix:double:R">
-int <tt class="descname">write_hdf5</tt><big>(</big>std::string <em>fName</em>, sparse_matrix_t&amp; <em>X</em>, elem::Matrix&lt;double&gt;&amp; <em>Y</em><big>)</big><a class="headerlink" href="#write_hdf5__ss.sparse_matrix_tR.elem::Matrix:double:R" title="Permalink to this definition">¶</a></dt>
-<dd><p>Writes feature/value pairs (in matrix <cite>X</cite>) and labels (in matrix <cite>Y</cite>) to the HDF5 file <cite>fName</cite> and returns 0 to signal successfully completed operation.For the case of dense matrix input <cite>X</cite> (of elem::Matrix&lt;double&gt; type) two datasets named <cite>X</cite> and <cite>Y</cite> are created in the file for all data. For the case of sparse matrix <cite>X</cite> (of sparse_matrix_t type, aka  skylark::base::sparse_matrix_t&lt;T&gt;) five datasets are created: <cite>dimensions</cite> (matrix size), <cite>indptr</cite>, <cite>indices</cite>, <cite>values</cite> (<cite>X</cite> matrix) and <cite>Y</cite> (<cite>Y</cite> matrix).</p>
+<dt id="write_hdf5__ss.skylark::base::sparse_matrix_t:double:R.elem::Matrix:double:R">
+int <tt class="descname">write_hdf5</tt><big>(</big>std::string <em>filename</em>, skylark::base::sparse_matrix_t&lt;double&gt;&amp; <em>X</em>, elem::Matrix&lt;double&gt;&amp; <em>Y</em><big>)</big><a class="headerlink" href="#write_hdf5__ss.skylark::base::sparse_matrix_t:double:R.elem::Matrix:double:R" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes feature/value pairs (in matrix <cite>X</cite>) and labels (in matrix <cite>Y</cite>) to the HDF5 <cite>filename</cite> and returns 0 to signal successfully completed operation.</p>
+<blockquote>
+<div><ul class="simple">
+<li>For the case of dense matrix input <cite>X</cite> (elem::Matrix&lt;double&gt; type) 2 datasets named <cite>X</cite> and <cite>Y</cite> are created in the file for all data.</li>
+<li>For the case of sparse matrix <cite>X</cite> (skylark::base::sparse_matrix_t&lt;double&gt; type) 5 datasets are created in the file for all data: <cite>dimensions</cite> (for <cite>X</cite> matrix size), <cite>indptr</cite>, <cite>indices</cite>, <cite>values</cite> (for <cite>X</cite> matrix) and <cite>Y</cite> (for <cite>Y</cite> matrix).</li>
+</ul>
+</div></blockquote>
 </dd></dl>
 
 <div class="admonition note">

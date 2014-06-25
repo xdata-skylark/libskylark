@@ -89,7 +89,7 @@
 used out-of-the-box for large-scale applications involving kernel-based modeling.</p>
 </div>
 <div class="section" id="input-data-format">
-<h3>Input Data Format<a class="headerlink" href="#input-data-format" title="Permalink to this headline">¶</a></h3>
+<span id="ml-io"></span><h3>Input Data Format<a class="headerlink" href="#input-data-format" title="Permalink to this headline">¶</a></h3>
 <p>The implementation supports <a class="reference external" href="http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/">LIBSVM</a> file format, where
 feature vectors and labels are specified as</p>
 <div class="highlight-python"><pre>0 1:0.2 4:0.5 10:0.3
@@ -123,23 +123,17 @@ sparse format.</p>
 </li>
 </ul>
 </div></blockquote>
-<p><em>Note</em>: For all fileformats described above, the current implementation is geared towards classification problems and
-requires the label to assume values from 0 to (K-1) for a K-class problem, or +1/-1 for binary classification problems.</p>
+<p>Examples of such files can be downloaded from <a class="reference external" href="http://vikas.sindhwani.org/data.tar.gz">here</a>. The HDF5 files can be viewed using <a class="reference external" href="http://http://www.hdfgroup.org/HDF5/Tutor/hdfview.html">HDFView</a>. A screenshot is shown below.</p>
+<a class="reference internal image-reference" href="files/hdfview_screenshot.png"><img alt="files/hdfview_screenshot.png" class="align-center" src="files/hdfview_screenshot.png" style="width: 750px;" /></a>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">For all fileformats described above, the current implementation is geared towards classification problems and requires the label to assume values from 0 to (K-1) for a K-class problem, or +1/-1 for binary classification problems. This assumption will be relaxed.</p>
+</div>
 </div>
 </div>
 <div class="section" id="quick-example">
 <h2>Quick Example<a class="headerlink" href="#quick-example" title="Permalink to this headline">¶</a></h2>
-<p><strong>Download USPS digit recognition dataset.</strong></p>
-<div class="highlight-python"><pre>wget http://vikas.sindhwani.org/usps.tar.gz
-tar -xvzf usps.tar.gz</pre>
-</div>
-<p><strong>Train a randomized SVM with Gaussian Kernel</strong></p>
-<div class="highlight-python"><pre>./skylark_ml -g 10 -k 1 -l 2 -i 20 --trainfile usps.train --valfile usps.test --modelfile model</pre>
-</div>
-<p><strong>Test with the generated model</strong></p>
-<div class="highlight-python"><pre>./skylark_ml --testfile usps.test --modelfile model</pre>
-</div>
-<p>The above executable can be passed to mpiexec for distributed execution.</p>
+<p>Please see <a class="reference internal" href="quick_start.html#ml-example"><em>ML</em></a></p>
 </div>
 <div class="section" id="commandline-usage">
 <h2>Commandline Usage<a class="headerlink" href="#commandline-usage" title="Permalink to this headline">¶</a></h2>

@@ -26,8 +26,8 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/theme_extras.js"></script>
     <link rel="top" title="libSkylark  documentation" href="index.html" />
-    <link rel="next" title="Numerical Linear Algebra Primitives" href="nla.html" />
-    <link rel="prev" title="Building from Source" href="installation.html" /> 
+    <link rel="next" title="Algorithmic Layer" href="algorithmic.html" />
+    <link rel="prev" title="Base Layer" href="base.html" /> 
   </head>
   <body>
       <div class="header"><h1 class="heading"><a href="index.html">
@@ -37,11 +37,11 @@
       <div class="topnav">
       
         <p>
-        «&#160;&#160;<a href="installation.html">Building from Source</a>
+        «&#160;&#160;<a href="base.html">Base Layer</a>
         &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
         &#160;&#160;::&#160;&#160;
-        <a href="nla.html">Numerical Linear Algebra Primitives</a>&#160;&#160;»
+        <a href="algorithmic.html">Algorithmic Layer</a>&#160;&#160;»
         </p>
 
       </div>
@@ -108,14 +108,42 @@ involved in the GEMM, for each of the input/output matrix-data distribution
 combinations.
 The user can optionally set the relative sizes that differentiate between these
 cases.
-Local R entries can be incrementally realized in a distribution format that
+Local <img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/> entries can be incrementally realized in a distribution format that
 best matches the matrix indices of the local GEMM operation that follows
 it.
-Resulting R blocks typically traverse the smallest of matrix sizes in
+Resulting <img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/> blocks typically traverse the smallest of matrix sizes in
 increments that can optionally be specified by the user.
 This has the extra benefit of minimizing the communication volume of a
 collective operation that generally follows this local GEMM - essentially to
 compensate for the stride-indexed matrix entries in the factors.</p>
+<p>As an example we provide a <em>pseudocode</em> snippet (in Python syntax) that describes
+the rowwise sketching of a squarish input matrix <img class="math" src="_images/math/019e9892786e493964e145e7c5cf7b700314e53b.png" alt="A"/>, initially distributed
+across the process grid in <cite>[MC, MR]</cite> format (please refer
+<a class="reference external" href="http://libelemental.org/documentation/0.83/core/dist_matrix/DM.html">here</a> for a
+comprehensive documentation of distribution formats, here appearing in brackets):
+<img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/> is first realized (its random entries are actually computed in the desired
+distribution format - in embarrassingly parallel mode) and then the local parts of
+<img class="math" src="_images/math/019e9892786e493964e145e7c5cf7b700314e53b.png" alt="A"/> and <img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/> are multiplied together. Finally collective communications within
+subsets of the process grid take place to produce the resulting sketched matrix
+(<cite>C[MC, MR]</cite>). The corresponding C++ code (allowing also for incremental realization of
+<img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/>) can be found in libskylark/sketch/dense_transform_Elemental_mc_mr.hpp.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">matrix_panel</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="n">MC</span><span class="p">,</span> <span class="n">MR</span><span class="p">],</span> <span class="n">S</span><span class="p">):</span>
+    <span class="n">S</span><span class="p">[</span><span class="n">MR</span><span class="p">,</span> <span class="n">STAR</span><span class="p">]</span>       <span class="o">=</span> <span class="n">realize</span><span class="p">(</span><span class="n">S</span><span class="p">)</span>
+    <span class="n">C_hat</span><span class="p">[</span><span class="n">MC</span><span class="p">,</span> <span class="n">STAR</span><span class="p">]</span>   <span class="o">=</span> <span class="n">local_gemm</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="n">MC</span><span class="p">,</span> <span class="n">MR</span><span class="p">],</span> <span class="n">S</span><span class="p">[</span><span class="n">MR</span><span class="p">,</span> <span class="n">STAR</span><span class="p">])</span>
+    <span class="n">C</span><span class="p">[</span><span class="n">MC</span><span class="p">,</span> <span class="n">MR</span><span class="p">]</span>         <span class="o">=</span> <span class="n">reduce_scatter_within_process_rows</span><span class="p">(</span><span class="n">C_hat</span><span class="p">[</span><span class="n">MC</span><span class="p">,</span> <span class="n">STAR</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">C</span><span class="p">[</span><span class="n">MC</span><span class="p">,</span> <span class="n">MR</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Quite interestingly and depending on the distribution format of the input and sketched
+matrices, sketching can be <em>communication free</em>. The following snippet illustrates this
+remark when both input and sketched matrices are in <cite>[VC, STAR]</cite> or <cite>[VR, STAR]</cite>
+distribution formats - same scenario as before, rowwise sketching of a squarish input matrix:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">matrix_panel</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="n">VC</span><span class="o">/</span><span class="n">VR</span><span class="p">,</span> <span class="n">STAR</span><span class="p">],</span> <span class="n">S</span><span class="p">):</span>
+    <span class="n">S</span><span class="p">[</span><span class="n">STAR</span><span class="p">,</span> <span class="n">STAR</span><span class="p">]</span>     <span class="o">=</span> <span class="n">realize</span><span class="p">(</span><span class="n">S</span><span class="p">)</span>
+    <span class="n">C</span><span class="p">[</span><span class="n">VC</span><span class="o">/</span><span class="n">VR</span><span class="p">,</span> <span class="n">STAR</span><span class="p">]</span>    <span class="o">=</span> <span class="n">local_gemm</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="n">VC</span><span class="o">/</span><span class="n">VR</span><span class="p">,</span> <span class="n">STAR</span><span class="p">],</span> <span class="n">S</span><span class="p">[</span><span class="n">STAR</span><span class="p">,</span> <span class="n">STAR</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">C</span><span class="p">[</span><span class="n">VC</span><span class="o">/</span><span class="n">VR</span><span class="p">,</span> <span class="n">STAR</span><span class="p">]</span>
+</pre></div>
+</div>
 <p>Sparse matrices <img class="math" src="_images/math/019e9892786e493964e145e7c5cf7b700314e53b.png" alt="A"/> are currently represented as
 <abbr title="Combinatorial BLAS">CombBLAS</abbr> matrices.
 It is possible to sketch from a sparse matrix to a dense (and vice versa).
@@ -205,91 +233,20 @@ in the C++ sketching layer.</p>
 while STAR/STAR, VR/STAR, VC/STAR, STAR/VR, STAR/VC, MC/MR refer to
 specializations of <a class="reference external" href="http://libelemental.org/documentation/0.83/core/dist_matrix/DM.html">Elemental distributed matrices</a>.
 Each specialization involves choosing a sensical pairing of distributions for
-the rows and columns of the matrix:</p>
-<blockquote>
-<div><ul class="simple">
-<li>CIRC : Only give the data to a single process</li>
-<li>STAR : Give the data to every process</li>
-<li>MC : Distribute round-robin within each column of the 2D process grid (M atrix C olumn)</li>
-<li>MR : Distribute round-robin within each row of the 2D process grid (M atrix R ow)</li>
-<li>VC : Distribute round-robin within a column-major ordering of the entire 2D process grid (V ector C olumn)</li>
-<li>VR : Distribute round-robin within a row-major ordering of the entire 2D process grid (V ector R ow)</li>
-</ul>
-</div></blockquote>
+the rows and columns of the matrix:
+* CIRC : Only give the data to a single process
+* STAR : Give the data to every process
+* MC : Distribute round-robin within each column of the 2D process grid (M atrix C olumn)
+* MR : Distribute round-robin within each row of the 2D process grid (M atrix R ow)
+* VC : Distribute round-robin within a column-major ordering of the entire 2D process grid (V ector C olumn)
+* VR : Distribute round-robin within a row-major ordering of the entire 2D process grid (V ector R ow)</p>
 <p><em>LocalSparse</em> refers to a libskylark-provided class for representing local
 sparse matrices, while <em>DistSparse</em> refers to CombBLAS sparse matrices.</p>
 <a class="reference internal image-reference" href="_images/sketch_transf_in_out_cpp.png"><img alt="_images/sketch_transf_in_out_cpp.png" class="align-center" src="_images/sketch_transf_in_out_cpp.png" style="width: 750px;" /></a>
 <i>Schematic views of input and output types for various sketch transforms.
 The <font color="#154685">blue</font> color marks sparse matrix or
 transforms, <font color="#ee9428">orange</font> is used for dense matrix or
-transforms.</i><div class="section" id="libskylark-context">
-<h4>libSkylark Context<a class="headerlink" href="#libskylark-context" title="Permalink to this headline">¶</a></h4>
-<p>One of the core parts of sketch transformations are random values. The library
-provides and tracks the state of the random number streams in the <cite>context</cite>
-class.</p>
-<dl class="type">
-<dt id="skylark::base::context_t__struct">
-<em class="property">type </em>struct <tt class="descclassname">skylark::base::</tt><tt class="descname">context_t</tt><a class="headerlink" href="#skylark::base::context_t__struct" title="Permalink to this definition">¶</a></dt>
-<dd><p><strong>Constructor</strong></p>
-<dl class="function">
-<dt id="skylark::base::context_t::context_t__i.i">
- <tt class="descname">context_t</tt><big>(</big>int <em>seed</em>, int <em>counter</em><em>=0</em><big>)</big><a class="headerlink" href="#skylark::base::context_t::context_t__i.i" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialize a context with a seed that is used for all computations.</p>
-</dd></dl>
-
-<p><strong>Serialization</strong></p>
-<dl class="function">
-<dt id="skylark::base::context_t::context_t__boost::property_tree::ptreeCR">
- <tt class="descname">context_t</tt><big>(</big>const boost::property_tree::ptree&amp; <em>json</em><big>)</big><a class="headerlink" href="#skylark::base::context_t::context_t__boost::property_tree::ptreeCR" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load a context from a serialized <cite>ptree</cite> structure.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="skylark::base::context_t::to_ptreeC">
-boost::property_tree::ptree <tt class="descname">to_ptree</tt><big>(</big><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#skylark::base::context_t::to_ptreeC" title="Permalink to this definition">¶</a></dt>
-<dd><p>Serialize the context to a Boost <cite>ptree</cite>.</p>
-</dd></dl>
-
-<p><strong>Query</strong></p>
-<dl class="function">
-<dt id="skylark::base::context_t::get_counter">
-size_t <tt class="descname">get_counter</tt><big>(</big><big>)</big><a class="headerlink" href="#skylark::base::context_t::get_counter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the current position in the random stream.</p>
-</dd></dl>
-
-<p><strong>Accessors</strong></p>
-<dl class="function">
-<dt id="skylark::base::context_t::allocate_random_samples_array__s.DistributionR">
-<a class="reference internal" href="#skylark::utility::random_samples_array_t:Distribution:__struct" title="skylark::utility::random_samples_array_t&lt;Distribution&gt;">skylark::utility::random_samples_array_t&lt;Distribution&gt;</a> <tt class="descname">allocate_random_samples_array</tt><big>(</big>size_t <em>size</em>, Distribution&amp; <em>distribution</em><big>)</big><a class="headerlink" href="#skylark::base::context_t::allocate_random_samples_array__s.DistributionR" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a container of samples drawn from a distribution to be accessed
-as an array. The container contains <cite>size</cite> samples drawn from the
-specified <cite>distribution</cite>.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="skylark::base::context_t::generate_random_samples_array__s.DistributionR">
-std::vector&lt;typename Distribution::result_type&gt; <tt class="descname">generate_random_samples_array</tt><big>(</big>size_t <em>size</em>, Distribution&amp; <em>distribution</em><big>)</big><a class="headerlink" href="#skylark::base::context_t::generate_random_samples_array__s.DistributionR" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a vector of samples drawn from a distribution. The vector
-contains <cite>size</cite> samples drawn from the specified <cite>distribution</cite>.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="skylark::base::context_t::allocate_random_array__s">
-skylark::utility::random_array_t <tt class="descname">allocate_random_array</tt><big>(</big>size_t <em>size</em><big>)</big><a class="headerlink" href="#skylark::base::context_t::allocate_random_array__s" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a container of random numbers to be accessed as an array. The
-container lazily provides <cite>size</cite> samples.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="skylark::base::context_t::random_int">
-int <tt class="descname">random_int</tt><big>(</big><big>)</big><a class="headerlink" href="#skylark::base::context_t::random_int" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns an integer random number.</p>
-</dd></dl>
-
-</dd></dl>
-
-</div>
-<div class="section" id="sketching-transforms-label">
+transforms.</i><div class="section" id="sketching-transforms-label">
 <span id="id2"></span><h4>Sketching Transforms<a class="headerlink" href="#sketching-transforms-label" title="Permalink to this headline">¶</a></h4>
 <dl class="type">
 <dt id="skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:__class">
@@ -358,43 +315,6 @@ applying the sketch transform.</p>
 <dd></dd></dl>
 
 </div></blockquote>
-</div>
-<div class="section" id="random-values">
-<h4>Random Values<a class="headerlink" href="#random-values" title="Permalink to this headline">¶</a></h4>
-<p>Random values are generated in a lazy fashion using
-<a class="reference external" href="http://www.deshawresearch.com/resources_random123.html">Random123 library</a>.
-The access to the random streams is wrapped in two classes.</p>
-<dl class="type">
-<dt id="skylark::utility::random_samples_array_t:Distribution:__struct">
-<em class="property">type </em>struct <tt class="descclassname">skylark::utility::</tt><tt class="descname">random_samples_array_t&lt;Distribution&gt;</tt><a class="headerlink" href="#skylark::utility::random_samples_array_t:Distribution:__struct" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="function">
-<dt id="skylark::utility::random_samples_array_t:Distribution:::random_samples_array_t__s.s.i.DistributionR">
- <tt class="descname">random_samples_array_t</tt><big>(</big>size_t <em>base</em>, size_t <em>size</em>, int <em>seed</em>, Distribution&amp; <em>distribution</em><big>)</big><a class="headerlink" href="#skylark::utility::random_samples_array_t:Distribution:::random_samples_array_t__s.s.i.DistributionR" title="Permalink to this definition">¶</a></dt>
-<dd><p>Random-access array of samples drawn from a distribution starting from
-<cite>base</cite> up to a total of <cite>size</cite> samples. The <cite>distribution</cite> determines
-how samples are drawn.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="skylark::utility::random_samples_array_t:Distribution:::random_samples_array_t__random_samples_array_tCR">
- <tt class="descname">random_samples_array_t</tt><big>(</big>const random_samples_array_t&amp; <em>other</em><big>)</big><a class="headerlink" href="#skylark::utility::random_samples_array_t:Distribution:::random_samples_array_t__random_samples_array_tCR" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="skylark::utility::random_samples_array_t:Distribution:::assign-operator__random_samples_array_tCR">
-random_samples_array_t&amp; <tt class="descname">operator=</tt><big>(</big>const random_samples_array_t&amp; <em>other</em><big>)</big><a class="headerlink" href="#skylark::utility::random_samples_array_t:Distribution:::assign-operator__random_samples_array_tCR" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<p><strong>Accessors</strong></p>
-<dl class="function">
-<dt id="skylark::utility::random_samples_array_t:Distribution:::subscript-operator__sC">
-value_type <tt class="descname">operator[]</tt><big>(</big>size_t <em>index</em><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#skylark::utility::random_samples_array_t:Distribution:::subscript-operator__sC" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the random value (following the specified distribution) at
-position <cite>index</cite> in the random stream.</p>
-</dd></dl>
-
-</dd></dl>
-
 </div>
 <div class="section" id="using-the-c-sketching-layer">
 <h4>Using the C++ Sketching layer<a class="headerlink" href="#using-the-c-sketching-layer" title="Permalink to this headline">¶</a></h4>
@@ -1013,11 +933,11 @@ For now, only Pure Python implementation, and only sampling with replacement.</p
       <div class="bottomnav">
       
         <p>
-        «&#160;&#160;<a href="installation.html">Building from Source</a>
+        «&#160;&#160;<a href="base.html">Base Layer</a>
         &#160;&#160;::&#160;&#160;
         <a class="uplink" href="index.html">Contents</a>
         &#160;&#160;::&#160;&#160;
-        <a href="nla.html">Numerical Linear Algebra Primitives</a>&#160;&#160;»
+        <a href="algorithmic.html">Algorithmic Layer</a>&#160;&#160;»
         </p>
 
       </div>

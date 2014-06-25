@@ -31,6 +31,8 @@ Standalone Usage
 Building libskylark creates an executable called **skylark_ml** under CMAKE_PREFIX_INSTALL/bin. This executable can be 
 used out-of-the-box for large-scale applications involving kernel-based modeling.
  
+.. _ml_io:
+
 Input Data Format
 ------------------
 The implementation supports `LIBSVM <http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/>`_ file format, where 
@@ -56,35 +58,24 @@ We also support `HDF5 <http://www.hdfgroup.org/HDF5/>`_ data files.
  		* *indptr*: (n+1) x 1 - pointer into indices, values specifying rows
 		* *Y*: n x 1 matrix of labels
 
-*Note*: For all fileformats described above, the current implementation is geared towards classification problems and 
-requires the label to assume values from 0 to (K-1) for a K-class problem, or +1/-1 for binary classification problems.
+
+Examples of such files can be downloaded from `here <http://vikas.sindhwani.org/data.tar.gz>`_. The HDF5 files can be viewed using `HDFView <http://http://www.hdfgroup.org/HDF5/Tutor/hdfview.html>`_. A screenshot is shown below.
+ 
+.. image:: files/hdfview_screenshot.png
+    :width: 750 px
+    :align: center
+
+
+.. note:: 
+
+	For all fileformats described above, the current implementation is geared towards classification problems and requires the label to assume values from 0 to (K-1) for a K-class problem, or +1/-1 for binary classification problems. This assumption will be relaxed.
 
 
 
 Quick Example
 ===============
  
-**Download USPS digit recognition dataset.**
-
-::
-
- 	wget http://vikas.sindhwani.org/usps.tar.gz
-	tar -xvzf usps.tar.gz
-  
-**Train a randomized SVM with Gaussian Kernel**
-
-:: 
-
-	./skylark_ml -g 10 -k 1 -l 2 -i 20 --trainfile usps.train --valfile usps.test --modelfile model
-
-**Test with the generated model**
-
-::
-
-	./skylark_ml --testfile usps.test --modelfile model
-
-
-The above executable can be passed to mpiexec for distributed execution.	
+Please see :ref:`ml_example`
 
 Commandline Usage
 ==================

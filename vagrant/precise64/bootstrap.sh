@@ -3,7 +3,7 @@
 # export to sudo environment
 # XXX need to clean environment variables export
 export SKYLARK_INSTALL_DIR=/home/vagrant/install
-export COMBBLAS_ROOT=/home/vagrant/CombBLAS_beta_14_0
+export COMBBLAS_ROOT=/home/vagrant/CombBLAS
 export PYTHON_SITE_PACKAGES=${SKYLARK_INSTALL_DIR}
 export PYTHONPATH=${SKYLARK_INSTALL_DIR}/lib/python2.7/site-packages:${PYTHONPATH}
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib

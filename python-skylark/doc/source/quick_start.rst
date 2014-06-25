@@ -176,7 +176,7 @@ Numerical Linear algebra and Machine Learning. If not, we refer the
 reader to subsequent sections which provide the necessary background and 
 references.
 
-The examples below compile to 
+When libskylark is built, executables instantiating these examples can be found under ``bin/examples`` and ``bin/ml``.
 
 Sketching
 ----------

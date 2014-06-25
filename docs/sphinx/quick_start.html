@@ -487,12 +487,21 @@ sketching. Below, three types of sketches are illustrated in the highlighted lin
 <span class="p">}</span>
 </pre></div>
 </td></tr></table></div>
+<p>For sketching Elemental and CombBLAS matrices via Python bindings, run, for example, the following:</p>
+<div class="highlight-sh"><div class="highlight"><pre>mpiexec -np 4 python <span class="nv">$SKYLARK_SRC_DIR</span>/python-skylark/skylark/examples/example_sketch.py
+mpiexec -np 4 python <span class="nv">$SKYLARK_SRC_DIR</span>/python-skylark/skylark/examples/example_sparse_sketch.py
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Currently, we have stable python bindings only for sketching layer. This too might change with newer versions of Elemental.</p>
+</div>
 </div>
 <div class="section" id="fast-least-square-regression">
 <h3>Fast Least Square Regression<a class="headerlink" href="#fast-least-square-regression" title="Permalink to this headline">¶</a></h3>
 <p>In <tt class="file docutils literal"><span class="pre">examples/least_squares.cpp</span></tt> examples are provided on how least
 squares problems can be solved faster using sketching. One approach is
-of the flavor of <tt class="docutils literal"><span class="pre">sketch-and-solve</span></tt> geared towards lower-precision
+of the flavor of <cite>sketch-and-solve</cite> geared towards lower-precision
 solutions, while the other approach uses sketching to construct a
 preconditioner to obtain high-precision solutions faster.</p>
 <div class="highlight-cpp"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>  1
@@ -726,6 +735,12 @@ preconditioner to obtain high-precision solutions faster.</p>
 <span class="p">}</span>
 </pre></div>
 </td></tr></table></div>
+<p>For an example of <cite>sketch-and-solve</cite> regression in Python, run:</p>
+<div class="highlight-sh"><div class="highlight"><pre>wget http://vikas.sindhwani.org/data.tar.gz
+tar -xvzf data.tar.gz
+mpiexec -np 4 python <span class="nv">$SKYLARK_SRC_DIR</span>/python-skylark/skylark/examples/sketch_solve.py data/usps.train data/usps.test
+</pre></div>
+</div>
 </div>
 <div class="section" id="svd">
 <h3>SVD<a class="headerlink" href="#svd" title="Permalink to this headline">¶</a></h3>

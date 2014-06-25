@@ -7,7 +7,7 @@ Introduction
 =============
 
 'Sketching' is the core algorithmic foundation on which Skylark is built, and is
-able to deliver faster NLA kernels and ML algorithmic.
+able to deliver faster NLA kernels and ML algorithms.
 
 Dimensionality reduction in NLA and ML is often based on building an oblivious
 subspace embedding (OSE). An OSE can be thought of as a data-independent random

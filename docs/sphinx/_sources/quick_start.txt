@@ -193,15 +193,24 @@ sketching. Below, three types of sketches are illustrated in the highlighted lin
     :emphasize-lines: 65,66,69,73,96,97,100,103,118,119,122,126 
     :linenos:
 
+  
+For sketching Elemental and CombBLAS matrices via Python bindings, run, for example, the following: 
 
+.. code-block:: sh
+	
+	mpiexec -np 4 python $SKYLARK_SRC_DIR/python-skylark/skylark/examples/example_sketch.py
+  	mpiexec -np 4 python $SKYLARK_SRC_DIR/python-skylark/skylark/examples/example_sparse_sketch.py
 
+.. note::
+	
+	Currently, we have stable python bindings only for sketching layer. This too might change with newer versions of Elemental.	
 
 Fast Least Square Regression
 -----------------------------
 
 In :file:`examples/least_squares.cpp` examples are provided on how least 
 squares problems can be solved faster using sketching. One approach is 
-of the flavor of ``sketch-and-solve`` geared towards lower-precision 
+of the flavor of `sketch-and-solve` geared towards lower-precision 
 solutions, while the other approach uses sketching to construct a 
 preconditioner to obtain high-precision solutions faster.
 
@@ -209,6 +218,14 @@ preconditioner to obtain high-precision solutions faster.
     :language: cpp
     :emphasize-lines: 88,102
     :linenos:
+
+For an example of `sketch-and-solve` regression in Python, run:
+
+.. code-block:: sh
+
+        wget http://vikas.sindhwani.org/data.tar.gz
+        tar -xvzf data.tar.gz
+	mpiexec -np 4 python $SKYLARK_SRC_DIR/python-skylark/skylark/examples/sketch_solve.py data/usps.train data/usps.test
 
 SVD
 ----

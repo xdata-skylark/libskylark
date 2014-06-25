@@ -126,7 +126,8 @@ distribution format - in embarrassingly parallel mode) and then the local parts 
 <img class="math" src="_images/math/019e9892786e493964e145e7c5cf7b700314e53b.png" alt="A"/> and <img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/> are multiplied together. Finally collective communications within
 subsets of the process grid take place to produce the resulting sketched matrix
 (<cite>C[MC, MR]</cite>). The corresponding C++ code (allowing also for incremental realization of
-<img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/>) can be found in libskylark/sketch/dense_transform_Elemental_mc_mr.hpp.</p>
+<img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/>) can be found in
+<tt class="file docutils literal"><span class="pre">libskylark/sketch/dense_transform_Elemental_mc_mr.hpp</span></tt>.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">matrix_panel</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="n">MC</span><span class="p">,</span> <span class="n">MR</span><span class="p">],</span> <span class="n">S</span><span class="p">):</span>
     <span class="n">S</span><span class="p">[</span><span class="n">MR</span><span class="p">,</span> <span class="n">STAR</span><span class="p">]</span>       <span class="o">=</span> <span class="n">realize</span><span class="p">(</span><span class="n">S</span><span class="p">)</span>
     <span class="n">C_hat</span><span class="p">[</span><span class="n">MC</span><span class="p">,</span> <span class="n">STAR</span><span class="p">]</span>   <span class="o">=</span> <span class="n">local_gemm</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="n">MC</span><span class="p">,</span> <span class="n">MR</span><span class="p">],</span> <span class="n">S</span><span class="p">[</span><span class="n">MR</span><span class="p">,</span> <span class="n">STAR</span><span class="p">])</span>
@@ -146,7 +147,13 @@ distribution formats - same scenario as before, rowwise sketching of a squarish 
 </div>
 <p>Sparse matrices <img class="math" src="_images/math/019e9892786e493964e145e7c5cf7b700314e53b.png" alt="A"/> are currently represented as
 <abbr title="Combinatorial BLAS">CombBLAS</abbr> matrices.
-It is possible to sketch from a sparse matrix to a dense (and vice versa).
+As for dense sketch matrices, any part of the sparse sketch matrix can be
+realized without communication. Since the sketch matrix is sparse, we only
+require a &#8220;sparse&#8221; realization of the sketch matrix <img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/> and the sketching
+GEMM can be computed on the random stream directly.
+Similar to the SUMMA approach for dense matrices we select what will be
+communicated depending on input and output dimensions.</p>
+<p>It is possible to sketch from a sparse matrix to a dense (and vice versa).
 The only restriction when using CombBLAS is that total number of processors
 has to be a square number.</p>
 </div>
@@ -166,7 +173,7 @@ These transforms are appropriate for specific downstream tasks, e.g.
 <table border="1" class="docutils">
 <colgroup>
 <col width="9%" />
-<col width="29%" />
+<col width="30%" />
 <col width="61%" />
 </colgroup>
 <thead valign="bottom">
@@ -246,7 +253,12 @@ sparse matrices, while <em>DistSparse</em> refers to CombBLAS sparse matrices.</
 <i>Schematic views of input and output types for various sketch transforms.
 The <font color="#154685">blue</font> color marks sparse matrix or
 transforms, <font color="#ee9428">orange</font> is used for dense matrix or
-transforms.</i><div class="section" id="sketching-transforms-label">
+transforms.</i><div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">In the near future the local dense matrix will be replaced by
+CIRC/CIRC and STAR/STAR matrices.</p>
+</div>
+<div class="section" id="sketching-transforms-label">
 <span id="id2"></span><h4>Sketching Transforms<a class="headerlink" href="#sketching-transforms-label" title="Permalink to this headline">¶</a></h4>
 <dl class="type">
 <dt id="skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:__class">
@@ -368,7 +380,12 @@ installed. One option is to use <a class="reference external" href="http://mpi4p
 <i>Schematic views of input and output types for various sketch transforms.
 The <font color="#154685">blue</font> color marks sparse matrix or
 transforms, <font color="#ee9428">orange</font> is used for dense matrix or
-transforms.</i><div class="section" id="using-the-python-interface">
+transforms.</i><div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">In the near future the local dense matrix will be replaced by
+CIRC/CIRC and STAR/STAR matrices.</p>
+</div>
+<div class="section" id="using-the-python-interface">
 <h4>Using the Python interface<a class="headerlink" href="#using-the-python-interface" title="Permalink to this headline">¶</a></h4>
 <p>Skylark is automatically initialized with a random seed when you import
 sketch. However, you can reinitialize it to a specific seed by calling

@@ -16,7 +16,7 @@ echo "SKYLARK_INSTALL_DIR=/home/vagrant/install" >> ./.bashrc
 echo "COMBBLAS_ROOT=/home/vagrant/CombBLAS" >> ./.bashrc
 echo "PYTHON_SITE_PACKAGES=${SKYLARK_INSTALL_DIR}" >> ./.bashrc
 echo "PYTHONPATH=${SKYLARK_INSTALL_DIR}/lib/python2.7/site-packages:${PYTHONPATH}" >> ./.bashrc
-echo "LD_LIBRARY_PATH=${SKYLARK_INSTALL_DIR}/lib:${COMBBLAS_ROOT}/lib:/usr/local/lib" >> ./.bashrc
+echo "LD_LIBRARY_PATH=${SKYLARK_INSTALL_DIR}/lib:${COMBBLAS_ROOT}:/usr/local/lib" >> ./.bashrc
 echo "export SKYLARK_SRC_DIR" >> ./.bashrc
 echo "export SKYLARK_BUILD_DIR" >> ./.bashrc
 echo "export SKYLARK_INSTALL_DIR" >> ./.bashrc
@@ -210,9 +210,10 @@ easy_install numpydoc
 apt-get install -y dvipng
 
 
+source /home/vagrant/.bashrc
+
 # To build skylark (with CombBLAS support):
 yes | git clone https://github.com/xdata-skylark/libskylark.git
-chown -R vagrant libskylark
 
 mkdir ${SKYLARK_BUILD_DIR}
 mkdir ${SKYLARK_INSTALL_DIR}

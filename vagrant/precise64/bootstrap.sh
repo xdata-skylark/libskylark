@@ -24,6 +24,7 @@ echo "export COMBBLAS_ROOT" >> ./.bashrc
 echo "export PYTHON_SITE_PACKAGES" >> ./.bashrc
 echo "export PYTHONPATH" >> ./.bashrc
 echo "export LD_LIBRARY_PATH" >> ./.bashrc
+echo "export LD_PRELOAD=$HOME/CombBLAS/libMPITypelib.so:$HOME/CombBLAS/libCommGridlib.so" >> ./.bashrc
 chown -R vagrant /home/vagrant/.bashrc
 
 # python development

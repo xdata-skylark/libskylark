@@ -1,7 +1,7 @@
 #ifndef SKYLARK_TRSM_HPP
 #define SKYLARK_TRSM_HPP
 
-// Defines a generic Gemm function that recieves a wider set of matrices
+// Defines a generic Trsm function that recieves a wider set of matrices
 
 #if SKYLARK_HAVE_ELEMENTAL
 

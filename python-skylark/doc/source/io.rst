@@ -8,9 +8,9 @@ Currently, IO from the C++ layer is implemented in libskylark/ml/io.hpp.
 Reading
 ^^^^^^^
 
-.. cpp:function:: void read(const boost::mpi::communicator &comm, int fileformat, std::string filename, InputType& X, LabelType& Y, int d=0)
+.. cpp:function:: void read(const boost::mpi::communicator& comm, int fileformat, std::string filename, InputType& X, LabelType& Y, int d=0)
 
-    Reads data from `filename` as a pair of matrices `X` and `Y`. Data are in the form of instances each carrying a label; an instance in turn consists of a series of feature/value pairs. Feature/value pairs are the column indices/entries for matrix `X` with its row indices coming from a running index of the instances. Matrix `Y` carries the vector of successive labels corresponding to this running index. `fileformat` can be any of the following:
+    Reads data from `filename` as a pair of matrices `X` and `Y`. Data are in the form of instances each carrying a label; an instance in turn consists of a series of feature/value pairs. Feature/value pairs are the column indices/entries for matrix `X` with its row indices coming from a running index of the instances (the minimum number of features is `d`). Matrix `Y` carries the vector of successive labels corresponding to this running index. `fileformat` can have any of the following values of `FileFormatType` enum (as defined in libskylark/ml/options.hpp):
 
     * HDF5_DENSE
 
@@ -20,57 +20,61 @@ Reading
 
     * LIBSVM_SPARSE
 
-`*_DENSE` correspond to the case of elem::Matrix<T> (dense) matrix `X` (`*_SPARSE` is for skylark::base::sparse_matrix_t<T> (sparse) matrix `X`).
-`HDF5_*` are for HDF5-formatted files  while `LIBSVM_*` are for LIBSVM ones.
+`*_DENSE` correspond to the case of elem::Matrix<T> (dense) matrix `X`; `*_SPARSE` is for the skylark::base::sparse_matrix_t<T> (sparse) matrix `X`.
+`HDF5_*` are for `Hierarchical Data Format, version 5 (HDF5) <http://www.hdfgroup.org/HDF5/>`_ files  while `LIBSVM_*` are for `Library for Support Vector Machines (LIBSVM) <http://www.csie.ntu.edu.tw/~cjlin/libsvm/>`_ ones.
 
 
 **HDF5-specific routines**
 
-.. cpp:function:: void read_hdf5(const boost::mpi::communicator &comm, std::string fName, LocalMatrixType&  Xlocal, LocalMatrixType& Ylocal, int blocksize = 10000)
+.. cpp:function:: void read_hdf5(const boost::mpi::communicator& comm, std::string filename, elem::Matrix<double>& X, elem::Matrix<double>& Y, int blocksize = 10000)
 
-.. cpp:function:: void read_hdf5(const boost::mpi::communicator &comm, std::string fName, sparse_matrix_t& X, elem::Matrix<double>& Y, int min_d = 0)
+.. cpp:function:: void read_hdf5(const boost::mpi::communicator& comm, std::string filename, skylark::base::sparse_matrix_t<double>& X, elem::Matrix<double>& Y, int min_d = 0)
 
-    Reads data from datasets `X` and `Y` in Hierarchical Data Format (HDF5) file `fName` as a pair of matrices `Xlocal`, `Ylocal` (`X`, `Y`). Instances are read in bunches of `blocksize` each.
+    Reads datasets `X` and `Y` from HDF5 `filename` as a pair of matrices `X`, `Y`. Instances are read in bunches of `blocksize` each; `min_d` is the minimum number of features.
 
 
 **LIBSVM-specific routines**
 
-.. cpp:function:: void read_libsvm(const boost::mpi::communicator &comm, std::string fName, elem::Matrix<T>& Xlocal, elem::Matrix<T>& Ylocal, int min_d = 0, int blocksize = 10000)
+.. cpp:function:: void read_libsvm(const boost::mpi::communicator& comm, std::string filename, elem::Matrix<T>& X, elem::Matrix<T>& Y, int min_d = 0, int blocksize = 10000)
 
-.. cpp:function:: void read_libsvm(const boost::mpi::communicator &comm, std::string fName,  skylark::base::sparse_matrix_t<T>& X, elem::Matrix<T>& Y, int min_d = 0)
+.. cpp:function:: void read_libsvm(const boost::mpi::communicator& comm, std::string filename, skylark::base::sparse_matrix_t<T>& X, elem::Matrix<T>& Y, int min_d = 0)
 
-    Reads data from Library for Support Vector Machines (LIBSVM) formatted file `fName` as a pair of matrices `Xlocal`, `Ylocal` (`X`, `Y`). Instances are read in bunches of `blocksize` each.
+    Reads data from LIBSVM `filename` as a pair of matrices `X`, `Y`. Instances are read in bunches of `blocksize` each; `min_d` is the minimum number of features.
 
 
 **Utility routines**
 
-.. cpp:function:: void read_hdf5_dataset(H5::H5File& file, std::string name, int* buf, int offset, int count)
+.. cpp:function:: void read_hdf5_dataset(H5::H5File& file, std::string name, int* buffer, int offset, int count)
 
-.. cpp:function:: void read_hdf5_dataset(H5::H5File& file, std::string name, double* buf, int offset, int count)
+.. cpp:function:: void read_hdf5_dataset(H5::H5File& file, std::string name, double* buffer, int offset, int count)
 
-    Reads `count` entries from the `name` dataset in HDF5 `file` starting at `offset` and collects them into buffer `buf`.
+    Reads `count` entries from the `name` dataset in HDF5 `file` starting at `offset` and collects them into `buffer`.
 
 
-.. cpp:function:: void read_model_file(std::string fName, elem::Matrix<double>& W)
+.. cpp:function:: void read_model_file(std::string filename, elem::Matrix<double>& W)
 
-    Reads the values from model file `fName` into matrix `W`; model file is expected to start with a line of the form:
+    Reads the values from model file `filename` into matrix `W`; model file is expected to start with a line of the form:
     `# Dimensions m n` for an `m x n` matrix `W` followed by lines containing the values of successive rows of the matrix.
 
 
-.. cpp:function:: std::string read_header(const boost::mpi::communicator &comm, std::string fName)
+.. cpp:function:: std::string read_header(const boost::mpi::communicator& comm, std::string filename)
 
-    Returns the first line of file `fName`.
+    Returns the first line of `filename`.
 
 
 
 Writing
 ^^^^^^^
 
-.. cpp:function:: int write_hdf5(const boost::mpi::communicator &comm, std::string fName, elem::Matrix<double>& X, elem::Matrix<double>& Y)
+.. cpp:function:: int write_hdf5(const boost::mpi::communicator& comm, std::string filename, elem::Matrix<double>& X, elem::Matrix<double>& Y)
 
-.. cpp:function:: int write_hdf5(std::string fName, sparse_matrix_t& X, elem::Matrix<double>& Y)
+.. cpp:function:: int write_hdf5(std::string filename, skylark::base::sparse_matrix_t<double>& X, elem::Matrix<double>& Y)
 
-    Writes feature/value pairs (in matrix `X`) and labels (in matrix `Y`) to the HDF5 file `fName` and returns 0 to signal successfully completed operation.For the case of dense matrix input `X` (of elem::Matrix<double> type) two datasets named `X` and `Y` are created in the file for all data. For the case of sparse matrix `X` (of sparse_matrix_t type, aka  skylark::base::sparse_matrix_t<T>) five datasets are created: `dimensions` (matrix size), `indptr`, `indices`, `values` (`X` matrix) and `Y` (`Y` matrix).
+    Writes feature/value pairs (in matrix `X`) and labels (in matrix `Y`) to the HDF5 `filename` and returns 0 to signal successfully completed operation. 
+    
+     * For the case of dense matrix input `X` (elem::Matrix<double> type) 2 datasets named `X` and `Y` are created in the file for all data. 
+     
+     * For the case of sparse matrix `X` (skylark::base::sparse_matrix_t<double> type) 5 datasets are created in the file for all data: `dimensions` (for `X` matrix size), `indptr`, `indices`, `values` (for `X` matrix) and `Y` (for `Y` matrix).
 
 
 .. note::

@@ -174,23 +174,24 @@ shown below:
 .. code-block:: sh
 
     Vagrant.configure("2") do |config|
-      config.vm.box = "skylark"
-      config.vm.provision :shell, :path => "bootstrap.sh"
+        config.vm.box = "skylark"
+        config.vm.provision :shell, :path => "bootstrap.sh"
 
-      config.vm.provider :aws do |aws, override|
-        aws.access_key_id     = "XYZ"
-        aws.secret_access_key = "AAA"
-        aws.keypair_name      = "keynam"
-        aws.security_groups   = ["ssh-rule"]
+        config.vm.provider :aws do |aws, override|
+            aws.access_key_id     = "XYZ"
+            aws.secret_access_key = "AAA"
+            aws.keypair_name      = "keynam"
+            aws.security_groups   = ["ssh-rule"]
 
-        aws.ami           = "ami-fa9cf1ca"
-        aws.region        = "us-west-2"
-        aws.instance_type = "t1.micro"
+            aws.ami           = "ami-fa9cf1ca"
+            aws.region        = "us-west-2"
+            aws.instance_type = "t1.micro"
 
-        override.ssh.username         = "ubuntu"
-        override.ssh.private_key_path = "aws.pem"
-      end
+            override.ssh.username         = "ubuntu"
+            override.ssh.private_key_path = "aws.pem"
+        end
     end
+
 
 Then execute:
 

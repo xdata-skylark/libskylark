@@ -20,7 +20,7 @@ Simply follow the instructions shown below.
         vagrant ssh
 
 .. note:: The ``vagrant up`` command is downloading, building and installing
-    libsklylark and its dependencies. This step will most likely takes a while
+    libsklylark and its dependencies. This step will most likely take a while
     to complete.
 
 To exit the virtual environment type ``exit`` in the shell followed by

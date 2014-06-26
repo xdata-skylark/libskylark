@@ -6,10 +6,10 @@ Quick Start Guide
 Setting up a libSkylark environment is facilitated using
 `Vagrant <http://www.vagrantup.com/>`_ and
 `VirtualBox <https://www.virtualbox.org/>`_.
-Simply follow the required steps below.
+Simply follow the instructions shown below.
 
-1. `Download <https://www.virtualbox.org/wiki/Downloads/>`_ and install VirtualBox.
-2. `Download <http://www.vagrantup.com/downloads.html>`_ and install Vagrant.
+1. Install VirtualBox (use packet manager or `download <https://www.virtualbox.org/wiki/Downloads/>`_)
+2. Install Vagrant (use packet manager or `download <http://www.vagrantup.com/downloads.html>`_).
 3. Execute the following command in a terminal:
 
     .. code-block:: sh
@@ -19,22 +19,21 @@ Simply follow the required steps below.
         vagrant up
         vagrant ssh
 
-.. note::
-    The ``vagrant up`` command may take a while to bootstrap and install
+.. note:: The ``vagrant up`` command may take a while to bootstrap and install
     everything.
 
 To exit the virtual environment type ``exit`` followed by ``vagrant halt`` if
 you want to power down the virtual machine. Use the ``up`` (if the machine
 was powered down) and the ``ssh`` commands to start and ssh to the virtual
-machine.
+machine again.
+
 
 In the next section we provide more in depth information and additional
 details on how the Vagrant setup works.
 Additionally we provide instruction on how to install on a cluster
 (see :ref:`cluster-label`) and running on AWS (see :ref:`aws-label`).
 
-Finally, to see how the library can be used consult the
-:ref:`examples-label` section.
+Finally, some examples are provided in the :ref:`examples-label` section.
 
 
 .. _vagrant-label:

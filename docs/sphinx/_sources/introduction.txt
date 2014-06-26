@@ -75,12 +75,12 @@ potential to significantly improve the computational efficiency of solving highe
 modeling and machine learning tasks, by essentially replacing calls to traditional NLA kernels with 
 their sketching counterparts. 
 
-Skylark builds on distributed Numerical Linear Algebra libraries for Dense and Sparse Matrices, with 
-an MPI backend. Organizationally, it comprises of three layers. The core is a library of sketching 
-transforms whose main functionality is to enable a variety of input matrix types to be sketched, 
-using transforms specialized for various NLA kernels such as least squares (:math:`l_2`) regression, 
-robust regression (:math:`l_1`) and low-rank matrix approximations. These kernels are being 
-implemented in the Numerical Linear Algebra (NLA) layer.
+Skylark builds on high-performance Numerical Linear Algebra libraries in C++ for Dense and Sparse Matrices, 
+with a Message Passing Interface (MPI) backend for distributed computations. Organizationally, it comprises of 
+three layers. The core is a library of sketching transforms whose main functionality is to enable a variety of 
+input matrix types to be sketched, using transforms specialized for various NLA kernels such as least squares 
+(:math:`l_2`) regression, robust regression (:math:`l_1`) and low-rank matrix approximations. These kernels 
+are being implemented in the Numerical Linear Algebra (NLA) layer.
 
 The accelerated NLA kernels are then used to accelerate higher level machine learning algorithms, 
 e.g., kernel-based nonlinear regression, matrix completion and statistical dimensionality reduction 
@@ -94,8 +94,9 @@ In the future, we also plan to support a streaming interface for out-of-core ske
 computations.
 
 Note that some of the features mentioned above are under active development and/or currently being 
-benchmarked for performance improvements, and as such some of the features in the current stack should be 
+benchmarked for performance improvements, and as such the current stack should be 
 considered experimental.
+
 
 License and Copyright
 ----------------------

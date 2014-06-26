@@ -978,22 +978,18 @@ tar -xvzf data.tar.gz
 <ol class="arabic simple" start="2">
 <li>Train an SVM with Randomized Gaussian Kernel</li>
 </ol>
-<div class="highlight-sh"><div class="highlight"><pre>./skylark_ml -g 10 -k 1 -l 2 -i 20 --trainfile data/usps.train --valfile data/usps.test --modelfile model
+<div class="highlight-sh"><div class="highlight"><pre>mpiexec -np 4 ./skylark_ml -g 10 -k 1 -l 2 -i 20 --trainfile data/usps.train --valfile data/usps.test --modelfile model
 </pre></div>
 </div>
 <ol class="arabic simple" start="3">
 <li>Test accuracy of the generated model</li>
 </ol>
-<div class="highlight-sh"><div class="highlight"><pre>./skylark_ml --testfile data/usps.test --modelfile model
+<div class="highlight-sh"><div class="highlight"><pre>mpiexec -np 4 ./skylark_ml --testfile data/usps.test --modelfile model
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">The above executable can be passed to <tt class="docutils literal"><span class="pre">mpiexec</span></tt> for distributed execution. We assume all nodes can see the path to the training/validation/test files.</p>
-</div>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">In testing mode, the entire test data is currently loaded in memory. A separate file containing predictions is currently not generated. These restrictions will be relaxed.</p>
+<p class="last">In testing mode, the entire test data is currently loaded in memory while ideally the model should be applied in a streaming fashion. A separate file containing predictions is currently not generated. These restrictions will be relaxed.</p>
 </div>
 </div>
 </div>

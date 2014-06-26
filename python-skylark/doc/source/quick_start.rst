@@ -261,18 +261,14 @@ The supported fileformats are described in :ref:`ml_io`.
  
 .. code-block:: sh
 
-        ./skylark_ml -g 10 -k 1 -l 2 -i 20 --trainfile data/usps.train --valfile data/usps.test --modelfile model
+        mpiexec -np 4 ./skylark_ml -g 10 -k 1 -l 2 -i 20 --trainfile data/usps.train --valfile data/usps.test --modelfile model
   
 3. Test accuracy of the generated model 
 
 .. code-block:: sh
 
-        ./skylark_ml --testfile data/usps.test --modelfile model
-
-.. note::
-	
-	The above executable can be passed to ``mpiexec`` for distributed execution. We assume all nodes can see the path to the training/validation/test files.
-
+        mpiexec -np 4 ./skylark_ml --testfile data/usps.test --modelfile model
+ 
 .. note:: 
 
-	In testing mode, the entire test data is currently loaded in memory. A separate file containing predictions is currently not generated. These restrictions will be relaxed.
+	In testing mode, the entire test data is currently loaded in memory while ideally the model should be applied in a streaming fashion. A separate file containing predictions is currently not generated. These restrictions will be relaxed.

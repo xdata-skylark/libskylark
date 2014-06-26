@@ -92,8 +92,8 @@ vagrant ssh
 virtual machine again is considerably slower because the <tt class="docutils literal"><span class="pre">vagrant</span> <span class="pre">up</span></tt>
 command reruns some parts of the bootstrap script.</p>
 </div>
-<p>In the next section we provide more in depth information and additional
-details on how the Vagrant setup works.
+<p>In the next section we provide more in depth details on how the Vagrant setup
+works and some trouble shooting.
 Additionally we provide instruction on how to install on a cluster
 (see <a class="reference internal" href="#cluster-label"><em>Cluster of vagrant-controlled VMs</em></a>) and running on AWS (see <a class="reference internal" href="#aws-label"><em>Running Vagrant on AWS</em></a>).</p>
 <p>Finally, some examples are provided in the <a class="reference internal" href="#examples-label"><em>Examples</em></a> section.</p>
@@ -119,10 +119,7 @@ vagrant ssh
 Then he/she can just <tt class="docutils literal"><span class="pre">ssh</span></tt> into this VM and follow the standard instructions
 (see <a class="reference internal" href="installation.html#build-libskylark-label"><em>Building libskylark</em></a>) for fetching, building and installing
 libSkylark alone and quickly start using it.</p>
-<p>The vagrant box can be stopped by issuing the following command:</p>
-<div class="highlight-sh"><div class="highlight"><pre>vagrant halt
-</pre></div>
-</div>
+<p>The vagrant box can be stopped by issuing <tt class="docutils literal"><span class="pre">vagrant</span> <span class="pre">halt</span></tt>.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p>We use <em>clean vagrant boxes</em>, automatically downloaded from the following

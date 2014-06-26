@@ -6,10 +6,14 @@ Quick Start Guide
 Setting up a libSkylark environment is facilitated using
 `Vagrant <http://www.vagrantup.com/>`_ and
 `VirtualBox <https://www.virtualbox.org/>`_.
+
+.. note:: Make sure to use Vagrant >= 1.6.3! The configuration file will
+    not be compatible with older versions.
+
 Simply follow the instructions shown below.
 
-1. Install VirtualBox (use packet manager or `download <https://www.virtualbox.org/wiki/Downloads/>`_)
-2. Install Vagrant (use packet manager or `download <http://www.vagrantup.com/downloads.html>`_).
+1. Install VirtualBox (`download <https://www.virtualbox.org/wiki/Downloads/>`_)
+2. Install Vagrant (`download <http://www.vagrantup.com/downloads.html>`_).
 3. Execute the following command in a terminal:
 
     .. code-block:: sh

@@ -87,10 +87,10 @@ vagrant ssh
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">Using the <tt class="docutils literal"><span class="pre">vagrant</span> <span class="pre">up</span></tt> (after a <tt class="docutils literal"><span class="pre">vagrant</span> <span class="pre">halt</span></tt>) and the
-<tt class="docutils literal"><span class="pre">vagrant</span> <span class="pre">ssh</span></tt> commands to reconnect to the virtual machine again is
-considerably slower because the <tt class="docutils literal"><span class="pre">vagrant</span> <span class="pre">up</span></tt> command reruns some parts
-of the bootstrap script.</p>
+<p class="last">Depending on your Vagrant version using the <tt class="docutils literal"><span class="pre">vagrant</span> <span class="pre">up</span></tt> (after a
+<tt class="docutils literal"><span class="pre">vagrant</span> <span class="pre">halt</span></tt>) and the <tt class="docutils literal"><span class="pre">vagrant</span> <span class="pre">ssh</span></tt> commands to reconnect to the
+virtual machine again is considerably slower because the <tt class="docutils literal"><span class="pre">vagrant</span> <span class="pre">up</span></tt>
+command reruns some parts of the bootstrap script.</p>
 </div>
 <p>In the next section we provide more in depth information and additional
 details on how the Vagrant setup works.
@@ -138,6 +138,25 @@ urls:</p>
 connection settings: IP= <tt class="docutils literal"><span class="pre">127.0.0.1</span></tt>, port= <tt class="docutils literal"><span class="pre">2222</span></tt>,
 username= <tt class="docutils literal"><span class="pre">vagrant</span></tt>, password= <tt class="docutils literal"><span class="pre">vagrant</span></tt>.
 See also <tt class="docutils literal"><span class="pre">vagrant</span> <span class="pre">ssh-config</span></tt> command.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>If you get a timeout error (waiting for virtual machine to boot)</p>
+<div class="highlight-sh"><div class="highlight"><pre><span class="o">[</span>...<span class="o">]</span>
+default: Warning: Connection timeout. Retrying...
+default: Warning: Connection timeout. Retrying...
+Timed out <span class="k">while </span>waiting <span class="k">for </span>the machine to boot. This means that
+Vagrant was unable to communicate with the guest machine within
+the configured <span class="o">(</span><span class="s2">&quot;config.vm.boot_timeout&quot;</span> value<span class="o">)</span> <span class="nb">time </span>period.
+</pre></div>
+</div>
+<p class="last">during <tt class="docutils literal"><span class="pre">vagrant</span> <span class="pre">up</span></tt> just halt and up vagrant again.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">In case Vagrant crashes during the setup, the safest thing is to delte the
+virtual machine (halt than delete the machine in the VirtualBox GUI) and
+start with a fresh vagrant build.</p>
 </div>
 </div>
 <div class="section" id="cluster-of-vagrant-controlled-vms">

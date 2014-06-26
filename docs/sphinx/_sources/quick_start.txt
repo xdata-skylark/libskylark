@@ -35,10 +35,10 @@ interface to start the virtual machine and then login with the
     vagrant ssh
 
 
-.. note:: Using the ``vagrant up`` (after a ``vagrant halt``) and the
-    ``vagrant ssh`` commands to reconnect to the virtual machine again is
-    considerably slower because the ``vagrant up`` command reruns some parts
-    of the bootstrap script.
+.. note:: Depending on your Vagrant version using the ``vagrant up`` (after a
+    ``vagrant halt``) and the ``vagrant ssh`` commands to reconnect to the
+    virtual machine again is considerably slower because the ``vagrant up``
+    command reruns some parts of the bootstrap script.
 
 
 In the next section we provide more in depth information and additional
@@ -100,6 +100,27 @@ The vagrant box can be stopped by issuing the following command:
     connection settings: IP= ``127.0.0.1``, port= ``2222``,
     username= ``vagrant``, password= ``vagrant``.
     See also ``vagrant ssh-config`` command.
+
+.. note::
+
+    If you get a timeout error (waiting for virtual machine to boot)
+
+    .. code-block:: sh
+
+        [...]
+        default: Warning: Connection timeout. Retrying...
+        default: Warning: Connection timeout. Retrying...
+        Timed out while waiting for the machine to boot. This means that
+        Vagrant was unable to communicate with the guest machine within
+        the configured ("config.vm.boot_timeout" value) time period.
+
+    during ``vagrant up`` just halt and up vagrant again.
+
+.. note::
+
+    In case Vagrant crashes during the setup, the safest thing is to delte the
+    virtual machine (halt than delete the machine in the VirtualBox GUI) and
+    start with a fresh vagrant build.
 
 
 .. _cluster-label:

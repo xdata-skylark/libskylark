@@ -171,7 +171,7 @@ Using the provided ``bootstrap.sh`` file in combination with the ``aws``
 plugin (see link above) one can deploy on AWS. First adapt the Vagrant file as
 shown below:
 
-.. code-block::
+.. code-block:: sh
 
     Vagrant.configure("2") do |config|
       config.vm.box = "skylark"
@@ -300,13 +300,13 @@ The supported fileformats are described in :ref:`ml_io`.
 .. code-block:: sh
 
         mpiexec -np 4 ./skylark_ml -g 10 -k 1 -l 2 -i 20 --trainfile data/usps.train --valfile data/usps.test --modelfile model
-  
-3. Test accuracy of the generated model 
+
+3. Test accuracy of the generated model
 
 .. code-block:: sh
 
         mpiexec -np 4 ./skylark_ml --testfile data/usps.test --modelfile model
- 
+
 .. note::
 
 	In testing mode, the entire test data is currently loaded in memory while ideally the model should be applied in a streaming fashion. A separate file containing predictions is currently not generated. These restrictions will be relaxed.

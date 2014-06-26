@@ -27,13 +27,11 @@ echo "export LD_LIBRARY_PATH" >> ./.bashrc
 echo "export LD_PRELOAD=/home/vagrant/CombBLAS/libMPITypelib.so:/home/vagrant/CombBLAS/libCommGridlib.so" >> ./.bashrc
 chown -R vagrant /home/vagrant/.bashrc
 
+# make sure the package information is up-to-date
 apt-get update
 
 # python development
 apt-get install -y python-dev
-
-# make sure the package information is up-to-date
-apt-get update
 
 # setuptools
 apt-get install -y python-setuptools
@@ -42,34 +40,16 @@ apt-get install -y python-setuptools
 apt-get install -y g++
 apt-get install -y gfortran
 
-# install new g++ > 4.7.1
-add-apt-repository ppa:ubuntu-toolchain-r/test
-apt-get update
-apt-get install -y gcc-4.7 g++-4.7
-update-alternatives --remove gcc /usr/bin/gcc-4.6
-update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.7 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.7
-update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.6 40 --slave /usr/bin/g++ g++ /usr/bin/g++-4.6
-
 # source control
 apt-get install -y git
 
 # configuration
-wget http://www.cmake.org/files/v2.8/cmake-2.8.11.2.tar.gz
-tar xvfz cmake-2.8.11.2.tar.gz
-cd cmake-2.8.11.2/
-mkdir build
-cd build
-../bootstrap
-make
-make install
-cd ../..
+apt-get install -y cmake
 
 # BLAS and LAPACK
 apt-get install -y libblas-dev
-apt-get install -y libblas-doc
 apt-get install -y libblas3gf
 apt-get install -y liblapack-dev
-apt-get install -y liblapack-doc
 apt-get install -y liblapack3gf
 
 # OpenBLAS
@@ -84,34 +64,22 @@ cd ..
 # Message Passing Interface
 apt-get install -y libcr-dev
 apt-get install -y mpich2
-apt-get install -y mpich2-doc
 
-# numpy
-wget http://downloads.sourceforge.net/project/numpy/NumPy/1.7.0/numpy-1.7.0.tar.gz
-tar xvzf numpy-1.7.0.tar.gz
-cd numpy-1.7.0
-echo "[atlas]" > site.cfg
-echo "atlas_libs = openblas" >> site.cfg
-echo "library_dirs = /usr/local/lib" >> site.cfg
-./setup.py build
-./setup.py install
-cd ..
+# Numpy and Scipy stack installation as recommended at scipy.org
+apt-get install -y python-numpy 
+apt-get install -y python-scipy 
+apt-get install -y python-matplotlib 
+apt-get install -y ipython 
+apt-get install -y ipython-notebook 
+apt-get install -y python-pandas 
+apt-get install -y python-sympy 
+apt-get install -y python-nose
 
-# scipy
-wget http://downloads.sourceforge.net/project/scipy/scipy/0.12.0/scipy-0.12.0.tar.gz
-tar xvzf scipy-0.12.0.tar.gz
-cd scipy-0.12.0/
-cp ../numpy-1.7.0/site.cfg .
-./setup.py build
-./setup.py install
-cd ..
 
 # SWIG
 apt-get install -y swig
-apt-get install -y swig-doc
 apt-get install -y swig-examples
 apt-get install -y swig2.0-examples
-apt-get install -y swig2.0-doc
 
 # mpi4py
 easy_install mpi4py
@@ -181,16 +149,6 @@ wget http://www.thesalmons.org/john/random123/releases/1.08/Random123-1.08.tar.g
 tar xvfz Random123-1.08.tar.gz
 cp -r Random123-1.08/include/Random123 /usr/local/include
 
-# spiral-wht
-wget http://www.ece.cmu.edu/~spiral/software/spiral-wht-1.8.tgz
-tar xzvf spiral-wht-1.8.tgz
-cd spiral-wht-1.8/
-./configure CFLAGS="-fPIC -fopenmp" --enable-RAM=16000 --enable-DDL --enable-IL --enable-PARA=8
-make -j4
-make install
-#/usr/local/bin/wht_dp.prl
-cd ..
-
 # doxygen
 apt-get install -y doxygen
 
@@ -199,9 +157,6 @@ apt-get install -y graphviz
 
 # sphinx
 apt-get install -y python-sphinx
-
-# matplotlib
-apt-get install -y python-matplotlib
 
 # numpydoc
 easy_install numpydoc

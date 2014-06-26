@@ -171,26 +171,27 @@ Using the provided ``bootstrap.sh`` file in combination with the ``aws``
 plugin (see link above) one can deploy on AWS. First adapt the Vagrant file as
 shown below:
 
-.. code-block::
+.. code-block:: sh
 
     Vagrant.configure("2") do |config|
-      config.vm.box = "skylark"
-      config.vm.provision :shell, :path => "bootstrap.sh"
+        config.vm.box = "skylark"
+        config.vm.provision :shell, :path => "bootstrap.sh"
 
-      config.vm.provider :aws do |aws, override|
-        aws.access_key_id     = "XYZ"
-        aws.secret_access_key = "AAA"
-        aws.keypair_name      = "keynam"
-        aws.security_groups   = ["ssh-rule"]
+        config.vm.provider :aws do |aws, override|
+            aws.access_key_id     = "XYZ"
+            aws.secret_access_key = "AAA"
+            aws.keypair_name      = "keynam"
+            aws.security_groups   = ["ssh-rule"]
 
-        aws.ami           = "ami-fa9cf1ca"
-        aws.region        = "us-west-2"
-        aws.instance_type = "t1.micro"
+            aws.ami           = "ami-fa9cf1ca"
+            aws.region        = "us-west-2"
+            aws.instance_type = "t1.micro"
 
-        override.ssh.username         = "ubuntu"
-        override.ssh.private_key_path = "aws.pem"
-      end
+            override.ssh.username         = "ubuntu"
+            override.ssh.private_key_path = "aws.pem"
+        end
     end
+
 
 Then execute:
 
@@ -300,13 +301,13 @@ The supported fileformats are described in :ref:`ml_io`.
 .. code-block:: sh
 
         mpiexec -np 4 ./skylark_ml -g 10 -k 1 -l 2 -i 20 --trainfile data/usps.train --valfile data/usps.test --modelfile model
-  
-3. Test accuracy of the generated model 
+
+3. Test accuracy of the generated model
 
 .. code-block:: sh
 
         mpiexec -np 4 ./skylark_ml --testfile data/usps.test --modelfile model
- 
+
 .. note::
 
 	In testing mode, the entire test data is currently loaded in memory while ideally the model should be applied in a streaming fashion. A separate file containing predictions is currently not generated. These restrictions will be relaxed.

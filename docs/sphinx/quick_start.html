@@ -201,6 +201,26 @@ user/password combination for ssh.</p>
 <p>Using the provided <tt class="docutils literal"><span class="pre">bootstrap.sh</span></tt> file in combination with the <tt class="docutils literal"><span class="pre">aws</span></tt>
 plugin (see link above) one can deploy on AWS. First adapt the Vagrant file as
 shown below:</p>
+<div class="highlight-sh"><div class="highlight"><pre>Vagrant.configure<span class="o">(</span><span class="s2">&quot;2&quot;</span><span class="o">)</span> <span class="k">do</span> |config|
+    config.vm.box <span class="o">=</span> <span class="s2">&quot;skylark&quot;</span>
+    config.vm.provision :shell, :path <span class="o">=</span>&gt; <span class="s2">&quot;bootstrap.sh&quot;</span>
+
+    config.vm.provider :aws <span class="k">do</span> |aws, override|
+        aws.access_key_id     <span class="o">=</span> <span class="s2">&quot;XYZ&quot;</span>
+        aws.secret_access_key <span class="o">=</span> <span class="s2">&quot;AAA&quot;</span>
+        aws.keypair_name      <span class="o">=</span> <span class="s2">&quot;keynam&quot;</span>
+        aws.security_groups   <span class="o">=</span> <span class="o">[</span><span class="s2">&quot;ssh-rule&quot;</span><span class="o">]</span>
+
+        aws.ami           <span class="o">=</span> <span class="s2">&quot;ami-fa9cf1ca&quot;</span>
+        aws.region        <span class="o">=</span> <span class="s2">&quot;us-west-2&quot;</span>
+        aws.instance_type <span class="o">=</span> <span class="s2">&quot;t1.micro&quot;</span>
+
+        override.ssh.username         <span class="o">=</span> <span class="s2">&quot;ubuntu&quot;</span>
+        override.ssh.private_key_path <span class="o">=</span> <span class="s2">&quot;aws.pem&quot;</span>
+    end
+end
+</pre></div>
+</div>
 <p>Then execute:</p>
 <ul class="simple">
 <li><tt class="docutils literal"><span class="pre">vagrant</span> <span class="pre">plugin</span> <span class="pre">install</span> <span class="pre">vagrant-aws</span></tt></li>

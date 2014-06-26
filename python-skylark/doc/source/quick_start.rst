@@ -41,8 +41,8 @@ interface to start the virtual machine and then login with the
     command reruns some parts of the bootstrap script.
 
 
-In the next section we provide more in depth information and additional
-details on how the Vagrant setup works.
+In the next section we provide more in depth details on how the Vagrant setup
+works and some trouble shooting.
 Additionally we provide instruction on how to install on a cluster
 (see :ref:`cluster-label`) and running on AWS (see :ref:`aws-label`).
 
@@ -79,11 +79,7 @@ Then he/she can just ``ssh`` into this VM and follow the standard instructions
 (see :ref:`build-libskylark-label`) for fetching, building and installing
 libSkylark alone and quickly start using it.
 
-The vagrant box can be stopped by issuing the following command:
-
-.. code-block:: sh
-
-   vagrant halt
+The vagrant box can be stopped by issuing ``vagrant halt``.
 
 
 .. note::

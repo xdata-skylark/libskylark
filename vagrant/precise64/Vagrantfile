@@ -7,6 +7,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.box_url = "http://cloud-images.ubuntu.com/vagrant/precise/current/precise-server-cloudimg-amd64-vagrant-disk1.box"
   # The list of software to install
   config.vm.provision :shell, :path => "bootstrap.sh"
+  config.vm.provision :shell, :path => "install-skylark.sh", privileged: false
   
   # Increase memory
   config.vm.provider :virtualbox do |vb|                                                                                                                   

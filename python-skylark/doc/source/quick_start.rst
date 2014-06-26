@@ -25,13 +25,19 @@ Simply follow the instructions shown below.
 
 To exit the virtual environment type ``exit`` in the shell followed by
 ``vagrant halt`` in order to power down the virtual machine.
-In order to reconnect to the virtual machine, use the VirtualBox
+In order to reconnect to the virtual machine, eiter use the VirtualBox
 interface to start the virtual machine and then login with the
-``vagrant/vagrant`` user/password.
+``vagrant/vagrant`` user/password or execute
+
+.. code-block:: sh
+
+    vagrant up --no-provision
+    vagrant ssh
+
 
 .. note:: Using the ``vagrant up`` (after a ``vagrant halt``) and the
     ``vagrant ssh`` commands to reconnect to the virtual machine again is
-    considerably  slower because the ``vagrant up`` command reruns some parts
+    considerably slower because the ``vagrant up`` command reruns some parts
     of the bootstrap script.
 
 

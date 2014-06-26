@@ -53,11 +53,11 @@
 <p>Setting up a libSkylark environment is facilitated using
 <a class="reference external" href="http://www.vagrantup.com/">Vagrant</a> and
 <a class="reference external" href="https://www.virtualbox.org/">VirtualBox</a>.
-Simply follow the required steps below.</p>
+Simply follow the instructions shown below.</p>
 <ol class="arabic">
-<li><p class="first"><a class="reference external" href="https://www.virtualbox.org/wiki/Downloads/">Download</a> and install VirtualBox.</p>
+<li><p class="first">Install VirtualBox (use packet manager or <a class="reference external" href="https://www.virtualbox.org/wiki/Downloads/">download</a>)</p>
 </li>
-<li><p class="first"><a class="reference external" href="http://www.vagrantup.com/downloads.html">Download</a> and install Vagrant.</p>
+<li><p class="first">Install Vagrant (use packet manager or <a class="reference external" href="http://www.vagrantup.com/downloads.html">download</a>).</p>
 </li>
 <li><p class="first">Execute the following command in a terminal:</p>
 <blockquote>
@@ -75,12 +75,15 @@ vagrant ssh
 <p class="last">The <tt class="docutils literal"><span class="pre">vagrant</span> <span class="pre">up</span></tt> command may take a while to bootstrap and install
 everything.</p>
 </div>
+<p>To exit the virtual environment type <tt class="docutils literal"><span class="pre">exit</span></tt> followed by <tt class="docutils literal"><span class="pre">vagrant</span> <span class="pre">halt</span></tt> if
+you want to power down the virtual machine. Use the <tt class="docutils literal"><span class="pre">up</span></tt> (if the machine
+was powered down) and the <tt class="docutils literal"><span class="pre">ssh</span></tt> commands to start and ssh to the virtual
+machine again.</p>
 <p>In the next section we provide more in depth information and additional
 details on how the Vagrant setup works.
 Additionally we provide instruction on how to install on a cluster
 (see <a class="reference internal" href="#cluster-label"><em>Cluster of vagrant-controlled VMs</em></a>) and running on AWS (see <a class="reference internal" href="#aws-label"><em>Running Vagrant on AWS</em></a>).</p>
-<p>Finally, to see how the library can be used consult the
-<a class="reference internal" href="#examples-label"><em>Examples</em></a> section.</p>
+<p>Finally, some examples are provided in the <a class="reference internal" href="#examples-label"><em>Examples</em></a> section.</p>
 <div class="section" id="vagrant-label">
 <span id="id2"></span><h2>Vagrant<a class="headerlink" href="#vagrant-label" title="Permalink to this headline">¶</a></h2>
 <p>Under <tt class="docutils literal"><span class="pre">vagrant/precise64</span></tt> we provide an easy way to materialize an
@@ -93,7 +96,8 @@ software (provider) we can launch a libSkylark environment indpendent of the
 host operating system (<em>Windows</em>, <em>Mac OS X</em> and <em>Linux</em> host platform
 require <em>exactly</em> the same commands).</p>
 <p><em>After installing VirtualBox and Vagrant</em> the following commands suffice</p>
-<div class="highlight-sh"><div class="highlight"><pre><span class="nb">cd </span>vagrant/precise64
+<div class="highlight-sh"><div class="highlight"><pre>git clone https://github.com/xdata-skylark/libskylark.git
+<span class="nb">cd </span>vagrant/precise64
 vagrant up
 vagrant ssh
 </pre></div>

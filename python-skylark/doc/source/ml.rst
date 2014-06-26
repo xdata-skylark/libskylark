@@ -73,14 +73,10 @@ Examples of such files can be downloaded from `here <http://vikas.sindhwani.org/
 	For all fileformats described above, the current implementation is geared towards classification problems and requires the label to assume values from 0 to (K-1) for a K-class problem, or +1/-1 for binary classification problems. This assumption will be relaxed.
 
 
+Example and Commandline Usage
+==============================
 
-Quick Example
-===============
- 
 Please see :ref:`ml_example`
-
-Commandline Usage
-==================
 
 ::
 
@@ -131,5 +127,5 @@ Commandline Usage
 
 Library Usage
 ===============
-
+ 
 To be documented (please see ``ml/run.hpp`` for a driver program).

@@ -1,0 +1,44 @@
+From 995e55739d56db2e2aeb6c4f39f8d8aeb28adcb3 Mon Sep 17 00:00:00 2001
+From: Your Name <you@example.com>
+Date: Wed, 5 Feb 2014 01:54:10 +0000
+Subject: [PATCH] patched
+
+---
+ CMakeLists.txt              |    6 +++---
+ RefGen21.h                  |    2 +-
+ psort-1.0/src/psort_merge.h |   10 +++++-----
+ 3 files changed, 9 insertions(+), 9 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 6c3a362..bd79ff2 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -53,9 +53,9 @@ else (NOT C11)
+ 	endif (CMAKE_COMPILER_IS_GNUCXX)
+ endif (NOT C11)
+
+-ADD_LIBRARY( CommGridlib CommGrid.cpp  )
+-ADD_LIBRARY( MPITypelib MPIType.cpp )
+-ADD_LIBRARY( MemoryPoollib MemoryPool.cpp )
++ADD_LIBRARY( CommGridlib SHARED CommGrid.cpp  )
++ADD_LIBRARY( MPITypelib SHARED MPIType.cpp )
++ADD_LIBRARY( MemoryPoollib SHARED MemoryPool.cpp )
+
+ ADD_SUBDIRECTORY( ReleaseTests )
+ ADD_SUBDIRECTORY( Applications )
+diff --git a/RefGen21.h b/RefGen21.h
+index d5425cd..90df1b7 100644
+--- a/RefGen21.h
++++ b/RefGen21.h
+@@ -134,7 +134,7 @@ public:
+
+   		/* 32-bit code */
+  		uint32_t h = (uint32_t)(x >> 32);
+-  		uint32_t l = (uint32_t)(x & UINT32_MAX);
++  		uint32_t l = (uint32_t)(x & std::numeric_limits<uint32_t>::max());
+ 		#ifdef USE_GCC_BYTESWAP
+   		 h = __builtin_bswap32(h);
+   		 l = __builtin_bswap32(l);
+--
+1.7.9.5
+

@@ -72,13 +72,26 @@ vagrant ssh
 </ol>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">The <tt class="docutils literal"><span class="pre">vagrant</span> <span class="pre">up</span></tt> command may take a while to bootstrap and install
-everything.</p>
+<p class="last">The <tt class="docutils literal"><span class="pre">vagrant</span> <span class="pre">up</span></tt> command is downloading, building and installing
+libsklylark and its dependencies. This step will most likely takes a while
+to complete.</p>
 </div>
-<p>To exit the virtual environment type <tt class="docutils literal"><span class="pre">exit</span></tt> followed by <tt class="docutils literal"><span class="pre">vagrant</span> <span class="pre">halt</span></tt> if
-you want to power down the virtual machine. Use the <tt class="docutils literal"><span class="pre">up</span></tt> (if the machine
-was powered down) and the <tt class="docutils literal"><span class="pre">ssh</span></tt> commands to start and ssh to the virtual
-machine again.</p>
+<p>To exit the virtual environment type <tt class="docutils literal"><span class="pre">exit</span></tt> in the shell followed by
+<tt class="docutils literal"><span class="pre">vagrant</span> <span class="pre">halt</span></tt> in order to power down the virtual machine.
+In order to reconnect to the virtual machine, eiter use the VirtualBox
+interface to start the virtual machine and then login with the
+<tt class="docutils literal"><span class="pre">vagrant/vagrant</span></tt> user/password or execute</p>
+<div class="highlight-sh"><div class="highlight"><pre>vagrant up --no-provision
+vagrant ssh
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Using the <tt class="docutils literal"><span class="pre">vagrant</span> <span class="pre">up</span></tt> (after a <tt class="docutils literal"><span class="pre">vagrant</span> <span class="pre">halt</span></tt>) and the
+<tt class="docutils literal"><span class="pre">vagrant</span> <span class="pre">ssh</span></tt> commands to reconnect to the virtual machine again is
+considerably slower because the <tt class="docutils literal"><span class="pre">vagrant</span> <span class="pre">up</span></tt> command reruns some parts
+of the bootstrap script.</p>
+</div>
 <p>In the next section we provide more in depth information and additional
 details on how the Vagrant setup works.
 Additionally we provide instruction on how to install on a cluster

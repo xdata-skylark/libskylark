@@ -19,13 +19,26 @@ Simply follow the instructions shown below.
         vagrant up
         vagrant ssh
 
-.. note:: The ``vagrant up`` command may take a while to bootstrap and install
-    everything.
+.. note:: The ``vagrant up`` command is downloading, building and installing
+    libsklylark and its dependencies. This step will most likely takes a while
+    to complete.
 
-To exit the virtual environment type ``exit`` followed by ``vagrant halt`` if
-you want to power down the virtual machine. Use the ``up`` (if the machine
-was powered down) and the ``ssh`` commands to start and ssh to the virtual
-machine again.
+To exit the virtual environment type ``exit`` in the shell followed by
+``vagrant halt`` in order to power down the virtual machine.
+In order to reconnect to the virtual machine, eiter use the VirtualBox
+interface to start the virtual machine and then login with the
+``vagrant/vagrant`` user/password or execute
+
+.. code-block:: sh
+
+    vagrant up --no-provision
+    vagrant ssh
+
+
+.. note:: Using the ``vagrant up`` (after a ``vagrant halt``) and the
+    ``vagrant ssh`` commands to reconnect to the virtual machine again is
+    considerably slower because the ``vagrant up`` command reruns some parts
+    of the bootstrap script.
 
 
 In the next section we provide more in depth information and additional

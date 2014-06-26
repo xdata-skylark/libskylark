@@ -6,10 +6,10 @@ Quick Start Guide
 Setting up a libSkylark environment is facilitated using
 `Vagrant <http://www.vagrantup.com/>`_ and
 `VirtualBox <https://www.virtualbox.org/>`_.
-Simply follow the required steps below.
+Simply follow the instructions shown below.
 
-1. `Download <https://www.virtualbox.org/wiki/Downloads/>`_ and install VirtualBox.
-2. `Download <http://www.vagrantup.com/downloads.html>`_ and install Vagrant.
+1. Install VirtualBox (use packet manager or `download <https://www.virtualbox.org/wiki/Downloads/>`_)
+2. Install Vagrant (use packet manager or `download <http://www.vagrantup.com/downloads.html>`_).
 3. Execute the following command in a terminal:
 
     .. code-block:: sh
@@ -19,9 +19,13 @@ Simply follow the required steps below.
         vagrant up
         vagrant ssh
 
-.. note::
-    The ``vagrant up`` command may take a while to bootstrap and install
+.. note:: The ``vagrant up`` command may take a while to bootstrap and install
     everything.
+
+To exit the virtual environment type ``exit`` followed by ``vagrant halt`` if
+you want to power down the virtual machine. Use the ``up`` (if the machine
+was powered down) and the ``ssh`` commands to start and ssh to the virtual
+machine again.
 
 
 In the next section we provide more in depth information and additional
@@ -29,8 +33,7 @@ details on how the Vagrant setup works.
 Additionally we provide instruction on how to install on a cluster
 (see :ref:`cluster-label`) and running on AWS (see :ref:`aws-label`).
 
-Finally, to see how the library can be used consult the
-:ref:`examples-label` section.
+Finally, some examples are provided in the :ref:`examples-label` section.
 
 
 .. _vagrant-label:
@@ -53,6 +56,7 @@ require *exactly* the same commands).
 
 .. code-block:: sh
 
+    git clone https://github.com/xdata-skylark/libskylark.git
     cd vagrant/precise64
     vagrant up
     vagrant ssh
@@ -170,10 +174,10 @@ It will take a while to compile and install everything specified in the
 Examples
 =========
 
-Here, we provide a flavor of the library and its usage. We assume that 
-the reader is familiar with sketching and its applications in randomized 
-Numerical Linear algebra and Machine Learning. If not, we refer the 
-reader to subsequent sections which provide the necessary background and 
+Here, we provide a flavor of the library and its usage. We assume that
+the reader is familiar with sketching and its applications in randomized
+Numerical Linear algebra and Machine Learning. If not, we refer the
+reader to subsequent sections which provide the necessary background and
 references.
 
 When libskylark is built, executables instantiating these examples can be found under ``bin/examples`` and ``bin/ml``.
@@ -182,7 +186,7 @@ Sketching
 ----------
 
 In :file:`examples/elemental.cpp` an example is provided that illustrates
-sketching. Below, three types of sketches are illustrated in the highlighted lines: 
+sketching. Below, three types of sketches are illustrated in the highlighted lines:
 
 1. a 1D row-distributed `Elemental <http://libelemental.org>`_ dense matrix is sketched using the `JLT (Johnson-Lindenstrauss) Transform` into a local matrix
 2. a row-distributed `Elemental <http://libelemental.org>`_ dense matrix is sketched using  `FJLT (Fast Johnson-Lindenstrauss transform)` involving faster FFT-like operations.
@@ -190,28 +194,28 @@ sketching. Below, three types of sketches are illustrated in the highlighted lin
 
 .. literalinclude:: ../../../examples/elemental.cpp
     :language: cpp
-    :emphasize-lines: 65,66,69,73,96,97,100,103,118,119,122,126 
+    :emphasize-lines: 65,66,69,73,96,97,100,103,118,119,122,126
     :linenos:
 
-  
-For sketching Elemental and CombBLAS matrices via Python bindings, run, for example, the following: 
+
+For sketching Elemental and CombBLAS matrices via Python bindings, run, for example, the following:
 
 .. code-block:: sh
-	
+
 	mpiexec -np 4 python $SKYLARK_SRC_DIR/python-skylark/skylark/examples/example_sketch.py
   	mpiexec -np 4 python $SKYLARK_SRC_DIR/python-skylark/skylark/examples/example_sparse_sketch.py
 
 .. note::
-	
-	Currently, we have stable python bindings only for sketching layer. This too might change with newer versions of Elemental.	
+
+	Currently, we have stable python bindings only for sketching layer. This too might change with newer versions of Elemental.
 
 Fast Least Square Regression
 -----------------------------
 
-In :file:`examples/least_squares.cpp` examples are provided on how least 
-squares problems can be solved faster using sketching. One approach is 
-of the flavor of `sketch-and-solve` geared towards lower-precision 
-solutions, while the other approach uses sketching to construct a 
+In :file:`examples/least_squares.cpp` examples are provided on how least
+squares problems can be solved faster using sketching. One approach is
+of the flavor of `sketch-and-solve` geared towards lower-precision
+solutions, while the other approach uses sketching to construct a
 preconditioner to obtain high-precision solutions faster.
 
 .. literalinclude:: ../../../examples/least_squares.cpp
@@ -242,37 +246,37 @@ In :file:`examples/rand_svd.cpp` an example is provided that illustrates randomi
 ML
 ---
 
-In :file:`ml/train.cpp` and :file:`ml/run.hpp`, an ADMM-based solver is 
-setup to train and predict with a randomized kernel based model for 
+In :file:`ml/train.cpp` and :file:`ml/run.hpp`, an ADMM-based solver is
+setup to train and predict with a randomized kernel based model for
 nonlinear classification and regression problems.
 
-Building libskylark creates an executable called ``skylark_ml`` in ``bin/ml`` under the libskylark installation folder. This executable can be used in standalone mode as follows. 
- 
+Building libskylark creates an executable called ``skylark_ml`` in ``bin/ml`` under the libskylark installation folder. This executable can be used in standalone mode as follows.
+
 1. Download USPS digit recognition dataset (in various supported formats).
 
 .. code-block:: sh
 
         wget http://vikas.sindhwani.org/data.tar.gz
         tar -xvzf data.tar.gz
- 
+
 The supported fileformats are described in :ref:`ml_io`.
 
-2. Train an SVM with Randomized Gaussian Kernel 
- 
+2. Train an SVM with Randomized Gaussian Kernel
+
 .. code-block:: sh
 
         ./skylark_ml -g 10 -k 1 -l 2 -i 20 --trainfile data/usps.train --valfile data/usps.test --modelfile model
-  
-3. Test accuracy of the generated model 
+
+3. Test accuracy of the generated model
 
 .. code-block:: sh
 
         ./skylark_ml --testfile data/usps.test --modelfile model
 
 .. note::
-	
+
 	The above executable can be passed to ``mpiexec`` for distributed execution. We assume all nodes can see the path to the training/validation/test files.
 
-.. note:: 
+.. note::
 
 	In testing mode, the entire test data is currently loaded in memory. A separate file containing predictions is currently not generated. These restrictions will be relaxed.

@@ -149,9 +149,9 @@ to the constructed functor.
 
     **Accessors**
 
-    .. cpp:function:: void operator<typename InputMatrixType, typename UMatrixType, typename SingularValuesMatrixType, typename VMatrixType> ()(InputMatrixType &A, int target_rank, UMatrixType &U, SingularValuesMatrixType &SV, VMatrixType &V, rand_svd_params_t params, skylark::base::context_t& context)
+    .. cpp:function:: void operator<InputMatrixType, UMatrixType, SingularValuesMatrixType, VMatrixType> ()(InputMatrixType &A, int target_rank, UMatrixType &U, SingularValuesMatrixType &SV, VMatrixType &V, rand_svd_params_t params, skylark::base::context_t& context)
 
-      The overloaded operator takes the input matrix A and produces the output matrices U, SV and V. In addition, a params object is passed which contains the parameters shown below.
+        The overloaded operator takes the input matrix A and produces the output matrices U, SV and V. In addition, a params object is passed which contains the parameters shown below.
 
 .. cpp:type:: struct skylark::nla::rand_svd_params_t
 

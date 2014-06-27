@@ -12,7 +12,7 @@ Setting up a libSkylark environment is facilitated using
 
 Simply follow the instructions shown below.
 
-1. Install VirtualBox (`download VirtualBox<https://www.virtualbox.org/wiki/Downloads/>`_)
+1. Install VirtualBox (`download VirtualBox <https://www.virtualbox.org/wiki/Downloads/>`_)
 2. Install Vagrant (`download Vagrant <http://www.vagrantup.com/downloads.html>`_).
 3. Execute the following command in a terminal:
 

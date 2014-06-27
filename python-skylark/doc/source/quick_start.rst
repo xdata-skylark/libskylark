@@ -78,10 +78,10 @@ require *exactly* the same commands).
     vagrant up
     vagrant ssh
 
-to get a virtual machine (VM) with all the dependencies for Skylark in place.
-Then he/she can just ``ssh`` into this VM and follow the standard instructions
-(see :ref:`build-libskylark-label`) for fetching, building and installing
-libSkylark alone and quickly start using it.
+to get a virtual machine (VM) with libSkylark and all its dependencies.
+If you want to customize the installed libSkylark follow the instructions
+(see :ref:`build-libskylark-label`) for building and installing
+libSkylark.
 
 The vagrant box can be stopped by issuing ``vagrant halt``.
 

@@ -652,7 +652,9 @@ Make sure to install the Sphinx extensions before you run make sphinx-doc:
 
     export SPHINXEXT=$HOME/.sphinx_ext
 
-.. note:: Sphinx can also be installed using apt-get: "apt-get install python-sphinx"
+.. note:: Some distributions provide packages for installing Sphinx
+    (containing more scripts and tools than the basic installation above). For
+    example in Ubuntu: ``apt-get install python-sphinx``
 
 .. note:: Sphinx requires some dependencies, e.g. plots and latex equations.
 

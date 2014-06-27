@@ -12,8 +12,8 @@ Setting up a libSkylark environment is facilitated using
 
 Simply follow the instructions shown below.
 
-1. Install VirtualBox (`download <https://www.virtualbox.org/wiki/Downloads/>`_)
-2. Install Vagrant (`download <http://www.vagrantup.com/downloads.html>`_).
+1. Install VirtualBox (`download VirtualBox<https://www.virtualbox.org/wiki/Downloads/>`_)
+2. Install Vagrant (`download Vagrant <http://www.vagrantup.com/downloads.html>`_).
 3. Execute the following command in a terminal:
 
     .. code-block:: sh
@@ -144,7 +144,7 @@ for more information on `Networking in VirtualBox`.
 * During ``vagrant up`` choose the ethernet interface to use.
 
 * After ``vagrant ssh`` do ``ifconfig``, get the interface name - let's say
-``eth1`` - and then for the VMs at nodes 1, 2,...  do:
+    ``eth1`` - and then for the VMs at nodes 1, 2,...  do:
 
 .. code-block:: sh
 
@@ -153,8 +153,8 @@ for more information on `Networking in VirtualBox`.
    ...
 
 * ``192.168.100.xxx`` will be the names to put in the "hosts" file for MPI
-daemons to use; as previously noted: ``vagrant``/``vagrant`` is the default
-user/password combination for ssh.
+    daemons to use; as previously noted: ``vagrant``/``vagrant`` is the default
+    user/password combination for ssh.
 
 
 .. _aws-label:

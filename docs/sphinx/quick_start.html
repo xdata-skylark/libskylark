@@ -60,9 +60,9 @@ not be compatible with older versions.</p>
 </div>
 <p>Simply follow the instructions shown below.</p>
 <ol class="arabic">
-<li><p class="first">Install VirtualBox (<a class="reference external" href="https://www.virtualbox.org/wiki/Downloads/">download</a>)</p>
+<li><p class="first">Install VirtualBox (<a href="#id5"><span class="problematic" id="id6">`download VirtualBox&lt;https://www.virtualbox.org/wiki/Downloads/&gt;`_</span></a>)</p>
 </li>
-<li><p class="first">Install Vagrant (<a class="reference external" href="http://www.vagrantup.com/downloads.html">download</a>).</p>
+<li><p class="first">Install Vagrant (<a class="reference external" href="http://www.vagrantup.com/downloads.html">download Vagrant</a>).</p>
 </li>
 <li><p class="first">Execute the following command in a terminal:</p>
 <blockquote>
@@ -103,7 +103,7 @@ Additionally we provide instruction on how to install on a cluster
 (see <a class="reference internal" href="#cluster-label"><em>Cluster of vagrant-controlled VMs</em></a>) and running on AWS (see <a class="reference internal" href="#aws-label"><em>Running Vagrant on AWS</em></a>).</p>
 <p>Finally, some examples are provided in the <a class="reference internal" href="#examples-label"><em>Examples</em></a> section.</p>
 <div class="section" id="vagrant-label">
-<span id="id2"></span><h2>Vagrant<a class="headerlink" href="#vagrant-label" title="Permalink to this headline">¶</a></h2>
+<span id="id1"></span><h2>Vagrant<a class="headerlink" href="#vagrant-label" title="Permalink to this headline">¶</a></h2>
 <p>Under <tt class="docutils literal"><span class="pre">vagrant/precise64</span></tt> we provide an easy way to materialize an
 64-bit Ubuntu-based virtual machine (release 12.04 LTS, aka precise) with all
 software dependencies required for a fresh build of Skylark.</p>
@@ -175,21 +175,30 @@ for more information on <cite>Networking in VirtualBox</cite>.</p>
 <div class="highlight-sh"><div class="highlight"><pre>config.vm.network :public_network
 </pre></div>
 </div>
-<ul class="simple">
-<li>During <tt class="docutils literal"><span class="pre">vagrant</span> <span class="pre">up</span></tt> choose the ethernet interface to use.</li>
-<li>After <tt class="docutils literal"><span class="pre">vagrant</span> <span class="pre">ssh</span></tt> do <tt class="docutils literal"><span class="pre">ifconfig</span></tt>, get the interface name - let&#8217;s say</li>
+<ul>
+<li><p class="first">During <tt class="docutils literal"><span class="pre">vagrant</span> <span class="pre">up</span></tt> choose the ethernet interface to use.</p>
+</li>
+<li><dl class="first docutils">
+<dt>After <tt class="docutils literal"><span class="pre">vagrant</span> <span class="pre">ssh</span></tt> do <tt class="docutils literal"><span class="pre">ifconfig</span></tt>, get the interface name - let&#8217;s say</dt>
+<dd><p class="first last"><tt class="docutils literal"><span class="pre">eth1</span></tt> - and then for the VMs at nodes 1, 2,...  do:</p>
+</dd>
+</dl>
+</li>
 </ul>
-<p><tt class="docutils literal"><span class="pre">eth1</span></tt> - and then for the VMs at nodes 1, 2,...  do:</p>
 <div class="highlight-sh"><div class="highlight"><pre>sudo /sbin/ifconfig eth1:vm 192.168.100.1
 sudo /sbin/ifconfig eth1:vm 192.168.100.2
 ...
 </pre></div>
 </div>
-<ul class="simple">
-<li><tt class="docutils literal"><span class="pre">192.168.100.xxx</span></tt> will be the names to put in the &#8220;hosts&#8221; file for MPI</li>
-</ul>
-<p>daemons to use; as previously noted: <tt class="docutils literal"><span class="pre">vagrant</span></tt>/<tt class="docutils literal"><span class="pre">vagrant</span></tt> is the default
+<ul>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">192.168.100.xxx</span></tt> will be the names to put in the &#8220;hosts&#8221; file for MPI</dt>
+<dd><p class="first last">daemons to use; as previously noted: <tt class="docutils literal"><span class="pre">vagrant</span></tt>/<tt class="docutils literal"><span class="pre">vagrant</span></tt> is the default
 user/password combination for ssh.</p>
+</dd>
+</dl>
+</li>
+</ul>
 </div>
 <div class="section" id="running-vagrant-on-aws">
 <span id="aws-label"></span><h2>Running Vagrant on AWS<a class="headerlink" href="#running-vagrant-on-aws" title="Permalink to this headline">¶</a></h2>

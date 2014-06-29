@@ -653,8 +653,9 @@ To read the documentation open <tt class="file docutils literal"><span class="pr
 </div>
 <div class="section" id="sphinx">
 <h3>Sphinx<a class="headerlink" href="#sphinx" title="Permalink to this headline">¶</a></h3>
-<p>Make sure to install the Sphinx extensions before you run make sphinx-doc:</p>
-<div class="highlight-sh"><div class="highlight"><pre><span class="nb">cd</span> /tmp
+<p>Make sure to install the Sphinx dependencies before you run make sphinx-doc:</p>
+<div class="highlight-sh"><div class="highlight"><pre>apt-get install python-sphinx
+<span class="nb">cd</span> /tmp
 svn co https://svn.code.sf.net/p/matplotlib/code/trunk/sampledoc_tut
 mkdir <span class="nv">$HOME</span>/.sphinx_ext
 cp sampledoc_tut/sphinxext/*.py <span class="nv">$HOME</span>/.sphinx_ext
@@ -662,12 +663,6 @@ rm -rf /tmp/sampledoc_tut
 
 <span class="nb">export </span><span class="nv">SPHINXEXT</span><span class="o">=</span><span class="nv">$HOME</span>/.sphinx_ext
 </pre></div>
-</div>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">Some distributions provide packages for installing Sphinx
-(containing more scripts and tools than the basic installation above). For
-example in Ubuntu: <tt class="docutils literal"><span class="pre">apt-get</span> <span class="pre">install</span> <span class="pre">python-sphinx</span></tt></p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>

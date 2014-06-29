@@ -640,10 +640,11 @@ To read the documentation open :file:`$BUILD_DIR/Documentation/html/index.html` 
 Sphinx
 -------
 
-Make sure to install the Sphinx extensions before you run make sphinx-doc:
+Make sure to install the Sphinx dependencies before you run make sphinx-doc:
 
 .. code-block:: sh
 
+    apt-get install python-sphinx
     cd /tmp
     svn co https://svn.code.sf.net/p/matplotlib/code/trunk/sampledoc_tut
     mkdir $HOME/.sphinx_ext
@@ -651,10 +652,6 @@ Make sure to install the Sphinx extensions before you run make sphinx-doc:
     rm -rf /tmp/sampledoc_tut
 
     export SPHINXEXT=$HOME/.sphinx_ext
-
-.. note:: Some distributions provide packages for installing Sphinx
-    (containing more scripts and tools than the basic installation above). For
-    example in Ubuntu: ``apt-get install python-sphinx``
 
 .. note:: Sphinx requires some dependencies, e.g. plots and latex equations.
 

@@ -44,6 +44,14 @@ interface to start the virtual machine and then login with the
     virtual machine again is considerably slower because the ``vagrant up``
     command reruns some parts of the bootstrap script.
 
+.. note:: The following environment variables are available after login,
+    pointing to the libSkylark source and install directory:
+
+    .. code-block:: sh
+
+        SKYLARK_SRC_DIR=/home/vagrant/libskylark
+        SKYLARK_INSTALL_DIR=/home/vagrant/install
+
 
 In the next section we provide more in depth details on how the Vagrant setup
 works and some trouble shooting.
@@ -215,12 +223,14 @@ Numerical Linear algebra and Machine Learning. If not, we refer the
 reader to subsequent sections which provide the necessary background and
 references.
 
-When libskylark is built, executables instantiating these examples can be found under ``bin/examples`` and ``bin/ml``.
+When libskylark is built, executables instantiating these examples can be found
+under ``${SKYLARK_INSTALL_DIR}/bin/examples`` and
+``${SKYLARK_INSTALL_DIR}/bin/ml``.
 
 Sketching
 ----------
 
-In :file:`examples/elemental.cpp` an example is provided that illustrates
+In :file:`${SKYLARK_SRC_DIR}/examples/elemental.cpp` an example is provided that illustrates
 sketching. Below, three types of sketches are illustrated in the highlighted lines:
 
 1. a 1D row-distributed `Elemental <http://libelemental.org>`_ dense matrix is sketched using the `JLT (Johnson-Lindenstrauss) Transform` into a local matrix
@@ -247,7 +257,7 @@ For sketching Elemental and CombBLAS matrices via Python bindings, run, for exam
 Fast Least Square Regression
 -----------------------------
 
-In :file:`examples/least_squares.cpp` examples are provided on how least
+In :file:`${SKYLARK_SRC_DIR}/examples/least_squares.cpp` examples are provided on how least
 squares problems can be solved faster using sketching. One approach is
 of the flavor of `sketch-and-solve` geared towards lower-precision
 solutions, while the other approach uses sketching to construct a
@@ -269,7 +279,7 @@ For an example of `sketch-and-solve` regression in Python, run:
 SVD
 ----
 
-In :file:`examples/rand_svd.cpp` an example is provided that illustrates randomized singular value decompositions.
+In :file:`${SKYLARK_SRC_DIR}/examples/rand_svd.cpp` an example is provided that illustrates randomized singular value decompositions.
 
 .. literalinclude:: ../../../examples/rand_svd.cpp
     :language: cpp
@@ -281,7 +291,7 @@ In :file:`examples/rand_svd.cpp` an example is provided that illustrates randomi
 ML
 ---
 
-In :file:`ml/train.cpp` and :file:`ml/run.hpp`, an ADMM-based solver is
+In :file:`${SKYLARK_SRC_DIR}/ml/train.cpp` and :file:`${SKYLARK_SRC_DIR}/ml/run.hpp`, an ADMM-based solver is
 setup to train and predict with a randomized kernel based model for
 nonlinear classification and regression problems.
 

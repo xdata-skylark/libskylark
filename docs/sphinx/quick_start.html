@@ -97,6 +97,15 @@ vagrant ssh
 virtual machine again is considerably slower because the <tt class="docutils literal"><span class="pre">vagrant</span> <span class="pre">up</span></tt>
 command reruns some parts of the bootstrap script.</p>
 </div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>The following environment variables are available after login,
+pointing to the libSkylark source and install directory:</p>
+<div class="last highlight-sh"><div class="highlight"><pre><span class="nv">SKYLARK_SRC_DIR</span><span class="o">=</span>/home/vagrant/libskylark
+<span class="nv">SKYLARK_INSTALL_DIR</span><span class="o">=</span>/home/vagrant/install
+</pre></div>
+</div>
+</div>
 <p>In the next section we provide more in depth details on how the Vagrant setup
 works and some trouble shooting.
 Additionally we provide instruction on how to install on a cluster
@@ -247,10 +256,12 @@ the reader is familiar with sketching and its applications in randomized
 Numerical Linear algebra and Machine Learning. If not, we refer the
 reader to subsequent sections which provide the necessary background and
 references.</p>
-<p>When libskylark is built, executables instantiating these examples can be found under <tt class="docutils literal"><span class="pre">bin/examples</span></tt> and <tt class="docutils literal"><span class="pre">bin/ml</span></tt>.</p>
+<p>When libskylark is built, executables instantiating these examples can be found
+under <tt class="docutils literal"><span class="pre">${SKYLARK_INSTALL_DIR}/bin/examples</span></tt> and
+<tt class="docutils literal"><span class="pre">${SKYLARK_INSTALL_DIR}/bin/ml</span></tt>.</p>
 <div class="section" id="sketching">
 <h3>Sketching<a class="headerlink" href="#sketching" title="Permalink to this headline">¶</a></h3>
-<p>In <tt class="file docutils literal"><span class="pre">examples/elemental.cpp</span></tt> an example is provided that illustrates
+<p>In <tt class="file docutils literal"><span class="pre">$</span><em><span class="pre">SKYLARK_SRC_DIR</span></em><span class="pre">/examples/elemental.cpp</span></tt> an example is provided that illustrates
 sketching. Below, three types of sketches are illustrated in the highlighted lines:</p>
 <ol class="arabic simple">
 <li>a 1D row-distributed <a class="reference external" href="http://libelemental.org">Elemental</a> dense matrix is sketched using the <cite>JLT (Johnson-Lindenstrauss) Transform</cite> into a local matrix</li>
@@ -566,7 +577,7 @@ mpiexec -np 4 python <span class="nv">$SKYLARK_SRC_DIR</span>/python-skylark/sky
 </div>
 <div class="section" id="fast-least-square-regression">
 <h3>Fast Least Square Regression<a class="headerlink" href="#fast-least-square-regression" title="Permalink to this headline">¶</a></h3>
-<p>In <tt class="file docutils literal"><span class="pre">examples/least_squares.cpp</span></tt> examples are provided on how least
+<p>In <tt class="file docutils literal"><span class="pre">$</span><em><span class="pre">SKYLARK_SRC_DIR</span></em><span class="pre">/examples/least_squares.cpp</span></tt> examples are provided on how least
 squares problems can be solved faster using sketching. One approach is
 of the flavor of <cite>sketch-and-solve</cite> geared towards lower-precision
 solutions, while the other approach uses sketching to construct a
@@ -811,7 +822,7 @@ mpiexec -np 4 python <span class="nv">$SKYLARK_SRC_DIR</span>/python-skylark/sky
 </div>
 <div class="section" id="svd">
 <h3>SVD<a class="headerlink" href="#svd" title="Permalink to this headline">¶</a></h3>
-<p>In <tt class="file docutils literal"><span class="pre">examples/rand_svd.cpp</span></tt> an example is provided that illustrates randomized singular value decompositions.</p>
+<p>In <tt class="file docutils literal"><span class="pre">$</span><em><span class="pre">SKYLARK_SRC_DIR</span></em><span class="pre">/examples/rand_svd.cpp</span></tt> an example is provided that illustrates randomized singular value decompositions.</p>
 <div class="highlight-cpp"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -992,7 +1003,7 @@ mpiexec -np 4 python <span class="nv">$SKYLARK_SRC_DIR</span>/python-skylark/sky
 </div>
 <div class="section" id="ml">
 <span id="ml-example"></span><h3>ML<a class="headerlink" href="#ml" title="Permalink to this headline">¶</a></h3>
-<p>In <tt class="file docutils literal"><span class="pre">ml/train.cpp</span></tt> and <tt class="file docutils literal"><span class="pre">ml/run.hpp</span></tt>, an ADMM-based solver is
+<p>In <tt class="file docutils literal"><span class="pre">$</span><em><span class="pre">SKYLARK_SRC_DIR</span></em><span class="pre">/ml/train.cpp</span></tt> and <tt class="file docutils literal"><span class="pre">$</span><em><span class="pre">SKYLARK_SRC_DIR</span></em><span class="pre">/ml/run.hpp</span></tt>, an ADMM-based solver is
 setup to train and predict with a randomized kernel based model for
 nonlinear classification and regression problems.</p>
 <p>Building libskylark creates an executable called <tt class="docutils literal"><span class="pre">skylark_ml</span></tt> in <tt class="docutils literal"><span class="pre">bin/ml</span></tt> under the libskylark installation folder. This executable can be used in standalone mode as follows.</p>

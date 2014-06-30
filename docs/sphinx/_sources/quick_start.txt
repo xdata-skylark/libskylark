@@ -224,8 +224,8 @@ reader to subsequent sections which provide the necessary background and
 references.
 
 When libskylark is built, executables instantiating these examples can be found
-under ``${SKYLARK_INSTALL_DIR}/bin/examples`` and
-``${SKYLARK_INSTALL_DIR}/bin/ml``.
+under ``$SKYLARK_INSTALL_DIR/bin/examples`` and
+``$SKYLARK_INSTALL_DIR/bin/ml``.
 
 Sketching
 ----------
@@ -295,7 +295,9 @@ In :file:`${SKYLARK_SRC_DIR}/ml/train.cpp` and :file:`${SKYLARK_SRC_DIR}/ml/run.
 setup to train and predict with a randomized kernel based model for
 nonlinear classification and regression problems.
 
-Building libskylark creates an executable called ``skylark_ml`` in ``bin/ml`` under the libskylark installation folder. This executable can be used in standalone mode as follows.
+Building libskylark creates an executable called ``skylark_ml`` in
+``$SKYLARK_INSTALL_DIR/bin/ml`` under the libskylark installation folder.
+This executable can be used in standalone mode as follows.
 
 1. Download USPS digit recognition dataset (in various supported formats).
 

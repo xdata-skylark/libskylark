@@ -257,8 +257,8 @@ Numerical Linear algebra and Machine Learning. If not, we refer the
 reader to subsequent sections which provide the necessary background and
 references.</p>
 <p>When libskylark is built, executables instantiating these examples can be found
-under <tt class="docutils literal"><span class="pre">${SKYLARK_INSTALL_DIR}/bin/examples</span></tt> and
-<tt class="docutils literal"><span class="pre">${SKYLARK_INSTALL_DIR}/bin/ml</span></tt>.</p>
+under <tt class="docutils literal"><span class="pre">$SKYLARK_INSTALL_DIR/bin/examples</span></tt> and
+<tt class="docutils literal"><span class="pre">$SKYLARK_INSTALL_DIR/bin/ml</span></tt>.</p>
 <div class="section" id="sketching">
 <h3>Sketching<a class="headerlink" href="#sketching" title="Permalink to this headline">¶</a></h3>
 <p>In <tt class="file docutils literal"><span class="pre">$</span><em><span class="pre">SKYLARK_SRC_DIR</span></em><span class="pre">/examples/elemental.cpp</span></tt> an example is provided that illustrates
@@ -1006,7 +1006,9 @@ mpiexec -np 4 python <span class="nv">$SKYLARK_SRC_DIR</span>/python-skylark/sky
 <p>In <tt class="file docutils literal"><span class="pre">$</span><em><span class="pre">SKYLARK_SRC_DIR</span></em><span class="pre">/ml/train.cpp</span></tt> and <tt class="file docutils literal"><span class="pre">$</span><em><span class="pre">SKYLARK_SRC_DIR</span></em><span class="pre">/ml/run.hpp</span></tt>, an ADMM-based solver is
 setup to train and predict with a randomized kernel based model for
 nonlinear classification and regression problems.</p>
-<p>Building libskylark creates an executable called <tt class="docutils literal"><span class="pre">skylark_ml</span></tt> in <tt class="docutils literal"><span class="pre">bin/ml</span></tt> under the libskylark installation folder. This executable can be used in standalone mode as follows.</p>
+<p>Building libskylark creates an executable called <tt class="docutils literal"><span class="pre">skylark_ml</span></tt> in
+<tt class="docutils literal"><span class="pre">$SKYLARK_INSTALL_DIR/bin/ml</span></tt> under the libskylark installation folder.
+This executable can be used in standalone mode as follows.</p>
 <ol class="arabic simple">
 <li>Download USPS digit recognition dataset (in various supported formats).</li>
 </ol>

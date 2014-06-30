@@ -107,7 +107,7 @@ The vagrant box can be stopped by issuing ``vagrant halt``.
     connection settings: IP= ``127.0.0.1``, port= ``2222``,
     username= ``vagrant``, password= ``vagrant``.
 
-.. tip::
+.. hint::
 
     If you get a timeout error (waiting for the virtual machine to boot)
 
@@ -122,7 +122,7 @@ The vagrant box can be stopped by issuing ``vagrant halt``.
 
     during ``vagrant up``, halt the virtual machine and ``vagrant up`` again.
 
-.. tip::
+.. hint::
 
     In case Vagrant crashes in the bootstrap phase, the safest thing is to
     delete the virtual machine (halt than delete the machine in the VirtualBox

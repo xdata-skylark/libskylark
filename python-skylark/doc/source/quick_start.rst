@@ -14,7 +14,7 @@ Simply follow the instructions shown below.
 
 1. Install VirtualBox (`download VirtualBox <https://www.virtualbox.org/wiki/Downloads/>`_)
 2. Install Vagrant (`download Vagrant <http://www.vagrantup.com/downloads.html>`_).
-3. Execute the following command in a terminal:
+3. Execute the following commands in a terminal:
 
     .. code-block:: sh
 
@@ -29,7 +29,7 @@ Simply follow the instructions shown below.
 
 To exit the virtual environment type ``exit`` in the shell followed by
 ``vagrant halt`` in order to power down the virtual machine.
-In order to reconnect to the virtual machine, eiter use the VirtualBox
+In order to reconnect to the virtual machine, either use the VirtualBox
 interface to start the virtual machine and then login with the
 ``vagrant/vagrant`` user/password or execute
 
@@ -39,13 +39,12 @@ interface to start the virtual machine and then login with the
     vagrant ssh
 
 
-.. note:: Depending on your Vagrant version using the ``vagrant up`` (after a
-    ``vagrant halt``) and the ``vagrant ssh`` commands to reconnect to the
-    virtual machine again is considerably slower because the ``vagrant up``
-    command reruns some parts of the bootstrap script.
+.. note:: Depending on your Vagrant version, omitting the ``--no-provision``
+    argument (after a ``vagrant halt``) is considerably slower because the
+    ``vagrant up`` reruns parts of the bootstrap script.
 
 .. note:: The following environment variables are available after login,
-    pointing to the libSkylark source and install directory:
+    pointing to the libskylark source and install directory:
 
     .. code-block:: sh
 
@@ -73,7 +72,7 @@ software dependencies required for a fresh build of Skylark.
 The ``Vagrantfile`` is the input to `Vagrant <http://www.vagrantup.com/>`_, a
 program that facilitates the management of virtual machines.
 Using `VirtualBox <https://www.virtualbox.org/>`_ as the backend virtualization
-software (provider) we can launch a libSkylark environment indpendent of the
+software (provider) we can launch a libSkylark environment independent of the
 host operating system (*Windows*, *Mac OS X* and *Linux* host platform
 require *exactly* the same commands).
 
@@ -107,11 +106,10 @@ The vagrant box can be stopped by issuing ``vagrant halt``.
     For a Windows XP host, *PuTTy* ssh client should use the default
     connection settings: IP= ``127.0.0.1``, port= ``2222``,
     username= ``vagrant``, password= ``vagrant``.
-    See also ``vagrant ssh-config`` command.
 
-.. note::
+.. tip::
 
-    If you get a timeout error (waiting for virtual machine to boot)
+    If you get a timeout error (waiting for the virtual machine to boot)
 
     .. code-block:: sh
 
@@ -122,13 +120,13 @@ The vagrant box can be stopped by issuing ``vagrant halt``.
         Vagrant was unable to communicate with the guest machine within
         the configured ("config.vm.boot_timeout" value) time period.
 
-    during ``vagrant up`` just halt and up vagrant again.
+    during ``vagrant up``, halt the virtual machine and ``vagrant up`` again.
 
-.. note::
+.. tip::
 
-    In case Vagrant crashes during the setup, the safest thing is to delte the
-    virtual machine (halt than delete the machine in the VirtualBox GUI) and
-    start with a fresh vagrant build.
+    In case Vagrant crashes in the bootstrap phase, the safest thing is to
+    delete the virtual machine (halt than delete the machine in the VirtualBox
+    GUI) and start with a fresh Vagrant build.
 
 
 .. _cluster-label:
@@ -137,9 +135,8 @@ Cluster of vagrant-controlled VMs
 ==================================
 
 Here is a simple approach for building a cluster of vagrant-controlled VMs;
-it works in a local setting but since it uses the *Bridged* mode it should work
-in a real cluster environment as well.
-Please refer to
+it works in a local setting but since it uses the *bridged* mode it should work
+in a real cluster environment as well. Please refer to
 `this blog entry <https://blogs.oracle.com/fatbloke/entry/networking_in_virtualbox1>`_
 for more information on `Networking in VirtualBox`.
 

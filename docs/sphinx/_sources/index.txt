@@ -19,6 +19,7 @@ Sketching-based Matrix Computations for Machine Learning
    nla
    ml
    io
+   contributing
 
 
 Indices and tables

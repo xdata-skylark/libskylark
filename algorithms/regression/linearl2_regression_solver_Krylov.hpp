@@ -1,4 +1,4 @@
-#ifndef SKYlARK_LINEARL2_REGRESSION_SOLVER_KRYLOV_HPP
+#ifndef SKYLARK_LINEARL2_REGRESSION_SOLVER_KRYLOV_HPP
 #define SKYLARK_LINEARL2_REGRESSION_SOLVER_KRYLOV_HPP
 
 #include "../../base/query.hpp"
@@ -9,7 +9,7 @@ namespace skylark { namespace algorithms {
 
 /**
  * l2 linear regression solver using Krylov method. We have not specialized this
- * for any type of matrix because it accepts any matrix type and only works if 
+ * for any type of matrix because it accepts any matrix type and only works if
  * the required base functions have been implemented.
  */
 template <typename MatrixType,

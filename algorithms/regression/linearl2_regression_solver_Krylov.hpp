@@ -32,24 +32,24 @@ struct regression_solver_t<
                                  linear_tag, l2_tag, no_reg_tag> problem_type;
 
 private:
-    const nla::id_precond_t<sol_type> _id_precond_obj;
+    const algorithms::id_precond_t<sol_type> _id_precond_obj;
 
 public:
     const int m;
     const int n;
     const matrix_type& A;
-    const nla::precond_t<sol_type>& R;
-    const nla::iter_params_t iter_params;
+    const algorithms::precond_t<sol_type>& R;
+    const algorithms::iter_params_t iter_params;
 
     regression_solver_t (const problem_type& problem,
-        nla::iter_params_t iter_params = nla::iter_params_t()) :
+        algorithms::iter_params_t iter_params = algorithms::iter_params_t()) :
         m(problem.m), n(problem.n), A(problem.input_matrix),
         R(_id_precond_obj), iter_params(iter_params)
     { /* Check if m<n? */ }
 
     regression_solver_t (const problem_type& problem,
-        const nla::precond_t<sol_type>& R,
-        nla::iter_params_t iter_params = nla::iter_params_t()) :
+        const algorithms::precond_t<sol_type>& R,
+        algorithms::iter_params_t iter_params = algorithms::iter_params_t()) :
         m(problem.m), n(problem.n), A(problem.input_matrix), R(R),
         iter_params(iter_params)
     { /* Check if m<n? */ }

@@ -149,14 +149,14 @@ struct exact_solver_type< skyalg::iterative_l2_solver_tag<KT> >:
         skyalg::iterative_l2_solver_tag<KT> > base_type;
 
     exact_solver_type(const regression_problem_type& problem,
-        skynla::iter_params_t iter_params) :
+        skyalg::iter_params_t iter_params) :
         base_type(problem, iter_params) {
 
     }
 
     exact_solver_type(const regression_problem_type& problem,
-        const skynla::precond_t<sol_type>& R,
-        skynla::iter_params_t iter_params) :
+        const skyalg::precond_t<sol_type>& R,
+        skyalg::iter_params_t iter_params) :
         base_type(problem, R, iter_params) {
 
     }
@@ -297,7 +297,7 @@ int main(int argc, char** argv) {
     res_opt = res;
 
     // Using LSQR
-    skynla::iter_params_t lsqrparams;
+    skyalg::iter_params_t lsqrparams;
     lsqrparams.am_i_printing = rank == 0;
     lsqrparams.log_level = 0;
     timer.restart();

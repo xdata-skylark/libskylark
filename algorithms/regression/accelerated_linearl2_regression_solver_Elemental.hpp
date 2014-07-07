@@ -53,17 +53,17 @@ inline double utcondest(const elem::DistMatrix<T, elem::STAR, elem::STAR>& A) {
 
 template<typename SolType, typename SketchType, typename PrecondType>
 double build_precond(SketchType& SA,
-    PrecondType& R, nla::precond_t<SolType> *&P, qr_precond_tag) {
+    PrecondType& R, algorithms::precond_t<SolType> *&P, qr_precond_tag) {
     elem::qr::Explicit(SA.Matrix(), R.Matrix()); // TODO
     P =
-        new nla::tri_inverse_precond_t<SolType, PrecondType,
+        new algorithms::tri_inverse_precond_t<SolType, PrecondType,
                                        elem::UPPER, elem::NON_UNIT>(R);
     return utcondest(R);
 }
 
 template<typename SolType, typename SketchType, typename PrecondType>
 double build_precond(SketchType& SA,
-    PrecondType& V, nla::precond_t<SolType> *&P, svd_precond_tag) {
+    PrecondType& V, algorithms::precond_t<SolType> *&P, svd_precond_tag) {
 
     int n = SA.Width();
     PrecondType s(SA);
@@ -73,7 +73,7 @@ double build_precond(SketchType& SA,
         s.Set(i, 0, 1 / s.Get(i, 0));
     base::DiagonalScale(elem::RIGHT, elem::NORMAL, s, V);
     P =
-        new nla::mat_precond_t<SolType, PrecondType>(V);
+        new algorithms::mat_precond_t<SolType, PrecondType>(V);
     return s.Get(0,0) / s.Get(n-1, 0);
 }
 
@@ -112,7 +112,7 @@ private:
     const int _n;
     const matrix_type &_A;
     precond_type _R;
-    nla::precond_t<sol_type> *_precond_R;
+    algorithms::precond_t<sol_type> *_precond_R;
 
 public:
     /**
@@ -120,7 +120,8 @@ public:
      *
      * @param problem Problem to solve given right-hand side.
      */
-    accelerated_regression_solver_t(const problem_type& problem, base::context_t& context) :
+    accelerated_regression_solver_t(const problem_type& problem, 
+        base::context_t& context) :
         _m(problem.m), _n(problem.n), _A(problem.input_matrix),
         _R(_n, _n, problem.input_matrix.Grid()) {
         // TODO n < m ???
@@ -139,7 +140,7 @@ public:
     }
 
     int solve(const rhs_type& b, sol_type& x) {
-        return LSQR(_A, b, x, nla::iter_params_t(), *_precond_R);
+        return LSQR(_A, b, x, algorithms::iter_params_t(), *_precond_R);
     }
 };
 
@@ -175,7 +176,7 @@ private:
     const int _n;
     const matrix_type &_A;
     precond_type _R;
-    nla::precond_t<sol_type> *_precond_R;
+    algorithms::precond_t<sol_type> *_precond_R;
 
     regression_solver_t<problem_type, rhs_type, sol_type, svd_l2_solver_tag> 
     *_alt_solver;
@@ -242,7 +243,7 @@ public:
     }
 
     int solve(const rhs_type& b, sol_type& x) {
-        return LSQR(_A, b, x, nla::iter_params_t(), *_precond_R);
+        return LSQR(_A, b, x, algorithms::iter_params_t(), *_precond_R);
     }
 };
 
@@ -270,7 +271,7 @@ public:
 private:
 
     typedef elem::DistMatrix<ValueType, elem::STAR, elem::STAR> precond_type;
-    typedef precond_type sketch_type; 
+    typedef precond_type sketch_type;
     // The assumption is that the sketch is not much bigger than the
     // preconditioner, so we should use the same matrix distribution.
 
@@ -280,8 +281,8 @@ private:
     bool _use_lsqr;
     double _sigma_U, _sigma_L;
     precond_type _R;
-    nla::precond_t<sol_type> *_precond_R;
-    nla::iter_params_t _params;
+    algorithms::precond_t<sol_type> *_precond_R;
+    algorithms::iter_params_t _params;
 
 public:
     /**

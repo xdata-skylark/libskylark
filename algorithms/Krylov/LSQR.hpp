@@ -7,7 +7,7 @@
 #include "../../utility/external/print.hpp"
 #include "precond.hpp"
 
-namespace skylark { namespace nla {
+namespace skylark { namespace algorithms {
 
 // We can have a version that is indpendent of Elemental. But that will
 // be tedious (convert between [STAR,STAR] and vector<T>, and really
@@ -240,6 +240,6 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
 
 #endif
 
-} } /** namespace skylark::nla */
+} } /** namespace skylark::algorithms */
 
 #endif // SKYLARK_LSQR_HPP

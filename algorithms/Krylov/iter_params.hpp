@@ -3,7 +3,7 @@
 
 #include <ostream>
 
-namespace skylark { namespace nla {
+namespace skylark { namespace algorithms {
 
 struct iter_params_t {
 

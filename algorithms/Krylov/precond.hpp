@@ -3,7 +3,7 @@
 
 #include "../../base/base.hpp"
 
-namespace skylark { namespace nla {
+namespace skylark { namespace algorithms {
 
 /**
  * Defines a generic interface for preconditioners.
@@ -74,6 +74,6 @@ struct tri_inverse_precond_t : public precond_t<XType> {
 
 #endif
 
-} } /** namespace skylark::nla */
+} } /** namespace skylark::algorithms */
 
 #endif // SKYLARK_PRECOND_HPP

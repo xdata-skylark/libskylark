@@ -4,18 +4,18 @@
 namespace skylark { namespace utility { namespace io {
 
 /**
- * Reads X and Y from stream that contains data in libsvm format.
+ * Reads X and Y from a file in libsvm format.
  * X and Y are Elemental dense matrices.
  *
  * IMPORTANT: output is in column-major format (the rows are features).
  *
- * @param in input stream
+ * @param fname input file name.
  * @param X output X
  * @param Y output Y
  * @param min_d minimum number of rows in the matrix.
  */
 template<typename T>
-void ReadLIBSVM(std::istream &in,
+void ReadLIBSVM(const std::string& fname,
     elem::Matrix<T>& X, elem::Matrix<T>& Y,
     int min_d = 0) {
 
@@ -29,6 +29,7 @@ void ReadLIBSVM(std::istream &in,
     int i, j, last;
     char c;
 
+    std::ifstream in(fname);
 
     // make one pass over the data to figure out dimensions - 
     // will pay in terms of preallocated storage.
@@ -83,12 +84,12 @@ void ReadLIBSVM(std::istream &in,
 }
 
 /**
- * Reads X and Y from stream that contains data in libsvm format.
+ * Reads X and Y from a file in libsvm format.
  * X and Y are Elemental distributed matrices.
  *
  * IMPORTANT: output is in column-major format (the rows are features).
  *
- * @param in input stream
+ * @param fname input file name.
  * @param X output X
  * @param Y output Y
  * @param min_d minimum number of rows in the matrix.
@@ -96,7 +97,7 @@ void ReadLIBSVM(std::istream &in,
  */
 template<typename T, elem::Distribution UX, elem::Distribution VX,
          elem::Distribution UY, elem::Distribution VY>
-void ReadLIBSVM(std::istream &in,
+void ReadLIBSVM(const std::string& fname,
     elem::DistMatrix<T, UX, VX>& X, elem::DistMatrix<T, UY, VY>& Y,
     int min_d = 0, int blocksize = 10000) {
 
@@ -110,6 +111,8 @@ void ReadLIBSVM(std::istream &in,
     int d = 0;
     int i, j, last;
     char c;
+
+    std::ifstream in(fname);
 
     // TODO check that X and Y have the same grid.
     boost::mpi::communicator comm = skylark::utility::get_communicator(X);
@@ -202,18 +205,18 @@ void ReadLIBSVM(std::istream &in,
 }
 
 /**
- * Reads X and Y from stream that contains data in libsvm format.
+ * Reads X and Y from a file in libsvm format.
  * X is a Skylark local sparse matrix, and Y is Elemental dense matrices.
  *
  * IMPORTANT: output is in column-major format (the rows are features).
  *
- * @param in input stream
+ * @param fname input file name
  * @param X output X
  * @param Y output Y
  * @param min_d minimum number of rows in the matrix.
  */
 template<typename T>
-void ReadLIBSVM(std::istream &in,
+void ReadLIBSVM(const std::string& fname,
     base::sparse_matrix_t<T>& X, elem::Matrix<T>& Y, int min_d = 0) {
 
     std::string line;
@@ -228,6 +231,7 @@ void ReadLIBSVM(std::istream &in,
     int nnz=0;
     int nz;
 
+    std::ifstream in(fname);
 
     // make one pass over the data to figure out dimensions and nnz
     // will pay in terms of preallocated storage.

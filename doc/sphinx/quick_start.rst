@@ -234,7 +234,7 @@ sketching. Below, three types of sketches are illustrated in the highlighted lin
 2. a row-distributed `Elemental <http://libelemental.org>`_ dense matrix is sketched using  `FJLT (Fast Johnson-Lindenstrauss transform)` involving faster FFT-like operations.
 3. a 2D block-cyclic distributed `Combinatorial BLAS <http://gauss.cs.ucsb.edu/~aydin/CombBLAS/html/>`_ sparse matrix is sketched to a dense local Elemental matrix using `Clarkson-Woodruff` transform which involves hashing the rows.
 
-.. literalinclude:: ../../../examples/elemental.cpp
+.. literalinclude:: ../../examples/elemental.cpp
     :language: cpp
     :emphasize-lines: 65,66,69,73,96,97,100,103,118,119,122,126
     :linenos:
@@ -260,7 +260,7 @@ of the flavor of `sketch-and-solve` geared towards lower-precision
 solutions, while the other approach uses sketching to construct a
 preconditioner to obtain high-precision solutions faster.
 
-.. literalinclude:: ../../../examples/least_squares.cpp
+.. literalinclude:: ../../examples/least_squares.cpp
     :language: cpp
     :emphasize-lines: 88,102
     :linenos:
@@ -278,7 +278,7 @@ SVD
 
 In :file:`${SKYLARK_SRC_DIR}/examples/rand_svd.cpp` an example is provided that illustrates randomized singular value decompositions.
 
-.. literalinclude:: ../../../examples/rand_svd.cpp
+.. literalinclude:: ../../examples/rand_svd.cpp
     :language: cpp
     :emphasize-lines: 79,81-82
     :linenos:

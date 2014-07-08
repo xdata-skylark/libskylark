@@ -443,14 +443,14 @@ endif (DOXYGEN_FOUND)
 find_package(Sphinx)
 if (SPHINX_FOUND)
     configure_file(
-        ${CMAKE_CURRENT_SOURCE_DIR}/python-skylark/doc/source/conf.py
+        ${CMAKE_CURRENT_SOURCE_DIR}/doc/sphinx/conf.py
         ${CMAKE_CURRENT_BINARY_DIR}/conf.py @ONLY
     )
     add_custom_target(sphinx-doc
         ${SPHINX_EXECUTABLE}
         -q -b html
         -d "${CMAKE_CURRENT_BINARY_DIR}/_cache"
-        "${CMAKE_CURRENT_SOURCE_DIR}/python-skylark/doc/source"
+        "${CMAKE_CURRENT_SOURCE_DIR}/doc/sphinx"
         "${CMAKE_CURRENT_BINARY_DIR}/Documentation/sphinx"
         COMMENT "Building HTML documentation with Sphinx"
     )

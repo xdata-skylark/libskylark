@@ -103,6 +103,53 @@ inline void Gemv(elem::Orientation oA,
     base::Gemv(oA, alpha, A, x, T(0), y);
 }
 
+template<typename T>
+inline void Gemv(elem::Orientation oA,
+    T alpha, const sparse_matrix_t<T>& A, const elem::Matrix<T>& x,
+    T beta, elem::Matrix<T>& y) {
+    // TODO verify sizes etc.
+
+    const int* indptr = A.indptr();
+    const int* indices = A.indices();
+    const double *values = A.locked_values();
+    double *yd = y.Buffer();
+    const double *xd = x.LockedBuffer();
+
+    int n = A.width();
+
+    if (oA == elem::NORMAL) {
+        elem::Scal(beta, y);
+
+#       if SKYLARK_HAVE_OPENMP
+#       pragma omp parallel for
+#       endif
+        for(int col = 0; col < n; col++) {
+            T xv = alpha * xd[col];
+            for (int j = indptr[col]; j < indptr[col + 1]; j++) {
+                     int row = indices[j];
+                     T val = values[j];
+                     yd[row] += val * xv;
+                 }
+        }
+
+    } else {
+
+#       if SKYLARK_HAVE_OPENMP
+#       pragma omp parallel for
+#       endif
+        for(int col = 0; col < n; col++) {
+            double yv = beta * yd[col];
+            for (int j = indptr[col]; j < indptr[col + 1]; j++) {
+                     int row = indices[j];
+                     T val = values[j];
+                     yv += alpha * val * xd[row];
+                 }
+            yd[col] = yv;
+        }
+
+    }
+}
+
 } } // namespace skylark::base
 
 #endif // SKYLARK_HAVE_ELEMENTAL

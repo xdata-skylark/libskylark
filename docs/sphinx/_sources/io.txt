@@ -70,10 +70,10 @@ Writing
 
 .. cpp:function:: int write_hdf5(std::string filename, skylark::base::sparse_matrix_t<double>& X, elem::Matrix<double>& Y)
 
-    Writes feature/value pairs (in matrix `X`) and labels (in matrix `Y`) to the HDF5 `filename` and returns 0 to signal successfully completed operation. 
-    
-     * For the case of dense matrix input `X` (elem::Matrix<double> type) 2 datasets named `X` and `Y` are created in the file for all data. 
-     
+    Writes feature/value pairs (in matrix `X`) and labels (in matrix `Y`) to the HDF5 `filename` and returns 0 to signal successfully completed operation.
+
+     * For the case of dense matrix input `X` (elem::Matrix<double> type) 2 datasets named `X` and `Y` are created in the file for all data.
+
      * For the case of sparse matrix `X` (skylark::base::sparse_matrix_t<double> type) 5 datasets are created in the file for all data: `dimensions` (for `X` matrix size), `indptr`, `indices`, `values` (for `X` matrix) and `Y` (for `Y` matrix).
 
 
@@ -91,7 +91,7 @@ IO from Python
 Example
 ^^^^^^^^
 
-.. literalinclude:: ../../skylark/examples/example_IO.py
+.. literalinclude:: ../../python-skylark/skylark/examples/example_IO.py
 
 Sketch Serialization
 ---------------------

@@ -279,7 +279,7 @@ we call bootstrap.
 
 	./bootstrap.sh --with-libraries=mpi,serialization,program_options
 
-In a next step, download :download:`jam file <./bgq.jam>` and
+In a next step, download :download:`jam file <files/bgq.jam>` and
 copy the Boost jam file to ``tools/build/v2/tools/``.
 Subsequently, executing
 

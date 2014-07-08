@@ -372,10 +372,10 @@ Python Examples
 
 **Sketching Dense Distributed Matrices**
 
-.. literalinclude:: ../../skylark/examples/example_sketch.py
+.. literalinclude:: ../../python-skylark/skylark/examples/example_sketch.py
 
 **Sketching Sparse Distributed Matrices**
 
-.. literalinclude:: ../../skylark/examples/example_sparse_sketch.py
+.. literalinclude:: ../../python-skylark/skylark/examples/example_sparse_sketch.py
 
 

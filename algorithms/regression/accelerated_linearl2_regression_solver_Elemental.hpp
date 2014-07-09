@@ -140,7 +140,7 @@ public:
     }
 
     int solve(const rhs_type& b, sol_type& x) {
-        return LSQR(_A, b, x, algorithms::iter_params_t(), *_precond_R);
+        return LSQR(_A, b, x, algorithms::krylov_iter_params_t(), *_precond_R);
     }
 };
 
@@ -243,7 +243,7 @@ public:
     }
 
     int solve(const rhs_type& b, sol_type& x) {
-        return LSQR(_A, b, x, algorithms::iter_params_t(), *_precond_R);
+        return LSQR(_A, b, x, algorithms::krylov_iter_params_t(), *_precond_R);
     }
 };
 
@@ -282,7 +282,7 @@ private:
     double _sigma_U, _sigma_L;
     precond_type _R;
     algorithms::precond_t<sol_type> *_precond_R;
-    algorithms::iter_params_t _params;
+    algorithms::krylov_iter_params_t _params;
 
 public:
     /**

@@ -22,7 +22,7 @@ namespace skylark { namespace algorithms {
 template<typename MatrixType, typename RhsType, typename SolType>
 void ChebyshevLS(const MatrixType& A, const RhsType& B, SolType& X,
     double sigma_L, double sigma_U,
-    iter_params_t params = iter_params_t(),
+    krylov_iter_params_t params = krylov_iter_params_t(),
     const precond_t<SolType>& P = id_precond_t<SolType>()) {
 
     typedef typename utility::typer_t<MatrixType>::value_type value_t;

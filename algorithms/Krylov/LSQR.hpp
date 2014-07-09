@@ -21,7 +21,7 @@ namespace skylark { namespace algorithms {
  */
 template<typename MatrixType, typename RhsType, typename SolType>
 int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
-    iter_params_t params = iter_params_t(),
+    krylov_iter_params_t params = krylov_iter_params_t(),
     const precond_t<SolType>& R = id_precond_t<SolType>()) {
 
     typedef typename utility::typer_t<MatrixType>::value_type value_t;

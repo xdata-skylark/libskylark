@@ -5,9 +5,11 @@
 #include "../../utility/elem_extender.hpp"
 #include "../../utility/typer.hpp"
 #include "../../utility/external/print.hpp"
+#include "internal.hpp"
 #include "precond.hpp"
 
-namespace skylark { namespace algorithms {
+namespace skylark {
+namespace algorithms {
 
 // We can have a version that is indpendent of Elemental. But that will
 // be tedious (convert between [STAR,STAR] and vector<T>, and really
@@ -35,7 +37,7 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
     typedef utility::print_t<sol_type> sol_print_t;
 
     typedef utility::elem_extender_t<
-        elem::DistMatrix<value_t, elem::STAR, elem::STAR> >
+        typename internal::scalar_cont_typer_t<rhs_type>::type >
         scalar_cont_type;
 
     bool log_lev1 = params.am_i_printing && params.log_level >= 1;
@@ -56,7 +58,9 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
     // We set the grid and rank for beta, and all other scalar containers
     // just copy from him to get that to be set right (not for the values).
     rhs_type U(B);
-    scalar_cont_type beta(k, 1, A.Grid(), A.Root()), i_beta(beta);
+    scalar_cont_type
+        beta(internal::scalar_cont_typer_t<rhs_type>::build_compatible(k, 1, U));
+    scalar_cont_type i_beta(beta);
     base::ColumnNrm2(U, beta);
     for (index_t i=0; i<k; ++i)
         i_beta[i] = 1 / beta[i];

@@ -41,13 +41,29 @@ int main(int argc, char** argv) {
     skyalg::AsyRGS(A, b, x, 20, context);
     std::cout <<"took " << boost::format("%.2e") % timer.elapsed() << " sec\n";
 
-    elem::Matrix<double> r(b);
+    {elem::Matrix<double> r(b);
     skybase::Gemv(elem::TRANSPOSE, -1.0, A, x, 1.0, r);
     double res = skybase::Nrm2(r);
     double nrmb = skybase::Nrm2(b);
     std::cout << "||A x - b||_2 / ||b||_2 = " <<
         boost::format("%.2e") % (res / nrmb) <<
-        std::endl;
+        std::endl;}
+
+    std::cout << "Using LSQR... ";
+    timer.restart();
+    elem::MakeZeros(x);
+    skyalg::krylov_iter_params_t iter_params;
+    iter_params.iter_lim = 1000;
+    skyalg::LSQR(A, b, x, iter_params);
+    std::cout <<"took " << boost::format("%.2e") % timer.elapsed() << " sec\n";
+
+    {elem::Matrix<double> r(b);
+    skybase::Gemv(elem::TRANSPOSE, -1.0, A, x, 1.0, r);
+    double res = skybase::Nrm2(r);
+    double nrmb = skybase::Nrm2(b);
+    std::cout << "||A x - b||_2 / ||b||_2 = " <<
+        boost::format("%.2e") % (res / nrmb) <<
+        std::endl;}
 
     return 0;
 }

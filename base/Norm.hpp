@@ -41,6 +41,20 @@ inline elem::Base<T> Nrm2(const elem::DistMatrix<T, elem::STAR, elem::STAR>& x) 
 }
 
 template<typename T>
+inline void ColumnNrm2(const elem::Matrix<T>& A,
+    elem::Matrix<elem::Base<T> >& N) {
+
+    double *n = N.Buffer();
+    const double *a = A.LockedBuffer();
+    for(int j = 0; j < A.Width(); j++) {
+        n[j] = 0.0;
+        for(int i = 0; i < A.Height(); i++)
+            n[j] += a[j * A.LDim() + i] * a[j * A.LDim() + i];
+        n[j] = sqrt(n[j]);
+    }
+}
+
+template<typename T>
 inline void ColumnNrm2(const elem::DistMatrix<T, elem::STAR, elem::STAR>& A,
     elem::DistMatrix<elem::Base<T>, elem::STAR, elem::STAR>& N) {
 

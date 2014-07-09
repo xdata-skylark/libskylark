@@ -20,6 +20,8 @@ struct elem_extender_t : public ET {
     // using ET::ET;
     // For now, I am just implementing the most basic c'tors. More
     // will be added as neccessary.
+    elem_extender_t(const ET& other) : ET(other) {  }
+    elem_extender_t(const ET&& other) : ET(other) {  }
     elem_extender_t(int m, int n, const elem::Grid& grid=elem::DefaultGrid(),
         int root=0) : ET(m, n, grid, root) { }
 

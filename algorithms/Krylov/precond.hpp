@@ -13,6 +13,9 @@ namespace skylark { namespace algorithms {
 template<typename T>
 struct precond_t {
 
+    // Is this really a no-op? (Identity preconditioner)
+    virtual bool is_id() const = 0;
+
     /// Apply the preconditoiner to X, overwritting X.
     virtual void apply(T& X) const = 0;
 
@@ -28,6 +31,8 @@ struct precond_t {
  */
 template<typename T>
 struct id_precond_t : public precond_t<T> {
+    bool is_id() const { return true; }
+
     void apply(T& X) const { }
 
     void apply_adjoint(T& X) const { }
@@ -41,6 +46,8 @@ struct mat_precond_t : public precond_t<XType> {
     const NType& N;
 
     mat_precond_t(const NType& N) : N(N) { }
+
+    bool is_id() const { return false; }
 
     void apply(XType& X) const {
         XType Xin(X);
@@ -62,6 +69,8 @@ struct tri_inverse_precond_t : public precond_t<XType> {
     const RType& R;
 
     tri_inverse_precond_t(const RType& R) : R(R) { }
+
+    bool is_id() const { return false; }
 
     void apply(XType& X) const {
         base::Trsm(elem::LEFT, UL, elem::NORMAL, D, 1.0, R, X);

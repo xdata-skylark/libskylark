@@ -170,6 +170,7 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
         nrm_r = phibar;
 
         /** 7. estimate of norm(A'*r) */
+        index_t cond_s1 = 0, cond_s2 = 0;
         for (index_t i=0; i<k; ++i) {
             nrm_ar[i] = std::abs(phibar[i]*alpha[i]*cs[i]);
 
@@ -178,18 +179,24 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
                                   << ": " << nrm_ar[i]
                                   << std::endl;
 
-            /** 8. check convergence */
-            if (nrm_ar[i]<(params.tolerance*nrm_ar_0[i])) {
-                if (log_lev1)
-                    params.log_stream << "LSQR: Convergence (S1)!" << std::endl;
-                return -2;
-            }
 
-            if (nrm_ar[i]<(eps*nrm_a[i]*nrm_r[i])) {
-                if (log_lev1)
-                    params.log_stream << "LSQR: Convergence (S2)!" << std::endl;
-                return -3;
-            }
+            if (nrm_ar[i]<(params.tolerance*nrm_ar_0[i]))
+                cond_s1++;
+            if (nrm_ar[i]<(eps*nrm_a[i]*nrm_r[i]))
+                cond_s2++;
+        }
+
+        /** 8. check convergence */
+        if (cond_s1 == k) {
+            if (log_lev1)
+                params.log_stream << "LSQR: Convergence (S1)!" << std::endl;
+            return -2;
+        }
+
+        if (cond_s2 == k) {
+            if (log_lev1)
+                params.log_stream << "LSQR: Convergence (S2)!" << std::endl;
+            return -3;
         }
 
         /** 9. estimate of cond(A) */

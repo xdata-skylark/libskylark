@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
     timer.restart();
     elem::MakeZeros(x);
     skyalg::krylov_iter_params_t iter_params;
-    iter_params.iter_lim = 10;
+    iter_params.iter_lim = 20;
     skyalg::CG(A, b, x, iter_params);
     std::cout <<"took " << boost::format("%.2e") % timer.elapsed() << " sec\n";
 

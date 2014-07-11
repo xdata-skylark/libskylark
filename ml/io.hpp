@@ -25,7 +25,7 @@ typedef elem::Matrix<double> LocalMatrixType;
 #ifdef SKYLARK_HAVE_HDF5
 #include <H5Cpp.h>
 
-int write_hdf5(const boost::mpi::communicator &comm, 
+int write_hdf5(const boost::mpi::communicator &comm,
     std::string fName, elem::Matrix<double>& X,
     elem::Matrix<double>& Y) {
 
@@ -446,9 +446,9 @@ void read_hdf5(const boost::mpi::communicator &comm, std::string fName,
        H5::H5File file( fName, H5F_ACC_RDONLY );
        H5::DataSet datasetX = file.openDataSet( "X" );
        H5::DataSpace filespaceX = datasetX.getSpace();
-       int ndims = filespaceX.getSimpleExtentNdims();
+       //int ndims = filespaceX.getSimpleExtentNdims();
        hsize_t dimsX[2]; // dataset dimensions
-       ndims = filespaceX.getSimpleExtentDims( dimsX );
+       int ndims = filespaceX.getSimpleExtentDims( dimsX );
        hsize_t n = dimsX[0];
        hsize_t d = dimsX[1];
 
@@ -673,7 +673,7 @@ void read_libsvm(const boost::mpi::communicator &comm, std::string fName,
 }
 
 template<typename T>
-void read_libsvm(const boost::mpi::communicator &comm, std::string fName, 
+void read_libsvm(const boost::mpi::communicator &comm, std::string fName,
     skylark::base::sparse_matrix_t<T>& X, elem::Matrix<T>& Y, int min_d = 0) {
 
     int rank = comm.rank();

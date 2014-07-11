@@ -380,7 +380,7 @@ sparse matrices.
 
 *Shared Libs*
 
-In order to use Skylark through Python, make sure compile and append the
+In order to use Skylark through Python, make sure to compile and append the
 directory containing the ``*.so`` files to your :envvar:`LD_LIBRARY_PATH`.
 
 ::

@@ -101,12 +101,14 @@ class SVD_test(unittest.TestCase):
         A = elem.DistMatrix_d_VR_STAR()
 
         #FIXME: Christos, use your matrix problem factory here
-        elem.Uniform(A, _M, _N)
+        elem.Uniform(A, _N, _M)
 
-        #measures = [svd_bound] #.. add more measures to be computed in a test
-        #results  = test_helper(A, _M, _N, _R, sketch.JLT, measures, MPI, direction="rowwise")
+        #FIXME: A.Matrix will not work in parallel
+        self.sv  = np.linalg.svd(A.Matrix, full_matrices=1, compute_uv=0)
 
-        #self.check_result(results)
+        for sketch in self.sketches:
+            results = test_helper(A, _N, _M, _R, sketch, [self.svd_bound], MPI, 5, "rowwise")
+            self.check_result(results, str(sketch))
 
 
 if __name__ == '__main__':

@@ -336,7 +336,7 @@ if (USE_PROFILER)
 endif (USE_PROFILER)
 
 
-option (USE_HYBRID "Use hybrid MPI/OpenMPI parallelization" OFF)
+option (USE_HYBRID "Use hybrid MPI/OpenMPI parallelization" ON)
 if (USE_HYBRID)
   find_package(OpenMP)
     if (OPENMP_FOUND)

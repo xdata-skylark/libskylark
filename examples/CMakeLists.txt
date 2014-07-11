@@ -46,19 +46,20 @@ if (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
                         ${Boost_LIBRARIES})
   install_targets(/bin/examples rand_svd)
 
-if (FALSE)
-# Commenting this out for now as we don't have a functioning
-# SVD implementation that uses sketching
-  add_executable(svd svd.cpp)
-  target_link_libraries(svd
+endif (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
+
+if (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_OPENMP)
+  add_executable(asynch asynch.cpp)
+  target_link_libraries(asynch
                         ${Elemental_LIBRARY}
                         ${FFTW_LIBRARY}
                         ${Pmrrr_LIBRARY}
                         ${SKYLARK_LIBS}
-                        ${Boost_LIBRARIES})
-endif(FALSE)
-
-endif (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
+                        ${Boost_LIBRARIES}                        
+                        ${HDF5_LIBRARIES}
+                        ${ZLIB_LIBRARIES})
+  install_targets(/bin/examples asynch)
+endif (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_OPENMP)
 
 if(FALSE)
 if (SKYLARK_HAVE_COMBBLAS AND SKYLARK_HAVE_ELEMENTAL)

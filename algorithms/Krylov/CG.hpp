@@ -29,6 +29,8 @@ int CG(const MatrixType& A, const RhsType& B, SolType& X,
     krylov_iter_params_t params = krylov_iter_params_t(),
     const precond_t<SolType>& M = id_precond_t<SolType>()) {
 
+    int ret;
+
     typedef typename utility::typer_t<MatrixType>::value_type value_t;
     typedef typename utility::typer_t<MatrixType>::index_type index_t;
 
@@ -109,18 +111,22 @@ int CG(const MatrixType& A, const RhsType& B, SolType& X,
         if(convg == k) {
             if (log_lev1)
                 params.log_stream << "CG: Convergence!" << std::endl;
-            return -1;
+            ret = -1;
+            goto cleanup;
         }
     }
 
-    if (isprecond)
-        delete &Z;
-
-   if (log_lev1)
+    ret = -6;
+    if (log_lev1)
         params.log_stream << "CG: No convergence within iteration limit."
                           << std::endl;
 
-    return -6;
+ cleanup:
+    if (isprecond)
+        delete &Z;
+
+
+    return ret;
 }
 
 #endif

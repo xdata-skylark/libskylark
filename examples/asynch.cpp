@@ -14,6 +14,29 @@ namespace skynla = skylark::nla;
 namespace skyalg = skylark::algorithms;
 namespace skyutil = skylark::utility;
 
+
+struct asyprecond_t : public skyalg::precond_t<elem::Matrix<double> > {
+
+    const skybase::sparse_matrix_t<double>& N;
+    skybase::context_t &context;
+
+    asyprecond_t(const skybase::sparse_matrix_t<double>& N, skybase::context_t &ctx) 
+        : N(N) , context(ctx) { }
+
+    bool is_id() const { return false; }
+
+    void apply(elem::Matrix<double>& X) const {
+        elem::Matrix<double> Xin(X);
+        elem::MakeZeros(X);
+        skyalg::AsyRGS(N, Xin, X, 2, context);
+    }
+
+    void apply_adjoint(elem::Matrix<double>& X) const {
+        // TODO
+    }
+
+};
+
 int main(int argc, char** argv) {
 
     elem::Initialize(argc, argv);
@@ -64,6 +87,22 @@ int main(int argc, char** argv) {
     std::cout << "||A x - b||_2 / ||b||_2 = " <<
         boost::format("%.2e") % (res / nrmb) <<
         std::endl;}
+
+    std::cout << "Using FCG... ";
+    timer.restart();
+    elem::MakeZeros(x);
+    iter_params.iter_lim = 500;
+    skyalg::FlexibleCG(A, b, x, iter_params, asyprecond_t(A, context));
+    std::cout <<"took " << boost::format("%.2e") % timer.elapsed() << " sec\n";
+
+    {elem::Matrix<double> r(b);
+    skybase::Gemv(elem::TRANSPOSE, -1.0, A, x, 1.0, r);
+    double res = skybase::Nrm2(r);
+    double nrmb = skybase::Nrm2(b);
+    std::cout << "||A x - b||_2 / ||b||_2 = " <<
+        boost::format("%.2e") % (res / nrmb) <<
+        std::endl;}
+
 
     return 0;
 }

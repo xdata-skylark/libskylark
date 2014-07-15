@@ -3,6 +3,7 @@
 
 #include "iter_params.hpp"
 #include "CG.hpp"
+#include "FlexibleCG.hpp"
 #include "LSQR.hpp"
 #include "Chebyshev.hpp"
 

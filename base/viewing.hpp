@@ -19,6 +19,19 @@ const elem::Matrix<T> ColumnView(const elem::Matrix<T>& B, int j, int width) {
     return A;
 }
 
+template<typename T>
+inline void RowView(elem::Matrix<T>& A, elem::Matrix<T>& B,
+    int i, int height) {
+    elem::View(A, B, i, 0, height, B.Width());
+}
+
+template<typename T>
+inline
+const elem::Matrix<T> RowView(const elem::Matrix<T>& B, int i, int height) {
+    elem::Matrix<T> A;
+    elem::LockedView(A, B, i, 0, height, B.Width());
+    return A;
+}
 #endif
 
 template<typename T>

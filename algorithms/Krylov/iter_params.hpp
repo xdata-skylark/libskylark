@@ -5,7 +5,7 @@
 
 namespace skylark { namespace algorithms {
 
-struct iter_params_t {
+struct krylov_iter_params_t {
 
     double tolerance;
     bool am_i_printing;
@@ -14,7 +14,7 @@ struct iter_params_t {
     std::ostream& log_stream;
     int debug_level;
 
-    iter_params_t(double tolerance = 1e-14,
+    krylov_iter_params_t(double tolerance = 1e-14,
         bool am_i_printing = 0,
         int iter_lim = 100,
         int log_level = 0,
@@ -30,7 +30,7 @@ struct iter_params_t {
 
 };
 
-} } // namespace skylark::nla
+} } // namespace skylark::algorithms
 
 
 #endif // SKYLARK_ITER_PARAMS_HPP

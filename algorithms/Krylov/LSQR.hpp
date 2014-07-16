@@ -5,9 +5,11 @@
 #include "../../utility/elem_extender.hpp"
 #include "../../utility/typer.hpp"
 #include "../../utility/external/print.hpp"
+#include "internal.hpp"
 #include "precond.hpp"
 
-namespace skylark { namespace algorithms {
+namespace skylark {
+namespace algorithms {
 
 // We can have a version that is indpendent of Elemental. But that will
 // be tedious (convert between [STAR,STAR] and vector<T>, and really
@@ -21,8 +23,8 @@ namespace skylark { namespace algorithms {
  */
 template<typename MatrixType, typename RhsType, typename SolType>
 int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
-    iter_params_t params = iter_params_t(),
-    const precond_t<SolType>& R = id_precond_t<SolType>()) {
+    krylov_iter_params_t params = krylov_iter_params_t(),
+    const inplace_precond_t<SolType>& R = inplace_id_precond_t<SolType>()) {
 
     typedef typename utility::typer_t<MatrixType>::value_type value_t;
     typedef typename utility::typer_t<MatrixType>::index_type index_t;
@@ -35,7 +37,7 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
     typedef utility::print_t<sol_type> sol_print_t;
 
     typedef utility::elem_extender_t<
-        elem::DistMatrix<value_t, elem::STAR, elem::STAR> >
+        typename internal::scalar_cont_typer_t<rhs_type>::type >
         scalar_cont_type;
 
     bool log_lev1 = params.am_i_printing && params.log_level >= 1;
@@ -56,7 +58,9 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
     // We set the grid and rank for beta, and all other scalar containers
     // just copy from him to get that to be set right (not for the values).
     rhs_type U(B);
-    scalar_cont_type beta(k, 1, A.Grid(), A.Root()), i_beta(beta);
+    scalar_cont_type
+        beta(internal::scalar_cont_typer_t<rhs_type>::build_compatible(k, 1, U));
+    scalar_cont_type i_beta(beta);
     base::ColumnNrm2(U, beta);
     for (index_t i=0; i<k; ++i)
         i_beta[i] = 1 / beta[i];
@@ -166,6 +170,7 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
         nrm_r = phibar;
 
         /** 7. estimate of norm(A'*r) */
+        index_t cond_s1 = 0, cond_s2 = 0;
         for (index_t i=0; i<k; ++i) {
             nrm_ar[i] = std::abs(phibar[i]*alpha[i]*cs[i]);
 
@@ -174,18 +179,24 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
                                   << ": " << nrm_ar[i]
                                   << std::endl;
 
-            /** 8. check convergence */
-            if (nrm_ar[i]<(params.tolerance*nrm_ar_0[i])) {
-                if (log_lev1)
-                    params.log_stream << "LSQR: Convergence (S1)!" << std::endl;
-                return -2;
-            }
 
-            if (nrm_ar[i]<(eps*nrm_a[i]*nrm_r[i])) {
-                if (log_lev1)
-                    params.log_stream << "LSQR: Convergence (S2)!" << std::endl;
-                return -3;
-            }
+            if (nrm_ar[i]<(params.tolerance*nrm_ar_0[i]))
+                cond_s1++;
+            if (nrm_ar[i]<(eps*nrm_a[i]*nrm_r[i]))
+                cond_s2++;
+        }
+
+        /** 8. check convergence */
+        if (cond_s1 == k) {
+            if (log_lev1)
+                params.log_stream << "LSQR: Convergence (S1)!" << std::endl;
+            return -2;
+        }
+
+        if (cond_s2 == k) {
+            if (log_lev1)
+                params.log_stream << "LSQR: Convergence (S2)!" << std::endl;
+            return -3;
         }
 
         /** 9. estimate of cond(A) */

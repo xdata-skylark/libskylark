@@ -6,41 +6,80 @@
 namespace skylark { namespace algorithms {
 
 /**
- * Defines a generic interface for preconditioners.
+ * Defines a generic interface for inplace preconditioners.
  *
  * @tparam T type of solution vector on which the preconditioner is applied.
  */
 template<typename T>
-struct precond_t {
+struct inplace_precond_t {
+
+    // Is this really a no-op? (Identity preconditioner)
+    virtual bool is_id() const = 0;
 
     /// Apply the preconditoiner to X, overwritting X.
     virtual void apply(T& X) const = 0;
 
     virtual void apply_adjoint(T& X) const = 0;
 
-    virtual ~precond_t() { }
+    virtual ~inplace_precond_t() { }
 };
+
+/**
+ * Defines a generic interface for out-of-place preconditioners.
+ *
+ * @tparam T type of solution vector on which the preconditioner is applied.
+ */
+template<typename RhsType, typename SolType>
+struct outplace_precond_t {
+
+    // Is this really a no-op? (Identity preconditioner)
+    virtual bool is_id() const = 0;
+
+    /// Apply the preconditoiner to X, overwritting X.
+    virtual void apply(const RhsType& B, SolType& X) const = 0;
+
+    virtual void apply_adjoint(const RhsType& B, SolType& X) const = 0;
+
+    virtual ~outplace_precond_t() { }
+};
+
 
 #ifdef SKYLARK_HAVE_ELEMENTAL
 
 /**
- * Identity preconditioner - does nothing!
+ * Inplace identity preconditioner - does nothing!
  */
 template<typename T>
-struct id_precond_t : public precond_t<T> {
+struct inplace_id_precond_t : public inplace_precond_t<T> {
+    bool is_id() const { return true; }
+
     void apply(T& X) const { }
 
     void apply_adjoint(T& X) const { }
 };
 
 /**
+ * Out-of-place identity preconditioner - just copies.
+ */
+template<typename RhsType, typename SolType>
+struct outplace_id_precond_t : public outplace_precond_t<RhsType, SolType> {
+    bool is_id() const { return true; }
+
+    void apply(const RhsType& B, SolType& X) const { base::Copy(B, X); }
+
+    void apply_adjoint(const RhsType& B, SolType& X) const { base::Copy(B, X); }
+};
+
+/**
  * A preconditioner that is explicitly given as a matrix.
  */
 template<typename XType, typename NType>
-struct mat_precond_t : public precond_t<XType> {
+struct inplace_mat_precond_t : public inplace_precond_t<XType> {
     const NType& N;
 
-    mat_precond_t(const NType& N) : N(N) { }
+    inplace_mat_precond_t(const NType& N) : N(N) { }
+
+    bool is_id() const { return false; }
 
     void apply(XType& X) const {
         XType Xin(X);
@@ -54,14 +93,16 @@ struct mat_precond_t : public precond_t<XType> {
 };
 
 /**
- * A preconditioner that is the inverse of a given traingular matrix.
+ * A preconditioner that is the inverse of a given triangular matrix.
  */
 template<typename XType, typename RType,
          elem::UpperOrLower UL, elem::UnitOrNonUnit D>
-struct tri_inverse_precond_t : public precond_t<XType> {
+struct inplace_tri_inverse_precond_t : public inplace_precond_t<XType> {
     const RType& R;
 
-    tri_inverse_precond_t(const RType& R) : R(R) { }
+    inplace_tri_inverse_precond_t(const RType& R) : R(R) { }
+
+    bool is_id() const { return false; }
 
     void apply(XType& X) const {
         base::Trsm(elem::LEFT, UL, elem::NORMAL, D, 1.0, R, X);

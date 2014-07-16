@@ -32,24 +32,26 @@ struct regression_solver_t<
                                  linear_tag, l2_tag, no_reg_tag> problem_type;
 
 private:
-    const algorithms::id_precond_t<sol_type> _id_precond_obj;
+    const algorithms::inplace_id_precond_t<sol_type> _id_precond_obj;
 
 public:
     const int m;
     const int n;
     const matrix_type& A;
-    const algorithms::precond_t<sol_type>& R;
-    const algorithms::iter_params_t iter_params;
+    const algorithms::inplace_precond_t<sol_type>& R;
+    const algorithms::krylov_iter_params_t iter_params;
 
     regression_solver_t (const problem_type& problem,
-        algorithms::iter_params_t iter_params = algorithms::iter_params_t()) :
+        algorithms::krylov_iter_params_t iter_params =
+        algorithms::krylov_iter_params_t()) :
         m(problem.m), n(problem.n), A(problem.input_matrix),
         R(_id_precond_obj), iter_params(iter_params)
     { /* Check if m<n? */ }
 
     regression_solver_t (const problem_type& problem,
-        const algorithms::precond_t<sol_type>& R,
-        algorithms::iter_params_t iter_params = algorithms::iter_params_t()) :
+        const algorithms::inplace_precond_t<sol_type>& R,
+        algorithms::krylov_iter_params_t iter_params =
+        algorithms::krylov_iter_params_t()) :
         m(problem.m), n(problem.n), A(problem.input_matrix), R(R),
         iter_params(iter_params)
     { /* Check if m<n? */ }

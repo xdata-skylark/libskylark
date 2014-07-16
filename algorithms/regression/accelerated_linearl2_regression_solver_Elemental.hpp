@@ -53,17 +53,17 @@ inline double utcondest(const elem::DistMatrix<T, elem::STAR, elem::STAR>& A) {
 
 template<typename SolType, typename SketchType, typename PrecondType>
 double build_precond(SketchType& SA,
-    PrecondType& R, algorithms::precond_t<SolType> *&P, qr_precond_tag) {
+    PrecondType& R, algorithms::inplace_precond_t<SolType> *&P, qr_precond_tag) {
     elem::qr::Explicit(SA.Matrix(), R.Matrix()); // TODO
     P =
-        new algorithms::tri_inverse_precond_t<SolType, PrecondType,
+        new algorithms::inplace_tri_inverse_precond_t<SolType, PrecondType,
                                        elem::UPPER, elem::NON_UNIT>(R);
     return utcondest(R);
 }
 
 template<typename SolType, typename SketchType, typename PrecondType>
 double build_precond(SketchType& SA,
-    PrecondType& V, algorithms::precond_t<SolType> *&P, svd_precond_tag) {
+    PrecondType& V, algorithms::inplace_precond_t<SolType> *&P, svd_precond_tag) {
 
     int n = SA.Width();
     PrecondType s(SA);
@@ -73,7 +73,7 @@ double build_precond(SketchType& SA,
         s.Set(i, 0, 1 / s.Get(i, 0));
     base::DiagonalScale(elem::RIGHT, elem::NORMAL, s, V);
     P =
-        new algorithms::mat_precond_t<SolType, PrecondType>(V);
+        new algorithms::inplace_mat_precond_t<SolType, PrecondType>(V);
     return s.Get(0,0) / s.Get(n-1, 0);
 }
 
@@ -112,7 +112,7 @@ private:
     const int _n;
     const matrix_type &_A;
     precond_type _R;
-    algorithms::precond_t<sol_type> *_precond_R;
+    algorithms::inplace_precond_t<sol_type> *_precond_R;
 
 public:
     /**
@@ -140,7 +140,7 @@ public:
     }
 
     int solve(const rhs_type& b, sol_type& x) {
-        return LSQR(_A, b, x, algorithms::iter_params_t(), *_precond_R);
+        return LSQR(_A, b, x, algorithms::krylov_iter_params_t(), *_precond_R);
     }
 };
 
@@ -176,7 +176,7 @@ private:
     const int _n;
     const matrix_type &_A;
     precond_type _R;
-    algorithms::precond_t<sol_type> *_precond_R;
+    algorithms::inplace_precond_t<sol_type> *_precond_R;
 
     regression_solver_t<problem_type, rhs_type, sol_type, svd_l2_solver_tag> 
     *_alt_solver;
@@ -243,7 +243,7 @@ public:
     }
 
     int solve(const rhs_type& b, sol_type& x) {
-        return LSQR(_A, b, x, algorithms::iter_params_t(), *_precond_R);
+        return LSQR(_A, b, x, algorithms::krylov_iter_params_t(), *_precond_R);
     }
 };
 
@@ -281,8 +281,8 @@ private:
     bool _use_lsqr;
     double _sigma_U, _sigma_L;
     precond_type _R;
-    algorithms::precond_t<sol_type> *_precond_R;
-    algorithms::iter_params_t _params;
+    algorithms::inplace_precond_t<sol_type> *_precond_R;
+    algorithms::krylov_iter_params_t _params;
 
 public:
     /**

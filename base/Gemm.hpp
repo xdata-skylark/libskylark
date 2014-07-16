@@ -209,6 +209,15 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
     int n = B.width();
     int m = A.Height();
 
+    if (oA == elem::ADJOINT && std::is_same<T, elem::Base<T> >::value)
+        oA = elem::TRANSPOSE;
+
+    if (oB == elem::ADJOINT && std::is_same<T, elem::Base<T> >::value)
+        oB = elem::TRANSPOSE;
+
+    if (oA == elem::ADJOINT || oB == elem::ADJOINT)
+        SKYLARK_THROW_EXCEPTION(base::unsupported_base_operation());
+
     // NN
     if (oA == elem::NORMAL && oB == elem::NORMAL) {
 
@@ -314,6 +323,12 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
     int n = B.Width();
     int m = B.Height();
 
+    if (oA == elem::ADJOINT && std::is_same<T, elem::Base<T> >::value)
+        oA = elem::TRANSPOSE;
+
+    if (oB == elem::ADJOINT && std::is_same<T, elem::Base<T> >::value)
+        oB = elem::TRANSPOSE;
+
     // NN
     if (oA == elem::NORMAL && oB == elem::NORMAL) {
 
@@ -338,7 +353,7 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
     }
 
     // NT
-    if (oA == elem::NORMAL && oB == elem::TRANSPOSE) {
+    if (oA == elem::NORMAL && (oB == elem::TRANSPOSE || oB == elem::ADJOINT)) {
 
         elem::Scal(beta, C);
 
@@ -348,7 +363,7 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
 
         for(int col = 0; col < k; col++) {
             elem::LockedView(Bc, B, 0, col, m, 1);
-            elem::Transpose(Bc, BTr);
+            elem::Transpose(Bc, BTr, oB == elem::ADJOINT);
 #           if SKYLARK_HAVE_OPENMP
 #           pragma omp parallel for private(Cr)
 #           endif
@@ -383,8 +398,31 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
             }
     }
 
+    // AN - TODO: Not tested!
+    if (oA == elem::ADJOINT && oB == elem::NORMAL) {
+        double *c = C.Buffer();
+        int ldc = C.LDim();
+
+        const double *b = B.LockedBuffer();
+        int ldb = B.LDim();
+
+#       if SKYLARK_HAVE_OPENMP
+#       pragma omp parallel for collapse(2)
+#       endif
+        for (int j = 0; j < n; j++)
+            for(int row = 0; row < k; row++) {
+                c[j * ldc + row] *= beta;
+                 for (int l = indptr[row]; l < indptr[row + 1]; l++) {
+                     int col = indices[l];
+                     T val = elem::Conj(values[l]);
+                     c[j * ldc + row] += val * b[j * ldb + col];
+                 }
+            }
+    }
+
+
     // TT - TODO: Not tested!
-    if (oA == elem::TRANSPOSE && oB == elem::TRANSPOSE) {
+    if (oA == elem::TRANSPOSE && (oB == elem::TRANSPOSE || oB == elem::ADJOINT)) {
 
         elem::Scal(beta, C);
 
@@ -401,13 +439,46 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
                 int col = indices[l];
                 T val = values[l];
                 elem::LockedView(Bc, B, 0, col, m, 1);
-                elem::Transpose(Bc, BTr);
+                elem::Transpose(Bc, BTr, oB == elem::ADJOINT);
+                elem::Axpy(alpha * val, BTr, Cr);
+            }
+        }
+    }
+
+    // AT - TODO: Not tested!
+    if (oA == elem::ADJOINT && (oB == elem::TRANSPOSE || oB == elem::ADJOINT)) {
+
+        elem::Scal(beta, C);
+
+        elem::Matrix<T> Bc;
+        elem::Matrix<T> BTr;
+        elem::Matrix<T> Cr;
+
+#       if SKYLARK_HAVE_OPENMP
+#       pragma omp parallel for private(Cr, Bc, BTr)
+#       endif
+        for(int row = 0; row < k; row++) {
+            elem::View(Cr, C, row, 0, 1, m);
+            for (int l = indptr[row]; l < indptr[row + 1]; l++) {
+                int col = indices[l];
+                T val = elem::Conj(values[l]);
+                elem::LockedView(Bc, B, 0, col, m, 1);
+                elem::Transpose(Bc, BTr, oB == elem::ADJOINT);
                 elem::Axpy(alpha * val, BTr, Cr);
             }
         }
     }
 }
 
+template<typename T>
+inline void Gemm(elem::Orientation oA, elem::Orientation oB,
+    T alpha, const sparse_matrix_t<T>& A, const elem::Matrix<T>& B,
+    elem::Matrix<T>& C) {
+    int C_height = (oA == elem::NORMAL ? A.height() : A.width());
+    int C_width = (oB == elem::NORMAL ? B.Width() : B.Height());
+    elem::Zeros(C, C_height, C_width);
+    base::Gemm(oA, oB, alpha, A, B, T(0), C);
+}
 
 #if SKYLARK_HAVE_COMBBLAS
 /**

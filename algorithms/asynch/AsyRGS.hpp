@@ -2,7 +2,6 @@
 #define SKYLARK_ASYRGS_HPP
 
 #if SKYLARK_HAVE_OPENMP
-    
 
 namespace skylark {
 namespace algorithms {
@@ -37,6 +36,28 @@ inline void jstep(const int *colptr, const int *rowind, const T1 *vals,
         X[idx] += v;
     }
 }
+
+template<typename T1, typename T2, typename T3>
+inline void jstep1(const int *colptr, const int *rowind, const T1 *vals,
+    T2 *b, T3 *x, int i) {
+
+    double diag = 1.0, v;
+
+    if (colptr[i] == colptr[i+1])
+        return;
+
+    v = b[i];
+    for(int j = colptr[i]; j < colptr[i + 1]; j++) {
+        if (rowind[j] == i)
+            diag = vals[j];
+        v -= vals[j] * x[rowind[j]];
+    }
+
+    v /= diag;
+#   pragma omp atomic
+    x[i] += v;
+}
+
 
 } // namespace internal
 
@@ -73,15 +94,14 @@ void AsyRGS(const base::sparse_matrix_t<T1>& A, const elem::Matrix<T2>& B,
         context.allocate_random_samples_array(sweeps * n, distribution);
 
     if (B.Width() == 1) {
-       T3 d;
        int j;
 
        const T2 *Bd = B.LockedBuffer();
        T3 *Xd = X.Buffer();
 
-#       pragma omp parallel for default(shared) private(j, d)
+#       pragma omp parallel for default(shared) private(j)
         for(j = 0; j < sweeps * n ; j++)
-            internal::jstep(colptr, rowind, vals, Bd, Xd, 1, &d, stepidxs[j]);
+            internal::jstep1(colptr, rowind, vals, Bd, Xd, stepidxs[j]);
 
     } else {
         elem::Matrix<T2> BT;

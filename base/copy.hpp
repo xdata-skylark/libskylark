@@ -7,6 +7,11 @@ namespace skylark { namespace base {
 
 #if SKYLARK_HAVE_ELEMENTAL
 
+template<typename T>
+inline void Copy(const elem::Matrix<T>& A, elem::Matrix<T>& B) {
+    elem::Copy(A, B);
+}
+
 /**
  * Copy matrix A into B, densifiying it in the process.
  */

@@ -24,7 +24,7 @@ namespace algorithms {
 template<typename MatrixType, typename RhsType, typename SolType>
 int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
     krylov_iter_params_t params = krylov_iter_params_t(),
-    const precond_t<SolType>& R = id_precond_t<SolType>()) {
+    const inplace_precond_t<SolType>& R = inplace_id_precond_t<SolType>()) {
 
     typedef typename utility::typer_t<MatrixType>::value_type value_t;
     typedef typename utility::typer_t<MatrixType>::index_type index_t;

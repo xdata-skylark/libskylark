@@ -15,23 +15,25 @@ namespace skyalg = skylark::algorithms;
 namespace skyutil = skylark::utility;
 
 
-struct asyprecond_t : public skyalg::precond_t<elem::Matrix<double> > {
+struct asyprecond_t : 
+    public skyalg::outplace_precond_t<elem::Matrix<double>, elem::Matrix<double> > {
 
     const skybase::sparse_matrix_t<double>& N;
     skybase::context_t &context;
 
-    asyprecond_t(const skybase::sparse_matrix_t<double>& N, skybase::context_t &ctx) 
+    asyprecond_t(const skybase::sparse_matrix_t<double>& N, 
+        skybase::context_t &ctx) 
         : N(N) , context(ctx) { }
 
     bool is_id() const { return false; }
 
-    void apply(elem::Matrix<double>& X) const {
-        elem::Matrix<double> Xin(X);
+    void apply(const elem::Matrix<double>& B, elem::Matrix<double>&X) const {
         elem::MakeZeros(X);
-        skyalg::AsyRGS(N, Xin, X, 2, context);
+        skyalg::AsyRGS(N, B, X, 2, context);
     }
 
-    void apply_adjoint(elem::Matrix<double>& X) const {
+    void apply_adjoint(const elem::Matrix<double>& B, 
+        elem::Matrix<double>&X) const {
         // TODO
     }
 

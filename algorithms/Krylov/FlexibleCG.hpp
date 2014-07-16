@@ -27,7 +27,8 @@ namespace skylark { namespace algorithms {
 template<typename MatrixType, typename RhsType, typename SolType>
 int FlexibleCG(const MatrixType& A, const RhsType& B, SolType& X,
     krylov_iter_params_t params = krylov_iter_params_t(),
-    const precond_t<SolType>& M = id_precond_t<SolType>()) {
+    const outplace_precond_t<RhsType, SolType>& M = 
+    outplace_id_precond_t<RhsType, SolType>()) {
 
     int ret;
 
@@ -81,8 +82,7 @@ int FlexibleCG(const MatrixType& A, const RhsType& B, SolType& X,
         sol_type &d = D[itn];
         rhs_type &l = L[itn];
 
-        elem::Copy(R, d);
-        M.apply(d);  // TODO it might be better to pass two parameters...
+        M.apply(R, d);
 
         // TODO. The following is Modified Gram-Schmidt. In terms of
         // sycnrhonization points, this is really bad, so we might want to

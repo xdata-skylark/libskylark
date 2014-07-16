@@ -27,7 +27,8 @@ namespace skylark { namespace algorithms {
 template<typename MatrixType, typename RhsType, typename SolType>
 int CG(const MatrixType& A, const RhsType& B, SolType& X,
     krylov_iter_params_t params = krylov_iter_params_t(),
-    const precond_t<SolType>& M = id_precond_t<SolType>()) {
+    const outplace_precond_t<RhsType, SolType>& M = 
+    outplace_id_precond_t<RhsType, SolType>()) {
 
     int ret;
 
@@ -74,8 +75,7 @@ int CG(const MatrixType& A, const RhsType& B, SolType& X,
 
     for (index_t itn=0; itn<params.iter_lim; ++itn) {
         if (isprecond) {
-            Z = R;
-            M.apply(Z);
+            M.apply(R, Z);
             base::ColumnDot(R, Z, rho);
         } else
             rho = ressqr;

@@ -155,7 +155,7 @@ struct exact_solver_type< skyalg::iterative_l2_solver_tag<KT> >:
     }
 
     exact_solver_type(const regression_problem_type& problem,
-        const skyalg::precond_t<sol_type>& R,
+        const skyalg::inplace_precond_t<sol_type>& R,
         skyalg::krylov_iter_params_t iter_params) :
         base_type(problem, R, iter_params) {
 

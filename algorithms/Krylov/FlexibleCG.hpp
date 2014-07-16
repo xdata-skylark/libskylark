@@ -70,7 +70,7 @@ int FlexibleCG(const MatrixType& A, const RhsType& B, SolType& X,
 
     scalar_cont_type
         nrmb(internal::scalar_cont_typer_t<rhs_type>::build_compatible(k, 1, B));
-    scalar_cont_type ressqr(nrmb), beta(nrmb),  alpha(nrmb), 
+    scalar_cont_type ressqr(nrmb), beta(nrmb),  alpha(nrmb),
         malpha(nrmb), gamma(nrmb), mgamma(nrmb);
 
     base::Gemm(elem::ADJOINT, elem::NORMAL, -1.0, A, X, 1.0, R);
@@ -84,8 +84,10 @@ int FlexibleCG(const MatrixType& A, const RhsType& B, SolType& X,
         elem::Copy(R, d);
         M.apply(d);  // TODO it might be better to pass two parameters...
 
+        // TODO. The following is Modified Gram-Schmidt. In terms of
+        // sycnrhonization points, this is really bad, so we might want to
+        // replace with a CGS procedure instead.
         for(index_t i = 0; i < itn; i++) {
-            // Only CGS for now...
             base::ColumnDot(L[i], d, gamma);
             for(index_t r = 0; r < k; r++)
                 mgamma[r] = -gamma[r];

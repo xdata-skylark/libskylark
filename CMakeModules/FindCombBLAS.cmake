@@ -10,6 +10,7 @@
 
 FIND_PATH(CombBLAS_INCLUDE_DIR CombBLAS.h SpParMat.h SpParVec.h DenseParVec.h
   /usr/local/include
+  /usr/local/include/CombBLAS
   /usr/include
   $ENV{HOME}/Software/include
   $ENV{COMBBLAS_ROOT}

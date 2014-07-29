@@ -27,7 +27,7 @@ namespace skylark { namespace algorithms {
 template<typename MatrixType, typename RhsType, typename SolType>
 int CG(const MatrixType& A, const RhsType& B, SolType& X,
     krylov_iter_params_t params = krylov_iter_params_t(),
-    const outplace_precond_t<RhsType, SolType>& M = 
+    const outplace_precond_t<RhsType, SolType>& M =
     outplace_id_precond_t<RhsType, SolType>()) {
 
     int ret;
@@ -69,6 +69,10 @@ int CG(const MatrixType& A, const RhsType& B, SolType& X,
     scalar_cont_type
         nrmb(internal::scalar_cont_typer_t<rhs_type>::build_compatible(k, 1, B));
     base::ColumnNrm2(B, nrmb);
+    double total_nrmb = 0.0;
+    for(index_t i = 0; i < k; i++)
+        total_nrmb += nrmb[i] * nrmb[i];
+    total_nrmb = sqrt(total_nrmb);
     scalar_cont_type ressqr(nrmb), rho(nrmb), rho0(nrmb), rhotmp(nrmb),
         alpha(nrmb), malpha(nrmb), beta(nrmb);
     base::ColumnDot(R, R, ressqr);
@@ -105,9 +109,22 @@ int CG(const MatrixType& A, const RhsType& B, SolType& X,
         base::ColumnDot(R, R, ressqr);
 
         int convg = 0;
-        for(index_t i = 0; i < k; i++)
+        for(index_t i = 0; i < k; i++) {
             if (sqrt(ressqr[i]) < (params.tolerance*nrmb[i]))
                 convg++;
+        }
+
+        if (log_lev2 && (itn % params.res_print == 0 || convg == k)) {
+            double total_ressqr = 0.0;
+            for(index_t i = 0; i < k; i++)
+                total_ressqr += ressqr[i];
+            double relres = sqrt(total_ressqr) / total_nrmb;
+            params.log_stream << "CG: Iteration " << itn
+                              << ", Relres = "
+                              << boost::format("%.2e") % relres 
+                              << ", " << convg << " rhs converged" << std::endl;
+        }
+
         if(convg == k) {
             if (log_lev1)
                 params.log_stream << "CG: Convergence!" << std::endl;

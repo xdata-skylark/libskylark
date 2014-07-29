@@ -142,6 +142,24 @@ inline void ColumnDot(const elem::DistMatrix<T, elem::VC, elem::STAR>& A,
     boost::mpi::all_reduce(comm, n.data(), A.Width(), N.Buffer(), std::plus<T>());
 }
 
+template<typename T>
+inline void RowDot(const elem::Matrix<T>& A, const elem::Matrix<T>& B,
+    elem::Matrix<elem::Base<T> >& N) {
+
+    // TODO just assuming sizes are OK for now.
+
+    double *n = N.Buffer();
+    const double *a = A.LockedBuffer();
+    const double *b = B.LockedBuffer();
+    for(int i = 0; i < A.Height(); i++)
+        n[i] = 0.0;
+
+    for(int j = 0; j < A.Width(); j++) {
+        for(int i = 0; i < A.Height(); i++)
+            n[i] += a[j * A.LDim() + i] * elem::Conj(b[j * B.LDim() + i]);
+    }
+}
+
 } } // namespace skylark::base
 
 #endif // SKYLARK_HAVE_ELEMENTAL

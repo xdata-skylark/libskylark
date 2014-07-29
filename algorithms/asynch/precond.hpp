@@ -8,8 +8,8 @@ struct asy_precond_t :
     public outplace_precond_t<RhsType, SolType> {
 
 
-    asy_precond_t(const MatType& A, asy_iter_params_t params
-        , base::context_t &context)
+    asy_precond_t(const MatType& A, asy_iter_params_t params,
+        base::context_t &context)
         : _A(A), _params(params), _context(context) { }
 
     bool is_id() const { return false; }

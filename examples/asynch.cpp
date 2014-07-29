@@ -35,58 +35,42 @@ int main(int argc, char** argv) {
     std::cout <<"took " << boost::format("%.2e") % timer.elapsed() << " sec\n";
 
     elem::Matrix<double> x(b.Height(), 1);
-    std::cout << "Using AsyRGS... ";
+    std::cout << "Using AsyRGS... " << std::endl;
     timer.restart();
     elem::MakeZeros(x);
     skyalg::asy_iter_params_t asy_params;
-    asy_params.tolerance = 0;
-    asy_params.syn_sweeps = 0;
-    asy_params.sweeps_lim = 20;
+    asy_params.tolerance = 1e-3;
+    asy_params.syn_sweeps = 5;
+    asy_params.sweeps_lim = 2000;
+    asy_params.am_i_printing = true;
+    asy_params.log_level = 2;
     skyalg::AsyRGS(A, b, x, context, asy_params);
-    std::cout <<"took " << boost::format("%.2e") % timer.elapsed() << " sec\n";
+    std::cout <<"Took " << boost::format("%.2e") % timer.elapsed() << " sec\n";
 
-    {elem::Matrix<double> r(b);
-    skybase::Gemv(elem::TRANSPOSE, -1.0, A, x, 1.0, r);
-    double res = skybase::Nrm2(r);
-    double nrmb = skybase::Nrm2(b);
-    std::cout << "||A x - b||_2 / ||b||_2 = " <<
-        boost::format("%.2e") % (res / nrmb) <<
-        std::endl;}
-
-    std::cout << "Using CG... ";
+    std::cout << "Using CG... " << std::endl;
     timer.restart();
     elem::MakeZeros(x);
-    skyalg::krylov_iter_params_t iter_params;
-    iter_params.iter_lim = 20;
-    skyalg::CG(A, b, x, iter_params);
-    std::cout <<"took " << boost::format("%.2e") % timer.elapsed() << " sec\n";
+    skyalg::krylov_iter_params_t krylov_params;
+    krylov_params.tolerance = 1e-3;
+    krylov_params.res_print = 30;
+    krylov_params.iter_lim = 2000;
+    krylov_params.am_i_printing = true;
+    krylov_params.log_level = 2;
+    skyalg::CG(A, b, x, krylov_params);
+    std::cout <<"Took " << boost::format("%.2e") % timer.elapsed() << " sec\n";
 
-    {elem::Matrix<double> r(b);
-    skybase::Gemv(elem::TRANSPOSE, -1.0, A, x, 1.0, r);
-    double res = skybase::Nrm2(r);
-    double nrmb = skybase::Nrm2(b);
-    std::cout << "||A x - b||_2 / ||b||_2 = " <<
-        boost::format("%.2e") % (res / nrmb) <<
-        std::endl;}
-
-    std::cout << "Using FCG... ";
+    std::cout << "Using FCG (high accuracy)... " << std::endl;
     timer.restart();
     elem::MakeZeros(x);
     asy_params.tolerance = 1e-8;
     asy_params.sweeps_lim = 2;
     asy_params.syn_sweeps = 0;
     asy_params.iter_lim = 200;
+    asy_params.iter_res_print = 20;
+    asy_params.am_i_printing = true;
+    asy_params.log_level = 2;
     skyalg::AsyFCG(A, b, x, context, asy_params);
-    std::cout <<"took " << boost::format("%.2e") % timer.elapsed() << " sec\n";
-
-    {elem::Matrix<double> r(b);
-    skybase::Gemv(elem::TRANSPOSE, -1.0, A, x, 1.0, r);
-    double res = skybase::Nrm2(r);
-    double nrmb = skybase::Nrm2(b);
-    std::cout << "||A x - b||_2 / ||b||_2 = " <<
-        boost::format("%.2e") % (res / nrmb) <<
-        std::endl;}
-
+    std::cout <<"Took " << boost::format("%.2e") % timer.elapsed() << " sec\n";
 
     return 0;
 }

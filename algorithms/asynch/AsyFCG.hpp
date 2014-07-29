@@ -11,7 +11,10 @@ void AsyFCG(const MatType& A, const RhsType& B, SolType& X,
 
     krylov_iter_params_t krylov_params;
     krylov_params.iter_lim = params.iter_lim;
+    krylov_params.res_print = params.iter_res_print;
     krylov_params.tolerance = params.tolerance;
+    krylov_params.am_i_printing = params.am_i_printing;
+    krylov_params.log_level = params.log_level;
 
     asy_iter_params_t asy_params;
     asy_params.tolerance = 0;

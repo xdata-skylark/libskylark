@@ -64,9 +64,9 @@ inline void jstep1(const int *colptr, const int *rowind, const T1 *vals,
 /**
  * Asynchronous Randomized Gauss-Seidel for solving A * X = B.
  *
- * The method is normally applied to SPD matrix A. However, you can
- * attempt to apply it even for a non-symmetric matrix, but be aware
- * that the code will operate actually on A^T in that case.
+ * The method is normally applied to HPD matrix A. However, you can
+ * attempt to apply it even for a non-Hermitian matrix, but be aware
+ * that the code will operate actually on A^* in that case.
  *
  * Reference:
  * Avron, Druinsky and Gupta
@@ -79,9 +79,14 @@ inline void jstep1(const int *colptr, const int *rowind, const T1 *vals,
  * @param X output - must be preallocated. The content is used as initial X.
  */
 template<typename T1, typename T2, typename T3>
-void AsyRGS(const base::sparse_matrix_t<T1>& A, const elem::Matrix<T2>& B,
+int AsyRGS(const base::sparse_matrix_t<T1>& A, const elem::Matrix<T2>& B,
     elem::Matrix<T3>& X, base::context_t& context,
     asy_iter_params_t params = asy_iter_params_t()) {
+
+    int ret;
+
+    bool log_lev1 = params.am_i_printing && params.log_level >= 1;
+    bool log_lev2 = params.am_i_printing && params.log_level >= 2;
 
     int n = A.height();   // We assume A is square. TODO assert it.
 
@@ -91,20 +96,54 @@ void AsyRGS(const base::sparse_matrix_t<T1>& A, const elem::Matrix<T2>& B,
 
     typedef boost::random::uniform_int_distribution<int> dtype;
     dtype distribution(0, n-1);
-    utility::random_samples_array_t<dtype> stepidxs =
-        context.allocate_random_samples_array(params.sweeps_lim * n, distribution);
 
     if (B.Width() == 1) {
        int j;
 
+       double nrmb = base::Nrm2(B);
+
        const T2 *Bd = B.LockedBuffer();
        T3 *Xd = X.Buffer();
 
-#       pragma omp parallel for default(shared) private(j)
-        for(j = 0; j < params.sweeps_lim * n ; j++)
-            internal::jstep1(colptr, rowind, vals, Bd, Xd, stepidxs[j]);
+       int sweeps_left = params.sweeps_lim;
+       int done_sweeps = 0;
+       while (sweeps_left > 0) {
 
-    } else {
+           int sweeps = params.syn_sweeps > 0 ?
+               std::min(params.syn_sweeps, sweeps_left) : sweeps_left;
+
+           utility::random_samples_array_t<dtype> stepidxs =
+               context.allocate_random_samples_array(sweeps * n, distribution);
+
+#          pragma omp parallel for default(shared) private(j)
+           for(j = 0; j < sweeps * n ; j++)
+               internal::jstep1(colptr, rowind, vals, Bd, Xd, stepidxs[j]);
+
+           sweeps_left -= sweeps;
+           done_sweeps += sweeps;
+
+           if (params.tolerance > 0) {
+               elem::Matrix<double> R(B);
+               base::Gemv(elem::ADJOINT, -1.0, A, X, 1.0, R);
+               double res = base::Nrm2(R);
+               double relres = res / nrmb;
+
+               if (log_lev2)
+                   params.log_stream << "AsyRGS: Sweeps = " << done_sweeps
+                                     << ", Relres = "
+                                     << boost::format("%.2e") % relres << std::endl;
+
+               if(res < nrmb * params.tolerance) {
+                   if (log_lev1)
+                       params.log_stream << "AsyRGS: Convergence!" << std::endl;
+                   ret = -1;
+                   goto cleanup;
+               }
+           }
+       }
+     } else {
+        int j;
+
         elem::Matrix<T2> BT;
         elem::Transpose(B, BT);
         elem::Matrix<T3> XT;
@@ -116,14 +155,82 @@ void AsyRGS(const base::sparse_matrix_t<T1>& A, const elem::Matrix<T2>& B,
         int k = B.Width();
         T3 d[k];
 
-        int j;
+        typedef elem::Matrix<T2> rhs_type;
+        typedef utility::elem_extender_t<
+            typename internal::scalar_cont_typer_t<rhs_type>::type >
+            scalar_cont_type;
+        scalar_cont_type
+            nrmb(internal::scalar_cont_typer_t<rhs_type>::build_compatible(k, 1, B));
+        double total_nrmb = 0.0;
+        if (params.tolerance > 0) {
+            base::ColumnNrm2(B, nrmb);
+            for(int i = 0; i < k; i++)
+                total_nrmb += nrmb[i] * nrmb[i];
+        }
+        total_nrmb = sqrt(total_nrmb);
+        scalar_cont_type ressqr(nrmb);
 
-#       pragma omp parallel for default(shared) private(j, d)
-        for(j = 0; j < params.sweeps_lim * n ; j++)
-            internal::jstep(colptr, rowind, vals, Bd, Xd, k, d, stepidxs[j]);
+        int sweeps_left = params.sweeps_lim;
+        int done_sweeps = 0;
+        while (sweeps_left > 0) {
+
+            int sweeps = params.syn_sweeps > 0 ?
+                std::min(params.syn_sweeps, sweeps_left) : sweeps_left;
+
+            utility::random_samples_array_t<dtype> stepidxs =
+                context.allocate_random_samples_array(sweeps * n, distribution);
+
+#           pragma omp parallel for default(shared) private(j, d)
+            for(j = 0; j < sweeps * n ; j++)
+                internal::jstep(colptr, rowind, vals, Bd, Xd, k, d, stepidxs[j]);
+
+           sweeps_left -= sweeps;
+           done_sweeps += sweeps;
+
+           if (params.tolerance > 0) {
+
+               elem::Matrix<double> RT(BT);
+               base::Gemm(elem::NORMAL, elem::NORMAL, -1.0, XT, A, 1.0, RT);
+               base::RowDot(RT, RT, ressqr);
+
+               int convg = 0;
+               for(int i = 0; i < k; i++) {
+                   if (sqrt(ressqr[i]) < (params.tolerance*nrmb[i]))
+                       convg++;
+               }
+
+               if (log_lev2) {
+                   double total_ressqr = 0.0;
+                   for(int i = 0; i < k; i++)
+                       total_ressqr += ressqr[i];
+                   double relres = sqrt(total_ressqr) / total_nrmb;
+                   params.log_stream << "AsyRGS: Sweeps = " << done_sweeps
+                                     << ", Relres = "
+                                     << boost::format("%.2e") % relres 
+                                     << ", " << convg << " rhs converged" << std::endl;
+               }
+
+               if(convg == k) {
+                   if (log_lev1)
+                       params.log_stream << "AsyRGS: Convergence!" << std::endl;
+                   ret = -1;
+                   elem::Transpose(XT, X);
+                   goto cleanup;
+               }
+           }
+        }
 
         elem::Transpose(XT, X);
     }
+
+    ret = -6;
+    if (log_lev1)
+        params.log_stream << "AsyRGS: No convergence within iteration limit."
+                          << std::endl;
+
+ cleanup:
+
+    return ret;
 }
 
 } } // namespace skylark::algorithms

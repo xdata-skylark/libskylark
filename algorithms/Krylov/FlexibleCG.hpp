@@ -76,6 +76,10 @@ int FlexibleCG(const MatrixType& A, const RhsType& B, SolType& X,
 
     base::Gemm(elem::ADJOINT, elem::NORMAL, -1.0, A, X, 1.0, R);
     base::ColumnNrm2(B, nrmb);
+    double total_nrmb = 0.0;
+    for(index_t i = 0; i < k; i++)
+        total_nrmb += nrmb[i] * nrmb[i];
+    total_nrmb = sqrt(total_nrmb);
     base::ColumnDot(R, R, ressqr);
 
     for (index_t itn=0; itn<params.iter_lim; ++itn) {
@@ -85,7 +89,7 @@ int FlexibleCG(const MatrixType& A, const RhsType& B, SolType& X,
         M.apply(R, d);
 
         // TODO. The following is Modified Gram-Schmidt. In terms of
-        // sycnrhonization points, this is really bad, so we might want to
+        // synchronization points, this is really bad, so we might want to
         // replace with a CGS procedure instead.
         for(index_t i = 0; i < itn; i++) {
             base::ColumnDot(L[i], d, gamma);
@@ -117,6 +121,18 @@ int FlexibleCG(const MatrixType& A, const RhsType& B, SolType& X,
         for(index_t i = 0; i < k; i++)
             if (sqrt(ressqr[i]) < (params.tolerance*nrmb[i]))
                 convg++;
+
+        if (log_lev2 && (itn % params.res_print == 0 || convg == k)) {
+            double total_ressqr = 0.0;
+            for(index_t i = 0; i < k; i++)
+                total_ressqr += ressqr[i];
+            double relres = sqrt(total_ressqr) / total_nrmb;
+            params.log_stream << "FlexibleCG: Iteration " << itn
+                              << ", Relres = "
+                              << boost::format("%.2e") % relres
+                              << ", " << convg << " rhs converged" << std::endl;
+        }
+
         if(convg == k) {
             if (log_lev1)
                 params.log_stream << "FlexibleCG: Convergence!" << std::endl;

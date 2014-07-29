@@ -982,3 +982,320 @@ you might need to apply the following patch:
 	    // 11 => in-place
 
 .. note:: This was fixed upstream in the 1.4.0 CombBLAS release (January 2014).
+
+
+Complete BGQ Installation Instructions
+=======================================
+
+This is an end-to-end guide for installing libSkylark on a BG/Q. During this
+section we assume the following:
+
+* most of the software and sources are installed in `$HOME/local`,
+* the installation of Random123 is omitted (just untar the library)
+
+
+LLVM/Clang
+----------
+
+Because of various dependencies and `c++11` compatibility issues the
+installation requires a `c++11` compiler. For this we are installing LLVM/Clang
+(until the XL compiler provides the necessary `c++11` features.
+
+Argonne provides rpm packages for the BG/Q. Download and follow the
+instructions as stated on https://trac.alcf.anl.gov/projects/llvm-bgq.
+
+After this step we assume you have installed LLVM/CLANG under `$HOME/bgclang/`.
+
+
+Elemental
+---------
+
+Download elemental 0.83 (http://libelemental.org/pub/releases/elemental-0.83.tgz).
+Then use the following toolchain file (e.g. save to `BGQ-toolchain.cmake`)
+
+.. code-block:: cmake
+
+    set(GCC_ROOT  "/bgsys/drivers/ppcfloor/gnu-linux")
+    set(GCC_NAME  "powerpc64-bgq-linux")
+    set(CLANG_ROOT "$HOME/bgclang/bin")
+    set(CLANG_MPI_ROOT "$HOME/bgclang/mpi/bgclang")
+    set(IBMCMP_ROOT "$ENV{IBM_MAIN_DIR}")
+
+    set(BLAS_LIB "$HOME/src/lapack-3.5.0/")
+    set(LAPACK_LIB "$HOME/src/lapack-3.5.0/")
+    set(ESSL_LIB "/opt/ibmmath/lib64")
+
+    set(MPI_ROOT   "/bgsys/drivers/ppcfloor/comm/gcc")
+    set(PAMI_ROOT  "/bgsys/drivers/ppcfloor/comm/sys")
+    set(SPI_ROOT   "/bgsys/drivers/ppcfloor/spi")
+
+    # The serial compilers
+    set(CMAKE_C_COMPILER   "${CLANG_MPI_ROOT}/bin/mpiclang")
+    set(CMAKE_CXX_COMPILER "${CLANG_MPI_ROOT}/bin/mpiclang++11")
+    set(CMAKE_Fortran_COMPILER "${GCC_ROOT}/bin/${GCC_NAME}-gfortran")
+
+    # The MPI wrappers for the C and C++ compilers
+    set(MPI_C_COMPILER   "${CLANG_MPI_ROOT}/bin/mpiclang")
+    set(MPI_CXX_COMPILER "${CLANG_MPI_ROOT}/bin/mpiclang++11")
+
+    set(MPI_C_COMPILE_FLAGS    "")
+    set(MPI_CXX_COMPILE_FLAGS  "")
+    set(MPI_C_INCLUDE_PATH     "${MPI_ROOT}/include")
+    set(MPI_CXX_INCLUDE_PATH   "${MPI_ROOT}/include")
+    set(MPI_C_LINK_FLAGS       "-L${MPI_ROOT}/lib -L${PAMI_ROOT}/lib -L${SPI_ROOT}/lib")
+    set(MPI_CXX_LINK_FLAGS     "${MPI_C_LINK_FLAGS}")
+    set(MPI_C_LIBRARIES       "${MPI_C_LINK_FLAGS}   -lSPI -lSPI_cnk -lrt -lpthread -lstdc++ -lpthread")
+    set(MPI_CXX_LIBRARIES     "${MPI_CXX_LINK_FLAGS} ${MPI_C_LIBRARIES}")
+
+    if(CMAKE_BUILD_TYPE MATCHES PureDebug OR
+    CMAKE_BUILD_TYPE MATCHES HybridDebug)
+    set(CXX_FLAGS "-g")
+    else()
+    set(CXX_FLAGS "-O3")
+    endif()
+
+    set(CMAKE_THREAD_LIBS_INIT "-fopenmp")
+    set(OpenMP_CXX_FLAGS "-fopenmp")
+
+    ##############################################################
+
+    # set the search path for the environment coming with the compiler
+    # and a directory where you can install your own compiled software
+    set(CMAKE_FIND_ROOT_PATH
+        /bgsys/drivers/ppcfloor
+        /bgsys/drivers/ppcfloor/spi
+        $HOME/bgclang/mpi/bgclang
+    )
+
+    # adjust the default behaviour of the FIND_XXX() commands:
+    # search headers and libraries in the target environment, search
+    # programs in the host environment
+    set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+    set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+    set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+
+    ##############################################################
+
+    set(XLF_LIB "/opt/ibmcmp/xlf/bg/14.1/bglib64")
+    set(XLSMP_LIB "/opt/ibmcmp/xlsmp/bg/3.1/bglib64")
+    if(CMAKE_BUILD_TYPE MATCHES PureDebug OR
+    CMAKE_BUILD_TYPE MATCHES PureRelease)
+    set(MATH_LIBS "-L${ESSL_LIB} -lesslbg -L${LAPACK_LIB} -llapack -L${ESSL_LIB} -lesslbg -L${XLF_LIB} -lxlf90_r -L${XLSMP_LIB} -lxlomp_ser -lxlopt -lxlfmath -lxl -lpthread -ldl -Wl,--allow-multiple-definition")
+    else()
+    set(MATH_LIBS "-L${ESSL_LIB} -lesslsmpbg -L${LAPACK_LIB} -llapack -L${ESSL_LIB} -lesslsmpbg -L${XLF_LIB} -lxlf90_r -L${XLSMP_LIB} -lxlsmp -lxlopt -lxlfmath -lxl -lpthread -ldl -Wl,--allow-multiple-definition")
+    endif()
+
+This toolchain file is based on the (Elemental) provided
+`BGQ-Mira-clang-essl.cmake` file.
+Finally, run the following to compile (and install) Elemental.
+
+.. code-block:: sh
+
+    rm -rf CMake*; \
+    cmake -DCMAKE_TOOLCHAIN_FILE=BGQ-toolchain.cmake \
+        -DCMAKE_INSTALL_PREFIX=$HOME/local \
+        -DCMAKE_BUILD_TYPE=PureDebug ..
+    make install
+
+In case you run into errors or problems, check the `CMakeFiles/CMakeError.log`
+file in the build directory.
+
+.. note:: It seems that the `HybridDebug` version is causing problems on the BGQ.
+
+
+CombBLAS
+--------
+
+Download http://gauss.cs.ucsb.edu/~aydin/CombBLAS_FILES/CombBLAS_beta_14_0.tgz
+untar and change to the CombBLAS directory.
+
+First we need to fix the CombBLAS `CMakeLists.txt` by commenting out the
+following two lines:
+
+.. code-block:: cmake
+
+    #SET(CMAKE_CXX_COMPILER mpicxx)
+    #SET(CMAKE_C_COMPILER mpicc)
+
+and then run to build the required libraries
+
+.. code-block:: sh
+
+    CC=$HOME/bgclang/mpi/bgclang/bin/mpiclang \
+    CXX=$HOME/bgclang/mpi/bgclang/bin/mpiclang++11 \
+    cmake .
+
+.. note:: The examples and test might fail to compile but that's ok for now.
+
+
+FFTW
+----
+
+Download http://www.fftw.org/fftw-3.3.3.tar.gz.
+
+.. code-block:: sh
+
+    CC=$HOME/bgclang/mpi/bgclang/bin/mpiclang \
+    CXX=$HOME/bgclang/mpi/bgclang/bin/mpiclang++11 \
+    ./configure
+    make
+
+
+Boost
+-----
+
+Download Boost 1.53.0, untar, change directory and then execute:
+
+.. code-block:: sh
+
+    ./bootstrap.sh --with-libraries=mpi,serialization,program_options
+    echo "using mpi : $HOME/bgclang/mpi/bgclang/bin/mpiclang++11 ;" >> project-config.jam
+    ./b2 toolset=clang
+
+.. note:: for this to work make sure that ``clang++`` is in your PATH.
+
+
+HDF5
+----
+
+Make sure you have a compiled libz around then run:
+
+.. code-block:: bash
+
+    CC=$HOME/bgclang/mpi/bgclang/bin/mpiclang \
+    CXX=$HOME/bgclang/mpi/bgclang/bin/mpiclang++11 \
+    ./configure --enable-cxx --prefix=$HOME/local/ \
+        --with-pic --disable-shared --with-zlib=$HOME/local/
+
+    make lib
+    make install
+
+.. note:: Building the tests fails, but that should be ok for now.
+
+
+libSkylark
+----------
+
+Finally we can turn to building libSkylark. First change the CMake file:
+
+.. code-block:: diff
+
+    diff --git a/CMakeLists.txt b/CMakeLists.txt
+    index ef18fa7..825dbaa 100644
+    --- a/CMakeLists.txt
+    +++ b/CMakeLists.txt
+    @@ -81,11 +81,14 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+        )
+
+        set (COMPILER_SPEC_FLAGS
+    -        "-W -Wall -Wno-write-strings -Wno-strict-aliasing -Wno-format -Wno-deprecated -Wno-unused-variable -Wno-unused-parameter -Wno-sign-compare"
+    +        "-W -Wall -Wno-write-strings -Wno-strict-aliasing -Wno-format -Wno-deprecated -Wno-unused-variable -Wno-unused-parameter -Wno-sign-compare -Wno-overloaded-virtual -Wno-unsupported-friend"
+        )
+
+        #set (LINK_FLAGS
+        #)
+
+        set (CMAKE_LIB_LINKER_FLAGS  "${CMAKE_LIB_LINKER_FLAGS} -fPIC")
+
+    @@ -157,7 +160,7 @@ include_directories (${CMAKE_SOURCE_DIR})
+    # dependent packages
+    # 1. Find MPI --- we are not adding any include directories here because we
+    # will be using the mpi compilers, which adds these libraries by default.
+    -find_package (MPI REQUIRED)
+    +find_package (MPI)
+    set (CMAKE_CXX_COMPILER ${MPI_COMPILER})
+
+    # 2. Find Boost with the relevant packages --- Use dynamic boost!
+    @@ -169,6 +172,11 @@ if (BOOST_ROOT)
+    set(Boost_NO_BOOST_CMAKE ON)
+    endif (BOOST_ROOT)
+
+    +if (BOOST_STATIC)
+    +  set(Boost_USE_STATIC_LIBS ON)
+    +endif (BOOST_STATIC)
+    +
+    +
+    set(BOOST_MIN_VERSION 1.53.0)
+    find_package (Boost REQUIRED mpi program_options serialization)
+    if (Boost_FOUND)
+
+and compile:
+
+.. code-block:: sh
+
+    rm CMakeCache.txt
+    rm -rf CMakeFiles
+
+    export BLAS_LIBRARIES="/opt/ibmmath/lib64/libesslsmpbg.a;/opt/ibmcmp/xlf/bg/14.1/lib64/libxlfmath.a;/opt/ibmcmp/xlf/bg/14.1/lib64/libxlf90_r.a;/opt/ibmcmp/xlsmp/bg/3.1/bglib64/libxlsmp.a"
+    export LAPACK_LIBRARIES="/opt/ibmmath/lib64/libesslsmpbg.a;/opt/ibmcmp/xlf/bg/14.1/lib64/libxlfmath.a;/opt/ibmcmp/xlf/bg/14.1/lib64/libxlf90_r.a;/opt/ibmcmp/xlsmp/bg/3.1/bglib64/libxlsmp.a;/opt/ibmcmp/xlf/bg/14.1/bglib64/libxl.a;-Wl,--allow-multiple-definition"
+
+    export FFTW_ROOT=$HOME/local/fftw-3.3.3/
+    export HDF5_ROOT=$HOME/local
+    export ELEMENTAL_ROOT=$HOME/local
+    export COMBBLAS_ROOT=$HOME/src/CombBLAS
+    export RANDOM123_ROOT=$HOME/local/Random123-1.08
+    export BOOST_ROOT=$HOME/local/boost_1_53_0
+
+    CC=$HOME/bgclang/mpi/bgclang/bin/mpiclang \
+    CXX=$HOME/bgclang/mpi/bgclang/bin/mpiclang++11 \
+    cmake -DUSE_ELEMENTAL=ON -DUSE_FFTW=ON -DUSE_COMBBLAS=ON -DBUILD_PYTHON=OFF -DUSE_HYBRID=ON \
+    -DBOOST_STATIC=ON ../
+
+.. note:: If you get a ``undefined reference to vtable for std::nested_exception``
+          error this hints that you most likely are missing the gcc 4.7.2 toolchain
+          (libc++). The missing files and instructions to patch the wrapper
+          scripts are provided on the ANL trac page (see top).*
+
+
+In order to be abl to compile skylark_ml apply the following patch:
+
+.. code-block:: diff
+
+    diff --git a/CMakeLists.txt b/CMakeLists.txt
+    index ef18fa7..b170cde 100644
+    --- a/CMakeLists.txt
+    +++ b/CMakeLists.txt
+    @@ -5,6 +5,8 @@ set (CMAKE_DISABLE_IN_SOURCE_BUILD ON)
+
+    project (SKYLARK)
+
+    +ADD_DEFINITIONS(-DSKYLARK_AVOID_BOOST_PO)
+    +
+    set (SKYLARK_VERSION_MAJOR 0)
+    set (SKYLARK_VERSION_MINOR 1)
+
+
+SLURM
+-----
+
+On Watson Q the following SLURM script can be used to run examples:
+
+.. code-block:: bash
+
+    #!/bin/bash
+    RUN_DIR=$HOME/work/libskylark/build
+    RUN_EXE=examples/elemental
+
+    if [ -z "$SLURM_JOBID" ]; then
+        sbatch --gid=`hostname -s` --time=10:00 --nodes=8 --ntasks-per-node=2  -O --qos=umax-8 $0
+    else
+        srun  --chdir=$RUN_DIR \
+            --output=elemental.out \
+            --error=error.out \
+            $RUN_EXE
+    fi
+
+which gives me
+
+.. code-block:: sh
+
+    # cat error.out
+
+    # cat elemental.out
+    Default
+    0.558572 -0.316131 -0.0357262 0.572592 0.142264
+    -0.149105 0.0597079 0.228256 -0.53152 -0.0828558
+    -0.201294 0.499321 0.397655 0.6972 -0.303714
+    -0.36505 -0.120876 -0.276908 -0.461459 -0.255837
+    -0.154734 -0.0392899 0.202231 -0.298655 -0.262944
+

@@ -8,14 +8,15 @@ struct asy_precond_t :
     public outplace_precond_t<RhsType, SolType> {
 
 
-    asy_precond_t(const MatType& A, int sweeps, base::context_t &context)
-        : _A(A), _sweeps(sweeps), _context(context) { }
+    asy_precond_t(const MatType& A, asy_iter_params_t params
+        , base::context_t &context)
+        : _A(A), _params(params), _context(context) { }
 
     bool is_id() const { return false; }
 
     void apply(const RhsType& B, SolType& X) const {
         elem::MakeZeros(X);
-        AsyRGS(_A, B, X, _sweeps, _context);
+        AsyRGS(_A, B, X, _context, _params);
     }
 
     void apply_adjoint(const RhsType& B, SolType& X) const {
@@ -24,7 +25,7 @@ struct asy_precond_t :
 
 private:
     const MatType& _A;
-    const int _sweeps;
+    const asy_iter_params_t _params;
     base::context_t &_context;
 };
 

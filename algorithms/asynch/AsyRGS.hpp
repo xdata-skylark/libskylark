@@ -80,7 +80,8 @@ inline void jstep1(const int *colptr, const int *rowind, const T1 *vals,
  */
 template<typename T1, typename T2, typename T3>
 void AsyRGS(const base::sparse_matrix_t<T1>& A, const elem::Matrix<T2>& B,
-    elem::Matrix<T3>& X, int sweeps, base::context_t& context) {
+    elem::Matrix<T3>& X, base::context_t& context,
+    asy_iter_params_t params = asy_iter_params_t()) {
 
     int n = A.height();   // We assume A is square. TODO assert it.
 
@@ -91,7 +92,7 @@ void AsyRGS(const base::sparse_matrix_t<T1>& A, const elem::Matrix<T2>& B,
     typedef boost::random::uniform_int_distribution<int> dtype;
     dtype distribution(0, n-1);
     utility::random_samples_array_t<dtype> stepidxs =
-        context.allocate_random_samples_array(sweeps * n, distribution);
+        context.allocate_random_samples_array(params.sweeps_lim * n, distribution);
 
     if (B.Width() == 1) {
        int j;
@@ -100,7 +101,7 @@ void AsyRGS(const base::sparse_matrix_t<T1>& A, const elem::Matrix<T2>& B,
        T3 *Xd = X.Buffer();
 
 #       pragma omp parallel for default(shared) private(j)
-        for(j = 0; j < sweeps * n ; j++)
+        for(j = 0; j < params.sweeps_lim * n ; j++)
             internal::jstep1(colptr, rowind, vals, Bd, Xd, stepidxs[j]);
 
     } else {
@@ -118,7 +119,7 @@ void AsyRGS(const base::sparse_matrix_t<T1>& A, const elem::Matrix<T2>& B,
         int j;
 
 #       pragma omp parallel for default(shared) private(j, d)
-        for(j = 0; j < sweeps * n ; j++)
+        for(j = 0; j < params.sweeps_lim * n ; j++)
             internal::jstep(colptr, rowind, vals, Bd, Xd, k, d, stepidxs[j]);
 
         elem::Transpose(XT, X);

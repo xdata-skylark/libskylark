@@ -38,7 +38,11 @@ int main(int argc, char** argv) {
     std::cout << "Using AsyRGS... ";
     timer.restart();
     elem::MakeZeros(x);
-    skyalg::AsyRGS(A, b, x, 20, context);
+    skyalg::asy_iter_params_t asy_params;
+    asy_params.tolerance = 0;
+    asy_params.syn_sweeps = 0;
+    asy_params.sweeps_lim = 20;
+    skyalg::AsyRGS(A, b, x, context, asy_params);
     std::cout <<"took " << boost::format("%.2e") % timer.elapsed() << " sec\n";
 
     {elem::Matrix<double> r(b);
@@ -68,7 +72,11 @@ int main(int argc, char** argv) {
     std::cout << "Using FCG... ";
     timer.restart();
     elem::MakeZeros(x);
-    skyalg::AsyFCG(A, b, x, 2, context);
+    asy_params.tolerance = 1e-8;
+    asy_params.sweeps_lim = 2;
+    asy_params.syn_sweeps = 0;
+    asy_params.iter_lim = 200;
+    skyalg::AsyFCG(A, b, x, context, asy_params);
     std::cout <<"took " << boost::format("%.2e") % timer.elapsed() << " sec\n";
 
     {elem::Matrix<double> r(b);

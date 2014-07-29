@@ -104,10 +104,11 @@ private:
         typedef elem::DistMatrix<value_type, elem::CIRC, elem::CIRC>
             intermediate_matrix_type;
 
-        matrix_type sketch_of_A_STAR_RD(A.Height(),
-                             data_type::_S);
-        intermediate_matrix_type sketch_of_A_CIRC_CIRC(A.Height(),
-                             data_type::_S);
+        matrix_type sketch_of_A_STAR_RD(A.Grid());
+        elem::Zeros(sketch_of_A_STAR_RD, A.Height(), data_type::_S);
+
+        intermediate_matrix_type sketch_of_A_CIRC_CIRC(A.Grid());
+        elem::Zeros(sketch_of_A_CIRC_CIRC, A.Height(), data_type::_S);
 
         dense_transform_t<matrix_type, matrix_type, ValueDistribution>
             transform(*this);
@@ -133,10 +134,12 @@ private:
         typedef elem::DistMatrix<value_type, elem::CIRC, elem::CIRC>
             intermediate_matrix_type;
 
-        matrix_type sketch_of_A_STAR_RD(data_type::_S,
-                                        A.Width());
-        intermediate_matrix_type sketch_of_A_CIRC_CIRC(data_type::_S,
-                                        A.Width());
+        matrix_type sketch_of_A_STAR_RD(A.Grid());
+        elem::Zeros(sketch_of_A_STAR_RD, data_type::_S, A.Width());
+
+        intermediate_matrix_type sketch_of_A_CIRC_CIRC(A.Grid());
+        elem::Zeros(sketch_of_A_CIRC_CIRC, data_type::_S, A.Width());
+
 
         dense_transform_t<matrix_type, matrix_type, ValueDistribution>
             transform(*this);

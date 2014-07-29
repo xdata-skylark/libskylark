@@ -981,6 +981,292 @@ index 858580b..256c3db 100644
 </div>
 </div>
 </div>
+<div class="section" id="complete-bgq-installation-instructions">
+<h2>Complete BGQ Installation Instructions<a class="headerlink" href="#complete-bgq-installation-instructions" title="Permalink to this headline">¶</a></h2>
+<p>This is an end-to-end guide for installing libSkylark on a BG/Q. During this
+section we assume the following:</p>
+<ul class="simple">
+<li>most of the software and sources are installed in <cite>$HOME/local</cite>,</li>
+<li>the installation of Random123 is omitted (just untar the library)</li>
+</ul>
+<div class="section" id="llvm-clang">
+<h3>LLVM/Clang<a class="headerlink" href="#llvm-clang" title="Permalink to this headline">¶</a></h3>
+<p>Because of various dependencies and <cite>c++11</cite> compatibility issues the
+installation requires a <cite>c++11</cite> compiler. For this we are installing LLVM/Clang
+(until the XL compiler provides the necessary <cite>c++11</cite> features.</p>
+<p>Argonne provides rpm packages for the BG/Q. Download and follow the
+instructions as stated on <a class="reference external" href="https://trac.alcf.anl.gov/projects/llvm-bgq">https://trac.alcf.anl.gov/projects/llvm-bgq</a>.</p>
+<p>After this step we assume you have installed LLVM/CLANG under <cite>$HOME/bgclang/</cite>.</p>
+</div>
+<div class="section" id="elemental">
+<h3>Elemental<a class="headerlink" href="#elemental" title="Permalink to this headline">¶</a></h3>
+<p>Download elemental 0.83 (<a class="reference external" href="http://libelemental.org/pub/releases/elemental-0.83.tgz">http://libelemental.org/pub/releases/elemental-0.83.tgz</a>).
+Then use the following toolchain file (e.g. save to <cite>BGQ-toolchain.cmake</cite>)</p>
+<div class="highlight-cmake"><pre>set(GCC_ROOT  "/bgsys/drivers/ppcfloor/gnu-linux")
+set(GCC_NAME  "powerpc64-bgq-linux")
+set(CLANG_ROOT "$HOME/bgclang/bin")
+set(CLANG_MPI_ROOT "$HOME/bgclang/mpi/bgclang")
+set(IBMCMP_ROOT "$ENV{IBM_MAIN_DIR}")
+
+set(BLAS_LIB "$HOME/src/lapack-3.5.0/")
+set(LAPACK_LIB "$HOME/src/lapack-3.5.0/")
+set(ESSL_LIB "/opt/ibmmath/lib64")
+
+set(MPI_ROOT   "/bgsys/drivers/ppcfloor/comm/gcc")
+set(PAMI_ROOT  "/bgsys/drivers/ppcfloor/comm/sys")
+set(SPI_ROOT   "/bgsys/drivers/ppcfloor/spi")
+
+# The serial compilers
+set(CMAKE_C_COMPILER   "${CLANG_MPI_ROOT}/bin/mpiclang")
+set(CMAKE_CXX_COMPILER "${CLANG_MPI_ROOT}/bin/mpiclang++11")
+set(CMAKE_Fortran_COMPILER "${GCC_ROOT}/bin/${GCC_NAME}-gfortran")
+
+# The MPI wrappers for the C and C++ compilers
+set(MPI_C_COMPILER   "${CLANG_MPI_ROOT}/bin/mpiclang")
+set(MPI_CXX_COMPILER "${CLANG_MPI_ROOT}/bin/mpiclang++11")
+
+set(MPI_C_COMPILE_FLAGS    "")
+set(MPI_CXX_COMPILE_FLAGS  "")
+set(MPI_C_INCLUDE_PATH     "${MPI_ROOT}/include")
+set(MPI_CXX_INCLUDE_PATH   "${MPI_ROOT}/include")
+set(MPI_C_LINK_FLAGS       "-L${MPI_ROOT}/lib -L${PAMI_ROOT}/lib -L${SPI_ROOT}/lib")
+set(MPI_CXX_LINK_FLAGS     "${MPI_C_LINK_FLAGS}")
+set(MPI_C_LIBRARIES       "${MPI_C_LINK_FLAGS}   -lSPI -lSPI_cnk -lrt -lpthread -lstdc++ -lpthread")
+set(MPI_CXX_LIBRARIES     "${MPI_CXX_LINK_FLAGS} ${MPI_C_LIBRARIES}")
+
+if(CMAKE_BUILD_TYPE MATCHES PureDebug OR
+CMAKE_BUILD_TYPE MATCHES HybridDebug)
+set(CXX_FLAGS "-g")
+else()
+set(CXX_FLAGS "-O3")
+endif()
+
+set(CMAKE_THREAD_LIBS_INIT "-fopenmp")
+set(OpenMP_CXX_FLAGS "-fopenmp")
+
+##############################################################
+
+# set the search path for the environment coming with the compiler
+# and a directory where you can install your own compiled software
+set(CMAKE_FIND_ROOT_PATH
+    /bgsys/drivers/ppcfloor
+    /bgsys/drivers/ppcfloor/spi
+    $HOME/bgclang/mpi/bgclang
+)
+
+# adjust the default behaviour of the FIND_XXX() commands:
+# search headers and libraries in the target environment, search
+# programs in the host environment
+set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+
+##############################################################
+
+set(XLF_LIB "/opt/ibmcmp/xlf/bg/14.1/bglib64")
+set(XLSMP_LIB "/opt/ibmcmp/xlsmp/bg/3.1/bglib64")
+if(CMAKE_BUILD_TYPE MATCHES PureDebug OR
+CMAKE_BUILD_TYPE MATCHES PureRelease)
+set(MATH_LIBS "-L${ESSL_LIB} -lesslbg -L${LAPACK_LIB} -llapack -L${ESSL_LIB} -lesslbg -L${XLF_LIB} -lxlf90_r -L${XLSMP_LIB} -lxlomp_ser -lxlopt -lxlfmath -lxl -lpthread -ldl -Wl,--allow-multiple-definition")
+else()
+set(MATH_LIBS "-L${ESSL_LIB} -lesslsmpbg -L${LAPACK_LIB} -llapack -L${ESSL_LIB} -lesslsmpbg -L${XLF_LIB} -lxlf90_r -L${XLSMP_LIB} -lxlsmp -lxlopt -lxlfmath -lxl -lpthread -ldl -Wl,--allow-multiple-definition")
+endif()</pre>
+</div>
+<p>This toolchain file is based on the (Elemental) provided
+<cite>BGQ-Mira-clang-essl.cmake</cite> file.
+Finally, run the following to compile (and install) Elemental.</p>
+<div class="highlight-sh"><div class="highlight"><pre>rm -rf CMake*; <span class="se">\</span>
+cmake -DCMAKE_TOOLCHAIN_FILE<span class="o">=</span>BGQ-toolchain.cmake <span class="se">\</span>
+    -DCMAKE_INSTALL_PREFIX<span class="o">=</span><span class="nv">$HOME</span>/local <span class="se">\</span>
+    -DCMAKE_BUILD_TYPE<span class="o">=</span>PureDebug ..
+make install
+</pre></div>
+</div>
+<p>In case you run into errors or problems, check the <cite>CMakeFiles/CMakeError.log</cite>
+file in the build directory.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">It seems that the <cite>HybridDebug</cite> version is causing problems on the BGQ.</p>
+</div>
+</div>
+<div class="section" id="combblas">
+<h3>CombBLAS<a class="headerlink" href="#combblas" title="Permalink to this headline">¶</a></h3>
+<p>Download <a class="reference external" href="http://gauss.cs.ucsb.edu/~aydin/CombBLAS_FILES/CombBLAS_beta_14_0.tgz">http://gauss.cs.ucsb.edu/~aydin/CombBLAS_FILES/CombBLAS_beta_14_0.tgz</a>
+untar and change to the CombBLAS directory.</p>
+<p>First we need to fix the CombBLAS <cite>CMakeLists.txt</cite> by commenting out the
+following two lines:</p>
+<div class="highlight-cmake"><div class="highlight"><pre><span class="c">#SET(CMAKE_CXX_COMPILER mpicxx)</span>
+<span class="c">#SET(CMAKE_C_COMPILER mpicc)</span>
+</pre></div>
+</div>
+<p>and then run to build the required libraries</p>
+<div class="highlight-sh"><div class="highlight"><pre><span class="nv">CC</span><span class="o">=</span><span class="nv">$HOME</span>/bgclang/mpi/bgclang/bin/mpiclang <span class="se">\</span>
+<span class="nv">CXX</span><span class="o">=</span><span class="nv">$HOME</span>/bgclang/mpi/bgclang/bin/mpiclang++11 <span class="se">\</span>
+cmake .
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The examples and test might fail to compile but that&#8217;s ok for now.</p>
+</div>
+</div>
+<div class="section" id="fftw">
+<h3>FFTW<a class="headerlink" href="#fftw" title="Permalink to this headline">¶</a></h3>
+<p>Download <a class="reference external" href="http://www.fftw.org/fftw-3.3.3.tar.gz">http://www.fftw.org/fftw-3.3.3.tar.gz</a>.</p>
+<div class="highlight-sh"><div class="highlight"><pre><span class="nv">CC</span><span class="o">=</span><span class="nv">$HOME</span>/bgclang/mpi/bgclang/bin/mpiclang <span class="se">\</span>
+<span class="nv">CXX</span><span class="o">=</span><span class="nv">$HOME</span>/bgclang/mpi/bgclang/bin/mpiclang++11 <span class="se">\</span>
+./configure
+make
+</pre></div>
+</div>
+</div>
+<div class="section" id="boost">
+<h3>Boost<a class="headerlink" href="#boost" title="Permalink to this headline">¶</a></h3>
+<p>Download Boost 1.53.0, untar, change directory and then execute:</p>
+<div class="highlight-sh"><div class="highlight"><pre>./bootstrap.sh --with-libraries<span class="o">=</span>mpi,serialization,program_options
+<span class="nb">echo</span> <span class="s2">&quot;using mpi : $HOME/bgclang/mpi/bgclang/bin/mpiclang++11 ;&quot;</span> &gt;&gt; project-config.jam
+./b2 <span class="nv">toolset</span><span class="o">=</span>clang
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">for this to work make sure that <tt class="docutils literal"><span class="pre">clang++</span></tt> is in your PATH.</p>
+</div>
+</div>
+<div class="section" id="id1">
+<h3>HDF5<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>Make sure you have a compiled libz around then run:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">CC</span><span class="o">=</span><span class="nv">$HOME</span>/bgclang/mpi/bgclang/bin/mpiclang <span class="se">\</span>
+<span class="nv">CXX</span><span class="o">=</span><span class="nv">$HOME</span>/bgclang/mpi/bgclang/bin/mpiclang++11 <span class="se">\</span>
+./configure --enable-cxx --prefix<span class="o">=</span><span class="nv">$HOME</span>/local/ <span class="se">\</span>
+    --with-pic --disable-shared --with-zlib<span class="o">=</span><span class="nv">$HOME</span>/local/
+
+make lib
+make install
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Building the tests fails, but that should be ok for now.</p>
+</div>
+</div>
+<div class="section" id="libskylark">
+<h3>libSkylark<a class="headerlink" href="#libskylark" title="Permalink to this headline">¶</a></h3>
+<p>Finally we can turn to building libSkylark. First change the CMake file:</p>
+<div class="highlight-diff"><div class="highlight"><pre><span class="gh">diff --git a/CMakeLists.txt b/CMakeLists.txt</span>
+<span class="gh">index ef18fa7..825dbaa 100644</span>
+<span class="gd">--- a/CMakeLists.txt</span>
+<span class="gi">+++ b/CMakeLists.txt</span>
+<span class="gu">@@ -81,11 +81,14 @@ if (&quot;${CMAKE_CXX_COMPILER_ID}&quot; STREQUAL &quot;Clang&quot;)</span>
+    )
+
+    set (COMPILER_SPEC_FLAGS
+<span class="gd">-        &quot;-W -Wall -Wno-write-strings -Wno-strict-aliasing -Wno-format -Wno-deprecated -Wno-unused-variable -Wno-unused-parameter -Wno-sign-compare&quot;</span>
+<span class="gi">+        &quot;-W -Wall -Wno-write-strings -Wno-strict-aliasing -Wno-format -Wno-deprecated -Wno-unused-variable -Wno-unused-parameter -Wno-sign-compare -Wno-overloaded-virtual -Wno-unsupported-friend&quot;</span>
+    )
+
+    #set (LINK_FLAGS
+    #)
+
+    set (CMAKE_LIB_LINKER_FLAGS  &quot;${CMAKE_LIB_LINKER_FLAGS} -fPIC&quot;)
+
+<span class="gu">@@ -157,7 +160,7 @@ include_directories (${CMAKE_SOURCE_DIR})</span>
+# dependent packages
+# 1. Find MPI --- we are not adding any include directories here because we
+# will be using the mpi compilers, which adds these libraries by default.
+<span class="gd">-find_package (MPI REQUIRED)</span>
+<span class="gi">+find_package (MPI)</span>
+set (CMAKE_CXX_COMPILER ${MPI_COMPILER})
+
+# 2. Find Boost with the relevant packages --- Use dynamic boost!
+<span class="gu">@@ -169,6 +172,11 @@ if (BOOST_ROOT)</span>
+set(Boost_NO_BOOST_CMAKE ON)
+endif (BOOST_ROOT)
+
+<span class="gi">+if (BOOST_STATIC)</span>
+<span class="gi">+  set(Boost_USE_STATIC_LIBS ON)</span>
+<span class="gi">+endif (BOOST_STATIC)</span>
+<span class="gi">+</span>
+<span class="gi">+</span>
+set(BOOST_MIN_VERSION 1.53.0)
+find_package (Boost REQUIRED mpi program_options serialization)
+if (Boost_FOUND)
+</pre></div>
+</div>
+<p>and compile:</p>
+<div class="highlight-sh"><div class="highlight"><pre>rm CMakeCache.txt
+rm -rf CMakeFiles
+
+<span class="nb">export </span><span class="nv">BLAS_LIBRARIES</span><span class="o">=</span><span class="s2">&quot;/opt/ibmmath/lib64/libesslsmpbg.a;/opt/ibmcmp/xlf/bg/14.1/lib64/libxlfmath.a;/opt/ibmcmp/xlf/bg/14.1/lib64/libxlf90_r.a;/opt/ibmcmp/xlsmp/bg/3.1/bglib64/libxlsmp.a&quot;</span>
+<span class="nb">export </span><span class="nv">LAPACK_LIBRARIES</span><span class="o">=</span><span class="s2">&quot;/opt/ibmmath/lib64/libesslsmpbg.a;/opt/ibmcmp/xlf/bg/14.1/lib64/libxlfmath.a;/opt/ibmcmp/xlf/bg/14.1/lib64/libxlf90_r.a;/opt/ibmcmp/xlsmp/bg/3.1/bglib64/libxlsmp.a;/opt/ibmcmp/xlf/bg/14.1/bglib64/libxl.a;-Wl,--allow-multiple-definition&quot;</span>
+
+<span class="nb">export </span><span class="nv">FFTW_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/local/fftw-3.3.3/
+<span class="nb">export </span><span class="nv">HDF5_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/local
+<span class="nb">export </span><span class="nv">ELEMENTAL_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/local
+<span class="nb">export </span><span class="nv">COMBBLAS_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/src/CombBLAS
+<span class="nb">export </span><span class="nv">RANDOM123_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/local/Random123-1.08
+<span class="nb">export </span><span class="nv">BOOST_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/local/boost_1_53_0
+
+<span class="nv">CC</span><span class="o">=</span><span class="nv">$HOME</span>/bgclang/mpi/bgclang/bin/mpiclang <span class="se">\</span>
+<span class="nv">CXX</span><span class="o">=</span><span class="nv">$HOME</span>/bgclang/mpi/bgclang/bin/mpiclang++11 <span class="se">\</span>
+cmake -DUSE_ELEMENTAL<span class="o">=</span>ON -DUSE_FFTW<span class="o">=</span>ON -DUSE_COMBBLAS<span class="o">=</span>ON -DBUILD_PYTHON<span class="o">=</span>OFF -DUSE_HYBRID<span class="o">=</span>ON <span class="se">\</span>
+-DBOOST_STATIC<span class="o">=</span>ON ../
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you get a <tt class="docutils literal"><span class="pre">undefined</span> <span class="pre">reference</span> <span class="pre">to</span> <span class="pre">vtable</span> <span class="pre">for</span> <span class="pre">std::nested_exception</span></tt>
+error this hints that you most likely are missing the gcc 4.7.2 toolchain
+(libc++). The missing files and instructions to patch the wrapper
+scripts are provided on the ANL trac page (see top).*</p>
+</div>
+<p>In order to be abl to compile skylark_ml apply the following patch:</p>
+<div class="highlight-diff"><div class="highlight"><pre><span class="gh">diff --git a/CMakeLists.txt b/CMakeLists.txt</span>
+<span class="gh">index ef18fa7..b170cde 100644</span>
+<span class="gd">--- a/CMakeLists.txt</span>
+<span class="gi">+++ b/CMakeLists.txt</span>
+<span class="gu">@@ -5,6 +5,8 @@ set (CMAKE_DISABLE_IN_SOURCE_BUILD ON)</span>
+
+project (SKYLARK)
+
+<span class="gi">+ADD_DEFINITIONS(-DSKYLARK_AVOID_BOOST_PO)</span>
+<span class="gi">+</span>
+set (SKYLARK_VERSION_MAJOR 0)
+set (SKYLARK_VERSION_MINOR 1)
+</pre></div>
+</div>
+</div>
+<div class="section" id="slurm">
+<h3>SLURM<a class="headerlink" href="#slurm" title="Permalink to this headline">¶</a></h3>
+<p>On Watson Q the following SLURM script can be used to run examples:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="c">#!/bin/bash</span>
+<span class="nv">RUN_DIR</span><span class="o">=</span><span class="nv">$HOME</span>/work/libskylark/build
+<span class="nv">RUN_EXE</span><span class="o">=</span>examples/elemental
+
+<span class="k">if</span> <span class="o">[</span> -z <span class="s2">&quot;$SLURM_JOBID&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+<span class="k">    </span>sbatch --gid<span class="o">=</span><span class="sb">`</span>hostname -s<span class="sb">`</span> --time<span class="o">=</span>10:00 --nodes<span class="o">=</span>8 --ntasks-per-node<span class="o">=</span>2  -O --qos<span class="o">=</span>umax-8 <span class="nv">$0</span>
+<span class="k">else</span>
+<span class="k">    </span>srun  --chdir<span class="o">=</span><span class="nv">$RUN_DIR</span> <span class="se">\</span>
+        --output<span class="o">=</span>elemental.out <span class="se">\</span>
+        --error<span class="o">=</span>error.out <span class="se">\</span>
+        <span class="nv">$RUN_EXE</span>
+<span class="k">fi</span>
+</pre></div>
+</div>
+<p>which gives me</p>
+<div class="highlight-sh"><div class="highlight"><pre><span class="c"># cat error.out</span>
+
+<span class="c"># cat elemental.out</span>
+Default
+0.558572 -0.316131 -0.0357262 0.572592 0.142264
+-0.149105 0.0597079 0.228256 -0.53152 -0.0828558
+-0.201294 0.499321 0.397655 0.6972 -0.303714
+-0.36505 -0.120876 -0.276908 -0.461459 -0.255837
+-0.154734 -0.0392899 0.202231 -0.298655 -0.262944
+</pre></div>
+</div>
+</div>
+</div>
 </div>
 
 

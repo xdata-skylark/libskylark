@@ -16,8 +16,8 @@ const char* const skylark_errmsg[] = {
     , "Skylark failed in nla operation"
     , "Skylark failed when allocating memory in a sketch"
     , "Skylark failed in a call into the Random123 layer"
-    , "Skylark failed in I/O calls"
     , "Skylark failed due to a unsupported base operation"
+    , "Skylark failed in I/O calls"
 };
 
 /// resolves an error_code to a human readable failure message
@@ -159,7 +159,7 @@ public:
     using skylark_exception::operator<<;
 
     io_exception() {
-        *this << error_code(108);
+        *this << error_code(110);
     }
 };
 

@@ -3,7 +3,7 @@
 
 #include <cstdio>
 
-#include "../../config.h"
+#include "config.h"
 
 #if SKYLARK_HAVE_ELEMENTAL
 #include <elemental.hpp>
@@ -16,7 +16,7 @@
 
 namespace skylark { namespace utility {
 
-template <typename DataType> 
+template <typename DataType>
 struct print_t { };
 
 #if SKYLARK_HAVE_ELEMENTAL
@@ -114,9 +114,9 @@ struct print_t <elem::DistMatrix<ValueType, CD, RD> > {
 
 #endif
 
-#if SKYLARK_HAVE_COMBBLAS 
+#if SKYLARK_HAVE_COMBBLAS
 
-template <typename IndexType, 
+template <typename IndexType,
           typename ValueType>
 struct print_t<SpParMat<IndexType,
                         ValueType,
@@ -135,15 +135,15 @@ struct print_t<SpParMat<IndexType,
                     int debug_level=0) {
     if (1>=debug_level) return;
     if (am_i_printing) printf ("Dump of %s\n", msg);
-    seq_matrix_t& data = (const_cast<mpi_matrix_t&>(A)).seq();    
-    for(seq_matrix_col_iter_t col=data.begcol();col!=data.endcol();++col) 
-      for(seq_matrix_nz_iter_t nz=data.begnz(col);nz!=data.endnz(col);++nz) 
+    seq_matrix_t& data = (const_cast<mpi_matrix_t&>(A)).seq();
+    for(seq_matrix_col_iter_t col=data.begcol();col!=data.endcol();++col)
+      for(seq_matrix_nz_iter_t nz=data.begnz(col);nz!=data.endnz(col);++nz)
         if (am_i_printing)
           printf ("%d %d %lf\n", 1+col.colid(), 1+nz.rowid(), nz.value());
   }
 };
 
-template <typename IndexType, 
+template <typename IndexType,
           typename ValueType>
 struct print_t<FullyDistVec<IndexType,ValueType> > {
 
@@ -163,8 +163,8 @@ struct print_t<FullyDistVec<IndexType,ValueType> > {
     }
   }
 
-  static void apply(const mpi_vector_t& x, 
-                    const mpi_vector_t& y, 
+  static void apply(const mpi_vector_t& x,
+                    const mpi_vector_t& y,
                     const char* msg,
                     bool am_i_printing,
                     int debug_level=0) {
@@ -178,7 +178,7 @@ struct print_t<FullyDistVec<IndexType,ValueType> > {
   }
 };
 
-template <typename IndexType, 
+template <typename IndexType,
           typename ValueType>
 struct print_t<FullyDistMultiVec<IndexType,ValueType> > {
   typedef IndexType index_t;
@@ -205,8 +205,8 @@ struct print_t<FullyDistMultiVec<IndexType,ValueType> > {
     }
   }
 
-  static void apply(const mpi_multi_vector_t& X, 
-                    const mpi_multi_vector_t& Y, 
+  static void apply(const mpi_multi_vector_t& X,
+                    const mpi_multi_vector_t& Y,
                     const char* msg,
                     bool am_i_printing,
                     int debug_level=0) {

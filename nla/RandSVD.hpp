@@ -2,7 +2,7 @@
 #ifndef SKYLARK_RAND_SVD_HPP
 #define SKYLARK_RAND_SVD_HPP
 
-#include "../config.h"
+#include "config.h"
 #include "../base/exception.hpp"
 #include "../base/svd.hpp"
 #include "../base/QR.hpp"

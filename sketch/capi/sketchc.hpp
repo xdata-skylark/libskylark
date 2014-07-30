@@ -2,7 +2,7 @@
 #define SKYLARK_SKETCHC_HPP
 
 #include "mpi.h"
-#include "../../config.h"
+#include "config.h"
 #include "../../utility/distributions.hpp"
 
 #include "../sketch.hpp"

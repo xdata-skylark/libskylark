@@ -1,11 +1,11 @@
 #ifndef SKYLARK_EMPTY_MATRIX_HPP
 #define SKYLARK_EMPTY_MATRIX_HPP
 
-#include "../../config.h"
+#include "config.h"
 
 #if SKYLARK_HAVE_COMBBLAS
 #include <CombBLAS.h>
-#endif 
+#endif
 
 #if SKYLARK_HAVE_ELEMENTAL
 #include <elemental.hpp>
@@ -15,7 +15,7 @@ namespace skylark { namespace utility {
 
 /**
  * A structure to create an empty matrix.
- */ 
+ */
 template <typename MatrixOrVectorType>
 struct empty_matrix_t {};
 
@@ -23,7 +23,7 @@ struct empty_matrix_t {};
 
 /**
  * Specialization for a fully distributed dense vector.
- */ 
+ */
 template <typename IndexType,
           typename ValueType>
 struct empty_matrix_t <FullyDistVec<IndexType, ValueType> > {
@@ -47,7 +47,7 @@ struct empty_matrix_t <FullyDistMultiVec<IndexType, ValueType> > {
   static mpi_multi_vector_t generate (index_t M,
                                    index_t N) {
     /* Create an empty multi-vector */
-    return mpi_multi_vector_t(M /* dimension */, 
+    return mpi_multi_vector_t(M /* dimension */,
                               N /* number of vectors */,
                               0 /* intial value */);
   }
@@ -55,8 +55,8 @@ struct empty_matrix_t <FullyDistMultiVec<IndexType, ValueType> > {
 
 template <typename IndexType,
           typename ValueType>
-struct empty_matrix_t <SpParMat<IndexType, 
-                                ValueType, 
+struct empty_matrix_t <SpParMat<IndexType,
+                                ValueType,
                                 SpDCCols<IndexType, ValueType> > > {
   typedef IndexType index_t;
   typedef ValueType value_t;
@@ -65,10 +65,10 @@ struct empty_matrix_t <SpParMat<IndexType,
   typedef FullyDistVec<IndexType,ValueType> mpi_value_vector_t;
   typedef FullyDistVec<IndexType,IndexType> mpi_index_vector_t;
 
-  static mpi_matrix_t generate (index_t M, 
+  static mpi_matrix_t generate (index_t M,
                             index_t N) {
-    return mpi_matrix_t (M, 
-                         N, 
+    return mpi_matrix_t (M,
+                         N,
                          mpi_index_vector_t(0, 0),
                          mpi_index_vector_t(0, 0),
                          mpi_index_vector_t(0, 0));

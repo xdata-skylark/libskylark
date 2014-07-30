@@ -55,7 +55,7 @@ if (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_OPENMP)
                         ${FFTW_LIBRARY}
                         ${Pmrrr_LIBRARY}
                         ${SKYLARK_LIBS}
-                        ${Boost_LIBRARIES}                        
+                        ${Boost_LIBRARIES}
                         ${HDF5_LIBRARIES}
                         ${ZLIB_LIBRARIES})
   install_targets(/bin/examples asynch)

@@ -4,7 +4,7 @@
 // TODO: Replace with Skylark specific exceptions.
 #include <exception>
 
-#include "../config.h"
+#include "config.h"
 #include "../base/base.hpp"
 
 #if SKYLARK_HAVE_COMBBLAS

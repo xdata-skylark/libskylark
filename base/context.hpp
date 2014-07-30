@@ -1,7 +1,7 @@
 #ifndef SKYLARK_CONTEXT_HPP
 #define SKYLARK_CONTEXT_HPP
 
-#include "../config.h"
+#include "config.h"
 
 #include "exception.hpp"
 #include "../utility/randgen.hpp"

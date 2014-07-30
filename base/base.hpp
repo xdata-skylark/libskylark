@@ -1,7 +1,7 @@
 #ifndef SKYLARK_BASE_HPP
 #define SKYLARK_BASE_HPP
 
-#include "../config.h"
+#include "config.h"
 
 #if SKYLARK_HAVE_ELEMENTAL
 #include <elemental.hpp>

@@ -1,7 +1,7 @@
 #ifndef SKYLARK_UNIFORM_MATRIX_HPP
 #define SKYLARK_UNIFORM_MATRIX_HPP
 
-#include "../../config.h"
+#include "config.h"
 #include "../../base/context.hpp"
 
 #if SKYLARK_HAVE_COMBBLAS

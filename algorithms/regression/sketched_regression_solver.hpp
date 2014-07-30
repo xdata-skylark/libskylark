@@ -1,7 +1,7 @@
 #ifndef SKYLARK_SKETCHED_REGRESSION_SOLVER_HPP
 #define SKYLARK_SKETCHED_REGRESSION_SOLVER_HPP
 
-#include "../../config.h"
+#include "config.h"
 
 namespace skylark {
 namespace algorithms {

@@ -152,6 +152,7 @@ message (STATUS "Building on ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR} on
 # #include "../utility/dense_1D.hpp"
 # is used in sketch/ subdirectory.
 include_directories (${CMAKE_SOURCE_DIR})
+include_directories (${CMAKE_BINARY_DIR})
 
 #---------------------------------------------------------------------------
 # dependent packages
@@ -389,8 +390,8 @@ endif (BUILD_EXAMPLES)
 #----------------------------------------------------------------------------
 # Write out the configure file
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/config.h.in
-                ${CMAKE_CURRENT_SOURCE_DIR}/config.h)
-install (FILES ${CMAKE_CURRENT_SOURCE_DIR}/config.h DESTINATION include/skylark/)
+                ${CMAKE_BINARY_DIR}/config.h)
+install (FILES ${CMAKE_BINARY_DIR}/config.h DESTINATION include/skylark/)
 #----------------------------------------------------------------------------
 
 #----------------------------------------------------------------------------

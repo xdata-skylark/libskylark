@@ -1,7 +1,7 @@
 #include <iostream>
 #include "boost/program_options.hpp"
 
-#include "../../config.h"
+#include "config.h"
 #include "../../base/svd.hpp"
 #include "test_utils.hpp"
 

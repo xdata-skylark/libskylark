@@ -43,6 +43,32 @@
            suitable for general statistical data analysis and optimization
            applications.</p>
 
+        <p>Many tasks in machine learning and statistics ultimately end up
+           being problems involving matrices: whether you're finding the key
+           players in the bitcoin market, or inferring where tweets came from,
+           or figuring out what's in sewage, you'll want to have a toolkit for
+           least-squares and robust regression, eigenvector analysis,
+           non-negative matrix factorization, and other matrix computations.</p>
+
+        <p><i>Sketching</i> is a way to compress matrices that preserves key
+           matrix properties; it can be used to speed up many matrix
+           computations. Sketching takes a given matrix A and produces a
+           sketch matrix B that has fewer rows and/or columns than A.
+           For a good sketch B, if we solve a problem with input B, the
+           solution will also be pretty good for input A.
+           For some problems, sketches can also be used to get faster ways to
+           find high-precision solutions to the original problem. In other
+           cases, sketches can be used to summarize the data by identifying
+           the most important rows or columns.</p>
+
+        <img src="images/sketching.png" width=450px />
+
+        <p>A simple example of sketching is just sampling the rows (and/or
+           columns) of the matrix, where each row (and/or column) is equally
+           likely to be sampled. This uniform sampling is quick and easy, but
+           doesn't always yield good sketches; however, there are sophisticated
+           sampling methods that do yield good sketches.</p>
+
         <p>The goal of this project is to build a sketching-based open-source
            software stack for NLA and its applications, as shown:<p>
 

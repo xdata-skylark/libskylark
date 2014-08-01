@@ -3,7 +3,7 @@
  under the terms of the Apache License, Version 2.0 which is available at
  http://www.apache.org/licenses/LICENSE-2.0.
 
- This is a distribution of SKYLARK: an open source software library for
+ This is a distribution of libSkylark: an open source software library for
  distributed randomized numerical linear algebra with applications to
  machine learning and statistical data analysis.
 

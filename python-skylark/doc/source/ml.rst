@@ -4,7 +4,7 @@ Machine Learning
 Randomized Kernel Methods
 ==========================
  
-libskylark provides distributed implementations of kernel-based nonlinear models for 
+libSkylark provides distributed implementations of kernel-based nonlinear models for 
  
 	* Regularized Least Squares Regression and Classification
 	* Regularized Robust Regression (Least Absolute Deviation loss)
@@ -30,7 +30,7 @@ The full implementation (under ``libskylark/ml``) is described in the following 
 Standalone Usage 
 ----------------- 
 
-Building libskylark creates an executable called **skylark_ml** under CMAKE_PREFIX_INSTALL/bin. This executable can be 
+Building libSkylark creates an executable called **skylark_ml** under CMAKE_PREFIX_INSTALL/bin. This executable can be 
 used out-of-the-box for large-scale applications involving kernel-based modeling.
  
 .. _ml_io:
@@ -73,14 +73,10 @@ Examples of such files can be downloaded from `here <http://vikas.sindhwani.org/
 	For all fileformats described above, the current implementation is geared towards classification problems and requires the label to assume values from 0 to (K-1) for a K-class problem, or +1/-1 for binary classification problems. This assumption will be relaxed.
 
 
+Example and Commandline Usage
+==============================
 
-Quick Example
-===============
- 
 Please see :ref:`ml_example`
-
-Commandline Usage
-==================
 
 ::
 
@@ -131,5 +127,5 @@ Commandline Usage
 
 Library Usage
 ===============
-
+ 
 To be documented (please see ``ml/run.hpp`` for a driver program).

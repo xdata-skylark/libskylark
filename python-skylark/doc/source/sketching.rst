@@ -6,7 +6,7 @@ Sketching Layer
 Introduction
 =============
 
-'Sketching' is the core algorithmic foundation on which Skylark is built, and is
+'Sketching' is the core algorithmic foundation on which libSkylark is built, and is
 able to deliver faster NLA kernels and ML algorithms.
 
 Dimensionality reduction in NLA and ML is often based on building an oblivious
@@ -128,7 +128,7 @@ has to be a square number.
 
 
 
-Libskylark's Sketching Layer
+libSkylark's Sketching Layer
 ==============================
 
 The purpose of the sketching layer is to provide optimized implementations
@@ -184,7 +184,7 @@ the rows and columns of the matrix:
 * VC : Distribute round-robin within a column-major ordering of the entire 2D process grid (V ector C olumn)
 * VR : Distribute round-robin within a row-major ordering of the entire 2D process grid (V ector R ow)
 
-*LocalSparse* refers to a libskylark-provided class for representing local
+*LocalSparse* refers to a libSkylark-provided class for representing local
 sparse matrices, while *DistSparse* refers to CombBLAS sparse matrices.
 
 .. image:: files/sketch_transf_in_out_cpp.png
@@ -280,7 +280,7 @@ The sketching is done using *Johnson-Lindenstrauss (JLT)* transform.
      /* Row distributed Matrix Type */
      typedef elem::DistMatrix<double, elem::VC, elem::STAR> DistMatrixType;
 
-      /* Initialize skylark context with a seed */
+      /* Initialize libSkylark context with a seed */
      skylark::base::context_t context (12345);
 
      /* Row distributed Elemental Matrix A of size N x M */
@@ -372,10 +372,10 @@ Python Examples
 
 **Sketching Dense Distributed Matrices**
 
-.. literalinclude:: ../../skylark/examples/example_sketch.py
+.. literalinclude:: ../../python-skylark/skylark/examples/example_sketch.py
 
 **Sketching Sparse Distributed Matrices**
 
-.. literalinclude:: ../../skylark/examples/example_sparse_sketch.py
+.. literalinclude:: ../../python-skylark/skylark/examples/example_sparse_sketch.py
 
 

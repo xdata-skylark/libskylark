@@ -52,7 +52,7 @@
 <h1>Building from Source<a class="headerlink" href="#building-from-source" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="getting-the-source-code">
 <h2>Getting the source code<a class="headerlink" href="#getting-the-source-code" title="Permalink to this headline">¶</a></h2>
-<p>The source code is hosted on github. The libskylark git repository can be
+<p>The source code is hosted on github. The libSkylark git repository can be
 cloned using the following command.</p>
 <div class="highlight-sh"><div class="highlight"><pre>git clone https://github.com/xdata-skylark/libskylark.git
 </pre></div>
@@ -60,22 +60,22 @@ cloned using the following command.</p>
 </div>
 <div class="section" id="libskylark-software-dependencies">
 <h2>libSkylark Software Dependencies<a class="headerlink" href="#libskylark-software-dependencies" title="Permalink to this headline">¶</a></h2>
-<p>Skylark uses several open-source software packages that are essential for its
+<p>libSkylark uses several open-source software packages that are essential for its
 operation (build, install, and run). In this section, we give instructions to
 install these software packages on Ubuntu machines. Installing the required
 software packages on other operating systems should be very similar.</p>
-<p>We can build Skylark in one or more of four possible configurations:</p>
+<p>We can build libSkylark in one or more of four possible configurations:</p>
 <blockquote>
 <div><ul class="simple">
-<li>Skylark C++ bindings with support for dense (Elemental) matrices skylark-c++-dense</li>
-<li>Skylark C++ bindings with support for sparse (CombBLAS) matrices skylark-c++-sparse</li>
-<li>Skylark python and C++ bindings with support for dense (Elemental) matrices skylark-python-dense</li>
-<li>Skylark python and C++ bindings with support for sparse (CombBLAS) matrices skylark-python-sparse</li>
+<li>libSkylark C++ bindings with support for dense (Elemental) matrices skylark-c++-dense</li>
+<li>libSkylark C++ bindings with support for sparse (CombBLAS) matrices skylark-c++-sparse</li>
+<li>libSkylark python and C++ bindings with support for dense (Elemental) matrices skylark-python-dense</li>
+<li>libSkylark python and C++ bindings with support for sparse (CombBLAS) matrices skylark-python-sparse</li>
 </ul>
 </div></blockquote>
 <p>Please refer to the graph of dependencies for realizing these configurations.
 Note that nodes with version information within brackets refer to software
-packages while nodes containing no brackets refer to Skylark build targets.
+packages while nodes containing no brackets refer to libSkylark build targets.
 The versions denote the ones that we have tested with, but apart from Elemental,
 CombBLAS, and KDT versions, which need to be strictly followed, other software
 (CMake, gfortran, etc) may work just as well with other versions as well.
@@ -345,7 +345,7 @@ environment variable.</p>
 <h3>Combinatorial BLAS (CombBLAS) 1.4<a class="headerlink" href="#combinatorial-blas-combblas-1-4" title="Permalink to this headline">¶</a></h3>
 <p>The Combinatorial BLAS is an extensible distributed-memory parallel graph
 library offering a small but powerful set of linear algebra primitives
-specifically targeting graph analytics. We use it in Skylark to represent
+specifically targeting graph analytics. We use it in libSkylark to represent
 sparse matrices.</p>
 <p><em>Installation:</em></p>
 <div class="highlight-rst"><div class="highlight"><pre>wget http://gauss.cs.ucsb.edu/~aydin/CombBLAS_FILES/CombBLAS_beta_14_0.tgz
@@ -356,7 +356,7 @@ make
 </pre></div>
 </div>
 <p><em>Shared Libs</em></p>
-<p>In order to use Skylark through Python, make sure to compile and append the
+<p>In order to use libSkylark through Python, make sure to compile and append the
 directory containing the <tt class="docutils literal"><span class="pre">*.so</span></tt> files to your <span class="target" id="index-3"></span><tt class="xref std std-envvar docutils literal"><span class="pre">LD_LIBRARY_PATH</span></tt>.</p>
 <div class="highlight-rst"><div class="highlight"><pre>cd CombBLAS/
 rm CMakeCache.txt
@@ -368,7 +368,7 @@ make
 <div class="section" id="kdt">
 <h3>KDT<a class="headerlink" href="#kdt" title="Permalink to this headline">¶</a></h3>
 <p>The Knowledge Discovery Toolbox (KDT) provides a Python interface (amongst
-other things) to CombBLAS. Skylark requires this package to handle sparse
+other things) to CombBLAS. libSkylark requires this package to handle sparse
 matrices through the Python interface.</p>
 <p>To install kdt you need python and python-dev libs:</p>
 <div class="highlight-rst"><div class="highlight"><pre>sudo apt-get install python
@@ -407,7 +407,7 @@ sudo make install
 <div class="section" id="random123-1-08">
 <h3>Random123 1.08<a class="headerlink" href="#random123-1-08" title="Permalink to this headline">¶</a></h3>
 <p>Random123 is a library of &#8220;counter-based&#8221; random number generators
-(CBRNGs). We use them in Skylark to generate independent random number
+(CBRNGs). We use them in libSkylark to generate independent random number
 streams.</p>
 <p><em>Installation:</em></p>
 <div class="highlight-rst"><div class="highlight"><pre>wget http://www.thesalmons.org/john/random123/releases/1.08/Random123-1.08.tar.gz
@@ -440,10 +440,10 @@ specified in DOT language scripts.</p>
 </div>
 </div>
 <div class="section" id="building-libskylark">
-<span id="build-libskylark-label"></span><h2>Building libskylark<a class="headerlink" href="#building-libskylark" title="Permalink to this headline">¶</a></h2>
-<p>Skylark is relying on Cmake as a build system. Before you start please make
+<span id="build-libskylark-label"></span><h2>Building libSkylark<a class="headerlink" href="#building-libskylark" title="Permalink to this headline">¶</a></h2>
+<p>libSkylark uses Cmake as a build system. Before you start please make
 sure to check out the Section &#8220;Installing software dependencies for
-skylark&#8221; to learn about the required dependencies.</p>
+libSkylark&#8221; to learn about the required dependencies.</p>
 <p><strong>Quick guide</strong>: In many situation the default configuration and settings
 should work out of the box. To that end execute</p>
 <div class="highlight-rst"><div class="highlight"><pre>cd $BUILD_DIR
@@ -483,7 +483,7 @@ machine continue reading the next sections.</p>
 </div>
 <div class="section" id="build-options">
 <h3>Build options<a class="headerlink" href="#build-options" title="Permalink to this headline">¶</a></h3>
-<p>Skylark accepts build options in order to customize components. The
+<p>libSkylark accepts build options in order to customize components. The
 following table summarizes all currently available build options:</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -524,11 +524,11 @@ following table summarizes all currently available build options:</p>
 </tr>
 <tr class="row-even"><td>BUILD_EXAMPLES</td>
 <td>ON</td>
-<td>Build Skylark examples (see examples directory)</td>
+<td>Build libSkylark examples (see examples directory)</td>
 </tr>
 <tr class="row-odd"><td>BUILD_ML</td>
 <td>ON</td>
-<td>Build Skylark with machine learning solvers Build type</td>
+<td>Build libSkylark with machine learning solvers Build type</td>
 </tr>
 </tbody>
 </table>
@@ -560,7 +560,7 @@ where <tt class="docutils literal"><span class="pre">STRING</span></tt> is any o
 </div>
 <div class="section" id="environment-variables">
 <h3>Environment variables<a class="headerlink" href="#environment-variables" title="Permalink to this headline">¶</a></h3>
-<p>The installation of Skylark can be influenced with two variables:</p>
+<p>The installation of libSkylark can be influenced with two variables:</p>
 <blockquote>
 <div><ul class="simple">
 <li>the CMake parameter <tt class="docutils literal"><span class="pre">CMAKE_INSTALL_PREFIX</span></tt> (i.e. pass <tt class="docutils literal"><span class="pre">-DCMAKE_INSTALL_PREFIX=/home/user/software</span></tt> when calling <strong class="command">cmake</strong>), and</li>
@@ -600,9 +600,9 @@ where <tt class="docutils literal"><span class="pre">STRING</span></tt> is any o
 </tbody>
 </table>
 </div>
-<div class="section" id="configuring-compiling-and-installing-skylark">
-<h3>Configuring, compiling and installing Skylark<a class="headerlink" href="#configuring-compiling-and-installing-skylark" title="Permalink to this headline">¶</a></h3>
-<p>Finally we are ready to configure, compile and install Skylark. The default configuration (compiling Elemental and Python
+<div class="section" id="configuring-compiling-and-installing-libskylark">
+<h3>Configuring, compiling and installing libSkylark<a class="headerlink" href="#configuring-compiling-and-installing-libskylark" title="Permalink to this headline">¶</a></h3>
+<p>Finally we are ready to configure, compile and install libSkylark. The default configuration (compiling Elemental and Python
 support, installed system-wide) can be compiled and installed with:</p>
 <div class="highlight-rst"><div class="highlight"><pre>cd $BUILD_DIR
 CC=mpicc CXX=mpicxx cmake $SRC_DIR
@@ -693,19 +693,19 @@ make test
 <div class="section" id="running-examples">
 <h3>Running examples<a class="headerlink" href="#running-examples" title="Permalink to this headline">¶</a></h3>
 <p>There are two examples in the example folder (for more see python-skylark).
-The elemental.cpp shows how C++ code can utilize skylark. Run</p>
+The elemental.cpp shows how C++ code can utilize libSkylark. Run</p>
 <div class="highlight-rst"><div class="highlight"><pre>examples/elemental -help
 </pre></div>
 </div>
 <p>in the <span class="target" id="index-20"></span><tt class="xref std std-envvar docutils literal"><span class="pre">$BUILD_DIR</span></tt> to get a list of available command line options.</p>
 </div>
-<div class="section" id="linking-against-skylark">
-<h3>Linking against Skylark<a class="headerlink" href="#linking-against-skylark" title="Permalink to this headline">¶</a></h3>
-<p>If you plan to use Skylark as a library in your project, the following steps
+<div class="section" id="linking-against-libskylark">
+<h3>Linking against libSkylark<a class="headerlink" href="#linking-against-libskylark" title="Permalink to this headline">¶</a></h3>
+<p>If you plan to use libSkylark as a library in your project, the following steps
 are necessary to build and link your application:</p>
 <blockquote>
 <div><ul>
-<li><p class="first">add the include path of all Skylark headers: <tt class="file docutils literal"><span class="pre">$</span><em><span class="pre">SKYLARK_INSTALL_DIR</span></em><span class="pre">/include</span></tt> (if configured with <tt class="docutils literal"><span class="pre">-DCMAKE_INSTALL_PREFIX=${SKYLARK_INSTALL_DIR}</span></tt>,</p>
+<li><p class="first">add the include path of all libSkylark headers: <tt class="file docutils literal"><span class="pre">$</span><em><span class="pre">SKYLARK_INSTALL_DIR</span></em><span class="pre">/include</span></tt> (if configured with <tt class="docutils literal"><span class="pre">-DCMAKE_INSTALL_PREFIX=${SKYLARK_INSTALL_DIR}</span></tt>,</p>
 </li>
 <li><dl class="first docutils">
 <dt>link against all external libraries used when building libSkylark (take a look and maybe reuse the find modules in <tt class="file docutils literal"><span class="pre">$</span><em><span class="pre">SRC_DIR</span></em><span class="pre">/CMakeModules</span></tt>:</dt>
@@ -744,7 +744,7 @@ target_link_libraries(ex_code ${SKYLARK_LIBRARIES} )
 set_target_properties(ex_code PROPERTIES COMPILE_FLAGS &quot;${SKYLARK_CXX_FLAGS}&quot; )
 </pre></div>
 </div>
-<p>This will pull all the required libs and add all include paths for Skylark and
+<p>This will pull all the required libs and add all include paths for libSkylark and
 its dependencies. You should be able to compile
 your application painless by following the above recipe.</p>
 </div>
@@ -758,12 +758,12 @@ to see which include directories libraries you have to include when using libSky
 <h2>Software Pitfalls<a class="headerlink" href="#software-pitfalls" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="combblas-installation-notes">
 <h3>CombBLAS Installation Notes<a class="headerlink" href="#combblas-installation-notes" title="Permalink to this headline">¶</a></h3>
-<p>The general steps to use CombBLAS with Skylark:</p>
+<p>The general steps to use CombBLAS with libSkylark:</p>
 <blockquote>
 <div><ul class="simple">
 <li>Download KDT, build and install the python package (generated with SWIG), then</li>
 <li>Download CombBLAS, build and install libs and include files, and finally</li>
-<li>When configuring Skylark, use <tt class="docutils literal"><span class="pre">-DWITH_COMBBLAS=ON</span></tt> in the CMake configure call</li>
+<li>When configuring libSkylark, use <tt class="docutils literal"><span class="pre">-DWITH_COMBBLAS=ON</span></tt> in the CMake configure call</li>
 </ul>
 </div></blockquote>
 <p><strong>Issues with CombBLAS &gt;= 1.4.0</strong></p>

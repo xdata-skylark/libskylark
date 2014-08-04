@@ -38,10 +38,10 @@ Also, in statistical and Machine Learning (ML) settings, approximate solutions c
 formal mechanism to avoid overfitting, that is, a form of regularization.
 
 However, sketching techniques can also be used to precondition standard methods, so that they
-accelerate computations but do not suffer from loss of accuracy. Skylark will also provide sketching
+accelerate computations but do not suffer from loss of accuracy. libSkylark will also provide sketching
 techniques as preconditioners, or accelerators, to a large variety of NLA computations.
 
-Another central goal of Skylark is to serve as a research platform with which to determine the best
+Another central goal of libSkylark is to serve as a research platform with which to determine the best
 sketching techniques in practice from among the many that have been proposed in the theoretical
 literature. This is challenging, because many sketching techniques come with error bounds that are
 asymptotic only, and contain unknown constants. Furthermore, a combination of criteria needs to
@@ -75,7 +75,7 @@ potential to significantly improve the computational efficiency of solving highe
 modeling and machine learning tasks, by essentially replacing calls to traditional NLA kernels with
 their sketching counterparts.
 
-Skylark builds on high-performance Numerical Linear Algebra libraries in C++ for Dense and Sparse Matrices,
+libSkylark builds on high-performance Numerical Linear Algebra libraries in C++ for Dense and Sparse Matrices,
 with a Message Passing Interface (MPI) backend for distributed computations. Organizationally, it comprises of
 three layers. The core is a library of sketching transforms whose main functionality is to enable a variety of
 input matrix types to be sketched, using transforms specialized for various NLA kernels such as least squares
@@ -84,10 +84,10 @@ are being implemented in the Numerical Linear Algebra (NLA) layer.
 
 The accelerated NLA kernels are then used to accelerate higher level machine learning algorithms,
 e.g., kernel-based nonlinear regression, matrix completion and statistical dimensionality reduction
-techniques such as Principal Component Analysis. We also provide Python bindings to Skylark lower
+techniques such as Principal Component Analysis. We also provide Python bindings to libSkylark lower
 layers to enable rapid prototyping of data analysis algorithms, and exploration of the sketching
 design space for optimal performance in a given domain.  Input matrices can also be local numpy or
-scipy arrays for single node execution of Skylark.  We use Python bindings for Elemental and
+scipy arrays for single node execution of libSkylark.  We use Python bindings for Elemental and
 Combinatorial BLAS (through `KDT <http://kdt.sourceforge.net/wiki/index.php/Main_Page>`_).
 
 In the future, we also plan to support a streaming interface for out-of-core sketching and matrix

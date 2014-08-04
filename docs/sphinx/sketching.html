@@ -52,7 +52,7 @@
 <h1>Sketching Layer<a class="headerlink" href="#sketching-layer" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
-<p>&#8216;Sketching&#8217; is the core algorithmic foundation on which Skylark is built, and is
+<p>&#8216;Sketching&#8217; is the core algorithmic foundation on which libSkylark is built, and is
 able to deliver faster NLA kernels and ML algorithms.</p>
 <p>Dimensionality reduction in NLA and ML is often based on building an oblivious
 subspace embedding (OSE). An OSE can be thought of as a data-independent random
@@ -158,7 +158,7 @@ The only restriction when using CombBLAS is that total number of processors
 has to be a square number.</p>
 </div>
 <div class="section" id="libskylark-s-sketching-layer">
-<h2>Libskylark&#8217;s Sketching Layer<a class="headerlink" href="#libskylark-s-sketching-layer" title="Permalink to this headline">¶</a></h2>
+<h2>libSkylark&#8217;s Sketching Layer<a class="headerlink" href="#libskylark-s-sketching-layer" title="Permalink to this headline">¶</a></h2>
 <p>The purpose of the sketching layer is to provide optimized implementations
 of various sketching transforms and for various matrix arrangement in memory
 (e.g. local matrices, distributed matrices, sparse matrices ...).
@@ -247,7 +247,7 @@ the rows and columns of the matrix:
 * MR : Distribute round-robin within each row of the 2D process grid (M atrix R ow)
 * VC : Distribute round-robin within a column-major ordering of the entire 2D process grid (V ector C olumn)
 * VR : Distribute round-robin within a row-major ordering of the entire 2D process grid (V ector R ow)</p>
-<p><em>LocalSparse</em> refers to a libskylark-provided class for representing local
+<p><em>LocalSparse</em> refers to a libSkylark-provided class for representing local
 sparse matrices, while <em>DistSparse</em> refers to CombBLAS sparse matrices.</p>
 <a class="reference internal image-reference" href="_images/sketch_transf_in_out_cpp.png"><img alt="_images/sketch_transf_in_out_cpp.png" class="align-center" src="_images/sketch_transf_in_out_cpp.png" style="width: 750px;" /></a>
 <i>Schematic views of input and output types for various sketch transforms.
@@ -346,7 +346,7 @@ The sketching is done using <em>Johnson-Lindenstrauss (JLT)</em> transform.</p>
 <span class="cm">/* Row distributed Matrix Type */</span>
 <span class="k">typedef</span> <span class="n">elem</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">VC</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="n">DistMatrixType</span><span class="p">;</span>
 
- <span class="cm">/* Initialize skylark context with a seed */</span>
+ <span class="cm">/* Initialize libSkylark context with a seed */</span>
 <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">context_t</span> <span class="n">context</span> <span class="p">(</span><span class="mi">12345</span><span class="p">);</span>
 
 <span class="cm">/* Row distributed Elemental Matrix A of size N x M */</span>

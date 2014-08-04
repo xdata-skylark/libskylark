@@ -44,7 +44,7 @@ interface to start the virtual machine and then login with the
     ``vagrant up`` reruns parts of the bootstrap script.
 
 .. note:: The following environment variables are available after login,
-    pointing to the libskylark source and install directory:
+    pointing to the libSkylark source and install directory:
 
     .. code-block:: sh
 
@@ -67,7 +67,7 @@ Vagrant
 
 Under ``vagrant/precise64`` we provide an easy way to materialize an
 64-bit Ubuntu-based virtual machine (release 12.04 LTS, aka precise) with all
-software dependencies required for a fresh build of Skylark.
+software dependencies required for a fresh build of libSkylark.
 
 The ``Vagrantfile`` is the input to `Vagrant <http://www.vagrantup.com/>`_, a
 program that facilitates the management of virtual machines.
@@ -220,7 +220,7 @@ Numerical Linear algebra and Machine Learning. If not, we refer the
 reader to subsequent sections which provide the necessary background and
 references.
 
-When libskylark is built, executables instantiating these examples can be found
+When libSkylark is built, executables instantiating these examples can be found
 under ``$SKYLARK_INSTALL_DIR/bin/examples`` and
 ``$SKYLARK_INSTALL_DIR/bin/ml``.
 
@@ -292,8 +292,8 @@ In :file:`${SKYLARK_SRC_DIR}/ml/train.cpp` and :file:`${SKYLARK_SRC_DIR}/ml/run.
 setup to train and predict with a randomized kernel based model for
 nonlinear classification and regression problems.
 
-Building libskylark creates an executable called ``skylark_ml`` in
-``$SKYLARK_INSTALL_DIR/bin/ml`` under the libskylark installation folder.
+Building libSkylark creates an executable called ``skylark_ml`` in
+``$SKYLARK_INSTALL_DIR/bin/ml`` under the libSkylark installation folder.
 This executable can be used in standalone mode as follows.
 
 1. Download USPS digit recognition dataset (in various supported formats).

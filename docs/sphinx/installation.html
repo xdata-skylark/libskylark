@@ -498,35 +498,31 @@ following table summarizes all currently available build options:</p>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td>USE_ELEMENTAL</td>
-<td>ON</td>
-<td>Build with Elemental matrix support</td>
-</tr>
-<tr class="row-odd"><td>USE_FFTW</td>
+<tr class="row-even"><td>USE_FFTW</td>
 <td>ON</td>
 <td>Build with fftw support</td>
 </tr>
-<tr class="row-even"><td>USE_COMBBLAS</td>
+<tr class="row-odd"><td>USE_COMBBLAS</td>
 <td>OFF</td>
 <td>Build with CombBLAS sparse matrix support</td>
 </tr>
-<tr class="row-odd"><td>USE_PROFILER</td>
+<tr class="row-even"><td>USE_PROFILER</td>
 <td>OFF</td>
 <td>Build with internal profiler</td>
 </tr>
-<tr class="row-even"><td>USE_HYBRID</td>
+<tr class="row-odd"><td>USE_HYBRID</td>
 <td>OFF</td>
 <td>Build in hybrid mode OpenMP and MPI (if Elemental was compiled in hybrid mode, activate)</td>
 </tr>
-<tr class="row-odd"><td>BUILD_PYTHON</td>
+<tr class="row-even"><td>BUILD_PYTHON</td>
 <td>ON</td>
 <td>Build Python interface</td>
 </tr>
-<tr class="row-even"><td>BUILD_EXAMPLES</td>
+<tr class="row-odd"><td>BUILD_EXAMPLES</td>
 <td>ON</td>
 <td>Build libSkylark examples (see examples directory)</td>
 </tr>
-<tr class="row-odd"><td>BUILD_ML</td>
+<tr class="row-even"><td>BUILD_ML</td>
 <td>ON</td>
 <td>Build libSkylark with machine learning solvers Build type</td>
 </tr>
@@ -1209,7 +1205,7 @@ rm -rf CMakeFiles
 
 <span class="nv">CC</span><span class="o">=</span><span class="nv">$HOME</span>/bgclang/mpi/bgclang/bin/mpiclang <span class="se">\</span>
 <span class="nv">CXX</span><span class="o">=</span><span class="nv">$HOME</span>/bgclang/mpi/bgclang/bin/mpiclang++11 <span class="se">\</span>
-cmake -DUSE_ELEMENTAL<span class="o">=</span>ON -DUSE_FFTW<span class="o">=</span>ON -DUSE_COMBBLAS<span class="o">=</span>ON -DBUILD_PYTHON<span class="o">=</span>OFF -DUSE_HYBRID<span class="o">=</span>ON <span class="se">\</span>
+cmake -DUSE_FFTW<span class="o">=</span>ON -DUSE_COMBBLAS<span class="o">=</span>ON -DBUILD_PYTHON<span class="o">=</span>OFF -DUSE_HYBRID<span class="o">=</span>ON <span class="se">\</span>
 -DBOOST_STATIC<span class="o">=</span>ON ../
 </pre></div>
 </div>

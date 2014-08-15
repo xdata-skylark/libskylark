@@ -6,17 +6,13 @@
 #include <CommGrid.h>
 #endif
 
-#if SKYLARK_HAVE_ELEMENTAL
-#include <elemental.hpp>
-#endif
-
 #include "../utility/external/view.hpp"
 #include "../utility/external/combblas_comm_grid.hpp"
 #include "../utility/external/elemental_comm_grid.hpp"
 
 namespace skylark { namespace base { namespace detail {
 
-#if SKYLARK_HAVE_ELEMENTAL && SKYLARK_HAVE_COMBBLAS
+#if SKYLARK_HAVE_COMBBLAS
 
 /// only compute local product:
 ///   elem(n x k) x local_part_cb(k x m) -> array(n x m)
@@ -294,7 +290,7 @@ inline void outer_panel_mixed_gemm_impl_tn(
                         std::plus<value_type>());
 }
 
-#endif // SKYLARK_HAVE_ELEMENTAL && SKYLARK_HAVE_COMBBLAS
+#endif // SKYLARK_HAVE_COMBBLAS
 
 } } } // namespace skylark::base::detail
 

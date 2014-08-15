@@ -10,11 +10,6 @@
 
 namespace skylark { namespace algorithms {
 
-// We can have a version that is indpendent of Elemental. But that will
-// be tedious (convert between [STAR,STAR] and vector<T>, and really
-// elemental is a very fudmanetal to Skylark.
-#if SKYLARK_HAVE_ELEMENTAL
-
 /**
  * FlexibleCG method.
  *
@@ -27,7 +22,7 @@ namespace skylark { namespace algorithms {
 template<typename MatrixType, typename RhsType, typename SolType>
 int FlexibleCG(const MatrixType& A, const RhsType& B, SolType& X,
     krylov_iter_params_t params = krylov_iter_params_t(),
-    const outplace_precond_t<RhsType, SolType>& M = 
+    const outplace_precond_t<RhsType, SolType>& M =
     outplace_id_precond_t<RhsType, SolType>()) {
 
     int ret;
@@ -153,8 +148,6 @@ int FlexibleCG(const MatrixType& A, const RhsType& B, SolType& X,
 
    return ret;
 }
-
-#endif
 
 } } /** namespace skylark::algorithms */
 

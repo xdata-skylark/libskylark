@@ -29,7 +29,7 @@ class RFT_t {
     typedef OutputMatrixType output_matrix_type;
     typedef RFT_data_t<KernelDistribution> data_type;
 
-    RFT_t(int N, int S, base::context_t& context) 
+    RFT_t(int N, int S, base::context_t& context)
         : data_type(N, S, context) {
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()
@@ -223,8 +223,6 @@ private:
 } } /** namespace skylark::sketch */
 
 
-#if SKYLARK_HAVE_ELEMENTAL
 #include "RFT_Elemental.hpp"
-#endif
 
 #endif // SKYLARK_RFT_HPP

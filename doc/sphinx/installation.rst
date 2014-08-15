@@ -535,7 +535,6 @@ following table summarizes all currently available build options:
 ================ =========== ==========================================================================================
 Name             Default     Description
 ================ =========== ==========================================================================================
-USE_ELEMENTAL     ON          Build with Elemental matrix support
 USE_FFTW          ON          Build with fftw support
 USE_COMBBLAS      OFF         Build with CombBLAS sparse matrix support
 USE_PROFILER      OFF         Build with internal profiler
@@ -1238,7 +1237,7 @@ and compile:
 
     CC=$HOME/bgclang/mpi/bgclang/bin/mpiclang \
     CXX=$HOME/bgclang/mpi/bgclang/bin/mpiclang++11 \
-    cmake -DUSE_ELEMENTAL=ON -DUSE_FFTW=ON -DUSE_COMBBLAS=ON -DBUILD_PYTHON=OFF -DUSE_HYBRID=ON \
+    cmake -DUSE_FFTW=ON -DUSE_COMBBLAS=ON -DBUILD_PYTHON=OFF -DUSE_HYBRID=ON \
     -DBOOST_STATIC=ON ../
 
 .. note:: If you get a ``undefined reference to vtable for std::nested_exception``

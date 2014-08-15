@@ -39,9 +39,7 @@ struct lsqr_tag: public krylov_tag {};
 } // namespace algorithms
 } // namespace skylark
 
-#if SKYLARK_HAVE_ELEMENTAL
 #include "linearl2_regression_solver_Elemental.hpp"
-#endif
 
 #include "linearl2_regression_solver_Krylov.hpp"
 

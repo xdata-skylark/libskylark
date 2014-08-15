@@ -47,7 +47,6 @@ static sketchc::transform_type_t str2transform_type(const char *str) {
 }
 
 // Just for shorter notation
-#if SKYLARK_HAVE_ELEMENTAL
 typedef elem::Matrix<double> Matrix;
 typedef elem::DistMatrix<double, elem::STAR, elem::STAR> SharedMatrix;
 typedef elem::DistMatrix<double, elem::CIRC, elem::CIRC> RootMatrix;
@@ -56,7 +55,6 @@ typedef elem::DistMatrix<double, elem::VR, elem::STAR> DistMatrix_VR_STAR;
 typedef elem::DistMatrix<double, elem::VC, elem::STAR> DistMatrix_VC_STAR;
 typedef elem::DistMatrix<double, elem::STAR, elem::VR> DistMatrix_STAR_VR;
 typedef elem::DistMatrix<double, elem::STAR, elem::VC> DistMatrix_STAR_VC;
-#endif
 typedef base::sparse_matrix_t<double> SparseMatrix;
 #ifdef SKYLARK_HAVE_COMBBLAS
 typedef SpDCCols< size_t, double > col_t;
@@ -72,7 +70,6 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
 #define SKDEF(t,i,o) "(\"" QUOTE(t) "\",\"" QUOTE(i) "\",\"" QUOTE(o) "\") "
 
     return
-#if SKYLARK_HAVE_ELEMENTAL
         SKDEF(JLT, Matrix, Matrix)
         SKDEF(JLT, SparseMatrix, Matrix)
         SKDEF(JLT, DistMatrix, Matrix)
@@ -156,7 +153,6 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
         SKDEF(FastGaussianRFT, SparseMatrix, Matrix)
 #endif
 
-#endif
 
 #ifdef SKYLARK_HAVE_COMBBLAS
         SKDEF(CWT, DistSparseMatrix, DistSparseMatrix)
@@ -173,11 +169,7 @@ SKYLARK_EXTERN_API const char* sl_strerror(const int error_code) {
 }
 
 SKYLARK_EXTERN_API bool sl_has_elemental() {
-#if SKYLARK_HAVE_ELEMENTAL
     return true;
-#else
-    return false;
-#endif
 }
 
 SKYLARK_EXTERN_API bool sl_has_combblas() {
@@ -355,8 +347,6 @@ SKYLARK_EXTERN_API int
         SKYLARK_END_TRY()                                                \
         SKYLARK_CATCH_AND_RETURN_ERROR_CODE();                           \
     }
-
-#if SKYLARK_HAVE_ELEMENTAL
 
     AUTO_APPLY_DISPATCH(sketchc::JLT,
         sketchc::MATRIX, sketchc::MATRIX,
@@ -681,7 +671,6 @@ SKYLARK_EXTERN_API int
         sketch::MMT_t, DistSparseMatrix, DistMatrix_VR_STAR,
         sketch::MMT_data_t);
 #endif
-#endif
 
 #ifdef SKYLARK_HAVE_COMBBLAS
 
@@ -712,24 +701,15 @@ SKYLARK_EXTERN_API int
 
 SKYLARK_EXTERN_API int sl_wrap_raw_matrix(double *data, int m, int n, void **A)
 {
-#if SKYLARK_HAVE_ELEMENTAL
     Matrix *tmp = new Matrix();
     tmp->Attach(m, n, data, m);
     *A = tmp;
     return 0;
-#else
-    return 103;
-#endif
-
 }
 
 SKYLARK_EXTERN_API int sl_free_raw_matrix_wrap(void *A_) {
-#if SKYLARK_HAVE_ELEMENTAL
     delete static_cast<Matrix *>(A_);
     return 0;
-#else
-    return 103;
-#endif
 }
 
 

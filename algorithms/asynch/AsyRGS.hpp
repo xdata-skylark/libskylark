@@ -206,7 +206,7 @@ int AsyRGS(const base::sparse_matrix_t<T1>& A, const elem::Matrix<T2>& B,
                    double relres = sqrt(total_ressqr) / total_nrmb;
                    params.log_stream << "AsyRGS: Sweeps = " << done_sweeps
                                      << ", Relres = "
-                                     << boost::format("%.2e") % relres 
+                                     << boost::format("%.2e") % relres
                                      << ", " << convg << " rhs converged" << std::endl;
                }
 
@@ -235,6 +235,6 @@ int AsyRGS(const base::sparse_matrix_t<T1>& A, const elem::Matrix<T2>& B,
 
 } } // namespace skylark::algorithms
 
-#endif  // if SKYLARK_HAVE_ELEMENTAL && SKYLARK_HAVE_OPENMP
+#endif  // if SKYLARK_HAVE_OPENMP
 
 #endif

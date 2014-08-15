@@ -10,11 +10,6 @@
 
 namespace skylark { namespace algorithms {
 
-// We can have a version that is indpendent of Elemental. But that will
-// be tedious (convert between [STAR,STAR] and vector<T>, and really
-// elemental is a very fudmanetal to Skylark.
-#if SKYLARK_HAVE_ELEMENTAL
-
 /**
  * CG method.
  *
@@ -121,7 +116,7 @@ int CG(const MatrixType& A, const RhsType& B, SolType& X,
             double relres = sqrt(total_ressqr) / total_nrmb;
             params.log_stream << "CG: Iteration " << itn
                               << ", Relres = "
-                              << boost::format("%.2e") % relres 
+                              << boost::format("%.2e") % relres
                               << ", " << convg << " rhs converged" << std::endl;
         }
 
@@ -145,8 +140,6 @@ int CG(const MatrixType& A, const RhsType& B, SolType& X,
 
     return ret;
 }
-
-#endif
 
 } } /** namespace skylark::algorithms */
 

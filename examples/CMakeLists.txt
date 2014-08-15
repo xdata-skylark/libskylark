@@ -1,4 +1,4 @@
-if (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
+if (SKYLARK_HAVE_FFTW)
 
   add_executable(hp_dense hp_dense.cpp)
   target_link_libraries(hp_dense
@@ -46,9 +46,9 @@ if (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
                         ${Boost_LIBRARIES})
   install_targets(/bin/examples rand_svd)
 
-endif (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
+endif (SKYLARK_HAVE_FFTW)
 
-if (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_OPENMP)
+if (SKYLARK_HAVE_OPENMP)
   add_executable(asynch asynch.cpp)
   target_link_libraries(asynch
                         ${Elemental_LIBRARY}
@@ -59,10 +59,10 @@ if (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_OPENMP)
                         ${HDF5_LIBRARIES}
                         ${ZLIB_LIBRARIES})
   install_targets(/bin/examples asynch)
-endif (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_OPENMP)
+endif (SKYLARK_HAVE_OPENMP)
 
 if(FALSE)
-if (SKYLARK_HAVE_COMBBLAS AND SKYLARK_HAVE_ELEMENTAL)
+if (SKYLARK_HAVE_COMBBLAS)
   add_executable(lsqr lsqr.cpp)
   target_link_libraries(lsqr
                         ${Elemental_LIBRARY}
@@ -71,5 +71,5 @@ if (SKYLARK_HAVE_COMBBLAS AND SKYLARK_HAVE_ELEMENTAL)
                         ${Pmrrr_LIBRARY}
                         ${SKYLARK_LIBS}
                         ${Boost_LIBRARIES})
-endif (SKYLARK_HAVE_COMBBLAS AND SKYLARK_HAVE_ELEMENTAL)
+endif (SKYLARK_HAVE_COMBBLAS)
 endif(FALSE)

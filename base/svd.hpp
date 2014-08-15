@@ -1,16 +1,11 @@
 #ifndef SKYLARK_SVD_HPP
 #define SKYLARK_SVD_HPP
 
-#if SKYLARK_HAVE_ELEMENTAL
 #include <elemental.hpp>
-#endif
 
 #include "Gemm.hpp"
 
 namespace skylark { namespace base {
-
-#if SKYLARK_HAVE_ELEMENTAL
-
 
 template<typename T>
 void SVD(elem::Matrix<T>& A, elem::Matrix< elem::Base<T> >& S,
@@ -180,8 +175,6 @@ void SVD(const elem::DistMatrix<T, elem::STAR, elem::VR>& A,
     SVD(A_U_STAR, V, S, U);
 }
 
-
-#endif // SKYLARK_HAVE_ELEMENTAL
 
 } } // namespace skylark::base
 

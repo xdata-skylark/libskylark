@@ -73,16 +73,11 @@ struct hash_transform_t :
 
 } } /** namespace skylark::sketch */
 
-#if SKYLARK_HAVE_ELEMENTAL
 #include "hash_transform_Elemental.hpp"
-#endif
 
 #if SKYLARK_HAVE_COMBBLAS
-#include "hash_transform_CombBLAS.hpp"
-#endif
-
-#if SKYLARK_HAVE_ELEMENTAL and SKYLARK_HAVE_COMBBLAS
 #include "hash_transform_Mixed.hpp"
+#include "hash_transform_CombBLAS.hpp"
 #endif
 
 #include "hash_transform_local_sparse.hpp"

@@ -44,8 +44,6 @@ struct outplace_precond_t {
 };
 
 
-#ifdef SKYLARK_HAVE_ELEMENTAL
-
 /**
  * Inplace identity preconditioner - does nothing!
  */
@@ -112,8 +110,6 @@ struct inplace_tri_inverse_precond_t : public inplace_precond_t<XType> {
         base::Trsm(elem::LEFT, UL, elem::ADJOINT, D, 1.0, R, X);
     }
 };
-
-#endif
 
 } } /** namespace skylark::algorithms */
 

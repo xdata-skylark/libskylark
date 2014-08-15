@@ -10,9 +10,7 @@
 #include "../sketch/capi/sketchc.hpp"
 
 
-#if SKYLARK_HAVE_ELEMENTAL
 #include <elemental.hpp>
-#endif
 
 namespace skylark { namespace nla {
 
@@ -30,7 +28,6 @@ struct rand_svd_params_t {
 };
 
 
-#if SKYLARK_HAVE_ELEMENTAL
 
 template < template <typename, typename> class SketchTransform >
 struct randsvd_t {
@@ -153,7 +150,6 @@ void operator()(InputMatrixType &A,
 }
 };
 
-#endif
 
 } } /** namespace skylark::nla */
 

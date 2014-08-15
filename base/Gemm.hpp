@@ -13,8 +13,6 @@
 
 namespace skylark { namespace base {
 
-#if SKYLARK_HAVE_ELEMENTAL
-
 /**
  * Rename the elemental Gemm function, so that we have unified access.
  */
@@ -35,7 +33,7 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
 
 template<typename T>
 inline void Gemm(elem::Orientation oA, elem::Orientation oB,
-    T alpha, const elem::DistMatrix<T, elem::STAR, elem::STAR>& A, 
+    T alpha, const elem::DistMatrix<T, elem::STAR, elem::STAR>& A,
     const elem::DistMatrix<T, elem::STAR, elem::STAR>& B,
     T beta, elem::DistMatrix<T, elem::STAR, elem::STAR>& C) {
     elem::Gemm(oA, oB, alpha, A.LockedMatrix(), B.LockedMatrix(), beta, C.Matrix());
@@ -551,7 +549,6 @@ void Gemm(elem::Orientation oA, elem::Orientation oB, double alpha,
 }
 
 #endif // SKYLARK_HAVE_COMBBLAS
-#endif // SKYLARK_HAVE_ELEMENTAL
 
 /* All combinations with computed matrix */
 

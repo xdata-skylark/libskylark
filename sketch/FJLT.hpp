@@ -27,7 +27,7 @@ struct FJLT_t :
                  "This combination has not yet been implemented for FJLT"));
     }
 
-    FJLT_t(int N, int S, const params_t& params, base::context_t& context) 
+    FJLT_t(int N, int S, const params_t& params, base::context_t& context)
         : data_type(N, S, params, context) {
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()
@@ -77,8 +77,6 @@ struct FJLT_t :
 
 } } /** namespace skylark::sketch */
 
-#if SKYLARK_HAVE_ELEMENTAL && SKYLARK_HAVE_FFTW
 # include "FJLT_Elemental.hpp"
-#endif
 
 #endif // SKYLARK_FJLT_HPP

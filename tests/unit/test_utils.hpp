@@ -7,12 +7,7 @@
 #include <boost/test/minimal.hpp>
 #endif
 
-#if SKYLARK_HAVE_ELEMENTAL
 #include <elemental.hpp>
-#endif
-
-
-#if SKYLARK_HAVE_ELEMENTAL
 
 template<typename MatrixType>
 MatrixType operator-(MatrixType& A, MatrixType& B) {
@@ -115,7 +110,5 @@ void check(elem::DistMatrix<double, elem::STAR, RowDist>& A,
 
 
 #endif // SKYLARK_HAVE_BOOST
-
-#endif // SKYLARK_HAVE_ELEMENTAL
 
 #endif // TEST_UTILS_HPP

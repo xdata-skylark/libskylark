@@ -5,9 +5,7 @@
 
 #include "config.h"
 
-#if SKYLARK_HAVE_ELEMENTAL
 #include <elemental.hpp>
-#endif
 
 #if SKYLARK_HAVE_COMBBLAS
 #include <CombBLAS.h>
@@ -18,8 +16,6 @@ namespace skylark { namespace utility {
 
 template <typename DataType>
 struct print_t { };
-
-#if SKYLARK_HAVE_ELEMENTAL
 
 template <typename ValueType>
 struct print_t <elem::Matrix<ValueType> > {
@@ -112,7 +108,6 @@ struct print_t <elem::DistMatrix<ValueType, CD, RD> > {
   }
 };
 
-#endif
 
 #if SKYLARK_HAVE_COMBBLAS
 

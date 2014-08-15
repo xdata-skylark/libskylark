@@ -9,11 +9,6 @@
 
 namespace skylark { namespace algorithms {
 
-// We can have a version that is indpendent of Elemental. But that will
-// be tedious (convert between [STAR,STAR] and vector<T>, and really
-// elemental is a very fudmanetal to Skylark.
-#if SKYLARK_HAVE_ELEMENTAL
-
 /**
  * Chebyshev Semi-Iterative method.
  *
@@ -87,8 +82,6 @@ void ChebyshevLS(const MatrixType& A, const RhsType& B, SolType& X,
         base::Gemm(elem::NORMAL, elem::NORMAL, -alpha, A, V, 1.0, R);
     }
 }
-
-#endif
 
 } } /** namespace skylark::algorithms */
 

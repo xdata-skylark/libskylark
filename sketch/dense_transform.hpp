@@ -17,7 +17,7 @@ class dense_transform_t :
     typedef OutputMatrixType output_matrix_type;
     typedef dense_transform_data_t<ValueDistribution> data_type;
 
-    dense_transform_t(int N, int S, base::context_t& context) 
+    dense_transform_t(int N, int S, base::context_t& context)
         : data_type(N, S, context) {
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()
@@ -63,8 +63,6 @@ class dense_transform_t :
 
 } } /** namespace skylark::sketch */
 
-#if SKYLARK_HAVE_ELEMENTAL
 #include "dense_transform_Elemental.hpp"
-#endif
 
 #endif // SKYLARK_DENSE_TRANSFORM_HPP

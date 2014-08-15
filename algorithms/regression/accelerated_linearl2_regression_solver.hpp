@@ -18,7 +18,7 @@ struct linearl2_reg_fast_alg_tag { };
 
 // Simplified Blendenpik just does a single sketch and uses the
 // sketched matrix as a preconditioner.
-template<template <typename, typename> class TransformType, 
+template<template <typename, typename> class TransformType,
          typename PrecondTag = qr_precond_tag>
 struct simplified_blendenpik_tag : public linearl2_reg_fast_alg_tag { };
 
@@ -32,8 +32,6 @@ struct lsrn_tag : public linearl2_reg_fast_alg_tag { };
 
 } }
 
-#if SKYLARK_HAVE_ELEMENTAL
 #include "accelerated_linearl2_regression_solver_Elemental.hpp"
-#endif
 
 #endif // SKYLARK_ACCELERATED_LINEARL2_REGRESSION_SOLVER_HPP

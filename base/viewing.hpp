@@ -3,8 +3,6 @@
 
 namespace skylark { namespace base {
 
-#if SKYLARK_HAVE_ELEMENTAL
-
 template<typename T>
 inline void ColumnView(elem::Matrix<T>& A, elem::Matrix<T>& B,
     int j, int width) {
@@ -32,7 +30,6 @@ const elem::Matrix<T> RowView(const elem::Matrix<T>& B, int i, int height) {
     elem::LockedView(A, B, i, 0, height, B.Width());
     return A;
 }
-#endif
 
 template<typename T>
 inline

@@ -1,8 +1,6 @@
-if(SKYLARK_HAVE_ELEMENTAL)
-  set(DEP_LIBRARIES ${Elemental_LIBRARY})
-endif(SKYLARK_HAVE_ELEMENTAL)
+set(DEP_LIBRARIES ${Elemental_LIBRARY})
 
-if (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
+if (SKYLARK_HAVE_FFTW)
 
   add_executable(sparse_elemental_apply SparseSketchApplyElementalTest.cpp)
   target_link_libraries(sparse_elemental_apply
@@ -23,10 +21,9 @@ if (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
                         ${Boost_LIBRARIES})
   add_test( dense_elemental_apply_test dense_elemental_apply )
 
+endif (SKYLARK_HAVE_FFTW)
 
-endif (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_FFTW)
-
-if (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_COMBBLAS)
+if (SKYLARK_HAVE_COMBBLAS)
 
   add_executable(mixed_gemm MixedGemmTest.cpp)
   target_link_libraries(mixed_gemm
@@ -39,7 +36,17 @@ if (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_COMBBLAS)
                         ${Boost_LIBRARIES})
   add_test( mixed_gemm_test mpirun -np 4 ./mixed_gemm )
 
-endif (SKYLARK_HAVE_ELEMENTAL AND SKYLARK_HAVE_COMBBLAS)
+  add_executable(sparse_mixed_apply SparseSketchApplyMixedTest.cpp)
+  target_link_libraries(sparse_mixed_apply
+                        ${SKYLARK_LIBS}
+                        ${Elemental_LIBRARY}
+                        ${FFTW_LIBRARY}
+                        ${Pmrrr_LIBRARY}
+                        ${CombBLAS_LIBRARIES}
+                        ${Boost_LIBRARIES})
+  add_test( sparse_mixed_apply_test mpirun -np 4 ./sparse_mixed_apply )
+
+endif (SKYLARK_HAVE_COMBBLAS)
 
 if (SKYLARK_HAVE_COMBBLAS AND SKYLARK_HAVE_FFTW)
 
@@ -64,18 +71,6 @@ if (SKYLARK_HAVE_COMBBLAS AND SKYLARK_HAVE_FFTW)
 
 endif (SKYLARK_HAVE_COMBBLAS AND SKYLARK_HAVE_FFTW)
 
-if (SKYLARK_HAVE_COMBBLAS AND SKYLARK_HAVE_ELEMENTAL)
-  add_executable(sparse_mixed_apply SparseSketchApplyMixedTest.cpp)
-  target_link_libraries(sparse_mixed_apply
-                        ${SKYLARK_LIBS}
-                        ${Elemental_LIBRARY}
-                        ${FFTW_LIBRARY}
-                        ${Pmrrr_LIBRARY}
-                        ${CombBLAS_LIBRARIES}
-                        ${Boost_LIBRARIES})
-  add_test( sparse_mixed_apply_test mpirun -np 4 ./sparse_mixed_apply )
-endif (SKYLARK_HAVE_COMBBLAS AND SKYLARK_HAVE_ELEMENTAL)
-
 add_executable(local_sparse_apply LocalSparseSketchApply.cpp)
 target_link_libraries( local_sparse_apply
                        ${SKYLARK_LIBS}
@@ -83,6 +78,15 @@ target_link_libraries( local_sparse_apply
                        ${DEP_LIBRARIES}
                        ${Boost_LIBRARIES} )
 add_test( local_sparse_apply_test local_sparse_apply )
+
+add_executable(svd_elemental_test SVDElementalTest.cpp)
+target_link_libraries(svd_elemental_test
+                      ${SKYLARK_LIBS}
+                      ${Elemental_LIBRARY}
+                      ${Pmrrr_LIBRARY}
+                      ${Boost_LIBRARIES})
+add_test( svd_elemental_test svd_elemental_test )
+
 
 find_package(PythonInterp REQUIRED)
 message (STATUS "Using Python interpreter to run tests: {PYTHON_EXECUTABLE}")
@@ -104,14 +108,3 @@ endif(!USE_HYBRID)
     #)
 #endforeach (TEST)
 
-if (SKYLARK_HAVE_ELEMENTAL)
-
-  add_executable(svd_elemental_test SVDElementalTest.cpp)
-  target_link_libraries(svd_elemental_test
-                        ${SKYLARK_LIBS}
-                        ${Elemental_LIBRARY}
-                        ${Pmrrr_LIBRARY}
-                        ${Boost_LIBRARIES})
-  add_test( svd_elemental_test svd_elemental_test )
-
-endif (SKYLARK_HAVE_ELEMENTAL)

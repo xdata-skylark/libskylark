@@ -5,7 +5,7 @@
 #error "Include top-level sketch.hpp instead of including individuals headers"
 #endif
 
-#if SKYLARK_HAVE_FFTW && SKYLARK_HAVE_ELEMENTAL
+#if SKYLARK_HAVE_FFTW
 
 #include <fftw3.h>
 
@@ -151,9 +151,9 @@ struct fft_futs<float> {
 
 } } /** namespace skylark::sketch */
 
-#endif // SKYLARK_HAVE_FFTW && SKYLARK_HAVE_ELEMENTAL
+#endif // SKYLARK_HAVE_FFTW
 
-#if SKYLARK_HAVE_SPIRALWHT && SKYLARK_HAVE_ELEMENTAL
+#if SKYLARK_HAVE_SPIRALWHT
 
 
 extern "C" {
@@ -250,6 +250,6 @@ private:
 
 } } /** namespace skylark::sketch */
 
-#endif // SKYLARK_HAVE_SPIRALWHT && SKYLARK_HAVE_ELEMENTAL
+#endif // SKYLARK_HAVE_SPIRALWHT
 
 #endif // SKYLARK_FUT_HPP

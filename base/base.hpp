@@ -3,9 +3,7 @@
 
 #include "config.h"
 
-#if SKYLARK_HAVE_ELEMENTAL
 #include <elemental.hpp>
-#endif
 
 #if SKYLARK_HAVE_COMBBLAS
 #include <CombBLAS.h>

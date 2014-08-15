@@ -6,8 +6,6 @@
 
 // Defines a generic Gemv function that recieves a wider set of matrices
 
-#if SKYLARK_HAVE_ELEMENTAL
-
 namespace skylark { namespace base {
 
 template<typename T>
@@ -152,6 +150,5 @@ inline void Gemv(elem::Orientation oA,
 
 } } // namespace skylark::base
 
-#endif // SKYLARK_HAVE_ELEMENTAL
 
 #endif // SKYLARK_GEMV_HPP

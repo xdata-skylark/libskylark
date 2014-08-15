@@ -86,7 +86,6 @@ struct combblas_slab_view_t {
             return static_cast<value_type>(0);
     }
 
-#ifdef SKYLARK_HAVE_ELEMENTAL
     /**
      *  Extract a Elemental view of CombBLAS COLUMNS. The distribution of the
      *  Elemental view is determined by the distribution of the input matrix
@@ -265,7 +264,6 @@ struct combblas_slab_view_t {
         std::set<index_type> indices;
         _set_view(per_proc_data, indices);
     }
-#endif
 
     /**
      *  Extract the same full (redundantly stored) column view of the CombBLAS

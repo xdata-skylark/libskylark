@@ -7,9 +7,7 @@
 #include <CombBLAS.h>
 #endif
 
-#if SKYLARK_HAVE_ELEMENTAL
 #include <elemental.hpp>
-#endif
 
 namespace skylark { namespace utility {
 
@@ -77,8 +75,6 @@ struct empty_matrix_t <SpParMat<IndexType,
 
 #endif // SKYLARK_HAVE_COMBBLAS
 
-#if SKYLARK_HAVE_ELEMENTAL
-
 template <typename ValueType>
 struct empty_matrix_t <elem::Matrix<ValueType> > {
   typedef int index_t;
@@ -105,8 +101,6 @@ struct empty_matrix_t <elem::DistMatrix<ValueType, CD, RD> > {
     return mpi_matrix_t (M, N, grid);
   }
 };
-
-#endif // SKYLARK_HAVE_ELEMENTAL
 
 } } /** namespace skylark::utlity */
 

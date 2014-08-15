@@ -3,8 +3,6 @@
 
 // Defines a generic Trsm function that recieves a wider set of matrices
 
-#if SKYLARK_HAVE_ELEMENTAL
-
 namespace skylark { namespace base {
 
 template<typename T>
@@ -40,7 +38,5 @@ inline void Trsm(elem::LeftOrRight s, elem::UpperOrLower ul,
 }
 
 } } // namespace skylark::base
-
-#endif // SKYLARK_HAVE_ELEMENTAL
 
 #endif // SKYLARK_TRSM_HPP

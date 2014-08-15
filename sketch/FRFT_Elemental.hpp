@@ -4,7 +4,7 @@
 namespace skylark {
 namespace sketch {
 
-#if SKYLARK_HAVE_ELEMENTAL && (SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT)
+#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT
 
 /**
  * Specialization local input (sparse of dense), local output.
@@ -253,7 +253,7 @@ private:
 
 };
 
-#endif // SKYLARK_HAVE_ELEMENTAL && (SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT)
+#endif // SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT
 
 } } /** namespace skylark::sketch */
 

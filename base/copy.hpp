@@ -5,8 +5,6 @@ namespace skylark { namespace base {
 
 // TODO copy sparse to sparse.
 
-#if SKYLARK_HAVE_ELEMENTAL
-
 template<typename T>
 inline void Copy(const elem::Matrix<T>& A, elem::Matrix<T>& B) {
     elem::Copy(A, B);
@@ -37,8 +35,6 @@ template<typename T>
 inline void DenseCopy(const elem::Matrix<T>& A, elem::Matrix<T>& B) {
     elem::Copy(A, B);
 }
-
-#endif
 
 } } // namespace skylark::base
 

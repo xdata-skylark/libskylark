@@ -20,8 +20,6 @@ struct RFUT_t {
 
 } } /** namespace skylark::sketch */
 
-#if SKYLARK_HAVE_ELEMENTAL
 # include "RFUT_Elemental.hpp"
-#endif
 
 #endif // RFUT

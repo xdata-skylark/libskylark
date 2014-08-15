@@ -1,7 +1,7 @@
 #ifndef SKYLARK_PPT_ELEMENTAL_HPP
 #define SKYLARK_PPT_ELEMENTAL_HPP
 
-#if (SKYLARK_HAVE_FFTW || SKYLARK_HAVE_FFTWF) && SKYLARK_HAVE_ELEMENTAL
+#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_FFTWF
 
 #include <fftw3.h>
 
@@ -463,6 +463,6 @@ protected:
 
 } } /** namespace skylark::sketch */
 
-#endif // SKYLARK_HAVE_FFTW && SKYLARK_HAVE_ELEMENTAL
+#endif // SKYLARK_HAVE_FFTW || SKYLARK_HAVE_FFTWF
 
 #endif // PPT_ELEMENTAL_HPP

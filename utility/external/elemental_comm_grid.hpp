@@ -7,7 +7,6 @@
 namespace skylark {
 namespace utility {
 
-#if SKYLARK_HAVE_ELEMENTAL
 #include <elemental.hpp>
 
 /// computes the rank owning the global (row_idx, col_idx) element
@@ -58,8 +57,6 @@ index_type owner(const elem::DistMatrix<value_type, elem::VC, elem::STAR> &A,
 
     return row_idx % (A.Grid().Height() * A.Grid().Width());
 }
-
-#endif //HAVE_ELEMENTAL
 
 } } //namespace skylark::utility
 

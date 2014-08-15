@@ -37,9 +37,6 @@
 /* Do we have OpenMP */
 #cmakedefine SKYLARK_HAVE_OPENMP 1
 
-/* Do we have want to build with Elemental */
-#cmakedefine SKYLARK_HAVE_ELEMENTAL 1
-
 /* Do we have want to build with fftw */
 #cmakedefine SKYLARK_HAVE_FFTW 1
 

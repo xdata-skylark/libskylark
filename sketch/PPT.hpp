@@ -77,8 +77,6 @@ struct PPT_t :
 
 } } /** namespace skylark::sketch */
 
-#if SKYLARK_HAVE_ELEMENTAL
 # include "PPT_Elemental.hpp"
-#endif
 
 #endif // SKYLARK_PPT_HPP

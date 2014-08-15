@@ -25,8 +25,6 @@ class sketched_regression_solver_t {
 } // namespace sketch
 } // namespace skylark
 
-#if SKYLARK_HAVE_ELEMENTAL
 #include "sketched_regression_solver_Elemental.hpp"
-#endif
 
 #endif // SKYLARK_SKETCHED_REGRESSION_SOLVER_HPP

@@ -8,9 +8,7 @@
 #include <CombBLAS.h>
 #endif
 
-#if SKYLARK_HAVE_ELEMENTAL
 #include <elemental.hpp>
-#endif
 
 namespace skylark { namespace utility {
 
@@ -125,7 +123,7 @@ struct uniform_matrix_t <SpParMat<IndexType,
 
 #endif // SKYLARK_HAVE_COMBBLAS and SKYLARK_HAVE_BOOST
 
-#if SKYLARK_HAVE_ELEMENTAL && SKYLARK_HAVE_BOOST
+#if SKYLARK_HAVE_BOOST
 
 template <typename ValueType>
 struct uniform_matrix_t <elem::Matrix<ValueType> > {
@@ -182,7 +180,7 @@ struct uniform_matrix_t <elem::DistMatrix<ValueType, CD, RD> > {
     }
 };
 
-#endif /** SKYLARK_HAVE_ELEMENTAL and SKYLARK_HAVE_BOOST */
+#endif /** SKYLARK_HAVE_BOOST */
 
 } } /** namespace skylark::utlity */
 

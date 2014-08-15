@@ -1,9 +1,7 @@
 #ifndef SKYLARK_TYPER_HPP
 #define SKYLARK_TYPER_HPP
 
-#ifdef SKYLARK_HAVE_ELEMENTAL
 #include <elemental.hpp>
-#endif
 #ifdef SKYLARK_HAVE_COMBBLAS
 #include <CombBLAS.h>
 #endif
@@ -18,7 +16,6 @@ struct typer_t {
 };
 
 
-#ifdef SKYLARK_HAVE_ELEMENTAL
 template<typename F>
 struct typer_t<elem::Matrix<F> > {
     typedef F value_type;
@@ -30,7 +27,6 @@ struct typer_t< elem::DistMatrix<F, CD, RD> > {
     typedef F value_type;
     typedef int index_type;
 };
-#endif
 
 #ifdef SKYLARK_HAVE_COMBBLAS
 template<typename IT, typename VT, typename DT>

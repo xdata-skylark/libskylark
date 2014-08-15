@@ -29,7 +29,7 @@ class RLT_t {
     typedef OutputMatrixType output_matrix_type;
     typedef RLT_data_t<KernelDistribution> data_type;
 
-    RLT_t(int N, int S, base::context_t& context) 
+    RLT_t(int N, int S, base::context_t& context)
         : data_type(N, S, context) {
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()
@@ -151,8 +151,6 @@ private:
 } } /** namespace skylark::sketch */
 
 
-#if SKYLARK_HAVE_ELEMENTAL
 #include "RLT_Elemental.hpp"
-#endif
 
 #endif // SKYLARK_RLT_HPP

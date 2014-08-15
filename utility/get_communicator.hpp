@@ -12,9 +12,7 @@
 #endif
 
 
-#if SKYLARK_HAVE_ELEMENTAL
 #include <elemental.hpp>
-#endif
 
 #include <boost/mpi.hpp>
 
@@ -30,8 +28,6 @@ mpi::communicator get_communicator(const base::sparse_matrix_t<T>& A,
     return mpi::communicator(MPI_COMM_SELF, kind);
 }
 
-#if SKYLARK_HAVE_ELEMENTAL
-
 template<typename T>
 mpi::communicator get_communicator(const elem::Matrix<T>& A,
     mpi::comm_create_kind kind = mpi::comm_attach) {
@@ -43,8 +39,6 @@ mpi::communicator get_communicator(const elem::DistMatrix<T, U, V>& A,
     mpi::comm_create_kind kind = mpi::comm_attach) {
     return mpi::communicator(A.DistComm(), kind);
 }
-
-#endif // SKYLARK_HAVE_ELEMENTAL
 
 
 #if SKYLARK_HAVE_COMBBLAS

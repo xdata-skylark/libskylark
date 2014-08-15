@@ -3,8 +3,6 @@
 
 #include <boost/mpi.hpp>
 
-#if SKYLARK_HAVE_ELEMENTAL
-
 namespace skylark { namespace base {
 
 template<typename T>
@@ -130,7 +128,7 @@ inline void ColumnDot(const elem::DistMatrix<T, elem::VC, elem::STAR>& A,
     const elem::Matrix<T> &Al = A.LockedMatrix();
     const double *a = Al.LockedBuffer();
     const elem::Matrix<T> &Bl = B.LockedMatrix();
-    const double *b = Bl.LockedBuffer(); 
+    const double *b = Bl.LockedBuffer();
    for(int j = 0; j < Al.Width(); j++) {
         n[j] = 0.0;
         for(int i = 0; i < Al.Height(); i++)
@@ -161,7 +159,5 @@ inline void RowDot(const elem::Matrix<T>& A, const elem::Matrix<T>& B,
 }
 
 } } // namespace skylark::base
-
-#endif // SKYLARK_HAVE_ELEMENTAL
 
 #endif // SKYLARK_INNER_HPP

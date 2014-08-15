@@ -4,8 +4,6 @@
 namespace skylark { namespace base {
 
 
-#if SKYLARK_HAVE_ELEMENTAL
-
 template<typename T>
 inline void Zero(elem::Matrix<T>& A) {
     elem::Zero(A);
@@ -18,14 +16,14 @@ inline void Zero(elem::DistMatrix<T, U, V>& A) {
 
 
 template<typename T>
-inline void DiagonalScale(elem::LeftOrRight s, elem::Orientation o, 
+inline void DiagonalScale(elem::LeftOrRight s, elem::Orientation o,
     const elem::Matrix<T>& d, elem::Matrix<T>& X) {
     elem::DiagonalScale(s, o, d, X);
 }
 
-template<typename T, elem::Distribution U, elem::Distribution V, 
+template<typename T, elem::Distribution U, elem::Distribution V,
          elem::Distribution W, elem::Distribution Z>
-inline void DiagonalScale(elem::LeftOrRight s, elem::Orientation o, 
+inline void DiagonalScale(elem::LeftOrRight s, elem::Orientation o,
     const elem::DistMatrix<T, U, V>& d, elem::DistMatrix<T, W, Z>& X) {
     elem::DiagonalScale(s, o, d, X);
 }
@@ -78,7 +76,6 @@ inline void Scal(const T s, elem::DistMatrix<T, U, V>& X) {
     elem::Scal(s, X);
 }
 
-#endif
 
 } } // namespace skylark::base
 

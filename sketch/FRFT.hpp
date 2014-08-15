@@ -20,7 +20,7 @@ namespace skylark { namespace sketch {
  * ICML 2013.
  */
 template < typename InputMatrixType,
-           typename OutputMatrixType = InputMatrixType> 
+           typename OutputMatrixType = InputMatrixType>
 class FastRFT_t :
     public FastGaussianRFT_data_t,
     virtual public sketch_transform_t<InputMatrixType, OutputMatrixType > {
@@ -143,8 +143,6 @@ private:
 } } /** namespace skylark::sketch */
 
 
-#if SKYLARK_HAVE_ELEMENTAL
 #include "FRFT_Elemental.hpp"
-#endif
 
 #endif // SKYLARK_FRFT_HPP

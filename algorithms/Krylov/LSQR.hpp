@@ -11,11 +11,6 @@
 namespace skylark {
 namespace algorithms {
 
-// We can have a version that is indpendent of Elemental. But that will
-// be tedious (convert between [STAR,STAR] and vector<T>, and really
-// elemental is a very fudmanetal to Skylark.
-#if SKYLARK_HAVE_ELEMENTAL
-
 /**
  * LSQR method.
  *
@@ -147,7 +142,7 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
         for (index_t i=0; i<k; ++i) {
             rho[i] = sqrt((rhobar[i]*rhobar[i]) + (beta[i]*beta[i]));
             cs[i] = rhobar[i]/rho[i];
-            sn[i] =  beta[i]/rho[i];  
+            sn[i] =  beta[i]/rho[i];
             theta[i] = sn[i]*alpha[i];
             rhobar[i] = -cs[i]*alpha[i];
             phi[i] = cs[i]*phibar[i];
@@ -175,7 +170,7 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
             nrm_ar[i] = std::abs(phibar[i]*alpha[i]*cs[i]);
 
             if (log_lev2)
-                params.log_stream << "LSQR: Iteration " << i << "/" << itn 
+                params.log_stream << "LSQR: Iteration " << i << "/" << itn
                                   << ": " << nrm_ar[i]
                                   << std::endl;
 
@@ -248,8 +243,6 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
 
     return -6;
 }
-
-#endif
 
 } } /** namespace skylark::algorithms */
 

@@ -1,8 +1,6 @@
 #ifndef SKYLARK_ELEM_EXTENDER_HPP
 #define SKYLARK_ELEM_EXTENDER_HPP
 
-#if SKYLARK_HAVE_ELEMENTAL
-
 #include <elemental.hpp>
 
 #include "typer.hpp"
@@ -40,7 +38,6 @@ public:
     }
 };
 
-#endif
 
 } }
 #endif

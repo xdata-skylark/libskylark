@@ -26,6 +26,7 @@ int main(int argc, char** argv) {
 
     // Parse options
     double gamma, alpha, epsilon;
+    bool recursive;
     std::string graphfile;
     std::vector<int> seeds;
     bpo::options_description
@@ -39,11 +40,15 @@ int main(int argc, char** argv) {
             bpo::value<std::vector<int> >(&seeds),
             "Seed node. Use multiple times for multiple seeds. "
             "Node numbers begin at 1. REQUIRED.")
+        ("recursive,r",
+            bpo::value<bool>(&recursive)->default_value(true),
+            "Whether to try to recursively improve clusters "
+            "(use cluster found as a seed)" )
         ("gamma",
             bpo::value<double>(&gamma)->default_value(5.0),
             "Time to derive the diffusion. As gamma->inf we get closer to ppr.")
         ("alpha",
-            bpo::value<double>(&alpha)->default_value(0.8),
+            bpo::value<double>(&alpha)->default_value(0.85),
             "PPR component parameter. alpha=1 will result in pure heat-kernel.")
         ("epsilon",
             bpo::value<double>(&epsilon)->default_value(0.001),
@@ -93,7 +98,8 @@ int main(int argc, char** argv) {
 
     timer.restart();
     std::vector<int> cluster;
-    double cond = skyml::FindLocalCluster(A, seeds, cluster, alpha, gamma, epsilon);
+    double cond = skyml::FindLocalCluster(A, seeds, cluster,
+        alpha, gamma, epsilon, recursive);
     std::cout <<"Analysis complete! Took "
               << boost::format("%.2e") % timer.elapsed() << " sec\n";
     std::cout << "Cluster found (node numbers begin at 1):" << std::endl;

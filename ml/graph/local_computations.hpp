@@ -178,64 +178,77 @@ void LocalGraphDiffusion(const base::sparse_matrix_t<T>& A,
 template<typename T>
 double FindLocalCluster(const base::sparse_matrix_t<T>& A,
     const std::vector<int>& seeds, std::vector<int>& cluster,
-    double alpha, double gamma, double epsilon) {
+    double alpha, double gamma, double epsilon, bool recursive = true) {
 
     // Structures of A
     const int *indptr = A.indptr();
     const int *indices = A.indices();
 
-    // Create seed vector.
-    int sindptr[2] = {0, static_cast<int>(seeds.size())};
-    base::sparse_matrix_t<double> s;
-    s.attach(sindptr, seeds.data(), nullptr, seeds.size(), A.height(), 1);
+    double currentcond = 0;
+    cluster = seeds;
 
-    // Run the diffusion
-    base::sparse_matrix_t<double> y;
-    LocalGraphDiffusion(A, s, y, alpha, gamma, epsilon);
+    while(true) {
+        // Create seed vector.
+        int sindptr[2] = {0, static_cast<int>(cluster.size())};
+        base::sparse_matrix_t<double> s;
+        s.attach(sindptr, cluster.data(), nullptr, cluster.size(), A.height(), 1);
 
-    // Sort (descending) the non-zero components based on their normalized
-    // y values (normalized by degree).
-    std::vector<std::pair<double, int> > vals(y.nonzeros());
-    const double *yvalues = y.locked_values();
-    const int *yindices = y.indices();
-    for(int i = 0; i < y.nonzeros(); i++) {
-        int idx = yindices[i];
-        double val = - yvalues[i] / (indptr[idx + 1] - indptr[idx]);
-        vals[i] = std::pair<double, int>(val, idx);
-    }
-    std::sort(vals.begin(), vals.end());
+        // Run the diffusion
+        base::sparse_matrix_t<double> y;
+        LocalGraphDiffusion(A, s, y, alpha, gamma, epsilon);
 
-    // Find the best prefix
-    int volS = 0, cutS = 0;
-    double bestcond = 1.0;
-    int bestprefix = 0;
-    int Gvol = A.nonzeros();
-    std::unordered_set<int> currentset;
-    for (int i = 0; i < vals.size(); i++) {
-        int node = vals[i].second;
-        volS += indptr[node + 1] - indptr[node];
-        for(int l = indptr[node]; l < indptr[node+1]; l++) {
-            int onode = indices[l];
-            if (currentset.count(onode))
-                cutS--;
-            else
-                cutS++;
+        // Sort (descending) the non-zero components based on their normalized
+        // y values (normalized by degree).
+        std::vector<std::pair<double, int> > vals(y.nonzeros());
+        const double *yvalues = y.locked_values();
+        const int *yindices = y.indices();
+        for(int i = 0; i < y.nonzeros(); i++) {
+            int idx = yindices[i];
+            double val = - yvalues[i] / (indptr[idx + 1] - indptr[idx]);
+            vals[i] = std::pair<double, int>(val, idx);
+        }
+        std::sort(vals.begin(), vals.end());
+
+        // Find the best prefix
+        int volS = 0, cutS = 0;
+        double bestcond = 1.0;
+        int bestprefix = 0;
+        int Gvol = A.nonzeros();
+        std::unordered_set<int> currentset;
+        for (int i = 0; i < vals.size(); i++) {
+            int node = vals[i].second;
+            volS += indptr[node + 1] - indptr[node];
+            for(int l = indptr[node]; l < indptr[node+1]; l++) {
+                int onode = indices[l];
+                if (currentset.count(onode))
+                    cutS--;
+                else
+                    cutS++;
+            }
+
+            double condS =
+                static_cast<double>(cutS) / std::min(volS, Gvol - volS);
+            if (condS < bestcond) {
+                bestcond = condS;
+                bestprefix = i;
+            }
+            currentset.insert(node);
         }
 
-        double condS = static_cast<double>(cutS) / std::min(volS, Gvol - volS);
-        if (condS < bestcond) {
-            bestcond = condS;
-            bestprefix = i;
-        }
-        currentset.insert(node);
+        if (currentcond == 0 || bestcond < 0.999999 * currentcond) {
+            // We have a new best cluster - the best perfix.
+            cluster.clear();
+            for(int i = 0; i <= bestprefix; i++)
+                cluster.push_back(vals[i].second);
+            currentcond = bestcond;
+
+            if (!recursive)
+                break;
+        } else
+            break;
     }
 
-    // Output is nodes the best prefix.
-    cluster.clear();
-    for(int i = 0; i <= bestprefix; i++)
-        cluster.push_back(vals[i].second);
-
-    return bestcond;
+    return currentcond;
 }
 
 } }   // namespace skylark::ml

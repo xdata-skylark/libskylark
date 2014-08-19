@@ -9,6 +9,7 @@
 
 
 #include <unordered_map>
+#include <unordered_set>
 #include <queue>
 
 namespace skylark { namespace ml {
@@ -50,7 +51,7 @@ void LocalGraphDiffusion(const base::sparse_matrix_t<T>& A,
     for (int i = 0; i < nseeds; i++) {
         elem::Matrix<T> *f = new elem::Matrix<T>(N+1, 1);
         for(int j = 0; j <= N; j++)
-            f->Set(j, 0, svalues[i]);
+            f->Set(j, 0, svalues != nullptr ? svalues[i] : 1.0);
         yf[seeds[i]] = f;
     }
 
@@ -161,14 +162,88 @@ void LocalGraphDiffusion(const base::sparse_matrix_t<T>& A,
         it = it+1;
     }
 
-    // Free memory
-    for(typename std::unordered_map<int, elem::Matrix<T>*>::iterator it =
-            yf.begin(); it != yf.end(); it++)
+    // Yank values to y, freeing yf in the process.
+    int *yindptr = new int[2]; yindptr[0] = 0; yindptr[1] = yf.size();
+    int *yindices = new int[yf.size()];
+    double *yvalues = new double[yf.size()];
+    int idx = 0;
+    for(auto it = yf.begin(); it != yf.end(); it++) {
+        yindices[idx] = it->first;
+        yvalues[idx] = it->second->Get(0, 0);
         delete it->second;
-    for(typename std::unordered_map<int, respair_t>::iterator it =
-            res.begin(); it != res.end(); it++)
+        idx++;
+    }
+    y.attach(yindptr, yindices, yvalues, yf.size(), A.height(), 1, true);
+
+    // Free res
+    for(auto it = res.begin(); it != res.end(); it++)
         delete it->second.second;
 }
+
+
+template<typename T>
+double FindLocalCluster(const base::sparse_matrix_t<T>& A,
+    const std::vector<int>& seeds, std::vector<int>& cluster,
+    double alpha, double gamma, double epsilon) {
+
+    // Structures of A
+    const int *indptr = A.indptr();
+    const int *indices = A.indices();
+
+    // Create seed vector.
+    int sindptr[2] = {0, static_cast<int>(seeds.size())};
+    base::sparse_matrix_t<double> s;
+    s.attach(sindptr, seeds.data(), nullptr, 1, A.height(), 1);
+
+    // Run the diffusion
+    base::sparse_matrix_t<double> y;
+    LocalGraphDiffusion(A, s, y, alpha, gamma, epsilon);
+
+    // Sort (descending) the non-zero components based on their normalized
+    // y values (normalized by degree).
+    std::vector<std::pair<double, int> > vals(y.nonzeros());
+    const double *yvalues = y.locked_values();
+    const int *yindices = y.indices();
+    for(int i = 0; i < y.nonzeros(); i++) {
+        int idx = yindices[i];
+        double val = - yvalues[i] / (indptr[idx + 1] - indptr[idx]);
+        vals[i] = std::pair<double, int>(val, idx);
+    }
+    std::sort(vals.begin(), vals.end());
+
+    // Find the best prefix
+    int volS = 0, cutS = 0;
+    double bestcond = 1.0;
+    int bestprefix = 0;
+    int Gvol = A.nonzeros();
+    std::unordered_set<int> currentset;
+    for (int i = 0; i < vals.size(); i++) {
+        int node = vals[i].second;
+        volS += indptr[node + 1] - indptr[node];
+        for(int l = indptr[node]; l < indptr[node+1]; l++) {
+            int onode = indices[l];
+            if (currentset.count(onode))
+                cutS--;
+            else
+                cutS++;
+        }
+
+        double condS = static_cast<double>(cutS) / std::min(volS, Gvol - volS);
+        if (condS < bestcond) {
+            bestcond = condS;
+            bestprefix = i;
+        }
+        currentset.insert(node);
+    }
+
+    // Output is nodes the best prefix.
+    cluster.clear();
+    for(int i = 0; i <= bestprefix; i++)
+        cluster.push_back(vals[i].second);
+
+    return bestcond;
+}
+
 
 } }
 
@@ -200,22 +275,21 @@ int main(int argc, char** argv) {
     std::cout <<"took " << boost::format("%.2e") % timer.elapsed() << " sec\n";
 
     // TODO get these as parameters
-    int seed = 19043 - 1;
+    std::vector<int> seeds = {19043 - 1};
     double gamma = 5;
     double epsilon = 0.001;
     double alpha = 0.8;
 
-    // Create seed vector.
-    int indptr[2] = {0, 1};
-    int indices[1] = {seed};
-    double values[1] = {1.0};
-    skybase::sparse_matrix_t<double> s;
-    s.attach(indptr, indices, values, 1, A.height(), 1);
-
-    skybase::sparse_matrix_t<double> y;
     timer.restart();
-    skyml::LocalGraphDiffusion(A, s, y, alpha, gamma, epsilon);
-    std::cout <<"Took " << boost::format("%.2e") % timer.elapsed() << " sec\n";
+    std::vector<int> cluster;
+    double cond = skyml::FindLocalCluster(A, seeds, cluster, alpha, gamma, epsilon);
+    std::cout <<"Analysis complete! Took "
+              << boost::format("%.2e") % timer.elapsed() << " sec\n";
+    std::cout << "Cluster found (vertex numbers begin at 1):" << std::endl;
+    for (auto it = cluster.begin(); it != cluster.end(); it++)
+        std::cout << *it + 1 << " ";
+    std::cout << std::endl;
+    std::cout << "Conductivity = " << cond << std::endl;
 
     return 0;
 }

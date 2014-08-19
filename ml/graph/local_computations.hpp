@@ -20,7 +20,8 @@ void LocalGraphDiffusion(const base::sparse_matrix_t<T>& A,
     const double *svalues = s.locked_values();
     int nseeds = s.nonzeros();
 
-    // TODO set N in a better way
+    // TODO set N in a better way. It depends on gamma. For gamma=5, N=15
+    //      is more than enough, but for gamma=100 it is not (N=50 works).
     int N = 15;
 
     const double pi = boost::math::constants::pi<double>();

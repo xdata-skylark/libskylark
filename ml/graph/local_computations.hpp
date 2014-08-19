@@ -187,7 +187,7 @@ double FindLocalCluster(const base::sparse_matrix_t<T>& A,
     // Create seed vector.
     int sindptr[2] = {0, static_cast<int>(seeds.size())};
     base::sparse_matrix_t<double> s;
-    s.attach(sindptr, seeds.data(), nullptr, 1, A.height(), 1);
+    s.attach(sindptr, seeds.data(), nullptr, seeds.size(), A.height(), 1);
 
     // Run the diffusion
     base::sparse_matrix_t<double> y;

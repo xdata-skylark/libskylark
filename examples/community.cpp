@@ -27,7 +27,7 @@ int main(int argc, char** argv) {
     // Parse options
     double gamma, alpha, epsilon;
     std::string graphfile;
-    int seed;
+    std::vector<int> seeds;
     bpo::options_description
         desc("Options:");
     desc.add_options()
@@ -36,8 +36,9 @@ int main(int argc, char** argv) {
             bpo::value<std::string>(&graphfile),
             "File holding the graph. REQUIRED.")
         ("seed,s",
-            bpo::value<int>(&seed),
-            "Seed node (node numbers begin at 1). REQUIRED.")
+            bpo::value<std::vector<int> >(&seeds),
+            "Seed node. Use multiple times for multiple seeds. "
+            "Node numbers begin at 1. REQUIRED.")
         ("gamma",
             bpo::value<double>(&gamma)->default_value(5.0),
             "Time to derive the diffusion. As gamma->inf we get closer to ppr.")
@@ -64,7 +65,7 @@ int main(int argc, char** argv) {
         }
 
         if (!vm.count("seed")) {
-            std::cout << "Seed node is required." << std::endl;
+            std::cout << "At least one seed node is required." << std::endl;
             return -1;
         }
 
@@ -76,6 +77,10 @@ int main(int argc, char** argv) {
     }
 
 
+    // Move from 1-based to 0-based
+    for(auto it = seeds.begin(); it != seeds.end(); it++)
+        (*it)--;
+
     // Load A from HDF5 file
     skybase::sparse_matrix_t<double> A;
     std::cout << "Reading the adjacency matrix... ";
@@ -85,9 +90,6 @@ int main(int argc, char** argv) {
     skyutil::io::ReadHDF5(in, "A", A);
     in.close();
     std::cout <<"took " << boost::format("%.2e") % timer.elapsed() << " sec\n";
-
-    // TODO get list as parameter
-    std::vector<int> seeds = {seed - 1};
 
     timer.restart();
     std::vector<int> cluster;

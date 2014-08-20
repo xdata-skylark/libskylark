@@ -6,8 +6,6 @@
 #include <boost/program_options.hpp>
 #include <skylark.hpp>
 
-#include <H5Cpp.h>
-
 namespace bmpi =  boost::mpi;
 namespace bpo = boost::program_options;
 namespace skybase = skylark::base;
@@ -17,16 +15,36 @@ namespace skyalg = skylark::algorithms;
 namespace skyml = skylark::ml;
 namespace skyutil = skylark::utility;
 
-template<typename T>
-void read_graph(const std::string &graphfile, skybase::sparse_matrix_t<T> &A) {
 
-    std::ifstream in(graphfile);
+struct simple_unweighted_graph_t {
+
+
+    simple_unweighted_graph_t(const std::string &gf);
+
+    ~simple_unweighted_graph_t() {
+        delete[] _out;
+    }
+
+    int num_vertices() const { return _num_vertices; }
+    int num_edges() const { return _num_edges; }
+    int degree(int vertex) const { return _nodepairs.at(vertex).first; }
+    const int *adjanct(int vertex) const { return _nodepairs.at(vertex).second; }
+private:
+    typedef std::pair<int, int *> nodepair_t;
+
+    std::unordered_map<int, nodepair_t> _nodepairs;
+    int *_out;
+    int _num_vertices;
+    int _num_edges;
+};
+
+
+simple_unweighted_graph_t::simple_unweighted_graph_t(const std::string &gf) {
+
+    std::ifstream in(gf);
     std::string line, token;
 
-    int max_vertex = 0;
-    int edges = 0;
-    std::unordered_map<int, int> degs;
-
+    _num_edges = 0;
     while(!in.eof()) {
         getline(in, line);
         if (line[0] == '#')
@@ -34,36 +52,32 @@ void read_graph(const std::string &graphfile, skybase::sparse_matrix_t<T> &A) {
 
         std::istringstream tokenstream(line);
         tokenstream >> token;
-        int i = atoi(token.c_str()) - 1;
+        int i = atoi(token.c_str());
         tokenstream >> token;
-        int j = atoi(token.c_str()) - 1;
+        int j = atoi(token.c_str());
 
         if (i == j)
             continue;
 
-        degs[i]++;
-        degs[j]++;
-        max_vertex = std::max(max_vertex, std::max(i, j));
-        edges += 2;
+        _nodepairs[i].first++;
+        _nodepairs[j].first++;
+        _num_edges += 2;
     }
 
-    std::cout << "Finished first pass. Vertices = " << max_vertex+1
-              << " Edges = " << edges << std::endl;
+    _num_vertices = _nodepairs.size();
 
-    int vertices = max_vertex + 1;
-    int *indptr = new int[vertices + 1];
-    int *indices = new int[edges];
+    std::cout << "Finished first pass. Vertices = " << _num_vertices
+              << " Edges = " << _num_edges << std::endl;
+    _out = new int[_num_edges];
 
-    // Set indptr
+    // Set pointers and zero degrees.
     int count = 0;
-    for(int i = 0; i < vertices; i++) {
-        indptr[i] = count;
-        if (degs.count(i) != 0) {
-            count += degs[i];
-            degs[i] = 0;
-        }
+    for(auto it = _nodepairs.begin(); it != _nodepairs.end(); it++) {
+        int nodeid = it->first;
+        int deg = it->second.first;
+        _nodepairs[nodeid] = nodepair_t(0, _out + count);
+        count += deg;
     }
-    indptr[vertices] = edges;
 
     // Second pass
     in.clear();
@@ -75,21 +89,21 @@ void read_graph(const std::string &graphfile, skybase::sparse_matrix_t<T> &A) {
 
         std::istringstream tokenstream(line);
         tokenstream >> token;
-        int i = atoi(token.c_str()) - 1;
+        int i = atoi(token.c_str());
         tokenstream >> token;
-        int j = atoi(token.c_str()) - 1;
+        int j = atoi(token.c_str());
 
         if (i == j)
             continue;
 
-        indices[indptr[i] + degs[i]] = j;
-        indices[indptr[j] + degs[j]] = i;
+        nodepair_t &npi = _nodepairs[i];
+        npi.second[npi.first] = j;
+        npi.first++;
 
-        degs[i]++;
-        degs[j]++;
+        nodepair_t &npj = _nodepairs[j];
+        npj.second[npj.first] = i;
+        npj.first++;
     }
-
-    A.attach(indptr, indices, nullptr, edges, vertices, vertices, true);
 
     std::cout << "Finished reading... ";
     in.close();
@@ -115,8 +129,7 @@ int main(int argc, char** argv) {
             "File holding the graph. REQUIRED.")
         ("seed,s",
             bpo::value<std::vector<int> >(&seeds),
-            "Seed node. Use multiple times for multiple seeds. "
-            "Node numbers begin at 1. REQUIRED.")
+            "Seed node. Use multiple times for multiple seeds. REQUIRED. ")
         ("recursive,r",
             bpo::value<bool>(&recursive)->default_value(true),
             "Whether to try to recursively improve clusters "
@@ -158,28 +171,22 @@ int main(int argc, char** argv) {
         return -1;
     }
 
-
-    // Move from 1-based to 0-based
-    for(auto it = seeds.begin(); it != seeds.end(); it++)
-        (*it)--;
-
     skybase::sparse_matrix_t<double> A;
     std::cout << "Reading the adjacency matrix... " << std::endl;
     std::cout.flush();
     timer.restart();
-    read_graph(graphfile, A);
+    simple_unweighted_graph_t G(graphfile);
     std::cout <<"took " << boost::format("%.2e") % timer.elapsed() << " sec\n";
 
     timer.restart();
     std::vector<int> cluster;
-    skybase::unweighted_local_graph_adapter_t G(A);
     double cond = skyml::FindLocalCluster(G, seeds, cluster,
         alpha, gamma, epsilon, recursive);
     std::cout <<"Analysis complete! Took "
               << boost::format("%.2e") % timer.elapsed() << " sec\n";
-    std::cout << "Cluster found (node numbers begin at 1):" << std::endl;
+    std::cout << "Cluster found:" << std::endl;
     for (auto it = cluster.begin(); it != cluster.end(); it++)
-        std::cout << *it + 1 << " ";
+        std::cout << *it << " ";
     std::cout << std::endl;
     std::cout << "Conductivity = " << cond << std::endl;
 

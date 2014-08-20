@@ -117,7 +117,7 @@ int main(int argc, char** argv) {
 
     // Parse options
     double gamma, alpha, epsilon;
-    bool recursive;
+    bool recursive, interactive;
     std::string graphfile;
     std::vector<int> seeds;
     bpo::options_description
@@ -127,6 +127,7 @@ int main(int argc, char** argv) {
         ("graphfile,g",
             bpo::value<std::string>(&graphfile),
             "File holding the graph. REQUIRED.")
+        ("interactive,i", "Whether to run in interactive mode.")
         ("seed,s",
             bpo::value<std::vector<int> >(&seeds),
             "Seed node. Use multiple times for multiple seeds. REQUIRED. ")
@@ -154,13 +155,16 @@ int main(int argc, char** argv) {
             return 0;
         }
 
+        interactive = vm.count("interactive");
+
         if (!vm.count("graphfile")) {
             std::cout << "Input graph-file is required." << std::endl;
             return -1;
         }
 
-        if (!vm.count("seed")) {
-            std::cout << "At least one seed node is required." << std::endl;
+        if (!interactive && !vm.count("seed")) {
+            std::cout << "A seed is required in non-interactive mode."
+                      << std::endl;
             return -1;
         }
 
@@ -178,17 +182,39 @@ int main(int argc, char** argv) {
     simple_unweighted_graph_t G(graphfile);
     std::cout <<"took " << boost::format("%.2e") % timer.elapsed() << " sec\n";
 
-    timer.restart();
-    std::vector<int> cluster;
-    double cond = skyml::FindLocalCluster(G, seeds, cluster,
-        alpha, gamma, epsilon, recursive);
-    std::cout <<"Analysis complete! Took "
-              << boost::format("%.2e") % timer.elapsed() << " sec\n";
-    std::cout << "Cluster found:" << std::endl;
-    for (auto it = cluster.begin(); it != cluster.end(); it++)
-        std::cout << *it << " ";
-    std::cout << std::endl;
-    std::cout << "Conductivity = " << cond << std::endl;
+    do {
+        if (interactive) {
+            std::cout << "Please input seeds: ";
+            std::string line;
+            std::getline(std::cin, line);
+            if (line.empty())
+                break;
+
+            seeds.clear();
+            std::stringstream strs(line);
+            int seed;
+            int c = 0;
+            while(strs >> seed) {
+                seeds.push_back(seed);
+                c++;
+                if (c == 200)
+                    exit(-1);
+            }
+        }
+
+
+        timer.restart();
+        std::vector<int> cluster;
+        double cond = skyml::FindLocalCluster(G, seeds, cluster,
+            alpha, gamma, epsilon, recursive);
+        std::cout <<"Analysis complete! Took "
+                  << boost::format("%.2e") % timer.elapsed() << " sec\n";
+        std::cout << "Cluster found:" << std::endl;
+        for (auto it = cluster.begin(); it != cluster.end(); it++)
+            std::cout << *it << " ";
+        std::cout << std::endl;
+        std::cout << "Conductivity = " << cond << std::endl;
+    } while (interactive);
 
     return 0;
 }

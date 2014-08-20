@@ -1,5 +1,5 @@
 #include <iostream>
-
+#include <unordered_map>
 #include <elemental.hpp>
 #include <boost/mpi.hpp>
 #include <boost/format.hpp>
@@ -17,9 +17,85 @@ namespace skyalg = skylark::algorithms;
 namespace skyml = skylark::ml;
 namespace skyutil = skylark::utility;
 
+template<typename T>
+void read_graph(const std::string &graphfile, skybase::sparse_matrix_t<T> &A) {
+
+    std::ifstream in(graphfile);
+    std::string line, token;
+
+    int max_vertex = 0;
+    int edges = 0;
+    std::unordered_map<int, int> degs;
+
+    while(!in.eof()) {
+        getline(in, line);
+        if (line[0] == '#')
+            continue;
+
+        std::istringstream tokenstream(line);
+        tokenstream >> token;
+        int i = atoi(token.c_str()) - 1;
+        tokenstream >> token;
+        int j = atoi(token.c_str()) - 1;
+
+        if (i == j)
+            continue;
+
+        degs[i]++;
+        degs[j]++;
+        max_vertex = std::max(max_vertex, std::max(i, j));
+        edges += 2;
+    }
+
+    std::cout << "Finished first pass. Vertices = " << max_vertex+1
+              << " Edges = " << edges << std::endl;
+
+    int vertices = max_vertex + 1;
+    int *indptr = new int[vertices + 1];
+    int *indices = new int[edges];
+
+    // Set indptr
+    int count = 0;
+    for(int i = 0; i < vertices; i++) {
+        indptr[i] = count;
+        if (degs.count(i) != 0) {
+            count += degs[i];
+            degs[i] = 0;
+        }
+    }
+    indptr[vertices] = edges;
+
+    // Second pass
+    in.clear();
+    in.seekg(0, std::ios::beg);
+    while(!in.eof()) {
+        getline(in, line);
+        if (line[0] == '#')
+            continue;
+
+        std::istringstream tokenstream(line);
+        tokenstream >> token;
+        int i = atoi(token.c_str()) - 1;
+        tokenstream >> token;
+        int j = atoi(token.c_str()) - 1;
+
+        if (i == j)
+            continue;
+
+        indices[indptr[i] + degs[i]] = j;
+        indices[indptr[j] + degs[j]] = i;
+
+        degs[i]++;
+        degs[j]++;
+    }
+
+    A.attach(indptr, indices, nullptr, edges, vertices, vertices, true);
+
+    std::cout << "Finished reading... ";
+    in.close();
+}
 
 int main(int argc, char** argv) {
-
 
     elem::Initialize(argc, argv);
 
@@ -87,14 +163,11 @@ int main(int argc, char** argv) {
     for(auto it = seeds.begin(); it != seeds.end(); it++)
         (*it)--;
 
-    // Load A from HDF5 file
     skybase::sparse_matrix_t<double> A;
-    std::cout << "Reading the adjacency matrix... ";
+    std::cout << "Reading the adjacency matrix... " << std::endl;
     std::cout.flush();
     timer.restart();
-    H5::H5File in(graphfile, H5F_ACC_RDONLY);
-    skyutil::io::ReadHDF5(in, "A", A);
-    in.close();
+    read_graph(graphfile, A);
     std::cout <<"took " << boost::format("%.2e") % timer.elapsed() << " sec\n";
 
     timer.restart();

@@ -7,14 +7,12 @@
 
 namespace skylark { namespace ml {
 
-template<typename T>
-void LocalGraphDiffusion(const base::sparse_matrix_t<T>& A,
+template<typename GraphType, typename T>
+void LocalGraphDiffusion(const GraphType& G,
     const base::sparse_matrix_t<T>& s, base::sparse_matrix_t<T>& y,
     double alpha, double gamma, double epsilon) {
 
     // TODO verify one column in s.
-    const int *indptr = A.indptr();
-    const int *indices = A.indices();
 
     const int *seeds = s.indices();
     const double *svalues = s.locked_values();
@@ -63,14 +61,15 @@ void LocalGraphDiffusion(const base::sparse_matrix_t<T>& A,
         *r = *yf[node];
         elem::Scal(-alpha, *r);
 
-        for (int l = indptr[node]; l < indptr[node+1]; l++) {
-            int onode = indices[l];
-            int deg = indptr[onode + 1] - indptr[onode];
+        int deg = G.degree(node);
+        const int *adjnodes = G.adjanct(node);
+        for (int l = 0; l < deg; l++) {
+            int onode = adjnodes[l];
+            int odeg = G.degree(onode);
             if (yf.count(onode))
-                elem::Axpy(alpha / deg, *yf[onode], *r);
+                elem::Axpy(alpha / odeg, *yf[onode], *r);
         }
 
-        int deg = indptr[node + 1] - indptr[node];
         bool inq = elem::InfinityNorm(*r) > C * deg;
         res[node] = respair_t(inq, r);
         if (inq)
@@ -81,8 +80,10 @@ void LocalGraphDiffusion(const base::sparse_matrix_t<T>& A,
     for (int i = 0; i < nseeds; i++) {
         int seed = seeds[i];
 
-        for(int j = indptr[seed]; j < indptr[seed+1]; j++) {
-            int node = indices[j];
+        int sdeg = G.degree(seed);
+        const int *sadjnodes = G.adjanct(seed);
+        for(int j = 0; j < sdeg; j++) {
+            int node = sadjnodes[j];
             if (res.count(node))
                 continue;
 
@@ -94,14 +95,15 @@ void LocalGraphDiffusion(const base::sparse_matrix_t<T>& A,
                 for(int j = 0; j <= N; j++)
                     r->Set(j, 0, 0.0);
 
-            for (int l = indptr[node]; l < indptr[node+1]; l++) {
-                int onode = indices[l];
-                int deg = indptr[onode + 1] - indptr[onode];
+            int deg = G.degree(node);
+            const int *adjnodes = G.adjanct(node);
+            for (int l = 0; l < deg; l++) {
+                int onode = adjnodes[l];
+                int odeg = G.degree(onode);
                 if (yf.count(onode))
-                    elem::Axpy(alpha / deg, *yf[onode], *r);
+                    elem::Axpy(alpha / odeg, *yf[onode], *r);
             }
 
-            int deg = indptr[node + 1] - indptr[node];
             bool inq = elem::InfinityNorm(*r) > C * deg;
             res[node] = respair_t(inq, r);
             if (inq)
@@ -133,9 +135,10 @@ void LocalGraphDiffusion(const base::sparse_matrix_t<T>& A,
         rpair.first = false;
 
         // Update residuals
-        int deg = indptr[node + 1] - indptr[node];
-        for (int l = indptr[node]; l < indptr[node+1]; l++) {
-            int onode = indices[l];
+        int deg = G.degree(node);
+        const int *adjnodes = G.adjanct(node);
+        for (int l = 0; l < deg; l++) {
+            int onode = adjnodes[l];
             if (res.count(onode) == 0) {
                 elem::Matrix<T> *rnew = new elem::Matrix<T>(N+1, 1);
                 elem::MakeZeros(*rnew);
@@ -146,7 +149,7 @@ void LocalGraphDiffusion(const base::sparse_matrix_t<T>& A,
             elem::Axpy(alpha/deg, dy, r1);
 
             // No need to check if already in queue.
-            int odeg = indptr[onode + 1] - indptr[onode];
+            int odeg = G.degree(onode);
             if (!rpair1.first &&
                 elem::InfinityNorm(*(rpair1.second)) > C * odeg) {
                 rpair1.first = true;
@@ -168,21 +171,17 @@ void LocalGraphDiffusion(const base::sparse_matrix_t<T>& A,
         delete it->second;
         idx++;
     }
-    y.attach(yindptr, yindices, yvalues, yf.size(), A.height(), 1, true);
+    y.attach(yindptr, yindices, yvalues, yf.size(), G.num_vertices(), 1, true);
 
     // Free res
     for(auto it = res.begin(); it != res.end(); it++)
         delete it->second.second;
 }
 
-template<typename T>
-double FindLocalCluster(const base::sparse_matrix_t<T>& A,
+template<typename GraphType>
+double FindLocalCluster(const GraphType& G,
     const std::vector<int>& seeds, std::vector<int>& cluster,
     double alpha, double gamma, double epsilon, bool recursive = true) {
-
-    // Structures of A
-    const int *indptr = A.indptr();
-    const int *indices = A.indices();
 
     double currentcond = 0;
     cluster = seeds;
@@ -191,11 +190,12 @@ double FindLocalCluster(const base::sparse_matrix_t<T>& A,
         // Create seed vector.
         int sindptr[2] = {0, static_cast<int>(cluster.size())};
         base::sparse_matrix_t<double> s;
-        s.attach(sindptr, cluster.data(), nullptr, cluster.size(), A.height(), 1);
+        s.attach(sindptr, cluster.data(), nullptr, cluster.size(),
+            G.num_vertices(), 1);
 
         // Run the diffusion
         base::sparse_matrix_t<double> y;
-        LocalGraphDiffusion(A, s, y, alpha, gamma, epsilon);
+        LocalGraphDiffusion(G, s, y, alpha, gamma, epsilon);
 
         // Sort (descending) the non-zero components based on their normalized
         // y values (normalized by degree).
@@ -204,7 +204,7 @@ double FindLocalCluster(const base::sparse_matrix_t<T>& A,
         const int *yindices = y.indices();
         for(int i = 0; i < y.nonzeros(); i++) {
             int idx = yindices[i];
-            double val = - yvalues[i] / (indptr[idx + 1] - indptr[idx]);
+            double val = - yvalues[i] / G.degree(idx);
             vals[i] = std::pair<double, int>(val, idx);
         }
         std::sort(vals.begin(), vals.end());
@@ -213,13 +213,15 @@ double FindLocalCluster(const base::sparse_matrix_t<T>& A,
         int volS = 0, cutS = 0;
         double bestcond = 1.0;
         int bestprefix = 0;
-        int Gvol = A.nonzeros();
+        int Gvol = G.num_edges();
         std::unordered_set<int> currentset;
         for (int i = 0; i < vals.size(); i++) {
             int node = vals[i].second;
-            volS += indptr[node + 1] - indptr[node];
-            for(int l = indptr[node]; l < indptr[node+1]; l++) {
-                int onode = indices[l];
+            int deg = G.degree(node);
+            const int *adjnodes = G.adjanct(node);
+            volS += deg;
+            for(int l = 0; l < deg; l++) {
+                int onode = adjnodes[l];
                 if (currentset.count(onode))
                     cutS--;
                 else

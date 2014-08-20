@@ -17,6 +17,7 @@ namespace skyalg = skylark::algorithms;
 namespace skyml = skylark::ml;
 namespace skyutil = skylark::utility;
 
+
 int main(int argc, char** argv) {
 
 
@@ -98,7 +99,8 @@ int main(int argc, char** argv) {
 
     timer.restart();
     std::vector<int> cluster;
-    double cond = skyml::FindLocalCluster(A, seeds, cluster,
+    skybase::unweighted_local_graph_adapter_t G(A);
+    double cond = skyml::FindLocalCluster(G, seeds, cluster,
         alpha, gamma, epsilon, recursive);
     std::cout <<"Analysis complete! Took "
               << boost::format("%.2e") % timer.elapsed() << " sec\n";

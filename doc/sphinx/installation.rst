@@ -1016,12 +1016,12 @@ Then use the following toolchain file (e.g. save to `BGQ-toolchain.cmake`)
 
     set(GCC_ROOT  "/bgsys/drivers/ppcfloor/gnu-linux")
     set(GCC_NAME  "powerpc64-bgq-linux")
-    set(CLANG_ROOT "$HOME/bgclang/bin")
-    set(CLANG_MPI_ROOT "$HOME/bgclang/mpi/bgclang")
+    set(CLANG_ROOT "$ENV{HOME}/bgclang/bin")
+    set(CLANG_MPI_ROOT "$ENV{HOME}/bgclang/mpi/bgclang")
     set(IBMCMP_ROOT "$ENV{IBM_MAIN_DIR}")
 
-    set(BLAS_LIB "$HOME/src/lapack-3.5.0/")
-    set(LAPACK_LIB "$HOME/src/lapack-3.5.0/")
+    set(BLAS_LIB "$ENV{HOME}/src/lapack-3.5.0/")
+    set(LAPACK_LIB "$ENV{HOME}/src/lapack-3.5.0/")
     set(ESSL_LIB "/opt/ibmmath/lib64")
 
     set(MPI_ROOT   "/bgsys/drivers/ppcfloor/comm/gcc")
@@ -1063,7 +1063,7 @@ Then use the following toolchain file (e.g. save to `BGQ-toolchain.cmake`)
     set(CMAKE_FIND_ROOT_PATH
         /bgsys/drivers/ppcfloor
         /bgsys/drivers/ppcfloor/spi
-        $HOME/bgclang/mpi/bgclang
+        $ENV{HOME}/bgclang/mpi/bgclang
     )
 
     # adjust the default behaviour of the FIND_XXX() commands:

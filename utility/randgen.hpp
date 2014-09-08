@@ -159,7 +159,7 @@ public:
 
     random_array_t(size_t base, size_t size, int seed)
         : _base(base), _size(size), _key(_seed_to_key(seed)) {
-        if(std::numeric_limits<size_t>::max() - base + 1 < size) {
+        if(std::numeric_limits<size_t>::max() - base < size - 1) {
             std::ostringstream msg;
             msg << "Usupported operation:\n";
             msg << "The random number generator stream cannot supply the ";

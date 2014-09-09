@@ -183,7 +183,7 @@ double FindLocalCluster(const GraphType& G,
     const std::vector<int>& seeds, std::vector<int>& cluster,
     double alpha, double gamma, double epsilon, bool recursive = true) {
 
-    double currentcond = 0;
+    double currentcond = -1;
     cluster = seeds;
 
     while(true) {
@@ -237,7 +237,7 @@ double FindLocalCluster(const GraphType& G,
             currentset.insert(node);
         }
 
-        if (currentcond == 0 || bestcond < 0.999999 * currentcond) {
+        if (currentcond == -1 || bestcond < 0.999999 * currentcond) {
             // We have a new best cluster - the best perfix.
             cluster.clear();
             for(int i = 0; i <= bestprefix; i++)

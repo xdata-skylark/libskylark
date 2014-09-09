@@ -29,6 +29,7 @@ struct simple_unweighted_graph_t {
     int num_edges() const { return _num_edges; }
     int degree(int vertex) const { return _nodepairs.at(vertex).first; }
     const int *adjanct(int vertex) const { return _nodepairs.at(vertex).second; }
+
 private:
     typedef std::pair<int, int *> nodepair_t;
 
@@ -45,8 +46,10 @@ simple_unweighted_graph_t::simple_unweighted_graph_t(const std::string &gf) {
     std::string line, token;
 
     _num_edges = 0;
-    while(!in.eof()) {
+    while(true) {
         getline(in, line);
+        if (in.eof())
+            break;
         if (line[0] == '#')
             continue;
 
@@ -118,7 +121,8 @@ int main(int argc, char** argv) {
     // Parse options
     double gamma, alpha, epsilon;
     bool recursive, interactive;
-    std::string graphfile;
+    std::string graphfile, indexfile;
+    std::vector<std::string> seedss;
     std::vector<int> seeds;
     bpo::options_description
         desc("Options:");
@@ -127,9 +131,12 @@ int main(int argc, char** argv) {
         ("graphfile,g",
             bpo::value<std::string>(&graphfile),
             "File holding the graph. REQUIRED.")
+        ("indexfile,d",
+            bpo::value<std::string>(&indexfile)->default_value(""),
+            "Index files mapping node-ids to strings. OPTIONAL.")
         ("interactive,i", "Whether to run in interactive mode.")
         ("seed,s",
-            bpo::value<std::vector<int> >(&seeds),
+            bpo::value<std::vector<std::string> >(&seedss),
             "Seed node. Use multiple times for multiple seeds. REQUIRED. ")
         ("recursive,r",
             bpo::value<bool>(&recursive)->default_value(true),
@@ -182,6 +189,42 @@ int main(int argc, char** argv) {
     simple_unweighted_graph_t G(graphfile);
     std::cout <<"took " << boost::format("%.2e") % timer.elapsed() << " sec\n";
 
+    bool use_index = !indexfile.empty();
+    std::unordered_map<int, std::string> id_to_name_map;
+    std::unordered_map<std::string, int> name_to_id_map;
+    if (use_index) {
+        use_index = true;
+        skybase::sparse_matrix_t<double> A;
+        std::cout << "Reading index files... ";
+        std::cout.flush();
+        timer.restart();
+
+        std::ifstream in(indexfile);
+        std::string line, token;
+
+        while(true) {
+            getline(in, line);
+            if (in.eof())
+                break;
+
+            if (line[0] == '#')
+                continue;
+
+            std::istringstream tokenstream(line);
+            tokenstream >> token;
+            int node = atoi(token.c_str());
+            tokenstream >> token;
+            std::string name = token;
+
+            id_to_name_map[node] = name;
+            name_to_id_map[name] = node;
+        }
+
+        in.close();
+
+        std::cout <<"took " << boost::format("%.2e") % timer.elapsed() << " sec\n";
+    }
+
     do {
         if (interactive) {
             std::cout << "Please input seeds: ";
@@ -200,6 +243,12 @@ int main(int argc, char** argv) {
                 if (c == 200)
                     exit(-1);
             }
+        } else {
+            for(auto it = seedss.begin(); it != seedss.end(); it++)
+                if (use_index)
+                    seeds.push_back(name_to_id_map[*it]);
+                else
+                    seeds.push_back(atoi(it->c_str()));
         }
 
 
@@ -211,8 +260,12 @@ int main(int argc, char** argv) {
                   << boost::format("%.2e") % timer.elapsed() << " sec\n";
         std::cout << "Cluster found:" << std::endl;
         for (auto it = cluster.begin(); it != cluster.end(); it++)
-            std::cout << *it << " ";
-        std::cout << std::endl;
+            if (use_index)
+                std::cout << id_to_name_map[*it] << std::endl;
+            else
+                std::cout << *it << " ";
+        if (!use_index)
+            std::cout << std::endl;
         std::cout << "Conductivity = " << cond << std::endl;
     } while (interactive);
 

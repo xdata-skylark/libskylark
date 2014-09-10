@@ -182,7 +182,6 @@ int main(int argc, char** argv) {
         return -1;
     }
 
-    skybase::sparse_matrix_t<double> A;
     std::cout << "Reading the adjacency matrix... " << std::endl;
     std::cout.flush();
     timer.restart();
@@ -193,8 +192,6 @@ int main(int argc, char** argv) {
     std::unordered_map<int, std::string> id_to_name_map;
     std::unordered_map<std::string, int> name_to_id_map;
     if (use_index) {
-        use_index = true;
-        skybase::sparse_matrix_t<double> A;
         std::cout << "Reading index files... ";
         std::cout.flush();
         timer.restart();
@@ -212,9 +209,9 @@ int main(int argc, char** argv) {
 
             std::istringstream tokenstream(line);
             tokenstream >> token;
-            int node = atoi(token.c_str());
-            tokenstream >> token;
             std::string name = token;
+            tokenstream >> token;
+            int node = atoi(token.c_str());
 
             id_to_name_map[node] = name;
             name_to_id_map[name] = node;

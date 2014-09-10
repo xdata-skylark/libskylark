@@ -235,13 +235,24 @@ int main(int argc, char** argv) {
 
             seeds.clear();
             std::stringstream strs(line);
-            int seed;
-            int c = 0;
-            while(strs >> seed) {
-                seeds.push_back(seed);
-                c++;
-                if (c == 200)
-                    exit(-1);
+            if (use_index) {
+                std::string seed;
+                int c = 0;
+                while (strs >> seed) {
+                    seeds.push_back(name_to_id_map[seed]);
+                    c++;
+                    if (c == 200)
+                        exit(-1);
+                }
+            } else {
+                int seed;
+                int c = 0;
+                while(strs >> seed) {
+                    seeds.push_back(seed);
+                    c++;
+                    if (c == 200)
+                        exit(-1);
+                }
             }
         } else {
             for(auto it = seedss.begin(); it != seedss.end(); it++)

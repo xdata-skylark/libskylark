@@ -23,7 +23,7 @@ public:
     /**
      * Convenience nicknames for Random123 types
      */
-    typedef r123::Threefry4x64 RNG_t;
+    typedef r123::Threefry2x64_R<13> RNG_t;
     typedef RNG_t::ctr_type ctr_t;
     typedef RNG_t::key_type key_t;
     typedef r123::MicroURNG<RNG_t> URNG_t;
@@ -33,10 +33,9 @@ public:
      */
     static key_t _seed_to_key(int seed) {
         key_t key;
-        for(int i = 1; i < 4; i++)
-            key.v[i] =  static_cast<key_t::value_type>(0);
         key.v[0] = static_cast<key_t::value_type>(seed);
-        return key;
+        key.v[1] = static_cast<key_t::value_type>(0);
+	return key;
     }
 
     random_samples_array_t() :
@@ -107,10 +106,9 @@ public:
                 << base::error_msg(msg.str()) );
         }
         ctr_t ctr;
-        for(int i = 1; i < 4; i++)
-            ctr.v[i] = static_cast<ctr_t::value_type>(0);
         ctr.v[0] = static_cast<ctr_t::value_type>(_base + index);
-        URNG_t urng(ctr, _key);
+        ctr.v[1] = static_cast<ctr_t::value_type>(0);
+	URNG_t urng(ctr, _key);
         Distribution cloned_distribution = _distribution;
         return cloned_distribution(urng);
     }
@@ -132,7 +130,7 @@ public:
     /**
      * Convenience nicknames for Random123 types
      */
-    typedef r123::Threefry4x64 RNG_t;
+    typedef r123::Threefry2x64_R<13> RNG_t;
     typedef RNG_t::ctr_type ctr_t;
     typedef RNG_t::key_type key_t;
     typedef r123::MicroURNG<RNG_t> URNG_t;
@@ -142,10 +140,9 @@ public:
      */
     static key_t _seed_to_key(int seed) {
         key_t key;
-        for(int i = 1; i < 4; i++)
-            key.v[i] =  static_cast<key_t::value_type>(0);
         key.v[0] = static_cast<key_t::value_type>(seed);
-        return key;
+        key.v[1] = static_cast<key_t::value_type>(0);
+	return key;
     }
 
     /**
@@ -182,10 +179,9 @@ public:
                 << base::error_msg(msg.str()) );
         }
         ctr_t ctr;
-        for(int i = 1; i < 4; i++)
-            ctr.v[i] = static_cast<ctr_t::value_type>(0);
         ctr.v[0] = static_cast<ctr_t::value_type>(_base + index);
-        URNG_t urng(ctr, _key);
+        ctr.v[1] = static_cast<ctr_t::value_type>(0);
+	URNG_t urng(ctr, _key);
         return urng();
     }
 

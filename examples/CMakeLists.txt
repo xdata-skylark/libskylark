@@ -36,6 +36,16 @@ if (SKYLARK_HAVE_FFTW)
                         ${Boost_LIBRARIES})
   install_targets(/bin/examples least_squares)
 
+  add_executable(community community)
+  target_link_libraries(community
+                        ${Elemental_LIBRARY}
+                        ${FFTW_LIBRARY}
+                        ${Pmrrr_LIBRARY}
+                        ${SKYLARK_LIBS}
+                        ${Boost_LIBRARIES}
+                        ${HDF5_LIBRARIES}
+                        ${ZLIB_LIBRARIES})
+  install_targets(/bin/examples community)
 
   add_executable(rand_svd rand_svd.cpp)
   target_link_libraries(rand_svd

@@ -61,8 +61,7 @@
 /** Include all NLA routines */
 #include "nla/nla.hpp"
 
-/** TODO: add include to ML routines */
-
-
+/** Include all ML/Data-mining routines */
+#include "ml/ml.hpp"
 
 #endif // SKYLARK_HPP

@@ -32,7 +32,7 @@ struct dense_transform_data_t : public sketch_transform_data_t {
     /**
      * Regular constructor
      */
-    dense_transform_data_t (int N, int S, double scale, 
+    dense_transform_data_t (int N, int S, double scale,
         base::context_t& context)
         : base_t(N, S, context, "DenseTransform"),
           scale(scale), distribution() {
@@ -79,13 +79,15 @@ struct dense_transform_data_t : public sketch_transform_data_t {
 #ifdef SKYLARK_HAVE_OPENMP
 #pragma omp parallel for
 #endif
-        for(int j_loc = 0; j_loc < width; j_loc++) {
-            int j_glob = j + j_loc * row_stride;
-            for (int i_loc = 0; i_loc < height; i_loc++) {
-                int i_glob = i + i_loc * col_stride;
-                value_type sample =
-                    random_samples[j_glob * _S + i_glob];
-                data[j_loc * height + i_loc] = scale * sample;
+        for(size_t j_loc = 0; j_loc < width; j_loc++) {
+            size_t j_glob = j + j_loc * row_stride;
+            for (size_t i_loc = 0; i_loc < height; i_loc++) {
+                size_t i_glob = i + i_loc * col_stride;
+                size_t tmp = j_glob * _S;
+                tmp += i_glob;
+                value_type sample = random_samples[tmp];
+                tmp = j_loc * height;
+                data[tmp + i_loc] = scale * sample;
             }
         }
     }
@@ -144,7 +146,7 @@ struct dense_transform_data_t : public sketch_transform_data_t {
 
 protected:
 
-    dense_transform_data_t (int N, int S, double scale, 
+    dense_transform_data_t (int N, int S, double scale,
         const base::context_t& context, std::string type)
         : base_t(N, S, context, type),
           scale(scale),
@@ -154,7 +156,8 @@ protected:
 
     base::context_t build() {
         base::context_t ctx = base_t::build();
-        random_samples = ctx.allocate_random_samples_array(_N * _S, distribution);
+        size_t array_size = static_cast<size_t>(_N) * static_cast<size_t>(_S);
+        random_samples = ctx.allocate_random_samples_array(array_size, distribution);
         return ctx;
     }
 

@@ -274,7 +274,7 @@ double model_t<InputType, OutputType>::evaluate(OutputType& Yt,
     double accuracy = 0.0;
     int totalcorrect, total;
     boost::mpi::reduce(comm, correct, totalcorrect, std::plus<double>(), 0);
-    boost::mpi::reduce(comm, Yt.Height(), total, std::plus<int>(), 0);
+    boost::mpi::reduce(comm, Yt.Height(), total, std::plus<size_t>(), 0);
 
     if(rank ==0)
         accuracy =  totalcorrect*100.0/total;

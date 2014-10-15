@@ -129,12 +129,13 @@ private:
         // TODO: Allow for different blocksizes in "down" and "right" directions
         int blocksize = get_blocksize();
         if (blocksize == 0) {
-            blocksize = std::min(sketch_of_A.Height(), sketch_of_A.Width());
+	  blocksize = std::min(static_cast<int>(sketch_of_A.Height()), 
+			       static_cast<int>(sketch_of_A.Width()));
         }
         int base = 0;
         while (sketch_of_A_Right.Width() > 0) {
 
-            int b = std::min(sketch_of_A_Right.Width(), blocksize);
+	    int b = std::min(static_cast<int>(sketch_of_A_Right.Width()), blocksize);
             data_type::realize_matrix_view(R1, base, 0,
                                                b,    A.Width());
 
@@ -265,7 +266,7 @@ private:
         int base = 0;
         while (A_Right.Width() > 0) {
 
-            int b = std::min(A_Right.Width(), blocksize);
+	    int b = std::min(static_cast<int>(A_Right.Width()), blocksize);
             data_type::realize_matrix_view(R1, 0,                   base,
                                                sketch_of_A.Width(), b);
 
@@ -362,7 +363,7 @@ private:
         int base = 0;
         while (sketch_of_A_Right.Width() > 0) {
 
-            int b = std::min(sketch_of_A_Right.Width(), blocksize);
+	    int b = std::min(static_cast<int>(sketch_of_A_Right.Width()), blocksize);
             data_type::realize_matrix_view(R1, base, 0,
                                                b,    A.Width());
 

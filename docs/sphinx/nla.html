@@ -10,7 +10,6 @@
     
     <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/print.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -24,17 +23,16 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/theme_extras.js"></script>
     <link rel="top" title="libSkylark  documentation" href="index.html" />
     <link rel="next" title="Machine Learning" href="ml.html" />
     <link rel="prev" title="Sketching Layer" href="sketching.html" /> 
   </head>
-  <body>
-      <div class="header"><h1 class="heading"><a href="index.html">
+  <body role="document">
+      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
           <span>libSkylark  documentation</span></a></h1>
         <h2 class="heading"><span>Numerical Linear Algebra Primitives</span></h2>
       </div>
-      <div class="topnav">
+      <div class="topnav" role="navigation" aria-label="top navigation">
       
         <p>
         «&#160;&#160;<a href="sketching.html">Sketching Layer</a>
@@ -58,7 +56,7 @@ accelerated using sketching.</p>
 provides sketching based linear least-squares regression routines. That is,
 solve equations of the form:</p>
 <div class="math">
-<p><img src="_images/math/8edb9c5ee6bcfc8ad76243c7d1f80e35410ba10f.png" alt="\arg\min_X \|A * X - B\|_F"/></p>
+<p><img src="_images/math/78fe473d4736c4b97480403b9527bf5a86a599d8.png" alt="\arg\min_X \|A * X - B\|_F"/></p>
 </div><p>Note that the various algorithms can be executed directly using the regression API.
 This layer just provides an easy-to-use functional interface that mirror Elemental&#8217;s
 <a class="reference external" href="http://libelemental.org/documentation/0.83/lapack-like/solve.html">LeastSquares</a>
@@ -67,13 +65,13 @@ function, but uses sketching to accelerate the computation.</p>
 <div class="section" id="approximate-least-squares">
 <h3>Approximate Least-squares<a class="headerlink" href="#approximate-least-squares" title="Permalink to this headline">¶</a></h3>
 <p>Solve the problem approximately using a sktech-and-solve strategy.
-Specifically, solve <img class="math" src="_images/math/9e84d84840bea4bd69d19a8315bf6f3b5cab7204.png" alt="\arg\min_X \|S A X -  S B\|_F"/> where <img class="math" src="_images/math/f7820991469af0efa3f8f7e0fed83fbbc3d8aabc.png" alt="S \in R^{s\times n}"/>
+Specifically, solve <img class="math" src="_images/math/478069cbaa494262b8583ab6a5d440d5e2fd27f7.png" alt="\arg\min_X \|S A X -  S B\|_F"/> where <img class="math" src="_images/math/e5f95fc1cde614179b82c3ec15f0bab4fd380591.png" alt="S \in R^{s\times n}"/>
 is a Fast Johnson-Lindenstrauss Transform matrix
 (<a class="reference external" href="http://www.cs.princeton.edu/~chazelle/pubs/FJLT-sicomp09.pdf">Ailon and Chazelle, 2009</a>).
-It can be shown that if <img class="math" src="_images/math/f37bba504894945c07a32f5496d74299a37aa51c.png" alt="s"/> is large enough (as a function of <img class="math" src="_images/math/eaf4418fbe935c15a606516d8f55dc380cd8e822.png" alt="\epsilon"/>), then</p>
+It can be shown that if <img class="math" src="_images/math/6859317dd1b439cef34131bcd4bafee8393444e0.png" alt="s"/> is large enough (as a function of <img class="math" src="_images/math/19bc0073dde1bcd1a8e6a32b251e80cced668f04.png" alt="\epsilon"/>), then</p>
 <div class="math">
-<p><img src="_images/math/8da82870e8328bf142f8067dd8cd78300a1192e0.png" alt="\|A * X_{approx} - B\|_F \leq (1+\epsilon) \|A * X - B\|_F"/></p>
-</div><p>where <img class="math" src="_images/math/df772ce5d20d3132b569f9a55597986a31b53a4f.png" alt="X=\arg\min_X \|A * X - B\|_F"/> and <img class="math" src="_images/math/48c750fdbce2f99e76d1c2e40bd5454a83d85d8f.png" alt="X_{approx}"/> is the approximate solution.
+<p><img src="_images/math/d35e5a4d7744e84d385ef3d8aa39fbfdb8616d7a.png" alt="\|A * X_{approx} - B\|_F \leq (1+\epsilon) \|A * X - B\|_F"/></p>
+</div><p>where <img class="math" src="_images/math/904d5655ba09c07a2d1b26f026d239f8b45f4339.png" alt="X=\arg\min_X \|A * X - B\|_F"/> and <img class="math" src="_images/math/f9fdf75162dc7b0e9eeb2d02d88aa60e98ce39e4.png" alt="X_{approx}"/> is the approximate solution.
 For the best known bounds see <a class="reference external" href="http://arxiv.org/abs/1204.0062">Boutsidis and Gittens (2013)</a>.</p>
 <dl class="docutils">
 <dt>The algorithm used is the one described in:</dt>
@@ -87,24 +85,24 @@ For the best known bounds see <a class="reference external" href="http://arxiv.o
 </ul>
 </dd>
 </dl>
-<p>Unlike the algorithm described in the paper we allow the user to set the size of <img class="math" src="_images/math/f37bba504894945c07a32f5496d74299a37aa51c.png" alt="s"/>.
+<p>Unlike the algorithm described in the paper we allow the user to set the size of <img class="math" src="_images/math/6859317dd1b439cef34131bcd4bafee8393444e0.png" alt="s"/>.
 There is also a default value, but it is much lower than the one suggested by that paper.</p>
-<p>Note: it is assume that a <img class="math" src="_images/math/5eae43ba51c87560a28c4fa2fcf54234ebe9e75a.png" alt="s \times n"/> matrix can fit in the memory of a single node
-(<img class="math" src="_images/math/174fadd07fd54c9afe288e96558c92e0c1da733a.png" alt="n"/> is the number of columns in <img class="math" src="_images/math/019e9892786e493964e145e7c5cf7b700314e53b.png" alt="A"/>).</p>
+<p>Note: it is assume that a <img class="math" src="_images/math/f09fbd65d15c149cd6c1f7ab74f697350039101b.png" alt="s \times n"/> matrix can fit in the memory of a single node
+(<img class="math" src="_images/math/413f8a8e40062a9090d9d50b88bc7b551b314c26.png" alt="n"/> is the number of columns in <img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/>).</p>
 <hr class="docutils" />
 <dl class="function">
-<dt id="ApproximateLeastSquares__elem::Orientation.elem::Matrix:T:CR.elem::Matrix:T:CR.elem::Matrix:T:R.base::context_tR.i">
-void <tt class="descname">ApproximateLeastSquares</tt><big>(</big>elem::Orientation <em>orientation</em>, const elem::Matrix&lt;T&gt;&amp; <em>A</em>, const elem::Matrix&lt;T&gt;&amp; <em>B</em>, elem::Matrix&lt;T&gt;&amp; <em>X</em>, base::context_t&amp; <em>context</em>, int <em>sketch_size</em><em>=-1</em><big>)</big><a class="headerlink" href="#ApproximateLeastSquares__elem::Orientation.elem::Matrix:T:CR.elem::Matrix:T:CR.elem::Matrix:T:R.base::context_tR.i" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPP23ApproximateLeastSquaresN4elem11OrientationERKN4elem6MatrixI1TEERKN4elem6MatrixI1TEERN4elem6MatrixI1TEERN4base9context_tEi">
+void <code class="descclassname"></code><code class="descname">ApproximateLeastSquares</code><span class="sig-paren">(</span>elem::Orientation <em>orientation</em>, <em class="property">const</em> elem::Matrix&lt;T&gt; &amp;<em>A</em>, <em class="property">const</em> elem::Matrix&lt;T&gt; &amp;<em>B</em>, elem::Matrix&lt;T&gt; &amp;<em>X</em>, base::context_t &amp;<em>context</em>, int <em>sketch_size</em> = -1<span class="sig-paren">)</span><a class="headerlink" href="#_CPP23ApproximateLeastSquaresN4elem11OrientationERKN4elem6MatrixI1TEERKN4elem6MatrixI1TEERN4elem6MatrixI1TEERN4base9context_tEi" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="ApproximateLeastSquares__elem::Orientation.elem::DistMatrix:T.elem::VC.elem::STAR:CR.elem::DistMatrix:T.elem::VC.elem::STAR:CR.elem::DistMatrix:T.elem::STAR.elem::STAR:R.base::context_tR.i">
-void <tt class="descname">ApproximateLeastSquares</tt><big>(</big>elem::Orientation <em>orientation</em>, const elem::DistMatrix&lt;T, elem::VC, elem::STAR&gt;&amp; <em>A</em>, const elem::DistMatrix&lt;T, elem::VC, elem::STAR&gt;&amp; <em>B</em>, elem::DistMatrix&lt;T, elem::STAR, elem::STAR&gt;&amp; <em>X</em>, base::context_t&amp; <em>context</em>, int <em>sketch_size</em><em>=-1</em><big>)</big><a class="headerlink" href="#ApproximateLeastSquares__elem::Orientation.elem::DistMatrix:T.elem::VC.elem::STAR:CR.elem::DistMatrix:T.elem::VC.elem::STAR:CR.elem::DistMatrix:T.elem::STAR.elem::STAR:R.base::context_tR.i" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPP23ApproximateLeastSquaresN4elem11OrientationERKN4elem10DistMatrixI1TN4elem2VCEN4elem4STAREEERKN4elem10DistMatrixI1TN4elem2VCEN4elem4STAREEERN4elem10DistMatrixI1TN4elem4STAREN4elem4STAREEERN4base9context_tEi">
+void <code class="descclassname"></code><code class="descname">ApproximateLeastSquares</code><span class="sig-paren">(</span>elem::Orientation <em>orientation</em>, <em class="property">const</em> elem::DistMatrix&lt;T, elem::VC, elem::STAR&gt; &amp;<em>A</em>, <em class="property">const</em> elem::DistMatrix&lt;T, elem::VC, elem::STAR&gt; &amp;<em>B</em>, elem::DistMatrix&lt;T, elem::STAR, elem::STAR&gt; &amp;<em>X</em>, base::context_t &amp;<em>context</em>, int <em>sketch_size</em> = -1<span class="sig-paren">)</span><a class="headerlink" href="#_CPP23ApproximateLeastSquaresN4elem11OrientationERKN4elem10DistMatrixI1TN4elem2VCEN4elem4STAREEERKN4elem10DistMatrixI1TN4elem2VCEN4elem4STAREEERN4elem10DistMatrixI1TN4elem4STAREN4elem4STAREEERN4base9context_tEi" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<p>If <cite>orientation</cite> is set to <tt class="docutils literal"><span class="pre">NORMAL</span></tt>, then approximate <img class="math" src="_images/math/4afb92869ffda8d5f95fe1bd39d151e61969934c.png" alt="\arg\min_X \|A * X - B\|_F"/>, otherwise
-<cite>orientation</cite> must be equal to <tt class="docutils literal"><span class="pre">ADJOINT</span></tt> and <img class="math" src="_images/math/9dafb0a1d4dbf744b40906bb80dbe16f097e41f9.png" alt="\arg\min_X \|A^H * X - B\|_F"/> is approximated.</p>
-<p>sketch_size controls the number of rows in <img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/>.</p>
+<p>If <cite>orientation</cite> is set to <code class="docutils literal"><span class="pre">NORMAL</span></code>, then approximate <img class="math" src="_images/math/485e12a6c8da2e147f54242e795622ddb82bed52.png" alt="\arg\min_X \|A * X - B\|_F"/>, otherwise
+<cite>orientation</cite> must be equal to <code class="docutils literal"><span class="pre">ADJOINT</span></code> and <img class="math" src="_images/math/8447326c551223e636d142d55db5e22ee5cf6496.png" alt="\arg\min_X \|A^H * X - B\|_F"/> is approximated.</p>
+<p>sketch_size controls the number of rows in <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/>.</p>
 <hr class="docutils" />
 <p>A flavor of usage is given in the code snippet below.</p>
 <div class="highlight-cpp"><div class="highlight"><pre><span class="cp">#include &lt;elemental.hpp&gt;</span>
@@ -113,7 +111,7 @@ void <tt class="descname">ApproximateLeastSquares</tt><big>(</big>elem::Orientat
 <span class="c1">// Setup regression problem with coefficient matrix A and target matrix B</span>
 <span class="p">...</span>
 
-<span class="n">skybase</span><span class="o">::</span><span class="n">context_t</span> <span class="n">context</span><span class="p">(</span><span class="mi">23234</span><span class="p">);</span>
+<span class="n">skybase</span><span class="o">::</span><span class="kt">context_t</span> <span class="n">context</span><span class="p">(</span><span class="mi">23234</span><span class="p">);</span>
 
 <span class="c1">// Solve the Least Squres problem of minimizing || AX - B||_2 over X</span>
 <span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="n">ApproximateLeastSquares</span><span class="p">(</span><span class="n">elem</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
@@ -139,16 +137,16 @@ so the solution&#8217;s accuracy is close to the full accuracy possible on a mac
 </ul>
 </dd>
 </dl>
-<p>Note: it is assume that a <img class="math" src="_images/math/1fcabf5d4e40896f23c792895f8a29a5dcb121ba.png" alt="4 n^2"/> matrix can fit in the memory of a single node
-(<img class="math" src="_images/math/174fadd07fd54c9afe288e96558c92e0c1da733a.png" alt="n"/> is the number of columns in <img class="math" src="_images/math/019e9892786e493964e145e7c5cf7b700314e53b.png" alt="A"/>).</p>
+<p>Note: it is assume that a <img class="math" src="_images/math/148b0dbe36192f1c7d3392d5d890527074ab49c2.png" alt="4 n^2"/> matrix can fit in the memory of a single node
+(<img class="math" src="_images/math/413f8a8e40062a9090d9d50b88bc7b551b314c26.png" alt="n"/> is the number of columns in <img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/>).</p>
 <hr class="docutils" />
 <dl class="function">
-<dt id="FastLeastSquares__elem::Orientation.elem::DistMatrix:T.elem::VC.elem::STAR:CR.elem::DistMatrix:T.elem::VC.elem::STAR:CR.elem::DistMatrix:T.elem::STAR.elem::STAR:R.base::context_tR">
-void <tt class="descname">FastLeastSquares</tt><big>(</big>elem::Orientation <em>orientation</em>, const elem::DistMatrix&lt;T, elem::VC, elem::STAR&gt;&amp; <em>A</em>, const elem::DistMatrix&lt;T, elem::VC, elem::STAR&gt;&amp; <em>B</em>, elem::DistMatrix&lt;T, elem::STAR, elem::STAR&gt;&amp; <em>X</em>, base::context_t&amp; <em>context</em><big>)</big><a class="headerlink" href="#FastLeastSquares__elem::Orientation.elem::DistMatrix:T.elem::VC.elem::STAR:CR.elem::DistMatrix:T.elem::VC.elem::STAR:CR.elem::DistMatrix:T.elem::STAR.elem::STAR:R.base::context_tR" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPP16FastLeastSquaresN4elem11OrientationERKN4elem10DistMatrixI1TN4elem2VCEN4elem4STAREEERKN4elem10DistMatrixI1TN4elem2VCEN4elem4STAREEERN4elem10DistMatrixI1TN4elem4STAREN4elem4STAREEERN4base9context_tE">
+void <code class="descclassname"></code><code class="descname">FastLeastSquares</code><span class="sig-paren">(</span>elem::Orientation <em>orientation</em>, <em class="property">const</em> elem::DistMatrix&lt;T, elem::VC, elem::STAR&gt; &amp;<em>A</em>, <em class="property">const</em> elem::DistMatrix&lt;T, elem::VC, elem::STAR&gt; &amp;<em>B</em>, elem::DistMatrix&lt;T, elem::STAR, elem::STAR&gt; &amp;<em>X</em>, base::context_t &amp;<em>context</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPP16FastLeastSquaresN4elem11OrientationERKN4elem10DistMatrixI1TN4elem2VCEN4elem4STAREEERKN4elem10DistMatrixI1TN4elem2VCEN4elem4STAREEERN4elem10DistMatrixI1TN4elem4STAREN4elem4STAREEERN4base9context_tE" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<p>If <cite>orientation</cite> is set to <tt class="docutils literal"><span class="pre">NORMAL</span></tt>, then approximate <img class="math" src="_images/math/4afb92869ffda8d5f95fe1bd39d151e61969934c.png" alt="\arg\min_X \|A * X - B\|_F"/>, otherwise
-<cite>orientation</cite> must be equal to <tt class="docutils literal"><span class="pre">ADJOINT</span></tt> and <img class="math" src="_images/math/9dafb0a1d4dbf744b40906bb80dbe16f097e41f9.png" alt="\arg\min_X \|A^H * X - B\|_F"/> is approximated.</p>
+<p>If <cite>orientation</cite> is set to <code class="docutils literal"><span class="pre">NORMAL</span></code>, then approximate <img class="math" src="_images/math/485e12a6c8da2e147f54242e795622ddb82bed52.png" alt="\arg\min_X \|A * X - B\|_F"/>, otherwise
+<cite>orientation</cite> must be equal to <code class="docutils literal"><span class="pre">ADJOINT</span></code> and <img class="math" src="_images/math/8447326c551223e636d142d55db5e22ee5cf6496.png" alt="\arg\min_X \|A^H * X - B\|_F"/> is approximated.</p>
 <hr class="docutils" />
 <p>A flavor of usage is given in the code snippet below.</p>
 <div class="highlight-cpp"><div class="highlight"><pre><span class="cp">#include &lt;elemental.hpp&gt;</span>
@@ -157,7 +155,7 @@ void <tt class="descname">FastLeastSquares</tt><big>(</big>elem::Orientation <em
 <span class="c1">// Setup regression problem with coefficient matrix A and target matrix B</span>
 <span class="p">...</span>
 
-<span class="n">skybase</span><span class="o">::</span><span class="n">context_t</span> <span class="n">context</span><span class="p">(</span><span class="mi">23234</span><span class="p">);</span>
+<span class="n">skybase</span><span class="o">::</span><span class="kt">context_t</span> <span class="n">context</span><span class="p">(</span><span class="mi">23234</span><span class="p">);</span>
 
 <span class="c1">// Solve the Least Squres problem of minimizing || AX - B||_2 over X</span>
 <span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="n">FasterLeastSquares</span><span class="p">(</span><span class="n">elem</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
@@ -180,10 +178,10 @@ void <tt class="descname">FastLeastSquares</tt><big>(</big>elem::Orientation <em
 </ul>
 </div></blockquote>
 <dl class="docutils">
-<dt>The prototypical algorithm involves the following steps, given a matrix <img class="math" src="_images/math/019e9892786e493964e145e7c5cf7b700314e53b.png" alt="A"/></dt>
+<dt>The prototypical algorithm involves the following steps, given a matrix <img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/></dt>
 <dd><ul class="first last simple">
-<li>Compute an approximate orthonormal basis for the range of <img class="math" src="_images/math/019e9892786e493964e145e7c5cf7b700314e53b.png" alt="A"/>, as specified by the columns of an orthonormal matrix <img class="math" src="_images/math/9866e3a998d628ba0941eb4fea0666ac391d149a.png" alt="Q"/>.</li>
-<li>Use <img class="math" src="_images/math/9866e3a998d628ba0941eb4fea0666ac391d149a.png" alt="Q"/> to compute a standard factorization of <img class="math" src="_images/math/019e9892786e493964e145e7c5cf7b700314e53b.png" alt="A"/>.</li>
+<li>Compute an approximate orthonormal basis for the range of <img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/>, as specified by the columns of an orthonormal matrix <img class="math" src="_images/math/7b1816c51f7d31275cd3ad400208fb7b3ce136a0.png" alt="Q"/>.</li>
+<li>Use <img class="math" src="_images/math/7b1816c51f7d31275cd3ad400208fb7b3ce136a0.png" alt="Q"/> to compute a standard factorization of <img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/>.</li>
 </ul>
 </dd>
 </dl>
@@ -194,31 +192,31 @@ void <tt class="descname">FastLeastSquares</tt><big>(</big>elem::Orientation <em
 <p>Randomized SVD is implemented by the use of functors which are first initialized to the type of transform and then the arguments are passed
 to the constructed functor.</p>
 <dl class="type">
-<dt id="skylark::nla::randsvd_t:skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType::__struct">
-<em class="property">type </em>struct <tt class="descclassname">skylark::nla::</tt><tt class="descname">randsvd_t&lt;skylark::sketch::sketch_transform_t&lt;InputMatrixType, OutputMatrixType&gt;&gt;</tt><a class="headerlink" href="#skylark::nla::randsvd_t:skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType::__struct" title="Permalink to this definition">¶</a></dt>
+<dt>
+<code class="descname">struct skylark::nla::randsvd_t&lt;skylark::sketch::sketch_transform_t&lt;InputMatrixType, OutputMatrixType&gt;&gt;</code></dt>
 <dd><p><strong>Constructor</strong></p>
 <dl class="function">
-<dt id="skylark::nla::randsvd_t:skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType::::randsvd_t__skylark::sketch::sketch_transform_tR">
- <tt class="descname">randsvd_t</tt><big>(</big>skylark::sketch::sketch_transform_t&amp; <em>st</em><big>)</big><a class="headerlink" href="#skylark::nla::randsvd_t:skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType::::randsvd_t__skylark::sketch::sketch_transform_tR" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPP9randsvd_tRN7skylark6sketch18sketch_transform_tE">
+<code class="descclassname"></code><code class="descname">randsvd_t</code><span class="sig-paren">(</span>skylark::sketch::sketch_transform_t &amp;<em>st</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPP9randsvd_tRN7skylark6sketch18sketch_transform_tE" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize the functor with the sketching transform desired.</p>
 </dd></dl>
 
 <p><strong>Accessors</strong></p>
 <dl class="function">
-<dt id="skylark::nla::randsvd_t:skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType::::call-operator:InputMatrixType.UMatrixType.SingularValuesMatrixType.VMatrixType:__InputMatrixTypeR.i.UMatrixTypeR.SingularValuesMatrixTypeR.VMatrixTypeR.rand_svd_params_t.skylark::base::context_tR">
-void <tt class="descname">operator()&lt;InputMatrixType, UMatrixType, SingularValuesMatrixType, VMatrixType&gt;</tt><big>(</big>InputMatrixType&amp; <em>A</em>, int <em>target_rank</em>, UMatrixType&amp; <em>U</em>, SingularValuesMatrixType&amp; <em>SV</em>, VMatrixType&amp; <em>V</em>, <a class="reference internal" href="#skylark::nla::rand_svd_params_t__struct" title="skylark::nla::rand_svd_params_t">rand_svd_params_t</a> <em>params</em>, <a class="reference internal" href="base.html#skylark::base::context_t__struct" title="skylark::base::context_t">skylark::base::context_t&amp;</a> <em>context</em><big>)</big><a class="headerlink" href="#skylark::nla::randsvd_t:skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType::::call-operator:InputMatrixType.UMatrixType.SingularValuesMatrixType.VMatrixType:__InputMatrixTypeR.i.UMatrixTypeR.SingularValuesMatrixTypeR.VMatrixTypeR.rand_svd_params_t.skylark::base::context_tR" title="Permalink to this definition">¶</a></dt>
+<dt>
+<code class="descname">void operator()&lt;InputMatrixType, UMatrixType, SingularValuesMatrixType, VMatrixType&gt; (InputMatrixType &amp;A, int target_rank, UMatrixType &amp;U, SingularValuesMatrixType &amp;SV, VMatrixType &amp;V, rand_svd_params_t params, skylark::base::context_t&amp; context)</code></dt>
 <dd><p>The overloaded operator takes the input matrix A and produces the output matrices U, SV and V. In addition, a params object is passed which contains the parameters shown below.</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="type">
-<dt id="skylark::nla::rand_svd_params_t__struct">
-<em class="property">type </em>struct <tt class="descclassname">skylark::nla::</tt><tt class="descname">rand_svd_params_t</tt><a class="headerlink" href="#skylark::nla::rand_svd_params_t__struct" title="Permalink to this definition">¶</a></dt>
+<dt>
+<code class="descname">struct skylark::nla::rand_svd_params_t</code></dt>
 <dd><p><strong>Constructor</strong></p>
 <dl class="function">
-<dt id="skylark::nla::rand_svd_params_t::rand_svd_params_t__i.i.b">
- <tt class="descname">rand_svd_params_t</tt><big>(</big>int <em>oversampling</em>, int <em>num_iterations</em><em>=0</em>, bool <em>skip_qr</em><em>=0</em><big>)</big><a class="headerlink" href="#skylark::nla::rand_svd_params_t::rand_svd_params_t__i.i.b" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPP17rand_svd_params_tiib">
+<code class="descclassname"></code><code class="descname">rand_svd_params_t</code><span class="sig-paren">(</span>int <em>oversampling</em>, int <em>num_iterations</em> = 0, bool <em>skip_qr</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPP17rand_svd_params_tiib" title="Permalink to this definition">¶</a></dt>
 <dd><p>The arguments include how much oversampling needs to be performed (oversampling), the number of subspace iterations needed (num_iterations)
 and an optimization flag (skip_qr) to skip a step in the algorithm.</p>
 </dd></dl>
@@ -234,10 +232,10 @@ and an optimization flag (skip_qr) to skip a step in the algorithm.</p>
 <span class="cm">/* These parameters include oversampling, number of power iterations and</span>
 <span class="cm">whether repeated QR iterations should be skipped */</span>
 
-<span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="n">rand_svd_params_t</span> <span class="n">params</span><span class="p">(</span><span class="n">oversampling_parameter</span><span class="p">);</span>
+<span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="kt">rand_svd_params_t</span> <span class="n">params</span><span class="p">(</span><span class="n">oversampling_parameter</span><span class="p">);</span>
 
 <span class="cm">/* create a rand_svd object parameterized by the Sketch */</span>
-<span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="n">randsvd_t</span><span class="o">&lt;</span><span class="n">skylark</span><span class="o">::</span><span class="n">sketch</span><span class="o">::</span><span class="n">JLT_t</span><span class="o">&gt;</span> <span class="n">rand_svd</span><span class="p">;</span>
+<span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="kt">randsvd_t</span><span class="o">&lt;</span><span class="n">skylark</span><span class="o">::</span><span class="n">sketch</span><span class="o">::</span><span class="n">JLT_t</span><span class="o">&gt;</span> <span class="n">rand_svd</span><span class="p">;</span>
 
 <span class="p">...</span>
 <span class="cm">/* Call the randomized SVD algorithm on Elemental or CombBLAS matrix A */</span>
@@ -253,7 +251,7 @@ U, S and V. Currently, the matrix types are Elemental MC/MR or elem::Matrix type
 
 
       </div>
-      <div class="bottomnav">
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
       
         <p>
         «&#160;&#160;<a href="sketching.html">Sketching Layer</a>
@@ -265,9 +263,9 @@ U, S and V. Currently, the matrix types are Elemental MC/MR or elem::Matrix type
 
       </div>
 
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright IBM Corporation 2012-2014.  All Rights Reserved.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b1.
     </div>
   </body>
 </html>

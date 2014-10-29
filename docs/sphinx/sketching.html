@@ -10,7 +10,6 @@
     
     <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/print.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -24,17 +23,16 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/theme_extras.js"></script>
     <link rel="top" title="libSkylark  documentation" href="index.html" />
     <link rel="next" title="Numerical Linear Algebra Primitives" href="nla.html" />
     <link rel="prev" title="Base Layer" href="base.html" /> 
   </head>
-  <body>
-      <div class="header"><h1 class="heading"><a href="index.html">
+  <body role="document">
+      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
           <span>libSkylark  documentation</span></a></h1>
         <h2 class="heading"><span>Sketching Layer</span></h2>
       </div>
-      <div class="topnav">
+      <div class="topnav" role="navigation" aria-label="top navigation">
       
         <p>
         «&#160;&#160;<a href="base.html">Base Layer</a>
@@ -56,14 +54,14 @@
 able to deliver faster NLA kernels and ML algorithms.</p>
 <p>Dimensionality reduction in NLA and ML is often based on building an oblivious
 subspace embedding (OSE). An OSE can be thought of as a data-independent random
-“sketching” matrix <img class="math" src="_images/math/f7820991469af0efa3f8f7e0fed83fbbc3d8aabc.png" alt="S \in R^{s\times n}"/> whose approximate isometry
-properties (with respect to a norm <img class="math" src="_images/math/cf364412dffd6244a11a7cce949985a0d81a9194.png" alt="\|\cdot\|_p"/>) over a subspace (e.g.,
+“sketching” matrix <img class="math" src="_images/math/e5f95fc1cde614179b82c3ec15f0bab4fd380591.png" alt="S \in R^{s\times n}"/> whose approximate isometry
+properties (with respect to a norm <img class="math" src="_images/math/4fc4bd8b4a49eaf5eeefc07d0a682e8f8e842b7c.png" alt="\|\cdot\|_p"/>) over a subspace (e.g.,
 over the column space of a data input matrix A, and regression target vector b)
 imply that,</p>
 <div class="math">
-<p><img src="_images/math/6a964459d708b233c97340ce4e1c824c9e5644c0.png" alt="\|S(A x - b)\|\approx\|A x-b\|"/></p>
-</div><p>which in turn allows the regression coefficients, <img class="math" src="_images/math/26eeb5258ca5099acf8fe96b2a1049c48c89a5e6.png" alt="x"/>, to be optimized
-over a “sketched” dataset - namely <img class="math" src="_images/math/078c007344421ceee265ccf4543efe3325e803c8.png" alt="S*A"/> and <img class="math" src="_images/math/bb20b78777cd902b54ef550f2d75d58a798f69d0.png" alt="S*b"/> - of much smaller
+<p><img src="_images/math/94097032b40423ca34ac7142e9a7ae8857c32f38.png" alt="\|S(A x - b)\|\approx\|A x-b\|"/></p>
+</div><p>which in turn allows the regression coefficients, <img class="math" src="_images/math/188c175aac0a8a9c22499336711b5d7256407254.png" alt="x"/>, to be optimized
+over a “sketched” dataset - namely <img class="math" src="_images/math/01ce80763ec37a5a2e1d7099273408913740773f.png" alt="S*A"/> and <img class="math" src="_images/math/6e2fee3f37086d1205c14ad6d038d3b8c71437e2.png" alt="S*b"/> - of much smaller
 size without losing solution quality significantly.
 Sketching matrices include Gaussian random matrices, structured random matrices
 which admit fast matrix multiplication via FFT-like operations, hashing-based
@@ -72,20 +70,20 @@ transforms, among others.</p>
 <div class="section" id="overview-of-high-performance-distributed-sketching-implementation">
 <h2>Overview of High-performance Distributed Sketching Implementation<a class="headerlink" href="#overview-of-high-performance-distributed-sketching-implementation" title="Permalink to this headline">¶</a></h2>
 <p>Sketching a matrix A typically amounts to multiplying it by a random matrix
-<img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/>, i.e., <img class="math" src="_images/math/dbcbf204f7a3b603a0916eeadfb842abc56b6385.png" alt="A * S"/> for compressing the size of its rows
-(row-wise sketching) or <img class="math" src="_images/math/258fd01e9b9fd2ccf703382574c962030ac1f9ec.png" alt="S * A"/> for compressing the size of its
+<img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/>, i.e., <img class="math" src="_images/math/0d7318978493f219bebbae2cfe4f63bf8c56dadf.png" alt="A * S"/> for compressing the size of its rows
+(row-wise sketching) or <img class="math" src="_images/math/c67c5155fdbd0009e97486374043c815f140f276.png" alt="S * A"/> for compressing the size of its
 columns (column-wise sketching).</p>
 <p>In a distributed setting, this matrix-matrix multiplication primitive
 (sketching GEMM operation) is special in the sense that any part of matrix
-<img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/> can be constructed without communication.
-In addition, depending on the relative sizes of <img class="math" src="_images/math/019e9892786e493964e145e7c5cf7b700314e53b.png" alt="A"/>, <img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/> and the
+<img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> can be constructed without communication.
+In addition, depending on the relative sizes of <img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/>, <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> and the
 sketched matrix (output), we can organize the distributed GEMM so that no part
 of the largest-size matrix is communicated (SUMMA approach), thus resulting in
 communication savings.
-Further optimizing, we can perform local computations over blocks of <img class="math" src="_images/math/019e9892786e493964e145e7c5cf7b700314e53b.png" alt="A"/>,
-<img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/>, and also assume transposed views of the operands for memory and
+Further optimizing, we can perform local computations over blocks of <img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/>,
+<img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/>, and also assume transposed views of the operands for memory and
 cache use efficiency.</p>
-<p>In particular when both <img class="math" src="_images/math/019e9892786e493964e145e7c5cf7b700314e53b.png" alt="A"/> and <img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/> are distributed dense matrices
+<p>In particular when both <img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/> and <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> are distributed dense matrices
 we represent them as Elemental matrices and support sketching over a rich set
 of combinations of vector and matrix-oriented data distributions: in vector
 distributions different processes own complete rows of columns of the matrix
@@ -96,11 +94,11 @@ columns being equal to the dimensions of the process grid.</p>
 independently by indexing into a global stream of random values provided by a
 counter-based Parallel random number generator (supplied by
 <a class="reference external" href="http://www.deshawresearch.com/resources_random123.html">Random123 library</a>).
-No entries of <img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/> are communicated since they can be locally generated
+No entries of <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> are communicated since they can be locally generated
 instead.
-<img class="math" src="_images/math/019e9892786e493964e145e7c5cf7b700314e53b.png" alt="A"/> can be squarish (aka &#8220;matrix&#8221;) or tall-and-thin or short-and-fat
+<img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/> can be squarish (aka &#8220;matrix&#8221;) or tall-and-thin or short-and-fat
 (aka &#8220;panel&#8221;).
-In multiplying with <img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/>, matrix-panel, panel-matrix, inner-panel-panel
+In multiplying with <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/>, matrix-panel, panel-matrix, inner-panel-panel
 or outer-panel-panel products may arise.
 We provide separate implementations for these cases organized around the
 principle of communication-avoidance for the largest of the matrix terms
@@ -108,26 +106,26 @@ involved in the GEMM, for each of the input/output matrix-data distribution
 combinations.
 The user can optionally set the relative sizes that differentiate between these
 cases.
-Local <img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/> entries can be incrementally realized in a distribution format that
+Local <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> entries can be incrementally realized in a distribution format that
 best matches the matrix indices of the local GEMM operation that follows
 it.
-Resulting <img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/> blocks typically traverse the smallest of matrix sizes in
+Resulting <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> blocks typically traverse the smallest of matrix sizes in
 increments that can optionally be specified by the user.
 This has the extra benefit of minimizing the communication volume of a
 collective operation that generally follows this local GEMM - essentially to
 compensate for the stride-indexed matrix entries in the factors.</p>
 <p>As an example we provide a <em>pseudocode</em> snippet (in Python syntax) that describes
-the rowwise sketching of a squarish input matrix <img class="math" src="_images/math/019e9892786e493964e145e7c5cf7b700314e53b.png" alt="A"/>, initially distributed
+the rowwise sketching of a squarish input matrix <img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/>, initially distributed
 across the process grid in <cite>[MC, MR]</cite> format (please refer
 <a class="reference external" href="http://libelemental.org/documentation/0.83/core/dist_matrix/DM.html">here</a> for a
 comprehensive documentation of distribution formats, here appearing in brackets):
-<img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/> is first realized (its random entries are actually computed in the desired
+<img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> is first realized (its random entries are actually computed in the desired
 distribution format - in embarrassingly parallel mode) and then the local parts of
-<img class="math" src="_images/math/019e9892786e493964e145e7c5cf7b700314e53b.png" alt="A"/> and <img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/> are multiplied together. Finally collective communications within
+<img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/> and <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> are multiplied together. Finally collective communications within
 subsets of the process grid take place to produce the resulting sketched matrix
 (<cite>C[MC, MR]</cite>). The corresponding C++ code (allowing also for incremental realization of
-<img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/>) can be found in
-<tt class="file docutils literal"><span class="pre">libskylark/sketch/dense_transform_Elemental_mc_mr.hpp</span></tt>.</p>
+<img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/>) can be found in
+<code class="file docutils literal"><span class="pre">libskylark/sketch/dense_transform_Elemental_mc_mr.hpp</span></code>.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">matrix_panel</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="n">MC</span><span class="p">,</span> <span class="n">MR</span><span class="p">],</span> <span class="n">S</span><span class="p">):</span>
     <span class="n">S</span><span class="p">[</span><span class="n">MR</span><span class="p">,</span> <span class="n">STAR</span><span class="p">]</span>       <span class="o">=</span> <span class="n">realize</span><span class="p">(</span><span class="n">S</span><span class="p">)</span>
     <span class="n">C_hat</span><span class="p">[</span><span class="n">MC</span><span class="p">,</span> <span class="n">STAR</span><span class="p">]</span>   <span class="o">=</span> <span class="n">local_gemm</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="n">MC</span><span class="p">,</span> <span class="n">MR</span><span class="p">],</span> <span class="n">S</span><span class="p">[</span><span class="n">MR</span><span class="p">,</span> <span class="n">STAR</span><span class="p">])</span>
@@ -145,11 +143,11 @@ distribution formats - same scenario as before, rowwise sketching of a squarish 
     <span class="k">return</span> <span class="n">C</span><span class="p">[</span><span class="n">VC</span><span class="o">/</span><span class="n">VR</span><span class="p">,</span> <span class="n">STAR</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>Sparse matrices <img class="math" src="_images/math/019e9892786e493964e145e7c5cf7b700314e53b.png" alt="A"/> are currently represented as
+<p>Sparse matrices <img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/> are currently represented as
 <abbr title="Combinatorial BLAS">CombBLAS</abbr> matrices.
 As for dense sketch matrices, any part of the sparse sketch matrix can be
 realized without communication. Since the sketch matrix is sparse, we only
-require a &#8220;sparse&#8221; realization of the sketch matrix <img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/> and the sketching
+require a &#8220;sparse&#8221; realization of the sketch matrix <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> and the sketching
 GEMM can be computed on the random stream directly.
 Similar to the SUMMA approach for dense matrices we select what will be
 communicated depending on input and output dimensions.</p>
@@ -163,12 +161,12 @@ has to be a square number.</p>
 of various sketching transforms and for various matrix arrangement in memory
 (e.g. local matrices, distributed matrices, sparse matrices ...).
 The majority of the sketching library is implemented in C++, but it is
-accessible in Python through <tt class="xref py py-mod docutils literal"><span class="pre">skylark.sketch</span></tt>.</p>
+accessible in Python through <code class="xref py py-mod docutils literal"><span class="pre">skylark.sketch</span></code>.</p>
 <div class="section" id="sketching-transforms">
 <h3>Sketching Transforms<a class="headerlink" href="#sketching-transforms" title="Permalink to this headline">¶</a></h3>
 <p>The following table lists the sketching transforms currently provided by LibSkylark.
 These transforms are appropriate for specific downstream tasks, e.g.
-<img class="math" src="_images/math/10b13e0812882e9b560de09656e69c9d42c706d5.png" alt="l2"/>-regression, <img class="math" src="_images/math/d89a5fe07fe3854a174b684785a2d0eb36f2b232.png" alt="l1"/>-regression, or kernel methods.</p>
+<img class="math" src="_images/math/a01b625bb6f1905a7f6f698c854f2b4ae161eeb4.png" alt="l2"/>-regression, <img class="math" src="_images/math/c3a1ea1c5ef9f9923d99db023a65c73d4b6dbc94.png" alt="l1"/>-regression, or kernel methods.</p>
 <p>The implementations are provided under <em>libskylark/sketch</em>.</p>
 <table border="1" class="docutils">
 <colgroup>
@@ -261,51 +259,51 @@ CIRC/CIRC and STAR/STAR matrices.</p>
 <div class="section" id="sketching-transforms-label">
 <span id="id2"></span><h4>Sketching Transforms<a class="headerlink" href="#sketching-transforms-label" title="Permalink to this headline">¶</a></h4>
 <dl class="type">
-<dt id="skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:__class">
-<em class="property">type </em>class <tt class="descclassname">skylark::sketch::</tt><tt class="descname">sketch_transform_t&lt;InputMatrixType, OutputMatrixType&gt;</tt><a class="headerlink" href="#skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:__class" title="Permalink to this definition">¶</a></dt>
+<dt>
+<code class="descname">class skylark::sketch::sketch_transform_t&lt;InputMatrixType, OutputMatrixType&gt;</code></dt>
 <dd><p><strong>Query dimensions</strong></p>
 <dl class="function">
-<dt id="skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::get_NC">
-int <tt class="descname">get_N</tt><big>(</big><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::get_NC" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPPK5get_Nv">
+int <code class="descclassname"></code><code class="descname">get_N</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPK5get_Nv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get input dimension.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::get_SC">
-int <tt class="descname">get_S</tt><big>(</big><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::get_SC" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPPK5get_Sv">
+int <code class="descclassname"></code><code class="descname">get_S</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPK5get_Sv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get output dimension.</p>
 </dd></dl>
 
 <p><strong>Sketch application</strong></p>
 <dl class="function">
-<dt id="skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::apply__InputMatrixTypeCR.OutputMatrixTypeR.columnwise_tagC">
-void <tt class="descname">apply</tt><big>(</big>const InputMatrixType&amp; <em>A</em>, OutputMatrixType&amp; <em>sketch_of_A</em>, <a class="reference internal" href="#skylark::sketch::columnwise_tag" title="skylark::sketch::columnwise_tag">columnwise_tag</a> <em>dimension</em><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::apply__InputMatrixTypeCR.OutputMatrixTypeR.columnwise_tagC" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPPK5applyRK15InputMatrixTypeR16OutputMatrixType14columnwise_tag">
+void <code class="descclassname"></code><code class="descname">apply</code><span class="sig-paren">(</span><em class="property">const</em> InputMatrixType &amp;<em>A</em>, OutputMatrixType &amp;<em>sketch_of_A</em>, columnwise_tag <em>dimension</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPK5applyRK15InputMatrixTypeR16OutputMatrixType14columnwise_tag" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply the sketch transform in column dimension.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::apply__InputMatrixTypeCR.OutputMatrixTypeR.rowwise_tagC">
-void <tt class="descname">apply</tt><big>(</big>const InputMatrixType&amp; <em>A</em>, OutputMatrixType&amp; <em>sketch_of_A</em>, <a class="reference internal" href="#skylark::sketch::rowwise_tag" title="skylark::sketch::rowwise_tag">rowwise_tag</a> <em>dimension</em><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::apply__InputMatrixTypeCR.OutputMatrixTypeR.rowwise_tagC" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPPK5applyRK15InputMatrixTypeR16OutputMatrixType11rowwise_tag">
+void <code class="descclassname"></code><code class="descname">apply</code><span class="sig-paren">(</span><em class="property">const</em> InputMatrixType &amp;<em>A</em>, OutputMatrixType &amp;<em>sketch_of_A</em>, rowwise_tag <em>dimension</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPK5applyRK15InputMatrixTypeR16OutputMatrixType11rowwise_tag" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply the sketch transform in row dimension.</p>
 </dd></dl>
 
 <p><strong>Serialization</strong></p>
 <dl class="function">
-<dt id="skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::to_ptreeC">
-boost::property_tree::ptree <tt class="descname">to_ptree</tt><big>(</big><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::to_ptreeC" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPPK8to_ptreev">
+boost::property_tree::ptree <code class="descclassname"></code><code class="descname">to_ptree</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPK8to_ptreev" title="Permalink to this definition">¶</a></dt>
 <dd><p>Serialize the sketch transform to a ptree structure.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::from_ptree__boost::property_tree::ptreeCR">
-<em class="property">static</em> sketch_transform_t* <tt class="descname">from_ptree</tt><big>(</big>const boost::property_tree::ptree&amp; <em>pt</em><big>)</big><a class="headerlink" href="#skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::from_ptree__boost::property_tree::ptreeCR" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPP10from_ptreeRKN5boost13property_tree5ptreeE">
+<em class="property">static</em> sketch_transform_t *<code class="descclassname"></code><code class="descname">from_ptree</code><span class="sig-paren">(</span><em class="property">const</em> boost::property_tree::ptree &amp;<em>pt</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPP10from_ptreeRKN5boost13property_tree5ptreeE" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load a sketch transform from a ptree structure.</p>
 </dd></dl>
 
 <p><strong>Accessors</strong></p>
 <dl class="function">
-<dt id="skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::get_data">
-const sketch_transform_data_t* <tt class="descname">get_data</tt><big>(</big><big>)</big><a class="headerlink" href="#skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::get_data" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPP8get_datav">
+<em class="property">const</em> sketch_transform_data_t *<code class="descclassname"></code><code class="descname">get_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPP8get_datav" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the underlaying transform data.</p>
 </dd></dl>
 
@@ -317,13 +315,13 @@ applying the sketch transform.</p>
 <p>The sketching direction is specified using the following types:</p>
 <blockquote>
 <div><dl class="type">
-<dt id="skylark::sketch::columnwise_tag">
-<em class="property">type </em><tt class="descclassname">skylark::sketch::</tt><tt class="descname">columnwise_tag</tt><a class="headerlink" href="#skylark::sketch::columnwise_tag" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPPN7skylark6sketch14columnwise_tagE">
+<em class="property">type </em><code class="descclassname">skylark::sketch::</code><code class="descname">columnwise_tag</code><a class="headerlink" href="#_CPPN7skylark6sketch14columnwise_tagE" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="type">
-<dt id="skylark::sketch::rowwise_tag">
-<em class="property">type </em><tt class="descclassname">skylark::sketch::</tt><tt class="descname">rowwise_tag</tt><a class="headerlink" href="#skylark::sketch::rowwise_tag" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPPN7skylark6sketch11rowwise_tagE">
+<em class="property">type </em><code class="descclassname">skylark::sketch::</code><code class="descname">rowwise_tag</code><a class="headerlink" href="#_CPPN7skylark6sketch11rowwise_tagE" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div></blockquote>
@@ -347,7 +345,7 @@ The sketching is done using <em>Johnson-Lindenstrauss (JLT)</em> transform.</p>
 <span class="k">typedef</span> <span class="n">elem</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">VC</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="n">DistMatrixType</span><span class="p">;</span>
 
  <span class="cm">/* Initialize libSkylark context with a seed */</span>
-<span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">context_t</span> <span class="n">context</span> <span class="p">(</span><span class="mi">12345</span><span class="p">);</span>
+<span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="kt">context_t</span> <span class="n">context</span> <span class="p">(</span><span class="mi">12345</span><span class="p">);</span>
 
 <span class="cm">/* Row distributed Elemental Matrix A of size N x M */</span>
 <span class="n">elem</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">VR</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="n">A</span><span class="p">(</span><span class="n">grid</span><span class="p">);</span>
@@ -357,7 +355,7 @@ The sketching is done using <em>Johnson-Lindenstrauss (JLT)</em> transform.</p>
 <span class="n">skys</span><span class="o">::</span><span class="n">JLT_t</span><span class="o">&lt;</span><span class="n">DistMatrixType</span><span class="p">,</span> <span class="n">MatrixType</span><span class="o">&gt;</span> <span class="n">JLT</span> <span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="n">S</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
 
 <span class="cm">/* Create space for the sketched matrix with number of rows compressed to S */</span>
-<span class="n">MatrixType</span> <span class="n">sketch_A</span><span class="p">(</span><span class="n">S</span><span class="p">,</span> <span class="n">M</span><span class="p">);</span>
+<span class="n">MatrixType</span> <span class="nf">sketch_A</span><span class="p">(</span><span class="n">S</span><span class="p">,</span> <span class="n">M</span><span class="p">);</span>
 
 <span class="cm">/* Apply the sketch. We call this columnwise sketching since the column dimensionality is reduced. */</span>
 <span class="n">JLT</span><span class="p">.</span><span class="n">apply</span> <span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">sketch_A</span><span class="p">,</span> <span class="n">skys</span><span class="o">::</span><span class="n">columnwise_tag</span><span class="p">());</span>
@@ -395,14 +393,14 @@ finalize. However, note that that will not cause allocated objects
 when detected as garbage (no references).</p>
 <dl class="function">
 <dt id="skylark.sketch.initialize">
-<tt class="descclassname">skylark.sketch.</tt><tt class="descname">initialize</tt><big>(</big><em>seed=-1</em><big>)</big><a class="headerlink" href="#skylark.sketch.initialize" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">skylark.sketch.</code><code class="descname">initialize</code><span class="sig-paren">(</span><em>seed=-1</em><span class="sig-paren">)</span><a class="headerlink" href="#skylark.sketch.initialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reinitalize the library with a seed. If seed is -1 then system time is
 used to create the seed.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="skylark.sketch.finalize">
-<tt class="descclassname">skylark.sketch.</tt><tt class="descname">finalize</tt><big>(</big><big>)</big><a class="headerlink" href="#skylark.sketch.finalize" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">skylark.sketch.</code><code class="descname">finalize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#skylark.sketch.finalize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Finalize (de-allocate) the library. However, note that that will not cause
 allocated objects (e.g. sketch transforms) to be freed. They are freed by
 the garbage collector when detected as garbage (no references).</p>
@@ -411,7 +409,7 @@ the garbage collector when detected as garbage (no references).</p>
 <p>Python sketch classes inherit from the <em>SketchTransform</em> class.</p>
 <dl class="class">
 <dt id="skylark.sketch._SketchTransform">
-<em class="property">class </em><tt class="descclassname">skylark.sketch.</tt><tt class="descname">_SketchTransform</tt><big>(</big><em>ttype</em>, <em>n</em>, <em>s</em>, <em>defouttype=None</em>, <em>forceppy=False</em>, <em>sketch_transform=None</em><big>)</big><a class="headerlink" href="#skylark.sketch._SketchTransform" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">skylark.sketch.</code><code class="descname">_SketchTransform</code><span class="sig-paren">(</span><em>ttype</em>, <em>n</em>, <em>s</em>, <em>defouttype=None</em>, <em>forceppy=False</em>, <em>sketch_transform=None</em><span class="sig-paren">)</span><a class="headerlink" href="#skylark.sketch._SketchTransform" title="Permalink to this definition">¶</a></dt>
 <dd><p>A sketching transform - in very general terms - is a dimensionality-reducing map
 from R^n to R^s which preserves key structural properties.</p>
 <p>_SketchTransform is base class sketch transforms. The various sketch transforms derive
@@ -419,7 +417,7 @@ from this class and as such it defines a common interface. Derived classes can h
 constructors. The class is not meant</p>
 <dl class="method">
 <dt id="skylark.sketch._SketchTransform.__mul__">
-<tt class="descname">__mul__</tt><big>(</big><em>A</em><big>)</big><a class="headerlink" href="#skylark.sketch._SketchTransform.__mul__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__mul__</code><span class="sig-paren">(</span><em>A</em><span class="sig-paren">)</span><a class="headerlink" href="#skylark.sketch._SketchTransform.__mul__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Allocate space for <strong>SA</strong> and apply the transform columnwise to <strong>A</strong>
 writing the result to <strong>SA</strong> and returning it.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -436,7 +434,7 @@ writing the result to <strong>SA</strong> and returning it.</p>
 
 <dl class="method">
 <dt id="skylark.sketch._SketchTransform.__div__">
-<tt class="descname">__div__</tt><big>(</big><em>A</em><big>)</big><a class="headerlink" href="#skylark.sketch._SketchTransform.__div__" title="Permalink to this definition">¶</a></dt>
+<code class="descname">__div__</code><span class="sig-paren">(</span><em>A</em><span class="sig-paren">)</span><a class="headerlink" href="#skylark.sketch._SketchTransform.__div__" title="Permalink to this definition">¶</a></dt>
 <dd><p>Allocate space for <strong>SA</strong> and apply the transform rowwise to <strong>A</strong>
 writing the result to <strong>SA</strong> and returning it.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -453,7 +451,7 @@ writing the result to <strong>SA</strong> and returning it.</p>
 
 <dl class="method">
 <dt id="skylark.sketch._SketchTransform.apply">
-<tt class="descname">apply</tt><big>(</big><em>A</em>, <em>SA</em>, <em>dim=0</em><big>)</big><a class="headerlink" href="#skylark.sketch._SketchTransform.apply" title="Permalink to this definition">¶</a></dt>
+<code class="descname">apply</code><span class="sig-paren">(</span><em>A</em>, <em>SA</em>, <em>dim=0</em><span class="sig-paren">)</span><a class="headerlink" href="#skylark.sketch._SketchTransform.apply" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply the transform on <strong>A</strong> along dimension <strong>dim</strong> and write
 result in <strong>SA</strong>. Note: for rowwise (aka right) sketching <strong>A</strong>
 is mapped to <strong>A S^T</strong>.</p>
@@ -479,19 +477,19 @@ default is columnwise</li>
 
 <dl class="method">
 <dt id="skylark.sketch._SketchTransform.getindim">
-<tt class="descname">getindim</tt><big>(</big><big>)</big><a class="headerlink" href="#skylark.sketch._SketchTransform.getindim" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getindim</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#skylark.sketch._SketchTransform.getindim" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get size of input.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="skylark.sketch._SketchTransform.getsketchdim">
-<tt class="descname">getsketchdim</tt><big>(</big><big>)</big><a class="headerlink" href="#skylark.sketch._SketchTransform.getsketchdim" title="Permalink to this definition">¶</a></dt>
+<code class="descname">getsketchdim</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#skylark.sketch._SketchTransform.getsketchdim" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get dimension of sketched output.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="skylark.sketch._SketchTransform.serialize">
-<tt class="descname">serialize</tt><big>(</big><big>)</big><a class="headerlink" href="#skylark.sketch._SketchTransform.serialize" title="Permalink to this definition">¶</a></dt>
+<code class="descname">serialize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#skylark.sketch._SketchTransform.serialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a dictionary that is the sketch in a serialized for.
 That is, the sketch object can be reconstructed using the deserialize_sketch
 function.</p>
@@ -502,7 +500,7 @@ function.</p>
 <p>Specific python sketch classes are documented below.</p>
 <dl class="class">
 <dt id="skylark.sketch.JLT">
-<em class="property">class </em><tt class="descclassname">skylark.sketch.</tt><tt class="descname">JLT</tt><big>(</big><em>n</em>, <em>s</em>, <em>defouttype=None</em>, <em>forceppy=False</em>, <em>sketch_transform=None</em><big>)</big><a class="headerlink" href="#skylark.sketch.JLT" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">skylark.sketch.</code><code class="descname">JLT</code><span class="sig-paren">(</span><em>n</em>, <em>s</em>, <em>defouttype=None</em>, <em>forceppy=False</em>, <em>sketch_transform=None</em><span class="sig-paren">)</span><a class="headerlink" href="#skylark.sketch.JLT" title="Permalink to this definition">¶</a></dt>
 <dd><p>The classic Johnson-Lindenstrauss dense sketching using Gaussian Random maps.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -561,7 +559,7 @@ vectors).</p>
 
 <dl class="class">
 <dt id="skylark.sketch.FJLT">
-<em class="property">class </em><tt class="descclassname">skylark.sketch.</tt><tt class="descname">FJLT</tt><big>(</big><em>n</em>, <em>s</em>, <em>defouttype=None</em>, <em>forceppy=False</em>, <em>sketch_transform=None</em><big>)</big><a class="headerlink" href="#skylark.sketch.FJLT" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">skylark.sketch.</code><code class="descname">FJLT</code><span class="sig-paren">(</span><em>n</em>, <em>s</em>, <em>defouttype=None</em>, <em>forceppy=False</em>, <em>sketch_transform=None</em><span class="sig-paren">)</span><a class="headerlink" href="#skylark.sketch.FJLT" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fast Johnson-Lindenstrauss Transform</p>
 <p>Alternative class name: FastJLT</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -584,7 +582,7 @@ Approximate Nearest Neighbors</strong>, SIAM Journal on Computing 39 (1), pg. 30
 
 <dl class="class">
 <dt id="skylark.sketch.SJLT">
-<em class="property">class </em><tt class="descclassname">skylark.sketch.</tt><tt class="descname">SJLT</tt><big>(</big><em>n</em>, <em>s</em>, <em>density=0.3333333333333333</em>, <em>defouttype=None</em>, <em>forceppy=False</em><big>)</big><a class="headerlink" href="#skylark.sketch.SJLT" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">skylark.sketch.</code><code class="descname">SJLT</code><span class="sig-paren">(</span><em>n</em>, <em>s</em>, <em>density=0.3333333333333333</em>, <em>defouttype=None</em>, <em>forceppy=False</em><span class="sig-paren">)</span><a class="headerlink" href="#skylark.sketch.SJLT" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sparse Johnson-Lindenstrauss Transform</p>
 <p>Alternative name: SparseJLT</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -610,7 +608,7 @@ KDD 2006</p>
 
 <dl class="class">
 <dt id="skylark.sketch.CT">
-<em class="property">class </em><tt class="descclassname">skylark.sketch.</tt><tt class="descname">CT</tt><big>(</big><em>n</em>, <em>s</em>, <em>C</em>, <em>defouttype=None</em>, <em>forceppy=False</em>, <em>sketch_transform=None</em><big>)</big><a class="headerlink" href="#skylark.sketch.CT" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">skylark.sketch.</code><code class="descname">CT</code><span class="sig-paren">(</span><em>n</em>, <em>s</em>, <em>C</em>, <em>defouttype=None</em>, <em>forceppy=False</em>, <em>sketch_transform=None</em><span class="sig-paren">)</span><a class="headerlink" href="#skylark.sketch.CT" title="Permalink to this definition">¶</a></dt>
 <dd><p>Cauchy Transform</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -633,7 +631,7 @@ Application</strong>, STOC 2011</p>
 
 <dl class="class">
 <dt id="skylark.sketch.CWT">
-<em class="property">class </em><tt class="descclassname">skylark.sketch.</tt><tt class="descname">CWT</tt><big>(</big><em>n</em>, <em>s</em>, <em>defouttype=None</em>, <em>forceppy=False</em>, <em>sketch_transform=None</em><big>)</big><a class="headerlink" href="#skylark.sketch.CWT" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">skylark.sketch.</code><code class="descname">CWT</code><span class="sig-paren">(</span><em>n</em>, <em>s</em>, <em>defouttype=None</em>, <em>forceppy=False</em>, <em>sketch_transform=None</em><span class="sig-paren">)</span><a class="headerlink" href="#skylark.sketch.CWT" title="Permalink to this definition">¶</a></dt>
 <dd><p>Clarkson-Woodruff Transform (also known as CountSketch)</p>
 <p>Alternative class name: CountSketch</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -656,7 +654,7 @@ in Input Sparsity Time</strong>, STOC 2013</p>
 
 <dl class="class">
 <dt id="skylark.sketch.MMT">
-<em class="property">class </em><tt class="descclassname">skylark.sketch.</tt><tt class="descname">MMT</tt><big>(</big><em>n</em>, <em>s</em>, <em>defouttype=None</em>, <em>forceppy=False</em>, <em>sketch_transform=None</em><big>)</big><a class="headerlink" href="#skylark.sketch.MMT" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">skylark.sketch.</code><code class="descname">MMT</code><span class="sig-paren">(</span><em>n</em>, <em>s</em>, <em>defouttype=None</em>, <em>forceppy=False</em>, <em>sketch_transform=None</em><span class="sig-paren">)</span><a class="headerlink" href="#skylark.sketch.MMT" title="Permalink to this definition">¶</a></dt>
 <dd><p>Meng-Mahoney Transform. A variant of CountSketch (Clarkson-Woodruff Transform)
 using for low-distrition in the L1-norm.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -679,7 +677,7 @@ Input-sparsity Time and Applications to Robust Linear Regression</strong>, STOC 
 
 <dl class="class">
 <dt id="skylark.sketch.WZT">
-<em class="property">class </em><tt class="descclassname">skylark.sketch.</tt><tt class="descname">WZT</tt><big>(</big><em>n</em>, <em>s</em>, <em>p</em>, <em>defouttype=None</em>, <em>forceppy=False</em>, <em>sketch_transform=None</em><big>)</big><a class="headerlink" href="#skylark.sketch.WZT" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">skylark.sketch.</code><code class="descname">WZT</code><span class="sig-paren">(</span><em>n</em>, <em>s</em>, <em>p</em>, <em>defouttype=None</em>, <em>forceppy=False</em>, <em>sketch_transform=None</em><span class="sig-paren">)</span><a class="headerlink" href="#skylark.sketch.WZT" title="Permalink to this definition">¶</a></dt>
 <dd><p>Woodruff-Zhang Transform. A variant of CountSketch (Clarkson-Woodruff Transform)
 using for low-distrition in Lp-norm. p is supplied as a parameter in the
 constructor.</p>
@@ -704,7 +702,7 @@ Using Exponential Random</strong>, COLT 2013</p>
 
 <dl class="class">
 <dt id="skylark.sketch.GaussianRFT">
-<em class="property">class </em><tt class="descclassname">skylark.sketch.</tt><tt class="descname">GaussianRFT</tt><big>(</big><em>n</em>, <em>s</em>, <em>sigma=1.0</em>, <em>defouttype=None</em>, <em>forceppy=False</em>, <em>sketch_transform=None</em><big>)</big><a class="headerlink" href="#skylark.sketch.GaussianRFT" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">skylark.sketch.</code><code class="descname">GaussianRFT</code><span class="sig-paren">(</span><em>n</em>, <em>s</em>, <em>sigma=1.0</em>, <em>defouttype=None</em>, <em>forceppy=False</em>, <em>sketch_transform=None</em><span class="sig-paren">)</span><a class="headerlink" href="#skylark.sketch.GaussianRFT" title="Permalink to this definition">¶</a></dt>
 <dd><p>Random Features Transform for the RBF Kernel.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -727,7 +725,7 @@ Kernel Machines</strong>, NIPS 2009</p>
 
 <dl class="class">
 <dt id="skylark.sketch.LaplacianRFT">
-<em class="property">class </em><tt class="descclassname">skylark.sketch.</tt><tt class="descname">LaplacianRFT</tt><big>(</big><em>n</em>, <em>s</em>, <em>sigma=1.0</em>, <em>defouttype=None</em>, <em>forceppy=False</em>, <em>sketch_transform=None</em><big>)</big><a class="headerlink" href="#skylark.sketch.LaplacianRFT" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">skylark.sketch.</code><code class="descname">LaplacianRFT</code><span class="sig-paren">(</span><em>n</em>, <em>s</em>, <em>sigma=1.0</em>, <em>defouttype=None</em>, <em>forceppy=False</em>, <em>sketch_transform=None</em><span class="sig-paren">)</span><a class="headerlink" href="#skylark.sketch.LaplacianRFT" title="Permalink to this definition">¶</a></dt>
 <dd><p>Random Features Transform for the Laplacian Kernel</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -750,7 +748,7 @@ Kernel Machines</strong>, NIPS 2009</p>
 
 <dl class="class">
 <dt id="skylark.sketch.URST">
-<em class="property">class </em><tt class="descclassname">skylark.sketch.</tt><tt class="descname">URST</tt><big>(</big><em>n</em>, <em>s</em>, <em>defouttype=None</em>, <em>forceppy=False</em><big>)</big><a class="headerlink" href="#skylark.sketch.URST" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">skylark.sketch.</code><code class="descname">URST</code><span class="sig-paren">(</span><em>n</em>, <em>s</em>, <em>defouttype=None</em>, <em>forceppy=False</em><span class="sig-paren">)</span><a class="headerlink" href="#skylark.sketch.URST" title="Permalink to this definition">¶</a></dt>
 <dd><p>Uniform Random Sampling Transform
 For now, only Pure Python implementation, and only sampling with replacement.</p>
 <p>Alternative class name: UniformSampler</p>
@@ -947,7 +945,7 @@ For now, only Pure Python implementation, and only sampling with replacement.</p
 
 
       </div>
-      <div class="bottomnav">
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
       
         <p>
         «&#160;&#160;<a href="base.html">Base Layer</a>
@@ -959,9 +957,9 @@ For now, only Pure Python implementation, and only sampling with replacement.</p
 
       </div>
 
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright IBM Corporation 2012-2014.  All Rights Reserved.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b1.
     </div>
   </body>
 </html>

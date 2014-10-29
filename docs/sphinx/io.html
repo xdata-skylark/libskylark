@@ -10,7 +10,6 @@
     
     <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/print.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
@@ -24,17 +23,16 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/theme_extras.js"></script>
     <link rel="top" title="libSkylark  documentation" href="index.html" />
     <link rel="next" title="Contributing" href="contributing.html" />
     <link rel="prev" title="Machine Learning" href="ml.html" /> 
   </head>
-  <body>
-      <div class="header"><h1 class="heading"><a href="index.html">
+  <body role="document">
+      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
           <span>libSkylark  documentation</span></a></h1>
         <h2 class="heading"><span>IO in libSkylark</span></h2>
       </div>
-      <div class="topnav">
+      <div class="topnav" role="navigation" aria-label="top navigation">
       
         <p>
         «&#160;&#160;<a href="ml.html">Machine Learning</a>
@@ -56,8 +54,8 @@
 <div class="section" id="reading">
 <h3>Reading<a class="headerlink" href="#reading" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
-<dt id="read__boost::mpi::communicatorCR.i.ss.InputTypeR.LabelTypeR.i">
-void <tt class="descname">read</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, int <em>fileformat</em>, std::string <em>filename</em>, InputType&amp; <em>X</em>, LabelType&amp; <em>Y</em>, int <em>d</em><em>=0</em><big>)</big><a class="headerlink" href="#read__boost::mpi::communicatorCR.i.ss.InputTypeR.LabelTypeR.i" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPP4readRKN5boost3mpi12communicatorEiNSt6stringER9InputTypeR9LabelTypei">
+void <code class="descclassname"></code><code class="descname">read</code><span class="sig-paren">(</span><em class="property">const</em> boost::mpi::communicator &amp;<em>comm</em>, int <em>fileformat</em>, std::string <em>filename</em>, InputType &amp;<em>X</em>, LabelType &amp;<em>Y</em>, int <em>d</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPP4readRKN5boost3mpi12communicatorEiNSt6stringER9InputTypeR9LabelTypei" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads data from <cite>filename</cite> as a pair of matrices <cite>X</cite> and <cite>Y</cite>. Data are in the form of instances each carrying a label; an instance in turn consists of a series of feature/value pairs. Feature/value pairs are the column indices/entries for matrix <cite>X</cite> with its row indices coming from a running index of the instances (the minimum number of features is <cite>d</cite>). Matrix <cite>Y</cite> carries the vector of successive labels corresponding to this running index. <cite>fileformat</cite> can have any of the following values of <cite>FileFormatType</cite> enum (as defined in libskylark/ml/options.hpp):</p>
 <ul class="simple">
 <li>HDF5_DENSE</li>
@@ -71,50 +69,50 @@ void <tt class="descname">read</tt><big>(</big>const boost::mpi::communicator&am
 <cite>HDF5_*</cite> are for <a class="reference external" href="http://www.hdfgroup.org/HDF5/">Hierarchical Data Format, version 5 (HDF5)</a> files  while <cite>LIBSVM_*</cite> are for <a class="reference external" href="http://www.csie.ntu.edu.tw/~cjlin/libsvm/">Library for Support Vector Machines (LIBSVM)</a> ones.</p>
 <p><strong>HDF5-specific routines</strong></p>
 <dl class="function">
-<dt id="read_hdf5__boost::mpi::communicatorCR.ss.elem::Matrix:double:R.elem::Matrix:double:R.i">
-void <tt class="descname">read_hdf5</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>filename</em>, elem::Matrix&lt;double&gt;&amp; <em>X</em>, elem::Matrix&lt;double&gt;&amp; <em>Y</em>, int <em>blocksize</em><em>=10000</em><big>)</big><a class="headerlink" href="#read_hdf5__boost::mpi::communicatorCR.ss.elem::Matrix:double:R.elem::Matrix:double:R.i" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPP9read_hdf5RKN5boost3mpi12communicatorENSt6stringERN4elem6MatrixIdEERN4elem6MatrixIdEEi">
+void <code class="descclassname"></code><code class="descname">read_hdf5</code><span class="sig-paren">(</span><em class="property">const</em> boost::mpi::communicator &amp;<em>comm</em>, std::string <em>filename</em>, elem::Matrix&lt;double&gt; &amp;<em>X</em>, elem::Matrix&lt;double&gt; &amp;<em>Y</em>, int <em>blocksize</em> = 10000<span class="sig-paren">)</span><a class="headerlink" href="#_CPP9read_hdf5RKN5boost3mpi12communicatorENSt6stringERN4elem6MatrixIdEERN4elem6MatrixIdEEi" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="read_hdf5__boost::mpi::communicatorCR.ss.skylark::base::sparse_matrix_t:double:R.elem::Matrix:double:R.i">
-void <tt class="descname">read_hdf5</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>filename</em>, skylark::base::sparse_matrix_t&lt;double&gt;&amp; <em>X</em>, elem::Matrix&lt;double&gt;&amp; <em>Y</em>, int <em>min_d</em><em>=0</em><big>)</big><a class="headerlink" href="#read_hdf5__boost::mpi::communicatorCR.ss.skylark::base::sparse_matrix_t:double:R.elem::Matrix:double:R.i" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPP9read_hdf5RKN5boost3mpi12communicatorENSt6stringERN7skylark4base15sparse_matrix_tIdEERN4elem6MatrixIdEEi">
+void <code class="descclassname"></code><code class="descname">read_hdf5</code><span class="sig-paren">(</span><em class="property">const</em> boost::mpi::communicator &amp;<em>comm</em>, std::string <em>filename</em>, skylark::base::sparse_matrix_t&lt;double&gt; &amp;<em>X</em>, elem::Matrix&lt;double&gt; &amp;<em>Y</em>, int <em>min_d</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPP9read_hdf5RKN5boost3mpi12communicatorENSt6stringERN7skylark4base15sparse_matrix_tIdEERN4elem6MatrixIdEEi" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads datasets <cite>X</cite> and <cite>Y</cite> from HDF5 <cite>filename</cite> as a pair of matrices <cite>X</cite>, <cite>Y</cite>. Instances are read in bunches of <cite>blocksize</cite> each; <cite>min_d</cite> is the minimum number of features.</p>
 </dd></dl>
 
 <p><strong>LIBSVM-specific routines</strong></p>
 <dl class="function">
-<dt id="read_libsvm__boost::mpi::communicatorCR.ss.elem::Matrix:T:R.elem::Matrix:T:R.i.i">
-void <tt class="descname">read_libsvm</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>filename</em>, elem::Matrix&lt;T&gt;&amp; <em>X</em>, elem::Matrix&lt;T&gt;&amp; <em>Y</em>, int <em>min_d</em><em>=0</em>, int <em>blocksize</em><em>=10000</em><big>)</big><a class="headerlink" href="#read_libsvm__boost::mpi::communicatorCR.ss.elem::Matrix:T:R.elem::Matrix:T:R.i.i" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPP11read_libsvmRKN5boost3mpi12communicatorENSt6stringERN4elem6MatrixI1TEERN4elem6MatrixI1TEEii">
+void <code class="descclassname"></code><code class="descname">read_libsvm</code><span class="sig-paren">(</span><em class="property">const</em> boost::mpi::communicator &amp;<em>comm</em>, std::string <em>filename</em>, elem::Matrix&lt;T&gt; &amp;<em>X</em>, elem::Matrix&lt;T&gt; &amp;<em>Y</em>, int <em>min_d</em> = 0, int <em>blocksize</em> = 10000<span class="sig-paren">)</span><a class="headerlink" href="#_CPP11read_libsvmRKN5boost3mpi12communicatorENSt6stringERN4elem6MatrixI1TEERN4elem6MatrixI1TEEii" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="read_libsvm__boost::mpi::communicatorCR.ss.skylark::base::sparse_matrix_t:T:R.elem::Matrix:T:R.i">
-void <tt class="descname">read_libsvm</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>filename</em>, <a class="reference internal" href="base.html#skylark::base::sparse_matrix_t:T:__struct" title="skylark::base::sparse_matrix_t&lt;T&gt;">skylark::base::sparse_matrix_t&lt;T&gt;&amp;</a> <em>X</em>, elem::Matrix&lt;T&gt;&amp; <em>Y</em>, int <em>min_d</em><em>=0</em><big>)</big><a class="headerlink" href="#read_libsvm__boost::mpi::communicatorCR.ss.skylark::base::sparse_matrix_t:T:R.elem::Matrix:T:R.i" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPP11read_libsvmRKN5boost3mpi12communicatorENSt6stringERN7skylark4base15sparse_matrix_tI1TEERN4elem6MatrixI1TEEi">
+void <code class="descclassname"></code><code class="descname">read_libsvm</code><span class="sig-paren">(</span><em class="property">const</em> boost::mpi::communicator &amp;<em>comm</em>, std::string <em>filename</em>, skylark::base::sparse_matrix_t&lt;T&gt; &amp;<em>X</em>, elem::Matrix&lt;T&gt; &amp;<em>Y</em>, int <em>min_d</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPP11read_libsvmRKN5boost3mpi12communicatorENSt6stringERN7skylark4base15sparse_matrix_tI1TEERN4elem6MatrixI1TEEi" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads data from LIBSVM <cite>filename</cite> as a pair of matrices <cite>X</cite>, <cite>Y</cite>. Instances are read in bunches of <cite>blocksize</cite> each; <cite>min_d</cite> is the minimum number of features.</p>
 </dd></dl>
 
 <p><strong>Utility routines</strong></p>
 <dl class="function">
-<dt id="read_hdf5_dataset__H5::H5FileR.ss.iP.i.i">
-void <tt class="descname">read_hdf5_dataset</tt><big>(</big>H5::H5File&amp; <em>file</em>, std::string <em>name</em>, int* <em>buffer</em>, int <em>offset</em>, int <em>count</em><big>)</big><a class="headerlink" href="#read_hdf5_dataset__H5::H5FileR.ss.iP.i.i" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPP17read_hdf5_datasetRN2H56H5FileENSt6stringEPiii">
+void <code class="descclassname"></code><code class="descname">read_hdf5_dataset</code><span class="sig-paren">(</span>H5::H5File &amp;<em>file</em>, std::string <em>name</em>, int *<em>buffer</em>, int <em>offset</em>, int <em>count</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPP17read_hdf5_datasetRN2H56H5FileENSt6stringEPiii" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="read_hdf5_dataset__H5::H5FileR.ss.doubleP.i.i">
-void <tt class="descname">read_hdf5_dataset</tt><big>(</big>H5::H5File&amp; <em>file</em>, std::string <em>name</em>, double* <em>buffer</em>, int <em>offset</em>, int <em>count</em><big>)</big><a class="headerlink" href="#read_hdf5_dataset__H5::H5FileR.ss.doubleP.i.i" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPP17read_hdf5_datasetRN2H56H5FileENSt6stringEPdii">
+void <code class="descclassname"></code><code class="descname">read_hdf5_dataset</code><span class="sig-paren">(</span>H5::H5File &amp;<em>file</em>, std::string <em>name</em>, double *<em>buffer</em>, int <em>offset</em>, int <em>count</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPP17read_hdf5_datasetRN2H56H5FileENSt6stringEPdii" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads <cite>count</cite> entries from the <cite>name</cite> dataset in HDF5 <cite>file</cite> starting at <cite>offset</cite> and collects them into <cite>buffer</cite>.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="read_model_file__ss.elem::Matrix:double:R">
-void <tt class="descname">read_model_file</tt><big>(</big>std::string <em>filename</em>, elem::Matrix&lt;double&gt;&amp; <em>W</em><big>)</big><a class="headerlink" href="#read_model_file__ss.elem::Matrix:double:R" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPP15read_model_fileNSt6stringERN4elem6MatrixIdEE">
+void <code class="descclassname"></code><code class="descname">read_model_file</code><span class="sig-paren">(</span>std::string <em>filename</em>, elem::Matrix&lt;double&gt; &amp;<em>W</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPP15read_model_fileNSt6stringERN4elem6MatrixIdEE" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads the values from model file <cite>filename</cite> into matrix <cite>W</cite>; model file is expected to start with a line of the form:
 <cite># Dimensions m n</cite> for an <cite>m x n</cite> matrix <cite>W</cite> followed by lines containing the values of successive rows of the matrix.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="read_header__boost::mpi::communicatorCR.ss">
-std::string <tt class="descname">read_header</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>filename</em><big>)</big><a class="headerlink" href="#read_header__boost::mpi::communicatorCR.ss" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPP11read_headerRKN5boost3mpi12communicatorENSt6stringE">
+std::string <code class="descclassname"></code><code class="descname">read_header</code><span class="sig-paren">(</span><em class="property">const</em> boost::mpi::communicator &amp;<em>comm</em>, std::string <em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPP11read_headerRKN5boost3mpi12communicatorENSt6stringE" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the first line of <cite>filename</cite>.</p>
 </dd></dl>
 
@@ -122,13 +120,13 @@ std::string <tt class="descname">read_header</tt><big>(</big>const boost::mpi::c
 <div class="section" id="writing">
 <h3>Writing<a class="headerlink" href="#writing" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
-<dt id="write_hdf5__boost::mpi::communicatorCR.ss.elem::Matrix:double:R.elem::Matrix:double:R">
-int <tt class="descname">write_hdf5</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>filename</em>, elem::Matrix&lt;double&gt;&amp; <em>X</em>, elem::Matrix&lt;double&gt;&amp; <em>Y</em><big>)</big><a class="headerlink" href="#write_hdf5__boost::mpi::communicatorCR.ss.elem::Matrix:double:R.elem::Matrix:double:R" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPP10write_hdf5RKN5boost3mpi12communicatorENSt6stringERN4elem6MatrixIdEERN4elem6MatrixIdEE">
+int <code class="descclassname"></code><code class="descname">write_hdf5</code><span class="sig-paren">(</span><em class="property">const</em> boost::mpi::communicator &amp;<em>comm</em>, std::string <em>filename</em>, elem::Matrix&lt;double&gt; &amp;<em>X</em>, elem::Matrix&lt;double&gt; &amp;<em>Y</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPP10write_hdf5RKN5boost3mpi12communicatorENSt6stringERN4elem6MatrixIdEERN4elem6MatrixIdEE" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="write_hdf5__ss.skylark::base::sparse_matrix_t:double:R.elem::Matrix:double:R">
-int <tt class="descname">write_hdf5</tt><big>(</big>std::string <em>filename</em>, skylark::base::sparse_matrix_t&lt;double&gt;&amp; <em>X</em>, elem::Matrix&lt;double&gt;&amp; <em>Y</em><big>)</big><a class="headerlink" href="#write_hdf5__ss.skylark::base::sparse_matrix_t:double:R.elem::Matrix:double:R" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPP10write_hdf5NSt6stringERN7skylark4base15sparse_matrix_tIdEERN4elem6MatrixIdEE">
+int <code class="descclassname"></code><code class="descname">write_hdf5</code><span class="sig-paren">(</span>std::string <em>filename</em>, skylark::base::sparse_matrix_t&lt;double&gt; &amp;<em>X</em>, elem::Matrix&lt;double&gt; &amp;<em>Y</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPP10write_hdf5NSt6stringERN7skylark4base15sparse_matrix_tIdEERN4elem6MatrixIdEE" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes feature/value pairs (in matrix <cite>X</cite>) and labels (in matrix <cite>Y</cite>) to the HDF5 <cite>filename</cite> and returns 0 to signal successfully completed operation.</p>
 <blockquote>
 <div><ul class="simple">
@@ -150,17 +148,17 @@ int <tt class="descname">write_hdf5</tt><big>(</big>std::string <em>filename</em
 <dl class="docutils">
 <dt>The following data formats are supported:</dt>
 <dd><ul class="first last simple">
-<li>Hierarchical Data Format (HDF5)             : <tt class="docutils literal"><span class="pre">hdf5</span></tt> class</li>
-<li>Matrix Market exchange format               : <tt class="docutils literal"><span class="pre">mtx</span></tt> class</li>
-<li>Library for Supprort Vector Machines format : <tt class="docutils literal"><span class="pre">libsvm</span></tt> class</li>
-<li>Raw text format                             : <tt class="docutils literal"><span class="pre">txt</span></tt> class</li>
+<li>Hierarchical Data Format (HDF5)             : <code class="docutils literal"><span class="pre">hdf5</span></code> class</li>
+<li>Matrix Market exchange format               : <code class="docutils literal"><span class="pre">mtx</span></code> class</li>
+<li>Library for Supprort Vector Machines format : <code class="docutils literal"><span class="pre">libsvm</span></code> class</li>
+<li>Raw text format                             : <code class="docutils literal"><span class="pre">txt</span></code> class</li>
 </ul>
 </dd>
 <dt>Three operations are exported, as appropriate:</dt>
 <dd><ul class="first last simple">
-<li><tt class="docutils literal"><span class="pre">read()</span></tt></li>
-<li><tt class="docutils literal"><span class="pre">write()</span></tt></li>
-<li><tt class="docutils literal"><span class="pre">stream()</span></tt></li>
+<li><code class="docutils literal"><span class="pre">read()</span></code></li>
+<li><code class="docutils literal"><span class="pre">write()</span></code></li>
+<li><code class="docutils literal"><span class="pre">stream()</span></code></li>
 </ul>
 </dd>
 </dl>
@@ -168,16 +166,16 @@ int <tt class="descname">write_hdf5</tt><big>(</big>std::string <em>filename</em
 data is (or is expected to be) for the operation to complete and as a last
 argument a boolean flag for whether the operation will use parallel IO or
 not.</p>
-<p><tt class="docutils literal"><span class="pre">read()</span></tt> is typically provided the <tt class="docutils literal"><span class="pre">matrix_type</span></tt> of the object to load in memory
-as its first argument. <tt class="docutils literal"><span class="pre">write()</span></tt> gets the matrix object itself as its only
+<p><code class="docutils literal"><span class="pre">read()</span></code> is typically provided the <code class="docutils literal"><span class="pre">matrix_type</span></code> of the object to load in memory
+as its first argument. <code class="docutils literal"><span class="pre">write()</span></code> gets the matrix object itself as its only
 argument.</p>
 <dl class="docutils">
 <dt>Matrix types are identified with string identifiers that are self-explanatory:</dt>
 <dd><ul class="first last simple">
-<li><tt class="docutils literal"><span class="pre">'numpy-dense'</span></tt></li>
-<li><tt class="docutils literal"><span class="pre">'elemental-dense'</span></tt></li>
-<li><tt class="docutils literal"><span class="pre">'scipy-sparse'</span></tt></li>
-<li><tt class="docutils literal"><span class="pre">'combblas-sparse'</span></tt></li>
+<li><code class="docutils literal"><span class="pre">'numpy-dense'</span></code></li>
+<li><code class="docutils literal"><span class="pre">'elemental-dense'</span></code></li>
+<li><code class="docutils literal"><span class="pre">'scipy-sparse'</span></code></li>
+<li><code class="docutils literal"><span class="pre">'combblas-sparse'</span></code></li>
 </ul>
 </dd>
 </dl>
@@ -187,31 +185,31 @@ argument.</p>
 </div>
 <dl class="function">
 <dt id="skylark.io._usage_tests">
-<tt class="descclassname">skylark.io.</tt><tt class="descname">_usage_tests</tt><big>(</big><em>usps_path='./datasets/usps.t'</em><big>)</big><a class="headerlink" href="#skylark.io._usage_tests" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">skylark.io.</code><code class="descname">_usage_tests</code><span class="sig-paren">(</span><em>usps_path='./datasets/usps.t'</em><span class="sig-paren">)</span><a class="headerlink" href="#skylark.io._usage_tests" title="Permalink to this definition">¶</a></dt>
 <dd><p>Various simple example scenaria for showing the usage of the IO facilities</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="skylark.io.elemental_dense">
-<em class="property">class </em><tt class="descclassname">skylark.io.</tt><tt class="descname">elemental_dense</tt><a class="headerlink" href="#skylark.io.elemental_dense" title="Permalink to this definition">¶</a></dt>
-<dd><p>Utility functions for <tt class="docutils literal"><span class="pre">'elemental-dense'</span></tt> matrices.</p>
+<em class="property">class </em><code class="descclassname">skylark.io.</code><code class="descname">elemental_dense</code><a class="headerlink" href="#skylark.io.elemental_dense" title="Permalink to this definition">¶</a></dt>
+<dd><p>Utility functions for <code class="docutils literal"><span class="pre">'elemental-dense'</span></code> matrices.</p>
 <dl class="classmethod">
 <dt id="skylark.io.elemental_dense.get_constructor">
-<em class="property">classmethod </em><tt class="descname">get_constructor</tt><big>(</big><em>distribution='MC_MR'</em><big>)</big><a class="headerlink" href="#skylark.io.elemental_dense.get_constructor" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="descname">get_constructor</code><span class="sig-paren">(</span><em>distribution='MC_MR'</em><span class="sig-paren">)</span><a class="headerlink" href="#skylark.io.elemental_dense.get_constructor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Constructor for a matrix distribution.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>distribution</strong> : string</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>distribution</strong> : string</p>
 <blockquote>
 <div><p>String identifier of matrix distribution.</p>
 </div></blockquote>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>constructor</strong> : object</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>constructor</strong> : object</p>
 <blockquote class="last">
-<div><p>Constructor; <tt class="docutils literal"><span class="pre">constructor()</span></tt> will instantiate the matrix.</p>
+<div><p>Constructor; <code class="docutils literal"><span class="pre">constructor()</span></code> will instantiate the matrix.</p>
 </div></blockquote>
 </td>
 </tr>
@@ -221,19 +219,19 @@ argument.</p>
 
 <dl class="classmethod">
 <dt id="skylark.io.elemental_dense.get_distribution">
-<em class="property">classmethod </em><tt class="descname">get_distribution</tt><big>(</big><em>A</em><big>)</big><a class="headerlink" href="#skylark.io.elemental_dense.get_distribution" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="descname">get_distribution</code><span class="sig-paren">(</span><em>A</em><span class="sig-paren">)</span><a class="headerlink" href="#skylark.io.elemental_dense.get_distribution" title="Permalink to this definition">¶</a></dt>
 <dd><p>String identifier of matrix distribution.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>A</strong> : <tt class="docutils literal"><span class="pre">'elemental-dense'</span></tt> matrix</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>A</strong> : <code class="docutils literal"><span class="pre">'elemental-dense'</span></code> matrix</p>
 <blockquote>
 <div><p>Input matrix.</p>
 </div></blockquote>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>distribution</strong> : string</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>distribution</strong> : string</p>
 <blockquote class="last">
 <div><p>String identifier of matrix distribution.</p>
 </div></blockquote>
@@ -245,19 +243,19 @@ argument.</p>
 
 <dl class="classmethod">
 <dt id="skylark.io.elemental_dense.get_indices">
-<em class="property">classmethod </em><tt class="descname">get_indices</tt><big>(</big><em>A</em><big>)</big><a class="headerlink" href="#skylark.io.elemental_dense.get_indices" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="descname">get_indices</code><span class="sig-paren">(</span><em>A</em><span class="sig-paren">)</span><a class="headerlink" href="#skylark.io.elemental_dense.get_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Matrix indices.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>A</strong> : <tt class="docutils literal"><span class="pre">'elemental-dense'</span></tt> matrix</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>A</strong> : <code class="docutils literal"><span class="pre">'elemental-dense'</span></code> matrix</p>
 <blockquote>
 <div><p>Input matrix.</p>
 </div></blockquote>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>indices</strong> : list of integers</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>indices</strong> : list of integers</p>
 <blockquote class="last">
 <div><p>Global indices into the the vector of entries of matrix A that are
 locally hosted if the matrix is traversed in column-major mode.</p>
@@ -272,63 +270,63 @@ locally hosted if the matrix is traversed in column-major mode.</p>
 
 <dl class="class">
 <dt id="skylark.io.hdf5">
-<em class="property">class </em><tt class="descclassname">skylark.io.</tt><tt class="descname">hdf5</tt><big>(</big><em>fpath</em>, <em>dataset='data'</em>, <em>parallel=False</em>, <em>atomic=False</em><big>)</big><a class="headerlink" href="#skylark.io.hdf5" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">skylark.io.</code><code class="descname">hdf5</code><span class="sig-paren">(</span><em>fpath</em>, <em>dataset='data'</em>, <em>parallel=False</em>, <em>atomic=False</em><span class="sig-paren">)</span><a class="headerlink" href="#skylark.io.hdf5" title="Permalink to this definition">¶</a></dt>
 <dd><p>IO support for HDF5.</p>
 <ul class="simple">
-<li><tt class="docutils literal"><span class="pre">read()</span></tt> can load as <tt class="docutils literal"><span class="pre">'elemental-dense'</span></tt> and <tt class="docutils literal"><span class="pre">'numpy-dense'</span></tt> matrix types;
-for <tt class="docutils literal"><span class="pre">'elemental-dense'</span></tt>, data <tt class="docutils literal"><span class="pre">distribution</span></tt> should also be indicated.</li>
-<li><tt class="docutils literal"><span class="pre">write()</span></tt> can save <tt class="docutils literal"><span class="pre">'elemental-dense'</span></tt> and <tt class="docutils literal"><span class="pre">'numpy-dense'</span></tt> matrix types.</li>
+<li><code class="docutils literal"><span class="pre">read()</span></code> can load as <code class="docutils literal"><span class="pre">'elemental-dense'</span></code> and <code class="docutils literal"><span class="pre">'numpy-dense'</span></code> matrix types;
+for <code class="docutils literal"><span class="pre">'elemental-dense'</span></code>, data <code class="docutils literal"><span class="pre">distribution</span></code> should also be indicated.</li>
+<li><code class="docutils literal"><span class="pre">write()</span></code> can save <code class="docutils literal"><span class="pre">'elemental-dense'</span></code> and <code class="docutils literal"><span class="pre">'numpy-dense'</span></code> matrix types.</li>
 </ul>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <ul class="last simple">
-<li>Parallel IO requires a parallel-enabled build of the <tt class="docutils literal"><span class="pre">HDF5</span></tt>
-library followed by compilation of <tt class="docutils literal"><span class="pre">h5py</span></tt> python bindings in MPI
+<li>Parallel IO requires a parallel-enabled build of the <code class="docutils literal"><span class="pre">HDF5</span></code>
+library followed by compilation of <code class="docutils literal"><span class="pre">h5py</span></code> python bindings in MPI
 mode. These steps are detailed in
 <a class="reference external" href="http://www.h5py.org/docs/topics/mpi.html">http://www.h5py.org/docs/topics/mpi.html</a>.</li>
 <li>Parallel IO reads and writes matrix data in vectorized layout
 (column-major). The shape of the matrix is expected separately in
-<tt class="docutils literal"><span class="pre">'shape'</span></tt> dataset.</li>
+<code class="docutils literal"><span class="pre">'shape'</span></code> dataset.</li>
 </ul>
 </div>
 <dl class="method">
 <dt id="skylark.io.hdf5.read">
-<tt class="descname">read</tt><big>(</big><em>matrix_type='elemental-dense'</em>, <em>distribution='MC_MR'</em><big>)</big><a class="headerlink" href="#skylark.io.hdf5.read" title="Permalink to this definition">¶</a></dt>
+<code class="descname">read</code><span class="sig-paren">(</span><em>matrix_type='elemental-dense'</em>, <em>distribution='MC_MR'</em><span class="sig-paren">)</span><a class="headerlink" href="#skylark.io.hdf5.read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read dataset from an HDF5 file as a matrix.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>matrix_type</strong> : string, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>matrix_type</strong> : string, optional</p>
 <blockquote>
 <div><p>String identifier for the matrix object that is read in. Two options
 are available:</p>
 <blockquote>
 <div><ul class="simple">
-<li><tt class="docutils literal"><span class="pre">'elemental-dense'</span></tt> for DistMatrix&lt;double,...&gt; objects in Elemental
+<li><code class="docutils literal"><span class="pre">'elemental-dense'</span></code> for DistMatrix&lt;double,...&gt; objects in Elemental
 library as wrapped in python (default).</li>
-<li><tt class="docutils literal"><span class="pre">'numpy-dense'</span></tt> for array objects in numpy package.</li>
+<li><code class="docutils literal"><span class="pre">'numpy-dense'</span></code> for array objects in numpy package.</li>
 </ul>
 </div></blockquote>
 </div></blockquote>
 <p><strong>distribution</strong> : string, optional</p>
 <blockquote>
 <div><p>String identifier for the matrix data distribution for the case the
-input matrix is required to be of <tt class="docutils literal"><span class="pre">'elemental-dense'</span></tt> type; this argument
-is ignored in the <tt class="docutils literal"><span class="pre">'numpy-dense'</span></tt> case. Available options are:</p>
+input matrix is required to be of <code class="docutils literal"><span class="pre">'elemental-dense'</span></code> type; this argument
+is ignored in the <code class="docutils literal"><span class="pre">'numpy-dense'</span></code> case. Available options are:</p>
 <blockquote>
 <div><ul class="simple">
-<li><tt class="docutils literal"><span class="pre">'MC_MR'</span></tt> (default)</li>
-<li><tt class="docutils literal"><span class="pre">'VC_STAR'</span></tt></li>
-<li><tt class="docutils literal"><span class="pre">'VR_STAR'</span></tt></li>
-<li><tt class="docutils literal"><span class="pre">'STAR_VC'</span></tt></li>
-<li><tt class="docutils literal"><span class="pre">'STAR_VR'</span></tt></li>
+<li><code class="docutils literal"><span class="pre">'MC_MR'</span></code> (default)</li>
+<li><code class="docutils literal"><span class="pre">'VC_STAR'</span></code></li>
+<li><code class="docutils literal"><span class="pre">'VR_STAR'</span></code></li>
+<li><code class="docutils literal"><span class="pre">'STAR_VC'</span></code></li>
+<li><code class="docutils literal"><span class="pre">'STAR_VR'</span></code></li>
 </ul>
 </div></blockquote>
 </div></blockquote>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>matrix</strong> : Python-wrapped DistMatrix&lt;double,...&gt; or numpy array</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>matrix</strong> : Python-wrapped DistMatrix&lt;double,...&gt; or numpy array</p>
 <blockquote class="last">
 <div><p>Matrix read.</p>
 </div></blockquote>
@@ -340,19 +338,19 @@ is ignored in the <tt class="docutils literal"><span class="pre">'numpy-dense'</
 
 <dl class="method">
 <dt id="skylark.io.hdf5.write">
-<tt class="descname">write</tt><big>(</big><em>A</em><big>)</big><a class="headerlink" href="#skylark.io.hdf5.write" title="Permalink to this definition">¶</a></dt>
+<code class="descname">write</code><span class="sig-paren">(</span><em>A</em><span class="sig-paren">)</span><a class="headerlink" href="#skylark.io.hdf5.write" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write matrix as a dataset to an HDF5 file.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>A</strong> : Python-wrapped DistMatrix&lt;double,...&gt; or numpy array</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>A</strong> : Python-wrapped DistMatrix&lt;double,...&gt; or numpy array</p>
 <blockquote>
 <div><p>Matrix to write.</p>
 </div></blockquote>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first last"><strong>None</strong> :</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>None</strong> :</p>
 </td>
 </tr>
 </tbody>
@@ -363,12 +361,12 @@ is ignored in the <tt class="docutils literal"><span class="pre">'numpy-dense'</
 
 <dl class="class">
 <dt id="skylark.io.libsvm">
-<em class="property">class </em><tt class="descclassname">skylark.io.</tt><tt class="descname">libsvm</tt><big>(</big><em>fpath</em>, <em>parallel=False</em><big>)</big><a class="headerlink" href="#skylark.io.libsvm" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">skylark.io.</code><code class="descname">libsvm</code><span class="sig-paren">(</span><em>fpath</em>, <em>parallel=False</em><span class="sig-paren">)</span><a class="headerlink" href="#skylark.io.libsvm" title="Permalink to this definition">¶</a></dt>
 <dd><p>IO support for libsvm.</p>
 <p>A libsvm file for our purposes consists of lines. Each line corresponds to
 an instance: this starts with a <em>label</em> (the class label of the instance)
 and it is followed by the set of its <em>feature</em>/<em>value</em> pairs.</p>
-<p><tt class="docutils literal"><span class="pre">read()</span></tt> and <tt class="docutils literal"><span class="pre">stream()</span></tt> operations are supported that produce
+<p><code class="docutils literal"><span class="pre">read()</span></code> and <code class="docutils literal"><span class="pre">stream()</span></code> operations are supported that produce
 (sparse-matrix, vector) pairs. The sparse matrix uses the <em>features</em> as
 column indices, the <em>values</em> as matrix entries and a running <em>index</em> of
 the instances as row indices. The vector accumulates the <em>labels</em>.</p>
@@ -382,25 +380,25 @@ the instances as row indices. The vector accumulates the <em>labels</em>.</p>
 </ul>
 </dd>
 </dl>
-<p>and these are returned from <tt class="docutils literal"><span class="pre">read_vectors()</span></tt> and <tt class="docutils literal"><span class="pre">stream_vectors()</span></tt>
-methods (<tt class="docutils literal"><span class="pre">vectors_to_matrices()</span></tt> provides the conversion).</p>
+<p>and these are returned from <code class="docutils literal"><span class="pre">read_vectors()</span></code> and <code class="docutils literal"><span class="pre">stream_vectors()</span></code>
+methods (<code class="docutils literal"><span class="pre">vectors_to_matrices()</span></code> provides the conversion).</p>
 <p>In streaming, the file is not read in one shot (as it happens e.g. in
-<tt class="docutils literal"><span class="pre">read()</span></tt>), but in stages: each stage consumes the next <tt class="docutils literal"><span class="pre">block_size</span></tt>
+<code class="docutils literal"><span class="pre">read()</span></code>), but in stages: each stage consumes the next <code class="docutils literal"><span class="pre">block_size</span></code>
 instances (i.e lines) in the input file (or the number of lines left,
 whichever happens to be smallest), thus dramatically bounding overall memory
 requirements.</p>
 <dl class="method">
 <dt id="skylark.io.libsvm.read">
-<tt class="descname">read</tt><big>(</big><big>)</big><a class="headerlink" href="#skylark.io.libsvm.read" title="Permalink to this definition">¶</a></dt>
+<code class="descname">read</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#skylark.io.libsvm.read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read the (features matrix, labels vector) pair from a libsvm file.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>None</strong> :</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>None</strong> :</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>matrix</strong> : scipy sparse array</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>matrix</strong> : scipy sparse array</p>
 <blockquote>
 <div><p>Features matrix read.</p>
 </div></blockquote>
@@ -416,17 +414,17 @@ requirements.</p>
 
 <dl class="method">
 <dt id="skylark.io.libsvm.read_vectors">
-<tt class="descname">read_vectors</tt><big>(</big><big>)</big><a class="headerlink" href="#skylark.io.libsvm.read_vectors" title="Permalink to this definition">¶</a></dt>
+<code class="descname">read_vectors</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#skylark.io.libsvm.read_vectors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read the labels, indices, features and values from a libsvm file as a
 tuple of vectors.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>None</strong> :</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>None</strong> :</p>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>labels</strong> : list of integers</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>labels</strong> : list of integers</p>
 <blockquote>
 <div><p>Class labels of instances.</p>
 </div></blockquote>
@@ -451,13 +449,13 @@ tuple of vectors.</p>
 
 <dl class="method">
 <dt id="skylark.io.libsvm.stream">
-<tt class="descname">stream</tt><big>(</big><em>num_features</em>, <em>block_size=1000</em><big>)</big><a class="headerlink" href="#skylark.io.libsvm.stream" title="Permalink to this definition">¶</a></dt>
+<code class="descname">stream</code><span class="sig-paren">(</span><em>num_features</em>, <em>block_size=1000</em><span class="sig-paren">)</span><a class="headerlink" href="#skylark.io.libsvm.stream" title="Permalink to this definition">¶</a></dt>
 <dd><p>Stream the (features matrix, labels vector) pair from a libsvm file.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>num_features</strong> : int</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>num_features</strong> : int</p>
 <blockquote>
 <div><p>Number of features.</p>
 </div></blockquote>
@@ -467,7 +465,7 @@ tuple of vectors.</p>
 </div></blockquote>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>generator</strong> :</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>generator</strong> :</p>
 <blockquote class="last">
 <div><p>A function that behaves like an iterator over the libsvm parts (of
 <cite>block_size</cite> lines max each).</p>
@@ -480,14 +478,14 @@ tuple of vectors.</p>
 
 <dl class="method">
 <dt id="skylark.io.libsvm.stream_vectors">
-<tt class="descname">stream_vectors</tt><big>(</big><em>block_size=1000</em>, <em>type=1</em><big>)</big><a class="headerlink" href="#skylark.io.libsvm.stream_vectors" title="Permalink to this definition">¶</a></dt>
+<code class="descname">stream_vectors</code><span class="sig-paren">(</span><em>block_size=1000</em>, <em>type=1</em><span class="sig-paren">)</span><a class="headerlink" href="#skylark.io.libsvm.stream_vectors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Stream the labels, indices, features and values from a libsvm file as a
 tuple of vectors.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>block_size</strong> : int, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>block_size</strong> : int, optional</p>
 <blockquote>
 <div><p>Number of lines to parse in each iteration.</p>
 </div></blockquote>
@@ -498,7 +496,7 @@ tuple of vectors.</p>
 </div></blockquote>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>generator</strong> :</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>generator</strong> :</p>
 <blockquote>
 <div><p>A function that behaves like an iterator over the tuples of vectors for</p>
 </div></blockquote>
@@ -511,14 +509,14 @@ tuple of vectors.</p>
 
 <dl class="method">
 <dt id="skylark.io.libsvm.vectors_to_matrices">
-<tt class="descname">vectors_to_matrices</tt><big>(</big><em>vectors</em>, <em>num_features=0</em><big>)</big><a class="headerlink" href="#skylark.io.libsvm.vectors_to_matrices" title="Permalink to this definition">¶</a></dt>
+<code class="descname">vectors_to_matrices</code><span class="sig-paren">(</span><em>vectors</em>, <em>num_features=0</em><span class="sig-paren">)</span><a class="headerlink" href="#skylark.io.libsvm.vectors_to_matrices" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>vectors</strong> : tuple of lists</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>vectors</strong> : tuple of lists</p>
 <blockquote>
-<div><p>(labels, indices, features, values); see <tt class="docutils literal"><span class="pre">read_vector()</span></tt> for
+<div><p>(labels, indices, features, values); see <code class="docutils literal"><span class="pre">read_vector()</span></code> for
 decriptions.</p>
 </div></blockquote>
 <p><strong>num_features</strong> : int, optional</p>
@@ -527,10 +525,10 @@ decriptions.</p>
 </div></blockquote>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>generator</strong> :</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>generator</strong> :</p>
 <blockquote class="last">
 <div><p>A function that behaves like an iterator over the libsvm parts (of
-<tt class="docutils literal"><span class="pre">block_size</span></tt> lines max each).</p>
+<code class="docutils literal"><span class="pre">block_size</span></code> lines max each).</p>
 </div></blockquote>
 </td>
 </tr>
@@ -542,45 +540,45 @@ decriptions.</p>
 
 <dl class="class">
 <dt id="skylark.io.mtx">
-<em class="property">class </em><tt class="descclassname">skylark.io.</tt><tt class="descname">mtx</tt><big>(</big><em>fpath</em>, <em>layout='coordinate'</em>, <em>parallel=False</em><big>)</big><a class="headerlink" href="#skylark.io.mtx" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">skylark.io.</code><code class="descname">mtx</code><span class="sig-paren">(</span><em>fpath</em>, <em>layout='coordinate'</em>, <em>parallel=False</em><span class="sig-paren">)</span><a class="headerlink" href="#skylark.io.mtx" title="Permalink to this definition">¶</a></dt>
 <dd><p>IO support for Matrix Market exchange format (MM).</p>
-<p>The <tt class="docutils literal"><span class="pre">layout</span></tt> of the data to is expected to be in <tt class="docutils literal"><span class="pre">'coordinate'</span></tt> or
-<tt class="docutils literal"><span class="pre">'array'</span></tt> MM formats.</p>
+<p>The <code class="docutils literal"><span class="pre">layout</span></code> of the data to is expected to be in <code class="docutils literal"><span class="pre">'coordinate'</span></code> or
+<code class="docutils literal"><span class="pre">'array'</span></code> MM formats.</p>
 <blockquote>
 <div><ul class="simple">
-<li><tt class="docutils literal"><span class="pre">read()</span></tt> can load <tt class="docutils literal"><span class="pre">'numpy-dense'</span></tt>, <tt class="docutils literal"><span class="pre">'scipy-sparse'</span></tt> and
-<tt class="docutils literal"><span class="pre">'combblas-sparse'</span></tt> matrix types from <tt class="docutils literal"><span class="pre">'coordinate'</span></tt> MM format and
-<tt class="docutils literal"><span class="pre">'numpy-dense'</span></tt>, <tt class="docutils literal"><span class="pre">'scipy-sparse'</span></tt> from <tt class="docutils literal"><span class="pre">'array'</span></tt> MM format.</li>
-<li><tt class="docutils literal"><span class="pre">write()</span></tt> can save in <tt class="docutils literal"><span class="pre">'array'</span></tt> and <tt class="docutils literal"><span class="pre">'coordinate'</span></tt> MM formats from
-<tt class="docutils literal"><span class="pre">'numpy-dense'</span></tt> and in <tt class="docutils literal"><span class="pre">'coordinate'</span></tt> MM format from
-<tt class="docutils literal"><span class="pre">'scipy-sparse'</span></tt> and <tt class="docutils literal"><span class="pre">'combblas-sparse'</span></tt> matrix types.</li>
+<li><code class="docutils literal"><span class="pre">read()</span></code> can load <code class="docutils literal"><span class="pre">'numpy-dense'</span></code>, <code class="docutils literal"><span class="pre">'scipy-sparse'</span></code> and
+<code class="docutils literal"><span class="pre">'combblas-sparse'</span></code> matrix types from <code class="docutils literal"><span class="pre">'coordinate'</span></code> MM format and
+<code class="docutils literal"><span class="pre">'numpy-dense'</span></code>, <code class="docutils literal"><span class="pre">'scipy-sparse'</span></code> from <code class="docutils literal"><span class="pre">'array'</span></code> MM format.</li>
+<li><code class="docutils literal"><span class="pre">write()</span></code> can save in <code class="docutils literal"><span class="pre">'array'</span></code> and <code class="docutils literal"><span class="pre">'coordinate'</span></code> MM formats from
+<code class="docutils literal"><span class="pre">'numpy-dense'</span></code> and in <code class="docutils literal"><span class="pre">'coordinate'</span></code> MM format from
+<code class="docutils literal"><span class="pre">'scipy-sparse'</span></code> and <code class="docutils literal"><span class="pre">'combblas-sparse'</span></code> matrix types.</li>
 </ul>
 </div></blockquote>
 <dl class="method">
 <dt id="skylark.io.mtx.read">
-<tt class="descname">read</tt><big>(</big><em>matrix_type='scipy-sparse'</em><big>)</big><a class="headerlink" href="#skylark.io.mtx.read" title="Permalink to this definition">¶</a></dt>
+<code class="descname">read</code><span class="sig-paren">(</span><em>matrix_type='scipy-sparse'</em><span class="sig-paren">)</span><a class="headerlink" href="#skylark.io.mtx.read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read a matrix from an MM file.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>matrix_type</strong> : string, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>matrix_type</strong> : string, optional</p>
 <blockquote>
 <div><p>String identifier for the matrix object that is read in. Three options
 are available:</p>
 <blockquote>
 <div><ul class="simple">
-<li><tt class="docutils literal"><span class="pre">'numpy-dense'</span></tt> for array objects in numpy package.</li>
-<li><tt class="docutils literal"><span class="pre">'scipy-sparse'</span></tt> for sparse array objects in scipy package,
+<li><code class="docutils literal"><span class="pre">'numpy-dense'</span></code> for array objects in numpy package.</li>
+<li><code class="docutils literal"><span class="pre">'scipy-sparse'</span></code> for sparse array objects in scipy package,
 of type <cite>scipy.sparse.csr_matrix</cite> (default).</li>
-<li><tt class="docutils literal"><span class="pre">'combblas-sparse'</span></tt> for array objects in CombBLAS wrapped as python
+<li><code class="docutils literal"><span class="pre">'combblas-sparse'</span></code> for array objects in CombBLAS wrapped as python
 objects of <cite>kdt.Mat</cite> type.</li>
 </ul>
 </div></blockquote>
 </div></blockquote>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first"><strong>matrix</strong> : numpy array or scipy sparse array or CombBLAS kdt.Mat matrix</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>matrix</strong> : numpy array or scipy sparse array or CombBLAS kdt.Mat matrix</p>
 <blockquote class="last">
 <div><p>Matrix read.</p>
 </div></blockquote>
@@ -592,19 +590,19 @@ objects of <cite>kdt.Mat</cite> type.</li>
 
 <dl class="method">
 <dt id="skylark.io.mtx.write">
-<tt class="descname">write</tt><big>(</big><em>A</em><big>)</big><a class="headerlink" href="#skylark.io.mtx.write" title="Permalink to this definition">¶</a></dt>
+<code class="descname">write</code><span class="sig-paren">(</span><em>A</em><span class="sig-paren">)</span><a class="headerlink" href="#skylark.io.mtx.write" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write matrix to an MM file.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>matrix</strong> : numpy array or scipy sparse array or CombBLAS kdt.Mat matrix</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>matrix</strong> : numpy array or scipy sparse array or CombBLAS kdt.Mat matrix</p>
 <blockquote>
 <div><p>Matrix to write.</p>
 </div></blockquote>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first last"><strong>None</strong> :</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>None</strong> :</p>
 </td>
 </tr>
 </tbody>
@@ -615,26 +613,26 @@ objects of <cite>kdt.Mat</cite> type.</li>
 
 <dl class="class">
 <dt id="skylark.io.txt">
-<em class="property">class </em><tt class="descclassname">skylark.io.</tt><tt class="descname">txt</tt><big>(</big><em>fpath</em>, <em>parallel=False</em><big>)</big><a class="headerlink" href="#skylark.io.txt" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">skylark.io.</code><code class="descname">txt</code><span class="sig-paren">(</span><em>fpath</em>, <em>parallel=False</em><span class="sig-paren">)</span><a class="headerlink" href="#skylark.io.txt" title="Permalink to this definition">¶</a></dt>
 <dd><p>IO support for raw text format.</p>
 <ul class="simple">
-<li><tt class="docutils literal"><span class="pre">read()</span></tt> can load as <tt class="docutils literal"><span class="pre">'numpy-dense'</span></tt> matrix type.</li>
-<li><tt class="docutils literal"><span class="pre">write()</span></tt> can save <tt class="docutils literal"><span class="pre">'elemental-dense'</span></tt> and <tt class="docutils literal"><span class="pre">'numpy-dense'</span></tt> matrix types.</li>
+<li><code class="docutils literal"><span class="pre">read()</span></code> can load as <code class="docutils literal"><span class="pre">'numpy-dense'</span></code> matrix type.</li>
+<li><code class="docutils literal"><span class="pre">write()</span></code> can save <code class="docutils literal"><span class="pre">'elemental-dense'</span></code> and <code class="docutils literal"><span class="pre">'numpy-dense'</span></code> matrix types.</li>
 </ul>
 <dl class="method">
 <dt id="skylark.io.txt.read">
-<tt class="descname">read</tt><big>(</big><em>matrix_type='numpy-dense'</em><big>)</big><a class="headerlink" href="#skylark.io.txt.read" title="Permalink to this definition">¶</a></dt>
+<code class="descname">read</code><span class="sig-paren">(</span><em>matrix_type='numpy-dense'</em><span class="sig-paren">)</span><a class="headerlink" href="#skylark.io.txt.read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read dataset from an raw text file as a matrix.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>matrix_type</strong> : string, optional</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>matrix_type</strong> : string, optional</p>
 <blockquote class="last">
 <div><dl class="docutils">
 <dt>String identifier for the matrix object that is read in. One option</dt>
 <dd><ul class="first last simple">
-<li><tt class="docutils literal"><span class="pre">'numpy-dense'</span></tt> for array objects in numpy package (default).</li>
+<li><code class="docutils literal"><span class="pre">'numpy-dense'</span></code> for array objects in numpy package (default).</li>
 </ul>
 </dd>
 </dl>
@@ -647,19 +645,19 @@ objects of <cite>kdt.Mat</cite> type.</li>
 
 <dl class="method">
 <dt id="skylark.io.txt.write">
-<tt class="descname">write</tt><big>(</big><em>A</em><big>)</big><a class="headerlink" href="#skylark.io.txt.write" title="Permalink to this definition">¶</a></dt>
+<code class="descname">write</code><span class="sig-paren">(</span><em>A</em><span class="sig-paren">)</span><a class="headerlink" href="#skylark.io.txt.write" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write matrix in raw text format.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters :</th><td class="field-body"><p class="first"><strong>A</strong> : Python-wrapped DistMatrix&lt;double,...&gt; or numpy array</p>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>A</strong> : Python-wrapped DistMatrix&lt;double,...&gt; or numpy array</p>
 <blockquote>
 <div><p>Matrix to write.</p>
 </div></blockquote>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns :</th><td class="field-body"><p class="first last"><strong>None</strong> :</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>None</strong> :</p>
 </td>
 </tr>
 </tbody>
@@ -720,14 +718,14 @@ objects of <cite>kdt.Mat</cite> type.</li>
 <p>As mentioned in Section <a class="reference internal" href="sketching.html#sketching-transforms-label"><em>Sketching Transforms</em></a> sketches can be
 serialized using the following API:</p>
 <dl class="function">
-<dt id="to_ptreeC">
-boost::property_tree::ptree <tt class="descname">to_ptree</tt><big>(</big><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#to_ptreeC" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPPK8to_ptreev">
+boost::property_tree::ptree <code class="descclassname"></code><code class="descname">to_ptree</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPK8to_ptreev" title="Permalink to this definition">¶</a></dt>
 <dd><p>Serialize the sketch transform to a ptree structure.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="from_ptree__boost::property_tree::ptreeCR">
-<em class="property">static</em> sketch_transform_t* <tt class="descname">from_ptree</tt><big>(</big>const boost::property_tree::ptree&amp; <em>pt</em><big>)</big><a class="headerlink" href="#from_ptree__boost::property_tree::ptreeCR" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPP10from_ptreeRKN5boost13property_tree5ptreeE">
+<em class="property">static</em> sketch_transform_t *<code class="descclassname"></code><code class="descname">from_ptree</code><span class="sig-paren">(</span><em class="property">const</em> boost::property_tree::ptree &amp;<em>pt</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPP10from_ptreeRKN5boost13property_tree5ptreeE" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load a sketch transform from a ptree structure.</p>
 </dd></dl>
 
@@ -768,7 +766,7 @@ C++.</p>
 
 
       </div>
-      <div class="bottomnav">
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
       
         <p>
         «&#160;&#160;<a href="ml.html">Machine Learning</a>
@@ -780,9 +778,9 @@ C++.</p>
 
       </div>
 
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright IBM Corporation 2012-2014.  All Rights Reserved.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b1.
     </div>
   </body>
 </html>

@@ -610,10 +610,9 @@ private:
         }
     }
 
-
-    void sketch_gemm(const matrix_type& A,
-        output_matrix_type& sketch_of_A,
-        skylark::sketch::rowwise_tag tag) const {
+    void apply_impl_dist (const matrix_type& A,
+                          output_matrix_type& sketch_of_A,
+                          skylark::sketch::rowwise_tag tag) const {
 
         const int sketch_height = sketch_of_A.Height();
         const int sketch_width  = sketch_of_A.Width();
@@ -632,9 +631,9 @@ private:
     }
 
 
-    void sketch_gemm(const matrix_type& A,
-        output_matrix_type& sketch_of_A,
-        skylark::sketch::columnwise_tag tag) const {
+    void apply_impl_dist (const matrix_type& A,
+                          output_matrix_type& sketch_of_A,
+                          skylark::sketch::columnwise_tag tag) const {
 
         const int sketch_height = sketch_of_A.Height();
         const int sketch_width  = sketch_of_A.Width();
@@ -650,21 +649,6 @@ private:
             outer_panel_gemm(A, sketch_of_A, tag);
         else
             panel_matrix_gemm(A, sketch_of_A, tag);
-    }
-
-    void apply_impl_dist (const matrix_type& A,
-                          output_matrix_type& sketch_of_A,
-                          skylark::sketch::rowwise_tag tag) const {
-
-        sketch_gemm(A, sketch_of_A, tag);
-    }
-
-
-    void apply_impl_dist (const matrix_type& A,
-                          output_matrix_type& sketch_of_A,
-                          skylark::sketch::columnwise_tag tag) const {
-
-        sketch_gemm(A, sketch_of_A, tag);
     }
 
 };

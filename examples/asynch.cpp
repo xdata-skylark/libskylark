@@ -5,9 +5,7 @@
 #include <boost/format.hpp>
 #include <skylark.hpp>
 
-#if HAVE_HDF5
 #include <H5Cpp.h>
-#endif
 
 namespace bmpi =  boost::mpi;
 namespace skybase = skylark::base;
@@ -18,7 +16,6 @@ namespace skyutil = skylark::utility;
 
 int main(int argc, char** argv) {
 
-    #if HAVE_HDF5
     elem::Initialize(argc, argv);
     skybase::context_t context(23234);
 
@@ -74,8 +71,6 @@ int main(int argc, char** argv) {
     asy_params.log_level = 2;
     skyalg::AsyFCG(A, b, x, context, asy_params);
     std::cout <<"Took " << boost::format("%.2e") % timer.elapsed() << " sec\n";
-
-    #endif
 
     return 0;
 }

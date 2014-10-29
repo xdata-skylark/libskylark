@@ -58,7 +58,7 @@ if (SKYLARK_HAVE_FFTW)
 
 endif (SKYLARK_HAVE_FFTW)
 
-if (SKYLARK_HAVE_OPENMP)
+if (SKYLARK_HAVE_OPENMP AND SKYLARK_HAVE_HDF5)
   add_executable(asynch asynch.cpp)
   target_link_libraries(asynch
                         ${Elemental_LIBRARY}
@@ -69,7 +69,7 @@ if (SKYLARK_HAVE_OPENMP)
                         ${HDF5_LIBRARIES}
                         ${ZLIB_LIBRARIES})
   install_targets(/bin/examples asynch)
-endif (SKYLARK_HAVE_OPENMP)
+endif (SKYLARK_HAVE_OPENMP AND SKYLARK_HAVE_HDF5)
 
 if(FALSE)
 if (SKYLARK_HAVE_COMBBLAS)

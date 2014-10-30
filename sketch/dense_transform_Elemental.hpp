@@ -12,8 +12,4 @@
 #include "dense_transform_Elemental_star_rowdist_star_star.hpp"
 #include "dense_transform_Elemental_star_rowdist_circ_circ.hpp"
 
-#include "dense_transform_Elemental_mc_mr_local.hpp"
-#include "dense_transform_Elemental_coldist_star_local.hpp"
-#include "dense_transform_Elemental_star_rowdist_local.hpp"
-
 #endif // SKYLARK_DENSE_TRANSFORM_ELEMENTAL_HPP

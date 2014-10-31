@@ -317,6 +317,12 @@ if _ELEM_INSTALLED:
       elif isinstance(A, elem.DistMatrix_d_STAR_VR):
         self._ctype = "DistMatrix_STAR_VR"
         self._typeid = "STAR_VR"
+      elif isinstance(A, elem.DistMatrix_d_STAR_STAR):
+        self._ctype = "SharedMatrix"
+        self._typeid = "STAR_STAR"
+      elif isinstance(A, elem.DistMatrix_d_CIRC_CIRC):
+        self._ctype = "RootMatrix"
+        self._typeid = "CIRC_CIRC"
       else:
         raise errors.UnsupportedError("Unsupported Elemental type")
 
@@ -404,7 +410,8 @@ def _adapt(obj):
     import elem
     elemcls = [elem.DistMatrix_d, 
                elem.DistMatrix_d_VR_STAR, elem.DistMatrix_d_VC_STAR,
-               elem.DistMatrix_d_STAR_VC, elem.DistMatrix_d_STAR_VR]
+               elem.DistMatrix_d_STAR_VC, elem.DistMatrix_d_STAR_VR,
+               elem.DistMatrix_d_STAR_STAR, elem.DistMatrix_d_CIRC_CIRC]
   else:
     elemcls = []
 
@@ -445,6 +452,8 @@ if _ELEM_INSTALLED:
   _map_to_ctor["DistMatrix_VC_STAR"] = lambda m, n, c : _ElemAdapter.ctor("VC_STAR", m, n, c)
   _map_to_ctor["DistMatrix_STAR_VR"] = lambda m, n, c : _ElemAdapter.ctor("STAR_VC", m, n, c)
   _map_to_ctor["DistMatrix_STAR_VC"] = lambda m, n, c : _ElemAdapter.ctor("STAR_VR", m, n, c)
+  _map_to_ctor["DistMatrix_STAR_STAR"] = lambda m, n, c : _ElemAdapter.ctor("STAR_STAR", m, n, c)
+  _map_to_ctor["DistMatrix_CIRC_CIRC"] = lambda m, n, c : _ElemAdapter.ctor("CIRC_CIRC", m, n, c)
 
 if _KDT_INSTALLED:
   _map_to_ctor["DistSparseMatrix"] = _KDTAdapter.ctor

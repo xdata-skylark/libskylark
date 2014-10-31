@@ -1,18 +1,14 @@
 #!/usr/bin/env python
 # Usage: python sketch_solve.py libsvm_trainfile libsvm_testfile
 
-from mpi4py import MPI
 import elem
+from mpi4py import MPI
 import skylark.io
 import skylark.sketch as sketch
 import skylark.elemhelper
 import numpy as np
 import urllib
 import sys
-#import bz2
-
-DATASET_URL = sys.argv[1] 
-TESTDATA_URL = sys.argv[2] 
 
 SIGMA = 10.0;
 D = 500;
@@ -24,15 +20,9 @@ size = comm.Get_size()
 
 # If on rank 0 read data from the web
 if rank == 0:
-    #print "Downloading dataset from web..."
-    #urlfile = urllib.urlopen(DATASET_URL)
-    #cmprs_data = urlfile.read()
-    #print "Decompressing the data..."
-    #rawdata = bz2.decompress(cmprs_data)
-    #print "Parsing the data..."
-    trnfile = skylark.io.libsvm(DATASET_URL)
+    print "Loading training data..."
+    trnfile = skylark.io.libsvm(sys.argv[1])
     data = trnfile.read()
-    #urlfile.close()
 
 # Now broadcast the sizes
 shape_X = data[0].shape if rank == 0 else None
@@ -50,6 +40,8 @@ X = elem.DistMatrix_d_VC_STAR()
 elem.Copy(X_cc, X);
 Y = elem.DistMatrix_d_VC_STAR()
 elem.Copy(Y_cc, Y);
+
+if rank == 0 : print "Doing the regression..."
 
 n = X.Height
 d = X.Width
@@ -69,7 +61,7 @@ R = sketch.GaussianRFT(d, D, SIGMA)
 XR = R / X    # <-------- Apply on the rows
 
 # Reduce number of rows by sketching on the colums
-S = sketch.CWT(n, T, defouttype="LocalMatrix")
+S = sketch.CWT(n, T, defouttype="DistMatrix_CIRC_CIRC")
 SXR = S * XR
 SY = S * rY
 
@@ -79,7 +71,7 @@ SY = S * rY
 # is done there.
 if (rank == 0):
     # Solve using NumPy
-    [W, res, rk, s] = np.linalg.lstsq(SXR, SY)
+    [W, res, rk, s] = np.linalg.lstsq(SXR.Matrix, SY.Matrix)
 else:
     W = None
 
@@ -87,20 +79,15 @@ else:
 # we need to apply R in a distributed manner (this should change in future
 # versions of Skylark)
 
+# Note: instead we could have sketched to [STAR, STAR] and did local solves
+
 # Distribute the solution 
 W = MPI.COMM_WORLD.bcast(W, root=0) 
 
 # If on rank 0 read test set from the web
 if rank == 0:
-    #print "Downloading test datfrom web..."
-    #urlfile = urllib.urlopen(TESTDATA_URL)
-    #cmprs_data = urlfile.read()
-    #print "Decompressing the data..."
-    #rawdata = bz2.decompress(cmprs_data)
-    #print "Parsing the data..."
-    #data = skylark.io.sparselibsvm2scipy(rawdata.splitlines(), shape_X[1])
-    #urlfile.close()
-    tstfile = skylark.io.libsvm(TESTDATA_URL)
+    print "Loading test data..."
+    tstfile = skylark.io.libsvm(sys.argv[1])
     data = tstfile.read()
 
 # Now broadcast the sizes

@@ -11,16 +11,14 @@ def test_helper(A, M, N, R, sketch, measures, MPI, num_repeats=5, direction="col
 
         if direction == "columnwise":
             S  = sketch(M, R)
-            SA = np.zeros((R, N), order='F')
+            SA = elem.DistMatrix_d_STAR_STAR(R, N)
         else:
             S  = sketch(N, R)
-            SA = np.zeros((M, R), order='F')
+            SA = elem.DistMatrix_d.STAR_STAR(M, R)
 
         S.apply(A, SA, direction)
 
-        SA = MPI.COMM_WORLD.bcast(SA, root=0)
-
         for m in measures:
-            results.append(m(SA))
+            results.append(m(SA.Matrix))
 
     return results

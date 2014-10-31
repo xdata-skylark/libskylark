@@ -16,7 +16,8 @@ import time
 m = 20000;
 n = 300;
 t = 1000;
-sketches = { "JLT" : sketch.JLT, "FJLT" : sketch.FJLT, "CWT" : sketch.CWT }
+#sketches = { "JLT" : sketch.JLT, "FJLT" : sketch.FJLT, "CWT" : sketch.CWT }
+sketches = { "JLT" : sketch.JLT, "CWT" : sketch.CWT }
 
 # Set up the random regression problem.
 A = elem.DistMatrix_d_VR_STAR()
@@ -58,8 +59,8 @@ for sname in sketches:
   
   t0 = time.time()
 
-  # Create transform. Default output type is "LocalMatrix".
-  S = stype(m, t, defouttype="LocalMatrix")
+  # Create transform. 
+  S = stype(m, t, defouttype="DistMatrix_STAR_STAR")
 
   # Sketch both A and b using the same sketch
   SA = S * A
@@ -69,7 +70,7 @@ for sname in sketches:
   # done there.
   if (MPI.COMM_WORLD.Get_rank() == 0):
     # Solve using NumPy
-    [x, res, rank, s] = np.linalg.lstsq(SA, Sb)
+    [x, res, rank, s] = np.linalg.lstsq(SA.Matrix, Sb.Matrix)
   else:
     x = None
 

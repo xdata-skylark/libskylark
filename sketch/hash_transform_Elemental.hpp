@@ -257,7 +257,7 @@ private:
 };
 
 /**
- * Specialization distributed input, local output
+ * Specialization: [Whatever, Whatever] -> [CIRC, CIRC]
  */
 template <typename ValueType,
           elem::Distribution ColDist,
@@ -266,7 +266,7 @@ template <typename ValueType,
           template <typename> class ValueDistribution>
 struct hash_transform_t <
     elem::DistMatrix<ValueType, ColDist, RowDist>,
-    elem::Matrix<ValueType>,
+    elem::DistMatrix<ValueType, elem::CIRC, elem::CIRC>,
     IdxDistributionType,
     ValueDistribution > :
         public hash_transform_data_t<IdxDistributionType,
@@ -275,7 +275,7 @@ struct hash_transform_t <
     // Typedef matrix and distribution types so that we can use them regularly
     typedef ValueType value_type;
     typedef elem::DistMatrix<value_type, ColDist, RowDist> matrix_type;
-    typedef elem::Matrix<value_type> output_matrix_type;
+    typedef elem::DistMatrix<value_type, elem::CIRC, elem::CIRC> output_matrix_type;
     typedef IdxDistributionType<size_t> idx_distribution_type;
     typedef ValueDistribution<value_type> value_distribution_type;
     typedef hash_transform_data_t<IdxDistributionType,
@@ -365,6 +365,7 @@ private:
             sketch_of_A.Buffer(),
             std::plus<value_type>(),
             0);
+
     }
 
     /**

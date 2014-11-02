@@ -338,13 +338,10 @@ private:
         // For [*, VC/VR] you need only O(sd).
 
         // Create space to hold local part of SA
-        elem::Matrix<value_type> SA_part (sketch_of_A.Height(),
-            sketch_of_A.Width(),
-            sketch_of_A.LDim());
-
-        elem::Zero(SA_part);
+        elem::Matrix<value_type> SA_part(this->_S, A.Width(), this->_S);
 
         // Construct Pi * A (directly on the fly)
+        elem::Zero(SA_part);
         for (size_t j = 0; j < A.LocalHeight(); j++) {
 
             size_t row_idx = A.ColShift() + A.ColStride() * j;
@@ -359,13 +356,20 @@ private:
         }
 
         // Pull everything to rank-0
-        boost::mpi::reduce (utility::get_communicator(A),
+        boost::mpi::communicator comm = utility::get_communicator(A);
+        boost::mpi::reduce(comm,
             SA_part.LockedBuffer(),
             SA_part.MemorySize(),
             sketch_of_A.Buffer(),
             std::plus<value_type>(),
             0);
 
+        if(comm.rank() == 0 && sketch_of_A.LDim() != this->_S) {
+            value_type *buf = sketch_of_A.Buffer();
+            for(size_t i = A.Width() - 1; i > 0; i--)
+                memcpy(buf + sketch_of_A.LDim() * i, buf + i * this->_S,
+                    this->_S * sizeof(value_type));
+        }
     }
 
     /**
@@ -383,13 +387,10 @@ private:
         // For [VC/VR, *] you need only O(sd).
 
         // Create space to hold local part of SA
-        elem::Matrix<value_type> SA_part (sketch_of_A.Height(),
-            sketch_of_A.Width(),
-            sketch_of_A.LDim());
-
-        elem::Zero(SA_part);
+        elem::Matrix<value_type> SA_part(A.Height(), this->_S, A.Height());
 
         // Construct A * Pi (directly on the fly)
+        elem::Zero(SA_part);
         for (size_t j = 0; j < A.LocalWidth(); ++j) {
 
             size_t col_idx = A.RowShift() + A.RowStride() * j;
@@ -404,12 +405,20 @@ private:
         }
 
         // Pull everything to rank-0
-        boost::mpi::reduce (skylark::utility::get_communicator(A),
+        boost::mpi::communicator comm = utility::get_communicator(A);
+        boost::mpi::reduce (comm,
             SA_part.LockedBuffer(),
             SA_part.MemorySize(),
             sketch_of_A.Buffer(),
             std::plus<value_type>(),
             0);
+
+        if(comm.rank() == 0 && sketch_of_A.LDim() != A.Height()) {
+            value_type *buf = sketch_of_A.Buffer();
+            for(size_t i = this->_S - 1; i > 0; i--)
+                memcpy(buf + sketch_of_A.LDim() * i, buf + i * A.Height(),
+                    A.Height() * sizeof(value_type));
+        }
     }
 };
 

@@ -164,7 +164,7 @@ public:
 #           endif
             for(int j = 0; j < base::Width(SAl); j++)
                 for(int i = 0; i < base::Height(SAl); i++) {
-                    value_type val = sketch_of_A.Get(i, j);
+                    value_type val = SAl.Get(i, j);
                     SAl.Set(i, j,
                         data_type::_outscale * std::exp(-val));
                 }

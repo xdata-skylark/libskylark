@@ -10,15 +10,18 @@ import numpy as np
 import urllib
 import sys
 
-SIGMA = 10.0;
+SIGMA = 10;
 D = 500;
 T = 10000;
+
+RFT = sketch.GaussianRFT
+RPT = sketch.CWT
 
 comm = MPI.COMM_WORLD
 rank = comm.Get_rank()
 size = comm.Get_size()
 
-# If on rank 0 read data from the web
+# If on rank 0 read data 
 if rank == 0:
     print "Loading training data..."
     trnfile = skylark.io.libsvm(sys.argv[1])
@@ -57,11 +60,11 @@ for i in range(rY.LocalHeight): rY.Matrix[i, Y.Matrix[i, 0]] = 1.0
 # the local matrices of X, Y and RY correspond to the same row.
 
 # Apply random feature transform
-R = sketch.GaussianRFT(d, D, SIGMA)
+R = RFT(d, D, SIGMA)
 XR = R / X    # <-------- Apply on the rows
 
 # Reduce number of rows by sketching on the colums
-S = sketch.CWT(n, T, defouttype="DistMatrix_CIRC_CIRC")
+S = RPT(n, T, defouttype="DistMatrix_CIRC_CIRC")
 SXR = S * XR
 SY = S * rY
 

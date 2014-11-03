@@ -255,13 +255,33 @@ private:
                      skylark::sketch::columnwise_tag tag) const {
         underlying_t underlying(*data_type::_underlying_data);
         underlying.apply(A, sketch_of_A, tag);
+
         elem::Matrix<value_type> &Al = sketch_of_A.Matrix();
+#       if SKYLARK_HAVE_OPENMP
+#       pragma omp parallel for collapse(2)
+#       endif
         for(int j = 0; j < base::Width(Al); j++)
             for(int i = 0; i < data_type::_S; i++) {
-                value_type val = Al.Get(i, j);
-                value_type trans =
-                    data_type::_outscale * std::cos(val + data_type::_shifts[i]);
-                Al.Set(i, j, trans);
+                value_type x = Al.Get(i, j);
+                x += data_type::_shifts[i];
+
+#               ifdef SKYLARK_EXACT_COSINE
+                x = std::cos(x);
+#               else
+                // x = std::cos(x) is slow
+                // Instead use low-accuracy approximation
+                if (x < -3.14159265) x += 6.28318531;
+                else if (x >  3.14159265) x -= 6.28318531;
+                x += 1.57079632;
+                if (x >  3.14159265)
+                    x -= 6.28318531;
+                x = (x < 0) ?
+                    1.27323954 * x + 0.405284735 * x * x :
+                    1.27323954 * x - 0.405284735 * x * x;
+#               endif
+
+                x = data_type::_outscale * x;
+                Al.Set(i, j, x);
             }
     }
 
@@ -276,13 +296,33 @@ private:
         // TODO verify sizes etc.
         underlying_t underlying(*data_type::_underlying_data);
         underlying.apply(A, sketch_of_A, tag);
+
         elem::Matrix<value_type> &Al = sketch_of_A.Matrix();
+#       if SKYLARK_HAVE_OPENMP
+#       pragma omp parallel for collapse(2)
+#       endif
         for(int j = 0; j < data_type::_S; j++)
             for(int i = 0; i < base::Height(Al); i++) {
-                value_type val = Al.Get(i, j);
-                value_type trans =
-                    data_type::_outscale * std::cos(val + data_type::_shifts[j]);
-                Al.Set(i, j, trans);
+                value_type x = Al.Get(i, j);
+                x += data_type::_shifts[j];
+
+#               ifdef SKYLARK_EXACT_COSINE
+                x = std::cos(x);
+#               else
+                // x = std::cos(x) is slow
+                // Instead use low-accuracy approximation
+                if (x < -3.14159265) x += 6.28318531;
+                else if (x >  3.14159265) x -= 6.28318531;
+                x += 1.57079632;
+                if (x >  3.14159265)
+                    x -= 6.28318531;
+                x = (x < 0) ?
+                    1.27323954 * x + 0.405284735 * x * x :
+                    1.27323954 * x - 0.405284735 * x * x;
+#               endif
+
+                x = data_type::_outscale * x;
+                Al.Set(i, j, x);
             }
     }
 

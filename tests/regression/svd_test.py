@@ -35,7 +35,8 @@ class SVD_test(unittest.TestCase):
         self.accuracy    = 0.5
         _R = _N / self.accuracy**2
 
-        self.sketches = [sketch.JLT, sketch.FJLT, sketch.CWT]
+        #self.sketches = [sketch.JLT, sketch.FJLT, sketch.CWT]
+        self.sketches = [sketch.JLT, sketch.CWT]
 
     def tearDown(self):
         pass

@@ -1,4 +1,5 @@
 import numpy as np
+import elem
 
 def test_helper(A, M, N, R, sketch, measures, MPI, num_repeats=5, direction="columnwise"):
     """
@@ -14,7 +15,7 @@ def test_helper(A, M, N, R, sketch, measures, MPI, num_repeats=5, direction="col
             SA = elem.DistMatrix_d_STAR_STAR(R, N)
         else:
             S  = sketch(N, R)
-            SA = elem.DistMatrix_d.STAR_STAR(M, R)
+            SA = elem.DistMatrix_d_STAR_STAR(M, R)
 
         S.apply(A, SA, direction)
 

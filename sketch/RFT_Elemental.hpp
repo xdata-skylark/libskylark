@@ -5,20 +5,20 @@ namespace skylark {
 namespace sketch {
 
 /**
- * Specialization for local input (dense or sparse), local output (dense)
+ * Specialization for local output
  */
 template <typename ValueType,
-          template <typename> class InputType,
+          typename InputType,
           template <typename> class KernelDistribution>
 struct RFT_t <
-    InputType<ValueType>,
+    InputType,
     elem::Matrix<ValueType>,
     KernelDistribution> :
         public RFT_data_t<KernelDistribution> {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
-    typedef InputType<value_type> matrix_type;
+    typedef InputType matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
     typedef RFT_data_t<KernelDistribution> data_type;
 private:
@@ -159,22 +159,23 @@ private:
 };
 
 /**
- * Specialization distributed input and output in [SOMETHING, *]
+ * Specialization for distributed output
  */
 template <typename ValueType,
-          elem::Distribution ColDist,
+          typename InputType,
+          elem::Distribution OC, elem::Distribution OR,
           template <typename> class KernelDistribution>
 struct RFT_t <
-    elem::DistMatrix<ValueType, ColDist, elem::STAR>,
-    elem::DistMatrix<ValueType, ColDist, elem::STAR>,
+    InputType,
+    elem::DistMatrix<ValueType, OC, OR>,
     KernelDistribution> :
         public RFT_data_t<KernelDistribution> {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
-    typedef elem::DistMatrix<value_type, ColDist, elem::STAR> matrix_type;
-    typedef elem::DistMatrix<value_type,
-                             ColDist, elem::STAR> output_matrix_type;
+    typedef InputType matrix_type;
+    typedef elem::DistMatrix<value_type, OC, OR> output_matrix_type;
+
     typedef RFT_data_t<KernelDistribution> data_type;
 private:
     typedef skylark::sketch::dense_transform_t <matrix_type,
@@ -222,70 +223,106 @@ public:
                 output_matrix_type& sketch_of_A,
                 Dimension dimension) const {
 
-        switch(ColDist) {
-        case elem::VR:
-        case elem::VC:
-            try {
-            apply_impl_vdist (A, sketch_of_A, dimension);
-            } catch (std::logic_error e) {
-                SKYLARK_THROW_EXCEPTION (
-                    base::elemental_exception()
-                        << base::error_msg(e.what()) );
-            } catch(boost::mpi::exception e) {
-                SKYLARK_THROW_EXCEPTION (
-                    base::mpi_exception()
-                        << base::error_msg(e.what()) );
-            }
-
-            break;
-
-        default:
+        try {
+            apply_impl (A, sketch_of_A, dimension);
+        } catch (std::logic_error e) {
             SKYLARK_THROW_EXCEPTION (
-                base::unsupported_matrix_distribution() );
+                base::elemental_exception()
+                    << base::error_msg(e.what()) );
+        } catch(boost::mpi::exception e) {
+            SKYLARK_THROW_EXCEPTION (
+                base::mpi_exception()
+                    << base::error_msg(e.what()) );
         }
     }
 
 private:
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
-     * Implementation for [VR/VC, *] and columnwise.
+     * Implementation for columnwise.
      */
-    void apply_impl_vdist (const matrix_type& A,
-                     output_matrix_type& sketch_of_A,
-                     skylark::sketch::columnwise_tag tag) const {
+    void apply_impl(const matrix_type& A,
+        output_matrix_type& sketch_of_A,
+        skylark::sketch::columnwise_tag tag) const {
+
         underlying_t underlying(*data_type::_underlying_data);
         underlying.apply(A, sketch_of_A, tag);
-        elem::Matrix<value_type> &Al = sketch_of_A.Matrix();
-        for(int j = 0; j < base::Width(Al); j++)
-            for(int i = 0; i < data_type::_S; i++) {
-                value_type val = Al.Get(i, j);
-                value_type trans =
-                    data_type::_outscale * std::cos(val + data_type::_shifts[i]);
-                Al.Set(i, j, trans);
+
+        elem::Matrix<value_type> &SAl = sketch_of_A.Matrix();
+        size_t col_shift = sketch_of_A.ColShift();
+        size_t col_stride = sketch_of_A.ColStride();
+
+#       if SKYLARK_HAVE_OPENMP
+#       pragma omp parallel for collapse(2)
+#       endif
+        for(size_t j = 0; j < base::Width(SAl); j++)
+            for(size_t i = 0; i < base::Height(SAl); i++) {
+                value_type x = SAl.Get(i, j);
+                x += data_type::_shifts[col_shift + i * col_stride];
+
+#               ifdef SKYLARK_EXACT_COSINE
+                x = std::cos(x);
+#               else
+                // x = std::cos(x) is slow
+                // Instead use low-accuracy approximation
+                if (x < -3.14159265) x += 6.28318531;
+                else if (x >  3.14159265) x -= 6.28318531;
+                x += 1.57079632;
+                if (x >  3.14159265)
+                    x -= 6.28318531;
+                x = (x < 0) ?
+                    1.27323954 * x + 0.405284735 * x * x :
+                    1.27323954 * x - 0.405284735 * x * x;
+#               endif
+
+                x = data_type::_outscale * x;
+                SAl.Set(i, j, x);
             }
     }
 
     /**
-      * Apply the sketching transform that is described in by the sketch_of_A.
-      * Implementation for [VR/VC, *] and rowwise.
-      */
-    void apply_impl_vdist(const matrix_type& A,
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     * Implementation for rowwise.
+     */
+    void apply_impl(const matrix_type& A,
         output_matrix_type& sketch_of_A,
         skylark::sketch::rowwise_tag tag) const {
 
         // TODO verify sizes etc.
         underlying_t underlying(*data_type::_underlying_data);
         underlying.apply(A, sketch_of_A, tag);
-        elem::Matrix<value_type> &Al = sketch_of_A.Matrix();
-        for(int j = 0; j < data_type::_S; j++)
-            for(int i = 0; i < base::Height(Al); i++) {
-                value_type val = Al.Get(i, j);
-                value_type trans =
-                    data_type::_outscale * std::cos(val + data_type::_shifts[j]);
-                Al.Set(i, j, trans);
+
+        elem::Matrix<value_type> &SAl = sketch_of_A.Matrix();
+        size_t row_shift = sketch_of_A.RowShift();
+        size_t row_stride = sketch_of_A.RowStride();
+
+#       if SKYLARK_HAVE_OPENMP
+#       pragma omp parallel for collapse(2)
+#       endif
+        for(size_t j = 0; j < base::Width(SAl); j++)
+            for(size_t i = 0; i < base::Height(SAl); i++) {
+                value_type x = SAl.Get(i, j);
+                x += data_type::_shifts[row_shift + j * row_stride];
+
+#               ifdef SKYLARK_EXACT_COSINE
+                x = std::cos(x);
+#               else
+                // x = std::cos(x) is slow
+                // Instead use low-accuracy approximation
+                if (x < -3.14159265) x += 6.28318531;
+                else if (x >  3.14159265) x -= 6.28318531;
+                x += 1.57079632;
+                if (x >  3.14159265)
+                    x -= 6.28318531;
+                x = (x < 0) ?
+                    1.27323954 * x + 0.405284735 * x * x :
+                    1.27323954 * x - 0.405284735 * x * x;
+#               endif
+
+                x = data_type::_outscale * x;
+                SAl.Set(i, j, x);
             }
     }
-
 };
 
 } } /** namespace skylark::sketch */

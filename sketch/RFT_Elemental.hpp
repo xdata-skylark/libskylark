@@ -5,7 +5,7 @@ namespace skylark {
 namespace sketch {
 
 /**
- * Specialization for local input (dense or sparse), local output (dense)
+ * Specialization for local output
  */
 template <typename ValueType,
           typename InputType,
@@ -159,7 +159,7 @@ private:
 };
 
 /**
- * Specialization distributed input and output
+ * Specialization for distributed output
  */
 template <typename ValueType,
           typename InputType,

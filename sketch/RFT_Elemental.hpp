@@ -8,17 +8,17 @@ namespace sketch {
  * Specialization for local input (dense or sparse), local output (dense)
  */
 template <typename ValueType,
-          template <typename> class InputType,
+          typename InputType,
           template <typename> class KernelDistribution>
 struct RFT_t <
-    InputType<ValueType>,
+    InputType,
     elem::Matrix<ValueType>,
     KernelDistribution> :
         public RFT_data_t<KernelDistribution> {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
-    typedef InputType<value_type> matrix_type;
+    typedef InputType matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
     typedef RFT_data_t<KernelDistribution> data_type;
 private:
@@ -162,18 +162,18 @@ private:
  * Specialization distributed input and output
  */
 template <typename ValueType,
-          elem::Distribution IC, elem::Distribution IR,
+          typename InputType,
           elem::Distribution OC, elem::Distribution OR,
           template <typename> class KernelDistribution>
 struct RFT_t <
-    elem::DistMatrix<ValueType, IC, IR>,
+    InputType,
     elem::DistMatrix<ValueType, OC, OR>,
     KernelDistribution> :
         public RFT_data_t<KernelDistribution> {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
-    typedef elem::DistMatrix<value_type, IC, IR> matrix_type;
+    typedef InputType matrix_type;
     typedef elem::DistMatrix<value_type, OC, OR> output_matrix_type;
 
     typedef RFT_data_t<KernelDistribution> data_type;

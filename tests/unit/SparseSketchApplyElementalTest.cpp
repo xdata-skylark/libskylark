@@ -62,7 +62,7 @@ int test_main(int argc, char *argv[]) {
     int provided;
     MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
 #endif
-    typedef elem::Matrix<double> MatrixType;
+    typedef elem::DistMatrix<double, elem::CIRC, elem::CIRC> MatrixType;
     typedef elem::DistMatrix<double, elem::VR, elem::STAR> DistMatrixType;
 
     mpi::environment env(argc, argv);

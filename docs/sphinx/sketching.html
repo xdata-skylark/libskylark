@@ -791,7 +791,8 @@ For now, only Pure Python implementation, and only sampling with replacement.</p
 <span class="n">m</span> <span class="o">=</span> <span class="mi">20000</span><span class="p">;</span>
 <span class="n">n</span> <span class="o">=</span> <span class="mi">300</span><span class="p">;</span>
 <span class="n">t</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">;</span>
-<span class="n">sketches</span> <span class="o">=</span> <span class="p">{</span> <span class="s">&quot;JLT&quot;</span> <span class="p">:</span> <span class="n">sketch</span><span class="o">.</span><span class="n">JLT</span><span class="p">,</span> <span class="s">&quot;FJLT&quot;</span> <span class="p">:</span> <span class="n">sketch</span><span class="o">.</span><span class="n">FJLT</span><span class="p">,</span> <span class="s">&quot;CWT&quot;</span> <span class="p">:</span> <span class="n">sketch</span><span class="o">.</span><span class="n">CWT</span> <span class="p">}</span>
+<span class="c">#sketches = { &quot;JLT&quot; : sketch.JLT, &quot;FJLT&quot; : sketch.FJLT, &quot;CWT&quot; : sketch.CWT }</span>
+<span class="n">sketches</span> <span class="o">=</span> <span class="p">{</span> <span class="s">&quot;JLT&quot;</span> <span class="p">:</span> <span class="n">sketch</span><span class="o">.</span><span class="n">JLT</span><span class="p">,</span> <span class="s">&quot;CWT&quot;</span> <span class="p">:</span> <span class="n">sketch</span><span class="o">.</span><span class="n">CWT</span> <span class="p">}</span>
 
 <span class="c"># Set up the random regression problem.</span>
 <span class="n">A</span> <span class="o">=</span> <span class="n">elem</span><span class="o">.</span><span class="n">DistMatrix_d_VR_STAR</span><span class="p">()</span>
@@ -833,8 +834,8 @@ For now, only Pure Python implementation, and only sampling with replacement.</p
   
   <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 
-  <span class="c"># Create transform. Default output type is &quot;LocalMatrix&quot;.</span>
-  <span class="n">S</span> <span class="o">=</span> <span class="n">stype</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">defouttype</span><span class="o">=</span><span class="s">&quot;LocalMatrix&quot;</span><span class="p">)</span>
+  <span class="c"># Create transform. </span>
+  <span class="n">S</span> <span class="o">=</span> <span class="n">stype</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">defouttype</span><span class="o">=</span><span class="s">&quot;DistMatrix_STAR_STAR&quot;</span><span class="p">)</span>
 
   <span class="c"># Sketch both A and b using the same sketch</span>
   <span class="n">SA</span> <span class="o">=</span> <span class="n">S</span> <span class="o">*</span> <span class="n">A</span>
@@ -844,7 +845,7 @@ For now, only Pure Python implementation, and only sampling with replacement.</p
   <span class="c"># done there.</span>
   <span class="k">if</span> <span class="p">(</span><span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span><span class="o">.</span><span class="n">Get_rank</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
     <span class="c"># Solve using NumPy</span>
-    <span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">rank</span><span class="p">,</span> <span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">SA</span><span class="p">,</span> <span class="n">Sb</span><span class="p">)</span>
+    <span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">rank</span><span class="p">,</span> <span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">SA</span><span class="o">.</span><span class="n">Matrix</span><span class="p">,</span> <span class="n">Sb</span><span class="o">.</span><span class="n">Matrix</span><span class="p">)</span>
   <span class="k">else</span><span class="p">:</span>
     <span class="n">x</span> <span class="o">=</span> <span class="bp">None</span>
 

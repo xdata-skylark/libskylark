@@ -38,7 +38,7 @@ class SVD_test(unittest.TestCase):
         #self.sketches = [sketch.JLT, sketch.FJLT, sketch.CWT]
         self.sketches = [sketch.JLT, sketch.CWT]
 
-        def tearDown(self):
+    def tearDown(self):
         pass
 
 

@@ -292,9 +292,10 @@ public:
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
      */
+    template <typename Dimension>
     void apply (const matrix_type& A,
                 output_matrix_type& sketch_of_A,
-                rowwise_tag dimension) const {
+                Dimension dimension) const {
         switch (ColDist) {
         case elem::VR:
         case elem::VC:
@@ -339,7 +340,7 @@ private:
         skylark::sketch::rowwise_tag tag) const {
 
         // Just a local operation on the Matrix
-        _local.apply(A.Matrix(), sketch_of_A.Matrix(), tag);
+        _local.apply(A.LockedMatrix(), sketch_of_A.Matrix(), tag);
     }
 
 private:

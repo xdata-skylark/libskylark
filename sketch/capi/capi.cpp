@@ -1022,6 +1022,16 @@ SKYLARK_EXTERN_API int
         sketch::FastGaussianRFT_t, SparseMatrix, Matrix,
         sketch::FastGaussianRFT_data_t);
 
+    AUTO_APPLY_DISPATCH(sketchc::FastGaussianRFT,
+        sketchc::DIST_MATRIX_VC_STAR, sketchc::DIST_MATRIX_VC_STAR,
+        sketch::FastGaussianRFT_t, DistMatrix_VC_STAR, DistMatrix_VC_STAR,
+        sketch::FastGaussianRFT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::FastGaussianRFT,
+        sketchc::DIST_MATRIX_VR_STAR, sketchc::DIST_MATRIX_VR_STAR,
+        sketch::FastGaussianRFT_t, DistMatrix_VR_STAR, DistMatrix_VR_STAR,
+        sketch::FastGaussianRFT_data_t);
+
     AUTO_APPLY_DISPATCH(sketchc::FastMaternRFT,
         sketchc::MATRIX, sketchc::MATRIX,
         sketch::FastMaternRFT_t, Matrix, Matrix,
@@ -1030,6 +1040,16 @@ SKYLARK_EXTERN_API int
     AUTO_APPLY_DISPATCH(sketchc::FastMaternRFT,
         sketchc::SPARSE_MATRIX, sketchc::MATRIX,
         sketch::FastMaternRFT_t, SparseMatrix, Matrix,
+        sketch::FastMaternRFT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::FastMaternRFT,
+        sketchc::DIST_MATRIX_VC_STAR, sketchc::DIST_MATRIX_VC_STAR,
+        sketch::FastMaternRFT_t, DistMatrix_VC_STAR, DistMatrix_VC_STAR,
+        sketch::FastMaternRFT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::FastMaternRFT,
+        sketchc::DIST_MATRIX_VR_STAR, sketchc::DIST_MATRIX_VR_STAR,
+        sketch::FastMaternRFT_t, DistMatrix_VR_STAR, DistMatrix_VR_STAR,
         sketch::FastMaternRFT_data_t);
 
 #endif

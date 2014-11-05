@@ -339,7 +339,7 @@ private:
         skylark::sketch::rowwise_tag tag) const {
 
         // Just a local operation on the Matrix
-        _local.apply(A.Matrix(), sketch_of_A.Matrix());
+        _local.apply(A.Matrix(), sketch_of_A.Matrix(), tag);
     }
 
 private:

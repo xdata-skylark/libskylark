@@ -334,7 +334,7 @@ private:
       * Apply the sketching transform on A and write to  sketch_of_A.
       * Implementation rowwise.
       */
-    void apply_impl_vidst(const matrix_type& A,
+    void apply_impl_vdist(const matrix_type& A,
         output_matrix_type& sketch_of_A,
         skylark::sketch::rowwise_tag tag) const {
 

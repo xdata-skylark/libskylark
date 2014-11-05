@@ -1054,6 +1054,36 @@ class FastGaussianRFT(_SketchTransform):
       ABFPGF = scipy.fftpack.dct(ABF[:, P] * G, axis = 1, norm='ortho') * sqrt(self._n)
       return ABFPGF
 
+class FastMaternRFT(_SketchTransform):
+  """
+  Fast variant of Random Features Transform for the Matern Kernel.
+
+  Alternative class name: MaternFastfood
+
+  :param n: Number of dimensions in input vectors.
+  :param s: Number of dimensions in output vectors.
+  :param sigma: bandwidth of the kernel.
+  :param defouttype: Default output type when using the * and / operators.
+  :param forceppy: whether to force a pure python implementation
+
+  *Q. Le*, *T. Sarlos*, *A. Smola*, **Fastfood - Computing Hilbert Space
+  Expansions in Loglinear Time**, ICML 2013
+  """
+  def __init__(self, n, s, order = 1, defouttype=None, forceppy=False, sketch_transform=None):
+    super(FastGaussianRFT, self)._baseinit("FastMaternRFT", n, s, defouttype, forceppy);
+
+    self._order = order
+    if not self._ppy:
+      if sketch_transform is None:
+        sketch_transform = c_void_p()
+        _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "FastMaternRFT", n, s, \
+                  byref(sketch_transform), ctypes.c_int(order))
+        self._obj = sketch_transform.value
+      else:
+        self._obj = sketch_transform
+
+    # TODO ppy implementation
+
 class ExpSemigroupRLT(_SketchTransform):
   """
   Random Features Transform for the Exponential Semigroup Kernel.
@@ -1193,6 +1223,7 @@ FastJLT = JLT
 CountSketch = CWT
 RRT = GaussianRFT
 Fastfood=FastGaussianRFT
+MaternFastfood=FastMaternRFT
 TensorSketch = PPT
 UniformSampler = URST
 NonUniformSampler = NURST
@@ -1215,6 +1246,8 @@ _map_csketch_type_to_cfun["LaplacianRFT"] = \
     lambda sd, obj : LaplacianRFT(int(sd['N']), int(sd['S']), float(sd['sigma']), None, False, obj.value)
 _map_csketch_type_to_cfun["FastGaussianRFT"] = \
     lambda sd, obj : FastGaussianRFT(int(sd['N']), int(sd['S']), float(sd['sigma']), None, False, obj.value)
+_map_csketch_type_to_cfun["FastMaternRFT"] = \
+    lambda sd, obj : FastMaternRFT(int(sd['N']), int(sd['S']), int(sd['order']), None, False, obj.value)
 _map_csketch_type_to_cfun["ExpSemigroupRLT"] = \
     lambda sd, obj : ExpSemigroupRLT(int(sd['N']), int(sd['S']), float(sd['beta']), None, False, obj.value)
 _map_csketch_type_to_cfun["PPT"] = \

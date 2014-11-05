@@ -253,6 +253,100 @@ private:
 
 };
 
+/**
+ * Specialization [VC/VR, STAR] to same distribution.
+ */
+template <typename ValueType, elem::Distribution ColDist>
+struct FastRFT_t <
+    elem::DistMatrix<ValueType, ColDist, elem::STAR>,
+    elem::DistMatrix<ValueType, ColDist, elem::STAR> > :
+        public FastRFT_data_t {
+    // Typedef value, matrix, transform, distribution and transform data types
+    // so that we can use them regularly and consistently.
+    typedef ValueType value_type;
+    typedef elem::DistMatrix<value_type, ColDist, elem::STAR> matrix_type;
+    typedef elem::DistMatrix<value_type, ColDist, elem::STAR> output_matrix_type;
+    typedef FastRFT_data_t data_type;
+
+public:
+
+    // No regular contructor, since need to be subclassed.
+
+    /**
+     * Copy constructor
+     */
+    FastRFT_t(const FastRFT_t<matrix_type,
+                      output_matrix_type>& other)
+        : data_type(other), _local(other) {
+
+    }
+
+    /**
+     * Constructor from data
+     */
+    FastRFT_t(const data_type& other_data)
+        : data_type(other_data), _local(other_data) {
+
+    }
+
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     */
+    void apply (const matrix_type& A,
+                output_matrix_type& sketch_of_A,
+                rowwise_tag dimension) const {
+        switch (ColDist) {
+        case elem::VR:
+        case elem::VC:
+            try {
+                apply_impl_vdist (A, sketch_of_A, dimension);
+            } catch (std::logic_error e) {
+                SKYLARK_THROW_EXCEPTION (
+                    base::elemental_exception()
+                        << base::error_msg(e.what()) );
+            } catch(boost::mpi::exception e) {
+                SKYLARK_THROW_EXCEPTION (
+                    base::mpi_exception()
+                        << base::error_msg(e.what()) );
+            }
+
+            break;
+
+        default:
+            SKYLARK_THROW_EXCEPTION (
+                base::unsupported_matrix_distribution() );
+
+        }
+    }
+
+private:
+    /**
+     * Apply the sketching transform on A and write to sketch_of_A.
+     * Implementation for columnwise.
+     */
+    void apply_impl_vdist(const matrix_type& A,
+        output_matrix_type& sketch_of_A,
+        skylark::sketch::columnwise_tag tag) const {
+
+    }
+
+    /**
+      * Apply the sketching transform on A and write to  sketch_of_A.
+      * Implementation rowwise.
+      */
+    void apply_impl_vidst(const matrix_type& A,
+        output_matrix_type& sketch_of_A,
+        skylark::sketch::rowwise_tag tag) const {
+
+        // Just a local operation on the Matrix
+        _local.apply(A.Matrix(), sketch_of_A.Matrix());
+    }
+
+private:
+
+    const FastRFT_t<elem::Matrix<value_type>, elem::Matrix<value_type> > _local;
+};
+
 #endif // SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT
 
 } } /** namespace skylark::sketch */

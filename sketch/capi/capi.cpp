@@ -41,6 +41,7 @@ static sketchc::transform_type_t str2transform_type(const char *str) {
     STRCMP_TYPE(GaussianRFT, sketchc::GaussianRFT);
     STRCMP_TYPE(LaplacianRFT, sketchc::LaplacianRFT);
     STRCMP_TYPE(FastGaussianRFT, sketchc::FastGaussianRFT);
+    STRCMP_TYPE(FastMaternRFT, sketchc::FastMaternRFT);
     STRCMP_TYPE(ExpSemigroupRLT, sketchc::ExpSemigroupRLT);
 
     return sketchc::TRANSFORM_TYPE_ERROR;
@@ -221,6 +222,12 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
         SKDEF(FJLT, DistMatrix_VC_STAR, Matrix)
         SKDEF(FastGaussianRFT, Matrix, Matrix)
         SKDEF(FastGaussianRFT, SparseMatrix, Matrix)
+        SKDEF(FastGaussianRFT, DistMatrix_VC_STAR, DistMatrix_VC_STAR)
+        SKDEF(FastGaussianRFT, DistMatrix_VR_STAR, DistMatrix_VR_STAR)
+        SKDEF(FastMaternRFT, Matrix, Matrix)
+        SKDEF(FastMaternRFT, SparseMatrix, Matrix)
+        SKDEF(FastMaternRFT, DistMatrix_VC_STAR, DistMatrix_VC_STAR)
+        SKDEF(FastMaternRFT, DistMatrix_VR_STAR, DistMatrix_VR_STAR)
 #endif
 
 
@@ -319,10 +326,24 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(base::context_t *ctxt,
     AUTO_NEW_DISPATCH_1P(sketchc::FastGaussianRFT, sketch::FastGaussianRFT_data_t);
 
     SKYLARK_BEGIN_TRY()
+        if (type == sketchc::FastMaternRFT)  {
+            va_list argp;
+            va_start(argp, sketch);
+            int order = va_arg(argp, int);
+            sketchc::sketch_transform_t *r =
+                new sketchc::sketch_transform_t(sketchc::FastMaternRFT,
+                    new sketch::FastMaternRFT_data_t(n, s, order, *ctxt));
+            va_end(argp);
+            *sketch = r;
+        }
+    SKYLARK_END_TRY()
+    SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
+
+    SKYLARK_BEGIN_TRY()
         if (type == sketchc::PPT)  {
             va_list argp;
             va_start(argp, sketch);
-            double q = va_arg(argp, int);
+            int q = va_arg(argp, int);
             double c = va_arg(argp, double);
             double g = va_arg(argp, double);
             sketchc::sketch_transform_t *r =
@@ -388,6 +409,7 @@ SKYLARK_EXTERN_API
     AUTO_DELETE_DISPATCH(sketchc::LaplacianRFT, sketch::LaplacianRFT_data_t);
     AUTO_DELETE_DISPATCH(sketchc::ExpSemigroupRLT, sketch::ExpSemigroupRLT_data_t);
     AUTO_DELETE_DISPATCH(sketchc::FastGaussianRFT, sketch::FastGaussianRFT_data_t);
+    AUTO_DELETE_DISPATCH(sketchc::FastMaternRFT, sketch::FastMaternRFT_data_t);
 
     // Now can delete object
     delete S;
@@ -999,6 +1021,16 @@ SKYLARK_EXTERN_API int
         sketchc::SPARSE_MATRIX, sketchc::MATRIX,
         sketch::FastGaussianRFT_t, SparseMatrix, Matrix,
         sketch::FastGaussianRFT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::FastMaternRFT,
+        sketchc::MATRIX, sketchc::MATRIX,
+        sketch::FastMaternRFT_t, Matrix, Matrix,
+        sketch::FastMaternRFT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::FastMaternRFT,
+        sketchc::SPARSE_MATRIX, sketchc::MATRIX,
+        sketch::FastMaternRFT_t, SparseMatrix, Matrix,
+        sketch::FastMaternRFT_data_t);
 
 #endif
 

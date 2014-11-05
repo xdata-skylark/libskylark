@@ -71,7 +71,7 @@ class FastRFT_t :
 };
 
 /**
- * FastRandom Features for Gaussian Kernel
+ * Fast Random Features for the Gaussian Kernel
  */
 template< typename InputMatrixType,
           typename OutputMatrixType = InputMatrixType >
@@ -139,6 +139,74 @@ private:
 
 };
 
+/**
+ * Fast Random Features for the Matern Kernel
+ */
+template< typename InputMatrixType,
+          typename OutputMatrixType = InputMatrixType >
+struct FastMaternRFT_t :
+    public FastMaternRFT_data_t,
+    virtual public sketch_transform_t<InputMatrixType, OutputMatrixType > {
+
+    // We use composition to defer calls to RFT_t
+    typedef FastRFT_t<InputMatrixType, OutputMatrixType > transform_t;
+
+    typedef FastMaternRFT_data_t data_type;
+    typedef data_type::params_t params_t;
+
+    FastMaternRFT_t(int N, int S, int order, base::context_t& context)
+        : data_type(N, S, order, context), _transform(*this) {
+
+    }
+
+    FastMaternRFT_t(int N, int S, const params_t& params,
+        base::context_t& context)
+        : data_type(N, S, params, context), _transform(*this) {
+
+    }
+
+    template <typename OtherInputMatrixType,
+              typename OtherOutputMatrixType>
+    FastMaternRFT_t(
+        const FastMaternRFT_t<OtherInputMatrixType, OtherOutputMatrixType> & other)
+        : data_type(other), _transform(*this) {
+
+    }
+
+    FastMaternRFT_t (const data_type& other)
+        : data_type(other), _transform(*this) {
+
+    }
+
+    /**
+     * Apply columnwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply (const typename transform_t::matrix_type& A,
+                typename transform_t::output_matrix_type& sketch_of_A,
+                columnwise_tag dimension) const {
+        _transform.apply(A, sketch_of_A, dimension);
+    }
+
+    /**
+     * Apply rowwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply (const typename transform_t::matrix_type& A,
+                typename transform_t::output_matrix_type& sketch_of_A,
+                rowwise_tag dimension) const {
+        _transform.apply(A, sketch_of_A, dimension);
+    }
+
+    int get_N() const { return this->_N; } /**< Get input dimesion. */
+    int get_S() const { return this->_S; } /**< Get output dimesion. */
+
+    const sketch_transform_data_t* get_data() const { return this; }
+
+private:
+    transform_t _transform;
+
+};
 
 } } /** namespace skylark::sketch */
 

@@ -31,6 +31,7 @@ enum transform_type_t {
     GaussianRFT,
     LaplacianRFT,
     FastGaussianRFT,
+    FastMaternRFT,
     ExpSemigroupRLT
 };
 

@@ -196,6 +196,75 @@ protected:
 
 };
 
+struct FastMaternRFT_data_t :
+        public FastRFT_data_t {
+
+    typedef FastRFT_data_t base_t;
+
+    /// Params structure
+    struct params_t : public sketch_params_t {
+
+        params_t(int order) : order(order) {
+
+        }
+
+        const int order;
+    };
+
+    FastMaternRFT_data_t(int N, int S, int order,
+        skylark::base::context_t& context)
+        : base_t(N, S, context, "FastMaternRFT"), _order(order) {
+
+        fill_Sm();
+        context = base_t::build();
+    }
+
+    FastMaternRFT_data_t(int N, int S, const params_t& params,
+        skylark::base::context_t& context)
+        : base_t(N, S, context, "FastMaternRFT"), _order(params.order) {
+
+        fill_Sm();
+        context = base_t::build();
+    }
+
+    FastMaternRFT_data_t(const boost::property_tree::ptree &pt) :
+        base_t(pt.get<int>("N"), pt.get<int>("S"),
+            base::context_t(pt.get_child("creation_context")), "FastMaternRFT"),
+        _order(pt.get<int>("order")) {
+
+        fill_Sm();
+        base_t::build();
+    }
+
+    /**
+     *  Serializes a sketch to a string.
+     *
+     *  @param[out] property_tree describing the sketch.
+     */
+    virtual
+    boost::property_tree::ptree to_ptree() const {
+        boost::property_tree::ptree pt;
+        sketch_transform_data_t::add_common(pt);
+        pt.put("order", _order);
+        return pt;
+    }
+
+protected:
+    FastMaternRFT_data_t(int N, int S, int order,
+        const skylark::base::context_t& context, std::string type)
+        : base_t(N, S, context, type), _order(order) {
+
+        fill_Sm();
+    }
+
+    void fill_Sm() {
+
+    }
+
+    const int _order; /**< The order of the kernel */
+
+};
+
 } } /** namespace skylark::sketch */
 
 #endif  // SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT

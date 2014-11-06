@@ -5,8 +5,9 @@
 
 namespace skylark { namespace sketch {
 
+
 /**
- * Specialization for [*, SOMETHING]
+ * Specialization for distributed [VC/VR, *] input and local matrix output
  */
 template <typename ValueType, elem::Distribution ColDist>
 struct FJLT_t <
@@ -134,8 +135,7 @@ public:
 
 private:
     /**
-     * Apply the sketching transform that is described in by the sketch_of_A.
-     * Implementation for [VR/VC, *] and columnwise.
+     * Implementation for sketching [VC/VR, *] -> Matrix and columnwise.
      */
     void apply_impl_vdist(const matrix_type& A,
                     output_matrix_type& sketch_A,
@@ -168,8 +168,7 @@ private:
     }
 
     /**
-     * Apply the sketching transform that is described in by the sketch_of_A.
-     * Implementation for [VR/VC, *] and rowwise.
+     * Implementation for sketching [VC/VR, *] -> Matrix and rowwise.
      */
     void apply_impl_vdist(const matrix_type& A,
                     output_matrix_type& sketch_of_A,
@@ -186,8 +185,10 @@ private:
      }
 };
 
+
+
 /**
- * Specialization for [*, SOMETHING] to [*, *]
+ * Specialization for distributed [VC/VR, *] input and distributed [*, *] output
  */
 template <typename ValueType, elem::Distribution ColDist>
 struct FJLT_t <
@@ -319,8 +320,7 @@ public:
 
 private:
     /**
-     * Apply the sketching transform that is described in by the sketch_of_A.
-     * Implementation for [VR/VC, *] and columnwise.
+     * Implementation for sketching [VC/VR, *] -> [*, *] and columnwise.
      */
     void apply_impl_vdist(const matrix_type& A,
                     output_matrix_type& sketch_A,
@@ -350,8 +350,7 @@ private:
     }
 
     /**
-     * Apply the sketching transform that is described in by the sketch_of_A.
-     * Implementation for [VR/VC, *] and rowwise.
+     * Implementation for sketching [VC/VR, *] -> [*, *] and rowwise.
      */
     void apply_impl_vdist(const matrix_type& A,
                     output_matrix_type& sketch_of_A,
@@ -369,10 +368,8 @@ private:
 };
 
 
-    /////////////////////////////////////////////////////
-
 /**
- * Specialization for [SOMETHING, *]
+ * Specialization distributed [*, VC/VR] input and local matrix output
  */
 template <typename ValueType, elem::Distribution RowDist>
 struct FJLT_t <
@@ -500,8 +497,7 @@ public:
 
 private:
     /**
-     * Apply the sketching transform that is described in by the sketch_of_A.
-     * Implementation for [*, VR/VC] and columnwise.
+     * Implementation for sketching [*, VC/VR] -> Matrix and columnwise.
      */
     void apply_impl_vdist(const matrix_type& A,
                     output_matrix_type& sketch_A,
@@ -534,8 +530,7 @@ private:
     }
 
     /**
-     * Apply the sketching transform that is described in by the sketch_of_A.
-     * Implementation for [*, VR/VC] and rowwise.
+     * Implementation for sketching [*, VC/VR] -> Matrix and rowwise.
      */
     void apply_impl_vdist(const matrix_type& A,
                     output_matrix_type& sketch_of_A,
@@ -554,7 +549,7 @@ private:
 
 
 /**
- * Specialization for [SOMETHING, *] to [*, *]
+ * Specialization for distributed [*, VC/VR] input and distributed [*, *] output
  */
 template <typename ValueType, elem::Distribution RowDist>
 struct FJLT_t <
@@ -686,8 +681,7 @@ public:
 
 private:
     /**
-     * Apply the sketching transform that is described in by the sketch_of_A.
-     * Implementation for [*, VR/VC] and columnwise.
+     * Implementation for sketching [*, VC/VR] -> [*, *] and columnwise.
      */
     void apply_impl_vdist(const matrix_type& A,
                     output_matrix_type& sketch_A,
@@ -717,8 +711,7 @@ private:
     }
 
     /**
-     * Apply the sketching transform that is described in by the sketch_of_A.
-     * Implementation for [VR/VC, *] and rowwise.
+     * Implementation for sketching [*, VC/VR] -> [*, *] and rowwise.
      */
     void apply_impl_vdist(const matrix_type& A,
                     output_matrix_type& sketch_of_A,
@@ -737,7 +730,7 @@ private:
 
 
 /**
- * Specialization for [MC, MR] to [MC, MR]
+ * Specialization for distributed [MC, MR] input and distributed [MC, MR] output
  */
 template <typename ValueType>
 struct FJLT_t <
@@ -837,8 +830,7 @@ public:
 
 private:
     /**
-     * Apply the sketching transform that is described in by the sketch_of_A.
-     * Implementation for [MC, MR] and columnwise.
+     * Implementation for sketching [MC, MR] -> [MC, MR] and columnwise.
      */
     void apply_impl_dist(const matrix_type& A,
                     output_matrix_type& sketch_A,
@@ -870,10 +862,9 @@ private:
     }
 
     /**
-     * Apply the sketching transform that is described in by the sketch_of_A.
-     * Implementation for [MC, MR] and rowwise.
+     * Implementation for sketching [MC, MR] -> [MC, MR] and rowwise.
      *
-     * XXX Avoid transposition by working on the underlying type/transform
+     * TODO Avoid transposition by working on the underlying type/transform.
      */
     void apply_impl_dist(const matrix_type& A,
                     output_matrix_type& sketch_of_A,

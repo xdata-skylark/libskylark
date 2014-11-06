@@ -461,6 +461,323 @@ protected:
     }
 };
 
+/**
+ * Specialization [STAR, STAR] to same distribution.
+ */
+template <typename ValueType>
+struct PPT_t <
+    elem::DistMatrix<ValueType, elem::STAR, elem::STAR>,
+    elem::DistMatrix<ValueType, elem::STAR, elem::STAR> > :
+        public PPT_data_t {
+    // Typedef value, matrix, transform, distribution and transform data types
+    // so that we can use them regularly and consistently.
+    typedef ValueType value_type;
+    typedef elem::DistMatrix<value_type, elem::STAR, elem::STAR> matrix_type;
+    typedef elem::DistMatrix<value_type, elem::STAR, elem::STAR> output_matrix_type;
+    typedef PPT_data_t data_type;
+
+public:
+
+    // No regular contructor, since need to be subclassed.
+
+    /**
+     * Copy constructor
+     */
+    PPT_t(const PPT_t<matrix_type,
+                      output_matrix_type>& other)
+        : data_type(other), _local(other) {
+
+    }
+
+    /**
+     * Constructor from data
+     */
+    PPT_t(const data_type& other_data)
+        : data_type(other_data), _local(other_data) {
+
+    }
+
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     */
+    template <typename Dimension>
+    void apply (const matrix_type& A,
+                output_matrix_type& sketch_of_A,
+                Dimension dimension) const {
+        // Just a local operation on the Matrix
+        _local.apply(A.LockedMatrix(), sketch_of_A.Matrix(), dimension);
+    }
+
+private:
+
+    const PPT_t<elem::Matrix<value_type>, elem::Matrix<value_type> > _local;
+};
+
+/**
+ * Specialization [CIRC, CIRC] to same distribution.
+ */
+template <typename ValueType>
+struct PPT_t <
+    elem::DistMatrix<ValueType, elem::CIRC, elem::CIRC>,
+    elem::DistMatrix<ValueType, elem::CIRC, elem::CIRC> > :
+        public PPT_data_t {
+    // Typedef value, matrix, transform, distribution and transform data types
+    // so that we can use them regularly and consistently.
+    typedef ValueType value_type;
+    typedef elem::DistMatrix<value_type, elem::CIRC, elem::CIRC> matrix_type;
+    typedef elem::DistMatrix<value_type, elem::CIRC, elem::CIRC> output_matrix_type;
+    typedef PPT_data_t data_type;
+
+public:
+
+    // No regular contructor, since need to be subclassed.
+
+    /**
+     * Copy constructor
+     */
+    PPT_t(const PPT_t<matrix_type,
+                      output_matrix_type>& other)
+        : data_type(other), _local(other) {
+
+    }
+
+    /**
+     * Constructor from data
+     */
+    PPT_t(const data_type& other_data)
+        : data_type(other_data), _local(other_data) {
+
+    }
+
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     */
+    template <typename Dimension>
+    void apply (const matrix_type& A,
+                output_matrix_type& sketch_of_A,
+                Dimension dimension) const {
+        // TODO do we allow different communicators and different roots?
+
+        // If on root: Just a local operation on the Matrix
+        if (skylark::utility::get_communicator(A).rank() == 0)
+            _local.apply(A.LockedMatrix(), sketch_of_A.Matrix(), dimension);
+    }
+
+private:
+
+    const PPT_t<elem::Matrix<value_type>, elem::Matrix<value_type> > _local;
+};
+
+/**
+ * Specialization [VC/VR, STAR] to same distribution.
+ */
+template <typename ValueType, elem::Distribution ColDist>
+struct PPT_t <
+    elem::DistMatrix<ValueType, ColDist, elem::STAR>,
+    elem::DistMatrix<ValueType, ColDist, elem::STAR> > :
+        public PPT_data_t {
+    // Typedef value, matrix, transform, distribution and transform data types
+    // so that we can use them regularly and consistently.
+    typedef ValueType value_type;
+    typedef elem::DistMatrix<value_type, ColDist, elem::STAR> matrix_type;
+    typedef elem::DistMatrix<value_type, ColDist, elem::STAR> output_matrix_type;
+    typedef PPT_data_t data_type;
+
+public:
+
+    // No regular contructor, since need to be subclassed.
+
+    /**
+     * Copy constructor
+     */
+    PPT_t(const PPT_t<matrix_type,
+                      output_matrix_type>& other)
+        : data_type(other), _local(other) {
+
+    }
+
+    /**
+     * Constructor from data
+     */
+    PPT_t(const data_type& other_data)
+        : data_type(other_data), _local(other_data) {
+
+    }
+
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     */
+    template <typename Dimension>
+    void apply (const matrix_type& A,
+                output_matrix_type& sketch_of_A,
+                Dimension dimension) const {
+        switch (ColDist) {
+        case elem::VR:
+        case elem::VC:
+            try {
+                apply_impl_vdist (A, sketch_of_A, dimension);
+            } catch (std::logic_error e) {
+                SKYLARK_THROW_EXCEPTION (
+                    base::elemental_exception()
+                        << base::error_msg(e.what()) );
+            } catch(boost::mpi::exception e) {
+                SKYLARK_THROW_EXCEPTION (
+                    base::mpi_exception()
+                        << base::error_msg(e.what()) );
+            }
+
+            break;
+
+        default:
+            SKYLARK_THROW_EXCEPTION (
+                base::unsupported_matrix_distribution() );
+
+        }
+    }
+
+private:
+    /**
+     * Apply the sketching transform on A and write to sketch_of_A.
+     * Implementation for columnwise.
+     */
+    void apply_impl_vdist(const matrix_type& A,
+        output_matrix_type& sketch_of_A,
+        skylark::sketch::columnwise_tag tag) const {
+
+        // Naive implementation: tranpose and uses the columnwise implementation
+        // Can we do better?
+        matrix_type A_t(A.Grid());
+        elem::Transpose(A, A_t);
+        output_matrix_type sketch_of_A_t(sketch_of_A.Width(),
+            sketch_of_A.Height(), sketch_of_A.Grid());
+        apply_impl_vdist(A_t, sketch_of_A_t,
+            skylark::sketch::rowwise_tag());
+        elem::Transpose(sketch_of_A_t, sketch_of_A);
+    }
+
+    /**
+      * Apply the sketching transform on A and write to  sketch_of_A.
+      * Implementation rowwise.
+      */
+    void apply_impl_vdist(const matrix_type& A,
+        output_matrix_type& sketch_of_A,
+        skylark::sketch::rowwise_tag tag) const {
+
+        // Just a local operation on the Matrix
+        _local.apply(A.LockedMatrix(), sketch_of_A.Matrix(), tag);
+    }
+
+private:
+
+    const PPT_t<elem::Matrix<value_type>, elem::Matrix<value_type> > _local;
+};
+
+/**
+ * Specialization [STAR, VC/VR] to same distribution.
+ */
+template <typename ValueType, elem::Distribution RowDist>
+struct PPT_t <
+    elem::DistMatrix<ValueType, elem::STAR, RowDist>,
+    elem::DistMatrix<ValueType, elem::STAR, RowDist> > :
+        public PPT_data_t {
+    // Typedef value, matrix, transform, distribution and transform data types
+    // so that we can use them regularly and consistently.
+    typedef ValueType value_type;
+    typedef elem::DistMatrix<value_type, elem::STAR, RowDist> matrix_type;
+    typedef elem::DistMatrix<value_type, elem::STAR, RowDist> output_matrix_type;
+    typedef PPT_data_t data_type;
+
+public:
+
+    // No regular contructor, since need to be subclassed.
+
+    /**
+     * Copy constructor
+     */
+    PPT_t(const PPT_t<matrix_type,
+                      output_matrix_type>& other)
+        : data_type(other), _local(other) {
+
+    }
+
+    /**
+     * Constructor from data
+     */
+    PPT_t(const data_type& other_data)
+        : data_type(other_data), _local(other_data) {
+
+    }
+
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     */
+    template <typename Dimension>
+    void apply (const matrix_type& A,
+                output_matrix_type& sketch_of_A,
+                Dimension dimension) const {
+        switch (RowDist) {
+        case elem::VR:
+        case elem::VC:
+            try {
+                apply_impl_vdist (A, sketch_of_A, dimension);
+            } catch (std::logic_error e) {
+                SKYLARK_THROW_EXCEPTION (
+                    base::elemental_exception()
+                        << base::error_msg(e.what()) );
+            } catch(boost::mpi::exception e) {
+                SKYLARK_THROW_EXCEPTION (
+                    base::mpi_exception()
+                        << base::error_msg(e.what()) );
+            }
+
+            break;
+
+        default:
+            SKYLARK_THROW_EXCEPTION (
+                base::unsupported_matrix_distribution() );
+
+        }
+    }
+
+private:
+    /**
+     * Apply the sketching transform on A and write to sketch_of_A.
+     * Implementation for columnwise.
+     */
+    void apply_impl_vdist(const matrix_type& A,
+        output_matrix_type& sketch_of_A,
+        skylark::sketch::columnwise_tag tag) const {
+
+
+        // Just a local operation on the Matrix
+        _local.apply(A.LockedMatrix(), sketch_of_A.Matrix(), tag);
+    }
+
+    /**
+      * Apply the sketching transform on A and write to  sketch_of_A.
+      * Implementation rowwise.
+      */
+    void apply_impl_vdist(const matrix_type& A,
+        output_matrix_type& sketch_of_A,
+        skylark::sketch::rowwise_tag tag) const {
+
+        // Naive implementation: tranpose and uses the columnwise implementation
+        // Can we do better?
+        matrix_type A_t(A.Grid());
+        elem::Transpose(A, A_t);
+        output_matrix_type sketch_of_A_t(sketch_of_A.Width(),
+            sketch_of_A.Height(), sketch_of_A.Grid());
+        apply_impl_vdist(A_t, sketch_of_A_t,
+            skylark::sketch::rowwise_tag());
+        elem::Transpose(sketch_of_A_t, sketch_of_A);
+    }
+
+private:
+
+    const PPT_t<elem::Matrix<value_type>, elem::Matrix<value_type> > _local;
+};
+
+
 } } /** namespace skylark::sketch */
 
 #endif // SKYLARK_HAVE_FFTW || SKYLARK_HAVE_FFTWF

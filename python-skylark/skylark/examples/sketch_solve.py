@@ -10,11 +10,11 @@ import numpy as np
 import urllib
 import sys
 
-SIGMA = 10;
 D = 500;
 T = 10000;
 
 RFT = sketch.GaussianRFT
+RFT_PARAMS = { 'sigma' : 10 }
 RPT = sketch.CWT
 
 comm = MPI.COMM_WORLD
@@ -60,7 +60,7 @@ for i in range(rY.LocalHeight): rY.Matrix[i, Y.Matrix[i, 0]] = 1.0
 # the local matrices of X, Y and RY correspond to the same row.
 
 # Apply random feature transform
-R = RFT(d, D, SIGMA)
+R = RFT(d, D, **RFT_PARAMS)
 XR = R / X    # <-------- Apply on the rows
 
 # Reduce number of rows by sketching on the colums

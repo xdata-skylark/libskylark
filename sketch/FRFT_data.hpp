@@ -146,18 +146,14 @@ struct FastGaussianRFT_data_t :
         skylark::base::context_t& context)
         : base_t(N, S, context, "FastGaussianRFT"), _sigma(sigma) {
 
-        std::fill(base_t::Sm.begin(), base_t::Sm.end(),
-                1.0 / (_sigma * std::sqrt(base_t::_N)));
-        context = base_t::build();
+        context = build();
     }
 
     FastGaussianRFT_data_t(int N, int S, const params_t& params,
         skylark::base::context_t& context)
         : base_t(N, S, context, "FastGaussianRFT"), _sigma(params.sigma) {
 
-        std::fill(base_t::Sm.begin(), base_t::Sm.end(),
-                1.0 / (_sigma * std::sqrt(base_t::_N)));
-        context = base_t::build();
+        context = build();
     }
 
     FastGaussianRFT_data_t(const boost::property_tree::ptree &pt) :
@@ -165,9 +161,7 @@ struct FastGaussianRFT_data_t :
             base::context_t(pt.get_child("creation_context")), "FastGaussianRFT"),
         _sigma(pt.get<double>("sigma")) {
 
-        std::fill(base_t::Sm.begin(), base_t::Sm.end(),
-                1.0 / (_sigma * std::sqrt(base_t::_N)));
-        base_t::build();
+        build();
     }
 
     /**
@@ -188,10 +182,16 @@ protected:
         const skylark::base::context_t& context, std::string type)
         : base_t(N, S, context, type), _sigma(sigma) {
 
-        std::fill(base_t::Sm.begin(), base_t::Sm.end(),
-                1.0 / (_sigma * std::sqrt(base_t::_N)));
     }
 
+    base::context_t build() {
+        base::context_t ctx = base_t::build();
+
+        std::fill(base_t::Sm.begin(), base_t::Sm.end(),
+                1.0 / (_sigma * std::sqrt(base_t::_N)));
+
+        return ctx;
+    }
     const double _sigma; /**< Bandwidth (sigma)  */
 
 };
@@ -215,16 +215,14 @@ struct FastMaternRFT_data_t :
         skylark::base::context_t& context)
         : base_t(N, S, context, "FastMaternRFT"), _order(order) {
 
-        fill_Sm();
-        context = base_t::build();
+        context = build();
     }
 
     FastMaternRFT_data_t(int N, int S, const params_t& params,
         skylark::base::context_t& context)
         : base_t(N, S, context, "FastMaternRFT"), _order(params.order) {
 
-        fill_Sm();
-        context = base_t::build();
+        context = build();
     }
 
     FastMaternRFT_data_t(const boost::property_tree::ptree &pt) :
@@ -232,8 +230,7 @@ struct FastMaternRFT_data_t :
             base::context_t(pt.get_child("creation_context")), "FastMaternRFT"),
         _order(pt.get<int>("order")) {
 
-        fill_Sm();
-        base_t::build();
+        build();
     }
 
     /**
@@ -254,13 +251,15 @@ protected:
         const skylark::base::context_t& context, std::string type)
         : base_t(N, S, context, type), _order(order) {
 
-        fill_Sm();
     }
 
-    void fill_Sm() {
+    base::context_t build() {
+        base::context_t ctx = base_t::build();
 
+        return ctx;
     }
 
+private:
     const int _order; /**< The order of the kernel */
 
 };

@@ -1062,7 +1062,7 @@ class FastMaternRFT(_SketchTransform):
 
   :param n: Number of dimensions in input vectors.
   :param s: Number of dimensions in output vectors.
-  :param sigma: bandwidth of the kernel.
+  :param order: order of the kernel.
   :param defouttype: Default output type when using the * and / operators.
   :param forceppy: whether to force a pure python implementation
 
@@ -1070,7 +1070,7 @@ class FastMaternRFT(_SketchTransform):
   Expansions in Loglinear Time**, ICML 2013
   """
   def __init__(self, n, s, order = 1, defouttype=None, forceppy=False, sketch_transform=None):
-    super(FastGaussianRFT, self)._baseinit("FastMaternRFT", n, s, defouttype, forceppy);
+    super(FastMaternRFT, self)._baseinit("FastMaternRFT", n, s, defouttype, forceppy);
 
     self._order = order
     if not self._ppy:

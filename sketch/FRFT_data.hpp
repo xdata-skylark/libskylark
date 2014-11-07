@@ -256,6 +256,26 @@ protected:
     base::context_t build() {
         base::context_t ctx = base_t::build();
 
+        // TODO (?) If we pregenerate, we can speed this up with OMP
+        boost::random::normal_distribution<double> distnrml;
+        std::vector<double> xi(_N), xii(_N);
+        for(auto it = Sm.begin(); it != Sm.end(); it++) {
+            std::fill(xi.begin(), xi.end(), 0.0);
+            for(int i = 0; i < _order; i++) {
+                xii = ctx.generate_random_samples_array(_N, distnrml);
+                double dot = 0.0;
+                for(int j = 0; j < _N; j++)
+                    dot += xii[j] * xii[j];
+                double nrm = std::sqrt(dot);
+                for(int j = 0; j < _N; j++)
+                    xi[j] += xii[j] / nrm;
+            }
+            double dot = 0.0;
+            for(int j = 0; j < _N; j++)
+                dot += xi[j] * xi[j];
+            *it = std::sqrt(dot);
+        }
+
         return ctx;
     }
 

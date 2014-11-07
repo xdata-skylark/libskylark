@@ -157,7 +157,8 @@ protected:
     base::context_t build() {
         base::context_t ctx = base_t::build();
         size_t array_size = static_cast<size_t>(_N) * static_cast<size_t>(_S);
-        random_samples = ctx.allocate_random_samples_array(array_size, distribution);
+        random_samples =
+            ctx.allocate_random_samples_array(array_size, distribution);
         return ctx;
     }
 

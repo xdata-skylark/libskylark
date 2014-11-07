@@ -59,6 +59,7 @@ struct PPT_data_t : public sketch_transform_data_t {
         _c(pt.get<double>("c")),
         _gamma(pt.get<double>("gamma")) {
 
+        build();
     }
 
     /**

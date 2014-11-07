@@ -273,7 +273,7 @@ protected:
             double dot = 0.0;
             for(int j = 0; j < _N; j++)
                 dot += xi[j] * xi[j];
-            *it = std::sqrt(dot);
+            *it = std::sqrt(dot / _N);
         }
 
         return ctx;

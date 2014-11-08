@@ -21,12 +21,12 @@ struct RLT_t <
     typedef InputType matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
     typedef RLT_data_t<KernelDistribution> data_type;
-private:
-    typedef skylark::sketch::dense_transform_t <matrix_type,
-                                                output_matrix_type,
-                                                KernelDistribution>
-    underlying_t;
 
+private:
+    typedef KernelDistribution<double> distribution_type;
+    typedef utility::random_samples_array_t<distribution_type> accessor_type;
+    typedef dense_transform_t <matrix_type, output_matrix_type,
+                               accessor_type> underlying_t;
 
 protected:
     /**
@@ -109,11 +109,12 @@ struct RLT_t <
     typedef InputType matrix_type;
     typedef elem::DistMatrix<value_type, OC, OR> output_matrix_type;
     typedef RLT_data_t<KernelDistribution> data_type;
+
 private:
-    typedef skylark::sketch::dense_transform_t <matrix_type,
-                                                output_matrix_type,
-                                                KernelDistribution>
-    underlying_t;
+    typedef KernelDistribution<double> distribution_type;
+    typedef utility::random_samples_array_t<distribution_type> accessor_type;
+    typedef dense_transform_t <matrix_type,  output_matrix_type,
+                               accessor_type> underlying_t;
 
 
 protected:

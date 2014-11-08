@@ -26,7 +26,7 @@ namespace skylark { namespace sketch {
 template <template <typename> class KernelDistribution>
 struct RLT_data_t : public sketch_transform_data_t {
 
-    typedef dense_transform_data_t<KernelDistribution> underlying_data_type;
+    typedef dist_dense_transform_data_t<KernelDistribution> underlying_data_type;
     typedef sketch_transform_data_t base_t;
 
     RLT_data_t (int N, int S, double inscale, double outscale, 

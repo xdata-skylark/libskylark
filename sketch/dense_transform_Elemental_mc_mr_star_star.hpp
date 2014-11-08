@@ -12,24 +12,23 @@
 #include "dense_transform_Elemental_mc_mr.hpp"
 
 namespace skylark { namespace sketch {
+
 /**
  * Specialization distributed input [MC, MR], distributed [STAR, STAR] output
  */
-template <typename ValueType,
-          template <typename> class ValueDistribution>
+template <typename ValueType,typename ValuesAccessor>
 struct dense_transform_t <
     elem::DistMatrix<ValueType>,
     elem::DistMatrix<ValueType, elem::STAR, elem::STAR>,
-    ValueDistribution> :
-        public dense_transform_data_t<ValueDistribution> {
+    ValuesAccessor> :
+        public dense_transform_data_t<ValuesAccessor> {
 
     // Typedef matrix and distribution types so that we can use them regularly
     typedef ValueType value_type;
     typedef elem::DistMatrix<value_type> matrix_type;
     typedef elem::DistMatrix<value_type, elem::STAR, elem::STAR>
      output_matrix_type;
-    typedef ValueDistribution<value_type> value_distribution_type;
-    typedef dense_transform_data_t<ValueDistribution> data_type;
+    typedef dense_transform_data_t<ValuesAccessor> data_type;
 
 
     /**
@@ -45,13 +44,13 @@ struct dense_transform_t <
      */
     dense_transform_t (dense_transform_t<matrix_type,
                                          output_matrix_type,
-                                         ValueDistribution>& other)
+                                         ValuesAccessor>& other)
         : data_type(other) {}
 
     /**
      * Constructor from data
      */
-    dense_transform_t(const dense_transform_data_t<ValueDistribution>& other_data)
+    dense_transform_t(const dense_transform_data_t<ValuesAccessor>& other_data)
         : data_type(other_data) {}
 
     /**
@@ -94,7 +93,7 @@ private:
         matrix_type sketch_of_A_MC_MR(A.Height(),
                                   data_type::_S);
 
-        dense_transform_t<matrix_type, matrix_type, ValueDistribution>
+        dense_transform_t<matrix_type, matrix_type, ValuesAccessor>
             transform(*this);
 
         transform.apply(A, sketch_of_A_MC_MR, tag);
@@ -111,7 +110,7 @@ private:
         matrix_type sketch_of_A_MC_MR(data_type::_S,
                                       A.Width());
 
-        dense_transform_t<matrix_type, matrix_type, ValueDistribution>
+        dense_transform_t<matrix_type, matrix_type, ValuesAccessor>
             transform(*this);
 
         transform.apply(A, sketch_of_A_MC_MR, tag);

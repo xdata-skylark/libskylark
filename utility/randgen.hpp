@@ -1,5 +1,5 @@
-#ifndef RANDGEN_HPP
-#define RANDGEN_HPP
+#ifndef SKYLARK_RANDGEN_HPP
+#define SKYLARK_RANDGEN_HPP
 
 #include <sstream>
 
@@ -193,4 +193,4 @@ private:
 
 } } /** skylark::utility */
 
-#endif // RANDGEN_HPP
+#endif // SKYLARK_RANDGEN_HPP

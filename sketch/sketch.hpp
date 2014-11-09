@@ -19,6 +19,8 @@
 #include "FJLT.hpp"
 #include "RFT_data.hpp"
 #include "RFT.hpp"
+#include "QRFT_data.hpp"
+#include "QRFT.hpp"
 #include "FRFT_data.hpp"
 #include "FRFT.hpp"
 #include "RLT_data.hpp"

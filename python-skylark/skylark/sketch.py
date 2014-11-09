@@ -990,6 +990,62 @@ class LaplacianRFT(_SketchTransform):
 
     # TODO ppy implementation
 
+class GuassianQRFT(_SketchTransform):
+  """
+  Quasi Random Features Transform for the Guassian Kernel
+
+  :param n: Number of dimensions in input vectors.
+  :param s: Number of dimensions in output vectors.
+  :param sigma: bandwidth of the kernel.
+  :param defouttype: Default output type when using the * and / operators.
+  :param forceppy: whether to force a pure python implementation
+
+  *J. Yang*, *V. Sindhwani*, *H. Avron* and *M. Mahoney*, 
+  **Quasi-Monte Carlo Feature Maps for Shift-Invariant Kernels**
+  ICML 2014
+  """
+  def __init__(self, n, s, sigma=1.0, defouttype=None, forceppy=False, sketch_transform=None):
+    super(GaussianQRFT, self)._baseinit("GaussianQRFT", n, s, defouttype, forceppy)
+
+    if not self._ppy:
+      if sketch_transform is None:
+        sketch_transform = c_void_p()
+        _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "GaussianQRFT", n, s, \
+                  byref(sketch_transform), ctypes.c_double(sigma))
+        self._obj = sketch_transform.value
+      else:
+        self._obj = sketch_transform
+
+    # TODO ppy implementation
+
+class LaplacianQRFT(_SketchTransform):
+  """
+  Quasi Random Features Transform for the Laplacian Kernel
+
+  :param n: Number of dimensions in input vectors.
+  :param s: Number of dimensions in output vectors.
+  :param sigma: bandwidth of the kernel.
+  :param defouttype: Default output type when using the * and / operators.
+  :param forceppy: whether to force a pure python implementation
+
+  *J. Yang*, *V. Sindhwani*, *H. Avron* and *M. Mahoney*, 
+  **Quasi-Monte Carlo Feature Maps for Shift-Invariant Kernels**
+  ICML 2014
+  """
+  def __init__(self, n, s, sigma=1.0, defouttype=None, forceppy=False, sketch_transform=None):
+    super(LaplacianQRFT, self)._baseinit("LaplacianQRFT", n, s, defouttype, forceppy)
+
+    if not self._ppy:
+      if sketch_transform is None:
+        sketch_transform = c_void_p()
+        _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "LaplacianQRFT", n, s, \
+                  byref(sketch_transform), ctypes.c_double(sigma))
+        self._obj = sketch_transform.value
+      else:
+        self._obj = sketch_transform
+
+    # TODO ppy implementation
+
 class FastGaussianRFT(_SketchTransform):
   """
   Fast variant of Random Features Transform for the RBF Kernel.
@@ -1244,6 +1300,10 @@ _map_csketch_type_to_cfun["GaussianRFT"] = \
     lambda sd, obj : GaussianRFT(int(sd['N']), int(sd['S']), float(sd['sigma']), None, False, obj.value)
 _map_csketch_type_to_cfun["LaplacianRFT"] = \
     lambda sd, obj : LaplacianRFT(int(sd['N']), int(sd['S']), float(sd['sigma']), None, False, obj.value)
+_map_csketch_type_to_cfun["GaussianRFT"] = \
+    lambda sd, obj : GaussianQRFT(int(sd['N']), int(sd['S']), float(sd['sigma']), None, False, obj.value)
+_map_csketch_type_to_cfun["LaplacianRFT"] = \
+    lambda sd, obj : LaplacianQRFT(int(sd['N']), int(sd['S']), float(sd['sigma']), None, False, obj.value)
 _map_csketch_type_to_cfun["FastGaussianRFT"] = \
     lambda sd, obj : FastGaussianRFT(int(sd['N']), int(sd['S']), float(sd['sigma']), None, False, obj.value)
 _map_csketch_type_to_cfun["FastMaternRFT"] = \

@@ -1,5 +1,5 @@
-#ifndef SKYLARK_RFT_HPP
-#define SKYLARK_RFT_HPP
+#ifndef SKYLARK_QRFT_HPP
+#define SKYLARK_QRFT_HPP
 
 #ifndef SKYLARK_SKETCH_HPP
 #error "Include top-level sketch.hpp instead of including individuals headers"
@@ -10,47 +10,49 @@ namespace skylark { namespace sketch {
 namespace bstrand = boost::random;
 
 /**
- * Random Fourier Transform
+ * Quasi Random Fourier Transform 
  *
- * Sketch transform into Eucledian space of fuctions in an RKHS
+ * Sketch transform into Euclidean space of functions in an RKHS
  * implicitly defined by a vector and a shift-invariant kernel.
  *
+ * Use quasi-random features.
+ *
  * See:
- * Ali Rahimi and Benjamin Recht
- * Random Features for Large-Scale Kernel Machines
- * NIPS 2007.
+ * Yang, Sindhawni, Avron and Mahoney
+ * Quasi-Monte Carlo Feature Maps for Shift-Invariant Kernels
+ * ICML 2014
  */
 template < typename InputMatrixType,
            typename OutputMatrixType,
            template <typename> class KernelDistribution>
-class RFT_t {
+class QRFT_t {
     // To be specilized and derived.
     typedef InputMatrixType matrix_type;
     typedef OutputMatrixType output_matrix_type;
-    typedef RFT_data_t<KernelDistribution> data_type;
+    typedef QRFT_data_t<KernelDistribution> data_type;
 
-    RFT_t(int N, int S, base::context_t& context)
+    QRFT_t(int N, int S, base::context_t& context)
         : data_type(N, S, context) {
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()
               << base::error_msg(
-                 "This combination has not yet been implemented for RFT"));
+                 "This combination has not yet been implemented for QRFT"));
     }
 
-    RFT_t(const data_type& other_data)
+    QRFT_t(const data_type& other_data)
         : data_type(other_data) {
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()
               << base::error_msg(
-                 "This combination has not yet been implemented for RFT"));
+                 "This combination has not yet been implemented for QRFT"));
     }
 
-    RFT_t(const boost::property_tree::ptree &pt)
+    QRFT_t(const boost::property_tree::ptree &pt)
         : data_type(pt) {
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()
               << base::error_msg(
-                 "This combination has not yet been implemented for RFT"));
+                 "This combination has not yet been implemented for QRFT"));
     }
 
     void apply (const matrix_type& A,
@@ -59,7 +61,7 @@ class RFT_t {
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()
               << base::error_msg(
-                 "This combination has not yet been implemented for RFT"));
+                 "This combination has not yet been implemented for QRFT"));
     }
 
     void apply (const matrix_type& A,
@@ -68,50 +70,50 @@ class RFT_t {
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()
               << base::error_msg(
-                 "This combination has not yet been implemented for RFT"));
+                 "This combination has not yet been implemented for QRFT"));
     }
 };
 
 /**
- * Random Features for Gaussian Kernel
+ * Quasi Random Features for Gaussian Kernel
  */
 template< typename InputMatrixType,
           typename OutputMatrixType = InputMatrixType>
-struct GaussianRFT_t :
-    public GaussianRFT_data_t,
+struct GaussianQRFT_t :
+    public GaussianQRFT_data_t,
     virtual public sketch_transform_t<InputMatrixType, OutputMatrixType > {
 
-    // We use composition to defer calls to RFT_t
-    typedef RFT_t<InputMatrixType, OutputMatrixType,
+    // We use composition to defer calls to QRFT_t
+    typedef QRFT_t<InputMatrixType, OutputMatrixType,
                   bstrand::normal_distribution > transform_t;
 
-    typedef GaussianRFT_data_t data_type;
+    typedef GaussianQRFT_data_t data_type;
     typedef data_type::params_t params_t;
 
-    GaussianRFT_t(int N, int S, double sigma, base::context_t& context)
+    GaussianQRFT_t(int N, int S, double sigma, base::context_t& context)
         : data_type(N, S, sigma, context), _transform(*this) {
 
     }
 
-    GaussianRFT_t(int N, int S, const params_t& params, base::context_t& context)
+    GaussianQRFT_t(int N, int S, const params_t& params, base::context_t& context)
         : data_type(N, S, params, context), _transform(*this) {
 
     }
 
-    GaussianRFT_t(const boost::property_tree::ptree &pt)
+    GaussianQRFT_t(const boost::property_tree::ptree &pt)
         : data_type(pt), _transform(*this) {
 
     }
 
     template <typename OtherInputMatrixType,
               typename OtherOutputMatrixType>
-    GaussianRFT_t(
-        const GaussianRFT_t<OtherInputMatrixType, OtherOutputMatrixType>& other)
+    GaussianQRFT_t(
+        const GaussianQRFT_t<OtherInputMatrixType, OtherOutputMatrixType>& other)
         : data_type(other), _transform(*this) {
 
     }
 
-    GaussianRFT_t (const data_type& other)
+    GaussianQRFT_t (const data_type& other)
         : data_type(other), _transform(*this) {
 
     }
@@ -147,45 +149,45 @@ private:
 };
 
 /**
- * Random Features for Laplacian Kernel
+ * Qausi Random Features for Laplacian Kernel
  */
 template< typename InputMatrixType,
           typename OutputMatrixType = InputMatrixType>
-struct LaplacianRFT_t :
-    public LaplacianRFT_data_t,
+struct LaplacianQRFT_t :
+    public LaplacianQRFT_data_t,
     virtual public sketch_transform_t<InputMatrixType, OutputMatrixType > {
 
-    // We use composition to defer calls to RFT_t
-    typedef RFT_t<InputMatrixType, OutputMatrixType,
+    // We use composition to defer calls to QRFT_t
+    typedef QRFT_t<InputMatrixType, OutputMatrixType,
                   bstrand::cauchy_distribution > transform_t;
 
-    typedef LaplacianRFT_data_t data_type;
+    typedef LaplacianQRFT_data_t data_type;
     typedef data_type::params_t params_t;
 
-    LaplacianRFT_t(int N, int S, double sigma, base::context_t& context)
+    LaplacianQRFT_t(int N, int S, double sigma, base::context_t& context)
         : data_type(N, S, sigma, context), _transform(*this) {
 
     }
 
-    LaplacianRFT_t(int N, int S, const params_t& params, base::context_t& context)
+    LaplacianQRFT_t(int N, int S, const params_t& params, base::context_t& context)
         : data_type(N, S, params, context), _transform(*this) {
 
     }
 
-    LaplacianRFT_t(const boost::property_tree::ptree &pt)
+    LaplacianQRFT_t(const boost::property_tree::ptree &pt)
         : data_type(pt), _transform(*this) {
 
     }
 
     template <typename OtherInputMatrixType,
               typename OtherOutputMatrixType>
-    LaplacianRFT_t(
-        const LaplacianRFT_t<OtherInputMatrixType, OtherOutputMatrixType>& other)
+    LaplacianQRFT_t(
+        const LaplacianQRFT_t<OtherInputMatrixType, OtherOutputMatrixType>& other)
         : data_type(other), _transform(*this) {
 
     }
 
-    LaplacianRFT_t (const data_type& other)
+    LaplacianQRFT_t (const data_type& other)
         : data_type(other), _transform(*this) {
 
     }
@@ -223,6 +225,6 @@ private:
 } } /** namespace skylark::sketch */
 
 
-#include "RFT_Elemental.hpp"
+#include "QRFT_Elemental.hpp"
 
-#endif // SKYLARK_RFT_HPP
+#endif // SKYLARK_QRFT_HPP

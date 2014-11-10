@@ -748,11 +748,7 @@ struct FJLT_t <
 
     typedef elem::DistMatrix<ValueType,
                              elem::STAR, elem::VR>
-    intermediate_type_star_rowdist;
-
-    typedef elem::DistMatrix<ValueType,
-                             elem::VC, elem::STAR>
-    intermediate_type_coldist_star;
+    intermediate_type;
 
     typedef fft_futs<double>::DCT_t transform_type;
     typedef utility::rademacher_distribution_t<value_type>
@@ -762,15 +758,10 @@ struct FJLT_t <
     typedef data_type::params_t params_t;
 
 protected:
-    typedef RFUT_t<intermediate_type_coldist_star,
-                   transform_type,
-                   underlying_value_distribution_type>
-    underlying_type_coldist_star;
 
-    typedef RFUT_t<intermediate_type_star_rowdist,
+    typedef RFUT_t<intermediate_type,
                    transform_type,
-                   underlying_value_distribution_type>
-    underlying_type_star_rowdist;
+                   underlying_value_distribution_type> underlying_type;
 
 public:
 
@@ -802,13 +793,36 @@ public:
     }
 
 
+
     /**
-     * Apply the sketching transform that is described in by the sketch_of_A.
+     * Apply columnwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
      */
-    template <typename Dimension>
     void apply (const matrix_type& A,
                 output_matrix_type& sketch_of_A,
-                Dimension dimension) const {
+                columnwise_tag dimension) const {
+
+        try {
+            apply_impl_dist(A, sketch_of_A, dimension);
+        } catch (std::logic_error e) {
+            SKYLARK_THROW_EXCEPTION (
+                base::elemental_exception()
+                    << base::error_msg(e.what()) );
+        } catch(boost::mpi::exception e) {
+                SKYLARK_THROW_EXCEPTION (
+                    base::mpi_exception()
+                        << base::error_msg(e.what()) );
+        }
+    }
+
+
+    /**
+     * Apply rowwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply (const matrix_type& A,
+                output_matrix_type& sketch_of_A,
+                rowwise_tag dimension) const {
         try {
             apply_impl_dist(A, sketch_of_A, dimension);
         } catch (std::logic_error e) {
@@ -837,8 +851,6 @@ private:
                     skylark::sketch::columnwise_tag) const {
 
         // Rearrange the matrix to fit the underlying transform
-        typedef intermediate_type_star_rowdist intermediate_type;
-        typedef underlying_type_star_rowdist   underlying_type;
         intermediate_type inter_A(A.Grid());
         inter_A = A;
 
@@ -863,8 +875,6 @@ private:
 
     /**
      * Implementation for sketching [MC, MR] -> [MC, MR] and rowwise.
-     *
-     * TODO Avoid transposition by working on the underlying type/transform.
      */
     void apply_impl_dist(const matrix_type& A,
                     output_matrix_type& sketch_of_A,
@@ -875,7 +885,7 @@ private:
         elem::Transpose(A, A_t);
         output_matrix_type sketch_of_A_t(sketch_of_A.Width(),
             sketch_of_A.Height());
-        apply_impl_vdist(A_t, sketch_of_A_t,
+        apply_impl_dist(A_t, sketch_of_A_t,
             skylark::sketch::columnwise_tag());
         elem::Transpose(sketch_of_A_t, sketch_of_A);
      }

@@ -151,6 +151,10 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
         SKDEF(FJLT, DistMatrix_VC_STAR, Matrix)
         SKDEF(FJLT, DistMatrix_STAR_VR, Matrix)
         SKDEF(FJLT, DistMatrix_STAR_VC, Matrix)
+        SKDEF(FJLT, DistMatrix_VR_STAR, SharedMatrix)
+        SKDEF(FJLT, DistMatrix_VC_STAR, SharedMatrix)
+        SKDEF(FJLT, DistMatrix_STAR_VR, SharedMatrix)
+        SKDEF(FJLT, DistMatrix_STAR_VC, SharedMatrix)
         SKDEF(FJLT, DistMatrix, DistMatrix)
         SKDEF(FastGaussianRFT, Matrix, Matrix)
         SKDEF(FastGaussianRFT, SparseMatrix, Matrix)
@@ -629,8 +633,28 @@ SKYLARK_EXTERN_API int
         sketch::FJLT_data_t);
 
     AUTO_APPLY_DISPATCH(sketchc::FJLT,
-        sketchc::DIST_MATRIX, sketchc::MATRIX,
-        sketch::FJLT_t, DistMatrix, Matrix,
+        sketchc::DIST_MATRIX_VR_STAR, sketchc::SHARED_MATRIX,
+        sketch::FJLT_t, DistMatrix_VR_STAR, SharedMatrix,
+        sketch::FJLT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::FJLT,
+        sketchc::DIST_MATRIX_VC_STAR, sketchc::SHARED_MATRIX,
+        sketch::FJLT_t, DistMatrix_VC_STAR, SharedMatrix,
+        sketch::FJLT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::FJLT,
+        sketchc::DIST_MATRIX_STAR_VR, sketchc::SHARED_MATRIX,
+        sketch::FJLT_t, DistMatrix_STAR_VR, SharedMatrix,
+        sketch::FJLT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::FJLT,
+        sketchc::DIST_MATRIX_STAR_VC, sketchc::SHARED_MATRIX,
+        sketch::FJLT_t, DistMatrix_STAR_VC, SharedMatrix,
+        sketch::FJLT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::FJLT,
+        sketchc::DIST_MATRIX, sketchc::DIST_MATRIX,
+        sketch::FJLT_t, DistMatrix, DistMatrix,
         sketch::FJLT_data_t);
 
     AUTO_APPLY_DISPATCH(sketchc::FastGaussianRFT,

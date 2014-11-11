@@ -24,7 +24,7 @@ namespace bstrand = boost::random;
  */
 template < typename InputMatrixType,
            typename OutputMatrixType,
-           template <typename> class KernelDistribution>
+           template <typename, typename> class KernelDistribution>
 class QRFT_t {
     // To be specilized and derived.
     typedef InputMatrixType matrix_type;
@@ -85,7 +85,7 @@ struct GaussianQRFT_t :
 
     // We use composition to defer calls to QRFT_t
     typedef QRFT_t<InputMatrixType, OutputMatrixType,
-                  bstrand::normal_distribution > transform_t;
+                   boost::math::normal_distribution > transform_t;
 
     typedef GaussianQRFT_data_t data_type;
     typedef data_type::params_t params_t;
@@ -159,7 +159,7 @@ struct LaplacianQRFT_t :
 
     // We use composition to defer calls to QRFT_t
     typedef QRFT_t<InputMatrixType, OutputMatrixType,
-                  bstrand::cauchy_distribution > transform_t;
+                   boost::math::cauchy_distribution > transform_t;
 
     typedef LaplacianQRFT_data_t data_type;
     typedef data_type::params_t params_t;

@@ -990,7 +990,7 @@ class LaplacianRFT(_SketchTransform):
 
     # TODO ppy implementation
 
-class GuassianQRFT(_SketchTransform):
+class GaussianQRFT(_SketchTransform):
   """
   Quasi Random Features Transform for the Guassian Kernel
 
@@ -1300,9 +1300,9 @@ _map_csketch_type_to_cfun["GaussianRFT"] = \
     lambda sd, obj : GaussianRFT(int(sd['N']), int(sd['S']), float(sd['sigma']), None, False, obj.value)
 _map_csketch_type_to_cfun["LaplacianRFT"] = \
     lambda sd, obj : LaplacianRFT(int(sd['N']), int(sd['S']), float(sd['sigma']), None, False, obj.value)
-_map_csketch_type_to_cfun["GaussianRFT"] = \
+_map_csketch_type_to_cfun["GaussianQRFT"] = \
     lambda sd, obj : GaussianQRFT(int(sd['N']), int(sd['S']), float(sd['sigma']), None, False, obj.value)
-_map_csketch_type_to_cfun["LaplacianRFT"] = \
+_map_csketch_type_to_cfun["LaplacianQRFT"] = \
     lambda sd, obj : LaplacianQRFT(int(sd['N']), int(sd['S']), float(sd['sigma']), None, False, obj.value)
 _map_csketch_type_to_cfun["FastGaussianRFT"] = \
     lambda sd, obj : FastGaussianRFT(int(sd['N']), int(sd['S']), float(sd['sigma']), None, False, obj.value)

@@ -6,21 +6,24 @@
 #endif
 
 #include <vector>
+#include <boost/math/distributions.hpp>
 
-#include "../utility/randgen.hpp"
+#include "../utility/quasirand.hpp"
 #include "boost/smart_ptr.hpp"
 
 namespace skylark { namespace sketch {
 
 namespace internal {
 
-template <typename Distribution>
+template <template <typename, typename> class Distribution,
+          typename ValueType>
 struct quasi_random_samples_array_t {
 
 public:
 
-    typedef typename Distribution::result_type value_type;
-
+    typedef ValueType value_type;
+    typedef Distribution<value_type, boost::math::policies::policy<> > 
+    distribution_type;
 
     quasi_random_samples_array_t() :
         _d(0), _N(0), _skip(0), _leap(0), _distribution() {
@@ -28,9 +31,9 @@ public:
     }
 
     quasi_random_samples_array_t(int d, int N, int skip, int  leap, 
-        const Distribution& distribution) :
+        const distribution_type& distribution) :
         _d(d), _N(N), _skip(skip), _leap(leap), _distribution(distribution) {
-        _distribution.reset();
+        
     }
 
 
@@ -59,7 +62,11 @@ public:
      * const-correctness.
      */
     value_type operator[](size_t index) const {
-        return 0.0;
+        // TODO embedded space (_d) should be a parameter
+        size_t skipidx = _skip + (index / _d) * _leap;
+        value_type baseval =
+            utility::Halton(_d + 1, skipidx, index % _d);
+        return boost::math::quantile(_distribution, baseval);
     }
 
 private:
@@ -67,21 +74,22 @@ private:
     size_t _N;
     size_t _skip;
     size_t _leap;
-    Distribution _distribution;
+    distribution_type _distribution;
 };
 
 }  // namespace internal
 
-template <template <typename> class ValueDistribution>
+template <template <typename, typename> class ValueDistribution>
 struct quasi_dense_transform_data_t :
         public dense_transform_data_t<
-    internal::quasi_random_samples_array_t< ValueDistribution<double> > > {
+    internal::quasi_random_samples_array_t< ValueDistribution, double > > {
 
     // Note: we always generate doubles for array values,
     // but when applying to floats the size can be reduced.
     typedef double value_type;
-    typedef ValueDistribution<value_type> value_distribution_type;
-    typedef internal::quasi_random_samples_array_t<value_distribution_type>
+    typedef ValueDistribution<value_type, boost::math::policies::policy<> >
+    distribution_type;
+    typedef internal::quasi_random_samples_array_t<ValueDistribution, value_type>
         value_accessor_type;
 
     typedef dense_transform_data_t<value_accessor_type> base_t;
@@ -134,7 +142,7 @@ protected:
     }
 
     int _skip, _leap;
-    value_distribution_type distribution; /**< Distribution for samples */
+    distribution_type distribution; /**< Distribution for samples */
 
 
 };

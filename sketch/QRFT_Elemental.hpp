@@ -9,7 +9,7 @@ namespace sketch {
  */
 template <typename ValueType,
           typename InputType,
-          template <typename> class KernelDistribution>
+          template <typename, typename> class KernelDistribution>
 struct QRFT_t <
     InputType,
     elem::Matrix<ValueType>,
@@ -163,7 +163,7 @@ private:
 template <typename ValueType,
           typename InputType,
           elem::Distribution OC, elem::Distribution OR,
-          template <typename> class KernelDistribution>
+          template <typename, typename> class KernelDistribution>
 struct QRFT_t <
     InputType,
     elem::DistMatrix<ValueType, OC, OR>,

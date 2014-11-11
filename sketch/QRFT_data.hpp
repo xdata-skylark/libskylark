@@ -26,7 +26,7 @@ namespace skylark { namespace sketch {
  * Quasi-Monte Carlo Feature Maps for Shift-Invariant Kernels
  * ICML 2014
  */
-template <template <typename> class KernelDistribution>
+template <template <typename, typename> class KernelDistribution>
 struct QRFT_data_t : public sketch_transform_data_t {
 
     typedef quasi_dense_transform_data_t<KernelDistribution>
@@ -76,7 +76,7 @@ protected:
         const double pi = boost::math::constants::pi<double>();
         for(int i = 0; i < base_t::_S; i++)
             _shifts[i] =  2 * pi * utility::Halton(base_t::_N + 1,
-                                                       base_t::_N, SKIP + i * LEAP);
+                                                       SKIP + i * LEAP, base_t::_N);
 
         return ctx;
     }
@@ -89,9 +89,9 @@ protected:
 };
 
 struct GaussianQRFT_data_t :
-        public QRFT_data_t<bstrand::normal_distribution> {
+        public QRFT_data_t<boost::math::normal_distribution> {
 
-    typedef QRFT_data_t<bstrand::normal_distribution > base_t;
+    typedef QRFT_data_t<boost::math::normal_distribution > base_t;
 
     /// Params structure
     struct params_t : public sketch_params_t {
@@ -155,9 +155,9 @@ private:
 };
 
 struct LaplacianQRFT_data_t :
-        public QRFT_data_t<bstrand::cauchy_distribution> {
+    public QRFT_data_t<boost::math::cauchy_distribution> {
 
-    typedef QRFT_data_t<bstrand::cauchy_distribution > base_t;
+    typedef QRFT_data_t<boost::math::cauchy_distribution > base_t;
 
     /// Params structure
     struct params_t : public sketch_params_t {

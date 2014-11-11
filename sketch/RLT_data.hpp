@@ -53,6 +53,10 @@ struct RLT_data_t : public sketch_transform_data_t {
     }
 
 protected:
+
+    typedef typename underlying_data_type::value_accessor_type accessor_type;
+
+
     RLT_data_t (int N, int S, double inscale, double outscale, 
         const skylark::base::context_t& context,
         std::string type)

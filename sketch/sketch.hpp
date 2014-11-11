@@ -10,6 +10,7 @@
 #include "RFUT.hpp"
 #include "dense_transform_data.hpp"
 #include "dist_dense_transform_data.hpp"
+#include "quasi_dense_transform_data.hpp"
 #include "dense_transform.hpp"
 #include "CT_data.hpp"
 #include "CT.hpp"

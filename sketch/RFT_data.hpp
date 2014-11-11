@@ -48,6 +48,9 @@ struct RFT_data_t : public sketch_transform_data_t {
     }
 
 protected:
+
+    typedef typename underlying_data_type::value_accessor_type accessor_type;
+
     RFT_data_t (int N, int S, double inscale, double outscale,
         const base::context_t& context, std::string type)
         : base_t(N, S, context, type),  _inscale(inscale),

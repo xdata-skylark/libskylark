@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "../utility/randgen.hpp"
+#include "../utility/quasirand.hpp"
 
 namespace skylark { namespace sketch {
 
@@ -28,13 +29,18 @@ namespace skylark { namespace sketch {
 template <template <typename> class KernelDistribution>
 struct QRFT_data_t : public sketch_transform_data_t {
 
-    typedef dist_dense_transform_data_t<KernelDistribution> underlying_data_type;
+    typedef quasi_dense_transform_data_t<KernelDistribution>
+    underlying_data_type;
     typedef sketch_transform_data_t base_t;
 
+    const int SKIP = 1000;
+    const int LEAP = 100;
+
+
     QRFT_data_t (int N, int S, double inscale, double outscale,
-        base::context_t& context)
-        : base_t(N, S, context, "RFT"), _inscale(inscale),
-          _outscale(outscale) {
+         base::context_t& context)
+        : base_t(N, S, context, "QRFT"), _inscale(inscale),
+          _outscale(outscale), _shifts(S) {
 
         context = build();
     }
@@ -50,10 +56,13 @@ struct QRFT_data_t : public sketch_transform_data_t {
     }
 
 protected:
+
+    typedef typename underlying_data_type::value_accessor_type accessor_type;
+
     QRFT_data_t (int N, int S, double inscale, double outscale,
         const base::context_t& context, std::string type)
         : base_t(N, S, context, type),  _inscale(inscale),
-          _outscale(outscale) {
+          _outscale(outscale), _shifts(S) {
 
     }
 
@@ -62,12 +71,13 @@ protected:
         base::context_t ctx = base_t::build();
 
         _underlying_data = boost::shared_ptr<underlying_data_type>(new
-            underlying_data_type(base_t::_N, base_t::_S, _inscale, ctx));
+        underlying_data_type(base_t::_N, base_t::_S, _inscale, SKIP, LEAP, ctx));
 
         const double pi = boost::math::constants::pi<double>();
-        boost::random::uniform_real_distribution<double>
-            distribution(0, 2 * pi);
-        _shifts = ctx.generate_random_samples_array(base_t::_S, distribution);
+        for(int i = 0; i < base_t::_S; i++)
+            _shifts[i] =  2 * pi * utility::Halton(base_t::_N + 1,
+                                                       base_t::_N, SKIP + i * LEAP);
+
         return ctx;
     }
 

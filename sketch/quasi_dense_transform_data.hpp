@@ -22,7 +22,7 @@ struct quasi_random_samples_array_t {
 public:
 
     typedef ValueType value_type;
-    typedef Distribution<value_type, boost::math::policies::policy<> > 
+    typedef Distribution<value_type, boost::math::policies::policy<> >
     distribution_type;
 
     quasi_random_samples_array_t() :
@@ -30,10 +30,10 @@ public:
 
     }
 
-    quasi_random_samples_array_t(int d, int N, int skip, int  leap, 
+    quasi_random_samples_array_t(int d, int N, int skip, int  leap,
         const distribution_type& distribution) :
         _d(d), _N(N), _skip(skip), _leap(leap), _distribution(distribution) {
-        
+
     }
 
 
@@ -63,7 +63,7 @@ public:
      */
     value_type operator[](size_t index) const {
         // TODO embedded space (_d) should be a parameter
-        size_t skipidx = _skip + (index / _d) * _leap;
+        size_t skipidx = (_skip + (index / _d)) * _leap;
         value_type baseval =
             utility::Halton(_d + 1, skipidx, index % _d);
         return boost::math::quantile(_distribution, baseval);

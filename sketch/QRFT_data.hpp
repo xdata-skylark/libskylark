@@ -33,14 +33,11 @@ struct QRFT_data_t : public sketch_transform_data_t {
     underlying_data_type;
     typedef sketch_transform_data_t base_t;
 
-    const int SKIP = 1000;
-    const int LEAP = 100;
-
-
     QRFT_data_t (int N, int S, double inscale, double outscale,
          base::context_t& context)
         : base_t(N, S, context, "QRFT"), _inscale(inscale),
-          _outscale(outscale), _shifts(S) {
+          _outscale(outscale), _shifts(S),
+          leap(boost::math::prime(N + 1)) {
 
         context = build();
     }
@@ -62,7 +59,8 @@ protected:
     QRFT_data_t (int N, int S, double inscale, double outscale,
         const base::context_t& context, std::string type)
         : base_t(N, S, context, type),  _inscale(inscale),
-          _outscale(outscale), _shifts(S) {
+          _outscale(outscale), _shifts(S),
+          leap(boost::math::prime(N + 1)) {
 
     }
 
@@ -71,12 +69,12 @@ protected:
         base::context_t ctx = base_t::build();
 
         _underlying_data = boost::shared_ptr<underlying_data_type>(new
-        underlying_data_type(base_t::_N, base_t::_S, _inscale, SKIP, LEAP, ctx));
+        underlying_data_type(base_t::_N, base_t::_S, _inscale, skip, leap, ctx));
 
         const double pi = boost::math::constants::pi<double>();
         for(int i = 0; i < base_t::_S; i++)
             _shifts[i] =  2 * pi * utility::Halton(base_t::_N + 1,
-                                                       SKIP + i * LEAP, base_t::_N);
+                (skip + i) * leap, base_t::_N);
 
         return ctx;
     }
@@ -86,6 +84,8 @@ protected:
     boost::shared_ptr<underlying_data_type> _underlying_data;
     /**< Data of the underlying dense transformation */
     std::vector<double> _shifts; /** Shifts for scaled trigonometric factor */
+    const int leap;
+    const int skip = 1000;
 };
 
 struct GaussianQRFT_data_t :

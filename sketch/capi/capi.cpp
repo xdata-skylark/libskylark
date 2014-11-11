@@ -88,6 +88,8 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
         SKDEF(JLT, DistMatrix_STAR_VC, SharedMatrix)
         SKDEF(JLT, DistMatrix_STAR_VR, DistMatrix_STAR_VR)
         SKDEF(JLT, DistMatrix_STAR_VC, DistMatrix_STAR_VC)
+        SKDEF(JLT, DistMatrix_VR_STAR, DistMatrix)
+        SKDEF(JLT, DistMatrix_VC_STAR, DistMatrix)
 
         SKDEF(CT, Matrix, Matrix)
         SKDEF(CT, SparseMatrix, Matrix)
@@ -106,6 +108,8 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
         SKDEF(CT, DistMatrix_STAR_VC, SharedMatrix)
         SKDEF(CT, DistMatrix_STAR_VR, DistMatrix_STAR_VR)
         SKDEF(CT, DistMatrix_STAR_VC, DistMatrix_STAR_VC)
+        SKDEF(CT, DistMatrix_VR_STAR, DistMatrix)
+        SKDEF(CT, DistMatrix_VC_STAR, DistMatrix)
 
         SKDEF(CWT, Matrix, Matrix)
         SKDEF(CWT, SparseMatrix, Matrix)
@@ -524,6 +528,14 @@ SKYLARK_EXTERN_API int
         sketchc::DIST_MATRIX_STAR_VC, sketchc::DIST_MATRIX_STAR_VC,
         sketch::JLT_t, DistMatrix_STAR_VC, DistMatrix_STAR_VC, sketch::JLT_data_t);
 
+    AUTO_APPLY_DISPATCH(sketchc::JLT,
+        sketchc::DIST_MATRIX_VR_STAR, sketchc::DIST_MATRIX,
+        sketch::JLT_t, DistMatrix_VR_STAR, DistMatrix, sketch::JLT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::JLT,
+        sketchc::DIST_MATRIX_VC_STAR, sketchc::DIST_MATRIX,
+        sketch::JLT_t, DistMatrix_VC_STAR, DistMatrix, sketch::JLT_data_t);
+
     AUTO_APPLY_DISPATCH(sketchc::CT,
         sketchc::MATRIX, sketchc::MATRIX,
         sketch::CT_t, Matrix, Matrix, sketch::CT_data_t);
@@ -591,6 +603,14 @@ SKYLARK_EXTERN_API int
     AUTO_APPLY_DISPATCH(sketchc::CT,
         sketchc::DIST_MATRIX_STAR_VC, sketchc::DIST_MATRIX_STAR_VC,
         sketch::CT_t, DistMatrix_STAR_VC, DistMatrix_STAR_VC, sketch::CT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::CT,
+        sketchc::DIST_MATRIX_VR_STAR, sketchc::DIST_MATRIX,
+        sketch::CT_t, DistMatrix_VR_STAR, DistMatrix, sketch::CT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::CT,
+        sketchc::DIST_MATRIX_VC_STAR, sketchc::DIST_MATRIX,
+        sketch::CT_t, DistMatrix_VC_STAR, DistMatrix, sketch::CT_data_t);
 
     AUTO_APPLY_DISPATCH(sketchc::CWT,
         sketchc::MATRIX, sketchc::MATRIX,

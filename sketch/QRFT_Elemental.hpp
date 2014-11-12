@@ -14,13 +14,15 @@ struct QRFT_t <
     InputType,
     elem::Matrix<ValueType>,
     KernelDistribution> :
-        public QRFT_data_t<KernelDistribution> {
+        public QRFT_data_t<KernelDistribution,
+                           utility::leaped_halton_sequence_t> {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
     typedef InputType matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
-    typedef QRFT_data_t<KernelDistribution> data_type;
+    typedef QRFT_data_t<KernelDistribution,
+                        utility::leaped_halton_sequence_t> data_type;
 
 private:
     typedef dense_transform_t <matrix_type, output_matrix_type,
@@ -168,14 +170,16 @@ struct QRFT_t <
     InputType,
     elem::DistMatrix<ValueType, OC, OR>,
     KernelDistribution> :
-        public QRFT_data_t<KernelDistribution> {
+        public QRFT_data_t<KernelDistribution,
+                           utility::leaped_halton_sequence_t> {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
     typedef InputType matrix_type;
     typedef elem::DistMatrix<value_type, OC, OR> output_matrix_type;
 
-    typedef QRFT_data_t<KernelDistribution> data_type;
+    typedef QRFT_data_t<KernelDistribution,
+                        utility::leaped_halton_sequence_t> data_type;
 
 private:
     typedef dense_transform_t <matrix_type, output_matrix_type,

@@ -36,7 +36,7 @@ struct leaped_halton_sequence_t {
         _d(0), _leap(0) {
     }
 
-    leaped_halton_sequence_t(size_t d, size_t leap) :
+    leaped_halton_sequence_t(size_t d, size_t leap = -1) :
         _d(d),
         _leap(leap == -1 ? boost::math::prime(d) : leap) {
 

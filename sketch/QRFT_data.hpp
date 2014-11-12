@@ -26,18 +26,23 @@ namespace skylark { namespace sketch {
  * Quasi-Monte Carlo Feature Maps for Shift-Invariant Kernels
  * ICML 2014
  */
-template <template <typename, typename> class KernelDistribution>
+template <template <typename, typename> class KernelDistribution,
+          template <typename> class QMCSequenceType>
 struct QRFT_data_t : public sketch_transform_data_t {
 
-    typedef quasi_dense_transform_data_t<KernelDistribution>
+    typedef double value_type;
+    typedef
+    quasi_dense_transform_data_t<KernelDistribution, QMCSequenceType>
     underlying_data_type;
+    typedef QMCSequenceType<value_type> sequence_type;
     typedef sketch_transform_data_t base_t;
 
+    static size_t qmc_seqeunce_dim(size_t N)  { return N+1; }
+
     QRFT_data_t (int N, int S, double inscale, double outscale,
-         base::context_t& context)
+        const sequence_type& sequence, int skip, base::context_t& context)
         : base_t(N, S, context, "QRFT"), _inscale(inscale),
-          _outscale(outscale), _shifts(S),
-          leap(boost::math::prime(N + 1)) {
+          _outscale(outscale), _shifts(S), _sequence(sequence), _skip(skip) {
 
         context = build();
     }
@@ -57,10 +62,10 @@ protected:
     typedef typename underlying_data_type::value_accessor_type accessor_type;
 
     QRFT_data_t (int N, int S, double inscale, double outscale,
+        const sequence_type& sequence, int skip,
         const base::context_t& context, std::string type)
         : base_t(N, S, context, type),  _inscale(inscale),
-          _outscale(outscale), _shifts(S),
-          leap(boost::math::prime(N + 1)) {
+          _outscale(outscale), _shifts(S), _sequence(sequence), _skip(skip)  {
 
     }
 
@@ -69,12 +74,12 @@ protected:
         base::context_t ctx = base_t::build();
 
         _underlying_data = boost::shared_ptr<underlying_data_type>(new
-        underlying_data_type(base_t::_N, base_t::_S, _inscale, skip, leap, ctx));
+            underlying_data_type(base_t::_N, base_t::_S, _inscale,
+                _sequence, _skip, ctx));
 
         const double pi = boost::math::constants::pi<double>();
         for(int i = 0; i < base_t::_S; i++)
-            _shifts[i] =  2 * pi * utility::Halton(base_t::_N + 1,
-                (skip + i) * leap, base_t::_N);
+            _shifts[i] =  2 * pi * _sequence.coordinate(_skip + i, base_t::_N);
 
         return ctx;
     }
@@ -84,14 +89,18 @@ protected:
     boost::shared_ptr<underlying_data_type> _underlying_data;
     /**< Data of the underlying dense transformation */
     std::vector<double> _shifts; /** Shifts for scaled trigonometric factor */
-    const int leap;
-    const int skip = 1000;
+    sequence_type _sequence;
+    const int _skip;
 };
 
 struct GaussianQRFT_data_t :
-        public QRFT_data_t<boost::math::normal_distribution> {
+        public QRFT_data_t<boost::math::normal_distribution,
+                           utility::leaped_halton_sequence_t> {
 
-    typedef QRFT_data_t<boost::math::normal_distribution > base_t;
+    typedef QRFT_data_t<boost::math::normal_distribution,
+                        utility::leaped_halton_sequence_t> base_t;
+
+    typedef base_t::sequence_type sequence_type;
 
     /// Params structure
     struct params_t : public sketch_params_t {
@@ -101,11 +110,13 @@ struct GaussianQRFT_data_t :
         }
 
         const double sigma;
+        // TODO sequence
     };
 
     GaussianQRFT_data_t(int N, int S, double sigma,
         base::context_t& context)
-        : base_t(N, S, 1.0 / sigma, std::sqrt(2.0 / S), context, "GaussianRFT"), 
+        : base_t(N, S, 1.0 / sigma, std::sqrt(2.0 / S),
+            sequence_type(N+1, -1), 1000, context, "GaussianRFT"),
           _sigma(sigma) {
 
         context = base_t::build();
@@ -113,7 +124,8 @@ struct GaussianQRFT_data_t :
 
     GaussianQRFT_data_t(int N, int S, const params_t& params,
         base::context_t& context)
-        : base_t(N, S, 1.0 / params.sigma, std::sqrt(2.0 / S), context, "GaussianRFT"), 
+        : base_t(N, S, 1.0 / params.sigma, std::sqrt(2.0 / S),
+            sequence_type(N + 1, -1), 1000, context, "GaussianRFT"),
           _sigma(params.sigma) {
 
         context = base_t::build();
@@ -123,7 +135,8 @@ struct GaussianQRFT_data_t :
         base_t(pt.get<int>("N"), pt.get<int>("S"),
             1.0 / pt.get<double>("sigma"),
             std::sqrt(2.0 / pt.get<double>("S")),
-            base::context_t(pt.get_child("creation_context")), "GaussianRFT"),
+            sequence_type(pt.get<int>("N") + 1, -1), 1000,    // TODO
+            base::context_t(pt.get_child("creation_context")), "GaussianQRFT"),
         _sigma(pt.get<double>("sigma")) {
 
         base_t::build();
@@ -139,13 +152,15 @@ struct GaussianQRFT_data_t :
         boost::property_tree::ptree pt;
         sketch_transform_data_t::add_common(pt);
         pt.put("sigma", _sigma);
+        // TODO
         return pt;
     }
 
 protected:
     GaussianQRFT_data_t(int N, int S, double sigma,
         const base::context_t& context, std::string type)
-        : base_t(N, S, 1.0 / sigma, std::sqrt(2.0 / S), context, type),
+        : base_t(N, S, 1.0 / sigma, std::sqrt(2.0 / S), 
+            sequence_type(N + 1, -1), 1000, context, type),
           _sigma(sigma) {
 
     }
@@ -155,9 +170,13 @@ private:
 };
 
 struct LaplacianQRFT_data_t :
-    public QRFT_data_t<boost::math::cauchy_distribution> {
+        public QRFT_data_t<boost::math::cauchy_distribution,
+                           utility::leaped_halton_sequence_t> {
 
-    typedef QRFT_data_t<boost::math::cauchy_distribution > base_t;
+    typedef QRFT_data_t<boost::math::cauchy_distribution,
+                        utility::leaped_halton_sequence_t> base_t;
+
+    typedef base_t::sequence_type sequence_type;
 
     /// Params structure
     struct params_t : public sketch_params_t {
@@ -167,11 +186,13 @@ struct LaplacianQRFT_data_t :
         }
 
         const double sigma;
+        // TODO sequence
     };
 
     LaplacianQRFT_data_t(int N, int S, double sigma,
         base::context_t& context)
-        : base_t(N, S, 1.0 / sigma, std::sqrt(2.0 / S), context, "LaplacianRFT"),
+        : base_t(N, S, 1.0 / sigma, std::sqrt(2.0 / S),
+            sequence_type(N+1, -1), 1000, context, "LaplacianRFT"),
         _sigma(sigma) {
 
         context = base_t::build();
@@ -179,7 +200,8 @@ struct LaplacianQRFT_data_t :
 
     LaplacianQRFT_data_t(int N, int S, const params_t& params,
         base::context_t& context)
-        : base_t(N, S, 1.0 / params.sigma, std::sqrt(2.0 / S), context, "LaplacianRFT"),
+        : base_t(N, S, 1.0 / params.sigma, std::sqrt(2.0 / S),
+            sequence_type(N + 1, -1), 1000, context, "LaplacianRFT"),
         _sigma(params.sigma) {
 
         context = base_t::build();
@@ -189,6 +211,7 @@ struct LaplacianQRFT_data_t :
         base_t(pt.get<int>("N"), pt.get<int>("S"),
             1.0 / pt.get<double>("sigma"),
             std::sqrt(2.0 / pt.get<double>("S")),
+            sequence_type(pt.get<int>("N") + 1, -1), 1000, // TODO
             base::context_t(pt.get_child("creation_context")), "LaplacianRFT"),
         _sigma(pt.get<double>("sigma")) {
 
@@ -205,6 +228,7 @@ struct LaplacianQRFT_data_t :
         boost::property_tree::ptree pt;
         sketch_transform_data_t::add_common(pt);
         pt.put("sigma", _sigma);
+        // TODO
         return pt;
     }
 
@@ -212,7 +236,8 @@ protected:
 
     LaplacianQRFT_data_t(int N, int S, double sigma,
         const base::context_t& context, std::string type)
-        : base_t(N, S, 1.0 / sigma, std::sqrt(2.0 / S), context, type), 
+        : base_t(N, S, 1.0 / sigma, std::sqrt(2.0 / S),
+            sequence_type(N + 1, -1), 1000, context, type),
           _sigma(sigma) {
 
     }

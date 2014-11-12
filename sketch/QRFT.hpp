@@ -29,7 +29,8 @@ class QRFT_t {
     // To be specilized and derived.
     typedef InputMatrixType matrix_type;
     typedef OutputMatrixType output_matrix_type;
-    typedef QRFT_data_t<KernelDistribution> data_type;
+    typedef QRFT_data_t<KernelDistribution,
+                        utility::leaped_halton_sequence_t> data_type;
 
     QRFT_t(int N, int S, base::context_t& context)
         : data_type(N, S, context) {

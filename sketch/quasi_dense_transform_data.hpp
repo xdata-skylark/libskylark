@@ -26,55 +26,47 @@ public:
     distribution_type;
 
     quasi_random_samples_array_t() :
-        _d(0), _N(0), _skip(0), _leap(0), _distribution() {
+        _d(0), _N(0), _distribution(), _skip(0), _qmc_sequence() {
 
     }
 
-    quasi_random_samples_array_t(int d, int N, int skip, int  leap,
-        const distribution_type& distribution) :
-        _d(d), _N(N), _skip(skip), _leap(leap), _distribution(distribution) {
+    quasi_random_samples_array_t(int d, int N,
+        const distribution_type& distribution,
+        int skip = 0, int  leap = -1) :
+        _d(d), _N(N), _distribution(distribution),
+        _skip(skip), _qmc_sequence(d + 1, leap) {
 
     }
 
 
 
     quasi_random_samples_array_t(const quasi_random_samples_array_t& other) :
-        _d(other._d), _N(other._N), _skip(other._skip), _leap(other._leap),
-        _distribution(other._distribution) {
+        _d(other._d), _N(other._N), _distribution(other._distribution),
+        _qmc_sequence(other._qmc_sequence) {
 
     }
 
     quasi_random_samples_array_t& operator=(const quasi_random_samples_array_t& other) {
         _d = other._d;
         _N = other._N;
-        _skip = other._skip;
-        _leap = other._leap;
         _distribution = other._distribution;
+        _skip = other._skip;
+        _qmc_sequence = other._qmc_sequence;
         return *this;
     }
 
-    /**
-     * @internal The samples could be generated during the sketch apply().
-     * apply() are const methods so this [] operator should be const too.
-     * A distribution object however as provided e.g. by boost may modify its
-     * state between successive invocations of the passed in generator object.
-     * (e.g. normal distribution). So the reason for copying is the
-     * const-correctness.
-     */
     value_type operator[](size_t index) const {
-        // TODO embedded space (_d) should be a parameter
-        size_t skipidx = (_skip + (index / _d)) * _leap;
-        value_type baseval =
-            utility::Halton(_d + 1, skipidx, index % _d);
+        size_t skpidx = index + _skip;
+        value_type baseval = _qmc_sequence.coordinate(skpidx / _d, skpidx % _d);
         return boost::math::quantile(_distribution, baseval);
     }
 
 private:
     size_t _d;
     size_t _N;
-    size_t _skip;
-    size_t _leap;
     distribution_type _distribution;
+    size_t _skip;
+    utility::leaped_halton_sequence_t<value_type> _qmc_sequence;
 };
 
 }  // namespace internal
@@ -100,7 +92,7 @@ struct quasi_dense_transform_data_t :
     quasi_dense_transform_data_t (int N, int S, double scale,
         int skip, int leap, base::context_t& context)
         : base_t(N, S, scale, context, "DistributionDenseTransform"),
-          _skip(skip), _leap(leap), distribution() {
+          _skip(skip), _leap(leap), _distribution() {
 
         // No scaling in "raw" form
         context = build();
@@ -117,7 +109,7 @@ struct quasi_dense_transform_data_t :
     }
 
     quasi_dense_transform_data_t(const quasi_dense_transform_data_t& other)
-        : base_t(other), distribution(other.distribution) {
+        : base_t(other), _distribution(other._distribution) {
 
     }
 
@@ -127,7 +119,7 @@ protected:
     quasi_dense_transform_data_t (int N, int S, double scale,
         int skip, int leap, const base::context_t& context, std::string type)
         : base_t(N, S, scale, context, type),
-          _skip(skip), _leap(leap), distribution() {
+          _skip(skip), _leap(leap), _distribution() {
 
     }
 
@@ -135,14 +127,14 @@ protected:
         base::context_t ctx = base_t::build();
 
         base_t::random_samples =
-            value_accessor_type(base_t::_N, base_t::_S, _skip, _leap,
-                distribution);
+            value_accessor_type(base_t::_N, base_t::_S, _distribution,
+                _skip, _leap);
 
         return ctx;
     }
 
     int _skip, _leap;
-    distribution_type distribution; /**< Distribution for samples */
+    distribution_type _distribution; /**< Distribution for samples */
 
 
 };

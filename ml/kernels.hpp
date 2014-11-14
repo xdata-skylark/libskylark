@@ -26,6 +26,20 @@ struct gaussian_t {
             new sketch::FastGaussianRFT_t<IT, OT>(_N, S, _sigma, context);
     }
 
+    template<typename IT, typename OT, 
+             template <typename> class QMCSequenceType>
+    sketch::sketch_transform_t<IT, OT> *create_qrft(int S,
+        const QMCSequenceType<double>& sequence, int skip,
+        base::context_t& context) const {
+        return
+            new sketch::GaussianQRFT_t<IT, OT, QMCSequenceType>(_N,
+                S, _sigma, sequence, skip, context);
+    }
+
+    int get_dim() const {
+        return _N;
+    }
+
     // TODO method for gram matrix ?
 
 
@@ -46,6 +60,10 @@ struct polynomial_t {
         regular_feature_transform_tag, base::context_t& context) const {
         return
             new sketch::PPT_t<IT, OT>(_N, S, _q, _c, _gamma, context);
+    }
+
+    int get_dim() const {
+        return _N;
     }
 
     // TODO method for gram matrix ?
@@ -71,6 +89,20 @@ struct laplacian_t {
             new sketch::LaplacianRFT_t<IT, OT>(_N, S, _sigma, context);
     }
 
+    template<typename IT, typename OT, 
+             template<typename> class QMCSequenceType>
+    sketch::sketch_transform_t<IT, OT> *create_qrft(int S,
+        const QMCSequenceType<double>& sequence, int skip,
+        base::context_t& context) const {
+        return
+            new sketch::LaplacianQRFT_t<IT, OT, QMCSequenceType>(_N, 
+                S, _sigma, sequence, skip, context);
+    }
+
+    int get_dim() const {
+        return _N;
+    }
+
     // TODO method for gram matrix ?
 
 
@@ -92,6 +124,9 @@ struct expsemigroup_t {
             new sketch::ExpSemigroupRLT_t<IT, OT>(_N, S, _beta, context);
     }
 
+    int get_dim() const {
+        return _N;
+    }
     // TODO method for gram matrix ?
 
 

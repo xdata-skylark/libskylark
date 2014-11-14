@@ -71,6 +71,7 @@ struct hilbert_options_t {
     int seed;
     int randomfeatures;
     bool regularmap;
+    bool usequasi;
     bool cachetransforms;
 
     /* parallelization options */
@@ -150,6 +151,10 @@ struct hilbert_options_t {
                 po::value<bool>(&regularmap)->default_value(true),
                 "Default is to use 'fast' feature mapping, if available."
                 "Use this flag to force regular mapping (default: false)")
+            ("usequasi",
+                po::value<bool>(&usequasi)->default_value(false),
+                "If avaible, use a quasi-randomized approach instead of"
+                "a randomized one (default: false)")
             ("cachetransforms",
                 po::value<bool>(&cachetransforms)->default_value(false),
                 "Default is to not cache feature transforms per iteration, but generate on fly"
@@ -316,6 +321,7 @@ struct hilbert_options_t {
         optionstring << "# Random Features = " << randomfeatures << std::endl;
         optionstring << "# Caching Transforms = " << cachetransforms << std::endl;
         optionstring << "# Slow/Fast feature mapping = " << regularmap  << std::endl;
+        optionstring << "# Use quasi-randomness = " << usequasi  << std::endl;
         optionstring << "# Number of feature partitions = "
                      << numfeaturepartitions << std::endl;
         optionstring << "# Threads = " << numthreads << std::endl;

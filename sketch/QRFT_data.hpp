@@ -106,7 +106,7 @@ struct GaussianQRFT_data_t :
     /// Params structure
     struct params_t : public sketch_params_t {
 
-        params_t(double sigma, const sequence_type& sequence, int skip) : 
+        params_t(double sigma, const sequence_type& sequence, int skip) :
             sigma(sigma), sequence(sequence), skip(skip) {
 
         }
@@ -140,7 +140,7 @@ struct GaussianQRFT_data_t :
         base_t(pt.get<int>("N"), pt.get<int>("S"),
             1.0 / pt.get<double>("sigma"),
             std::sqrt(2.0 / pt.get<double>("S")),
-            sequence_type(pt.get<int>("N") + 1, -1), pt.get<int>("skip"),    // TODO
+            sequence_type(pt.get_child("sequence")), pt.get<int>("skip"),
             base::context_t(pt.get_child("creation_context")), "GaussianQRFT"),
         _sigma(pt.get<double>("sigma")),
         _sequence(pt.get<int>("N") + 1, -1),  _skip(pt.get<int>("skip")) {
@@ -157,9 +157,9 @@ struct GaussianQRFT_data_t :
     boost::property_tree::ptree to_ptree() const {
         boost::property_tree::ptree pt;
         sketch_transform_data_t::add_common(pt);
+        pt.put_child("sequence", _sequence.to_ptree());
         pt.put("sigma", _sigma);
         pt.put("skip", _skip);
-        // TODO
         return pt;
     }
 
@@ -167,7 +167,7 @@ protected:
     GaussianQRFT_data_t(int N, int S, double sigma,
         const sequence_type& sequence, int skip,
         const base::context_t& context, std::string type)
-        : base_t(N, S, 1.0 / sigma, std::sqrt(2.0 / S), 
+        : base_t(N, S, 1.0 / sigma, std::sqrt(2.0 / S),
             sequence, skip, context, type),
           _sigma(sigma), _sequence(sequence), _skip(skip) {
 
@@ -191,7 +191,7 @@ struct LaplacianQRFT_data_t :
     /// Params structure
     struct params_t : public sketch_params_t {
 
-        params_t(double sigma, const sequence_type& sequence, int skip) : 
+        params_t(double sigma, const sequence_type& sequence, int skip) :
             sigma(sigma), sequence(sequence), skip(skip) {
 
         }
@@ -225,7 +225,7 @@ struct LaplacianQRFT_data_t :
         base_t(pt.get<int>("N"), pt.get<int>("S"),
             1.0 / pt.get<double>("sigma"),
             std::sqrt(2.0 / pt.get<double>("S")),
-            sequence_type(pt.get<int>("N") + 1, -1), pt.get<int>("skip"),    // TODO
+            sequence_type(pt.get_child("sequence")), pt.get<int>("skip"),
             base::context_t(pt.get_child("creation_context")), "LaplacianQRFT"),
         _sigma(pt.get<double>("sigma")),
         _sequence(pt.get<int>("N") + 1, -1),  _skip(pt.get<int>("skip")) {
@@ -242,9 +242,9 @@ struct LaplacianQRFT_data_t :
     boost::property_tree::ptree to_ptree() const {
         boost::property_tree::ptree pt;
         sketch_transform_data_t::add_common(pt);
+        pt.put_child("sequence", _sequence.to_ptree());
         pt.put("sigma", _sigma);
         pt.put("skip", _skip);
-        // TODO
         return pt;
     }
 
@@ -253,7 +253,7 @@ protected:
     LaplacianQRFT_data_t(int N, int S, double sigma,
         const sequence_type& sequence, int skip,
         const base::context_t& context, std::string type)
-        : base_t(N, S, 1.0 / sigma, std::sqrt(2.0 / S), 
+        : base_t(N, S, 1.0 / sigma, std::sqrt(2.0 / S),
             sequence, skip, context, type),
           _sigma(sigma), _sequence(sequence), _skip(skip) {
 

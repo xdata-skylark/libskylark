@@ -1,7 +1,8 @@
 #ifndef SKYLARK_QUASIRAND_HPP
 #define SKYLARK_QUASIRAND_HPP
 
-#include <boost/math/special_functions/prime.hpp>
+#include "boost/property_tree/ptree.hpp"
+#include "boost/math/special_functions/prime.hpp"
 
 namespace skylark { namespace utility {
 
@@ -42,6 +43,11 @@ struct leaped_halton_sequence_t {
 
     }
 
+    leaped_halton_sequence_t (const boost::property_tree::ptree& json) {
+        _d = json.get<int>("d");
+        _leap = json.get<size_t>("leap");
+    }
+
     leaped_halton_sequence_t& operator=(const leaped_halton_sequence_t& other) {
         _d = other._d;
         _leap = other._leap;
@@ -50,6 +56,16 @@ struct leaped_halton_sequence_t {
 
     inline value_type coordinate(size_t idx, size_t i) const {
         return RadialInverseFunction(boost::math::prime(i), idx * _leap);
+    }
+
+    boost::property_tree::ptree to_ptree() const {
+        boost::property_tree::ptree pt;
+        pt.put("skylark_object_type", "qmc_sequence");
+        pt.put("skylark_version", VERSION);
+        pt.put("sequence_type", "leaped halton");
+        pt.put("d", _d);
+        pt.put("leap", _leap);
+        return pt;
     }
 
 private:

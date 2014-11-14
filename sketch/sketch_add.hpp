@@ -30,6 +30,11 @@ sketch_transform_data_t::from_ptree(const boost::property_tree::ptree& pt) {
     AUTO_LOAD_DISPATCH(GaussianRFT,  GaussianRFT_data_t);
     AUTO_LOAD_DISPATCH(LaplacianRFT, LaplacianRFT_data_t);
 
+    AUTO_LOAD_DISPATCH(GaussianQRFT,
+        GaussianQRFT_data_t<utility::leaped_halton_sequence_t>);
+    AUTO_LOAD_DISPATCH(LaplacianQRFT,
+        LaplacianQRFT_data_t<utility::leaped_halton_sequence_t>);
+
     AUTO_LOAD_DISPATCH(ExpSemigroupRLT, ExpSemigroupRLT_data_t);
     AUTO_LOAD_DISPATCH(FastGaussianRFT, FastGaussianRFT_data_t);
 
@@ -62,6 +67,7 @@ sketch_transform_t<IT, OT>::from_ptree(const boost::property_tree::ptree& pt) {
 
     AUTO_LOAD_DISPATCH(GaussianRFT,  GaussianRFT_t);
     AUTO_LOAD_DISPATCH(LaplacianRFT, LaplacianRFT_t);
+
 
     AUTO_LOAD_DISPATCH(ExpSemigroupRLT, ExpSemigroupRLT_t);
     AUTO_LOAD_DISPATCH(FastGaussianRFT, FastGaussianRFT_t);

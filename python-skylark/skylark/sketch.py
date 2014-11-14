@@ -997,6 +997,7 @@ class GaussianQRFT(_SketchTransform):
   :param n: Number of dimensions in input vectors.
   :param s: Number of dimensions in output vectors.
   :param sigma: bandwidth of the kernel.
+  :param skip: how many values in the QMC sequence to skip.
   :param defouttype: Default output type when using the * and / operators.
   :param forceppy: whether to force a pure python implementation
 
@@ -1004,14 +1005,14 @@ class GaussianQRFT(_SketchTransform):
   **Quasi-Monte Carlo Feature Maps for Shift-Invariant Kernels**
   ICML 2014
   """
-  def __init__(self, n, s, sigma=1.0, defouttype=None, forceppy=False, sketch_transform=None):
+  def __init__(self, n, s, sigma=1.0, skip=0, defouttype=None, forceppy=False, sketch_transform=None):
     super(GaussianQRFT, self)._baseinit("GaussianQRFT", n, s, defouttype, forceppy)
 
     if not self._ppy:
       if sketch_transform is None:
         sketch_transform = c_void_p()
         _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "GaussianQRFT", n, s, \
-                  byref(sketch_transform), ctypes.c_double(sigma))
+                  byref(sketch_transform), ctypes.c_double(sigma), ctypes.c_int(skip))
         self._obj = sketch_transform.value
       else:
         self._obj = sketch_transform
@@ -1025,6 +1026,7 @@ class LaplacianQRFT(_SketchTransform):
   :param n: Number of dimensions in input vectors.
   :param s: Number of dimensions in output vectors.
   :param sigma: bandwidth of the kernel.
+  :param skip: how many values in the QMC sequence to skip.
   :param defouttype: Default output type when using the * and / operators.
   :param forceppy: whether to force a pure python implementation
 
@@ -1032,14 +1034,14 @@ class LaplacianQRFT(_SketchTransform):
   **Quasi-Monte Carlo Feature Maps for Shift-Invariant Kernels**
   ICML 2014
   """
-  def __init__(self, n, s, sigma=1.0, defouttype=None, forceppy=False, sketch_transform=None):
+  def __init__(self, n, s, sigma=1.0, skip=0, defouttype=None, forceppy=False, sketch_transform=None):
     super(LaplacianQRFT, self)._baseinit("LaplacianQRFT", n, s, defouttype, forceppy)
 
     if not self._ppy:
       if sketch_transform is None:
         sketch_transform = c_void_p()
         _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "LaplacianQRFT", n, s, \
-                  byref(sketch_transform), ctypes.c_double(sigma))
+                  byref(sketch_transform), ctypes.c_double(sigma), c_int(skip))
         self._obj = sketch_transform.value
       else:
         self._obj = sketch_transform
@@ -1301,9 +1303,9 @@ _map_csketch_type_to_cfun["GaussianRFT"] = \
 _map_csketch_type_to_cfun["LaplacianRFT"] = \
     lambda sd, obj : LaplacianRFT(int(sd['N']), int(sd['S']), float(sd['sigma']), None, False, obj.value)
 _map_csketch_type_to_cfun["GaussianQRFT"] = \
-    lambda sd, obj : GaussianQRFT(int(sd['N']), int(sd['S']), float(sd['sigma']), None, False, obj.value)
+    lambda sd, obj : GaussianQRFT(int(sd['N']), int(sd['S']), float(sd['sigma']), int(sd['skip']), None, False, obj.value)
 _map_csketch_type_to_cfun["LaplacianQRFT"] = \
-    lambda sd, obj : LaplacianQRFT(int(sd['N']), int(sd['S']), float(sd['sigma']), None, False, obj.value)
+    lambda sd, obj : LaplacianQRFT(int(sd['N']), int(sd['S']), float(sd['sigma']), int(sd['skip']), None, False, obj.value)
 _map_csketch_type_to_cfun["FastGaussianRFT"] = \
     lambda sd, obj : FastGaussianRFT(int(sd['N']), int(sd['S']), float(sd['sigma']), None, False, obj.value)
 _map_csketch_type_to_cfun["FastMaternRFT"] = \

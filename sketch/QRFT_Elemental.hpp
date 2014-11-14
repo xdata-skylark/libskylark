@@ -9,20 +9,20 @@ namespace sketch {
  */
 template <typename ValueType,
           typename InputType,
-          template <typename, typename> class KernelDistribution>
+          template <typename, typename> class KernelDistribution,
+          template <typename> class QMCSequenceType>
 struct QRFT_t <
     InputType,
     elem::Matrix<ValueType>,
-    KernelDistribution> :
-        public QRFT_data_t<KernelDistribution,
-                           utility::leaped_halton_sequence_t> {
+    KernelDistribution, QMCSequenceType> :
+        public QRFT_data_t<KernelDistribution,  QMCSequenceType> {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
     typedef InputType matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
-    typedef QRFT_data_t<KernelDistribution,
-                        utility::leaped_halton_sequence_t> data_type;
+    typedef QRFT_data_t<KernelDistribution,  QMCSequenceType> data_type;
+    typedef typename data_type::sequence_type sequence_type;
 
 private:
     typedef dense_transform_t <matrix_type, output_matrix_type,
@@ -33,8 +33,9 @@ protected:
     /**
      * Regular constructor - Allow creation only by subclasses
      */
-    QRFT_t (int N, int S, base::context_t& context)
-        : data_type (N, S, context) {
+    QRFT_t (int N, int S, 
+        const sequence_type& sequence, int skip, base::context_t& context)
+        : data_type (N, S, sequence, skip, context) {
 
     }
 
@@ -43,8 +44,8 @@ public:
      * Copy constructor
      */
     QRFT_t(const QRFT_t<matrix_type,
-                      output_matrix_type,
-                      KernelDistribution>& other)
+        output_matrix_type,
+        KernelDistribution, QMCSequenceType>& other)
         : data_type(other) {
 
     }
@@ -165,21 +166,21 @@ private:
 template <typename ValueType,
           typename InputType,
           elem::Distribution OC, elem::Distribution OR,
-          template <typename, typename> class KernelDistribution>
+          template <typename, typename> class KernelDistribution,
+          template <typename> class QMCSequenceType>
 struct QRFT_t <
     InputType,
     elem::DistMatrix<ValueType, OC, OR>,
-    KernelDistribution> :
-        public QRFT_data_t<KernelDistribution,
-                           utility::leaped_halton_sequence_t> {
+    KernelDistribution, QMCSequenceType> :
+        public QRFT_data_t<KernelDistribution, QMCSequenceType> {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
     typedef InputType matrix_type;
     typedef elem::DistMatrix<value_type, OC, OR> output_matrix_type;
 
-    typedef QRFT_data_t<KernelDistribution,
-                        utility::leaped_halton_sequence_t> data_type;
+    typedef QRFT_data_t<KernelDistribution, QMCSequenceType> data_type;
+    typedef typename data_type::sequence_type sequence_type;
 
 private:
     typedef dense_transform_t <matrix_type, output_matrix_type,
@@ -192,8 +193,9 @@ protected:
     /**
      * Regular constructor -- Allow only creation by subclasses
      */
-    QRFT_t (int N, int S, base::context_t& context)
-        : data_type (N, S, context) {
+    QRFT_t (int N, int S, 
+        const sequence_type& sequence, int skip, base::context_t& context)
+        : data_type (N, S, sequence, skip, context) {
 
     }
 
@@ -203,8 +205,8 @@ public:
      * Copy constructor
      */
     QRFT_t(const QRFT_t<matrix_type,
-                      output_matrix_type,
-                      KernelDistribution>& other)
+        output_matrix_type,
+        KernelDistribution, QMCSequenceType>& other)
         : data_type(other) {
 
     }

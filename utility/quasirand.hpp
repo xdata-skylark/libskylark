@@ -19,17 +19,16 @@ inline double RadialInverseFunction(int base, size_t idx)
     return r;
 }
 
-/**
- * Returns the i'th coordinate of the idx's vector of the Halton sequence of
- * dimension d.
- */
-inline double Halton(size_t d, size_t idx, size_t i)
-{
-    return RadialInverseFunction(boost::math::prime(i), idx);
-}
+template<typename ValueType>
+struct qmc_sequence_t {
+    typedef ValueType value_type;
 
-template<typename ValueType> 
-struct leaped_halton_sequence_t {
+    virtual value_type coordinate(size_t idx, size_t i) const = 0;
+    virtual boost::property_tree::ptree to_ptree() const  = 0;
+};
+
+template<typename ValueType>
+struct leaped_halton_sequence_t : public qmc_sequence_t<ValueType> {
 
     typedef ValueType value_type;
 
@@ -71,6 +70,38 @@ struct leaped_halton_sequence_t {
 private:
     size_t _d;
     size_t _leap;
+};
+
+template<typename ValueType>
+struct qmc_sequence_container_t : public qmc_sequence_t<ValueType> {
+    typedef ValueType value_type;
+
+    qmc_sequence_container_t(const boost::property_tree::ptree& json) {
+        std::string sequence_type = json.get<std::string>("sequence_type");
+        if (sequence_type == "leaped halton")
+            _sequence = boost::shared_ptr<qmc_sequence_t<value_type> >(new
+                leaped_halton_sequence_t<value_type>(json));
+        else 
+            SKYLARK_THROW_EXCEPTION(base::skylark_exception() <<
+                base::error_msg("Unknown QMC sequence type"));
+        // TODO throw exception if type not found...
+    }
+
+    qmc_sequence_container_t() {
+
+    }
+
+    virtual value_type coordinate(size_t idx, size_t i) const {
+        return _sequence->coordinate(idx, i);
+    }
+
+    virtual boost::property_tree::ptree to_ptree() const {
+        return _sequence->to_ptree();
+    }
+
+private:
+    boost::shared_ptr<qmc_sequence_t<value_type> > _sequence;
+
 };
 
 } } // namespace skylark::utility

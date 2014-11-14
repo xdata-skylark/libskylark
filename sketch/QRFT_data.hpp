@@ -143,7 +143,7 @@ struct GaussianQRFT_data_t :
             sequence_type(pt.get_child("sequence")), pt.get<int>("skip"),
             base::context_t(pt.get_child("creation_context")), "GaussianQRFT"),
         _sigma(pt.get<double>("sigma")),
-        _sequence(pt.get<int>("N") + 1, -1),  _skip(pt.get<int>("skip")) {
+        _sequence(pt.get_child("sequence")),  _skip(pt.get<int>("skip")) {
 
         base_t::build();
     }
@@ -228,7 +228,7 @@ struct LaplacianQRFT_data_t :
             sequence_type(pt.get_child("sequence")), pt.get<int>("skip"),
             base::context_t(pt.get_child("creation_context")), "LaplacianQRFT"),
         _sigma(pt.get<double>("sigma")),
-        _sequence(pt.get<int>("N") + 1, -1),  _skip(pt.get<int>("skip")) {
+        _sequence(pt.get_child("sequence")),  _skip(pt.get<int>("skip")) {
 
         base_t::build();
     }

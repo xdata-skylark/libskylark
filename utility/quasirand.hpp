@@ -25,6 +25,10 @@ struct qmc_sequence_t {
 
     virtual value_type coordinate(size_t idx, size_t i) const = 0;
     virtual boost::property_tree::ptree to_ptree() const  = 0;
+
+    virtual ~qmc_sequence_t() {
+
+    }
 };
 
 template<typename ValueType>

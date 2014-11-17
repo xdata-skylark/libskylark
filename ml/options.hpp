@@ -263,6 +263,8 @@ struct hilbert_options_t {
                 numthreads = boost::lexical_cast<int>(value);
             if (flag == "--regular")
                 regularmap = value == "on";
+            if (flag == "--usequasi")
+                usequasi = value == "on";
             if (flag == "--fileformat")
                 fileformat =
                     static_cast<FileFormatType>(boost::lexical_cast<int>(value));

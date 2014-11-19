@@ -40,6 +40,11 @@ struct gaussian_t {
         return _N;
     }
 
+    int qrft_sequence_dim() const {
+        return sketch::GaussianQRFT_data_t<utility::qmc_sequence_container_t>::
+            qmc_sequence_dim(_N);
+    }
+
     // TODO method for gram matrix ?
 
 
@@ -101,6 +106,11 @@ struct laplacian_t {
 
     int get_dim() const {
         return _N;
+    }
+
+    int qrft_sequence_dim() const {
+        return sketch::LaplacianQRFT_data_t<utility::qmc_sequence_container_t>::
+            qmc_sequence_dim(_N);
     }
 
     // TODO method for gram matrix ?

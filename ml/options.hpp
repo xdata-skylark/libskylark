@@ -223,6 +223,7 @@ struct hilbert_options_t {
         numfeaturepartitions = DEFAULT_FEATURE_PARTITIONS;
         numthreads = DEFAULT_THREADS;
         regularmap = true;
+        usequasi = false;
         fileformat = DEFAULT_FILEFORMAT;
         MAXITER = DEFAULT_MAXITER;
         valfile = "";

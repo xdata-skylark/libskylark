@@ -214,7 +214,7 @@ BlockADMMSolver<T>::BlockADMMSolver(skylark::base::context_t& context,
     this->lambda = lambda;
     int blksize = int(ceil(double(NumFeatures) / NumFeaturePartitions));
     skylark::utility::leaped_halton_sequence_t<double>
-        qmcseq(kernel.get_dim() + 1); // TODO size
+        qmcseq(kernel.qrft_sequence_dim()); // TODO size
     for(int i = 0; i < NumFeaturePartitions; i++) {
         starts[i] = i * blksize;
         finishes[i] = std::min((i + 1) * blksize, NumFeatures) - 1;

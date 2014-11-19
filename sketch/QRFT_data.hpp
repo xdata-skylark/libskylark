@@ -37,7 +37,7 @@ struct QRFT_data_t : public sketch_transform_data_t {
     typedef QMCSequenceType<value_type> sequence_type;
     typedef sketch_transform_data_t base_t;
 
-    static size_t qmc_seqeunce_dim(size_t N)  { return N+1; }
+    static size_t qmc_sequence_dim(size_t N)  { return N+1; }
 
     QRFT_data_t (int N, int S, double inscale, double outscale,
         const sequence_type& sequence, int skip, base::context_t& context)

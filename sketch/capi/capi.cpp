@@ -386,7 +386,7 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(base::context_t *ctxt,
             int seqdim =
                 sketch::
                 GaussianQRFT_data_t<skylark::utility::leaped_halton_sequence_t>::
-                qmc_seqeunce_dim(n);
+                qmc_sequence_dim(n);
             skylark::utility::leaped_halton_sequence_t<double> sequence(seqdim);
             sketchc::sketch_transform_t *r =
                 new sketchc::sketch_transform_t(sketchc::GaussianQRFT,
@@ -408,7 +408,7 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(base::context_t *ctxt,
             int seqdim =
                 sketch::
                 GaussianQRFT_data_t<skylark::utility::leaped_halton_sequence_t>::
-                qmc_seqeunce_dim(n);
+                qmc_sequence_dim(n);
             skylark::utility::leaped_halton_sequence_t<double> sequence(seqdim);
             sketchc::sketch_transform_t *r =
                 new sketchc::sketch_transform_t(sketchc::GaussianQRFT,

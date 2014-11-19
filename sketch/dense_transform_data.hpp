@@ -53,7 +53,7 @@ struct dense_transform_data_t : public sketch_transform_data_t {
 
     dense_transform_data_t(const dense_transform_data_t& other)
         : base_t(other), scale(other.scale),
-          random_samples(other.random_samples)  {
+          entries(other.entries)  {
 
     }
 
@@ -85,7 +85,7 @@ struct dense_transform_data_t : public sketch_transform_data_t {
                 size_t i_glob = i + i_loc * col_stride;
                 size_t tmp = j_glob * _S;
                 tmp += i_glob;
-                value_type sample = random_samples[tmp];
+                value_type sample = entries[tmp];
                 tmp = j_loc * height;
                 data[tmp + i_loc] = scale * sample;
             }
@@ -162,7 +162,7 @@ protected:
     }
 
     double scale; /**< Scaling factor for the samples */
-    value_accesor_type random_samples; /**< Samples (lazily computed) */
+    value_accesor_type entries; /**< Samples (lazily computed) */
 };
 
 } } /** namespace skylark::sketch */

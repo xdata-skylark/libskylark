@@ -18,9 +18,9 @@ namespace bstrand = boost::random;
  * The CT is simply a dense random matrix with i.i.d Cauchy variables
  */
 struct CT_data_t :
-   public dist_dense_transform_data_t<bstrand::cauchy_distribution> {
+   public random_dense_transform_data_t<bstrand::cauchy_distribution> {
 
-    typedef dist_dense_transform_data_t<bstrand::cauchy_distribution> base_t;
+    typedef random_dense_transform_data_t<bstrand::cauchy_distribution> base_t;
 
     /// Params structure
     struct params_t : public sketch_params_t {

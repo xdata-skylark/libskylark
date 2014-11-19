@@ -9,7 +9,7 @@
 #include "RFUT_data.hpp"
 #include "RFUT.hpp"
 #include "dense_transform_data.hpp"
-#include "dist_dense_transform_data.hpp"
+#include "random_dense_transform_data.hpp"
 #include "quasi_dense_transform_data.hpp"
 #include "dense_transform.hpp"
 #include "CT_data.hpp"

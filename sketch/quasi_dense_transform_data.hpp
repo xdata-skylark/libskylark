@@ -124,7 +124,7 @@ struct quasi_dense_transform_data_t :
 protected:
 
     quasi_dense_transform_data_t (int N, int S, double scale,
-        const sequence_type& sequence, int skip, 
+        const sequence_type& sequence, int skip,
         const base::context_t& context, std::string type)
         : base_t(N, S, scale, context, type),
           _skip(skip), _distribution(), _sequence(sequence) {
@@ -134,7 +134,7 @@ protected:
     base::context_t build() {
         base::context_t ctx = base_t::build();
 
-        base_t::random_samples =
+        base_t::entries =
             value_accessor_type(base_t::_N, base_t::_S, _distribution,
                 _sequence, _skip);
 

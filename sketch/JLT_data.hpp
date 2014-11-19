@@ -15,9 +15,9 @@ namespace bstrand = boost::random;
  * The JLT is simply a dense random matrix with i.i.d normal entries.
  */
 struct JLT_data_t :
-   public dist_dense_transform_data_t<bstrand::normal_distribution> {
+   public random_dense_transform_data_t<bstrand::normal_distribution> {
 
-    typedef dist_dense_transform_data_t<bstrand::normal_distribution> base_t;
+    typedef random_dense_transform_data_t<bstrand::normal_distribution> base_t;
 
     /// Params structure
     struct params_t : public sketch_params_t {

@@ -1,5 +1,5 @@
-#ifndef SKYLARK_DIST_DENSE_TRANSFORM_DATA_HPP
-#define SKYLARK_DIST_DENSE_TRANSFORM_DATA_HPP
+#ifndef SKYLARK_RANDOM_DENSE_TRANSFORM_DATA_HPP
+#define SKYLARK_RANDOM_DENSE_TRANSFORM_DATA_HPP
 
 #ifndef SKYLARK_SKETCH_HPP
 #error "Include top-level sketch.hpp instead of including individuals headers"
@@ -13,7 +13,7 @@
 namespace skylark { namespace sketch {
 
 template <template <typename> class ValueDistribution>
-struct dist_dense_transform_data_t :
+struct random_dense_transform_data_t :
         public dense_transform_data_t<
     utility::random_samples_array_t< ValueDistribution<double> > > {
 
@@ -21,7 +21,7 @@ struct dist_dense_transform_data_t :
     // but when applying to floats the size can be reduced.
     typedef double value_type;
     typedef ValueDistribution<value_type> value_distribution_type;
-    typedef utility::random_samples_array_t<value_distribution_type>  
+    typedef utility::random_samples_array_t<value_distribution_type>
         value_accessor_type;
 
     typedef dense_transform_data_t<value_accessor_type> base_t;
@@ -29,7 +29,7 @@ struct dist_dense_transform_data_t :
     /**
      * Regular constructor
      */
-    dist_dense_transform_data_t (int N, int S, double scale,
+    random_dense_transform_data_t (int N, int S, double scale,
         base::context_t& context)
         : base_t(N, S, scale, context, "DistributionDenseTransform"),
           distribution() {
@@ -48,7 +48,7 @@ struct dist_dense_transform_data_t :
         return boost::property_tree::ptree();
     }
 
-    dist_dense_transform_data_t(const dist_dense_transform_data_t& other)
+    random_dense_transform_data_t(const random_dense_transform_data_t& other)
         : base_t(other), distribution(other.distribution) {
 
     }
@@ -56,7 +56,7 @@ struct dist_dense_transform_data_t :
 
 protected:
 
-    dist_dense_transform_data_t (int N, int S, double scale,
+    random_dense_transform_data_t (int N, int S, double scale,
         const base::context_t& context, std::string type)
         : base_t(N, S, scale, context, type),
           distribution() {
@@ -65,9 +65,9 @@ protected:
 
     base::context_t build() {
         base::context_t ctx = base_t::build();
-        size_t array_size = static_cast<size_t>(base_t::_N) * 
+        size_t array_size = static_cast<size_t>(base_t::_N) *
             static_cast<size_t>(base_t::_S);
-        base_t::random_samples =
+        base_t::entries =
             ctx.allocate_random_samples_array(array_size, distribution);
         return ctx;
     }
@@ -79,4 +79,4 @@ protected:
 
 } } /** namespace skylark::sketch */
 
-#endif /** SKYLARK_DIST_DENSE_TRANSFORM_DATA_HPP */
+#endif /** SKYLARK_RANDOM_DENSE_TRANSFORM_DATA_HPP */

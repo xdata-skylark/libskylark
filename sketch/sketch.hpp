@@ -26,6 +26,8 @@
 #include "FRFT.hpp"
 #include "RLT_data.hpp"
 #include "RLT.hpp"
+#include "QRLT_data.hpp"
+#include "QRLT.hpp"
 #include "hash_transform_data.hpp"
 #include "hash_transform.hpp"
 #include "CWT_data.hpp"

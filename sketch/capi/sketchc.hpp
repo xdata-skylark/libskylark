@@ -34,7 +34,8 @@ enum transform_type_t {
     LaplacianQRFT,
     FastGaussianRFT,
     FastMaternRFT,
-    ExpSemigroupRLT
+    ExpSemigroupRLT,
+    ExpSemigroupQRLT
 };
 
 enum matrix_type_t {

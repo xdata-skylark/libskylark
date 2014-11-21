@@ -1152,7 +1152,8 @@ class ExpSemigroupRLT(_SketchTransform):
   :param defouttype: Default output type when using the * and / operators.
   :param forceppy: whether to force a pure python implementation
 
-  **Random Laplace Feature Maps for Semigroup Kernels on Histograms**, 2014
+  *J. Yang*, *V. Sindhwani*, *Q. Fan*, *H. Avron*, *M. Mahoney*, 
+  **Random Laplace Feature Maps for Semigroup Kernels on Histograms**, CVPR 2014
   """
   def __init__(self, n, s, beta=1.0, defouttype=None, forceppy=False, sketch_transform=None):
     super(ExpSemigroupRLT, self)._baseinit("ExpSemigroupRLT", n, s, defouttype, forceppy)
@@ -1162,6 +1163,33 @@ class ExpSemigroupRLT(_SketchTransform):
       if sketch_transform is None:
         sketch_transform = c_void_p()
         _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "ExpSemigroupRLT", n, s, \
+                  byref(sketch_transform), ctypes.c_double(beta))
+        self._obj = sketch_transform.value
+      else:
+        self._obj = sketch_transform
+
+    # TODO ppy implementation
+
+class ExpSemigroupQRLT(_SketchTransform):
+  """
+  Quasi Random Features Transform for the Exponential Semigroup Kernel.
+
+  :param n: Number of dimensions in input vectors.
+  :param s: Number of dimensions in output vectors.
+  :param beta: kernel parameter
+  :param defouttype: Default output type when using the * and / operators.
+  :param forceppy: whether to force a pure python implementation
+
+  **Random Laplace Feature Maps for Semigroup Kernels on Histograms**, 2014
+  """
+  def __init__(self, n, s, beta=1.0, defouttype=None, forceppy=False, sketch_transform=None):
+    super(ExpSemigroupQRLT, self)._baseinit("ExpSemigroupQRLT", n, s, defouttype, forceppy)
+
+    self._beta = beta
+    if not self._ppy:
+      if sketch_transform is None:
+        sketch_transform = c_void_p()
+        _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "ExpSemigroupQRLT", n, s, \
                   byref(sketch_transform), ctypes.c_double(beta))
         self._obj = sketch_transform.value
       else:
@@ -1311,6 +1339,8 @@ _map_csketch_type_to_cfun["FastGaussianRFT"] = \
 _map_csketch_type_to_cfun["FastMaternRFT"] = \
     lambda sd, obj : FastMaternRFT(int(sd['N']), int(sd['S']), int(sd['order']), None, False, obj.value)
 _map_csketch_type_to_cfun["ExpSemigroupRLT"] = \
+    lambda sd, obj : ExpSemigroupRLT(int(sd['N']), int(sd['S']), float(sd['beta']), None, False, obj.value)
+_map_csketch_type_to_cfun["ExpSemigroupQRLT"] = \
     lambda sd, obj : ExpSemigroupRLT(int(sd['N']), int(sd['S']), float(sd['beta']), None, False, obj.value)
 _map_csketch_type_to_cfun["PPT"] = \
     lambda sd, obj : PPT(int(sd['N']), int(sd['S']), int(sd['q']), float(sd['c']), float(sd['gamma']), \

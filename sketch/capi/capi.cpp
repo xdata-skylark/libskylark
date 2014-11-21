@@ -15,6 +15,8 @@
     if (std::strcmp(str, #STR) == 0) \
         return TYPE;
 
+namespace skyutil = skylark::utility;
+
 static sketchc::matrix_type_t str2matrix_type(const char *str) {
     STRCMP_TYPE(Matrix,     sketchc::MATRIX);
     STRCMP_TYPE(SharedMatrix,  sketchc::SHARED_MATRIX);
@@ -241,6 +243,24 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
         SKDEF(ExpSemigroupRLT, DistMatrix_STAR_VR, DistMatrix_STAR_VR)
         SKDEF(ExpSemigroupRLT, DistMatrix_STAR_VC, DistMatrix_STAR_VC)
 
+        SKDEF(ExpSemigroupQRLT, Matrix, Matrix)
+        SKDEF(ExpSemigroupQRLT, SparseMatrix, Matrix)
+        SKDEF(ExpSemigroupQRLT, DistMatrix, RootMatrix)
+        SKDEF(ExpSemigroupQRLT, DistMatrix, SharedMatrix)
+        SKDEF(ExpSemigroupQRLT, DistMatrix, DistMatrix)
+        SKDEF(ExpSemigroupQRLT, DistMatrix_VR_STAR, RootMatrix)
+        SKDEF(ExpSemigroupQRLT, DistMatrix_VC_STAR, RootMatrix)
+        SKDEF(ExpSemigroupQRLT, DistMatrix_VR_STAR, SharedMatrix)
+        SKDEF(ExpSemigroupQRLT, DistMatrix_VC_STAR, SharedMatrix)
+        SKDEF(ExpSemigroupQRLT, DistMatrix_VR_STAR, DistMatrix_VR_STAR)
+        SKDEF(ExpSemigroupQRLT, DistMatrix_VC_STAR, DistMatrix_VC_STAR)
+        SKDEF(ExpSemigroupQRLT, DistMatrix_STAR_VR, RootMatrix)
+        SKDEF(ExpSemigroupQRLT, DistMatrix_STAR_VC, RootMatrix)
+        SKDEF(ExpSemigroupQRLT, DistMatrix_STAR_VR, SharedMatrix)
+        SKDEF(ExpSemigroupQRLT, DistMatrix_STAR_VC, SharedMatrix)
+        SKDEF(ExpSemigroupQRLT, DistMatrix_STAR_VR, DistMatrix_STAR_VR)
+        SKDEF(ExpSemigroupQRLT, DistMatrix_STAR_VC, DistMatrix_STAR_VC)
+
 #ifdef SKYLARK_HAVE_COMBBLAS
         SKDEF(CWT, DistSparseMatrix, Matrix)
         SKDEF(CWT, DistSparseMatrix, DistMatrix)
@@ -385,9 +405,9 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(base::context_t *ctxt,
             int skip = va_arg(argp, int);
             int seqdim =
                 sketch::
-                GaussianQRFT_data_t<skylark::utility::leaped_halton_sequence_t>::
+                GaussianQRFT_data_t<skyutil::leaped_halton_sequence_t>::
                 qmc_sequence_dim(n);
-            skylark::utility::leaped_halton_sequence_t<double> sequence(seqdim);
+            skyutil::leaped_halton_sequence_t<double> sequence(seqdim);
             sketchc::sketch_transform_t *r =
                 new sketchc::sketch_transform_t(sketchc::GaussianQRFT,
                     new sketch::
@@ -407,13 +427,13 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(base::context_t *ctxt,
             int skip = va_arg(argp, int);
             int seqdim =
                 sketch::
-                GaussianQRFT_data_t<skylark::utility::leaped_halton_sequence_t>::
+                GaussianQRFT_data_t<skyutil::leaped_halton_sequence_t>::
                 qmc_sequence_dim(n);
-            skylark::utility::leaped_halton_sequence_t<double> sequence(seqdim);
+            skyutil::leaped_halton_sequence_t<double> sequence(seqdim);
             sketchc::sketch_transform_t *r =
                 new sketchc::sketch_transform_t(sketchc::GaussianQRFT,
                     new sketch::
-                    LaplacianQRFT_data_t<skylark::utility::
+                    LaplacianQRFT_data_t<skyutil::
                     leaped_halton_sequence_t>(n, s, sigma, sequence, skip, *ctxt));
             va_end(argp);
             *sketch = r;
@@ -421,8 +441,33 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(base::context_t *ctxt,
     SKYLARK_END_TRY()
     SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
 
-    AUTO_NEW_DISPATCH_1P(sketchc::ExpSemigroupRLT, sketch::ExpSemigroupRLT_data_t);
-    AUTO_NEW_DISPATCH_1P(sketchc::FastGaussianRFT, sketch::FastGaussianRFT_data_t);
+    AUTO_NEW_DISPATCH_1P(sketchc::ExpSemigroupRLT,
+        sketch::ExpSemigroupRLT_data_t);
+
+    SKYLARK_BEGIN_TRY()
+        if (type == sketchc::ExpSemigroupQRLT)  {
+            va_list argp;
+            va_start(argp, sketch);
+            double beta = va_arg(argp, double);
+            int skip = va_arg(argp, int);
+            int seqdim =
+                sketch::
+                ExpSemigroupQRLT_data_t<skyutil::leaped_halton_sequence_t>::
+                qmc_sequence_dim(n);
+            skyutil::leaped_halton_sequence_t<double> sequence(seqdim);
+            sketchc::sketch_transform_t *r =
+                new sketchc::sketch_transform_t(sketchc::ExpSemigroupQRLT,
+                    new sketch::
+                    ExpSemigroupQRLT_data_t<skyutil::
+                    leaped_halton_sequence_t>(n, s, beta, sequence, skip, *ctxt));
+            va_end(argp);
+            *sketch = r;
+        }
+    SKYLARK_END_TRY()
+    SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
+
+    AUTO_NEW_DISPATCH_1P(sketchc::FastGaussianRFT,
+        sketch::FastGaussianRFT_data_t);
 
     SKYLARK_BEGIN_TRY()
         if (type == sketchc::FastMaternRFT)  {
@@ -507,11 +552,15 @@ SKYLARK_EXTERN_API
     AUTO_DELETE_DISPATCH(sketchc::GaussianRFT, sketch::GaussianRFT_data_t);
     AUTO_DELETE_DISPATCH(sketchc::LaplacianRFT, sketch::LaplacianRFT_data_t);
     AUTO_DELETE_DISPATCH(sketchc::GaussianQRFT,
-        sketch::GaussianQRFT_data_t<skylark::utility::leaped_halton_sequence_t>);
+        sketch::GaussianQRFT_data_t<skyutil::leaped_halton_sequence_t>);
     AUTO_DELETE_DISPATCH(sketchc::LaplacianQRFT,
-        sketch::LaplacianQRFT_data_t<skylark::utility::leaped_halton_sequence_t>);
-    AUTO_DELETE_DISPATCH(sketchc::ExpSemigroupRLT, sketch::ExpSemigroupRLT_data_t);
-    AUTO_DELETE_DISPATCH(sketchc::FastGaussianRFT, sketch::FastGaussianRFT_data_t);
+        sketch::LaplacianQRFT_data_t<skyutil::leaped_halton_sequence_t>);
+    AUTO_DELETE_DISPATCH(sketchc::ExpSemigroupRLT,
+        sketch::ExpSemigroupRLT_data_t);
+    AUTO_DELETE_DISPATCH(sketchc::ExpSemigroupQRLT,
+        sketch::ExpSemigroupQRLT_data_t<skyutil::leaped_halton_sequence_t>);
+    AUTO_DELETE_DISPATCH(sketchc::FastGaussianRFT,
+        sketch::FastGaussianRFT_data_t);
     AUTO_DELETE_DISPATCH(sketchc::FastMaternRFT, sketch::FastMaternRFT_data_t);
 
     // Now can delete object
@@ -1010,8 +1059,8 @@ SKYLARK_EXTERN_API int
 
 # define AUTO_APPLY_DISPATCH_QUASI(T, I, O, C, IT, OT, CD)               \
     if (type == T && input == I && output == O) {                        \
-        C<IT, OT, skylark::utility::leaped_halton_sequence_t>            \
-            S(*static_cast<CD<skylark::utility::leaped_halton_sequence_t>*>(S_->transform_obj)); \
+        C<IT, OT, skyutil::leaped_halton_sequence_t>            \
+            S(*static_cast<CD<skyutil::leaped_halton_sequence_t>*>(S_->transform_obj)); \
         IT &A = * static_cast<IT*>(A_);                                  \
         OT &SA = * static_cast<OT*>(SA_);                                \
                                                                          \
@@ -1278,6 +1327,91 @@ SKYLARK_EXTERN_API int
         sketchc::DIST_MATRIX_STAR_VC, sketchc::DIST_MATRIX_STAR_VC,
         sketch::ExpSemigroupRLT_t, DistMatrix_STAR_VC, DistMatrix_STAR_VC,
         sketch::ExpSemigroupRLT_data_t);
+
+   AUTO_APPLY_DISPATCH_QUASI(sketchc::ExpSemigroupQRLT,
+        sketchc::MATRIX, sketchc::MATRIX,
+        sketch::ExpSemigroupQRLT_t, Matrix, Matrix,
+        sketch::ExpSemigroupQRLT_data_t);
+
+    AUTO_APPLY_DISPATCH_QUASI(sketchc::ExpSemigroupQRLT,
+        sketchc::SPARSE_MATRIX, sketchc::MATRIX,
+        sketch::ExpSemigroupQRLT_t, SparseMatrix, Matrix,
+        sketch::ExpSemigroupQRLT_data_t);
+
+    AUTO_APPLY_DISPATCH_QUASI(sketchc::ExpSemigroupQRLT,
+        sketchc::DIST_MATRIX, sketchc::ROOT_MATRIX,
+        sketch::ExpSemigroupQRLT_t, DistMatrix, RootMatrix,
+        sketch::ExpSemigroupQRLT_data_t);
+
+    AUTO_APPLY_DISPATCH_QUASI(sketchc::ExpSemigroupQRLT,
+        sketchc::DIST_MATRIX, sketchc::SHARED_MATRIX,
+        sketch::ExpSemigroupQRLT_t, DistMatrix, SharedMatrix,
+        sketch::ExpSemigroupQRLT_data_t);
+
+    AUTO_APPLY_DISPATCH_QUASI(sketchc::ExpSemigroupQRLT,
+        sketchc::DIST_MATRIX, sketchc::DIST_MATRIX,
+        sketch::ExpSemigroupQRLT_t, DistMatrix, DistMatrix,
+        sketch::ExpSemigroupQRLT_data_t);
+
+    AUTO_APPLY_DISPATCH_QUASI(sketchc::ExpSemigroupQRLT,
+        sketchc::DIST_MATRIX_VR_STAR, sketchc::ROOT_MATRIX,
+        sketch::ExpSemigroupQRLT_t, DistMatrix_VR_STAR, RootMatrix,
+        sketch::ExpSemigroupQRLT_data_t);
+
+    AUTO_APPLY_DISPATCH_QUASI(sketchc::ExpSemigroupQRLT,
+        sketchc::DIST_MATRIX_VC_STAR, sketchc::ROOT_MATRIX,
+        sketch::ExpSemigroupQRLT_t, DistMatrix_VC_STAR, RootMatrix,
+        sketch::ExpSemigroupQRLT_data_t);
+
+    AUTO_APPLY_DISPATCH_QUASI(sketchc::ExpSemigroupQRLT,
+        sketchc::DIST_MATRIX_VR_STAR, sketchc::SHARED_MATRIX,
+        sketch::ExpSemigroupQRLT_t, DistMatrix_VR_STAR, SharedMatrix,
+        sketch::ExpSemigroupQRLT_data_t);
+
+    AUTO_APPLY_DISPATCH_QUASI(sketchc::ExpSemigroupQRLT,
+        sketchc::DIST_MATRIX_VC_STAR, sketchc::SHARED_MATRIX,
+        sketch::ExpSemigroupQRLT_t, DistMatrix_VC_STAR, SharedMatrix,
+        sketch::ExpSemigroupQRLT_data_t);
+
+    AUTO_APPLY_DISPATCH_QUASI(sketchc::ExpSemigroupQRLT,
+        sketchc::DIST_MATRIX_VR_STAR, sketchc::DIST_MATRIX_VR_STAR,
+        sketch::ExpSemigroupQRLT_t, DistMatrix_VR_STAR, DistMatrix_VR_STAR,
+        sketch::ExpSemigroupQRLT_data_t);
+
+    AUTO_APPLY_DISPATCH_QUASI(sketchc::ExpSemigroupQRLT,
+        sketchc::DIST_MATRIX_VC_STAR, sketchc::DIST_MATRIX_VC_STAR,
+        sketch::ExpSemigroupQRLT_t, DistMatrix_VC_STAR, DistMatrix_VC_STAR,
+        sketch::ExpSemigroupQRLT_data_t);
+
+    AUTO_APPLY_DISPATCH_QUASI(sketchc::ExpSemigroupQRLT,
+        sketchc::DIST_MATRIX_STAR_VR, sketchc::ROOT_MATRIX,
+        sketch::ExpSemigroupQRLT_t, DistMatrix_STAR_VR, RootMatrix,
+        sketch::ExpSemigroupQRLT_data_t);
+
+    AUTO_APPLY_DISPATCH_QUASI(sketchc::ExpSemigroupQRLT,
+        sketchc::DIST_MATRIX_STAR_VC, sketchc::ROOT_MATRIX,
+        sketch::ExpSemigroupQRLT_t, DistMatrix_STAR_VC, RootMatrix,
+        sketch::ExpSemigroupQRLT_data_t);
+
+    AUTO_APPLY_DISPATCH_QUASI(sketchc::ExpSemigroupQRLT,
+        sketchc::DIST_MATRIX_STAR_VR, sketchc::SHARED_MATRIX,
+        sketch::ExpSemigroupQRLT_t, DistMatrix_STAR_VR, SharedMatrix,
+        sketch::ExpSemigroupQRLT_data_t);
+
+    AUTO_APPLY_DISPATCH_QUASI(sketchc::ExpSemigroupQRLT,
+        sketchc::DIST_MATRIX_STAR_VC, sketchc::SHARED_MATRIX,
+        sketch::ExpSemigroupQRLT_t, DistMatrix_STAR_VC, SharedMatrix,
+        sketch::ExpSemigroupQRLT_data_t);
+
+    AUTO_APPLY_DISPATCH_QUASI(sketchc::ExpSemigroupQRLT,
+        sketchc::DIST_MATRIX_STAR_VR, sketchc::DIST_MATRIX_STAR_VR,
+        sketch::ExpSemigroupQRLT_t, DistMatrix_STAR_VR, DistMatrix_STAR_VR,
+        sketch::ExpSemigroupQRLT_data_t);
+
+    AUTO_APPLY_DISPATCH_QUASI(sketchc::ExpSemigroupQRLT,
+        sketchc::DIST_MATRIX_STAR_VC, sketchc::DIST_MATRIX_STAR_VC,
+        sketch::ExpSemigroupQRLT_t, DistMatrix_STAR_VC, DistMatrix_STAR_VC,
+        sketch::ExpSemigroupQRLT_data_t);
 
 #if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT
 

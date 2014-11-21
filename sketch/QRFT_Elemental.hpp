@@ -33,7 +33,7 @@ protected:
     /**
      * Regular constructor - Allow creation only by subclasses
      */
-    QRFT_t (int N, int S, 
+    QRFT_t (int N, int S,
         const sequence_type& sequence, int skip, base::context_t& context)
         : data_type (N, S, sequence, skip, context) {
 
@@ -193,7 +193,7 @@ protected:
     /**
      * Regular constructor -- Allow only creation by subclasses
      */
-    QRFT_t (int N, int S, 
+    QRFT_t (int N, int S,
         const sequence_type& sequence, int skip, base::context_t& context)
         : data_type (N, S, sequence, skip, context) {
 

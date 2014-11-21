@@ -94,13 +94,13 @@ struct laplacian_t {
             new sketch::LaplacianRFT_t<IT, OT>(_N, S, _sigma, context);
     }
 
-    template<typename IT, typename OT, 
+    template<typename IT, typename OT,
              template<typename> class QMCSequenceType>
     sketch::sketch_transform_t<IT, OT> *create_qrft(int S,
         const QMCSequenceType<double>& sequence, int skip,
         base::context_t& context) const {
         return
-            new sketch::LaplacianQRFT_t<IT, OT, QMCSequenceType>(_N, 
+            new sketch::LaplacianQRFT_t<IT, OT, QMCSequenceType>(_N,
                 S, _sigma, sequence, skip, context);
     }
 
@@ -134,9 +134,25 @@ struct expsemigroup_t {
             new sketch::ExpSemigroupRLT_t<IT, OT>(_N, S, _beta, context);
     }
 
+    template<typename IT, typename OT,
+             template<typename> class QMCSequenceType>
+    sketch::sketch_transform_t<IT, OT> *create_qrft(int S,
+        const QMCSequenceType<double>& sequence, int skip,
+        base::context_t& context) const {
+        return
+            new sketch::ExpSemigroupQRLT_t<IT, OT, QMCSequenceType>(_N,
+                S, _beta, sequence, skip, context);
+    }
+
     int get_dim() const {
         return _N;
     }
+
+    int qrft_sequence_dim() const {
+        return sketch::ExpSemigroupQRLT_data_t<utility::qmc_sequence_container_t>::
+            qmc_sequence_dim(_N);
+    }
+
     // TODO method for gram matrix ?
 
 

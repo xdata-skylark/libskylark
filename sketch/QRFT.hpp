@@ -175,7 +175,7 @@ struct LaplacianQRFT_t :
     LaplacianQRFT_t(int N, int S, double sigma,
         const sequence_type& sequence, int skip,
         base::context_t& context)
-        : data_type(N, S, sigma, context), _transform(*this) {
+        : data_type(N, S, sigma, sequence, skip, context), _transform(*this) {
 
     }
 

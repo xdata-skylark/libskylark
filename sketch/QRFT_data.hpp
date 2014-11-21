@@ -22,6 +22,7 @@ namespace skylark { namespace sketch {
  * Use quasi-random features.
  *
  * See:
+ *
  * Yang, Sindhawni, Avron and Mahoney
  * Quasi-Monte Carlo Feature Maps for Shift-Invariant Kernels
  * ICML 2014
@@ -47,12 +48,17 @@ struct QRFT_data_t : public sketch_transform_data_t {
         context = build();
     }
 
+    /**
+     *  Serializes a sketch to a string.
+     *
+     *  @param[out] property_tree describing the sketch.
+     */
     virtual
     boost::property_tree::ptree to_ptree() const {
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()
               << base::error_msg(
-                 "Do not yet support serialization of generic RFT transform"));
+                 "Do not yet support serialization of generic QRFT transform"));
 
         return boost::property_tree::ptree();
     }
@@ -178,6 +184,7 @@ private:
     const sequence_type _sequence;
     const int _skip;
 };
+
 template<template <typename> class QMCSequenceType>
 struct LaplacianQRFT_data_t :
         public QRFT_data_t<boost::math::cauchy_distribution,

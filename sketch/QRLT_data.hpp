@@ -5,6 +5,7 @@
 #error "Include top-level sketch.hpp instead of including individuals headers"
 #endif
 
+#include <boost/math/special_functions/erf.hpp>
 #include <vector>
 
 #include "../utility/randgen.hpp"
@@ -46,7 +47,7 @@ struct QRLT_data_t : public sketch_transform_data_t {
 
     QRLT_data_t (int N, int S, double inscale, double outscale,
         const sequence_type& sequence, int skip,  base::context_t& context)
-        : base_t(N, S, context, "RLT"), _inscale(inscale),
+        : base_t(N, S, context, "QRLT"), _inscale(inscale),
           _outscale(outscale), _sequence(sequence), _skip(skip) {
 
         context = build();
@@ -96,15 +97,58 @@ protected:
     const int _skip;
 };
 
+namespace internal {
+
+// There is no boost::math class for levy's distribution.
+// However, we need only the quantile function, which 
+// we implement in this skeleton.
+
+template <class ValueType = double, 
+          class Policy = boost::math::policies::policy<> >
+struct levy_distribution_t
+{
+    typedef ValueType value_type;
+    typedef Policy policy_type;
+
+    levy_distribution_t(value_type mean = 0, value_type scale = 1)
+        : _mean(mean), _scale(scale) {
+
+    }
+
+    value_type get_mean() const {
+        return _mean;
+    }
+
+    value_type get_scale() const {
+        return _scale;
+    }
+
+private:
+    value_type _mean;
+    value_type _scale;
+};
+
+// I have no idea how the compiler/boost finds this function!
+// It works on my machine, but I hope it will not break in others...
+template <class RealType, class Policy>
+inline RealType quantile(const internal::levy_distribution_t<RealType,
+    Policy>& dist,
+    const RealType& p) {
+    RealType v = boost::math::erfc_inv(p, Policy());
+    return dist.get_scale() / (2 * v * v) + dist.get_mean();
+}
+
+}
+
 /**
  * Quasi Random Features for Exponential Semigroup
  */
 template<template <typename> class QMCSequenceType>
 struct ExpSemigroupQRLT_data_t :
-        public QRLT_data_t<boost::math::normal_distribution,
-                           QMCSequenceType> { // TODO
+        public QRLT_data_t<internal::levy_distribution_t,
+                           QMCSequenceType> {
 
-    typedef QRLT_data_t<boost::math::normal_distribution,
+    typedef QRLT_data_t<internal::levy_distribution_t,
                         QMCSequenceType> base_t;
 
     typedef typename base_t::sequence_type sequence_type;

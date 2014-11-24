@@ -92,8 +92,8 @@ struct ExpSemigroupQRLT_t :
 
     // We use composition to defer calls to RLT_t
     typedef QRLT_t<InputMatrixType, OutputMatrixType,
-                   boost::math::normal_distribution, 
-                   QMCSequenceType> transform_t; // TODO
+                   internal::levy_distribution_t,
+                   QMCSequenceType> transform_t; 
 
     typedef ExpSemigroupQRLT_data_t<QMCSequenceType> data_type;
     typedef typename data_type::sequence_type sequence_type;

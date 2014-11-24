@@ -47,6 +47,7 @@ static sketchc::transform_type_t str2transform_type(const char *str) {
     STRCMP_TYPE(FastGaussianRFT, sketchc::FastGaussianRFT);
     STRCMP_TYPE(FastMaternRFT, sketchc::FastMaternRFT);
     STRCMP_TYPE(ExpSemigroupRLT, sketchc::ExpSemigroupRLT);
+    STRCMP_TYPE(ExpSemigroupQRLT, sketchc::ExpSemigroupQRLT);
 
     return sketchc::TRANSFORM_TYPE_ERROR;
 }

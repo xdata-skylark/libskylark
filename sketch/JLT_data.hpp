@@ -25,14 +25,16 @@ struct JLT_data_t :
     };
 
     JLT_data_t(int N, int S, skylark::base::context_t& context)
-        : base_t(N, S, sqrt(1.0 / static_cast<double>(S)), context, "JLT") {
+        : base_t(N, S, sqrt(1.0 / static_cast<double>(S)),
+            bstrand::normal_distribution<double>(), context, "JLT") {
 
         context = base_t::build();
     }
 
     JLT_data_t(int N, int S, const params_t& params,
         skylark::base::context_t& context)
-        : base_t(N, S, sqrt(1.0 / static_cast<double>(S)), context, "JLT") {
+        : base_t(N, S, sqrt(1.0 / static_cast<double>(S)),
+            bstrand::normal_distribution<double>(), context, "JLT") {
 
         context = base_t::build();
     }
@@ -40,6 +42,7 @@ struct JLT_data_t :
     JLT_data_t(const boost::property_tree::ptree &pt) :
         base_t(pt.get<int>("N"), pt.get<int>("S"),
             sqrt(1.0 / pt.get<double>("S")),
+            bstrand::normal_distribution<double>(),
             base::context_t(pt.get_child("creation_context")), "JLT") {
 
         base_t::build();
@@ -61,7 +64,9 @@ protected:
 
     JLT_data_t(int N, int S, const skylark::base::context_t& context,
         std::string type)
-        : base_t(N, S, sqrt(1.0 / static_cast<double>(S)), context, type) {
+        : base_t(N, S, sqrt(1.0 / static_cast<double>(S)), 
+            bstrand::normal_distribution<double>(),
+            context, type) {
 
     }
 

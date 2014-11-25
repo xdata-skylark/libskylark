@@ -29,12 +29,13 @@ struct RFT_data_t : public sketch_transform_data_t {
     typedef double value_type;
     typedef random_dense_transform_data_t<KernelDistribution>
     underlying_data_type;
+    typedef typename underlying_data_type::distribution_type distribution_type;
     typedef sketch_transform_data_t base_t;
 
     RFT_data_t (int N, int S, double inscale, double outscale,
-        base::context_t& context)
+        const distribution_type& distribution, base::context_t& context)
         : base_t(N, S, context, "RFT"), _inscale(inscale),
-          _outscale(outscale) {
+          _outscale(outscale), _distribution(distribution) {
 
         context = build();
     }
@@ -51,12 +52,13 @@ struct RFT_data_t : public sketch_transform_data_t {
 
 protected:
 
-    typedef typename underlying_data_type::value_accessor_type accessor_type;
+    typedef typename underlying_data_type::accessor_type accessor_type;
 
     RFT_data_t (int N, int S, double inscale, double outscale,
+        const distribution_type& distribution,
         const base::context_t& context, std::string type)
         : base_t(N, S, context, type),  _inscale(inscale),
-          _outscale(outscale) {
+          _outscale(outscale), _distribution(distribution) {
 
     }
 
@@ -65,7 +67,8 @@ protected:
         base::context_t ctx = base_t::build();
 
         _underlying_data = boost::shared_ptr<underlying_data_type>(new
-            underlying_data_type(base_t::_N, base_t::_S, _inscale, ctx));
+            underlying_data_type(base_t::_N, base_t::_S, _inscale,
+                _distribution, ctx));
 
         const double pi = boost::math::constants::pi<double>();
         boost::random::uniform_real_distribution<double>
@@ -79,6 +82,7 @@ protected:
     boost::shared_ptr<underlying_data_type> _underlying_data;
     /**< Data of the underlying dense transformation */
     std::vector<double> _shifts; /** Shifts for scaled trigonometric factor */
+    distribution_type _distribution;
 };
 
 struct GaussianRFT_data_t :
@@ -98,7 +102,9 @@ struct GaussianRFT_data_t :
 
     GaussianRFT_data_t(int N, int S, double sigma,
         base::context_t& context)
-        : base_t(N, S, 1.0 / sigma, std::sqrt(2.0 / S), context, "GaussianRFT"), 
+        : base_t(N, S, 1.0 / sigma, std::sqrt(2.0 / S),
+            bstrand::normal_distribution<double>(),
+            context, "GaussianRFT"),
           _sigma(sigma) {
 
         context = base_t::build();
@@ -106,7 +112,9 @@ struct GaussianRFT_data_t :
 
     GaussianRFT_data_t(int N, int S, const params_t& params,
         base::context_t& context)
-        : base_t(N, S, 1.0 / params.sigma, std::sqrt(2.0 / S), context, "GaussianRFT"), 
+        : base_t(N, S, 1.0 / params.sigma, std::sqrt(2.0 / S),
+             bstrand::normal_distribution<double>(),
+            context, "GaussianRFT"),
           _sigma(params.sigma) {
 
         context = base_t::build();
@@ -116,6 +124,7 @@ struct GaussianRFT_data_t :
         base_t(pt.get<int>("N"), pt.get<int>("S"),
             1.0 / pt.get<double>("sigma"),
             std::sqrt(2.0 / pt.get<double>("S")),
+             bstrand::normal_distribution<double>(),
             base::context_t(pt.get_child("creation_context")), "GaussianRFT"),
         _sigma(pt.get<double>("sigma")) {
 
@@ -138,7 +147,9 @@ struct GaussianRFT_data_t :
 protected:
     GaussianRFT_data_t(int N, int S, double sigma,
         const base::context_t& context, std::string type)
-        : base_t(N, S, 1.0 / sigma, std::sqrt(2.0 / S), context, type),
+        : base_t(N, S, 1.0 / sigma, std::sqrt(2.0 / S),
+             bstrand::normal_distribution<double>(),
+            context, type),
           _sigma(sigma) {
 
     }
@@ -164,7 +175,9 @@ struct LaplacianRFT_data_t :
 
     LaplacianRFT_data_t(int N, int S, double sigma,
         base::context_t& context)
-        : base_t(N, S, 1.0 / sigma, std::sqrt(2.0 / S), context, "LaplacianRFT"),
+        : base_t(N, S, 1.0 / sigma, std::sqrt(2.0 / S),
+            bstrand::cauchy_distribution<double>(),
+            context, "LaplacianRFT"),
         _sigma(sigma) {
 
         context = base_t::build();
@@ -172,7 +185,9 @@ struct LaplacianRFT_data_t :
 
     LaplacianRFT_data_t(int N, int S, const params_t& params,
         base::context_t& context)
-        : base_t(N, S, 1.0 / params.sigma, std::sqrt(2.0 / S), context, "LaplacianRFT"),
+        : base_t(N, S, 1.0 / params.sigma, std::sqrt(2.0 / S),
+            bstrand::cauchy_distribution<double>(),
+            context, "LaplacianRFT"),
         _sigma(params.sigma) {
 
         context = base_t::build();
@@ -182,6 +197,7 @@ struct LaplacianRFT_data_t :
         base_t(pt.get<int>("N"), pt.get<int>("S"),
             1.0 / pt.get<double>("sigma"),
             std::sqrt(2.0 / pt.get<double>("S")),
+            bstrand::cauchy_distribution<double>(),
             base::context_t(pt.get_child("creation_context")), "LaplacianRFT"),
         _sigma(pt.get<double>("sigma")) {
 
@@ -205,7 +221,9 @@ protected:
 
     LaplacianRFT_data_t(int N, int S, double sigma,
         const base::context_t& context, std::string type)
-        : base_t(N, S, 1.0 / sigma, std::sqrt(2.0 / S), context, type), 
+        : base_t(N, S, 1.0 / sigma, std::sqrt(2.0 / S),
+            bstrand::cauchy_distribution<double>(),
+            context, type),
           _sigma(sigma) {
 
     }

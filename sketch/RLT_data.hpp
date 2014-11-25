@@ -31,12 +31,13 @@ struct RLT_data_t : public sketch_transform_data_t {
     typedef double value_type;
     typedef random_dense_transform_data_t<KernelDistribution>
     underlying_data_type;
+    typedef typename underlying_data_type::distribution_type distribution_type;
     typedef sketch_transform_data_t base_t;
 
     RLT_data_t (int N, int S, double inscale, double outscale,
-        base::context_t& context)
+        const distribution_type& distribution, base::context_t& context)
         : base_t(N, S, context, "RLT"), _inscale(inscale),
-          _outscale(outscale) {
+          _outscale(outscale), _distribution(distribution) {
 
         context = build();
     }
@@ -58,20 +59,22 @@ struct RLT_data_t : public sketch_transform_data_t {
 
 protected:
 
-    typedef typename underlying_data_type::value_accessor_type accessor_type;
+    typedef typename underlying_data_type::accessor_type accessor_type;
 
 
     RLT_data_t (int N, int S, double inscale, double outscale,
+        const distribution_type& distribution,
         const base::context_t& context, std::string type)
         : base_t(N, S, context, type), _inscale(inscale),
-          _outscale(outscale) {
+          _outscale(outscale), _distribution(distribution) {
 
     }
 
    base::context_t build() {
        base::context_t ctx = base_t::build();
        _underlying_data = boost::shared_ptr<underlying_data_type>(new
-           underlying_data_type(base_t::_N, base_t::_S, _inscale, ctx));
+           underlying_data_type(base_t::_N, base_t::_S, _inscale, 
+               _distribution, ctx));
        return ctx;
    }
 
@@ -79,7 +82,7 @@ protected:
     double _outscale; /** Scaling for exponential factor */
     boost::shared_ptr<underlying_data_type> _underlying_data;
     /**< Data of the underlying dense transformation */
-
+    distribution_type _distribution;
 };
 
 /**
@@ -88,7 +91,7 @@ protected:
 struct ExpSemigroupRLT_data_t :
         public RLT_data_t<utility::standard_levy_distribution_t> {
 
-    typedef RLT_data_t<utility::standard_levy_distribution_t > base_t;
+    typedef RLT_data_t<utility::standard_levy_distribution_t> base_t;
 
     /// Params structure
     struct params_t : public sketch_params_t {
@@ -102,7 +105,8 @@ struct ExpSemigroupRLT_data_t :
 
     ExpSemigroupRLT_data_t(int N, int S, double beta,
         base::context_t& context)
-        : base_t(N, S, beta * beta / 2, std::sqrt(1.0 / S), 
+        : base_t(N, S, beta * beta / 2, std::sqrt(1.0 / S),
+            utility::standard_levy_distribution_t<double>(),
             context, "ExpSemigroupRLT"), _beta(beta) {
 
         context = base_t::build();
@@ -110,7 +114,8 @@ struct ExpSemigroupRLT_data_t :
 
     ExpSemigroupRLT_data_t(int N, int S, const params_t& params,
         base::context_t& context)
-        : base_t(N, S, params.beta * params.beta / 2, std::sqrt(1.0 / S), 
+        : base_t(N, S, params.beta * params.beta / 2, std::sqrt(1.0 / S),
+            utility::standard_levy_distribution_t<double>(),
             context, "ExpSemigroupRLT"), _beta(params.beta) {
 
         context = base_t::build();
@@ -120,6 +125,7 @@ struct ExpSemigroupRLT_data_t :
         base_t(pt.get<int>("N"), pt.get<int>("S"),
             pt.get<double>("beta") * pt.get<double>("beta") / 2,
             std::sqrt(1.0 / pt.get<double>("S")),
+            utility::standard_levy_distribution_t<double>(),
             base::context_t(pt.get_child("creation_context")), "ExpSemiGroupRLT"),
         _beta(pt.get<double>("beta")) {
 
@@ -142,7 +148,9 @@ struct ExpSemigroupRLT_data_t :
 protected:
     ExpSemigroupRLT_data_t(int N, int S, double beta,
         const base::context_t& context, std::string type)
-        : base_t(N, S,  beta * beta / 2, std::sqrt(1.0 / S), context, type), 
+        : base_t(N, S,  beta * beta / 2, std::sqrt(1.0 / S),
+            utility::standard_levy_distribution_t<double>(),
+            context, type),
           _beta(beta) {
 
     }

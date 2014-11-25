@@ -13,12 +13,13 @@ namespace skylark { namespace utility {
  * Random-access array of samples drawn from a distribution.
  * It is templated over the types of each sample value and the distribution.
  */
-template <typename Distribution>
+template <typename DistributionType>
 struct random_samples_array_t {
 
 public:
 
-    typedef typename Distribution::result_type value_type;
+    typedef DistributionType distribution_type;
+    typedef typename distribution_type::result_type value_type;
 
     /**
      * Convenience nicknames for Random123 types
@@ -56,7 +57,7 @@ public:
      *
      */
     random_samples_array_t(size_t base, size_t size, int seed,
-        Distribution& distribution)
+        const distribution_type& distribution)
         : _base(base), _size(size),
           _key(_seed_to_key(seed)),
           _distribution(distribution) {
@@ -109,7 +110,7 @@ public:
         ctr.v[0] = static_cast<ctr_t::value_type>(_base + index);
         ctr.v[1] = static_cast<ctr_t::value_type>(0);
 	URNG_t urng(ctr, _key);
-        Distribution cloned_distribution = _distribution;
+        distribution_type cloned_distribution = _distribution;
         return cloned_distribution(urng);
     }
 
@@ -117,7 +118,7 @@ private:
     size_t _base;
     size_t _size;
     key_t _key;
-    Distribution _distribution;
+    distribution_type _distribution;
 };
 
 

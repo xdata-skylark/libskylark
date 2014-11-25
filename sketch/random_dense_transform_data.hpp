@@ -12,27 +12,27 @@
 
 namespace skylark { namespace sketch {
 
-template <template <typename> class ValueDistribution>
+template <template <typename> class DistributionType>
 struct random_dense_transform_data_t :
         public dense_transform_data_t<
-    utility::random_samples_array_t< ValueDistribution<double> > > {
+    utility::random_samples_array_t< DistributionType<double> > > {
 
     // Note: we always generate doubles for array values,
     // but when applying to floats the size can be reduced.
     typedef double value_type;
-    typedef ValueDistribution<value_type> value_distribution_type;
-    typedef utility::random_samples_array_t<value_distribution_type>
-        value_accessor_type;
+    typedef DistributionType<value_type> distribution_type;
+    typedef utility::random_samples_array_t<distribution_type>
+        accessor_type;
 
-    typedef dense_transform_data_t<value_accessor_type> base_t;
+    typedef dense_transform_data_t<accessor_type> base_t;
 
     /**
      * Regular constructor
      */
     random_dense_transform_data_t (int N, int S, double scale,
-        base::context_t& context)
+        const distribution_type& distribution, base::context_t& context)
         : base_t(N, S, scale, context, "DistributionDenseTransform"),
-          distribution() {
+          _distribution(distribution) {
 
         // No scaling in "raw" form
         context = build();
@@ -49,7 +49,7 @@ struct random_dense_transform_data_t :
     }
 
     random_dense_transform_data_t(const random_dense_transform_data_t& other)
-        : base_t(other), distribution(other.distribution) {
+        : base_t(other), _distribution(other._distribution) {
 
     }
 
@@ -57,9 +57,10 @@ struct random_dense_transform_data_t :
 protected:
 
     random_dense_transform_data_t (int N, int S, double scale,
+        const distribution_type& distribution,
         const base::context_t& context, std::string type)
         : base_t(N, S, scale, context, type),
-          distribution() {
+          _distribution(distribution) {
 
     }
 
@@ -68,13 +69,11 @@ protected:
         size_t array_size = static_cast<size_t>(base_t::_N) *
             static_cast<size_t>(base_t::_S);
         base_t::entries =
-            ctx.allocate_random_samples_array(array_size, distribution);
+            ctx.allocate_random_samples_array(array_size, _distribution);
         return ctx;
     }
 
-    value_distribution_type distribution; /**< Distribution for samples */
-
-
+    distribution_type _distribution; /**< Distribution for samples */
 };
 
 } } /** namespace skylark::sketch */

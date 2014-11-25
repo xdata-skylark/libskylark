@@ -61,16 +61,28 @@ BlockADMMSolver<InputType>* GetSolver(skylark::base::context_t& context,
     case GAUSSIAN:
         features = options.randomfeatures;
         if (options.regularmap)
-            Solver =
-                new BlockADMMSolver<InputType>(context,
-                    loss,
-                    regularizer,
-                    options.lambda,
-                    features,
-                    skylark::ml::kernels::gaussian_t(dimensions,
-                        options.kernelparam),
-                    skylark::ml::regular_feature_transform_tag(),
-                    options.numfeaturepartitions);
+            if (options.seqtype == LEAPED_HALTON)
+                Solver =
+                    new BlockADMMSolver<InputType>(context,
+                        loss,
+                        regularizer,
+                        options.lambda,
+                        features,
+                        skylark::ml::kernels::gaussian_t(dimensions,
+                            options.kernelparam),
+                        skylark::ml::quasi_feature_transform_tag(),
+                        options.numfeaturepartitions);
+            else
+                Solver =
+                    new BlockADMMSolver<InputType>(context,
+                        loss,
+                        regularizer,
+                        options.lambda,
+                        features,
+                        skylark::ml::kernels::gaussian_t(dimensions,
+                            options.kernelparam),
+                        skylark::ml::regular_feature_transform_tag(),
+                        options.numfeaturepartitions);
         else
             Solver =
                 new BlockADMMSolver<InputType>(context,
@@ -100,28 +112,53 @@ BlockADMMSolver<InputType>* GetSolver(skylark::base::context_t& context,
 
     case LAPLACIAN:
         features = options.randomfeatures;
-        Solver = 
+        if (options.seqtype == LEAPED_HALTON)
             new BlockADMMSolver<InputType>(context,
                 loss,
                 regularizer,
                 options.lambda,
                 features,
-                skylark::ml::kernels::laplacian_t(dimensions, options.kernelparam),
-                skylark::ml::regular_feature_transform_tag(),
+                skylark::ml::kernels::laplacian_t(dimensions,
+                    options.kernelparam),
+                skylark::ml::quasi_feature_transform_tag(),
                 options.numfeaturepartitions);
+        else
+            Solver =
+                new BlockADMMSolver<InputType>(context,
+                    loss,
+                    regularizer,
+                    options.lambda,
+                    features,
+                    skylark::ml::kernels::laplacian_t(dimensions,
+                        options.kernelparam),
+                    skylark::ml::regular_feature_transform_tag(),
+                    options.numfeaturepartitions);
+
         break;
 
     case EXPSEMIGROUP:
         features = options.randomfeatures;
-        Solver =
+        if (options.seqtype == LEAPED_HALTON)
             new BlockADMMSolver<InputType>(context,
                 loss,
                 regularizer,
                 options.lambda,
                 features,
-                skylark::ml::kernels::expsemigroup_t(dimensions, options.kernelparam),
-                skylark::ml::regular_feature_transform_tag(),
+                skylark::ml::kernels::expsemigroup_t(dimensions,
+                    options.kernelparam),
+                skylark::ml::quasi_feature_transform_tag(),
                 options.numfeaturepartitions);
+        else
+            Solver =
+                new BlockADMMSolver<InputType>(context,
+                    loss,
+                    regularizer,
+                    options.lambda,
+                    features,
+                    skylark::ml::kernels::expsemigroup_t(dimensions,
+                        options.kernelparam),
+                    skylark::ml::regular_feature_transform_tag(),
+                    options.numfeaturepartitions);
         break;
 
     default:

@@ -26,7 +26,9 @@ namespace skylark { namespace sketch {
 template <template <typename> class KernelDistribution>
 struct RFT_data_t : public sketch_transform_data_t {
 
-    typedef dense_transform_data_t<KernelDistribution> underlying_data_type;
+    typedef double value_type;
+    typedef random_dense_transform_data_t<KernelDistribution>
+    underlying_data_type;
     typedef sketch_transform_data_t base_t;
 
     RFT_data_t (int N, int S, double inscale, double outscale,
@@ -48,6 +50,9 @@ struct RFT_data_t : public sketch_transform_data_t {
     }
 
 protected:
+
+    typedef typename underlying_data_type::value_accessor_type accessor_type;
+
     RFT_data_t (int N, int S, double inscale, double outscale,
         const base::context_t& context, std::string type)
         : base_t(N, S, context, type),  _inscale(inscale),

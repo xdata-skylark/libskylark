@@ -20,18 +20,22 @@ namespace skylark { namespace sketch {
  *
  * See:
  *
+ * Jiyan Yang, Vikas Sindhwani, Quanfu Fan, Haim Avron, Michael Mahoney
  * Random Laplace Feature Maps for Semigroup Kernels on Histograms
+ * CVPR 2014
  *
  */
 template <template <typename> class KernelDistribution>
 struct RLT_data_t : public sketch_transform_data_t {
 
-    typedef dense_transform_data_t<KernelDistribution> underlying_data_type;
+    typedef double value_type;
+    typedef random_dense_transform_data_t<KernelDistribution>
+    underlying_data_type;
     typedef sketch_transform_data_t base_t;
 
-    RLT_data_t (int N, int S, double inscale, double outscale, 
-        skylark::base::context_t& context)
-        : base_t(N, S, context, "RLT"), _inscale(inscale), 
+    RLT_data_t (int N, int S, double inscale, double outscale,
+        base::context_t& context)
+        : base_t(N, S, context, "RLT"), _inscale(inscale),
           _outscale(outscale) {
 
         context = build();
@@ -53,9 +57,12 @@ struct RLT_data_t : public sketch_transform_data_t {
     }
 
 protected:
-    RLT_data_t (int N, int S, double inscale, double outscale, 
-        const skylark::base::context_t& context,
-        std::string type)
+
+    typedef typename underlying_data_type::value_accessor_type accessor_type;
+
+
+    RLT_data_t (int N, int S, double inscale, double outscale,
+        const base::context_t& context, std::string type)
         : base_t(N, S, context, type), _inscale(inscale),
           _outscale(outscale) {
 
@@ -94,7 +101,7 @@ struct ExpSemigroupRLT_data_t :
     };
 
     ExpSemigroupRLT_data_t(int N, int S, double beta,
-        skylark::base::context_t& context)
+        base::context_t& context)
         : base_t(N, S, beta * beta / 2, std::sqrt(1.0 / S), 
             context, "ExpSemigroupRLT"), _beta(beta) {
 
@@ -102,7 +109,7 @@ struct ExpSemigroupRLT_data_t :
     }
 
     ExpSemigroupRLT_data_t(int N, int S, const params_t& params,
-        skylark::base::context_t& context)
+        base::context_t& context)
         : base_t(N, S, params.beta * params.beta / 2, std::sqrt(1.0 / S), 
             context, "ExpSemigroupRLT"), _beta(params.beta) {
 
@@ -134,7 +141,7 @@ struct ExpSemigroupRLT_data_t :
 
 protected:
     ExpSemigroupRLT_data_t(int N, int S, double beta,
-        const skylark::base::context_t& context, std::string type)
+        const base::context_t& context, std::string type)
         : base_t(N, S,  beta * beta / 2, std::sqrt(1.0 / S), context, type), 
           _beta(beta) {
 

@@ -30,6 +30,11 @@ sketch_transform_data_t::from_ptree(const boost::property_tree::ptree& pt) {
     AUTO_LOAD_DISPATCH(GaussianRFT,  GaussianRFT_data_t);
     AUTO_LOAD_DISPATCH(LaplacianRFT, LaplacianRFT_data_t);
 
+    AUTO_LOAD_DISPATCH(GaussianQRFT,
+        GaussianQRFT_data_t<utility::qmc_sequence_container_t>);
+    AUTO_LOAD_DISPATCH(LaplacianQRFT,
+        LaplacianQRFT_data_t<utility::qmc_sequence_container_t>);
+
     AUTO_LOAD_DISPATCH(ExpSemigroupRLT, ExpSemigroupRLT_data_t);
     AUTO_LOAD_DISPATCH(FastGaussianRFT, FastGaussianRFT_data_t);
 
@@ -63,6 +68,15 @@ sketch_transform_t<IT, OT>::from_ptree(const boost::property_tree::ptree& pt) {
     AUTO_LOAD_DISPATCH(GaussianRFT,  GaussianRFT_t);
     AUTO_LOAD_DISPATCH(LaplacianRFT, LaplacianRFT_t);
 
+    if (type == "GaussianQRFT")
+        return new GaussianQRFT_t<IT, OT, utility::qmc_sequence_container_t>(pt);
+    if (type == "LaplacianQRFT")
+        return new LaplacianQRFT_t<IT, OT, utility::qmc_sequence_container_t>(pt);
+
+    AUTO_LOAD_DISPATCH(GaussianQRFT,  GaussianRFT_t);
+    AUTO_LOAD_DISPATCH(LaplacianQRFT, LaplacianRFT_t);
+
+
     AUTO_LOAD_DISPATCH(ExpSemigroupRLT, ExpSemigroupRLT_t);
     AUTO_LOAD_DISPATCH(FastGaussianRFT, FastGaussianRFT_t);
 
@@ -72,7 +86,8 @@ sketch_transform_t<IT, OT>::from_ptree(const boost::property_tree::ptree& pt) {
 
 #undef AUTO_LOAD_DISPATCH
 
-    SKYLARK_THROW_EXCEPTION(base::sketch_exception());
+    SKYLARK_THROW_EXCEPTION(base::sketch_exception() <<
+        base::error_msg("Unknown sktech type"));
 
     return nullptr;
 }

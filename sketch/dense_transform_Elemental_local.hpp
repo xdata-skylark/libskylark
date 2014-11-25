@@ -18,18 +18,17 @@ namespace skylark { namespace sketch {
  */
 template <typename ValueType,
           template <typename> class InputType,
-          template <typename> class ValueDistribution>
+          typename ValuesAccessor>
 struct dense_transform_t <
     InputType<ValueType>,
     elem::Matrix<ValueType>,
-    ValueDistribution> :
-        public dense_transform_data_t<ValueDistribution> {
+    ValuesAccessor> :
+        public dense_transform_data_t<ValuesAccessor> {
 
     typedef ValueType value_type;
     typedef InputType<value_type> matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
-    typedef ValueDistribution<value_type> value_distribution_type;
-    typedef dense_transform_data_t<ValueDistribution> data_type;
+    typedef dense_transform_data_t<ValuesAccessor> data_type;
 
     /**
      * Regular constructor
@@ -44,7 +43,7 @@ struct dense_transform_t <
      */
     dense_transform_t (const dense_transform_t<matrix_type,
                                          output_matrix_type,
-                                         ValueDistribution>& other)
+                                         ValuesAccessor>& other)
         : data_type(other) {}
 
     /**

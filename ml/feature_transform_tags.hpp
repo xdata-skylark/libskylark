@@ -9,5 +9,7 @@ struct regular_feature_transform_tag : public feature_transform_type_tag { } ;
 
 struct fast_feature_transform_tag : public feature_transform_type_tag { } ;
 
+struct quasi_feature_transform_tag : public feature_transform_type_tag { } ;
+
 } } 
 #endif // SKYLARK_FEATURE_TRANSFORM_TAGS

@@ -9,13 +9,13 @@ namespace skylark { namespace sketch {
 
 template < typename InputMatrixType,
            typename OutputMatrixType,
-           template <typename> class ValueDistribution>
+           typename ValuesAccessor >
 class dense_transform_t :
-        public dense_transform_data_t<ValueDistribution> {
+        public dense_transform_data_t<ValuesAccessor> {
 
     typedef InputMatrixType matrix_type;
     typedef OutputMatrixType output_matrix_type;
-    typedef dense_transform_data_t<ValueDistribution> data_type;
+    typedef dense_transform_data_t<ValuesAccessor> data_type;
 
     dense_transform_t(int N, int S, base::context_t& context)
         : data_type(N, S, context) {

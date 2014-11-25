@@ -50,6 +50,17 @@ public:
         MapTypeTag tag,
         int NumFeaturePartitions = 1);
 
+    // Easy interface, aka kernel based, with quasi-random features.
+    template<typename Kernel>
+    BlockADMMSolver<T>(skylark::base::context_t& context,
+        const lossfunction* loss,
+        const regularization* regularizer,
+        double lambda, // regularization parameter
+        int NumFeatures,
+        Kernel kernel,
+        skylark::ml::quasi_feature_transform_tag tag,
+        int NumFeaturePartitions);
+
     // Guru interface.
     BlockADMMSolver<T>(const lossfunction* loss,
         const regularization* regularizer,
@@ -175,6 +186,43 @@ BlockADMMSolver<T>::BlockADMMSolver(skylark::base::context_t& context,
         int sj = finishes[i] - starts[i] + 1;
         featureMaps[i] =
             kernel.template create_rft< T, LocalMatrixType >(sj, tag, context);
+    }
+    this->ScaleFeatureMaps = true;
+    OwnFeatureMaps = true;
+    InitializeFactorizationCache();
+    CacheTransforms = false;
+}
+
+// Easy interface, aka kernel based, with quasi-random features.
+template<class T>
+template<typename Kernel>
+BlockADMMSolver<T>::BlockADMMSolver(skylark::base::context_t& context,
+    const lossfunction* loss,
+    const regularization* regularizer,
+    double lambda, // regularization parameter
+    int NumFeatures,
+    Kernel kernel,
+    skylark::ml::quasi_feature_transform_tag tag,
+    int NumFeaturePartitions) :
+    featureMaps(NumFeaturePartitions),
+    NumFeatures(NumFeatures), NumFeaturePartitions(NumFeaturePartitions),
+    starts(NumFeaturePartitions), finishes(NumFeaturePartitions),
+    NumThreads(1), RHO(1.0), MAXITER(1000), TOL(0.1) {
+
+    this->loss = const_cast<lossfunction *> (loss);
+    this->regularizer = const_cast<regularization *> (regularizer);
+    this->lambda = lambda;
+    int blksize = int(ceil(double(NumFeatures) / NumFeaturePartitions));
+    skylark::utility::leaped_halton_sequence_t<double>
+        qmcseq(kernel.qrft_sequence_dim()); // TODO size
+    for(int i = 0; i < NumFeaturePartitions; i++) {
+        starts[i] = i * blksize;
+        finishes[i] = std::min((i + 1) * blksize, NumFeatures) - 1;
+        int sj = finishes[i] - starts[i] + 1;
+        featureMaps[i] =
+            kernel.template create_qrft< T, LocalMatrixType,
+              skylark::utility::leaped_halton_sequence_t>(sj, qmcseq,
+                  starts[i], context);
     }
     this->ScaleFeatureMaps = true;
     OwnFeatureMaps = true;

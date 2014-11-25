@@ -19,13 +19,13 @@ namespace skylark { namespace sketch {
  * holds the input and sketched matrix sizes and the array of samples
  * to be lazily computed.
  */
-template <template <typename> class ValueDistribution>
+template <typename ValuesAccessor>
 struct dense_transform_data_t : public sketch_transform_data_t {
     typedef sketch_transform_data_t base_t;
 
-    // Note: we always generate doubles for array values,
-    // but when applying to floats the size can be reduced.
-    typedef ValueDistribution<double> value_distribution_type;
+    // Note: we assume ValuesAccessor generates doubles.
+    // When applying to floats the size can be reduced.
+    typedef ValuesAccessor value_accesor_type;
 
     typedef double value_type;
 
@@ -35,7 +35,7 @@ struct dense_transform_data_t : public sketch_transform_data_t {
     dense_transform_data_t (int N, int S, double scale,
         base::context_t& context)
         : base_t(N, S, context, "DenseTransform"),
-          scale(scale), distribution() {
+          scale(scale) {
 
         // No scaling in "raw" form
         context = build();
@@ -52,8 +52,8 @@ struct dense_transform_data_t : public sketch_transform_data_t {
     }
 
     dense_transform_data_t(const dense_transform_data_t& other)
-        : base_t(other), scale(other.scale), distribution(other.distribution),
-          random_samples(other.random_samples)  {
+        : base_t(other), scale(other.scale),
+          entries(other.entries)  {
 
     }
 
@@ -85,7 +85,7 @@ struct dense_transform_data_t : public sketch_transform_data_t {
                 size_t i_glob = i + i_loc * col_stride;
                 size_t tmp = j_glob * _S;
                 tmp += i_glob;
-                value_type sample = random_samples[tmp];
+                value_type sample = entries[tmp];
                 tmp = j_loc * height;
                 data[tmp + i_loc] = scale * sample;
             }
@@ -149,26 +149,20 @@ protected:
     dense_transform_data_t (int N, int S, double scale,
         const base::context_t& context, std::string type)
         : base_t(N, S, context, type),
-          scale(scale),
-          distribution() {
+          scale(scale) {
 
     }
 
     base::context_t build() {
         base::context_t ctx = base_t::build();
-        size_t array_size = static_cast<size_t>(_N) * static_cast<size_t>(_S);
-        random_samples =
-            ctx.allocate_random_samples_array(array_size, distribution);
+
+        // It is the responsobility of sub-classes to  allocate the array.
+
         return ctx;
     }
 
     double scale; /**< Scaling factor for the samples */
-    value_distribution_type distribution; /**< Distribution for samples */
-    skylark::utility::random_samples_array_t <value_distribution_type>
-    random_samples;
-    /**< Array of samples, to be lazily computed */
-
-
+    value_accesor_type entries; /**< Samples (lazily computed) */
 };
 
 } } /** namespace skylark::sketch */

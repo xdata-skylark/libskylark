@@ -1,5 +1,5 @@
-#ifndef SKYLARK_RFT_ELEMENTAL_HPP
-#define SKYLARK_RFT_ELEMENTAL_HPP
+#ifndef SKYLARK_QRFT_ELEMENTAL_HPP
+#define SKYLARK_QRFT_ELEMENTAL_HPP
 
 namespace skylark {
 namespace sketch {
@@ -9,18 +9,20 @@ namespace sketch {
  */
 template <typename ValueType,
           typename InputType,
-          template <typename> class KernelDistribution>
-struct RFT_t <
+          template <typename, typename> class KernelDistribution,
+          template <typename> class QMCSequenceType>
+struct QRFT_t <
     InputType,
     elem::Matrix<ValueType>,
-    KernelDistribution> :
-        public RFT_data_t<KernelDistribution> {
+    KernelDistribution, QMCSequenceType> :
+        public QRFT_data_t<KernelDistribution,  QMCSequenceType> {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
     typedef InputType matrix_type;
     typedef elem::Matrix<value_type> output_matrix_type;
-    typedef RFT_data_t<KernelDistribution> data_type;
+    typedef QRFT_data_t<KernelDistribution,  QMCSequenceType> data_type;
+    typedef typename data_type::sequence_type sequence_type;
 
 private:
     typedef dense_transform_t <matrix_type, output_matrix_type,
@@ -31,8 +33,9 @@ protected:
     /**
      * Regular constructor - Allow creation only by subclasses
      */
-    RFT_t (int N, int S, base::context_t& context)
-        : data_type (N, S, context) {
+    QRFT_t (int N, int S,
+        const sequence_type& sequence, int skip, base::context_t& context)
+        : data_type (N, S, sequence, skip, context) {
 
     }
 
@@ -40,9 +43,9 @@ public:
     /**
      * Copy constructor
      */
-    RFT_t(const RFT_t<matrix_type,
-                      output_matrix_type,
-                      KernelDistribution>& other)
+    QRFT_t(const QRFT_t<matrix_type,
+        output_matrix_type,
+        KernelDistribution, QMCSequenceType>& other)
         : data_type(other) {
 
     }
@@ -50,7 +53,7 @@ public:
     /**
      * Constructor from data
      */
-    RFT_t(const data_type& other_data)
+    QRFT_t(const data_type& other_data)
         : data_type(other_data) {
 
     }
@@ -163,19 +166,21 @@ private:
 template <typename ValueType,
           typename InputType,
           elem::Distribution OC, elem::Distribution OR,
-          template <typename> class KernelDistribution>
-struct RFT_t <
+          template <typename, typename> class KernelDistribution,
+          template <typename> class QMCSequenceType>
+struct QRFT_t <
     InputType,
     elem::DistMatrix<ValueType, OC, OR>,
-    KernelDistribution> :
-        public RFT_data_t<KernelDistribution> {
+    KernelDistribution, QMCSequenceType> :
+        public QRFT_data_t<KernelDistribution, QMCSequenceType> {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
     typedef InputType matrix_type;
     typedef elem::DistMatrix<value_type, OC, OR> output_matrix_type;
 
-    typedef RFT_data_t<KernelDistribution> data_type;
+    typedef QRFT_data_t<KernelDistribution, QMCSequenceType> data_type;
+    typedef typename data_type::sequence_type sequence_type;
 
 private:
     typedef dense_transform_t <matrix_type, output_matrix_type,
@@ -188,8 +193,9 @@ protected:
     /**
      * Regular constructor -- Allow only creation by subclasses
      */
-    RFT_t (int N, int S, base::context_t& context)
-        : data_type (N, S, context) {
+    QRFT_t (int N, int S,
+        const sequence_type& sequence, int skip, base::context_t& context)
+        : data_type (N, S, sequence, skip, context) {
 
     }
 
@@ -198,9 +204,9 @@ public:
     /**
      * Copy constructor
      */
-    RFT_t(const RFT_t<matrix_type,
-                      output_matrix_type,
-                      KernelDistribution>& other)
+    QRFT_t(const QRFT_t<matrix_type,
+        output_matrix_type,
+        KernelDistribution, QMCSequenceType>& other)
         : data_type(other) {
 
     }
@@ -208,7 +214,7 @@ public:
     /**
      * Constructor from data
      */
-    RFT_t(const data_type& other_data)
+    QRFT_t(const data_type& other_data)
         : data_type(other_data) {
 
     }
@@ -325,4 +331,4 @@ private:
 
 } } /** namespace skylark::sketch */
 
-#endif // SKYLARK_RFT_ELEMENTAL_HPP
+#endif // SKYLARK_QRFT_ELEMENTAL_HPP

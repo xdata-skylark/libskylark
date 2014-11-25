@@ -23,8 +23,10 @@ class JLT_t :
 public:
 
     // We use composition to defer calls to dense_transform_t
-    typedef dense_transform_t<InputMatrixType, OutputMatrixType,
-                               bstrand::normal_distribution > transform_t;
+    typedef boost::random::normal_distribution<double> distribution_type;
+    typedef utility::random_samples_array_t<distribution_type> accessor_type;
+    typedef dense_transform_t<InputMatrixType, OutputMatrixType, accessor_type>
+    transform_t;
 
     typedef JLT_data_t data_type;
     typedef data_type::params_t params_t;

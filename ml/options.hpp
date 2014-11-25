@@ -36,6 +36,9 @@ std::string Regularizers[] = {"L2", "L1"};
 enum ProblemType {REGRESSION = 0, CLASSIFICATION = 1};
 std::string Problems[] = {"Regression", "Classification"};
 
+enum SequenceType { MONTECARLO = 0, LEAPED_HALTON = 1};
+std::string Sequences[] = {"Monte Carlo", "Leaped Halton"};
+
 enum KernelType {LINEAR = 0, GAUSSIAN = 1, POLYNOMIAL = 2,
                  LAPLACIAN = 3, EXPSEMIGROUP = 4};
 std::string Kernels[] = {"Linear", "Gaussian",
@@ -71,7 +74,7 @@ struct hilbert_options_t {
     int seed;
     int randomfeatures;
     bool regularmap;
-    bool usequasi;
+    SequenceType seqtype;
     bool cachetransforms;
 
     /* parallelization options */
@@ -108,7 +111,7 @@ struct hilbert_options_t {
             ("help,h", "produce a help message")
             ("lossfunction,l",
                 po::value<int>((int*) &lossfunction)->default_value(SQUARED),
-                "Loss function (0:SQUARED, 1:LAD, 2:HINGE, 3:LOGISTIC")
+                "Loss function (0:SQUARED, 1:LAD, 2:HINGE, 3:LOGISTIC)")
             ("regularizer,r",
                 po::value<int>((int*) &regularizer)->default_value(L2),
                 "Regularizer (0:L2, 1:L1)")
@@ -151,10 +154,10 @@ struct hilbert_options_t {
                 po::value<bool>(&regularmap)->default_value(true),
                 "Default is to use 'fast' feature mapping, if available."
                 "Use this flag to force regular mapping (default: false)")
-            ("usequasi",
-                po::value<bool>(&usequasi)->default_value(false),
-                "If avaible, use a quasi-randomized approach instead of"
-                "a randomized one (default: false)")
+            ("usequasi,q",
+                po::value<int>((int*) &seqtype)->default_value(MONTECARLO),
+                "If possible, change the underlying sequence of samples"
+                " (0:Regular/Monte Carlo, 1:Leaped Halton)")
             ("cachetransforms",
                 po::value<bool>(&cachetransforms)->default_value(false),
                 "Default is to not cache feature transforms per iteration, but generate on fly"
@@ -264,8 +267,9 @@ struct hilbert_options_t {
                 numthreads = boost::lexical_cast<int>(value);
             if (flag == "--regular")
                 regularmap = value == "on";
-            if (flag == "--usequasi")
-                usequasi = value == "on";
+            if (flag == "--useqausi" || flag == "-q")
+                seqtype =
+                    static_cast<SequenceType>(boost::lexical_cast<int>(value));
             if (flag == "--fileformat")
                 fileformat =
                     static_cast<FileFormatType>(boost::lexical_cast<int>(value));
@@ -324,7 +328,8 @@ struct hilbert_options_t {
         optionstring << "# Random Features = " << randomfeatures << std::endl;
         optionstring << "# Caching Transforms = " << cachetransforms << std::endl;
         optionstring << "# Slow/Fast feature mapping = " << regularmap  << std::endl;
-        optionstring << "# Use quasi-randomness = " << usequasi  << std::endl;
+        optionstring << "# Sequence = " << seqtype  
+                     << " (" << Sequences[seqtype] << ")" << std::endl;
         optionstring << "# Number of feature partitions = "
                      << numfeaturepartitions << std::endl;
         optionstring << "# Threads = " << numthreads << std::endl;

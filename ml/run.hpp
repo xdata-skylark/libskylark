@@ -61,7 +61,7 @@ BlockADMMSolver<InputType>* GetSolver(skylark::base::context_t& context,
     case GAUSSIAN:
         features = options.randomfeatures;
         if (options.regularmap)
-            if (options.usequasi)
+            if (options.seqtype == LEAPED_HALTON)
                 Solver =
                     new BlockADMMSolver<InputType>(context,
                         loss,
@@ -112,7 +112,7 @@ BlockADMMSolver<InputType>* GetSolver(skylark::base::context_t& context,
 
     case LAPLACIAN:
         features = options.randomfeatures;
-        if (options.usequasi)
+        if (options.seqtype == LEAPED_HALTON)
             new BlockADMMSolver<InputType>(context,
                 loss,
                 regularizer,
@@ -138,7 +138,7 @@ BlockADMMSolver<InputType>* GetSolver(skylark::base::context_t& context,
 
     case EXPSEMIGROUP:
         features = options.randomfeatures;
-        if (options.usequasi)
+        if (options.seqtype == LEAPED_HALTON)
             new BlockADMMSolver<InputType>(context,
                 loss,
                 regularizer,

@@ -14,21 +14,19 @@ namespace skylark { namespace sketch {
 /**
  * Specialization distributed input [SOMETHING, *], distributed output [MC, MR]
  */
-template <typename ValueType,
-          elem::Distribution ColDist,
-          template <typename> class ValueDistribution>
+template <typename ValueType, elem::Distribution ColDist,
+          typename ValueAccessor>
 struct dense_transform_t <
     elem::DistMatrix<ValueType, ColDist, elem::STAR>,
     elem::DistMatrix<ValueType>,
-    ValueDistribution> :
-        public dense_transform_data_t<ValueDistribution> {
+    ValueAccessor> :
+        public dense_transform_data_t<ValueAccessor> {
 
     // Typedef matrix and distribution types so that we can use them regularly
     typedef ValueType value_type;
     typedef elem::DistMatrix<value_type, ColDist, elem::STAR> matrix_type;
     typedef elem::DistMatrix<value_type> output_matrix_type;
-    typedef ValueDistribution<value_type> value_distribution_type;
-    typedef dense_transform_data_t<ValueDistribution> data_type;
+    typedef dense_transform_data_t<ValueAccessor> data_type;
 
 
     /**
@@ -44,7 +42,7 @@ struct dense_transform_t <
      */
     dense_transform_t (dense_transform_t<matrix_type,
                                          output_matrix_type,
-                                         ValueDistribution>& other)
+                                         ValueAccessor>& other)
         : data_type(other) {
 
     }

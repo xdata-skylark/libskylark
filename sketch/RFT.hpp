@@ -73,7 +73,7 @@ class RFT_t {
 };
 
 /**
- * Random Features for Gaussian Kernel
+ * Random Features for the Gaussian Kernel
  */
 template< typename InputMatrixType,
           typename OutputMatrixType = InputMatrixType>
@@ -212,6 +212,80 @@ struct LaplacianRFT_t :
 
     int get_N() const { return this->_N; } /**< Get input dimension. */
     int get_S() const { return this->_S; } /**< Get output dimension. */
+
+    const sketch_transform_data_t* get_data() const { return this; }
+
+private:
+    transform_t _transform;
+
+};
+
+/**
+ * Random Features for the Matern Kernel
+ */
+template< typename InputMatrixType,
+          typename OutputMatrixType = InputMatrixType>
+struct MaternRFT_t :
+    public MaternRFT_data_t,
+    virtual public sketch_transform_t<InputMatrixType, OutputMatrixType > {
+
+    // We use composition to defer calls to RFT_t
+    typedef RFT_t<InputMatrixType, OutputMatrixType,
+                  bstrand::student_t_distribution> transform_t;
+
+    typedef MaternRFT_data_t data_type;
+    typedef data_type::params_t params_t;
+
+    MaternRFT_t(int N, int S, double nu, double l, base::context_t& context)
+        : data_type(N, S, nu, l, context), _transform(*this) {
+
+    }
+
+    MaternRFT_t(int N, int S, const params_t& params, base::context_t& context)
+        : data_type(N, S, params, context), _transform(*this) {
+
+    }
+
+    MaternRFT_t(const boost::property_tree::ptree &pt)
+        : data_type(pt), _transform(*this) {
+
+    }
+
+    template <typename OtherInputMatrixType,
+              typename OtherOutputMatrixType>
+    MaternRFT_t(
+        const MaternRFT_t<OtherInputMatrixType, OtherOutputMatrixType>& other)
+        : data_type(other), _transform(*this) {
+
+    }
+
+    MaternRFT_t (const data_type& other)
+        : data_type(other), _transform(*this) {
+
+    }
+
+    /**
+     * Apply columnwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply (const typename transform_t::matrix_type& A,
+                typename transform_t::output_matrix_type& sketch_of_A,
+                columnwise_tag dimension) const {
+        _transform.apply(A, sketch_of_A, dimension);
+    }
+
+    /**
+     * Apply rowwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply (const typename transform_t::matrix_type& A,
+                typename transform_t::output_matrix_type& sketch_of_A,
+                rowwise_tag dimension) const {
+        _transform.apply(A, sketch_of_A, dimension);
+    }
+
+    int get_N() const { return this->_N; } /**< Get input dimesion. */
+    int get_S() const { return this->_S; } /**< Get output dimesion. */
 
     const sketch_transform_data_t* get_data() const { return this; }
 

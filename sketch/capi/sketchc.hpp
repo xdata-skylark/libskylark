@@ -30,6 +30,7 @@ enum transform_type_t {
     PPT,
     GaussianRFT,
     LaplacianRFT,
+    MaternRFT,
     GaussianQRFT,
     LaplacianQRFT,
     FastGaussianRFT,

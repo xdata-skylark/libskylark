@@ -238,6 +238,11 @@ private:
     const double _sigma;
 };
 
+/**
+ * Matern kernel - the sampling probabilities is multivariate-t distribution.
+ * See "A Short Review of Multivariate-t Distribution"
+ * (Kibria and Joarder, 2006)
+ */
 struct MaternRFT_data_t :
         public RFT_data_t<bstrand::normal_distribution> {
 

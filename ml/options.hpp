@@ -40,9 +40,9 @@ enum SequenceType { MONTECARLO = 0, LEAPED_HALTON = 1};
 std::string Sequences[] = {"Monte Carlo", "Leaped Halton"};
 
 enum KernelType {LINEAR = 0, GAUSSIAN = 1, POLYNOMIAL = 2,
-                 LAPLACIAN = 3, EXPSEMIGROUP = 4};
+                 LAPLACIAN = 3, EXPSEMIGROUP = 4, MATERN = 5};
 std::string Kernels[] = {"Linear", "Gaussian",
-                         "Polynomial", "Laplacian", "ExpSemigroup"};
+                         "Polynomial", "Laplacian", "ExpSemigroup", "Matern"};
 
 enum FileFormatType {LIBSVM_DENSE = 0, LIBSVM_SPARSE = 1, HDF5_DENSE = 2, HDF5_SPARSE = 3};
 std::string FileFormats[] = {"libsvm-dense", "libsvm-sparse", "hdf5_dense", "hdf5_sparse"};
@@ -118,7 +118,7 @@ struct hilbert_options_t {
             ("kernel,k",
                 po::value<int>((int*) &kernel)->default_value(LINEAR),
                 "Kernel (0:LINEAR, 1:GAUSSIAN, 2:POLYNOMIAL, "
-                "3:LAPLACIAN, 4:EXPSEMIGROUP)")
+                "3:LAPLACIAN, 4:EXPSEMIGROUP, 5:MATERN)")
             ("kernelparam,g",
                 po::value<double>(&kernelparam)->default_value(DEFAULT_KERPARAM),
                 "Kernel Parameter")

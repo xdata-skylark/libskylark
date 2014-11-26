@@ -29,6 +29,7 @@ sketch_transform_data_t::from_ptree(const boost::property_tree::ptree& pt) {
 
     AUTO_LOAD_DISPATCH(GaussianRFT,  GaussianRFT_data_t);
     AUTO_LOAD_DISPATCH(LaplacianRFT, LaplacianRFT_data_t);
+    AUTO_LOAD_DISPATCH(MaternRFT, MaternRFT_data_t);
 
     AUTO_LOAD_DISPATCH(GaussianQRFT,
         GaussianQRFT_data_t<utility::qmc_sequence_container_t>);
@@ -67,6 +68,7 @@ sketch_transform_t<IT, OT>::from_ptree(const boost::property_tree::ptree& pt) {
 
     AUTO_LOAD_DISPATCH(GaussianRFT,  GaussianRFT_t);
     AUTO_LOAD_DISPATCH(LaplacianRFT, LaplacianRFT_t);
+    AUTO_LOAD_DISPATCH(MaternRFT,  MaternRFT_t);
 
     if (type == "GaussianQRFT")
         return new GaussianQRFT_t<IT, OT, utility::qmc_sequence_container_t>(pt);

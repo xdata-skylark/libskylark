@@ -110,6 +110,20 @@ BlockADMMSolver<InputType>* GetSolver(skylark::base::context_t& context,
                 options.numfeaturepartitions);
         break;
 
+    case MATERN:
+        features = options.randomfeatures;
+        Solver = 
+            new BlockADMMSolver<InputType>(context,
+                loss,
+                regularizer,
+                options.lambda,
+                features,
+                skylark::ml::kernels::matern_t(dimensions,
+                    options.kernelparam, options.kernelparam2),
+                skylark::ml::regular_feature_transform_tag(),
+                options.numfeaturepartitions);
+        break;
+
     case LAPLACIAN:
         features = options.randomfeatures;
         if (options.seqtype == LEAPED_HALTON)

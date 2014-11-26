@@ -990,6 +990,35 @@ class LaplacianRFT(_SketchTransform):
 
     # TODO ppy implementation
 
+class MaternRFT(_SketchTransform):
+  """
+  Random Features Transform for the Matern Kernel
+
+  :param n: Number of dimensions in input vectors.
+  :param s: Number of dimensions in output vectors.
+  :param nu: nu parameter
+  :param l: l parameter
+  :param defouttype: Default output type when using the * and / operators.
+  :param forceppy: whether to force a pure python implementation
+
+  *A. Rahimi* and *B. Recht*, **Random Features for Large-scale
+  Kernel Machines**, NIPS 2009
+  """
+  def __init__(self, n, s, nu, l, defouttype=None, forceppy=False, sketch_transform=None):
+    super(MaternRFT, self)._baseinit("MaternRFT", n, s, defouttype, forceppy)
+
+    if not self._ppy:
+      if sketch_transform is None:
+        sketch_transform = c_void_p()
+        _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "MaternRFT", n, s, \
+                  byref(sketch_transform), ctypes.c_double(nu), ctypes.c_double(l))
+        self._obj = sketch_transform.value
+      else:
+        self._obj = sketch_transform
+
+    # TODO ppy implementation
+
+
 class GaussianQRFT(_SketchTransform):
   """
   Quasi Random Features Transform for the Guassian Kernel
@@ -1330,6 +1359,8 @@ _map_csketch_type_to_cfun["GaussianRFT"] = \
     lambda sd, obj : GaussianRFT(int(sd['N']), int(sd['S']), float(sd['sigma']), None, False, obj.value)
 _map_csketch_type_to_cfun["LaplacianRFT"] = \
     lambda sd, obj : LaplacianRFT(int(sd['N']), int(sd['S']), float(sd['sigma']), None, False, obj.value)
+_map_csketch_type_to_cfun["MaternRFT"] = \
+    lambda sd, obj : LaplacianRFT(int(sd['N']), int(sd['S']), float(sd['nu']), float(sd['l']), None, False, obj.value)
 _map_csketch_type_to_cfun["GaussianQRFT"] = \
     lambda sd, obj : GaussianQRFT(int(sd['N']), int(sd['S']), float(sd['sigma']), int(sd['skip']), None, False, obj.value)
 _map_csketch_type_to_cfun["LaplacianQRFT"] = \

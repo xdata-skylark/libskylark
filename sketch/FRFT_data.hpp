@@ -107,7 +107,7 @@ protected:
                     P[i * (_NB - 1) + _NB - 1 - j] % (j + 1);
 
         // Fill scaling matrix with 1. Subclasses (which are adapted to concrete
-        // kernels) should modify this.
+        // kernels) could modify this.
         std::fill(Sm.begin(), Sm.end(), 1.0);
 
         return ctx;

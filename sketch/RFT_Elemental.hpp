@@ -111,7 +111,7 @@ private:
                     1.27323954 * x - 0.405284735 * x * x;
 #               endif
 
-                x = data_type::_outscale * x;
+                x = data_type::_outscale * data_type::_scales[i] * x;
                 sketch_of_A.Set(i, j, x);
             }
     }
@@ -151,7 +151,7 @@ private:
                     1.27323954 * x - 0.405284735 * x * x;
 #               endif
 
-                x = data_type::_outscale * x;
+                x = data_type::_outscale * data_type::_scales[i] * x;
                 sketch_of_A.Set(i, j, x);
             }
     }
@@ -273,7 +273,7 @@ private:
                     1.27323954 * x - 0.405284735 * x * x;
 #               endif
 
-                x = data_type::_outscale * x;
+                x = data_type::_outscale * data_type::_scales[i] * x;
                 SAl.Set(i, j, x);
             }
     }
@@ -317,7 +317,7 @@ private:
                     1.27323954 * x - 0.405284735 * x * x;
 #               endif
 
-                x = data_type::_outscale * x;
+                x = data_type::_outscale * data_type::_scales[i] * x;
                 SAl.Set(i, j, x);
             }
     }

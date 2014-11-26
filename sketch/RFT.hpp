@@ -231,7 +231,7 @@ struct MaternRFT_t :
 
     // We use composition to defer calls to RFT_t
     typedef RFT_t<InputMatrixType, OutputMatrixType,
-                  bstrand::student_t_distribution> transform_t;
+                  bstrand::normal_distribution> transform_t;
 
     typedef MaternRFT_data_t data_type;
     typedef data_type::params_t params_t;

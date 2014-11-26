@@ -35,7 +35,7 @@ struct RFT_data_t : public sketch_transform_data_t {
     RFT_data_t (int N, int S, double inscale, double outscale,
         const distribution_type& distribution, base::context_t& context)
         : base_t(N, S, context, "RFT"), _inscale(inscale),
-          _outscale(outscale), _distribution(distribution) {
+          _outscale(outscale), _scales(S), _distribution(distribution) {
 
         context = build();
     }
@@ -58,7 +58,7 @@ protected:
         const distribution_type& distribution,
         const base::context_t& context, std::string type)
         : base_t(N, S, context, type),  _inscale(inscale),
-          _outscale(outscale), _distribution(distribution) {
+          _outscale(outscale), _scales(S), _distribution(distribution) {
 
     }
 
@@ -74,6 +74,11 @@ protected:
         boost::random::uniform_real_distribution<double>
             distribution(0, 2 * pi);
         _shifts = ctx.generate_random_samples_array(base_t::_S, distribution);
+
+        // Fill scaling matrix with 1. Subclasses (which are adapted to concrete
+        // kernels) could modify this.
+        std::fill(_scales.begin(), _scales.end(), 1.0);
+
         return ctx;
     }
 
@@ -82,6 +87,7 @@ protected:
     boost::shared_ptr<underlying_data_type> _underlying_data;
     /**< Data of the underlying dense transformation */
     std::vector<double> _shifts; /** Shifts for scaled trigonometric factor */
+    std::vector<double> _scales; /** Scaling based on kernel (filled by subclass) */
     distribution_type _distribution;
 };
 
@@ -233,9 +239,9 @@ private:
 };
 
 struct MaternRFT_data_t :
-        public RFT_data_t<bstrand::student_t_distribution> {
+        public RFT_data_t<bstrand::normal_distribution> {
 
-    typedef RFT_data_t<bstrand::student_t_distribution> base_t;
+    typedef RFT_data_t<bstrand::normal_distribution> base_t;
 
     /// Params structure
     struct params_t : public sketch_params_t {
@@ -251,32 +257,32 @@ struct MaternRFT_data_t :
     MaternRFT_data_t(int N, int S, double nu, double l,
         base::context_t& context)
         : base_t(N, S, 1.0 / (6.28 * l), std::sqrt(2.0 / S),
-            bstrand::student_t_distribution<double>(2.0 * nu),
+            bstrand::normal_distribution<double>(),
             context, "MaternRFT"),
           _nu(nu), _l(l) {
 
-        context = base_t::build();
+        context = build();
     }
 
     MaternRFT_data_t(int N, int S, const params_t& params,
         base::context_t& context)
         : base_t(N, S, 1.0 / (6.28 * params.l), std::sqrt(2.0 / S),
-            bstrand::student_t_distribution<double>(2.0 * params.nu),
+            bstrand::normal_distribution<double>(),
             context, "MaternRFT"),
           _nu(params.nu), _l(params.l) {
 
-        context = base_t::build();
+        context = build();
     }
 
     MaternRFT_data_t(const boost::property_tree::ptree &pt) :
         base_t(pt.get<int>("N"), pt.get<int>("S"),
             1.0 / (6.28 * pt.get<double>("l")),
             std::sqrt(2.0 / pt.get<double>("S")),
-            bstrand::student_t_distribution<double>(2 * pt.get<double>("nu")),
+            bstrand::normal_distribution<double>(),
             base::context_t(pt.get_child("creation_context")), "MaternRFT"),
         _nu(pt.get<double>("nu")), _l(pt.get<double>("l")) {
 
-        base_t::build();
+        build();
     }
 
     /**
@@ -297,10 +303,22 @@ protected:
     MaternRFT_data_t(int N, int S, double nu, double l,
         const base::context_t& context, std::string type)
         : base_t(N, S, 1.0 / (6.28 * l), std::sqrt(2.0 / S),
-            bstrand::student_t_distribution<double>(2.0 * nu),
+            bstrand::normal_distribution<double>(),
             context, type),
           _nu(nu), _l(l) {
 
+    }
+
+    base::context_t build() {
+
+        base::context_t ctx = base_t::build();
+
+        boost::random::chi_squared_distribution<double> distribution(2 * _nu);
+        _scales = ctx.generate_random_samples_array(base_t::_S, distribution);
+        for(auto it = _scales.begin(); it != _scales.end(); it++)
+            *it = std::sqrt(2.0 * _nu / *it);
+
+        return ctx;
     }
 
 private:

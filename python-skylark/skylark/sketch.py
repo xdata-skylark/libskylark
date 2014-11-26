@@ -1360,7 +1360,7 @@ _map_csketch_type_to_cfun["GaussianRFT"] = \
 _map_csketch_type_to_cfun["LaplacianRFT"] = \
     lambda sd, obj : LaplacianRFT(int(sd['N']), int(sd['S']), float(sd['sigma']), None, False, obj.value)
 _map_csketch_type_to_cfun["MaternRFT"] = \
-    lambda sd, obj : LaplacianRFT(int(sd['N']), int(sd['S']), float(sd['nu']), float(sd['l']), None, False, obj.value)
+    lambda sd, obj : MaternRFT(int(sd['N']), int(sd['S']), float(sd['nu']), float(sd['l']), None, False, obj.value)
 _map_csketch_type_to_cfun["GaussianQRFT"] = \
     lambda sd, obj : GaussianQRFT(int(sd['N']), int(sd['S']), float(sd['sigma']), int(sd['skip']), None, False, obj.value)
 _map_csketch_type_to_cfun["LaplacianQRFT"] = \

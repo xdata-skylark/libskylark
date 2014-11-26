@@ -161,6 +161,32 @@ private:
     const double _beta;
 };
 
+struct matern_t {
+
+    matern_t(int N, double nu, double l) : _N(N), _nu(nu), _l(l) {
+
+    }
+
+    template<typename IT, typename OT>
+    sketch::sketch_transform_t<IT, OT> *create_rft(int S,
+        regular_feature_transform_tag, base::context_t& context) const {
+        return
+            new sketch::MaternRFT_t<IT, OT>(_N, S, _nu, _l, context);
+    }
+
+    int get_dim() const {
+        return _N;
+    }
+
+    // TODO method for gram matrix ?
+
+
+private:
+    const int _N;
+    const double _nu;
+    const double _l;
+};
+
 } } }
 
 #endif // SKYLARK_KERNELS_HPP

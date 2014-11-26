@@ -94,6 +94,7 @@ private:
         for(int j = 0; j < base::Width(A); j++)
             for(int i = 0; i < data_type::_S; i++) {
                 value_type x = sketch_of_A.Get(i, j);
+                x *= data_type::_scales[i];
                 x += data_type::_shifts[i];
 
 #               ifndef SKYLARK_INEXACT_COSINE
@@ -111,7 +112,7 @@ private:
                     1.27323954 * x - 0.405284735 * x * x;
 #               endif
 
-                x = data_type::_outscale * data_type::_scales[i] * x;
+                x = data_type::_outscale * x;
                 sketch_of_A.Set(i, j, x);
             }
     }
@@ -134,6 +135,7 @@ private:
         for(int j = 0; j < data_type::_S; j++)
             for(int i = 0; i < base::Height(A); i++) {
                 value_type x = sketch_of_A.Get(i, j);
+                x *= data_type::_scales[j];
                 x += data_type::_shifts[j];
 
 #               ifndef SKYLARK_INEXACT_COSINE
@@ -151,7 +153,7 @@ private:
                     1.27323954 * x - 0.405284735 * x * x;
 #               endif
 
-                x = data_type::_outscale * data_type::_scales[i] * x;
+                x = data_type::_outscale * x;
                 sketch_of_A.Set(i, j, x);
             }
     }
@@ -256,6 +258,7 @@ private:
         for(size_t j = 0; j < base::Width(SAl); j++)
             for(size_t i = 0; i < base::Height(SAl); i++) {
                 value_type x = SAl.Get(i, j);
+                x *= data_type::_scales[col_shift + i * col_stride];
                 x += data_type::_shifts[col_shift + i * col_stride];
 
 #               ifndef SKYLARK_INEXACT_COSINE
@@ -273,7 +276,7 @@ private:
                     1.27323954 * x - 0.405284735 * x * x;
 #               endif
 
-                x = data_type::_outscale * data_type::_scales[i] * x;
+                x = data_type::_outscale * x;
                 SAl.Set(i, j, x);
             }
     }
@@ -300,6 +303,7 @@ private:
         for(size_t j = 0; j < base::Width(SAl); j++)
             for(size_t i = 0; i < base::Height(SAl); i++) {
                 value_type x = SAl.Get(i, j);
+                x *= data_type::_scales[row_shift + j * row_stride];
                 x += data_type::_shifts[row_shift + j * row_stride];
 
 #               ifndef SKYLARK_INEXACT_COSINE
@@ -317,7 +321,7 @@ private:
                     1.27323954 * x - 0.405284735 * x * x;
 #               endif
 
-                x = data_type::_outscale * data_type::_scales[i] * x;
+                x = data_type::_outscale * x;
                 SAl.Set(i, j, x);
             }
     }

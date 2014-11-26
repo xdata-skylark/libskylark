@@ -256,7 +256,7 @@ struct MaternRFT_data_t :
 
     MaternRFT_data_t(int N, int S, double nu, double l,
         base::context_t& context)
-        : base_t(N, S, 1.0 / (6.28 * l), std::sqrt(2.0 / S),
+        : base_t(N, S, 1.0 / l, std::sqrt(2.0 / S),
             bstrand::normal_distribution<double>(),
             context, "MaternRFT"),
           _nu(nu), _l(l) {
@@ -266,7 +266,7 @@ struct MaternRFT_data_t :
 
     MaternRFT_data_t(int N, int S, const params_t& params,
         base::context_t& context)
-        : base_t(N, S, 1.0 / (6.28 * params.l), std::sqrt(2.0 / S),
+        : base_t(N, S, 1.0 / params.l, std::sqrt(2.0 / S),
             bstrand::normal_distribution<double>(),
             context, "MaternRFT"),
           _nu(params.nu), _l(params.l) {
@@ -276,7 +276,7 @@ struct MaternRFT_data_t :
 
     MaternRFT_data_t(const boost::property_tree::ptree &pt) :
         base_t(pt.get<int>("N"), pt.get<int>("S"),
-            1.0 / (6.28 * pt.get<double>("l")),
+            1.0 / pt.get<double>("l"),
             std::sqrt(2.0 / pt.get<double>("S")),
             bstrand::normal_distribution<double>(),
             base::context_t(pt.get_child("creation_context")), "MaternRFT"),
@@ -302,7 +302,7 @@ struct MaternRFT_data_t :
 protected:
     MaternRFT_data_t(int N, int S, double nu, double l,
         const base::context_t& context, std::string type)
-        : base_t(N, S, 1.0 / (6.28 * l), std::sqrt(2.0 / S),
+        : base_t(N, S, 1.0 / l, std::sqrt(2.0 / S),
             bstrand::normal_distribution<double>(),
             context, type),
           _nu(nu), _l(l) {

@@ -133,7 +133,7 @@ private:
                     value_type x = w[l - s];
                     x += data_type::shifts[l];
 
-#                   ifdef SKYLARK_EXACT_COSINE
+#                   ifndef SKYLARK_INEXACT_COSINE
                     x = std::cos(x);
 #                   else
                     // x = std::cos(x) is slow
@@ -223,7 +223,7 @@ private:
                 value_type x = sketch_of_A.Get(i, j);
                 x += data_type::shifts[j];
 
-#               ifdef SKYLARK_EXACT_COSINE
+#               ifndef SKYLARK_INEXACT_COSINE
                 x = std::cos(x);
 #               else
                 // x = std::cos(x) is slow

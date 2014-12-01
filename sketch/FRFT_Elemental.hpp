@@ -149,7 +149,7 @@ private:
 #                   endif
 
                     x = data_type::scale * x;
-                    sac[l - s] = x;
+                    sac[l] = x;
                 }
             }
         }

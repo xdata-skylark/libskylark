@@ -207,7 +207,7 @@ class Matern(object):
     Y = scipy.sqrt(2.0 * nu * D) / l
     K = 2.0 ** (1 - nu) / scipy.special.gamma(nu) * Y ** nu * scipy.special.kv(nu, Y)
 
-    return K
+    return scipy.real(K)
   
   def rft(self, s, subtype=None, defouttype=None, **args):
     """

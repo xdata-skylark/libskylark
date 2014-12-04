@@ -1156,15 +1156,16 @@ class FastMaternRFT(_SketchTransform):
   *Q. Le*, *T. Sarlos*, *A. Smola*, **Fastfood - Computing Hilbert Space
   Expansions in Loglinear Time**, ICML 2013
   """
-  def __init__(self, n, s, order = 1, defouttype=None, forceppy=False, sketch_transform=None):
+  def __init__(self, n, s,nu, l, defouttype=None, forceppy=False, sketch_transform=None):
     super(FastMaternRFT, self)._baseinit("FastMaternRFT", n, s, defouttype, forceppy);
 
-    self._order = order
+    self._nu = nu
+    self._l = l
     if not self._ppy:
       if sketch_transform is None:
         sketch_transform = c_void_p()
         _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "FastMaternRFT", n, s, \
-                  byref(sketch_transform), ctypes.c_int(order))
+                  byref(sketch_transform), ctypes.c_double(nu), ctypes.c_double(l))
         self._obj = sketch_transform.value
       else:
         self._obj = sketch_transform
@@ -1368,7 +1369,7 @@ _map_csketch_type_to_cfun["LaplacianQRFT"] = \
 _map_csketch_type_to_cfun["FastGaussianRFT"] = \
     lambda sd, obj : FastGaussianRFT(int(sd['N']), int(sd['S']), float(sd['sigma']), None, False, obj.value)
 _map_csketch_type_to_cfun["FastMaternRFT"] = \
-    lambda sd, obj : FastMaternRFT(int(sd['N']), int(sd['S']), int(sd['order']), None, False, obj.value)
+    lambda sd, obj : FastMaternRFT(int(sd['N']), int(sd['S']), float(sd['nu']), float(sd['l']), None, False, obj.value)
 _map_csketch_type_to_cfun["ExpSemigroupRLT"] = \
     lambda sd, obj : ExpSemigroupRLT(int(sd['N']), int(sd['S']), float(sd['beta']), None, False, obj.value)
 _map_csketch_type_to_cfun["ExpSemigroupQRLT"] = \

@@ -204,23 +204,25 @@ struct FastMaternRFT_data_t :
     /// Params structure
     struct params_t : public sketch_params_t {
 
-        params_t(int order) : order(order) {
+        params_t(double nu, double l) : nu(nu), l(l) {
 
         }
 
-        const int order;
+        const double nu;
+        const double l;
     };
 
-    FastMaternRFT_data_t(int N, int S, int order,
+    FastMaternRFT_data_t(int N, int S, double nu, double l,
         skylark::base::context_t& context)
-        : base_t(N, S, context, "FastMaternRFT"), _order(order) {
+        : base_t(N, S, context, "FastMaternRFT"), _nu(nu), _l(l) {
 
         context = build();
     }
 
     FastMaternRFT_data_t(int N, int S, const params_t& params,
         skylark::base::context_t& context)
-        : base_t(N, S, context, "FastMaternRFT"), _order(params.order) {
+        : base_t(N, S, context, "FastMaternRFT"), 
+          _nu(params.nu), _l(params.l) {
 
         context = build();
     }
@@ -228,7 +230,7 @@ struct FastMaternRFT_data_t :
     FastMaternRFT_data_t(const boost::property_tree::ptree &pt) :
         base_t(pt.get<int>("N"), pt.get<int>("S"),
             base::context_t(pt.get_child("creation_context")), "FastMaternRFT"),
-        _order(pt.get<int>("order")) {
+        _nu(pt.get<double>("nu")), _l(pt.get<double>("l")) {
 
         build();
     }
@@ -242,45 +244,32 @@ struct FastMaternRFT_data_t :
     boost::property_tree::ptree to_ptree() const {
         boost::property_tree::ptree pt;
         sketch_transform_data_t::add_common(pt);
-        pt.put("order", _order);
+        pt.put("nu", _nu);
+        pt.put("l", _l);
         return pt;
     }
 
 protected:
-    FastMaternRFT_data_t(int N, int S, int order,
+    FastMaternRFT_data_t(int N, int S, double nu, double l,
         const skylark::base::context_t& context, std::string type)
-        : base_t(N, S, context, type), _order(order) {
+        : base_t(N, S, context, type), _nu(nu), _l(l) {
 
     }
 
     base::context_t build() {
         base::context_t ctx = base_t::build();
 
-        // TODO (?) If we pregenerate, we can speed this up with OMP
-        boost::random::normal_distribution<double> distnrml;
-        std::vector<double> xi(_N), xii(_N);
-        for(auto it = Sm.begin(); it != Sm.end(); it++) {
-            std::fill(xi.begin(), xi.end(), 0.0);
-            for(int i = 0; i < _order; i++) {
-                xii = ctx.generate_random_samples_array(_N, distnrml);
-                double dot = 0.0;
-                for(int j = 0; j < _N; j++)
-                    dot += xii[j] * xii[j];
-                double nrm = std::sqrt(dot);
-                for(int j = 0; j < _N; j++)
-                    xi[j] += xii[j] / nrm;
-            }
-            double dot = 0.0;
-            for(int j = 0; j < _N; j++)
-                dot += xi[j] * xi[j];
-            *it = std::sqrt(dot / _N);
-        }
+        boost::random::chi_squared_distribution<double> distribution(2 * _nu);
+        Sm = ctx.generate_random_samples_array(base_t::_S, distribution);
+        for(auto it = Sm.begin(); it != Sm.end(); it++)
+            *it = std::sqrt(2.0 * _nu / *it) / (_l * std::sqrt(base_t::_N));
 
         return ctx;
     }
 
 private:
-    const int _order; /**< The order of the kernel */
+    const double _nu;
+    const double _l;
 
 };
 

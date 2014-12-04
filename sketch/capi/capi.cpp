@@ -520,10 +520,11 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(base::context_t *ctxt,
         if (type == sketchc::FastMaternRFT)  {
             va_list argp;
             va_start(argp, sketch);
-            int order = va_arg(argp, int);
+            double nu = va_arg(argp, double);
+            double l = va_arg(argp, double);
             sketchc::sketch_transform_t *r =
                 new sketchc::sketch_transform_t(sketchc::FastMaternRFT,
-                    new sketch::FastMaternRFT_data_t(n, s, order, *ctxt));
+                    new sketch::FastMaternRFT_data_t(n, s, nu, l, *ctxt));
             va_end(argp);
             *sketch = r;
         }

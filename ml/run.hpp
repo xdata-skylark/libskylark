@@ -112,16 +112,28 @@ BlockADMMSolver<InputType>* GetSolver(skylark::base::context_t& context,
 
     case MATERN:
         features = options.randomfeatures;
-        Solver = 
-            new BlockADMMSolver<InputType>(context,
-                loss,
-                regularizer,
-                options.lambda,
-                features,
-                skylark::ml::kernels::matern_t(dimensions,
-                    options.kernelparam, options.kernelparam2),
-                skylark::ml::regular_feature_transform_tag(),
-                options.numfeaturepartitions);
+        if (options.regularmap)
+            Solver =
+                new BlockADMMSolver<InputType>(context,
+                    loss,
+                    regularizer,
+                    options.lambda,
+                    features,
+                    skylark::ml::kernels::matern_t(dimensions,
+                        options.kernelparam, options.kernelparam2),
+                    skylark::ml::regular_feature_transform_tag(),
+                    options.numfeaturepartitions);
+        else
+            Solver =
+                new BlockADMMSolver<InputType>(context,
+                    loss,
+                    regularizer,
+                    options.lambda,
+                    features,
+                    skylark::ml::kernels::matern_t(dimensions,
+                        options.kernelparam, options.kernelparam2),
+                    skylark::ml::fast_feature_transform_tag(),
+                    options.numfeaturepartitions);
         break;
 
     case LAPLACIAN:

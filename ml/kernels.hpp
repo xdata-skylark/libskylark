@@ -174,6 +174,14 @@ struct matern_t {
             new sketch::MaternRFT_t<IT, OT>(_N, S, _nu, _l, context);
     }
 
+    template<typename IT, typename OT>
+    sketch::sketch_transform_t<IT, OT> *create_rft(int S,
+        fast_feature_transform_tag, base::context_t& context) const {
+        return
+            new sketch::FastMaternRFT_t<IT, OT>(_N, S, _nu, _l, context);
+    }
+
+
     int get_dim() const {
         return _N;
     }

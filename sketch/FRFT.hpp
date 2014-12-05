@@ -154,8 +154,8 @@ struct FastMaternRFT_t :
     typedef FastMaternRFT_data_t data_type;
     typedef data_type::params_t params_t;
 
-    FastMaternRFT_t(int N, int S, int order, base::context_t& context)
-        : data_type(N, S, order, context), _transform(*this) {
+    FastMaternRFT_t(int N, int S, double nu, double l, base::context_t& context)
+        : data_type(N, S, nu, l, context), _transform(*this) {
 
     }
 

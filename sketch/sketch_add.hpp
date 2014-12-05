@@ -38,6 +38,7 @@ sketch_transform_data_t::from_ptree(const boost::property_tree::ptree& pt) {
 
     AUTO_LOAD_DISPATCH(ExpSemigroupRLT, ExpSemigroupRLT_data_t);
     AUTO_LOAD_DISPATCH(FastGaussianRFT, FastGaussianRFT_data_t);
+    AUTO_LOAD_DISPATCH(FastMaternnRFT, FastMaternRFT_data_t);
 
 #if SKYLARK_HAVE_FFTW
     AUTO_LOAD_DISPATCH(FJLT, FJLT_data_t);
@@ -45,7 +46,8 @@ sketch_transform_data_t::from_ptree(const boost::property_tree::ptree& pt) {
 
 #undef AUTO_LOAD_DISPATCH
 
-    SKYLARK_THROW_EXCEPTION(base::sketch_exception());
+    SKYLARK_THROW_EXCEPTION(base::sketch_exception() <<
+        base::error_msg("Unknown sktech type"));
 
     return nullptr;
 }
@@ -81,6 +83,7 @@ sketch_transform_t<IT, OT>::from_ptree(const boost::property_tree::ptree& pt) {
 
     AUTO_LOAD_DISPATCH(ExpSemigroupRLT, ExpSemigroupRLT_t);
     AUTO_LOAD_DISPATCH(FastGaussianRFT, FastGaussianRFT_t);
+    AUTO_LOAD_DISPATCH(FastMaternRFT, FastMaternRFT_t);
 
 #if SKYLARK_HAVE_FFTW
     AUTO_LOAD_DISPATCH(FJLT, FJLT_t);

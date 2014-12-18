@@ -264,8 +264,8 @@ int run(const boost::mpi::communicator& comm, skylark::base::context_t& context,
             model.get_input_size());
     	LabelType DecisionValues(Yt.Height(), model.get_num_outputs());
     	LabelType PredictedLabels(Yt.Height(), 1);
-    	elem::MakeZeros(DecisionValues);
-    	elem::MakeZeros(PredictedLabels);
+    	El::Zero(DecisionValues);
+    	El::Zero(PredictedLabels);
 
     	std::cout << "Starting predictions" << std::endl;
     	model.predict(Xt, PredictedLabels, DecisionValues, options.numthreads);

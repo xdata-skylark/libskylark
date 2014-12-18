@@ -73,13 +73,13 @@ void ChebyshevLS(const MatrixType& A, const RhsType& B, SolType& X,
             break;
         }
 
-        base::Gemm(elem::ADJOINT, elem::NORMAL, 1.0, A, R, AR);
+        base::Gemm(El::ADJOINT, El::NORMAL, 1.0, A, R, AR);
         P.apply_adjoint(AR);
-        base::Scal(beta, V);
+        base::Scale(beta, V);
         base::Axpy(1.0, AR, V);
         P.apply(V);
         base::Axpy(alpha, V, X);
-        base::Gemm(elem::NORMAL, elem::NORMAL, -alpha, A, V, 1.0, R);
+        base::Gemm(El::NORMAL, El::NORMAL, -alpha, A, V, 1.0, R);
     }
 }
 

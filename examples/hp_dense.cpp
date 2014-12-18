@@ -13,29 +13,29 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <boost/mpi.hpp>
-#include <elemental.hpp>
+#include <El.hpp>
 #include <skylark.hpp>
 #include <iostream>
 
 
 /** Aliases */
 
-typedef elem::Matrix<double>     dense_matrix_t;
+typedef El::Matrix<double>     dense_matrix_t;
 
-typedef elem::DistMatrix<double> dist_dense_matrix_t;
-typedef elem::DistMatrix<double, elem::VC, elem::STAR>
+typedef El::DistMatrix<double> dist_dense_matrix_t;
+typedef El::DistMatrix<double, El::VC, El::STAR>
 dist_VC_STAR_dense_matrix_t;
-typedef elem::DistMatrix<double, elem::VR, elem::STAR>
+typedef El::DistMatrix<double, El::VR, El::STAR>
 dist_VR_STAR_dense_matrix_t;
-typedef elem::DistMatrix<double, elem::STAR, elem::VC>
+typedef El::DistMatrix<double, El::STAR, El::VC>
 dist_STAR_VC_dense_matrix_t;
-typedef elem::DistMatrix<double, elem::STAR, elem::VR>
+typedef El::DistMatrix<double, El::STAR, El::VR>
 dist_STAR_VR_dense_matrix_t;
 
-typedef elem::DistMatrix<double, elem::CIRC, elem::CIRC>
+typedef El::DistMatrix<double, El::CIRC, El::CIRC>
 dist_CIRC_CIRC_dense_matrix_t;
 
-typedef elem::DistMatrix<double, elem::STAR, elem::STAR>
+typedef El::DistMatrix<double, El::STAR, El::STAR>
 dist_STAR_STAR_dense_matrix_t;
 
 
@@ -54,10 +54,10 @@ int main(int argc, char* argv[]) {
     boost::mpi::communicator world;
 
     /** Initialize Elemental */
-    elem::Initialize (argc, argv);
+    El::Initialize (argc, argv);
 
     MPI_Comm mpi_world(world);
-    elem::Grid grid(mpi_world);
+    El::Grid grid(mpi_world);
 
     /** Example parameters */
     int height      = 20;
@@ -68,11 +68,11 @@ int main(int argc, char* argv[]) {
 
 #ifdef LOCAL
     input_matrix_t A;
-    elem::Uniform(A, height, width);
+    El::Uniform(A, height, width);
 #else
     dist_CIRC_CIRC_dense_matrix_t A_CIRC_CIRC(grid);
     input_matrix_t A(grid);
-    elem::Uniform(A_CIRC_CIRC, height, width);
+    El::Uniform(A_CIRC_CIRC, height, width);
     A = A_CIRC_CIRC;
 #endif
 
@@ -102,10 +102,10 @@ int main(int argc, char* argv[]) {
 #ifdef ROOT_OUTPUT
     if (world.rank() == 0) {
 #endif
-        elem::Print(sketched_A, "sketched_A");
+        El::Print(sketched_A, "sketched_A");
 #ifdef ROOT_OUTPUT
     }
 #endif
-    elem::Finalize();
+    El::Finalize();
     return 0;
 }

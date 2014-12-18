@@ -1,7 +1,7 @@
 #ifndef SKYLARK_LEAST_SQUARES_HPP
 #define SKYLARK_LEAST_SQUARES_HPP
 
-#include <elemental.hpp>
+#include <El.hpp>
 #include "../algorithms/regression/regression.hpp"
 #include "../base/exception.hpp"
 
@@ -26,9 +26,9 @@ namespace skylark { namespace nla {
  * Note: it is assume that a sketch_size x Width(A) matrix can fit in memory
  * of a single node.
  *
- * \param orientation If elem::NORMAL will approximate 
+ * \param orientation If El::NORMAL will approximate 
  *                    argmin_X ||A * X - B||_F
- *                    If elem::ADJOINT will approximate (NOT YET SUPPORTED)
+ *                    If El::ADJOINT will approximate (NOT YET SUPPORTED)
  *                    argmin_X ||A^H * X - B||_F
  * \param A input matrix
  * \param B right-hand side
@@ -37,11 +37,11 @@ namespace skylark { namespace nla {
  *                    approximations. Default is 4 * Width(A).
  */
 template<typename T>
-void ApproximateLeastSquares(elem::Orientation orientation,
-    const elem::Matrix<T>& A, const elem::Matrix<T>& B, elem::Matrix<T>& X, 
+void ApproximateLeastSquares(El::Orientation orientation,
+    const El::Matrix<T>& A, const El::Matrix<T>& B, El::Matrix<T>& X, 
     base::context_t& context, int sketch_size = -1) {
 
-    if (orientation != elem::NORMAL)
+    if (orientation != El::NORMAL)
         SKYLARK_THROW_EXCEPTION (
           base::nla_exception()
               << base::error_msg(
@@ -50,17 +50,17 @@ void ApproximateLeastSquares(elem::Orientation orientation,
     if (sketch_size == -1)
         sketch_size = 4 * base::Width(A);
 
-    typedef algorithms::regression_problem_t<elem::Matrix<double>,
+    typedef algorithms::regression_problem_t<El::Matrix<double>,
                                              algorithms::linear_tag,
                                              algorithms::l2_tag,
                                              algorithms::no_reg_tag> ptype;
     ptype problem(base::Height(A), base::Width(A), A);
 
     algorithms::sketched_regression_solver_t<
-        ptype, elem::Matrix<T>, elem::Matrix<T>,
+        ptype, El::Matrix<T>, El::Matrix<T>,
         algorithms::linear_tag,
-        elem::Matrix<T>,
-        elem::Matrix<T>,
+        El::Matrix<T>,
+        El::Matrix<T>,
         sketch::FJLT_t,
         algorithms::qr_l2_solver_tag> solver(problem, sketch_size, context);
 
@@ -86,9 +86,9 @@ void ApproximateLeastSquares(elem::Orientation orientation,
  * Note: it is assume that a sketch_size x Width(A) matrix can fit in memory
  * of a single node.
  *
- * \param orientation If elem::NORMAL will approximate
+ * \param orientation If El::NORMAL will approximate
  *                    argmin_X ||A * X - B||_F
- *                    If elem::ADJOINT will approximate (NOT YET SUPPORTED)
+ *                    If El::ADJOINT will approximate (NOT YET SUPPORTED)
  *                    argmin_X ||A^H * X - B||_F
  * \param A input matrix
  * \param B right-hand side
@@ -96,15 +96,15 @@ void ApproximateLeastSquares(elem::Orientation orientation,
  * \param sketch_size Sketch size to use. Higher values will produce better
  *                    approximations. Default is 4 * Width(A).
  */
-template<typename T, elem::Distribution CA, elem::Distribution RA,
-         elem::Distribution CB, elem::Distribution RB, elem::Distribution CX,
-         elem::Distribution RX>
-void ApproximateLeastSquares(elem::Orientation orientation,
-    const elem::DistMatrix<T, CA, RA>& A, const elem::DistMatrix<T, CB, RB>& B,
-    elem::DistMatrix<T, CX, RX>& X, base::context_t& context,
+template<typename T, El::Distribution CA, El::Distribution RA,
+         El::Distribution CB, El::Distribution RB, El::Distribution CX,
+         El::Distribution RX>
+void ApproximateLeastSquares(El::Orientation orientation,
+    const El::DistMatrix<T, CA, RA>& A, const El::DistMatrix<T, CB, RB>& B,
+    El::DistMatrix<T, CX, RX>& X, base::context_t& context,
     int sketch_size = -1) {
 
-    if (orientation != elem::NORMAL)
+    if (orientation != El::NORMAL)
         SKYLARK_THROW_EXCEPTION (
           base::nla_exception()
               << base::error_msg(
@@ -113,7 +113,7 @@ void ApproximateLeastSquares(elem::Orientation orientation,
     if (sketch_size == -1)
         sketch_size = 4 * base::Width(A);
 
-    typedef algorithms::regression_problem_t<elem::DistMatrix<T, CA, RA>,
+    typedef algorithms::regression_problem_t<El::DistMatrix<T, CA, RA>,
                                              algorithms::linear_tag,
                                              algorithms::l2_tag,
                                              algorithms::no_reg_tag> ptype;
@@ -121,11 +121,11 @@ void ApproximateLeastSquares(elem::Orientation orientation,
 
     algorithms::sketched_regression_solver_t<
         ptype,
-        elem::DistMatrix<T, CB, RB>,
-        elem::DistMatrix<T, CX, RX>,
+        El::DistMatrix<T, CB, RB>,
+        El::DistMatrix<T, CX, RX>,
         algorithms::linear_tag,
-        elem::DistMatrix<T, elem::STAR, elem::STAR>,
-        elem::DistMatrix<T, elem::STAR, elem::STAR>,
+        El::DistMatrix<T, El::STAR, El::STAR>,
+        El::DistMatrix<T, El::STAR, El::STAR>,
         sketch::FJLT_t,
         algorithms::qr_l2_solver_tag> solver(problem, sketch_size, context);
 
@@ -153,19 +153,19 @@ void ApproximateLeastSquares(elem::Orientation orientation,
  * Note: it is assume that a 4*Width(A)^2 matrix can fit in memory
  * of a single node.
  *
- * \param orientation If elem::NORMAL will approximate 
+ * \param orientation If El::NORMAL will approximate 
  *                    argmin_X ||A * X - B||_F
- *                    If elem::ADJOINT will approximate (NOT YET SUPPORTED)
+ *                    If El::ADJOINT will approximate (NOT YET SUPPORTED)
  *                    argmin_X ||A^H * X - B||_F
  * \param A input matrix
  * \param B right-hand side
  * \param X solution matrix
  */
 template<typename AT, typename BT, typename XT>
-void FastLeastSquares(elem::Orientation orientation, const AT& A, const BT& B,
+void FastLeastSquares(El::Orientation orientation, const AT& A, const BT& B,
     XT& X, base::context_t& context) {
 
-    if (orientation != elem::NORMAL)
+    if (orientation != El::NORMAL)
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()
               << base::error_msg(

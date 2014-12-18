@@ -29,27 +29,27 @@ void LocalGraphDiffusion(const GraphType& G,
         epsilon / (gamma * LC);
 
     // Setup matrices associated with Chebyshev spectral diff
-    elem::Matrix<T> DO, ct_N, D1, Z;
+    El::Matrix<T> DO, ct_N, D1, Z;
     nla::ChebyshevDiffMatrix(N, DO, 0, gamma);
     for(int i = 0; i <= N; i++)
         DO.Set(i, i, DO.Get(i, i) + 1.0);
     base::ColumnView(ct_N, DO, N, 1);
     base::ColumnView(D1, DO, 0, N);
     Z = D1;
-    elem::Pseudoinverse(Z);
+    El::Pseudoinverse(Z);
 
     // Initlize non-zero functions.
     // TODO: boost or stl?
-    std::unordered_map<int, elem::Matrix<T>*> yf;
+    std::unordered_map<int, El::Matrix<T>*> yf;
     for (int i = 0; i < nseeds; i++) {
-        elem::Matrix<T> *f = new elem::Matrix<T>(N+1, 1);
+        El::Matrix<T> *f = new El::Matrix<T>(N+1, 1);
         for(int j = 0; j <= N; j++)
             f->Set(j, 0, svalues != nullptr ? svalues[i] : 1.0);
         yf[seeds[i]] = f;
     }
 
     // Compute residual for non-zeros. Put in queue if above threshold.
-    typedef std::pair<bool, elem::Matrix<T>*> respair_t;
+    typedef std::pair<bool, El::Matrix<T>*> respair_t;
     std::unordered_map<int, respair_t> res;
     std::queue<int> violating;
 
@@ -57,9 +57,9 @@ void LocalGraphDiffusion(const GraphType& G,
     for (int i = 0; i < nseeds; i++) {
         int node = seeds[i];
 
-        elem::Matrix<T> *r = new elem::Matrix<T>(N+1, 1);
+        El::Matrix<T> *r = new El::Matrix<T>(N+1, 1);
         *r = *yf[node];
-        elem::Scal(-alpha, *r);
+        El::Scale(-alpha, *r);
 
         int deg = G.degree(node);
         const int *adjnodes = G.adjanct(node);
@@ -67,10 +67,10 @@ void LocalGraphDiffusion(const GraphType& G,
             int onode = adjnodes[l];
             int odeg = G.degree(onode);
             if (yf.count(onode))
-                elem::Axpy(alpha / odeg, *yf[onode], *r);
+                El::Axpy(alpha / odeg, *yf[onode], *r);
         }
 
-        bool inq = elem::InfinityNorm(*r) > C * deg;
+        bool inq = El::InfinityNorm(*r) > C * deg;
         res[node] = respair_t(inq, r);
         if (inq)
             violating.push(node);
@@ -87,10 +87,10 @@ void LocalGraphDiffusion(const GraphType& G,
             if (res.count(node))
                 continue;
 
-            elem::Matrix<T> *r = new elem::Matrix<T>(N+1, 1);
+            El::Matrix<T> *r = new El::Matrix<T>(N+1, 1);
             if (yf.count(node)) {
                 *r = *yf[node];
-                elem::Scal(-alpha, *r);
+                El::Scale(-alpha, *r);
             } else
                 for(int j = 0; j <= N; j++)
                     r->Set(j, 0, 0.0);
@@ -101,10 +101,10 @@ void LocalGraphDiffusion(const GraphType& G,
                 int onode = adjnodes[l];
                 int odeg = G.degree(onode);
                 if (yf.count(onode))
-                    elem::Axpy(alpha / odeg, *yf[onode], *r);
+                    El::Axpy(alpha / odeg, *yf[onode], *r);
             }
 
-            bool inq = elem::InfinityNorm(*r) > C * deg;
+            bool inq = El::InfinityNorm(*r) > C * deg;
             res[node] = respair_t(inq, r);
             if (inq)
                 violating.push(node);
@@ -112,26 +112,26 @@ void LocalGraphDiffusion(const GraphType& G,
     }
 
     int it = 1;
-    elem::Matrix<T> dy(N, 1);
-    elem::Matrix<T> y1, r1;
+    El::Matrix<T> dy(N, 1);
+    El::Matrix<T> y1, r1;
     while(!violating.empty()) {
         int node = violating.front();
         violating.pop();
 
         // If not in yf then it is the zero function
         if (yf.count(node) == 0) {
-            elem::Matrix<T> *ynew = new elem::Matrix<T>(N+1, 1);
-            elem::MakeZeros(*ynew);
+            El::Matrix<T> *ynew = new El::Matrix<T>(N+1, 1);
+            El::Zero(*ynew);
             yf[node] = ynew;
         }
 
         // Solve locally, and update yf[node].
         respair_t& rpair = res[node];
-        elem::Matrix<T>& r = *(rpair.second);
-        elem::Gemv(elem::NORMAL, 1.0, Z, r, 0.0, dy);
-        elem::View(y1, *yf[node], 0, 0, N, 1);
-        elem::Axpy(1.0, dy, y1);
-        elem::Gemv(elem::NORMAL, -1.0, D1, dy, 1.0, r);
+        El::Matrix<T>& r = *(rpair.second);
+        El::Gemv(El::NORMAL, 1.0, Z, r, 0.0, dy);
+        El::View(y1, *yf[node], 0, 0, N, 1);
+        El::Axpy(1.0, dy, y1);
+        El::Gemv(El::NORMAL, -1.0, D1, dy, 1.0, r);
         rpair.first = false;
 
         // Update residuals
@@ -140,18 +140,18 @@ void LocalGraphDiffusion(const GraphType& G,
         for (int l = 0; l < deg; l++) {
             int onode = adjnodes[l];
             if (res.count(onode) == 0) {
-                elem::Matrix<T> *rnew = new elem::Matrix<T>(N+1, 1);
-                elem::MakeZeros(*rnew);
+                El::Matrix<T> *rnew = new El::Matrix<T>(N+1, 1);
+                El::Zero(*rnew);
                 res[onode] = respair_t(false, rnew);
             }
             respair_t& rpair1 = res[onode];
-            elem::View(r1, *(rpair1.second), 0, 0, N, 1);
-            elem::Axpy(alpha/deg, dy, r1);
+            El::View(r1, *(rpair1.second), 0, 0, N, 1);
+            El::Axpy(alpha/deg, dy, r1);
 
             // No need to check if already in queue.
             int odeg = G.degree(onode);
             if (!rpair1.first &&
-                elem::InfinityNorm(*(rpair1.second)) > C * odeg) {
+                El::InfinityNorm(*(rpair1.second)) > C * odeg) {
                 rpair1.first = true;
                 violating.push(onode);
             }

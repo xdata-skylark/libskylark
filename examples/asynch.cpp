@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include <elemental.hpp>
+#include <El.hpp>
 #include <boost/mpi.hpp>
 #include <boost/format.hpp>
 #include <skylark.hpp>
@@ -16,11 +16,11 @@ namespace skyutil = skylark::utility;
 
 int main(int argc, char** argv) {
 
-    elem::Initialize(argc, argv);
+    El::Initialize(argc, argv);
     skybase::context_t context(23234);
 
     skybase::sparse_matrix_t<double> A;
-    elem::Matrix<double> b;
+    El::Matrix<double> b;
 
     boost::mpi::timer timer;
 
@@ -34,10 +34,10 @@ int main(int argc, char** argv) {
     in.close();
     std::cout <<"took " << boost::format("%.2e") % timer.elapsed() << " sec\n";
 
-    elem::Matrix<double> x(b.Height(), 1);
+    El::Matrix<double> x(b.Height(), 1);
     std::cout << "Using AsyRGS... " << std::endl;
     timer.restart();
-    elem::MakeZeros(x);
+    El::Zero(x);
     skyalg::asy_iter_params_t asy_params;
     asy_params.tolerance = 1e-3;
     asy_params.syn_sweeps = 5;
@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
 
     std::cout << "Using CG... " << std::endl;
     timer.restart();
-    elem::MakeZeros(x);
+    El::Zero(x);
     skyalg::krylov_iter_params_t krylov_params;
     krylov_params.tolerance = 1e-3;
     krylov_params.res_print = 30;
@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
 
     std::cout << "Using FCG (high accuracy)... " << std::endl;
     timer.restart();
-    elem::MakeZeros(x);
+    El::Zero(x);
     asy_params.tolerance = 1e-8;
     asy_params.sweeps_lim = 2;
     asy_params.syn_sweeps = 0;

@@ -81,12 +81,12 @@ struct inplace_mat_precond_t : public inplace_precond_t<XType> {
 
     void apply(XType& X) const {
         XType Xin(X);
-        base::Gemm(elem::NORMAL, elem::NORMAL, 1.0, N, Xin, X);
+        base::Gemm(El::NORMAL, El::NORMAL, 1.0, N, Xin, X);
     }
 
     void apply_adjoint(XType& X) const {
         XType Xin(X);
-        base::Gemm(elem::ADJOINT, elem::NORMAL, 1.0, N, Xin, X);
+        base::Gemm(El::ADJOINT, El::NORMAL, 1.0, N, Xin, X);
     }
 };
 
@@ -94,7 +94,7 @@ struct inplace_mat_precond_t : public inplace_precond_t<XType> {
  * A preconditioner that is the inverse of a given triangular matrix.
  */
 template<typename XType, typename RType,
-         elem::UpperOrLower UL, elem::UnitOrNonUnit D>
+         El::UpperOrLower UL, El::UnitOrNonUnit D>
 struct inplace_tri_inverse_precond_t : public inplace_precond_t<XType> {
     const RType& R;
 
@@ -103,11 +103,11 @@ struct inplace_tri_inverse_precond_t : public inplace_precond_t<XType> {
     bool is_id() const { return false; }
 
     void apply(XType& X) const {
-        base::Trsm(elem::LEFT, UL, elem::NORMAL, D, 1.0, R, X);
+        base::Trsm(El::LEFT, UL, El::NORMAL, D, 1.0, R, X);
     }
 
     void apply_adjoint(XType& X) const {
-        base::Trsm(elem::LEFT, UL, elem::ADJOINT, D, 1.0, R, X);
+        base::Trsm(El::LEFT, UL, El::ADJOINT, D, 1.0, R, X);
     }
 };
 

@@ -9,50 +9,51 @@
 namespace skylark { namespace base {
 
 template<typename T>
-inline void Gemv(elem::Orientation oA,
-    T alpha, const elem::Matrix<T>& A, const elem::Matrix<T>& x,
-    T beta, elem::Matrix<T>& y) {
-    elem::Gemv(oA, alpha, A, x, beta, y);
+inline void Gemv(El::Orientation oA,
+    T alpha, const El::Matrix<T>& A, const El::Matrix<T>& x,
+    T beta, El::Matrix<T>& y) {
+    El::Gemv(oA, alpha, A, x, beta, y);
 }
 
 template<typename T>
-inline void Gemv(elem::Orientation oA,
-    T alpha, const elem::Matrix<T>& A, const elem::Matrix<T>& x,
-    elem::Matrix<T>& y) {
-    elem::Gemv(oA, alpha, A, x, y);
+inline void Gemv(El::Orientation oA,
+    T alpha, const El::Matrix<T>& A, const El::Matrix<T>& x,
+    El::Matrix<T>& y) {
+    El::Gemv(oA, alpha, A, x, y);
 }
 
 template<typename T>
-inline void Gemv(elem::Orientation oA,
-    T alpha, const elem::DistMatrix<T>& A, const elem::DistMatrix<T>& x,
-    T beta, elem::DistMatrix<T>& y) {
-    elem::Gemv(oA, alpha, A, x, beta, y);
+inline void Gemv(El::Orientation oA,
+    T alpha, const El::DistMatrix<T>& A, const El::DistMatrix<T>& x,
+    T beta, El::DistMatrix<T>& y) {
+    El::Gemv(oA, alpha, A, x, beta, y);
 }
 
 template<typename T>
-inline void Gemv(elem::Orientation oA,
-    T alpha, const elem::DistMatrix<T>& A, const elem::DistMatrix<T>& x,
-    elem::DistMatrix<T>& y) {
-    elem::Gemv(oA, alpha, A, x, y);
+inline void Gemv(El::Orientation oA,
+    T alpha, const El::DistMatrix<T>& A, const El::DistMatrix<T>& x,
+    El::DistMatrix<T>& y) {
+    El::Gemv(oA, alpha, A, x, y);
 }
 
 /**
- * The following combinations is not offered by Elemental, but is useful for us.
+ * The following combinations is not offered by Elental, but is useful for us.
  * We implement it partially.
  */
 
 template<typename T>
-inline void Gemv(elem::Orientation oA,
-    T alpha, const elem::DistMatrix<T, elem::VC, elem::STAR>& A,
-    const elem::DistMatrix<T, elem::VC, elem::STAR>& x,
-    T beta, elem::DistMatrix<T, elem::STAR, elem::STAR>& y) {
+inline void Gemv(El::Orientation oA,
+    T alpha, const El::DistMatrix<T, El::VC, El::STAR>& A,
+    const El::DistMatrix<T, El::VC, El::STAR>& x,
+    T beta, El::DistMatrix<T, El::STAR, El::STAR>& y) {
     // TODO verify sizes etc.
     // TODO verify matching grids.
 
-    if (oA == elem::TRANSPOSE) {
-        boost::mpi::communicator comm(y.Grid().Comm(), boost::mpi::comm_attach);
-        elem::Matrix<T> ylocal(y.Matrix());
-        elem::Gemv(elem::TRANSPOSE,
+    if (oA == El::TRANSPOSE) {
+        boost::mpi::communicator comm(y.Grid().Comm().comm,
+            boost::mpi::comm_attach);
+        El::Matrix<T> ylocal(y.Matrix());
+        El::Gemv(El::TRANSPOSE,
             alpha, A.LockedMatrix(), x.LockedMatrix(),
             beta / T(comm.size()), ylocal);
         boost::mpi::all_reduce(comm,
@@ -64,25 +65,25 @@ inline void Gemv(elem::Orientation oA,
 }
 
 template<typename T>
-inline void Gemv(elem::Orientation oA,
-    T alpha, const elem::DistMatrix<T, elem::VC, elem::STAR>& A,
-    const elem::DistMatrix<T, elem::VC, elem::STAR>& x,
-    elem::DistMatrix<T, elem::STAR, elem::STAR>& y) {
+inline void Gemv(El::Orientation oA,
+    T alpha, const El::DistMatrix<T, El::VC, El::STAR>& A,
+    const El::DistMatrix<T, El::VC, El::STAR>& x,
+    El::DistMatrix<T, El::STAR, El::STAR>& y) {
 
-    int y_height = (oA == elem::NORMAL ? A.Height() : A.Width());
-    elem::Zeros(y, y_height, 1);
+    int y_height = (oA == El::NORMAL ? A.Height() : A.Width());
+    El::Zeros(y, y_height, 1);
     base::Gemv(oA, alpha, A, x, T(0), y);
 }
 
 template<typename T>
-inline void Gemv(elem::Orientation oA,
-    T alpha, const elem::DistMatrix<T, elem::VC, elem::STAR>& A,
-    const elem::DistMatrix<T, elem::STAR, elem::STAR>& x,
-    T beta, elem::DistMatrix<T, elem::VC, elem::STAR>& y) {
+inline void Gemv(El::Orientation oA,
+    T alpha, const El::DistMatrix<T, El::VC, El::STAR>& A,
+    const El::DistMatrix<T, El::STAR, El::STAR>& x,
+    T beta, El::DistMatrix<T, El::VC, El::STAR>& y) {
     // TODO verify sizes etc.
 
-    if (oA == elem::NORMAL) {
-        elem::Gemv(elem::NORMAL,
+    if (oA == El::NORMAL) {
+        El::Gemv(El::NORMAL,
             alpha, A.LockedMatrix(), x.LockedMatrix(),
             beta, y.Matrix());
     } else {
@@ -91,20 +92,20 @@ inline void Gemv(elem::Orientation oA,
 }
 
 template<typename T>
-inline void Gemv(elem::Orientation oA,
-    T alpha, const elem::DistMatrix<T, elem::VC, elem::STAR>& A,
-    const elem::DistMatrix<T, elem::STAR, elem::STAR>& x,
-    elem::DistMatrix<T, elem::VC, elem::STAR>& y) {
+inline void Gemv(El::Orientation oA,
+    T alpha, const El::DistMatrix<T, El::VC, El::STAR>& A,
+    const El::DistMatrix<T, El::STAR, El::STAR>& x,
+    El::DistMatrix<T, El::VC, El::STAR>& y) {
 
-    int y_height = (oA == elem::NORMAL ? A.Height() : A.Width());
-    elem::Zeros(y, y_height, 1);
+    int y_height = (oA == El::NORMAL ? A.Height() : A.Width());
+    El::Zeros(y, y_height, 1);
     base::Gemv(oA, alpha, A, x, T(0), y);
 }
 
 template<typename T>
-inline void Gemv(elem::Orientation oA,
-    T alpha, const sparse_matrix_t<T>& A, const elem::Matrix<T>& x,
-    T beta, elem::Matrix<T>& y) {
+inline void Gemv(El::Orientation oA,
+    T alpha, const sparse_matrix_t<T>& A, const El::Matrix<T>& x,
+    T beta, El::Matrix<T>& y) {
     // TODO verify sizes etc.
 
     const int* indptr = A.indptr();
@@ -115,8 +116,8 @@ inline void Gemv(elem::Orientation oA,
 
     int n = A.width();
 
-    if (oA == elem::NORMAL) {
-        elem::Scal(beta, y);
+    if (oA == El::NORMAL) {
+        El::Scale(beta, y);
 
 #       if SKYLARK_HAVE_OPENMP
 #       pragma omp parallel for

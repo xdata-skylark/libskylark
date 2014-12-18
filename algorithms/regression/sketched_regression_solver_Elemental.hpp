@@ -2,7 +2,7 @@
 #define SKYLARK_SKETCHED_REGRESSION_SOLVER_ELEMENTAL_HPP
 
 #include <boost/mpi.hpp>
-#include <elemental.hpp>
+#include <El.hpp>
 
 #include "../../base/context.hpp"
 #include "regression_problem.hpp"
@@ -32,9 +32,9 @@ class sketched_regression_solver_t<
     RhsType,
     SolType,
     SketchedRegressionType,
-    elem::Matrix<
+    El::Matrix<
         typename utility::typer_t<InputType>::value_type >,
-    elem::Matrix<
+    El::Matrix<
         typename utility::typer_t<InputType>::value_type >,
     TransformType,
     ExactAlgTag> {
@@ -43,8 +43,8 @@ public:
 
     typedef typename utility::typer_t<InputType>::value_type value_type;
 
-    typedef elem::Matrix<value_type> sketch_type;
-    typedef elem::Matrix<value_type> sketch_rhs_type;
+    typedef El::Matrix<value_type> sketch_type;
+    typedef El::Matrix<value_type> sketch_rhs_type;
     typedef InputType matrix_type;
     typedef RhsType rhs_type;
     typedef SolType sol_type;
@@ -124,7 +124,7 @@ template <
     typename RhsType,
     typename SolType,
     typename SketchedRegressionType,
-    elem::Distribution CD, elem::Distribution RD,
+    El::Distribution CD, El::Distribution RD,
     template <typename, typename> class TransformType,
     typename ExactAlgTag>
 class sketched_regression_solver_t<
@@ -133,10 +133,10 @@ class sketched_regression_solver_t<
     RhsType,
     SolType,
     SketchedRegressionType,
-    elem::DistMatrix<
+    El::DistMatrix<
         typename utility::typer_t<InputType>::value_type,
         CD, RD >,
-   elem::DistMatrix<
+   El::DistMatrix<
         typename utility::typer_t<InputType>::value_type,
         CD, RD >,
     TransformType,
@@ -146,8 +146,8 @@ public:
 
     typedef typename utility::typer_t<InputType>::value_type value_type;
 
-    typedef elem::DistMatrix<value_type, CD, RD> sketch_type;
-    typedef elem::DistMatrix<value_type, CD, RD> sketch_rhs_type;
+    typedef El::DistMatrix<value_type, CD, RD> sketch_type;
+    typedef El::DistMatrix<value_type, CD, RD> sketch_rhs_type;
     typedef InputType matrix_type;
     typedef RhsType rhs_type;
     typedef SolType sol_type;

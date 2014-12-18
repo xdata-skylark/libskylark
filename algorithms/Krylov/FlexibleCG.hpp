@@ -69,7 +69,7 @@ int FlexibleCG(const MatrixType& A, const RhsType& B, SolType& X,
     scalar_cont_type ressqr(nrmb), beta(nrmb),  alpha(nrmb),
         malpha(nrmb), gamma(nrmb), mgamma(nrmb);
 
-    base::Gemm(elem::ADJOINT, elem::NORMAL, -1.0, A, X, 1.0, R);
+    base::Gemm(El::ADJOINT, El::NORMAL, -1.0, A, X, 1.0, R);
     base::ColumnNrm2(B, nrmb);
     double total_nrmb = 0.0;
     for(index_t i = 0; i < k; i++)
@@ -93,7 +93,7 @@ int FlexibleCG(const MatrixType& A, const RhsType& B, SolType& X,
             base::Axpy(mgamma, D[i], d);
         }
 
-        base::Gemm(elem::ADJOINT, elem::NORMAL, 1.0, A, d, l);
+        base::Gemm(El::ADJOINT, El::NORMAL, 1.0, A, d, l);
 
         base::ColumnDot(d, l, beta);
         base::ColumnDot(d, R, alpha);
@@ -104,8 +104,8 @@ int FlexibleCG(const MatrixType& A, const RhsType& B, SolType& X,
             malpha[i] = -alpha[i];
         }
 
-        base::DiagonalScale(elem::RIGHT, elem::NORMAL, beta, d);
-        base::DiagonalScale(elem::RIGHT, elem::NORMAL, beta, l);
+        base::DiagonalScale(El::RIGHT, El::NORMAL, beta, d);
+        base::DiagonalScale(El::RIGHT, El::NORMAL, beta, l);
 
         base::Axpy(alpha, d, X);
         base::Axpy(malpha, l, R);

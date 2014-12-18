@@ -16,7 +16,7 @@ namespace skylark { namespace utility { namespace io {
  */
 template<typename T>
 void ReadLIBSVM(const std::string& fname,
-    elem::Matrix<T>& X, elem::Matrix<T>& Y,
+    El::Matrix<T>& X, El::Matrix<T>& Y,
     int min_d = 0) {
 
     std::string line;
@@ -95,10 +95,10 @@ void ReadLIBSVM(const std::string& fname,
  * @param min_d minimum number of rows in the matrix.
  * @param blocksize blocksize for blocking of read.
  */
-template<typename T, elem::Distribution UX, elem::Distribution VX,
-         elem::Distribution UY, elem::Distribution VY>
+template<typename T, El::Distribution UX, El::Distribution VX,
+         El::Distribution UY, El::Distribution VY>
 void ReadLIBSVM(const std::string& fname,
-    elem::DistMatrix<T, UX, VX>& X, elem::DistMatrix<T, UY, VY>& Y,
+    El::DistMatrix<T, UX, VX>& X, El::DistMatrix<T, UY, VY>& Y,
     int min_d = 0, int blocksize = 10000) {
 
 
@@ -156,17 +156,17 @@ void ReadLIBSVM(const std::string& fname,
     X.Resize(d, n);
     Y.Resize(1, n);
 
-    elem::DistMatrix<T, elem::CIRC, elem::CIRC> XB(X.Grid()), YB(Y.Grid());
-    elem::DistMatrix<T, UX, VX> Xv(X.Grid());
-    elem::DistMatrix<T, UY, VY> Yv(Y.Grid());
+    El::DistMatrix<T, El::CIRC, El::CIRC> XB(X.Grid()), YB(Y.Grid());
+    El::DistMatrix<T, UX, VX> Xv(X.Grid());
+    El::DistMatrix<T, UY, VY> Yv(Y.Grid());
     for(int i=0; i<numblocks+1; i++) {
         if (i==numblocks)
             block = leftover;
         if (block==0)
             break;
 
-        elem::Zeros(XB, d, block);
-        elem::Zeros(YB, 1, block);
+        El::Zeros(XB, d, block);
+        El::Zeros(YB, 1, block);
 
         if(rank==0) {
             T *Xdata = XB.Matrix().Buffer();
@@ -196,8 +196,8 @@ void ReadLIBSVM(const std::string& fname,
         }
 
         // The calls below should distribute the data to all the nodes.
-        elem::View(Xv, X, 0, i*blocksize, d, block);
-        elem::View(Yv, Y, 0, i*blocksize, 1, block);
+        El::View(Xv, X, 0, i*blocksize, d, block);
+        El::View(Yv, Y, 0, i*blocksize, 1, block);
 
         Xv = XB;
         Yv = YB;
@@ -217,7 +217,7 @@ void ReadLIBSVM(const std::string& fname,
  */
 template<typename T>
 void ReadLIBSVM(const std::string& fname,
-    base::sparse_matrix_t<T>& X, elem::Matrix<T>& Y, int min_d = 0) {
+    base::sparse_matrix_t<T>& X, El::Matrix<T>& Y, int min_d = 0) {
 
     std::string line;
     std::string token, val, ind;

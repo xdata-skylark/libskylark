@@ -54,14 +54,14 @@ static sketchc::transform_type_t str2transform_type(const char *str) {
 }
 
 // Just for shorter notation
-typedef elem::Matrix<double> Matrix;
-typedef elem::DistMatrix<double, elem::STAR, elem::STAR> SharedMatrix;
-typedef elem::DistMatrix<double, elem::CIRC, elem::CIRC> RootMatrix;
-typedef elem::DistMatrix<double> DistMatrix;
-typedef elem::DistMatrix<double, elem::VR, elem::STAR> DistMatrix_VR_STAR;
-typedef elem::DistMatrix<double, elem::VC, elem::STAR> DistMatrix_VC_STAR;
-typedef elem::DistMatrix<double, elem::STAR, elem::VR> DistMatrix_STAR_VR;
-typedef elem::DistMatrix<double, elem::STAR, elem::VC> DistMatrix_STAR_VC;
+typedef El::Matrix<double> Matrix;
+typedef El::DistMatrix<double, El::STAR, El::STAR> SharedMatrix;
+typedef El::DistMatrix<double, El::CIRC, El::CIRC> RootMatrix;
+typedef El::DistMatrix<double> DistMatrix;
+typedef El::DistMatrix<double, El::VR, El::STAR> DistMatrix_VR_STAR;
+typedef El::DistMatrix<double, El::VC, El::STAR> DistMatrix_VC_STAR;
+typedef El::DistMatrix<double, El::STAR, El::VR> DistMatrix_STAR_VR;
+typedef El::DistMatrix<double, El::STAR, El::VC> DistMatrix_STAR_VC;
 typedef base::sparse_matrix_t<double> SparseMatrix;
 #ifdef SKYLARK_HAVE_COMBBLAS
 typedef SpDCCols< size_t, double > col_t;

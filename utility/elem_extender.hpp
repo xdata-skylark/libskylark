@@ -1,7 +1,7 @@
 #ifndef SKYLARK_ELEM_EXTENDER_HPP
 #define SKYLARK_ELEM_EXTENDER_HPP
 
-#include <elemental.hpp>
+#include <El.hpp>
 
 #include "typer.hpp"
 namespace skylark { namespace utility {
@@ -20,7 +20,7 @@ struct elem_extender_t : public ET {
     // will be added as neccessary.
     elem_extender_t(const ET& other) : ET(other) {  }
     elem_extender_t(const ET&& other) : ET(other) {  }
-    elem_extender_t(int m, int n, const elem::Grid& grid=elem::DefaultGrid(),
+    elem_extender_t(int m, int n, const El::Grid& grid=El::DefaultGrid(),
         int root=0) : ET(m, n, grid, root) { }
 
 private:

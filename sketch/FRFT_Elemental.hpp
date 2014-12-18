@@ -8,19 +8,19 @@ namespace sketch {
 
 /**
  * Specialization local input (sparse of dense), local output.
- * InputType should either be elem::Matrix, or base:spare_matrix_t.
+ * InputType should either be El::Matrix, or base:spare_matrix_t.
  */
 template <typename ValueType,
           template <typename> class InputType>
 struct FastRFT_t <
     InputType<ValueType>,
-    elem::Matrix<ValueType> > :
+    El::Matrix<ValueType> > :
         public FastRFT_data_t {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
     typedef InputType<value_type> matrix_type;
-    typedef elem::Matrix<value_type> output_matrix_type;
+    typedef El::Matrix<value_type> output_matrix_type;
     typedef FastRFT_data_t data_type;
 
 public:
@@ -84,7 +84,7 @@ private:
         double *ac = Ac.Buffer();
 
         output_matrix_type Acv;
-        elem::View(Acv, Ac, 0, 0, data_type::_N, 1);
+        El::View(Acv, Ac, 0, 0, data_type::_N, 1);
 
         double *sa = sketch_of_A.Buffer();
         int ldsa = sketch_of_A.LDim();
@@ -117,16 +117,16 @@ private:
 
                 W = Ac;
 
-                elem::DiagonalScale(elem::LEFT, elem::NORMAL, B, W);
+                El::DiagonalScale(El::LEFT, El::NORMAL, B, W);
                 _fut.apply(W, tag);
                 for(int l = 0; l < data_type::_NB - 1; l++) {
                     int idx1 = data_type::_NB - 1 - l;
                     int idx2 = data_type::P[i * (data_type::_NB - 1) + l];
                     std::swap(w[idx1], w[idx2]);
                 }
-                elem::DiagonalScale(elem::LEFT, elem::NORMAL, G, W);
+                El::DiagonalScale(El::LEFT, El::NORMAL, G, W);
                 _fut.apply(W, tag);
-                elem::DiagonalScale(elem::LEFT, elem::NORMAL, Sm, W);
+                El::DiagonalScale(El::LEFT, El::NORMAL, Sm, W);
 
                 double *sac = sa + ldsa * c;
                 for(int l = s; l < e; l++) {
@@ -190,7 +190,7 @@ private:
                 Sm.Set(j, 0, scal * data_type::Sm[i * data_type::_N + j]);
             }
 
-            elem::DiagonalScale(elem::RIGHT, elem::NORMAL, B, W);
+            El::DiagonalScale(El::RIGHT, El::NORMAL, B, W);
 
             _fut.apply(W, tag);
 
@@ -203,18 +203,18 @@ private:
                     std::swap(w[idx1], w[idx2]);
                 }
 
-            elem::DiagonalScale(elem::RIGHT, elem::NORMAL, G, W);
+            El::DiagonalScale(El::RIGHT, El::NORMAL, G, W);
 
             _fut.apply(W, tag);
 
-            elem::DiagonalScale(elem::RIGHT, elem::NORMAL, Sm, W);
+            El::DiagonalScale(El::RIGHT, El::NORMAL, Sm, W);
 
             // Copy that part to the output
             output_matrix_type view_sketch_of_A;
-            elem::View(view_sketch_of_A, sketch_of_A, 0, s,
+            El::View(view_sketch_of_A, sketch_of_A, 0, s,
                 base::Height(A), e - s);
             output_matrix_type view_W;
-            elem::View(view_W, W, 0, 0, base::Height(A), e - s);
+            El::View(view_W, W, 0, 0, base::Height(A), e - s);
             view_sketch_of_A = view_W;
         }
 
@@ -258,14 +258,14 @@ private:
  */
 template <typename ValueType>
 struct FastRFT_t <
-    elem::DistMatrix<ValueType, elem::STAR, elem::STAR>,
-    elem::DistMatrix<ValueType, elem::STAR, elem::STAR> > :
+    El::DistMatrix<ValueType, El::STAR, El::STAR>,
+    El::DistMatrix<ValueType, El::STAR, El::STAR> > :
         public FastRFT_data_t {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
-    typedef elem::DistMatrix<value_type, elem::STAR, elem::STAR> matrix_type;
-    typedef elem::DistMatrix<value_type, elem::STAR, elem::STAR> output_matrix_type;
+    typedef El::DistMatrix<value_type, El::STAR, El::STAR> matrix_type;
+    typedef El::DistMatrix<value_type, El::STAR, El::STAR> output_matrix_type;
     typedef FastRFT_data_t data_type;
 
 public:
@@ -302,7 +302,7 @@ public:
 
 private:
 
-    const FastRFT_t<elem::Matrix<value_type>, elem::Matrix<value_type> > _local;
+    const FastRFT_t<El::Matrix<value_type>, El::Matrix<value_type> > _local;
 };
 
 /**
@@ -310,14 +310,14 @@ private:
  */
 template <typename ValueType>
 struct FastRFT_t <
-    elem::DistMatrix<ValueType, elem::CIRC, elem::CIRC>,
-    elem::DistMatrix<ValueType, elem::CIRC, elem::CIRC> > :
+    El::DistMatrix<ValueType, El::CIRC, El::CIRC>,
+    El::DistMatrix<ValueType, El::CIRC, El::CIRC> > :
         public FastRFT_data_t {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
-    typedef elem::DistMatrix<value_type, elem::CIRC, elem::CIRC> matrix_type;
-    typedef elem::DistMatrix<value_type, elem::CIRC, elem::CIRC> output_matrix_type;
+    typedef El::DistMatrix<value_type, El::CIRC, El::CIRC> matrix_type;
+    typedef El::DistMatrix<value_type, El::CIRC, El::CIRC> output_matrix_type;
     typedef FastRFT_data_t data_type;
 
 public:
@@ -357,22 +357,22 @@ public:
 
 private:
 
-    const FastRFT_t<elem::Matrix<value_type>, elem::Matrix<value_type> > _local;
+    const FastRFT_t<El::Matrix<value_type>, El::Matrix<value_type> > _local;
 };
 
 /**
  * Specialization [VC/VR, STAR] to same distribution.
  */
-template <typename ValueType, elem::Distribution ColDist>
+template <typename ValueType, El::Distribution ColDist>
 struct FastRFT_t <
-    elem::DistMatrix<ValueType, ColDist, elem::STAR>,
-    elem::DistMatrix<ValueType, ColDist, elem::STAR> > :
+    El::DistMatrix<ValueType, ColDist, El::STAR>,
+    El::DistMatrix<ValueType, ColDist, El::STAR> > :
         public FastRFT_data_t {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
-    typedef elem::DistMatrix<value_type, ColDist, elem::STAR> matrix_type;
-    typedef elem::DistMatrix<value_type, ColDist, elem::STAR> output_matrix_type;
+    typedef El::DistMatrix<value_type, ColDist, El::STAR> matrix_type;
+    typedef El::DistMatrix<value_type, ColDist, El::STAR> output_matrix_type;
     typedef FastRFT_data_t data_type;
 
 public:
@@ -404,8 +404,8 @@ public:
                 output_matrix_type& sketch_of_A,
                 Dimension dimension) const {
         switch (ColDist) {
-        case elem::VR:
-        case elem::VC:
+        case El::VR:
+        case El::VC:
             try {
                 apply_impl_vdist (A, sketch_of_A, dimension);
             } catch (std::logic_error e) {
@@ -439,12 +439,12 @@ private:
         // Naive implementation: tranpose and uses the columnwise implementation
         // Can we do better?
         matrix_type A_t(A.Grid());
-        elem::Transpose(A, A_t);
+        El::Transpose(A, A_t);
         output_matrix_type sketch_of_A_t(sketch_of_A.Width(),
             sketch_of_A.Height(), sketch_of_A.Grid());
         apply_impl_vdist(A_t, sketch_of_A_t,
             skylark::sketch::rowwise_tag());
-        elem::Transpose(sketch_of_A_t, sketch_of_A);
+        El::Transpose(sketch_of_A_t, sketch_of_A);
     }
 
     /**
@@ -461,22 +461,22 @@ private:
 
 private:
 
-    const FastRFT_t<elem::Matrix<value_type>, elem::Matrix<value_type> > _local;
+    const FastRFT_t<El::Matrix<value_type>, El::Matrix<value_type> > _local;
 };
 
 /**
  * Specialization [STAR, VC/VR] to same distribution.
  */
-template <typename ValueType, elem::Distribution RowDist>
+template <typename ValueType, El::Distribution RowDist>
 struct FastRFT_t <
-    elem::DistMatrix<ValueType, elem::STAR, RowDist>,
-    elem::DistMatrix<ValueType, elem::STAR, RowDist> > :
+    El::DistMatrix<ValueType, El::STAR, RowDist>,
+    El::DistMatrix<ValueType, El::STAR, RowDist> > :
         public FastRFT_data_t {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
-    typedef elem::DistMatrix<value_type, elem::STAR, RowDist> matrix_type;
-    typedef elem::DistMatrix<value_type, elem::STAR, RowDist> output_matrix_type;
+    typedef El::DistMatrix<value_type, El::STAR, RowDist> matrix_type;
+    typedef El::DistMatrix<value_type, El::STAR, RowDist> output_matrix_type;
     typedef FastRFT_data_t data_type;
 
 public:
@@ -508,8 +508,8 @@ public:
                 output_matrix_type& sketch_of_A,
                 Dimension dimension) const {
         switch (RowDist) {
-        case elem::VR:
-        case elem::VC:
+        case El::VR:
+        case El::VC:
             try {
                 apply_impl_vdist (A, sketch_of_A, dimension);
             } catch (std::logic_error e) {
@@ -556,17 +556,17 @@ private:
         // Naive implementation: tranpose and uses the columnwise implementation
         // Can we do better?
         matrix_type A_t(A.Grid());
-        elem::Transpose(A, A_t);
+        El::Transpose(A, A_t);
         output_matrix_type sketch_of_A_t(sketch_of_A.Width(),
             sketch_of_A.Height(), sketch_of_A.Grid());
         apply_impl_vdist(A_t, sketch_of_A_t,
             skylark::sketch::rowwise_tag());
-        elem::Transpose(sketch_of_A_t, sketch_of_A);
+        El::Transpose(sketch_of_A_t, sketch_of_A);
     }
 
 private:
 
-    const FastRFT_t<elem::Matrix<value_type>, elem::Matrix<value_type> > _local;
+    const FastRFT_t<El::Matrix<value_type>, El::Matrix<value_type> > _local;
 };
 
 #endif // SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT

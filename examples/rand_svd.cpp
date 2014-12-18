@@ -1,6 +1,6 @@
 #include <skylark.hpp>
 #include <boost/mpi.hpp>
-#include <elemental.hpp>
+#include <El.hpp>
 #include <iostream>
 #include "../base/QR.hpp"
 #include <cfloat>
@@ -8,10 +8,10 @@
 
 
 /** Aliases for matrix types */
-typedef elem::DistMatrix<double> dist_matrix_t;
-typedef elem::Matrix<double> matrix_t;
-typedef elem::DistMatrix<double, elem::VR, elem::STAR> vr_star_dist_matrix_t;
-typedef elem::DistMatrix<double, elem::STAR, elem::STAR> star_star_matrix_t;
+typedef El::DistMatrix<double> dist_matrix_t;
+typedef El::Matrix<double> matrix_t;
+typedef El::DistMatrix<double, El::VR, El::STAR> vr_star_dist_matrix_t;
+typedef El::DistMatrix<double, El::STAR, El::STAR> star_star_matrix_t;
 typedef skylark::sketch::JLT_t<dist_matrix_t, dist_matrix_t> sketch_transform_t;
 
 using namespace std;
@@ -26,25 +26,25 @@ int main(int argc, char* argv[]) {
     boost::mpi::environment env(argc, argv);
     boost::mpi::communicator world;
     MPI_Comm mpi_world(world);
-    elem::Grid grid(mpi_world);
+    El::Grid grid(mpi_world);
 
     /** Initialize Elemental */
-    elem::Initialize (argc, argv);
+    El::Initialize (argc, argv);
 
     /** Initialize context */
     skylark::base::context_t context(0);
 
     /** Declare matrices */
     dist_matrix_t A(grid), B(grid), C(grid);
-    elem::Uniform(B, 5000, 100);
-    skylark::base::qr::Explicit(B);
+    El::Uniform(B, 5000, 100);
+    skylark::base::qr::ExplicitUnitary(B);
 
-    elem::Uniform(C, 100, 100);
-    skylark::base::qr::Explicit(C);
+    El::Uniform(C, 100, 100);
+    skylark::base::qr::ExplicitUnitary(C);
 
     //star_star_matrix_t S(100,100);
     dist_matrix_t S(100,100);
-    elem::Zero(S);
+    El::Zero(S);
 	
     vector<double> diag(100);
 
@@ -54,19 +54,19 @@ int main(int argc, char* argv[]) {
         std::cout << exp(-j) *100 << "\n";
     }
 
-    elem::Diagonal(S, diag);
+    El::Diagonal(S, diag);
     dist_matrix_t tmp(grid);
 
-    elem::Gemm(elem::NORMAL, elem::NORMAL, double(1), B, S, tmp);
-    elem::Gemm(elem::NORMAL, elem::ADJOINT, double(1), tmp, C, A);
+    El::Gemm(El::NORMAL, El::NORMAL, double(1), B, S, tmp);
+    El::Gemm(El::NORMAL, El::ADJOINT, double(1), tmp, C, A);
 
     dist_matrix_t U(grid), V(grid);
     vr_star_dist_matrix_t S1;
 
     dist_matrix_t A1(A);
-    elem::SVD(A1,S1,V);
+    El::SVD(A1,S1,V);
 
-    elem::Print(S1, "S1");
+    El::Print(S1, "S1");
 
     /** Declare matrices */
     dist_matrix_t A2(A);
@@ -81,8 +81,8 @@ int main(int argc, char* argv[]) {
     skylark::nla::randsvd_t<skylark::sketch::JLT_t> rand_svd;
     rand_svd(A2, target_rank, U1, S2, V1, params, context);
 
-    elem::Print(S2, "S2");
+    El::Print(S2, "S2");
 
-    elem::Finalize();
+    El::Finalize();
     return 0;
 }

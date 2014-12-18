@@ -1,7 +1,7 @@
 #ifndef SKYLARK_ACCELERATED_LINEARL2_REGRESSION_SOLVER_ELEMENTAL_HPP
 #define SKYLARK_ACCELERATED_LINEARL2_REGRESSION_SOLVER_ELEMENTAL_HPP
 
-#include <elemental.hpp>
+#include <El.hpp>
 
 #include "regression_problem.hpp"
 
@@ -12,34 +12,34 @@ namespace flinl2_internal {
 
 extern "C" {
 
-void BLAS(dtrcon)(const char* norm, const char* uplo, const char* diag,
+void EL_BLAS(dtrcon)(const char* norm, const char* uplo, const char* diag,
     const int* n, const double* A, const int *lda, double *rcond,
     double *work, int *iwork, int *info);
 
-void BLAS(strcon)(const char* norm, const char* uplo, const char* diag,
+void EL_BLAS(strcon)(const char* norm, const char* uplo, const char* diag,
     const int* n, const float* A, const int *lda, float *rcond,
     float *work, int *iwork, int *info);
 
 }
 
-inline double utcondest(const elem::Matrix<double>& A) {
+inline double utcondest(const El::Matrix<double>& A) {
     int n = A.Height(), ld = A.LDim(), info;
     double *work = new double[3 * n];
     int *iwork = new int[n];
     double rcond;
-    BLAS(dtrcon)("1", "U", "N", &n, A.LockedBuffer(), &ld, &rcond, work,
+    EL_BLAS(dtrcon)("1", "U", "N", &n, A.LockedBuffer(), &ld, &rcond, work,
         iwork, &info); // TODO check info
     delete[] work;
     delete[] iwork;
     return 1/rcond;
 }
 
-inline double utcondest(const elem::Matrix<float>& A) {
+inline double utcondest(const El::Matrix<float>& A) {
     int n = A.Height(), ld = A.LDim(), info;
     float *work  = new float[3 * n];
     int *iwork = new int[n];
     float rcond;
-    BLAS(strcon)("1", "U", "N", &n, A.LockedBuffer(), &ld, &rcond, work,
+    EL_BLAS(strcon)("1", "U", "N", &n, A.LockedBuffer(), &ld, &rcond, work,
         iwork, &info);  // TODO check info
     delete[] work;
     delete[] iwork;
@@ -47,17 +47,17 @@ inline double utcondest(const elem::Matrix<float>& A) {
 }
 
 template<typename T>
-inline double utcondest(const elem::DistMatrix<T, elem::STAR, elem::STAR>& A) {
+inline double utcondest(const El::DistMatrix<T, El::STAR, El::STAR>& A) {
     return utcondest(A.LockedMatrix());
 }
 
 template<typename SolType, typename SketchType, typename PrecondType>
 double build_precond(SketchType& SA,
     PrecondType& R, algorithms::inplace_precond_t<SolType> *&P, qr_precond_tag) {
-    elem::qr::Explicit(SA.Matrix(), R.Matrix()); // TODO
+    El::qr::Explicit(SA.Matrix(), R.Matrix()); // TODO
     P =
         new algorithms::inplace_tri_inverse_precond_t<SolType, PrecondType,
-                                       elem::UPPER, elem::NON_UNIT>(R);
+                                       El::UPPER, El::NON_UNIT>(R);
     return utcondest(R);
 }
 
@@ -68,10 +68,10 @@ double build_precond(SketchType& SA,
     int n = SA.Width();
     PrecondType s(SA);
     s.Resize(n, 1);
-    elem::SVD(SA.Matrix(), s.Matrix(), V.Matrix()); // TODO
+    El::SVD(SA.Matrix(), s.Matrix(), V.Matrix()); // TODO
     for(int i = 0; i < n; i++)
         s.Set(i, 0, 1 / s.Get(i, 0));
-    base::DiagonalScale(elem::RIGHT, elem::NORMAL, s, V);
+    base::DiagonalScale(El::RIGHT, El::NORMAL, s, V);
     P =
         new algorithms::inplace_mat_precond_t<SolType, PrecondType>(V);
     return s.Get(0,0) / s.Get(n-1, 0);
@@ -80,30 +80,30 @@ double build_precond(SketchType& SA,
 }  // namespace flinl2_internal
 
 /// Specialization for simplified Blendenpik algorithm
-template <typename ValueType, elem::Distribution VD,
+template <typename ValueType, El::Distribution VD,
           template <typename, typename> class TransformType,
           typename PrecondTag>
 class accelerated_regression_solver_t<
-    regression_problem_t<elem::DistMatrix<ValueType, VD, elem::STAR>,
+    regression_problem_t<El::DistMatrix<ValueType, VD, El::STAR>,
                          linear_tag, l2_tag, no_reg_tag>,
-    elem::DistMatrix<ValueType, VD, elem::STAR>,
-    elem::DistMatrix<ValueType, elem::STAR, elem::STAR>,
+    El::DistMatrix<ValueType, VD, El::STAR>,
+    El::DistMatrix<ValueType, El::STAR, El::STAR>,
     simplified_blendenpik_tag<TransformType, PrecondTag> > {
 
 public:
 
     typedef ValueType value_type;
 
-    typedef elem::DistMatrix<ValueType, VD, elem::STAR> matrix_type;
-    typedef elem::DistMatrix<ValueType, VD, elem::STAR> rhs_type;
-    typedef elem::DistMatrix<ValueType, elem::STAR, elem::STAR> sol_type;
+    typedef El::DistMatrix<ValueType, VD, El::STAR> matrix_type;
+    typedef El::DistMatrix<ValueType, VD, El::STAR> rhs_type;
+    typedef El::DistMatrix<ValueType, El::STAR, El::STAR> sol_type;
 
     typedef regression_problem_t<matrix_type,
                                  linear_tag, l2_tag, no_reg_tag> problem_type;
 
 private:
 
-    typedef elem::DistMatrix<ValueType, elem::STAR, elem::STAR> precond_type;
+    typedef El::DistMatrix<ValueType, El::STAR, El::STAR> precond_type;
     typedef precond_type sketch_type;
     // The assumption is that the sketch is not much bigger than the
     // preconditioner, so we should use the same matrix distribution.
@@ -145,29 +145,29 @@ public:
 };
 
 /// Specialization for Blendenpik algorithm
-template <typename ValueType, elem::Distribution VD,
+template <typename ValueType, El::Distribution VD,
           typename PrecondTag>
 class accelerated_regression_solver_t<
-    regression_problem_t<elem::DistMatrix<ValueType, VD, elem::STAR>,
+    regression_problem_t<El::DistMatrix<ValueType, VD, El::STAR>,
                          linear_tag, l2_tag, no_reg_tag>,
-    elem::DistMatrix<ValueType, VD, elem::STAR>,
-    elem::DistMatrix<ValueType, elem::STAR, elem::STAR>,
+    El::DistMatrix<ValueType, VD, El::STAR>,
+    El::DistMatrix<ValueType, El::STAR, El::STAR>,
     blendenpik_tag<PrecondTag> > {
 
 public:
 
     typedef ValueType value_type;
 
-    typedef elem::DistMatrix<ValueType, VD, elem::STAR> matrix_type;
-    typedef elem::DistMatrix<ValueType, VD, elem::STAR> rhs_type;
-    typedef elem::DistMatrix<ValueType, elem::STAR, elem::STAR> sol_type;
+    typedef El::DistMatrix<ValueType, VD, El::STAR> matrix_type;
+    typedef El::DistMatrix<ValueType, VD, El::STAR> rhs_type;
+    typedef El::DistMatrix<ValueType, El::STAR, El::STAR> sol_type;
 
     typedef regression_problem_t<matrix_type,
                                  linear_tag, l2_tag, no_reg_tag> problem_type;
 
 private:
 
-    typedef elem::DistMatrix<ValueType, elem::STAR, elem::STAR> precond_type;
+    typedef El::DistMatrix<ValueType, El::STAR, El::STAR> precond_type;
     typedef precond_type sketch_type; 
     // The assumption is that the sketch is not much bigger than the
     // preconditioner, so we should use the same matrix distribution.
@@ -195,8 +195,8 @@ public:
         int t = 4 * _n;    // TODO parameter.
         double scale = std::sqrt((double)_m / (double)t);
 
-        elem::DistMatrix<ValueType, elem::STAR, VD> Ar(_A.Grid());
-        elem::DistMatrix<ValueType, elem::STAR, VD> dist_SA(t, _n, _A.Grid());
+        El::DistMatrix<ValueType, El::STAR, VD> Ar(_A.Grid());
+        El::DistMatrix<ValueType, El::STAR, VD> dist_SA(t, _n, _A.Grid());
         sketch_type SA(t, _n, _A.Grid());
         boost::random::uniform_int_distribution<int> distribution(0, _m- 1);
 
@@ -204,7 +204,7 @@ public:
         double condest = 0;
         int attempts = 0;
         do {
-            sketch::RFUT_t<elem::DistMatrix<ValueType, elem::STAR, VD>,
+            sketch::RFUT_t<El::DistMatrix<ValueType, El::STAR, VD>,
                            sketch::fft_futs<double>::DCT_t,
                            utility::rademacher_distribution_t<value_type> > 
                 F(_m, context);
@@ -248,29 +248,29 @@ public:
 };
 
 /// Specialization for LSRN algorithm.
-template <typename ValueType, elem::Distribution VD,
+template <typename ValueType, El::Distribution VD,
           typename PrecondTag>
 class accelerated_regression_solver_t<
-    regression_problem_t<elem::DistMatrix<ValueType, VD, elem::STAR>,
+    regression_problem_t<El::DistMatrix<ValueType, VD, El::STAR>,
                          linear_tag, l2_tag, no_reg_tag>,
-    elem::DistMatrix<ValueType, VD, elem::STAR>,
-    elem::DistMatrix<ValueType, elem::STAR, elem::STAR>,
+    El::DistMatrix<ValueType, VD, El::STAR>,
+    El::DistMatrix<ValueType, El::STAR, El::STAR>,
     lsrn_tag<PrecondTag> > {
 
 public:
 
     typedef ValueType value_type;
 
-    typedef elem::DistMatrix<ValueType, VD, elem::STAR> matrix_type;
-    typedef elem::DistMatrix<ValueType, VD, elem::STAR> rhs_type;
-    typedef elem::DistMatrix<ValueType, elem::STAR, elem::STAR> sol_type;
+    typedef El::DistMatrix<ValueType, VD, El::STAR> matrix_type;
+    typedef El::DistMatrix<ValueType, VD, El::STAR> rhs_type;
+    typedef El::DistMatrix<ValueType, El::STAR, El::STAR> sol_type;
 
     typedef regression_problem_t<matrix_type,
                                  linear_tag, l2_tag, no_reg_tag> problem_type;
 
 private:
 
-    typedef elem::DistMatrix<ValueType, elem::STAR, elem::STAR> precond_type;
+    typedef El::DistMatrix<ValueType, El::STAR, El::STAR> precond_type;
     typedef precond_type sketch_type;
     // The assumption is that the sketch is not much bigger than the
     // preconditioner, so we should use the same matrix distribution.

@@ -59,7 +59,7 @@ int CG(const MatrixType& A, const RhsType& B, SolType& X,
     bool isprecond = !(M.is_id() && std::is_same<sol_type, rhs_type>::value);
     sol_type &Z =  !isprecond ? R : *(new sol_type(X));
 
-    base::Gemm(elem::ADJOINT, elem::NORMAL, -1.0, A, X, 1.0, R);
+    base::Gemm(El::ADJOINT, El::NORMAL, -1.0, A, X, 1.0, R);
 
     scalar_cont_type
         nrmb(internal::scalar_cont_typer_t<rhs_type>::build_compatible(k, 1, B));
@@ -80,15 +80,15 @@ int CG(const MatrixType& A, const RhsType& B, SolType& X,
             rho = ressqr;
 
         if (itn == 0)
-            elem::MakeZeros(beta);
+            El::Zero(beta);
         else
             for(index_t i = 0; i < k; i++)
                 beta[i] = rho[i] / rho0[i];
 
-        base::DiagonalScale(elem::RIGHT, elem::NORMAL, beta, P);
+        base::DiagonalScale(El::RIGHT, El::NORMAL, beta, P);
         base::Axpy(1.0, Z, P);
 
-        base::Gemm(elem::ADJOINT, elem::NORMAL, 1.0, A, P, Q);
+        base::Gemm(El::ADJOINT, El::NORMAL, 1.0, A, P, Q);
 
         base::ColumnDot(P, Q, rhotmp);
         for(index_t i = 0; i < k; i++) {

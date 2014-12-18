@@ -1,7 +1,7 @@
 #ifndef SKYLARK_TYPER_HPP
 #define SKYLARK_TYPER_HPP
 
-#include <elemental.hpp>
+#include <El.hpp>
 #ifdef SKYLARK_HAVE_COMBBLAS
 #include <CombBLAS.h>
 #endif
@@ -17,13 +17,13 @@ struct typer_t {
 
 
 template<typename F>
-struct typer_t<elem::Matrix<F> > {
+struct typer_t<El::Matrix<F> > {
     typedef F value_type;
     typedef int index_type;
 };
 
-template<typename F, elem::Distribution CD, elem::Distribution RD>
-struct typer_t< elem::DistMatrix<F, CD, RD> > {
+template<typename F, El::Distribution CD, El::Distribution RD>
+struct typer_t< El::DistMatrix<F, CD, RD> > {
     typedef F value_type;
     typedef int index_type;
 };

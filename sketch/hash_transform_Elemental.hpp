@@ -12,8 +12,8 @@ template <typename ValueType,
           template <typename> class IdxDistributionType,
           template <typename> class ValueDistribution>
 struct hash_transform_t <
-    elem::Matrix<ValueType>,
-    elem::Matrix<ValueType>,
+    El::Matrix<ValueType>,
+    El::Matrix<ValueType>,
     IdxDistributionType,
     ValueDistribution > :
         public hash_transform_data_t<IdxDistributionType,
@@ -21,8 +21,8 @@ struct hash_transform_t <
 
     // Typedef matrix and distribution types so that we can use them regularly
     typedef ValueType value_type;
-    typedef elem::Matrix<value_type> matrix_type;
-    typedef elem::Matrix<value_type> output_matrix_type;
+    typedef El::Matrix<value_type> matrix_type;
+    typedef El::Matrix<value_type> output_matrix_type;
     typedef IdxDistributionType<size_t> idx_distribution_type;
     typedef ValueDistribution<value_type> value_distribution_type;
     typedef hash_transform_data_t<IdxDistributionType,
@@ -84,7 +84,7 @@ private:
         output_matrix_type& sketch_of_A,
         skylark::sketch::columnwise_tag) const {
 
-        elem::Zero(sketch_of_A);
+        El::Zero(sketch_of_A);
 
         // Construct Pi * A (directly on the fly)
         for (size_t row_idx = 0; row_idx < A.Height(); row_idx++) {
@@ -107,7 +107,7 @@ private:
         output_matrix_type& sketch_of_A,
         skylark::sketch::rowwise_tag) const {
 
-        elem::Zero(sketch_of_A);
+        El::Zero(sketch_of_A);
 
         // Construct Pi * A (directly on the fly)
         for (size_t col_idx = 0; col_idx < A.Width(); col_idx++) {
@@ -131,7 +131,7 @@ template <typename ValueType,
           template <typename> class ValueDistribution>
 struct hash_transform_t <
     base::sparse_matrix_t<ValueType>,
-    elem::Matrix<ValueType>,
+    El::Matrix<ValueType>,
     IdxDistributionType,
     ValueDistribution > :
         public hash_transform_data_t<IdxDistributionType,
@@ -140,7 +140,7 @@ struct hash_transform_t <
     // Typedef matrix and distribution types so that we can use them regularly
     typedef ValueType value_type;
     typedef base::sparse_matrix_t<ValueType> matrix_type;
-    typedef elem::Matrix<value_type> output_matrix_type;
+    typedef El::Matrix<value_type> output_matrix_type;
     typedef IdxDistributionType<size_t> idx_distribution_type;
     typedef ValueDistribution<value_type> value_distribution_type;
     typedef hash_transform_data_t<IdxDistributionType,
@@ -202,7 +202,7 @@ private:
         output_matrix_type& sketch_of_A,
         skylark::sketch::columnwise_tag) const {
 
-        elem::Zero(sketch_of_A);
+        El::Zero(sketch_of_A);
 
         double *SA = sketch_of_A.Buffer();
         int ld = sketch_of_A.LDim();
@@ -232,7 +232,7 @@ private:
         output_matrix_type& sketch_of_A,
         skylark::sketch::rowwise_tag) const {
 
-        elem::Zero(sketch_of_A);
+        El::Zero(sketch_of_A);
 
         double *SA = sketch_of_A.Buffer();
         int ld = sketch_of_A.LDim();
@@ -260,13 +260,13 @@ private:
  * Specialization: [Whatever, Whatever] -> [CIRC, CIRC]
  */
 template <typename ValueType,
-          elem::Distribution ColDist,
-          elem::Distribution RowDist,
+          El::Distribution ColDist,
+          El::Distribution RowDist,
           template <typename> class IdxDistributionType,
           template <typename> class ValueDistribution>
 struct hash_transform_t <
-    elem::DistMatrix<ValueType, ColDist, RowDist>,
-    elem::DistMatrix<ValueType, elem::CIRC, elem::CIRC>,
+    El::DistMatrix<ValueType, ColDist, RowDist>,
+    El::DistMatrix<ValueType, El::CIRC, El::CIRC>,
     IdxDistributionType,
     ValueDistribution > :
         public hash_transform_data_t<IdxDistributionType,
@@ -274,8 +274,8 @@ struct hash_transform_t <
 
     // Typedef matrix and distribution types so that we can use them regularly
     typedef ValueType value_type;
-    typedef elem::DistMatrix<value_type, ColDist, RowDist> matrix_type;
-    typedef elem::DistMatrix<value_type, elem::CIRC, elem::CIRC> output_matrix_type;
+    typedef El::DistMatrix<value_type, ColDist, RowDist> matrix_type;
+    typedef El::DistMatrix<value_type, El::CIRC, El::CIRC> output_matrix_type;
     typedef IdxDistributionType<size_t> idx_distribution_type;
     typedef ValueDistribution<value_type> value_distribution_type;
     typedef hash_transform_data_t<IdxDistributionType,
@@ -338,10 +338,10 @@ private:
         // For [*, VC/VR] you need only O(sd).
 
         // Create space to hold local part of SA
-        elem::Matrix<value_type> SA_part(this->_S, A.Width(), this->_S);
+        El::Matrix<value_type> SA_part(this->_S, A.Width(), this->_S);
 
         // Construct Pi * A (directly on the fly)
-        elem::Zero(SA_part);
+        El::Zero(SA_part);
         for (size_t j = 0; j < A.LocalHeight(); j++) {
 
             size_t row_idx = A.ColShift() + A.ColStride() * j;
@@ -387,10 +387,10 @@ private:
         // For [VC/VR, *] you need only O(sd).
 
         // Create space to hold local part of SA
-        elem::Matrix<value_type> SA_part(A.Height(), this->_S, A.Height());
+        El::Matrix<value_type> SA_part(A.Height(), this->_S, A.Height());
 
         // Construct A * Pi (directly on the fly)
-        elem::Zero(SA_part);
+        El::Zero(SA_part);
         for (size_t j = 0; j < A.LocalWidth(); ++j) {
 
             size_t col_idx = A.RowShift() + A.RowStride() * j;
@@ -426,27 +426,27 @@ private:
  * Specialization: [Whatever, Whatever] -> [STAR, STAR]
  */
 template <typename ValueType,
-          elem::Distribution ColDist,
-          elem::Distribution RowDist,
+          El::Distribution ColDist,
+          El::Distribution RowDist,
           template <typename> class IdxDistributionType,
           template <typename> class ValueDistribution>
 struct hash_transform_t <
-    elem::DistMatrix<ValueType, ColDist, RowDist>,
-    elem::DistMatrix<ValueType, elem::STAR, elem::STAR>,
+    El::DistMatrix<ValueType, ColDist, RowDist>,
+    El::DistMatrix<ValueType, El::STAR, El::STAR>,
     IdxDistributionType,
     ValueDistribution > :
         public hash_transform_data_t<IdxDistributionType,
                                      ValueDistribution>,
-        virtual public sketch_transform_t<elem::DistMatrix<ValueType, ColDist,
+        virtual public sketch_transform_t<El::DistMatrix<ValueType, ColDist,
                                                            RowDist>,
-                                          elem::DistMatrix<ValueType,
-                                                           elem::STAR,
-                                                           elem::STAR> >  {
+                                          El::DistMatrix<ValueType,
+                                                           El::STAR,
+                                                           El::STAR> >  {
 
     // Typedef matrix and distribution types so that we can use them regularly
     typedef ValueType value_type;
-    typedef elem::DistMatrix<value_type, ColDist, RowDist> matrix_type;
-    typedef elem::DistMatrix<value_type, elem::STAR, elem::STAR> output_matrix_type;
+    typedef El::DistMatrix<value_type, ColDist, RowDist> matrix_type;
+    typedef El::DistMatrix<value_type, El::STAR, El::STAR> output_matrix_type;
     typedef IdxDistributionType<size_t> idx_distribution_type;
     typedef ValueDistribution<value_type> value_distribution_type;
     typedef hash_transform_data_t<IdxDistributionType,
@@ -533,11 +533,11 @@ private:
         // For [*, VC/VR] you need only O(sd).
 
         // Create space to hold local part of SA
-        elem::Matrix<value_type> SA_part (sketch_of_A.Height(),
+        El::Matrix<value_type> SA_part (sketch_of_A.Height(),
             sketch_of_A.Width(),
             sketch_of_A.LDim());
 
-        elem::Zero(SA_part);
+        El::Zero(SA_part);
 
         // Construct Pi * A (directly on the fly)
         for (size_t j = 0; j < A.LocalHeight(); j++) {
@@ -575,11 +575,11 @@ private:
         // For [VC/VR, *] you need only O(sd).
 
         // Create space to hold local part of SA
-        elem::Matrix<value_type> SA_part (sketch_of_A.Height(),
+        El::Matrix<value_type> SA_part (sketch_of_A.Height(),
             sketch_of_A.Width(),
             sketch_of_A.LDim());
 
-        elem::Zero(SA_part);
+        El::Zero(SA_part);
 
         // Construct A * Pi (directly on the fly)
         for (size_t j = 0; j < A.LocalWidth(); ++j) {

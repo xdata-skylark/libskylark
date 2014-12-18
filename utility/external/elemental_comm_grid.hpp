@@ -7,7 +7,7 @@
 namespace skylark {
 namespace utility {
 
-#include <elemental.hpp>
+#include <El.hpp>
 
 /// computes the rank owning the global (row_idx, col_idx) element
 //template<typename index_type, typename value_type,
@@ -19,9 +19,9 @@ namespace utility {
     //return A.Owner(row_idx, col_idx);
 //}
 
-/// computes the rank owning the global (row_idx, col_idx) element
+/// computes the rank owning the global (row_idx, col_idx) Elent
 template<typename index_type, typename value_type>
-index_type owner(const elem::DistMatrix<value_type> &A,
+index_type owner(const El::DistMatrix<value_type> &A,
                  const index_type row_idx, const index_type col_idx) {
 
     return (col_idx % A.Grid().Width()) * A.Grid().Height() +
@@ -29,7 +29,7 @@ index_type owner(const elem::DistMatrix<value_type> &A,
 }
 
 template<typename index_type, typename value_type>
-index_type owner(const elem::DistMatrix<value_type, elem::STAR, elem::VR> &A,
+index_type owner(const El::DistMatrix<value_type, El::STAR, El::VR> &A,
                  const index_type row_idx, const index_type col_idx) {
 
     return (col_idx / A.Grid().Width()) % A.Grid().Height() +
@@ -37,7 +37,7 @@ index_type owner(const elem::DistMatrix<value_type, elem::STAR, elem::VR> &A,
 }
 
 template<typename index_type, typename value_type>
-index_type owner(const elem::DistMatrix<value_type, elem::VR, elem::STAR> &A,
+index_type owner(const El::DistMatrix<value_type, El::VR, El::STAR> &A,
                  const index_type row_idx, const index_type col_idx) {
 
     return (row_idx / A.Grid().Width()) % A.Grid().Height() +
@@ -45,14 +45,14 @@ index_type owner(const elem::DistMatrix<value_type, elem::VR, elem::STAR> &A,
 }
 
 template<typename index_type, typename value_type>
-index_type owner(const elem::DistMatrix<value_type, elem::STAR, elem::VC> &A,
+index_type owner(const El::DistMatrix<value_type, El::STAR, El::VC> &A,
                  const index_type row_idx, const index_type col_idx) {
 
     return col_idx % (A.Grid().Height() * A.Grid().Width());
 }
 
 template<typename index_type, typename value_type>
-index_type owner(const elem::DistMatrix<value_type, elem::VC, elem::STAR> &A,
+index_type owner(const El::DistMatrix<value_type, El::VC, El::STAR> &A,
                  const index_type row_idx, const index_type col_idx) {
 
     return row_idx % (A.Grid().Height() * A.Grid().Width());
@@ -60,4 +60,4 @@ index_type owner(const elem::DistMatrix<value_type, elem::VC, elem::STAR> &A,
 
 } } //namespace skylark::utility
 
-#endif //SKYLARK_ELEMENTAL_COMM_GRID_HPP
+#endif //SKYLARK_ELENTAL_COMM_GRID_HPP

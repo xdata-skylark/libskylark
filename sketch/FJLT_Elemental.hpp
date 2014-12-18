@@ -9,22 +9,22 @@ namespace skylark { namespace sketch {
 /**
  * Specialization for distributed [VC/VR, *] input and local matrix output
  */
-template <typename ValueType, elem::Distribution ColDist>
+template <typename ValueType, El::Distribution ColDist>
 struct FJLT_t <
-    elem::DistMatrix<ValueType, ColDist, elem::STAR>,
-    elem::Matrix<ValueType> > :
+    El::DistMatrix<ValueType, ColDist, El::STAR>,
+    El::Matrix<ValueType> > :
         public FJLT_data_t,
-        virtual public sketch_transform_t<elem::DistMatrix<ValueType,
+        virtual public sketch_transform_t<El::DistMatrix<ValueType,
                                                            ColDist,
-                                                           elem::STAR>,
-                                          elem::Matrix<ValueType> > {
+                                                           El::STAR>,
+                                          El::Matrix<ValueType> > {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
-    typedef elem::DistMatrix<value_type, ColDist, elem::STAR> matrix_type;
-    typedef elem::Matrix<value_type> output_matrix_type;
-    typedef elem::DistMatrix<ValueType,
-                             elem::STAR, ColDist> intermediate_type;
+    typedef El::DistMatrix<value_type, ColDist, El::STAR> matrix_type;
+    typedef El::Matrix<value_type> output_matrix_type;
+    typedef El::DistMatrix<ValueType,
+                             El::STAR, ColDist> intermediate_type;
     typedef fft_futs<double>::DCT_t transform_type;
     typedef utility::rademacher_distribution_t<value_type>
     underlying_value_distribution_type;
@@ -73,8 +73,8 @@ public:
                 output_matrix_type& sketch_of_A,
                 columnwise_tag dimension) const {
         switch (ColDist) {
-        case elem::VR:
-        case elem::VC:
+        case El::VR:
+        case El::VC:
             try {
                 apply_impl_vdist (A, sketch_of_A, dimension);
             } catch (std::logic_error e) {
@@ -105,8 +105,8 @@ public:
                 output_matrix_type& sketch_of_A,
                 rowwise_tag dimension) const {
         switch (ColDist) {
-        case elem::VR:
-        case elem::VC:
+        case El::VR:
+        case El::VC:
             try {
                 apply_impl_vdist (A, sketch_of_A, dimension);
             } catch (std::logic_error e) {
@@ -176,12 +176,12 @@ private:
 
         // TODO This is a quick&dirty hack - uses the columnwise implementation.
         matrix_type A_t(A.Grid());
-        elem::Transpose(A, A_t);
+        El::Transpose(A, A_t);
         output_matrix_type sketch_of_A_t(sketch_of_A.Width(),
             sketch_of_A.Height());
         apply_impl_vdist(A_t, sketch_of_A_t,
             skylark::sketch::columnwise_tag());
-        elem::Transpose(sketch_of_A_t, sketch_of_A);
+        El::Transpose(sketch_of_A_t, sketch_of_A);
      }
 };
 
@@ -190,25 +190,25 @@ private:
 /**
  * Specialization for distributed [VC/VR, *] input and distributed [*, *] output
  */
-template <typename ValueType, elem::Distribution ColDist>
+template <typename ValueType, El::Distribution ColDist>
 struct FJLT_t <
-    elem::DistMatrix<ValueType, ColDist, elem::STAR>,
-    elem::DistMatrix<ValueType, elem::STAR, elem::STAR> > :
+    El::DistMatrix<ValueType, ColDist, El::STAR>,
+    El::DistMatrix<ValueType, El::STAR, El::STAR> > :
         public FJLT_data_t,
-        virtual public sketch_transform_t<elem::DistMatrix<ValueType,
+        virtual public sketch_transform_t<El::DistMatrix<ValueType,
                                                            ColDist,
-                                                           elem::STAR>,
-                                          elem::DistMatrix<ValueType,
-                                                           elem::STAR,
-                                                           elem::STAR> > {
+                                                           El::STAR>,
+                                          El::DistMatrix<ValueType,
+                                                           El::STAR,
+                                                           El::STAR> > {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
-    typedef elem::DistMatrix<value_type, ColDist, elem::STAR> matrix_type;
-    typedef elem::DistMatrix<value_type, elem::STAR, elem::STAR>
+    typedef El::DistMatrix<value_type, ColDist, El::STAR> matrix_type;
+    typedef El::DistMatrix<value_type, El::STAR, El::STAR>
     output_matrix_type;
-    typedef elem::DistMatrix<ValueType,
-                             elem::STAR, ColDist> intermediate_type;
+    typedef El::DistMatrix<ValueType,
+                             El::STAR, ColDist> intermediate_type;
     typedef fft_futs<double>::DCT_t transform_type;
     typedef utility::rademacher_distribution_t<value_type>
     underlying_value_distribution_type;
@@ -258,8 +258,8 @@ public:
                 output_matrix_type& sketch_of_A,
                 columnwise_tag dimension) const {
         switch (ColDist) {
-        case elem::VR:
-        case elem::VC:
+        case El::VR:
+        case El::VC:
             try {
                 apply_impl_vdist (A, sketch_of_A, dimension);
             } catch (std::logic_error e) {
@@ -290,8 +290,8 @@ public:
                 output_matrix_type& sketch_of_A,
                 rowwise_tag dimension) const {
         switch (ColDist) {
-        case elem::VR:
-        case elem::VC:
+        case El::VR:
+        case El::VC:
             try {
                 apply_impl_vdist (A, sketch_of_A, dimension);
             } catch (std::logic_error e) {
@@ -358,12 +358,12 @@ private:
 
         // TODO This is a quick&dirty hack - uses the columnwise implementation.
         matrix_type A_t(A.Grid());
-        elem::Transpose(A, A_t);
+        El::Transpose(A, A_t);
         output_matrix_type sketch_of_A_t(sketch_of_A.Width(),
             sketch_of_A.Height());
         apply_impl_vdist(A_t, sketch_of_A_t,
             skylark::sketch::columnwise_tag());
-        elem::Transpose(sketch_of_A_t, sketch_of_A);
+        El::Transpose(sketch_of_A_t, sketch_of_A);
      }
 };
 
@@ -371,22 +371,22 @@ private:
 /**
  * Specialization distributed [*, VC/VR] input and local matrix output
  */
-template <typename ValueType, elem::Distribution RowDist>
+template <typename ValueType, El::Distribution RowDist>
 struct FJLT_t <
-  elem::DistMatrix<ValueType, elem::STAR, RowDist>,
-    elem::Matrix<ValueType> > :
+  El::DistMatrix<ValueType, El::STAR, RowDist>,
+    El::Matrix<ValueType> > :
         public FJLT_data_t,
-        virtual public sketch_transform_t<elem::DistMatrix<ValueType,
-                                                           elem::STAR,
+        virtual public sketch_transform_t<El::DistMatrix<ValueType,
+                                                           El::STAR,
                                                            RowDist>,
-                                          elem::Matrix<ValueType> > {
+                                          El::Matrix<ValueType> > {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
-    typedef elem::DistMatrix<value_type, elem::STAR, RowDist> matrix_type;
-    typedef elem::Matrix<value_type> output_matrix_type;
-    typedef elem::DistMatrix<ValueType,
-                             elem::STAR, RowDist> intermediate_type;
+    typedef El::DistMatrix<value_type, El::STAR, RowDist> matrix_type;
+    typedef El::Matrix<value_type> output_matrix_type;
+    typedef El::DistMatrix<ValueType,
+                             El::STAR, RowDist> intermediate_type;
     typedef fft_futs<double>::DCT_t transform_type;
     typedef utility::rademacher_distribution_t<value_type>
     underlying_value_distribution_type;
@@ -435,8 +435,8 @@ public:
                 output_matrix_type& sketch_of_A,
                 columnwise_tag dimension) const {
         switch (RowDist) {
-        case elem::VR:
-        case elem::VC:
+        case El::VR:
+        case El::VC:
             try {
                 apply_impl_vdist (A, sketch_of_A, dimension);
             } catch (std::logic_error e) {
@@ -467,8 +467,8 @@ public:
                 output_matrix_type& sketch_of_A,
                 rowwise_tag dimension) const {
         switch (RowDist) {
-        case elem::VR:
-        case elem::VC:
+        case El::VR:
+        case El::VC:
             try {
                 apply_impl_vdist (A, sketch_of_A, dimension);
             } catch (std::logic_error e) {
@@ -538,12 +538,12 @@ private:
 
         // TODO This is a quick&dirty hack - uses the columnwise implementation.
         matrix_type A_t(A.Grid());
-        elem::Transpose(A, A_t);
+        El::Transpose(A, A_t);
         output_matrix_type sketch_of_A_t(sketch_of_A.Width(),
             sketch_of_A.Height());
         apply_impl_vdist(A_t, sketch_of_A_t,
             skylark::sketch::columnwise_tag());
-        elem::Transpose(sketch_of_A_t, sketch_of_A);
+        El::Transpose(sketch_of_A_t, sketch_of_A);
      }
 };
 
@@ -551,25 +551,25 @@ private:
 /**
  * Specialization for distributed [*, VC/VR] input and distributed [*, *] output
  */
-template <typename ValueType, elem::Distribution RowDist>
+template <typename ValueType, El::Distribution RowDist>
 struct FJLT_t <
-    elem::DistMatrix<ValueType, elem::STAR, RowDist>,
-    elem::DistMatrix<ValueType, elem::STAR, elem::STAR> > :
+    El::DistMatrix<ValueType, El::STAR, RowDist>,
+    El::DistMatrix<ValueType, El::STAR, El::STAR> > :
         public FJLT_data_t,
-        virtual public sketch_transform_t<elem::DistMatrix<ValueType,
-                                                           elem::STAR,
+        virtual public sketch_transform_t<El::DistMatrix<ValueType,
+                                                           El::STAR,
                                                            RowDist>,
-                                          elem::DistMatrix<ValueType,
-                                                           elem::STAR,
-                                                           elem::STAR> > {
+                                          El::DistMatrix<ValueType,
+                                                           El::STAR,
+                                                           El::STAR> > {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
-    typedef elem::DistMatrix<value_type, elem::STAR, RowDist> matrix_type;
-    typedef elem::DistMatrix<value_type, elem::STAR, elem::STAR>
+    typedef El::DistMatrix<value_type, El::STAR, RowDist> matrix_type;
+    typedef El::DistMatrix<value_type, El::STAR, El::STAR>
     output_matrix_type;
-    typedef elem::DistMatrix<ValueType,
-                             elem::STAR, RowDist> intermediate_type;
+    typedef El::DistMatrix<ValueType,
+                             El::STAR, RowDist> intermediate_type;
     typedef fft_futs<double>::DCT_t transform_type;
     typedef utility::rademacher_distribution_t<value_type>
     underlying_value_distribution_type;
@@ -619,8 +619,8 @@ public:
                 output_matrix_type& sketch_of_A,
                 columnwise_tag dimension) const {
         switch (RowDist) {
-        case elem::VR:
-        case elem::VC:
+        case El::VR:
+        case El::VC:
             try {
                 apply_impl_vdist (A, sketch_of_A, dimension);
             } catch (std::logic_error e) {
@@ -651,8 +651,8 @@ public:
                 output_matrix_type& sketch_of_A,
                 rowwise_tag dimension) const {
         switch (RowDist) {
-        case elem::VR:
-        case elem::VC:
+        case El::VR:
+        case El::VC:
             try {
                 apply_impl_vdist (A, sketch_of_A, dimension);
             } catch (std::logic_error e) {
@@ -719,12 +719,12 @@ private:
 
         // TODO This is a quick&dirty hack - uses the columnwise implementation.
         matrix_type A_t(A.Grid());
-        elem::Transpose(A, A_t);
+        El::Transpose(A, A_t);
         output_matrix_type sketch_of_A_t(sketch_of_A.Width(),
             sketch_of_A.Height());
         apply_impl_vdist(A_t, sketch_of_A_t,
             skylark::sketch::columnwise_tag());
-        elem::Transpose(sketch_of_A_t, sketch_of_A);
+        El::Transpose(sketch_of_A_t, sketch_of_A);
      }
 };
 
@@ -734,20 +734,20 @@ private:
  */
 template <typename ValueType>
 struct FJLT_t <
-    elem::DistMatrix<ValueType>,
-    elem::DistMatrix<ValueType> > :
+    El::DistMatrix<ValueType>,
+    El::DistMatrix<ValueType> > :
         public FJLT_data_t,
-        virtual public sketch_transform_t<elem::DistMatrix<ValueType>,
-                                          elem::DistMatrix<ValueType> > {
+        virtual public sketch_transform_t<El::DistMatrix<ValueType>,
+                                          El::DistMatrix<ValueType> > {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
-    typedef elem::DistMatrix<value_type> matrix_type;
-    typedef elem::DistMatrix<value_type>
+    typedef El::DistMatrix<value_type> matrix_type;
+    typedef El::DistMatrix<value_type>
     output_matrix_type;
 
-    typedef elem::DistMatrix<ValueType,
-                             elem::STAR, elem::VR>
+    typedef El::DistMatrix<ValueType,
+                             El::STAR, El::VR>
     intermediate_type;
 
     typedef fft_futs<double>::DCT_t transform_type;
@@ -882,12 +882,12 @@ private:
 
         // TODO This is a quick&dirty hack - uses the columnwise implementation.
         matrix_type A_t(A.Grid());
-        elem::Transpose(A, A_t);
+        El::Transpose(A, A_t);
         output_matrix_type sketch_of_A_t(sketch_of_A.Width(),
             sketch_of_A.Height());
         apply_impl_dist(A_t, sketch_of_A_t,
             skylark::sketch::columnwise_tag());
-        elem::Transpose(sketch_of_A_t, sketch_of_A);
+        El::Transpose(sketch_of_A_t, sketch_of_A);
      }
 };
 

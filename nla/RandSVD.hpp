@@ -10,7 +10,7 @@
 #include "../sketch/capi/sketchc.hpp"
 
 
-#include <elemental.hpp>
+#include <El.hpp>
 
 namespace skylark { namespace nla {
 
@@ -124,28 +124,28 @@ void operator()(InputMatrixType &A,
     UMatrixType Y;
 
     /** Q = QR(Q) */
-    skylark::base::qr::Explicit(Q);
+    skylark::base::qr::ExplicitUnitary(Q);
 
     /** q steps of subspace iteration */
     for(int step = 0; step < params.num_iterations; step++) {
 	    /** Q = QR(A^T * Q) */
-	    skylark::base::Gemm(elem::ADJOINT, elem::NORMAL,
+	    skylark::base::Gemm(El::ADJOINT, El::NORMAL,
 			    double(1), A, Q, Y);
-	    skylark::base::qr::Explicit(Y);
+	    skylark::base::qr::ExplicitUnitary(Y);
 
-	    skylark::base::Gemm(elem::NORMAL, elem::NORMAL,
+	    skylark::base::Gemm(El::NORMAL, El::NORMAL,
 			    double(1), A,Y, Q);
 	    if (!params.skip_qr)
-	    	skylark::base::qr::Explicit(Q);
+	    	skylark::base::qr::ExplicitUnitary(Q);
     }
 
 
     /** SVD of projected A and then project-back left singular vectors */
     UMatrixType B;
-    skylark::base::Gemm(elem::ADJOINT, elem::NORMAL,
+    skylark::base::Gemm(El::ADJOINT, El::NORMAL,
 		    double(1), Q, A, B);
     skylark::base::SVD(B, SV, V);
-    skylark::base::Gemm(elem::NORMAL, elem::NORMAL,
+    skylark::base::Gemm(El::NORMAL, El::NORMAL,
 		    double(1), Q, B, U);
 }
 };

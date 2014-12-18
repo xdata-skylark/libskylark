@@ -58,18 +58,18 @@ struct dense_transform_data_t : public sketch_transform_data_t {
     }
 
 
-    void realize_matrix_view(elem::Matrix<value_type>& A) const {
+    void realize_matrix_view(El::Matrix<value_type>& A) const {
         realize_matrix_view(A, 0, 0, _S, _N);
     }
 
 
-    void realize_matrix_view(elem::Matrix<value_type>& A,
+    void realize_matrix_view(El::Matrix<value_type>& A,
         int i, int j, int height, int width) const {
         realize_matrix_view(A, i, j, height, width, 1, 1);
     }
 
 
-    void realize_matrix_view(elem::Matrix<value_type>& A,
+    void realize_matrix_view(El::Matrix<value_type>& A,
         int i, int j, int height, int width,
         int col_stride, int row_stride) const {
 
@@ -93,22 +93,22 @@ struct dense_transform_data_t : public sketch_transform_data_t {
     }
 
 
-    template<elem::Distribution ColDist,
-             elem::Distribution RowDist>
-    void realize_matrix_view(elem::DistMatrix<value_type,
+    template<El::Distribution ColDist,
+             El::Distribution RowDist>
+    void realize_matrix_view(El::DistMatrix<value_type,
                                               ColDist,
                                               RowDist>& A) const {
         realize_matrix_view<ColDist, RowDist>(A, 0, 0, _S, _N);
     }
 
 
-    template<elem::Distribution ColDist,
-             elem::Distribution RowDist>
-    void realize_matrix_view(elem::DistMatrix<value_type, ColDist, RowDist>& A,
+    template<El::Distribution ColDist,
+             El::Distribution RowDist>
+    void realize_matrix_view(El::DistMatrix<value_type, ColDist, RowDist>& A,
         int i, int j, int height, int width) const {
 
-        elem::DistMatrix<value_type, ColDist, RowDist> parent;
-        const elem::Grid& grid = parent.Grid();
+        El::DistMatrix<value_type, ColDist, RowDist> parent;
+        const El::Grid& grid = parent.Grid();
 
         // for view (A) and parent matrices: stride, rank are the same
         const int col_stride    = parent.ColStride();
@@ -123,20 +123,20 @@ struct dense_transform_data_t : public sketch_transform_data_t {
         const int col_alignment = (parent_col_alignment + i) % col_stride;
         const int row_alignment = (parent_row_alignment + j) % row_stride;
         const int col_shift     =
-            elem::Shift(col_rank, col_alignment, col_stride);
+            El::Shift(col_rank, col_alignment, col_stride);
         const int row_shift     =
-            elem::Shift(row_rank, row_alignment, row_stride);
+            El::Shift(row_rank, row_alignment, row_stride);
         const int local_height        =
-            elem::Length(height, col_shift, col_stride);
+            El::Length(height, col_shift, col_stride);
         const int local_width         =
-            elem::Length(width,  row_shift, row_stride);
+            El::Length(width,  row_shift, row_stride);
 
         A.Empty();
 
-        A = elem::DistMatrix<value_type, ColDist, RowDist>(height, width,
-            col_alignment, row_alignment, grid);
+        A = El::DistMatrix<value_type, ColDist, RowDist>(height, width, grid);
+        A.Align(col_alignment, row_alignment);
 
-        elem::Matrix<value_type>& local_matrix = A.Matrix();
+        El::Matrix<value_type>& local_matrix = A.Matrix();
         realize_matrix_view(local_matrix,
             i + col_shift, j + row_shift,
             local_height, local_width,

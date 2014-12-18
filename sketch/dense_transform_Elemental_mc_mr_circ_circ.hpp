@@ -18,15 +18,15 @@ namespace skylark { namespace sketch {
  */
 template <typename ValueType, typename ValuesAccessor>
 struct dense_transform_t <
-    elem::DistMatrix<ValueType>,
-    elem::DistMatrix<ValueType, elem::CIRC, elem::CIRC>,
+    El::DistMatrix<ValueType>,
+    El::DistMatrix<ValueType, El::CIRC, El::CIRC>,
     ValuesAccessor> :
         public dense_transform_data_t<ValuesAccessor> {
 
     // Typedef matrix and distribution types so that we can use them regularly
     typedef ValueType value_type;
-    typedef elem::DistMatrix<value_type> matrix_type;
-    typedef elem::DistMatrix<value_type, elem::CIRC, elem::CIRC>
+    typedef El::DistMatrix<value_type> matrix_type;
+    typedef El::DistMatrix<value_type, El::CIRC, El::CIRC>
      output_matrix_type;
     typedef dense_transform_data_t<ValuesAccessor> data_type;
 

@@ -15,26 +15,26 @@ struct scalar_cont_typer_t {
 };
 
 template<typename F>
-struct scalar_cont_typer_t<elem::Matrix<F> > {
-    typedef elem::Matrix<F> type;
+struct scalar_cont_typer_t<El::Matrix<F> > {
+    typedef El::Matrix<F> type;
 
-    static type build_compatible(int m, int n, const elem::Matrix<F>& A) {
+    static type build_compatible(int m, int n, const El::Matrix<F>& A) {
         return type(m, n);
     }
 };
 
-template<typename F, elem::Distribution U, elem::Distribution V>
-struct scalar_cont_typer_t<elem::DistMatrix<F, U, V> > {
-    typedef elem::DistMatrix<F, elem::STAR, elem::STAR> type;
+template<typename F, El::Distribution U, El::Distribution V>
+struct scalar_cont_typer_t<El::DistMatrix<F, U, V> > {
+    typedef El::DistMatrix<F, El::STAR, El::STAR> type;
 
-    static type build_compatible(int m, int n, const elem::DistMatrix<F, U, V>& A) {
+    static type build_compatible(int m, int n, const El::DistMatrix<F, U, V>& A) {
         return type(m, n, A.Grid(), A.Root());
     }
 };
 
 template<typename F>
 struct scalar_cont_typer_t<base::sparse_matrix_t<F> > {
-    typedef elem::Matrix<F> type;
+    typedef El::Matrix<F> type;
 
     static type build_compatible(int m, int n, const base::sparse_matrix_t<F>& A) {
         return type(m, n);

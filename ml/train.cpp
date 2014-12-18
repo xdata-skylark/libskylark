@@ -1,4 +1,4 @@
-#include <elemental.hpp>
+#include <El.hpp>
 #include <skylark.hpp>
 #include <fstream>
 #include <iostream>
@@ -33,7 +33,7 @@ int main (int argc, char** argv) {
     hilbert_options_t options (argc, argv, comm.size());
     skylark::base::context_t context (options.seed);
 
-    elem::Initialize (argc, argv);
+    El::Initialize (argc, argv);
 
     if (options.exit_on_return) { return -1; }
     if (comm.rank() == 0)
@@ -44,11 +44,11 @@ int main (int argc, char** argv) {
     int flag = 0;
 
     if (sparse)
-        flag = run<sparse_matrix_t, elem::Matrix<double> >(comm, context, options);
+        flag = run<sparse_matrix_t, El::Matrix<double> >(comm, context, options);
     else
         flag = run<LocalMatrixType, LocalMatrixType>(comm, context, options);
 
     comm.barrier();
-    elem::Finalize();
+    El::Finalize();
     return flag;
 }

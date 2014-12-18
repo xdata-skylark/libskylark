@@ -4,30 +4,30 @@
 namespace skylark { namespace base {
 
 template<typename T>
-inline void ColumnView(elem::Matrix<T>& A, elem::Matrix<T>& B,
+inline void ColumnView(El::Matrix<T>& A, El::Matrix<T>& B,
     int j, int width) {
-    elem::View(A, B, 0, j, B.Height(), width);
+    El::View(A, B, 0, j, B.Height(), width);
 }
 
 template<typename T>
 inline
-const elem::Matrix<T> ColumnView(const elem::Matrix<T>& B, int j, int width) {
-    elem::Matrix<T> A;
-    elem::LockedView(A, B, 0, j, B.Height(), width);
+const El::Matrix<T> ColumnView(const El::Matrix<T>& B, int j, int width) {
+    El::Matrix<T> A;
+    El::LockedView(A, B, 0, j, B.Height(), width);
     return A;
 }
 
 template<typename T>
-inline void RowView(elem::Matrix<T>& A, elem::Matrix<T>& B,
+inline void RowView(El::Matrix<T>& A, El::Matrix<T>& B,
     int i, int height) {
-    elem::View(A, B, i, 0, height, B.Width());
+    El::View(A, B, i, 0, height, B.Width());
 }
 
 template<typename T>
 inline
-const elem::Matrix<T> RowView(const elem::Matrix<T>& B, int i, int height) {
-    elem::Matrix<T> A;
-    elem::LockedView(A, B, i, 0, height, B.Width());
+const El::Matrix<T> RowView(const El::Matrix<T>& B, int i, int height) {
+    El::Matrix<T> A;
+    El::LockedView(A, B, i, 0, height, B.Width());
     return A;
 }
 

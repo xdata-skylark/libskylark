@@ -1,18 +1,18 @@
 #ifndef SKYLARK_SPECTRAL_HPP
 #define SKYLARK_SPECTRAL_HPP
 
-#include <elemental.hpp>
+#include <El.hpp>
 
 namespace skylark { namespace nla {
 
-/** 
+/**
  * Chebyshev points of the second kind.
  *
  * Returns the N+1 Chebyshev points of the second kind, rescaled to [a,b].
  * That is, x_j = (cos(j* pi / N) + a + 1) * (b - a) / 2 for j=0,..N.
  */
 template<typename T>
-void ChebyshevPoints(int N, elem::Matrix<T>& X, double a = -1, double b = 1) {
+void ChebyshevPoints(int N, El::Matrix<T>& X, double a = -1, double b = 1) {
     const double s = (b - a) / 2.0;
     const double pi = boost::math::constants::pi<double>();
 
@@ -47,9 +47,9 @@ void ChebyshevPoints(int N, elem::Matrix<T>& X, double a = -1, double b = 1) {
  * \param a,b  range of the parameter we are interested in.
  */
 template<typename T>
-void ChebyshevDiffMatrix(int N, elem::Matrix<T>& D, double a = -1, double b = 1) {
+void ChebyshevDiffMatrix(int N, El::Matrix<T>& D, double a = -1, double b = 1) {
 
-    elem::Matrix<T> X;
+    El::Matrix<T> X;
     ChebyshevPoints(N, X);
     double *x = X.Buffer();
 

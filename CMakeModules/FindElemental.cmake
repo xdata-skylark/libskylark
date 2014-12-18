@@ -15,7 +15,7 @@ FIND_PATH(Elemental_INCLUDE_DIR elemental/core.hpp
   $ENV{ELEMENTAL_ROOT}/include
 )
 
-FIND_LIBRARY(Elemental_LIBRARY elemental
+FIND_LIBRARY(Elemental_LIBRARY El
    /usr/local/lib
    /usr/lib
    $ENV{HOME}/Software/lib
@@ -36,7 +36,7 @@ ENDIF(Elemental_INCLUDE_DIR AND Elemental_LIBRARY AND Pmrrr_LIBRARY)
 IF (Elemental_FOUND)
   IF (NOT Elemental_FIND_QUIETLY)
     MESSAGE(STATUS
-            "Found Elemental:${Elemental_LIBRARY};${Elemental_LIBRARY_C}")
+            "Found Elemental:${Elemental_LIBRARY}")
     MESSAGE(STATUS
             "Found pmrrr:${Pmrrr_LIBRARY}")
   ENDIF (NOT Elemental_FIND_QUIETLY)

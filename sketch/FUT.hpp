@@ -43,12 +43,12 @@ struct fftw_r2r_fut_t {
 
 
     template <typename Dimension>
-    void apply(elem::Matrix<ValueType>& A, Dimension dimension) const {
+    void apply(El::Matrix<ValueType>& A, Dimension dimension) const {
         return apply_impl (A, dimension);
     }
 
     template <typename Dimension>
-    void apply_inverse(elem::Matrix<ValueType>& A, Dimension dimension) const {
+    void apply_inverse(El::Matrix<ValueType>& A, Dimension dimension) const {
         return apply_inverse_impl (A, dimension);
     }
 
@@ -58,7 +58,7 @@ struct fftw_r2r_fut_t {
 
 private:
 
-    void apply_impl(elem::Matrix<ValueType>& A,
+    void apply_impl(El::Matrix<ValueType>& A,
                     skylark::sketch::columnwise_tag) const {
         double* AA = A.Buffer();
         int j;
@@ -69,7 +69,7 @@ private:
             ExecuteFun(_plan, AA + j * A.LDim(), AA + j * A.LDim());
     }
 
-    void apply_inverse_impl(elem::Matrix<ValueType>& A,
+    void apply_inverse_impl(El::Matrix<ValueType>& A,
                             skylark::sketch::columnwise_tag) const {
         double* AA = A.Buffer();
         int j;
@@ -80,12 +80,12 @@ private:
             ExecuteFun(_plan_inverse, AA + j * A.LDim(), AA + j * A.LDim());
     }
 
-    void apply_impl(elem::Matrix<ValueType>& A,
+    void apply_impl(El::Matrix<ValueType>& A,
                     skylark::sketch::rowwise_tag) const {
         // Using transpositions instead of moving to the advanced interface
         // of FFTW
-        elem::Matrix<ValueType> matrix;
-        elem::Transpose(A, matrix);
+        El::Matrix<ValueType> matrix;
+        El::Transpose(A, matrix);
         double* matrix_buffer = matrix.Buffer();
         int j;
 #ifdef SKYLARK_HAVE_OPENMP
@@ -94,15 +94,15 @@ private:
         for (j = 0; j < matrix.Width(); j++)
             ExecuteFun(_plan, matrix_buffer + j * matrix.LDim(),
                 matrix_buffer + j * matrix.LDim());
-        elem::Transpose(matrix, A);
+        El::Transpose(matrix, A);
     }
 
-    void apply_inverse_impl(elem::Matrix<ValueType>& A,
+    void apply_inverse_impl(El::Matrix<ValueType>& A,
                             skylark::sketch::rowwise_tag) const {
         // Using transpositions instead of moving to the advanced interface
         // of FFTW
-        elem::Matrix<ValueType> matrix;
-        elem::Transpose(A, matrix);
+        El::Matrix<ValueType> matrix;
+        El::Transpose(A, matrix);
         double* matrix_buffer = matrix.Buffer();
         int j;
 #ifdef SKYLARK_HAVE_OPENMP
@@ -111,7 +111,7 @@ private:
         for (j = 0; j < matrix.Width(); j++)
             ExecuteFun(_plan_inverse, matrix_buffer + j * matrix.LDim(),
                 matrix_buffer + j * matrix.LDim());
-        elem::Transpose(matrix, A);
+        El::Transpose(matrix, A);
     }
 
 private:
@@ -182,12 +182,12 @@ struct WHT_t<double> {
     }
 
     template <typename Dimension>
-    void apply(elem::Matrix<value_type>& A, Dimension dimension) const {
+    void apply(El::Matrix<value_type>& A, Dimension dimension) const {
         return apply_impl (A, dimension);
     }
 
     template <typename Dimension>
-    void apply_inverse(elem::Matrix<value_type>& A, Dimension dimension) const {
+    void apply_inverse(El::Matrix<value_type>& A, Dimension dimension) const {
         return apply_inverse_impl (A, dimension);
     }
 
@@ -197,7 +197,7 @@ struct WHT_t<double> {
 
 private:
 
-    void apply_impl(elem::Matrix<value_type>& A,
+    void apply_impl(El::Matrix<value_type>& A,
                     skylark::sketch::columnwise_tag) const {
         double* AA = A.Buffer();
         int j;
@@ -208,7 +208,7 @@ private:
             wht_apply(_tree, 1, AA + j * A.LDim());
     }
 
-    void apply_inverse_impl(elem::Matrix<value_type>& A,
+    void apply_inverse_impl(El::Matrix<value_type>& A,
         skylark::sketch::columnwise_tag) const {
         double* AA = A.Buffer();
         int j;
@@ -219,7 +219,7 @@ private:
             wht_apply(_tree, 1, AA + j * A.LDim());
     }
 
-    void apply_impl(elem::Matrix<value_type>& A,
+    void apply_impl(El::Matrix<value_type>& A,
         skylark::sketch::rowwise_tag) const {
         double* AA = A.Buffer();
         int j;
@@ -231,7 +231,7 @@ private:
         // Not sure stride is used correctly here.
     }
 
-    void apply_inverse_impl(elem::Matrix<value_type>& A,
+    void apply_inverse_impl(El::Matrix<value_type>& A,
         skylark::sketch::rowwise_tag) const {
         double* AA = A.Buffer();
         int j;

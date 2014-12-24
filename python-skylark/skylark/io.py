@@ -47,7 +47,7 @@ import scipy.sparse
 import scipy.io
 import numpy
 import h5py
-import elem
+import El
 
 # TODO: Add support for parallel IO along the implementation show-cased in the
 # wiki.
@@ -732,219 +732,219 @@ class txt(object):
 
 
 
-class elemental_dense(object):
-    '''
-    Utility functions for ``'elemental-dense'`` matrices.
-    '''
+# class elemental_dense(object):
+#     '''
+#     Utility functions for ``'elemental-dense'`` matrices.
+#     '''
 
-    _constructors = {
-        'MC_MR'   : elem.DistMatrix_d,
-        'VC_STAR' : elem.DistMatrix_d_VC_STAR,
-        'VR_STAR' : elem.DistMatrix_d_VR_STAR,
-        'STAR_VC' : elem.DistMatrix_d_STAR_VC,
-        'STAR_VR' : elem.DistMatrix_d_STAR_VR
-        }
+#     _constructors = {
+#         'MC_MR'   : elem.DistMatrix_d,
+#         'VC_STAR' : elem.DistMatrix_d_VC_STAR,
+#         'VR_STAR' : elem.DistMatrix_d_VR_STAR,
+#         'STAR_VC' : elem.DistMatrix_d_STAR_VC,
+#         'STAR_VR' : elem.DistMatrix_d_STAR_VR
+#         }
 
-    @classmethod
-    def get_distribution(cls, A):
-        '''
-        String identifier of matrix distribution.
+#     @classmethod
+#     def get_distribution(cls, A):
+#         '''
+#         String identifier of matrix distribution.
 
-        Parameters
-        ----------
-        A : ``'elemental-dense'`` matrix
-         Input matrix.
+#         Parameters
+#         ----------
+#         A : ``'elemental-dense'`` matrix
+#          Input matrix.
 
-        Returns
-        -------
-        distribution : string
-         String identifier of matrix distribution.
-        '''
-        for (key, value) in cls._constructors.iteritems():
-            if type(A) == value:
-                distribution = key
-        return distribution
-
-
-    @classmethod
-    def get_constructor(cls, distribution='MC_MR'):
-        '''
-        Constructor for a matrix distribution.
-
-        Parameters
-        ----------
-        distribution : string
-         String identifier of matrix distribution.
-
-        Returns
-        -------
-        constructor : object
-         Constructor; ``constructor()`` will instantiate the matrix.
-        '''
-
-        return cls._constructors[distribution]
+#         Returns
+#         -------
+#         distribution : string
+#          String identifier of matrix distribution.
+#         '''
+#         for (key, value) in cls._constructors.iteritems():
+#             if type(A) == value:
+#                 distribution = key
+#         return distribution
 
 
-    @classmethod
-    def get_indices(cls, A):
-        '''
-        Matrix indices.
+#     @classmethod
+#     def get_constructor(cls, distribution='MC_MR'):
+#         '''
+#         Constructor for a matrix distribution.
 
-        Parameters
-        ----------
-        A : ``'elemental-dense'`` matrix
-         Input matrix.
+#         Parameters
+#         ----------
+#         distribution : string
+#          String identifier of matrix distribution.
 
-        Returns
-        -------
-        indices : list of integers
-         Global indices into the the vector of entries of matrix A that are
-         locally hosted if the matrix is traversed in column-major mode.
+#         Returns
+#         -------
+#         constructor : object
+#          Constructor; ``constructor()`` will instantiate the matrix.
+#         '''
 
-        '''
-
-        distribution = cls.get_distribution(A)
-        if distribution == 'MC_MR':
-            indices = cls._indices_MC_MR(A)
-        elif distribution == 'VC_STAR':
-            indices = cls._indices_VC_STAR(A)
-        elif distribution == 'VR_STAR':
-            indices = cls._indices_VR_STAR(A)
-        elif distribution == 'STAR_VC':
-            indices = cls._indices_STAR_VC(A)
-        elif distribution == 'STAR_VR':
-            indices = cls._indices_STAR_VR(A)
-        return indices
+#         return cls._constructors[distribution]
 
 
-    @staticmethod
-    def _indices_MC_MR(A):
-        vc_rank = A.Grid.VCRank
-        col_alignment = A.ColAlignment
-        row_alignment = A.RowAlignment
-        col_stride = A.ColStride
-        row_stride = A.RowStride
-        col_shift = A.ColShift
-        row_shift = A.RowShift
-        height = A.Height
-        width = A.Width
-        local_height = A.LocalHeight
-        local_width = A.LocalWidth
-        local_size = local_height * local_width
+#     @classmethod
+#     def get_indices(cls, A):
+#         '''
+#         Matrix indices.
 
-        indices = [0 for i in range(local_size)]
-        for j in range(width):
-            for i in range(height):
-                owner_row = (i + col_alignment) % col_stride;
-                owner_col = (j + row_alignment) % row_stride;
-                owner_rank = owner_row + owner_col * col_stride;
-                if vc_rank == owner_rank:
-                    i_loc = (i - col_shift) / col_stride;
-                    j_loc = (j - row_shift) / row_stride;
-                    global_index = j * height + i
-                    local_index = j_loc * local_height + i_loc
-                    indices[local_index] = global_index
-        return indices
+#         Parameters
+#         ----------
+#         A : ``'elemental-dense'`` matrix
+#          Input matrix.
 
+#         Returns
+#         -------
+#         indices : list of integers
+#          Global indices into the the vector of entries of matrix A that are
+#          locally hosted if the matrix is traversed in column-major mode.
 
-    @staticmethod
-    def _indices_VC_STAR(A):
-        vc_rank = A.Grid.VCRank
-        grid_size = A.Grid.Size
-        col_alignment = A.ColAlignment
-        col_shift = A.ColShift
-        height = A.Height
-        width = A.Width
-        local_height = A.LocalHeight
-        local_width = A.LocalWidth
-        local_size = local_height * local_width
+#         '''
 
-        indices = [0 for i in range(local_size)]
-        for i in range(height):
-            owner_rank = (i + col_alignment) % grid_size
-            if vc_rank == owner_rank:
-                i_loc = (i - col_shift) / grid_size;
-                for j in range(width):
-                    j_loc = j
-                    global_index = j * height + i
-                    local_index = j_loc * local_height + i_loc
-                    indices[local_index] = global_index
-        return indices
+#         distribution = cls.get_distribution(A)
+#         if distribution == 'MC_MR':
+#             indices = cls._indices_MC_MR(A)
+#         elif distribution == 'VC_STAR':
+#             indices = cls._indices_VC_STAR(A)
+#         elif distribution == 'VR_STAR':
+#             indices = cls._indices_VR_STAR(A)
+#         elif distribution == 'STAR_VC':
+#             indices = cls._indices_STAR_VC(A)
+#         elif distribution == 'STAR_VR':
+#             indices = cls._indices_STAR_VR(A)
+#         return indices
 
 
-    @staticmethod
-    def _indices_VR_STAR(A):
-        vr_rank = A.Grid.VRRank
-        grid_size = A.Grid.Size
-        col_alignment = A.ColAlignment
-        col_shift = A.ColShift
-        height = A.Height
-        width = A.Width
-        local_height = A.LocalHeight
-        local_width = A.LocalWidth
-        local_size = local_height * local_width
+#     @staticmethod
+#     def _indices_MC_MR(A):
+#         vc_rank = A.Grid.VCRank
+#         col_alignment = A.ColAlignment
+#         row_alignment = A.RowAlignment
+#         col_stride = A.ColStride
+#         row_stride = A.RowStride
+#         col_shift = A.ColShift
+#         row_shift = A.RowShift
+#         height = A.Height
+#         width = A.Width
+#         local_height = A.LocalHeight
+#         local_width = A.LocalWidth
+#         local_size = local_height * local_width
 
-        indices = [0 for i in range(local_size)]
-        for i in range(height):
-            owner_rank = (i + col_alignment) % grid_size
-            if vr_rank == owner_rank:
-                i_loc = (i - col_shift) / grid_size;
-                for j in range(width):
-                    j_loc = j
-                    global_index = j * height + i
-                    local_index = j_loc * local_height + i_loc
-                    indices[local_index] = global_index
-        return indices
-
-
-    @staticmethod
-    def _indices_STAR_VC(A):
-        vc_rank = A.Grid.VCRank
-        grid_size = A.Grid.Size
-        row_alignment = A.RowAlignment
-        row_shift = A.RowShift
-        height = A.Height
-        width = A.Width
-        local_height = A.LocalHeight
-        local_width = A.LocalWidth
-        local_size = local_height * local_width
-
-        indices = [0 for i in range(local_size)]
-        for j in range(width):
-                owner_rank = (j + row_alignment) % grid_size
-                if vc_rank == owner_rank:
-                    j_loc = (j - row_shift) / grid_size;
-                    for i in range(height):
-                        i_loc = i
-                        global_index = j * height + i
-                        local_index = j_loc * local_height + i_loc
-                        indices[local_index] = global_index
-        return indices
+#         indices = [0 for i in range(local_size)]
+#         for j in range(width):
+#             for i in range(height):
+#                 owner_row = (i + col_alignment) % col_stride;
+#                 owner_col = (j + row_alignment) % row_stride;
+#                 owner_rank = owner_row + owner_col * col_stride;
+#                 if vc_rank == owner_rank:
+#                     i_loc = (i - col_shift) / col_stride;
+#                     j_loc = (j - row_shift) / row_stride;
+#                     global_index = j * height + i
+#                     local_index = j_loc * local_height + i_loc
+#                     indices[local_index] = global_index
+#         return indices
 
 
-    @staticmethod
-    def _indices_STAR_VR(A):
-        vr_rank = A.Grid.VRRank
-        grid_size = A.Grid.Size
-        row_alignment = A.RowAlignment
-        row_shift = A.RowShift
-        height = A.Height
-        width = A.Width
-        local_height = A.LocalHeight
-        local_width = A.LocalWidth
-        local_size = local_height * local_width
+#     @staticmethod
+#     def _indices_VC_STAR(A):
+#         vc_rank = A.Grid.VCRank
+#         grid_size = A.Grid.Size
+#         col_alignment = A.ColAlignment
+#         col_shift = A.ColShift
+#         height = A.Height
+#         width = A.Width
+#         local_height = A.LocalHeight
+#         local_width = A.LocalWidth
+#         local_size = local_height * local_width
 
-        indices = [0 for i in range(local_size)]
-        for j in range(width):
-                owner_rank = (j + row_alignment) % grid_size
-                if vr_rank == owner_rank:
-                    j_loc = (j - row_shift) / grid_size;
-                    for i in range(height):
-                        i_loc = i
-                        global_index = j * height + i
-                        local_index = j_loc * local_height + i_loc
-                        indices[local_index] = global_index
-        return indices
+#         indices = [0 for i in range(local_size)]
+#         for i in range(height):
+#             owner_rank = (i + col_alignment) % grid_size
+#             if vc_rank == owner_rank:
+#                 i_loc = (i - col_shift) / grid_size;
+#                 for j in range(width):
+#                     j_loc = j
+#                     global_index = j * height + i
+#                     local_index = j_loc * local_height + i_loc
+#                     indices[local_index] = global_index
+#         return indices
+
+
+#     @staticmethod
+#     def _indices_VR_STAR(A):
+#         vr_rank = A.Grid.VRRank
+#         grid_size = A.Grid.Size
+#         col_alignment = A.ColAlignment
+#         col_shift = A.ColShift
+#         height = A.Height
+#         width = A.Width
+#         local_height = A.LocalHeight
+#         local_width = A.LocalWidth
+#         local_size = local_height * local_width
+
+#         indices = [0 for i in range(local_size)]
+#         for i in range(height):
+#             owner_rank = (i + col_alignment) % grid_size
+#             if vr_rank == owner_rank:
+#                 i_loc = (i - col_shift) / grid_size;
+#                 for j in range(width):
+#                     j_loc = j
+#                     global_index = j * height + i
+#                     local_index = j_loc * local_height + i_loc
+#                     indices[local_index] = global_index
+#         return indices
+
+
+#     @staticmethod
+#     def _indices_STAR_VC(A):
+#         vc_rank = A.Grid.VCRank
+#         grid_size = A.Grid.Size
+#         row_alignment = A.RowAlignment
+#         row_shift = A.RowShift
+#         height = A.Height
+#         width = A.Width
+#         local_height = A.LocalHeight
+#         local_width = A.LocalWidth
+#         local_size = local_height * local_width
+
+#         indices = [0 for i in range(local_size)]
+#         for j in range(width):
+#                 owner_rank = (j + row_alignment) % grid_size
+#                 if vc_rank == owner_rank:
+#                     j_loc = (j - row_shift) / grid_size;
+#                     for i in range(height):
+#                         i_loc = i
+#                         global_index = j * height + i
+#                         local_index = j_loc * local_height + i_loc
+#                         indices[local_index] = global_index
+#         return indices
+
+
+#     @staticmethod
+#     def _indices_STAR_VR(A):
+#         vr_rank = A.Grid.VRRank
+#         grid_size = A.Grid.Size
+#         row_alignment = A.RowAlignment
+#         row_shift = A.RowShift
+#         height = A.Height
+#         width = A.Width
+#         local_height = A.LocalHeight
+#         local_width = A.LocalWidth
+#         local_size = local_height * local_width
+
+#         indices = [0 for i in range(local_size)]
+#         for j in range(width):
+#                 owner_rank = (j + row_alignment) % grid_size
+#                 if vr_rank == owner_rank:
+#                     j_loc = (j - row_shift) / grid_size;
+#                     for i in range(height):
+#                         i_loc = i
+#                         global_index = j * height + i
+#                         local_index = j_loc * local_height + i_loc
+#                         indices[local_index] = global_index
+#         return indices
 
 
 

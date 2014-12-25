@@ -7,6 +7,7 @@ export COMBBLAS_ROOT=/home/vagrant/CombBLAS
 export PYTHON_SITE_PACKAGES=${SKYLARK_INSTALL_DIR}
 export PYTHONPATH=${SKYLARK_INSTALL_DIR}/lib/python2.7/site-packages:${PYTHONPATH}
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib
+export NPROC=`nproc`
 
 # populate .bashrc
 # XXX need to clean environment variables export
@@ -60,7 +61,7 @@ cd cmake-2.8.11.2/
 mkdir build
 cd build
 ../bootstrap
-make
+make -j $NPROC
 make install
 cd ../..
 
@@ -77,7 +78,7 @@ apt-get install -y liblapack3gf
 wget -O OpenBLAS.tgz http://github.com/xianyi/OpenBLAS/tarball/v0.2.8
 tar xzvf OpenBLAS.tgz
 cd xianyi-OpenBLAS-9c51cdf/
-make -j4
+make -j $NPROC
 make PREFIX=/usr/local install
 cd ..
 
@@ -131,16 +132,14 @@ echo "using mpi ;" >> project-config.jam
 cd ..
 
 # Elemental
-wget http://libelemental.org/pub/releases/elemental-0.83.tgz
-tar xvfz elemental-0.83.tgz
-cd elemental-0.83/
+wget http://libelemental.org/pub/releases/Elemental-0.85.tgz
+tar xvfz Elemental-0.85.tgz
+cd Elemental-0.85/
 mkdir build
 cd build
-cmake -D USE_SWIG=ON ..
-make -j4
+cmake -D MATH_LIBS="-L/usr/local/lib -llapack -lopenblas -lm" ....
+make -j $NPROC
 make install
-cp *.py /usr/local/lib/python2.7/dist-packages/
-cp _*.so /usr/local/lib/python2.7/dist-packages/
 cd ../..
 
 # CombBLAS
@@ -151,7 +150,7 @@ cp /vagrant/combblas.patch .
 git apply --ignore-space-change --ignore-whitespace combblas.patch
 rm combblas.patch
 cmake .
-make
+make -j $NPROC
 cp *.so /usr/local/lib
 mkdir /usr/local/include/CombBLAS
 cp *.h /usr/local/include/CombBLAS
@@ -172,7 +171,7 @@ wget http://www.fftw.org/fftw-3.3.3.tar.gz
 tar xvfz fftw-3.3.3.tar.gz
 cd fftw-3.3.3/
 ./configure --enable-shared
-make -j4
+make -j $NPROC
 make install
 cd ..
 
@@ -186,7 +185,7 @@ wget http://www.ece.cmu.edu/~spiral/software/spiral-wht-1.8.tgz
 tar xzvf spiral-wht-1.8.tgz
 cd spiral-wht-1.8/
 ./configure CFLAGS="-fPIC -fopenmp" --enable-RAM=16000 --enable-DDL --enable-IL --enable-PARA=8
-make -j4
+make -j $NPROC
 make install
 #/usr/local/bin/wht_dp.prl
 cd ..

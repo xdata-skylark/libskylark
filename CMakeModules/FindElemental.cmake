@@ -8,7 +8,7 @@
 # Elemental_LIBRARY     - qualified libraries to link against.
 # Elemental_FOUND       - do not attempt to use if "no" or undefined.
 
-FIND_PATH(Elemental_INCLUDE_DIR elemental/core.hpp
+FIND_PATH(Elemental_INCLUDE_DIR El/core.hpp
   /usr/local/include
   /usr/include
   $ENV{HOME}/Software/include

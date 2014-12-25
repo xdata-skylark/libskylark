@@ -203,7 +203,7 @@ if (Elemental_FOUND)
   set (CMAKE_CXX_FLAGS "${CXX11_COMPILER_FLAGS} ${CMAKE_CXX_FLAGS}")
 
   # check if elemental build type is Hybrid
-  file(STRINGS "${Elemental_INCLUDE_DIR}/elemental/config.h"
+  file(STRINGS "${Elemental_INCLUDE_DIR}/El/config.h"
     ELEMENTAL_HYBRID_BUILD_TYPE REGEX "^[ \t]*#define[ \t]+CMAKE_BUILD_TYPE[ \t]+\"HybridRelease\"")
 
   if(ELEMENTAL_HYBRID_BUILD_TYPE)

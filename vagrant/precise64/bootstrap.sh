@@ -137,7 +137,7 @@ tar xvfz Elemental-0.85.tgz
 cd Elemental-0.85/
 mkdir build
 cd build
-cmake -D MATH_LIBS="-L/usr/local/lib -llapack -lopenblas -lm" ....
+cmake -D MATH_LIBS="-L/usr/local/lib -llapack -lopenblas -lm" ..
 make -j $NPROC
 make install
 cd ../..

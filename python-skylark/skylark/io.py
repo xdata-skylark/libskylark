@@ -100,31 +100,31 @@ class hdf5(object):
         self.parallel = parallel
 
 
-    def _read_elemental_dense_parallel(self, distribution='MC_MR'):
-
-        constructor = elemental_dense.get_constructor(distribution)
+    def _read_elemental_dense_parallel(self, colDist = El.MC, rowDist = El.MR):
 
         f = h5py.File(fpath, 'r', driver='mpio', comm=MPI.COMM_WORLD)
         height, width = int(f['shape'][0]), int(f['shape'][1])
 
-        A = constructor()
+        A = El.DistMatrix(colDist = colDist, rowDist = colDist)
         A.Resize(height, width)
-        local_height, local_width = A.LocalHeight, A.LocalWidth
+        local_height, local_width = A.LocalHeight(), A.LocalWidth()
 
         indices = elemental_dense.get_indices(A)
         local_data = f[self.dataset][indices]
-        A.Matrix[:] = local_data.reshape(local_height, local_width, order='F')
+        local_buf = A.Matrix().Buffer()
+        for i in range(len(indices)):
+            local_buf[i] = local_data[i]
+
         f.close()
         return A
 
 
-    def _read_elemental_dense(self, distribution='MC_MR'):
+    def _read_elemental_dense(self, colDist = El.MC, rowDist = El.MR):
 
         comm = MPI.COMM_WORLD
         rank = comm.Get_rank()
         size = comm.Get_size()
 
-        constructor = elemental_dense.get_constructor(distribution)
         # only the root process touches the filesystem
         if rank == 0:
             f = h5py.File(self.fpath, 'r')
@@ -150,7 +150,7 @@ class hdf5(object):
         num_width_blocks = int(numpy.ceil(width / (1.0 * block_width)))
         num_blocks = num_height_blocks * num_width_blocks
 
-        A = constructor(height, width)
+        A = El.DistMatrix(colDist = colDist, rowDist = rowDist)
         for block in range(num_blocks):
             # the global coordinates of the block corners
             i_start = (block / num_width_blocks) * block_height
@@ -161,14 +161,16 @@ class hdf5(object):
             local_height = i_end - i_start
             local_width = j_end - j_start
             # [CIRC, CIRC] matrix is populated by the reader process (i.e. the root)...
-            A_block = elem.DistMatrix_d_CIRC_CIRC(local_height, local_width)
+            A_block = El.DistMatrix(colDist = El.CIRC, rowDist = El.CIRC)
+            A_block.Resize(local_height, local_width)
             if rank == 0:
-                A_block.Matrix[:] = dataset_obj[i_start:i_end, j_start:j_end]
+                for j in range(j_start, j_end):
+                    for i in range(i_start, i_end):
+                        A_block.SetLocal(i - i_start, j - j_start, dataset_obj[i, j])
             # ... then a view into the full matrix A is constructed...
-            A_block_view = constructor()
-            elem.View(A_block_view, A, i_start, j_start, local_height, local_width)
+            A_block_view = A[i_start:i_end, j_start:j_end]
             # ... and finally this view is updated by redistribution of the [CIRC, CIRC] block
-            elem.Copy(A_block, A_block_view)
+            El.Copy(A_block, A_block_view)
         if rank == 0:
             f.close()
         return A
@@ -180,7 +182,7 @@ class hdf5(object):
         return A
 
 
-    def read(self, matrix_type='elemental-dense', distribution='MC_MR'):
+    def read(self, matrix_type='elemental-dense', colDist = El.MC, rowDist = El.MR):
         '''
         Read dataset from an HDF5 file as a matrix.
 
@@ -194,16 +196,7 @@ class hdf5(object):
             library as wrapped in python (default).
           * ``'numpy-dense'`` for array objects in numpy package.
 
-        distribution : string, optional
-         String identifier for the matrix data distribution for the case the
-         input matrix is required to be of ``'elemental-dense'`` type; this argument
-         is ignored in the ``'numpy-dense'`` case. Available options are:
-
-          * ``'MC_MR'`` (default)
-          * ``'VC_STAR'``
-          * ``'VR_STAR'``
-          * ``'STAR_VC'``
-          * ``'STAR_VR'``
+        colDist, rowDist : the column and row distributions, e.g. El.VC
 
         Returns
         -------
@@ -212,9 +205,9 @@ class hdf5(object):
         '''
         if matrix_type == 'elemental-dense':
             if self.parallel:
-                A = self._read_elemental_dense_parallel(distribution)
+                A = self._read_elemental_dense_parallel(colDist, rowDist)
             else:
-                A = self._read_elemental_dense(distribution)
+                A = self._read_elemental_dense(colDist, rowDist)
         elif matrix_type == 'numpy-dense':
             A = self._read_numpy_dense()
         else:
@@ -253,11 +246,10 @@ class hdf5(object):
         size = comm.Get_size()
 
         # XXX currently gathers at root
-        height, width = A.Height, A.Width
-        A_CIRC_CIRC = elem.DistMatrix_d_CIRC_CIRC(height, width)
-        elem.Copy(A, A_CIRC_CIRC)
+        A_CIRC_CIRC = El.DistMatrix(colDist = El.CIRC, rowDist = El.CIRC)
+        El.Copy(A, A_CIRC_CIRC)
         if rank == 0:
-            A_numpy_dense = A_CIRC_CIRC.Matrix[:]
+            A_numpy_dense = A_CIRC_CIRC.Matrix().ToNumPy()
             self._write_numpy_dense(A_numpy_dense)
 
 
@@ -708,7 +700,7 @@ class txt(object):
 
     def _write_elemental_dense(self, A):
         stripped = self.fpath.split('.txt')[0]
-        elem.Write(A, stripped, elem.ASCII, '')
+        El.Write(A, stripped, El.ASCII, '')
         #MPI.COMM_WORLD.barrier()
 
     def write(self, A):
@@ -732,219 +724,171 @@ class txt(object):
 
 
 
-# class elemental_dense(object):
-#     '''
-#     Utility functions for ``'elemental-dense'`` matrices.
-#     '''
+class elemental_dense(object):
+    '''
+    Utility functions for ``'elemental-dense'`` matrices.
+    '''
 
-#     _constructors = {
-#         'MC_MR'   : elem.DistMatrix_d,
-#         'VC_STAR' : elem.DistMatrix_d_VC_STAR,
-#         'VR_STAR' : elem.DistMatrix_d_VR_STAR,
-#         'STAR_VC' : elem.DistMatrix_d_STAR_VC,
-#         'STAR_VR' : elem.DistMatrix_d_STAR_VR
-#         }
+    @classmethod
+    def get_indices(cls, A):
+        '''
+        Matrix indices.
 
-#     @classmethod
-#     def get_distribution(cls, A):
-#         '''
-#         String identifier of matrix distribution.
+        Parameters
+        ----------
+        A : ``'elemental-dense'`` matrix
+         Input matrix.
 
-#         Parameters
-#         ----------
-#         A : ``'elemental-dense'`` matrix
-#          Input matrix.
+        Returns
+        -------
+        indices : list of integers
+         Global indices into the the vector of entries of matrix A that are
+         locally hosted if the matrix is traversed in column-major mode.
 
-#         Returns
-#         -------
-#         distribution : string
-#          String identifier of matrix distribution.
-#         '''
-#         for (key, value) in cls._constructors.iteritems():
-#             if type(A) == value:
-#                 distribution = key
-#         return distribution
+        '''
 
-
-#     @classmethod
-#     def get_constructor(cls, distribution='MC_MR'):
-#         '''
-#         Constructor for a matrix distribution.
-
-#         Parameters
-#         ----------
-#         distribution : string
-#          String identifier of matrix distribution.
-
-#         Returns
-#         -------
-#         constructor : object
-#          Constructor; ``constructor()`` will instantiate the matrix.
-#         '''
-
-#         return cls._constructors[distribution]
+        dist_data = A.GetDistData()
+        if dist_data.colDist == El.MC and dist_data.rowDist == El.MR:
+            indices = cls._indices_MC_MR(A)
+        elif dist_data.colDist == El.VC and dist_data.rowDist == El.STAR:
+            indices = cls._indices_VC_STAR(A)
+        elif dist_data.colDist == El.VR and dist_data.rowDist == El.STAR:
+            indices = cls._indices_VR_STAR(A)
+        elif dist_data.colDist == El.STAR and dist_data.rowDist == El.VC:
+            indices = cls._indices_STAR_VC(A)
+        elif dist_data.colDist == El.STAR and dist_data.rowDist == El.VR:
+            indices = cls._indices_STAR_VR(A)
+        return indices
 
 
-#     @classmethod
-#     def get_indices(cls, A):
-#         '''
-#         Matrix indices.
+    @staticmethod
+    def _indices_MC_MR(A):
+        vc_rank = A.Grid().VCRank()
+        col_alignment = A.ColAlign()
+        row_alignment = A.RowAlign()
+        col_stride = A.ColStride()
+        row_stride = A.RowStride()
+        col_shift = A.ColShift()
+        row_shift = A.RowShift()
+        height = A.Height()
+        width = A.Width()
+        local_height = A.LocalHeight()
+        local_width = A.LocalWidth()
+        local_size = local_height * local_width
 
-#         Parameters
-#         ----------
-#         A : ``'elemental-dense'`` matrix
-#          Input matrix.
-
-#         Returns
-#         -------
-#         indices : list of integers
-#          Global indices into the the vector of entries of matrix A that are
-#          locally hosted if the matrix is traversed in column-major mode.
-
-#         '''
-
-#         distribution = cls.get_distribution(A)
-#         if distribution == 'MC_MR':
-#             indices = cls._indices_MC_MR(A)
-#         elif distribution == 'VC_STAR':
-#             indices = cls._indices_VC_STAR(A)
-#         elif distribution == 'VR_STAR':
-#             indices = cls._indices_VR_STAR(A)
-#         elif distribution == 'STAR_VC':
-#             indices = cls._indices_STAR_VC(A)
-#         elif distribution == 'STAR_VR':
-#             indices = cls._indices_STAR_VR(A)
-#         return indices
+        indices = [0 for i in range(local_size)]
+        for j in range(width):
+            for i in range(height):
+                owner_row = (i + col_alignment) % col_stride;
+                owner_col = (j + row_alignment) % row_stride;
+                owner_rank = owner_row + owner_col * col_stride;
+                if vc_rank == owner_rank:
+                    i_loc = (i - col_shift) / col_stride;
+                    j_loc = (j - row_shift) / row_stride;
+                    global_index = j * height + i
+                    local_index = j_loc * local_height + i_loc
+                    indices[local_index] = global_index
+        return indices
 
 
-#     @staticmethod
-#     def _indices_MC_MR(A):
-#         vc_rank = A.Grid.VCRank
-#         col_alignment = A.ColAlignment
-#         row_alignment = A.RowAlignment
-#         col_stride = A.ColStride
-#         row_stride = A.RowStride
-#         col_shift = A.ColShift
-#         row_shift = A.RowShift
-#         height = A.Height
-#         width = A.Width
-#         local_height = A.LocalHeight
-#         local_width = A.LocalWidth
-#         local_size = local_height * local_width
+    @staticmethod
+    def _indices_VC_STAR(A):
+        vc_rank = A.Grid().VCRank()
+        grid_size = A.Grid().Size()
+        col_alignment = A.ColAlign()
+        col_shift = A.ColShift()
+        height = A.Height()
+        width = A.Width()
+        local_height = A.LocalHeight()
+        local_width = A.LocalWidth()
+        local_size = local_height * local_width
 
-#         indices = [0 for i in range(local_size)]
-#         for j in range(width):
-#             for i in range(height):
-#                 owner_row = (i + col_alignment) % col_stride;
-#                 owner_col = (j + row_alignment) % row_stride;
-#                 owner_rank = owner_row + owner_col * col_stride;
-#                 if vc_rank == owner_rank:
-#                     i_loc = (i - col_shift) / col_stride;
-#                     j_loc = (j - row_shift) / row_stride;
-#                     global_index = j * height + i
-#                     local_index = j_loc * local_height + i_loc
-#                     indices[local_index] = global_index
-#         return indices
+        indices = [0 for i in range(local_size)]
+        for i in range(height):
+            owner_rank = (i + col_alignment) % grid_size
+            if vc_rank == owner_rank:
+                i_loc = (i - col_shift) / grid_size;
+                for j in range(width):
+                    j_loc = j
+                    global_index = j * height + i
+                    local_index = j_loc * local_height + i_loc
+                    indices[local_index] = global_index
+        return indices
 
 
-#     @staticmethod
-#     def _indices_VC_STAR(A):
-#         vc_rank = A.Grid.VCRank
-#         grid_size = A.Grid.Size
-#         col_alignment = A.ColAlignment
-#         col_shift = A.ColShift
-#         height = A.Height
-#         width = A.Width
-#         local_height = A.LocalHeight
-#         local_width = A.LocalWidth
-#         local_size = local_height * local_width
+    @staticmethod
+    def _indices_VR_STAR(A):
+        vr_rank = A.Grid().VRRank()
+        grid_size = A.Grid().Size()
+        col_alignment = A.ColAlign()
+        col_shift = A.ColShift()
+        height = A.Height()
+        width = A.Width()
+        local_height = A.LocalHeight()
+        local_width = A.LocalWidth()
+        local_size = local_height * local_width
 
-#         indices = [0 for i in range(local_size)]
-#         for i in range(height):
-#             owner_rank = (i + col_alignment) % grid_size
-#             if vc_rank == owner_rank:
-#                 i_loc = (i - col_shift) / grid_size;
-#                 for j in range(width):
-#                     j_loc = j
-#                     global_index = j * height + i
-#                     local_index = j_loc * local_height + i_loc
-#                     indices[local_index] = global_index
-#         return indices
-
-
-#     @staticmethod
-#     def _indices_VR_STAR(A):
-#         vr_rank = A.Grid.VRRank
-#         grid_size = A.Grid.Size
-#         col_alignment = A.ColAlignment
-#         col_shift = A.ColShift
-#         height = A.Height
-#         width = A.Width
-#         local_height = A.LocalHeight
-#         local_width = A.LocalWidth
-#         local_size = local_height * local_width
-
-#         indices = [0 for i in range(local_size)]
-#         for i in range(height):
-#             owner_rank = (i + col_alignment) % grid_size
-#             if vr_rank == owner_rank:
-#                 i_loc = (i - col_shift) / grid_size;
-#                 for j in range(width):
-#                     j_loc = j
-#                     global_index = j * height + i
-#                     local_index = j_loc * local_height + i_loc
-#                     indices[local_index] = global_index
-#         return indices
+        indices = [0 for i in range(local_size)]
+        for i in range(height):
+            owner_rank = (i + col_alignment) % grid_size
+            if vr_rank == owner_rank:
+                i_loc = (i - col_shift) / grid_size;
+                for j in range(width):
+                    j_loc = j
+                    global_index = j * height + i
+                    local_index = j_loc * local_height + i_loc
+                    indices[local_index] = global_index
+        return indices
 
 
-#     @staticmethod
-#     def _indices_STAR_VC(A):
-#         vc_rank = A.Grid.VCRank
-#         grid_size = A.Grid.Size
-#         row_alignment = A.RowAlignment
-#         row_shift = A.RowShift
-#         height = A.Height
-#         width = A.Width
-#         local_height = A.LocalHeight
-#         local_width = A.LocalWidth
-#         local_size = local_height * local_width
+    @staticmethod
+    def _indices_STAR_VC(A):
+        vc_rank = A.Grid().VCRank()
+        grid_size = A.Grid().Size()
+        row_alignment = A.RowAlign()
+        row_shift = A.RowShift()
+        height = A.Height()
+        width = A.Width()
+        local_height = A.LocalHeight()
+        local_width = A.LocalWidth()
+        local_size = local_height * local_width
 
-#         indices = [0 for i in range(local_size)]
-#         for j in range(width):
-#                 owner_rank = (j + row_alignment) % grid_size
-#                 if vc_rank == owner_rank:
-#                     j_loc = (j - row_shift) / grid_size;
-#                     for i in range(height):
-#                         i_loc = i
-#                         global_index = j * height + i
-#                         local_index = j_loc * local_height + i_loc
-#                         indices[local_index] = global_index
-#         return indices
+        indices = [0 for i in range(local_size)]
+        for j in range(width):
+                owner_rank = (j + row_alignment) % grid_size
+                if vc_rank == owner_rank:
+                    j_loc = (j - row_shift) / grid_size;
+                    for i in range(height):
+                        i_loc = i
+                        global_index = j * height + i
+                        local_index = j_loc * local_height + i_loc
+                        indices[local_index] = global_index
+        return indices
 
 
-#     @staticmethod
-#     def _indices_STAR_VR(A):
-#         vr_rank = A.Grid.VRRank
-#         grid_size = A.Grid.Size
-#         row_alignment = A.RowAlignment
-#         row_shift = A.RowShift
-#         height = A.Height
-#         width = A.Width
-#         local_height = A.LocalHeight
-#         local_width = A.LocalWidth
-#         local_size = local_height * local_width
+    @staticmethod
+    def _indices_STAR_VR(A):
+        vr_rank = A.Grid().VRRank()
+        grid_size = A.Grid().Size()
+        row_alignment = A.RowAlign()
+        row_shift = A.RowShift()
+        height = A.Height()
+        width = A.Width()
+        local_height = A.LocalHeight()
+        local_width = A.LocalWidth()
+        local_size = local_height * local_width
 
-#         indices = [0 for i in range(local_size)]
-#         for j in range(width):
-#                 owner_rank = (j + row_alignment) % grid_size
-#                 if vr_rank == owner_rank:
-#                     j_loc = (j - row_shift) / grid_size;
-#                     for i in range(height):
-#                         i_loc = i
-#                         global_index = j * height + i
-#                         local_index = j_loc * local_height + i_loc
-#                         indices[local_index] = global_index
-#         return indices
+        indices = [0 for i in range(local_size)]
+        for j in range(width):
+                owner_rank = (j + row_alignment) % grid_size
+                if vr_rank == owner_rank:
+                    j_loc = (j - row_shift) / grid_size;
+                    for i in range(height):
+                        i_loc = i
+                        global_index = j * height + i
+                        local_index = j_loc * local_height + i_loc
+                        indices[local_index] = global_index
+        return indices
 
 
 
@@ -968,9 +912,9 @@ def _usage_tests(usps_path='./datasets/usps.t'):
     matrix_info = features_matrix.shape, features_matrix.nnz, labels_matrix.shape
 
     # stream features matrix and labels vector
-    store = libsvm(fpath)
-    for features_matrix, labels_matrix in store.stream(num_features=400, block_size=100):
-        matrix_info = features_matrix.shape, features_matrix.nnz, labels_matrix.shape
+    #store = libsvm(fpath)
+    #for features_matrix, labels_matrix in store.stream(num_features=400, block_size=100):
+    #    matrix_info = features_matrix.shape, features_matrix.nnz, labels_matrix.shape
     print 'libsvm OK'
 
     ############################################################
@@ -1004,11 +948,11 @@ def _usage_tests(usps_path='./datasets/usps.t'):
 
     # read HDF5 file as:
     # - 'numpy-dense'
-    # - 'elemental-dense' (default 'MC_MR' distribution)
-    # - 'elemental-dense' ('VC_STAR' distribution)
+    # - 'elemental-dense' (default [MC, MR] distribution)
+    # - 'elemental-dense' ([VC, STAR] distribution)
     B = store.read('numpy-dense')
     C = store.read('elemental-dense')
-    D = store.read('elemental-dense', distribution='VC_STAR')
+    D = store.read('elemental-dense', colDist = El.VC, rowDist = El.STAR)
     print 'hdf OK'
 
     ############################################################
@@ -1017,8 +961,8 @@ def _usage_tests(usps_path='./datasets/usps.t'):
     fpath = '/tmp/test_matrix.txt'
 
     # write a uniform random 'elemental-dense', 'MC_MR' distribution
-    A = elem.DistMatrix_d()
-    elem.Uniform(A, 10, 30)
+    A = El.DistMatrix()
+    El.Uniform(A, 10, 30)
     store = txt(fpath)
     store.write(A)
 

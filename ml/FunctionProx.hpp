@@ -518,9 +518,9 @@ void l2::proxoperator(LocalDenseMatrixType& W, double lambda, LocalDenseMatrixTy
 	}
 
 double l1::evaluate(LocalDenseMatrixType& W) {
-		double norm = El::EntrywiseOneNorm(W);
-		return norm;
-	}
+    double norm = El::EntrywiseNorm(W, 1);
+    return norm;
+}
 
 double l1::soft_threshold(double x, double lambda) {
 	double v = 0;

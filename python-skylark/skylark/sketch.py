@@ -299,8 +299,11 @@ class _ScipyAdapter:
       return scipy.sparse.csc_matrix((m, n))
 
 if _ELEM_INSTALLED:
-  class _ElemAdapter:
+  class _DistMatrixAdapter:
     def __init__(self, A):
+      if El.TagToType(A.tag) != ctypes.c_double:
+        raise errors.UnsupportedError("Only double precision matrices are supported.")
+
       self._A = A
       self._dist_data = A.GetDistData()
       if self._dist_data.colDist == El.MC and self._dist_data.rowDist == El.MR:
@@ -341,13 +344,54 @@ if _ELEM_INSTALLED:
         return None, False
 
     def getctor(self):
-      return lambda m, n, c : _ElemAdapter.ctor(self._dist_data.colDist, self._dist_data.rowDist, m, n, c)
+      return lambda m, n, c : _DistMatrixAdapter.ctor(self._dist_data.colDist, self._dist_data.rowDist, m, n, c)
 
     @staticmethod
     def ctor(coldist, rowdist, m, n, B):
       A = El.DistMatrix(colDist = coldist, rowDist = rowdist)
       A.Resize(m, n)
       return A
+
+  class _ElMatrixAdapter:
+    def __init__(self, A):
+      if El.TagToType(A.tag) != ctypes.c_double:
+        raise errors.UnsupportedError("Only double precision matrices are supported.")
+
+      self._A = A
+      
+    def ctype(self):
+      return "Matrix"
+
+    def ptr(self):
+      return self._A.obj
+
+    def ptrcleaner(self):
+      pass
+
+    def getdim(self, dim):
+      if dim == 0:
+        return self._A.Height()
+      if dim == 1:
+        return self._A.Width()
+
+    def getobj(self):
+      return self._A
+
+    def iscompatible(self, B):
+      if isinstance(B, _NumpyAdapter) and B.getorder() != 'F':
+        return "numpy combined with other types must have fortran ordering", None
+      else:
+        return None, False
+
+    def getctor(self):
+      return _ElMatrixAdapter.ctor
+
+    @staticmethod
+    def ctor(m, n, B):
+      A = El.Matrix()
+      A.Resize(m, n)
+      return A
+
 
 if _KDT_INSTALLED:
   class _KDTAdapter:
@@ -395,17 +439,17 @@ def _adapt(obj):
   if _ELEM_INSTALLED and sys.modules.has_key('El'):
     global El
     import El
-    elemcls = [El.DistMatrix]
+    haselem = True
   else:
-    elemcls = []
+    haselem = False
 
   #FIXME: check if object is KDT without loading kdt
   if _KDT_INSTALLED and sys.modules.has_key('kdt'):
     global kdt
     import kdt
-    kdtcls = [kdt.Mat]
+    haskdt = True
   else:
-    kdtcls = [];
+    haskdt = False
 
   if isinstance(obj, numpy.ndarray):
     return _NumpyAdapter(obj)
@@ -413,10 +457,13 @@ def _adapt(obj):
   elif isinstance(obj, scipy.sparse.csr_matrix) or isinstance(obj, scipy.sparse.csc_matrix):
     return _ScipyAdapter(obj)
 
-  elif any(isinstance(obj, c) for c in elemcls):
-    return _ElemAdapter(obj)
+  elif haselem and isinstance(obj, El.Matrix):
+    return _ElMatrixAdapter(obj)
 
-  elif any(isinstance(obj, c) for c in kdtcls):
+  elif haselem and isinstance(obj, El.DistMatrix):
+    return _DistMatrixAdapter(obj)
+
+  elif haskdt and isinstance(obj, kdt.Mat):
       return _KDTAdapter(obj)
 
   else:
@@ -431,13 +478,14 @@ _map_to_ctor["LocalMatrix"]   = _NumpyAdapter.ctor
 _map_to_ctor["LocalSpMatrix"] = _ScipyAdapter.ctor
 
 if _ELEM_INSTALLED:
-  _map_to_ctor["DistMatrix"] = lambda m, n, c : _ElemAdapter.ctor(El.MC, el.MR, m, n, c)
-  _map_to_ctor["DistMatrix_VR_STAR"] = lambda m, n, c : _ElemAdapter.ctor(El.VR, El.STAR, m, n, c)
-  _map_to_ctor["DistMatrix_VC_STAR"] = lambda m, n, c : _ElemAdapter.ctor(El.VC, El.STAR, m, n, c)
-  _map_to_ctor["DistMatrix_STAR_VR"] = lambda m, n, c : _ElemAdapter.ctor(El.STAR, El.VR, m, n, c)
-  _map_to_ctor["DistMatrix_STAR_VC"] = lambda m, n, c : _ElemAdapter.ctor(El.STAR, El.VC, m, n, c)
-  _map_to_ctor["SharedMatrix"] = lambda m, n, c : _ElemAdapter.ctor(El.STAR, El.STAR, m, n, c)
-  _map_to_ctor["RootMatrix"] = lambda m, n, c : _ElemAdapter.ctor(El.CIRC, El.CIRC, m, n, c)
+  _map_to_ctor["ElMatrix"] = _ElMatrixAdapter.ctor
+  _map_to_ctor["DistMatrix"] = lambda m, n, c : _DistMatrixAdapter.ctor(El.MC, el.MR, m, n, c)
+  _map_to_ctor["DistMatrix_VR_STAR"] = lambda m, n, c : _DistMatrixAdapter.ctor(El.VR, El.STAR, m, n, c)
+  _map_to_ctor["DistMatrix_VC_STAR"] = lambda m, n, c : _DistMatrixAdapter.ctor(El.VC, El.STAR, m, n, c)
+  _map_to_ctor["DistMatrix_STAR_VR"] = lambda m, n, c : _DistMatrixAdapter.ctor(El.STAR, El.VR, m, n, c)
+  _map_to_ctor["DistMatrix_STAR_VC"] = lambda m, n, c : _DistMatrixAdapter.ctor(El.STAR, El.VC, m, n, c)
+  _map_to_ctor["SharedMatrix"] = lambda m, n, c : _DistMatrixAdapter.ctor(El.STAR, El.STAR, m, n, c)
+  _map_to_ctor["RootMatrix"] = lambda m, n, c : _DistMatrixAdapter.ctor(El.CIRC, El.CIRC, m, n, c)
 
 if _KDT_INSTALLED:
   _map_to_ctor["DistSparseMatrix"] = _KDTAdapter.ctor

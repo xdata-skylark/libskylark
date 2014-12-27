@@ -561,6 +561,22 @@ class _SketchTransform(object):
         # TODO: python serialization of sketch
         pass
 
+  def __getstate__(self):
+    if self._ppy:
+      return self.__dict__
+    else:
+      return self.__dict__, self.serialize()
+
+  def __setstate__(self, p):
+    if type(p) is tuple:
+      self.__dict__ = p[0]
+      sketch_transform = c_void_p()
+      _callsl(_lib.sl_deserialize_sketch_transform, \
+                json.dumps(p[1]), byref(sketch_transform))
+      self._obj = sketch_transform.value
+    else:
+      self.__dict__ = p
+
   def apply(self, A, SA, dim=0):
     """
     Apply the transform on **A** along dimension **dim** and write

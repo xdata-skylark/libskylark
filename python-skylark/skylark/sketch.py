@@ -133,7 +133,7 @@ def deserialize_sketch(sketch_dict):
 #
 class _NumpyAdapter:
   def __init__(self, A):
-    if A.dtype is not numpy.dtype('float64'):
+    if A.dtype.type is not numpy.float64:
       raise errors.UnsupportedError("Only float64 matrices are supported.")
     if A.base is not None:
       raise errors.UnsupportedError("Passing a numpy matrix view is not supported.")

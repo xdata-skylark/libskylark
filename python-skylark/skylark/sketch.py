@@ -562,20 +562,19 @@ class _SketchTransform(object):
         pass
 
   def __getstate__(self):
-    if self._ppy:
-      return self.__dict__
-    else:
-      return self.__dict__, self.serialize()
+    d = self.__dict__.copy()
+    if d.has_key("_obj"): d["_obj"] = self.serialize()
+    return d
 
-  def __setstate__(self, p):
-    if type(p) is tuple:
-      self.__dict__ = p[0]
+  def __setstate__(self, d):
+    self.__dict__ = d
+    try: 
       sketch_transform = c_void_p()
       _callsl(_lib.sl_deserialize_sketch_transform, \
-                json.dumps(p[1]), byref(sketch_transform))
+                json.dumps(d["_obj"]), byref(sketch_transform))
       self._obj = sketch_transform.value
-    else:
-      self.__dict__ = p
+    except:
+      pass
 
   def apply(self, A, SA, dim=0):
     """

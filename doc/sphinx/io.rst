@@ -136,13 +136,17 @@ C++.
     skylark::sketch::CWT_t<DistMatrixType, DistMatrixType> tmp(json_tree);
 
 
-This functionality is also exposed to the Python layer.
+This functionality is also exposed to the Python layer in two ways.
+The first, is straightforward serialize method of sketch objects, and a 
+corresponding deserialize_sketch on the module level. The following is a 
+short example.
 
 .. code-block:: python
 
     S = sketch.CWT(10, 6)
     sketch_dict = S.serialize()
 
-    S_clone = deserialize_sketch(sketch_dict)
+    S_clone = sketch.deserialize_sketch(sketch_dict)
 
-
+Alternatively, sketch objects also support the Pickle and cPickle modules.
+This allows them to be easily used by external libraries or software like Spark.

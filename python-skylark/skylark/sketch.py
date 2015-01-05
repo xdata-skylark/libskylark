@@ -83,7 +83,7 @@ def initialize(seed=-1):
 
   ctxt_obj = c_void_p()
   _lib.sl_create_default_context(seed, byref(ctxt_obj))
-  _ctxt_obj = ctxt_obj.value
+  _ctxt_obj = ctxt_obj
 
   # TODO the following is temporary. Random numbers should be taken from library
   #      even for pure-Python implementations.
@@ -123,7 +123,7 @@ def deserialize_sketch(sketch_dict):
   """
   sketch_transform = c_void_p()
   _callsl(_lib.sl_deserialize_sketch_transform, \
-            json.dumps(sketch_dict), byref(sketch_transform))    
+            json.dumps(sketch_dict), byref(sketch_transform))
   sketch_name = str(sketch_dict['sketch_type'])
   return _map_csketch_type_to_cfun[sketch_name](sketch_dict, sketch_transform)
 
@@ -157,8 +157,8 @@ class _NumpyAdapter:
                 self._A.shape[1] if self._A.ndim > 1 else self._A.shape[0], \
                 self._A.shape[0] if self._A.ndim > 1 else 1 , \
                 byref(data))
-    self._ptr = data.value
-    return data.value
+    self._ptr = data
+    return data
 
   def ptrcleaner(self):
     _callsl(_lib.sl_free_raw_matrix_wrap, self._ptr);
@@ -228,9 +228,9 @@ class _ScipyAdapter:
                 self._A.shape[1] if self._A.ndim > 1 else self._A.shape[0], \
                 self._A.shape[0] if self._A.ndim > 1 else 1 , \
                 byref(data))
-    _callsl(_lib.sl_raw_sp_matrix_reset_update_flag, data.value)
-    self._ptr = data.value
-    return data.value
+    _callsl(_lib.sl_raw_sp_matrix_reset_update_flag, data)
+    self._ptr = data
+    return data
 
   def ptrcleaner(self):
     # before cleaning the pointer make sure to update the csr structure if
@@ -408,7 +408,7 @@ def _adapt(obj):
   if _ELEM_INSTALLED and sys.modules.has_key('elem'):
     global elem
     import elem
-    elemcls = [elem.DistMatrix_d, 
+    elemcls = [elem.DistMatrix_d,
                elem.DistMatrix_d_VR_STAR, elem.DistMatrix_d_VC_STAR,
                elem.DistMatrix_d_STAR_VC, elem.DistMatrix_d_STAR_VR,
                elem.DistMatrix_d_STAR_STAR, elem.DistMatrix_d_CIRC_CIRC]
@@ -491,7 +491,7 @@ class _SketchTransform(object):
       if sketch_transform is None:
         sketch_transform = c_void_p()
         _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, ttype, n, s, byref(sketch_transform))
-        self._obj = sketch_transform.value
+        self._obj = sketch_transform
       else:
         self._obj = sketch_transform
 
@@ -761,7 +761,7 @@ class CT(_SketchTransform):
         sketch_transform = c_void_p()
         _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "CT", n, s, \
                   byref(sketch_transform), ctypes.c_double(C))
-        self._obj = sketch_transform.value
+        self._obj = sketch_transform
       else:
         self._obj = sketch_transform
 
@@ -912,7 +912,7 @@ class WZT(_SketchTransform):
         sketch_transform = c_void_p()
         _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "WZT", n, s, \
                   byref(sketch_transform), ctypes.c_double(p))
-        self._obj = sketch_transform.value
+        self._obj = sketch_transform
       else:
         self._obj = sketch_transform
 
@@ -951,7 +951,7 @@ class GaussianRFT(_SketchTransform):
         sketch_transform = c_void_p()
         _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "GaussianRFT", n, s, \
                   byref(sketch_transform), ctypes.c_double(sigma))
-        self._obj = sketch_transform.value
+        self._obj = sketch_transform
       else:
         self._obj = sketch_transform
 
@@ -984,7 +984,7 @@ class LaplacianRFT(_SketchTransform):
         sketch_transform = c_void_p()
         _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "LaplacianRFT", n, s, \
                   byref(sketch_transform), ctypes.c_double(sigma))
-        self._obj = sketch_transform.value
+        self._obj = sketch_transform
       else:
         self._obj = sketch_transform
 
@@ -1012,7 +1012,7 @@ class MaternRFT(_SketchTransform):
         sketch_transform = c_void_p()
         _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "MaternRFT", n, s, \
                   byref(sketch_transform), ctypes.c_double(nu), ctypes.c_double(l))
-        self._obj = sketch_transform.value
+        self._obj = sketch_transform
       else:
         self._obj = sketch_transform
 
@@ -1030,7 +1030,7 @@ class GaussianQRFT(_SketchTransform):
   :param defouttype: Default output type when using the * and / operators.
   :param forceppy: whether to force a pure python implementation
 
-  *J. Yang*, *V. Sindhwani*, *H. Avron* and *M. Mahoney*, 
+  *J. Yang*, *V. Sindhwani*, *H. Avron* and *M. Mahoney*,
   **Quasi-Monte Carlo Feature Maps for Shift-Invariant Kernels**
   ICML 2014
   """
@@ -1042,7 +1042,7 @@ class GaussianQRFT(_SketchTransform):
         sketch_transform = c_void_p()
         _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "GaussianQRFT", n, s, \
                   byref(sketch_transform), ctypes.c_double(sigma), ctypes.c_int(skip))
-        self._obj = sketch_transform.value
+        self._obj = sketch_transform
       else:
         self._obj = sketch_transform
 
@@ -1059,7 +1059,7 @@ class LaplacianQRFT(_SketchTransform):
   :param defouttype: Default output type when using the * and / operators.
   :param forceppy: whether to force a pure python implementation
 
-  *J. Yang*, *V. Sindhwani*, *H. Avron* and *M. Mahoney*, 
+  *J. Yang*, *V. Sindhwani*, *H. Avron* and *M. Mahoney*,
   **Quasi-Monte Carlo Feature Maps for Shift-Invariant Kernels**
   ICML 2014
   """
@@ -1071,7 +1071,7 @@ class LaplacianQRFT(_SketchTransform):
         sketch_transform = c_void_p()
         _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "LaplacianQRFT", n, s, \
                   byref(sketch_transform), ctypes.c_double(sigma), c_int(skip))
-        self._obj = sketch_transform.value
+        self._obj = sketch_transform
       else:
         self._obj = sketch_transform
 
@@ -1109,7 +1109,7 @@ class FastGaussianRFT(_SketchTransform):
         sketch_transform = c_void_p()
         _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "FastGaussianRFT", n, s, \
                   byref(sketch_transform), ctypes.c_double(sigma))
-        self._obj = sketch_transform.value
+        self._obj = sketch_transform
       else:
         self._obj = sketch_transform
 
@@ -1166,7 +1166,7 @@ class FastMaternRFT(_SketchTransform):
         sketch_transform = c_void_p()
         _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "FastMaternRFT", n, s, \
                   byref(sketch_transform), ctypes.c_double(nu), ctypes.c_double(l))
-        self._obj = sketch_transform.value
+        self._obj = sketch_transform
       else:
         self._obj = sketch_transform
 
@@ -1182,7 +1182,7 @@ class ExpSemigroupRLT(_SketchTransform):
   :param defouttype: Default output type when using the * and / operators.
   :param forceppy: whether to force a pure python implementation
 
-  *J. Yang*, *V. Sindhwani*, *Q. Fan*, *H. Avron*, *M. Mahoney*, 
+  *J. Yang*, *V. Sindhwani*, *Q. Fan*, *H. Avron*, *M. Mahoney*,
   **Random Laplace Feature Maps for Semigroup Kernels on Histograms**, CVPR 2014
   """
   def __init__(self, n, s, beta=1.0, defouttype=None, forceppy=False, sketch_transform=None):
@@ -1194,7 +1194,7 @@ class ExpSemigroupRLT(_SketchTransform):
         sketch_transform = c_void_p()
         _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "ExpSemigroupRLT", n, s, \
                   byref(sketch_transform), ctypes.c_double(beta))
-        self._obj = sketch_transform.value
+        self._obj = sketch_transform
       else:
         self._obj = sketch_transform
 
@@ -1221,7 +1221,7 @@ class ExpSemigroupQRLT(_SketchTransform):
         sketch_transform = c_void_p()
         _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "ExpSemigroupQRLT", n, s, \
                   byref(sketch_transform), ctypes.c_double(beta))
-        self._obj = sketch_transform.value
+        self._obj = sketch_transform
       else:
         self._obj = sketch_transform
 
@@ -1261,7 +1261,7 @@ class PPT(_SketchTransform):
         _callsl(_lib.sl_create_sketch_transform, _ctxt_obj, "PPT", n, s, \
                   byref(sketch_transform), \
                   ctypes.c_int(q), ctypes.c_double(c), ctypes.c_double(gamma))
-        self._obj = sketch_transform.value
+        self._obj = sketch_transform
       else:
         self._obj = sketch_transform
 
@@ -1347,34 +1347,34 @@ NonUniformSampler = NURST
 #
 # Mapping between serialize type string and Python calss
 #
-_map_csketch_type_to_cfun = { } 
-_map_csketch_type_to_cfun["JLT"] = lambda sd, obj : JLT(int(sd['N']), int(sd['S']), None, False, obj.value)
+_map_csketch_type_to_cfun = { }
+_map_csketch_type_to_cfun["JLT"] = lambda sd, obj : JLT(int(sd['N']), int(sd['S']), None, False, obj)
 _map_csketch_type_to_cfun["CT"] = \
-    lambda sd, obj : CT(int(sd['N']), int(sd['S']), float(sd['C']), None, False, obj.value)
-_map_csketch_type_to_cfun["FJLT"] = lambda sd, obj : FJLT(int(sd['N']), int(sd['S']), None, False, obj.value)
-_map_csketch_type_to_cfun["CWT"] = lambda sd, obj : CWT(int(sd['N']), int(sd['S']), None, False, obj.value)
-_map_csketch_type_to_cfun["MMT"] = lambda sd, obj : MMT(int(sd['N']), int(sd['S']), None, False, obj.value)
+    lambda sd, obj : CT(int(sd['N']), int(sd['S']), float(sd['C']), None, False, obj)
+_map_csketch_type_to_cfun["FJLT"] = lambda sd, obj : FJLT(int(sd['N']), int(sd['S']), None, False, obj)
+_map_csketch_type_to_cfun["CWT"] = lambda sd, obj : CWT(int(sd['N']), int(sd['S']), None, False, obj)
+_map_csketch_type_to_cfun["MMT"] = lambda sd, obj : MMT(int(sd['N']), int(sd['S']), None, False, obj)
 _map_csketch_type_to_cfun["WZT"] = \
-    lambda sd, obj : WZT(int(sd['N']), int(sd['S']), float(sd['P']), None, False, obj.value)
+    lambda sd, obj : WZT(int(sd['N']), int(sd['S']), float(sd['P']), None, False, obj)
 _map_csketch_type_to_cfun["GaussianRFT"] = \
-    lambda sd, obj : GaussianRFT(int(sd['N']), int(sd['S']), float(sd['sigma']), None, False, obj.value)
+    lambda sd, obj : GaussianRFT(int(sd['N']), int(sd['S']), float(sd['sigma']), None, False, obj)
 _map_csketch_type_to_cfun["LaplacianRFT"] = \
-    lambda sd, obj : LaplacianRFT(int(sd['N']), int(sd['S']), float(sd['sigma']), None, False, obj.value)
+    lambda sd, obj : LaplacianRFT(int(sd['N']), int(sd['S']), float(sd['sigma']), None, False, obj)
 _map_csketch_type_to_cfun["MaternRFT"] = \
-    lambda sd, obj : MaternRFT(int(sd['N']), int(sd['S']), float(sd['nu']), float(sd['l']), None, False, obj.value)
+    lambda sd, obj : MaternRFT(int(sd['N']), int(sd['S']), float(sd['nu']), float(sd['l']), None, False, obj)
 _map_csketch_type_to_cfun["GaussianQRFT"] = \
-    lambda sd, obj : GaussianQRFT(int(sd['N']), int(sd['S']), float(sd['sigma']), int(sd['skip']), None, False, obj.value)
+    lambda sd, obj : GaussianQRFT(int(sd['N']), int(sd['S']), float(sd['sigma']), int(sd['skip']), None, False, obj)
 _map_csketch_type_to_cfun["LaplacianQRFT"] = \
-    lambda sd, obj : LaplacianQRFT(int(sd['N']), int(sd['S']), float(sd['sigma']), int(sd['skip']), None, False, obj.value)
+    lambda sd, obj : LaplacianQRFT(int(sd['N']), int(sd['S']), float(sd['sigma']), int(sd['skip']), None, False, obj)
 _map_csketch_type_to_cfun["FastGaussianRFT"] = \
-    lambda sd, obj : FastGaussianRFT(int(sd['N']), int(sd['S']), float(sd['sigma']), None, False, obj.value)
+    lambda sd, obj : FastGaussianRFT(int(sd['N']), int(sd['S']), float(sd['sigma']), None, False, obj)
 _map_csketch_type_to_cfun["FastMaternRFT"] = \
-    lambda sd, obj : FastMaternRFT(int(sd['N']), int(sd['S']), float(sd['nu']), float(sd['l']), None, False, obj.value)
+    lambda sd, obj : FastMaternRFT(int(sd['N']), int(sd['S']), float(sd['nu']), float(sd['l']), None, False, obj)
 _map_csketch_type_to_cfun["ExpSemigroupRLT"] = \
-    lambda sd, obj : ExpSemigroupRLT(int(sd['N']), int(sd['S']), float(sd['beta']), None, False, obj.value)
+    lambda sd, obj : ExpSemigroupRLT(int(sd['N']), int(sd['S']), float(sd['beta']), None, False, obj)
 _map_csketch_type_to_cfun["ExpSemigroupQRLT"] = \
-    lambda sd, obj : ExpSemigroupRLT(int(sd['N']), int(sd['S']), float(sd['beta']), None, False, obj.value)
+    lambda sd, obj : ExpSemigroupRLT(int(sd['N']), int(sd['S']), float(sd['beta']), None, False, obj)
 _map_csketch_type_to_cfun["PPT"] = \
     lambda sd, obj : PPT(int(sd['N']), int(sd['S']), int(sd['q']), float(sd['c']), float(sd['gamma']), \
-                           None, False, obj.value)
+                           None, False, obj)
 

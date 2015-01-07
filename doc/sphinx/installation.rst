@@ -487,6 +487,22 @@ should work out of the box. To that end execute
 In case you have a more specific setup or this does not work on your
 machine continue reading the next sections.
 
+Python only user-level installation
+-----------------------------------
+In case you do not have root access, and are satisfied with an Python only
+installation, you can install the Python package only at user-level.
+
+::
+
+	cd $BUILD_DIR
+	CC=mpicc CXX=mpicxx cmake $SRC_DIR
+	make
+	cd python-skylark
+        python ./setup.py install --user
+
+The Python package will be installed under :file:`~/.local`. The directory :file:`~/.local/lib` should
+be in the library load path for the installation to function properly.
+
 Directory setup
 ----------------
 

@@ -6,7 +6,7 @@ set (CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 project (SKYLARK)
 
 set (SKYLARK_VERSION_MAJOR 0)
-set (SKYLARK_VERSION_MINOR 1)
+set (SKYLARK_VERSION_MINOR 11)
 
 # Unfortunately we need Fortran ;(
 enable_language( Fortran )
@@ -39,11 +39,11 @@ set (BUILD_DATE \"${DATE_OUT}\")
 
 
 set (PACKAGE \"SKYLARK\")
-set (PACKAGE_BUGREPORT \"bla@bla.com\")
+set (PACKAGE_BUGREPORT \"klclarks@us.ibm.com\")
 set (PACKAGE_NAME \"SKYLARK\")
 set (PACKAGE_STRING \"SKYLARK\")
-set (PACKAGE_VERSION \"0.1\")
-set (VERSION \"0.1\")
+set (PACKAGE_VERSION \"0.11\")
+set (VERSION \"0.11\")
 
 #configure_file(config.h.in ${CMAKE_SOURCE_DIR}/config.h)
 

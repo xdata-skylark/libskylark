@@ -89,7 +89,7 @@ add_test( svd_elemental_test svd_elemental_test )
 
 
 find_package(PythonInterp REQUIRED)
-message (STATUS "Using Python interpreter to run tests: {PYTHON_EXECUTABLE}")
+message (STATUS "Using Python interpreter to run tests: ${PYTHON_EXECUTABLE}")
 #FIXME: Because of mpi4py/kdt MPI initialization issue we cannot run the test
 #       in hybrid mode when we need to call MPI.Init_thread().
 if(!USE_HYBRID)

@@ -8,15 +8,16 @@ namespace skylark { namespace nla {
 /**
  * Chebyshev points of the second kind.
  *
- * Returns the N+1 Chebyshev points of the second kind, rescaled to [a,b].
- * That is, x_j = (cos(j* pi / N) + a + 1) * (b - a) / 2 for j=0,..N.
+ * Returns the N Chebyshev points of the second kind, rescaled to [a,b].
+ * That is, x_j = (cos(j* pi / N) + a + 1) * (b - a) / 2 for j=0,..N-1.
  */
 template<typename T>
 void ChebyshevPoints(int N, El::Matrix<T>& X, double a = -1, double b = 1) {
     const double s = (b - a) / 2.0;
     const double pi = boost::math::constants::pi<double>();
 
-    X.Resize(N+1, 1);
+    N = N - 1;
+    X.Resize(N, 1);
     for(int j = 0; j <= N; j++)
         X.Set(j, 0,
             (std::cos(j * pi / N) + a + 1) * s);
@@ -26,34 +27,34 @@ void ChebyshevPoints(int N, El::Matrix<T>& X, double a = -1, double b = 1) {
 }
 
 /**
- * Differentation matrix associated with with interpolation on N+1 Chebyshev
+ * Differentation matrix associated with with interpolation on N Chebyshev
  * points of the second kind.
  *
- * Returns a (N+1)x(N+1) matrix with the following property:
+ * Returns a NxN matrix with the following property:
  *
- * Suppose a vector p representes a polynomial p(x) of degree N by keeping its
- * value at the N+1 points x_j = (cos(j* pi / N) + a + 1) * (b - a) / 2
- * for j=0,..,N. That is p_i = p(x_j-1) for i = 1,..,N. There is a unique degree
- * N polynomial interpolating those points, and that is p(x).
+ * Suppose a vector p representes a polynomial p(x) of degree N-1 by keeping its
+ * value at the N points x_j = (cos(j* pi / N) + a + 1) * (b - a) / 2
+ * for j=0,..,N-1. That is p_i = p(x_j-1) for i = 1,..,N-1. There is a unique
+ * degree N-1 polynomial interpolating those points, and that is p(x).
  *
  * ([a,b] is the range of values of x we are interested in.)
  *
- * The dervitative of p(x), p'(x), is a degree N polynomial as well, and it 
+ * The dervitative of p(x), p'(x), is a degree N polynomial as well, and it
  * can be represented in the same manner by a vector p'. D is built such that
  *                    p' = D * p
  *
- * \param N degree of differentation matrix (i.e. degree of polynomials).
+ * \param N degree of differentation matrix (i.e. degree of polynomials + 1).
  * \param D matrix to be filled.
+ * \param X matrix containing the Chebyshev points used.
  * \param a,b  range of the parameter we are interested in.
  */
 template<typename T>
-void ChebyshevDiffMatrix(int N, El::Matrix<T>& D, double a = -1, double b = 1) {
+void ChebyshevDiffMatrix(int N, El::Matrix<T>& D, El::Matrix<T> &X,
+    double a = -1, double b = 1) {
 
-    El::Matrix<T> X;
     ChebyshevPoints(N, X);
+    N = N - 1;
     double *x = X.Buffer();
-
-    const double s = 2.0 / (b - a);
 
     D.Resize(N+1, N+1);
     for(int j = 0; j <= N; j++)
@@ -81,6 +82,11 @@ void ChebyshevDiffMatrix(int N, El::Matrix<T>& D, double a = -1, double b = 1) {
 
             D.Set(i, j, v);
         }
+
+    // Rescale points from [-1, 1] to [a, b]
+    if (a != -1 && b != 1)
+        for(int i = 0; i <= N; i++)
+            x[i] = a + (x[i] + 1.0) * (b - a) / 2.0;
 }
 
 } }

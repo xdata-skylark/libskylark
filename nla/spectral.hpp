@@ -17,7 +17,7 @@ void ChebyshevPoints(int N, El::Matrix<T>& X, double a = -1, double b = 1) {
     const double pi = boost::math::constants::pi<double>();
 
     N = N - 1;
-    X.Resize(N, 1);
+    X.Resize(N+1, 1);
     for(int j = 0; j <= N; j++)
         X.Set(j, 0,
             (std::cos(j * pi / N) + a + 1) * s);

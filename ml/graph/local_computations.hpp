@@ -20,7 +20,10 @@ void LocalGraphDiffusion(const GraphType& G,
 
     // TODO set N in a better way. It depends on gamma. For gamma=5, N=15
     //      is more than enough, but for gamma=100 it is not (N=50 works).
-    int N = 16;
+    int N = 12;
+    int NX = 4;
+
+    int NR = N / NX;  // Should be integer!
 
     const double pi = boost::math::constants::pi<double>();
     double LC = 1 + (2 / pi) * log(N);
@@ -31,123 +34,124 @@ void LocalGraphDiffusion(const GraphType& G,
     // Setup matrices associated with Chebyshev spectral diff
     // We cache them to keep costs low (can be crucial for
     // when finding the cluster is very fast).
-    static std::unordered_map<int, El::Matrix<T>*> Zmap;
-    static std::unordered_map<int, El::Matrix<T>*> Dmap;
+    static std::unordered_map<int, El::Matrix<T>*> DZmap;
 
-    El::Matrix<T> *Z, *D;
-    if (Zmap.count(N)) {
-        D = Dmap[N];
-        Z = Zmap[N];
-    } else {
-        El::Matrix<T> DO, D1;
-        nla::ChebyshevDiffMatrix(N, DO, x, 0, gamma);
+    El::Matrix<T> *DZ;
+    if (DZmap.count(N))
+        DZ = DZmap[N];
+    else {
+        El::Matrix<T> DO, D1, x1;
+        nla::ChebyshevDiffMatrix(N, DO, x1, 0, gamma);
         for(int i = 0; i < N; i++)
             DO.Set(i, i, DO.Get(i, i) + 1.0);
         base::ColumnView(D1, DO, 0, N - 1);
 
-        D = new El::Matrix<T>(N, N - 1);
-        *D = D1;
-        Dmap[N] = D;
+        El::Matrix<T> Z(N, N - 1);
+        Z = D1;
+        El::Pseudoinverse(Z);
 
-        Z = new El::Matrix<T>(N, N - 1);
-        *Z = D1;
-        El::Pseudoinverse(*Z);
-        Zmap[N] = Z;
+        El::Matrix<T> D(N, N);
+        El::Gemm(El::NORMAL, El::NORMAL, 1.0, D1, Z, 0.0, D);
+
+        DZ = new El::Matrix<T>(2 * N - 1, N);
+
+        El::Matrix<T> V;
+        base::RowView(V, *DZ, 0, N);
+        V = D;
+        base::RowView(V, *DZ, N, N-1);
+        V = Z;
+
+
+        DZmap[N] = DZ;
+
+        x.Resize(NX, 1);
+        for(int i = 0; i < NX; i++)
+            x.Set(i, 0, x1.Get(i * NR, 0));
     }
 
-    // Initialize non-zero functions.
-    // TODO: boost or stl?
-    std::unordered_map<int, El::Matrix<T>*> yf;
-    for (int i = 0; i < nseeds; i++) {
-        El::Matrix<T> *f = new El::Matrix<T>(N+1, 1);
-        for(int j = 0; j < N; j++)
-            f->Set(j, 0, svalues != nullptr ? svalues[i] : 1.0);
-        yf[seeds[i]] = f;
-    }
 
-    // Compute residual for non-zeros. Put in queue if above threshold.
     typedef std::pair<bool, El::Matrix<T>*> respair_t;
-    std::unordered_map<int, respair_t> res;
+    std::unordered_map<int, respair_t> rymap;
     std::queue<int> violating;
 
-    // First do seeds
+    // Initialize non-zero functions, and their residual, which is not
+    // fully computed yet.
     for (int i = 0; i < nseeds; i++) {
         int node = seeds[i];
 
-        El::Matrix<T> *r = new El::Matrix<T>(N, 1);
-        *r = *yf[node];
-        El::Scale(-alpha, *r);
+        El::Matrix<T> *ry = new El::Matrix<T>(N + NX, 1);
+        for(int j = 0; j < N; j++)
+            ry->Set(j, 0, svalues != nullptr ? -alpha * svalues[i] : -alpha);
+        for(int j = 0; j < NX; j++)
+            ry->Set(N + j, 0, svalues != nullptr ? svalues[i] : 1.0);
+
+
+        rymap[node] = respair_t(false, ry);
+    }
+
+    // Initialize to just zero for all nodes adjanct to seeds, that
+    // are not seeds themselves. Residual is not fully computed yet.
+    for (int i = 0; i < nseeds; i++) {
+        const int *adjnodes = G.adjanct(seeds[i]);
+        for (int l = 0; l < G.degree(seeds[i]); l++) {
+            int onode = adjnodes[l];
+            if (rymap.count(onode) == 0) {
+                El::Matrix<T> *ry = new El::Matrix<T>(N + NX, 1);
+                El::Zero(*ry);
+                rymap[onode] = respair_t(false, ry);
+            }
+        }
+    }
+
+    // Update the residual based on seeds
+    for (int i = 0; i < nseeds; i++) {
+        int node = seeds[i];
+
+        El::Matrix<T> *ry = rymap[node].second;
 
         int deg = G.degree(node);
         const int *adjnodes = G.adjanct(node);
         for (int l = 0; l < deg; l++) {
             int onode = adjnodes[l];
             int odeg = G.degree(onode);
-            if (yf.count(onode))
-                El::Axpy(alpha / odeg, *yf[onode], *r);
+            double v = alpha * ry->Get(N,0) / odeg;
+            for(int j = 0; j < N; j++)
+                ry->Update(j, 0, v);
         }
 
-        bool inq = El::InfinityNorm(*r) > C * deg;
-        res[node] = respair_t(inq, r);
+        bool inq = false;
+        for(int j = 0; j < N; j++)
+            if (std::abs(ry->Get(j, 0)) > C * deg) {
+                inq = true;
+                break;
+            }
+
+        rymap[node].first = inq;
         if (inq)
             violating.push(node);
     }
 
-    // Now go over adjanct nodes
-    for (int i = 0; i < nseeds; i++) {
-        int seed = seeds[i];
-
-        int sdeg = G.degree(seed);
-        const int *sadjnodes = G.adjanct(seed);
-        for(int j = 0; j < sdeg; j++) {
-            int node = sadjnodes[j];
-            if (res.count(node))
-                continue;
-
-            El::Matrix<T> *r = new El::Matrix<T>(N, 1);
-            if (yf.count(node)) {
-                *r = *yf[node];
-                El::Scale(-alpha, *r);
-            } else
-                for(int j = 0; j < N; j++)
-                    r->Set(j, 0, 0.0);
-
-            int deg = G.degree(node);
-            const int *adjnodes = G.adjanct(node);
-            for (int l = 0; l < deg; l++) {
-                int onode = adjnodes[l];
-                int odeg = G.degree(onode);
-                if (yf.count(onode))
-                    El::Axpy(alpha / odeg, *yf[onode], *r);
-            }
-
-            bool inq = El::InfinityNorm(*r) > C * deg;
-            res[node] = respair_t(inq, r);
-            if (inq)
-                violating.push(node);
-        }
-    }
-
-    El::Matrix<T> dy(N - 1, 1);
-    El::Matrix<T> y1, r1;
+    // Initialize r and y for nodes that are adjanct to seeds
+    El::Matrix<T> dry(2 * N - 1, 1);
+    El::Matrix<T> dr = base::RowView(dry, 0, N);
+    T *dybuf = dry.Buffer() + N;
+    El::Matrix<T> r;
     while(!violating.empty()) {
         int node = violating.front();
         violating.pop();
 
-        // If not in yf then it is the zero function
-        if (yf.count(node) == 0) {
-            El::Matrix<T> *ynew = new El::Matrix<T>(N, 1);
-            El::Zero(*ynew);
-            yf[node] = ynew;
-        }
+        // Solve locally, and update rymap[node].
+        respair_t& rpair = rymap[node];
+        El::Matrix<T>& ry = *(rpair.second);
 
-        // Solve locally, and update yf[node].
-        respair_t& rpair = res[node];
-        El::Matrix<T>& r = *(rpair.second);
-        El::Gemv(El::NORMAL, 1.0, *Z, r, 0.0, dy);
-        El::View(y1, *yf[node], 0, 0, N - 1, 1);
-        El::Axpy(1.0, dy, y1);
-        El::Gemv(El::NORMAL, -1.0, *D, dy, 1.0, r);
+        // Compute change in sample values, and r value (of this node)
+        base::RowView(r, ry, 0, N);
+        El::Gemv(El::NORMAL, 1.0, *DZ, r, 0.0, dry);
+        El::Axpy(-1.0, dr, r);
+        T *ybuf = ry.Buffer() + N;
+        for(int i = 0; i < NX; i++)
+            ybuf[i] += dybuf[i * NR];
+
         rpair.first = false;
 
         // Update residuals
@@ -155,48 +159,50 @@ void LocalGraphDiffusion(const GraphType& G,
         const int *adjnodes = G.adjanct(node);
         for (int l = 0; l < deg; l++) {
             int onode = adjnodes[l];
-            if (res.count(onode) == 0) {
-                El::Matrix<T> *rnew = new El::Matrix<T>(N, 1);
-                El::Zero(*rnew);
-                res[onode] = respair_t(false, rnew);
-            }
-            respair_t& rpair1 = res[onode];
-            El::View(r1, *(rpair1.second), 0, 0, N - 1, 1);
-            El::Axpy(alpha/deg, dy, r1);
-
-            // No need to check if already in queue.
             int odeg = G.degree(onode);
-            if (!rpair1.first &&
-                El::InfinityNorm(*(rpair1.second)) > C * odeg) {
-                rpair1.first = true;
+
+            // Add it to rymap, if not already there.
+            if (rymap.count(onode) == 0) {
+                El::Matrix<T> *rynew = new El::Matrix<T>(N + NX, 1);
+                El::Zero(*rynew);
+                rymap[onode] = respair_t(false, rynew);
+            }
+
+            respair_t& rpair1 = rymap[onode];
+            bool inq = false;
+            T *robuf = rpair1.second->Buffer();
+            for(int i = 0; i < N - 1; i++) {
+                robuf[i] += alpha * dybuf[i] / deg;
+                inq = inq || (std::abs(robuf[i]) > C * odeg);
+            }
+            inq = inq || (std::abs(robuf[N - 1]) > C * odeg);
+            if (!rpair1.first && inq) {
                 violating.push(onode);
+                rpair1.first = true;
             }
         }
     }
 
-    // Yank values to y, freeing yf in the process.
+    // Yank values to y, freeing ry in the process.
     // (we yank at all N time points)
-    int nnzcol = yf.size();
-    int *yindptr = new int[N + 1];
-    for(int i = 0; i < N + 1; i++)
+    int nnzcol = rymap.size();
+    int *yindptr = new int[NX + 1];
+    for(int i = 0; i < NX + 1; i++)
         yindptr[i] = i * nnzcol;
-    int *yindices = new int[nnzcol * N];
-    double *yvalues = new double[nnzcol * N];
+    int *yindices = new int[nnzcol * NX];
+    double *yvalues = new double[nnzcol * NX];
 
     int idx = 0;
-    for(auto it = yf.begin(); it != yf.end(); it++) {
-        yindices[idx] = it->first;
-        for(int i = 0; i < N; i++)
-            yvalues[idx + i * nnzcol] = it->second->Get(i, 0);
-        delete it->second;
+    for(auto it = rymap.begin(); it != rymap.end(); it++) {
+        for(int i = 0; i < NX; i++) {
+            yindices[idx + i * nnzcol] = it->first;
+            yvalues[idx + i * nnzcol] = it->second.second->Get(N + i, 0);
+        }
+        delete it->second.second;
         idx++;
     }
-    y.attach(yindptr, yindices, yvalues, yf.size(), G.num_vertices(),
-        N, true);
-
-    // Free res
-    for(auto it = res.begin(); it != res.end(); it++)
-        delete it->second.second;
+    y.attach(yindptr, yindices, yvalues, rymap.size(), G.num_vertices(),
+        NX, true);
 }
 
 template<typename GraphType>

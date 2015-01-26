@@ -1,6 +1,8 @@
 #ifndef SKYLARK_LOCAL_COMPUTATIONS_HPP
 #define SKYLARK_LOCAL_COMPUTATIONS_HPP
 
+#include <boost/math/special_functions/bessel.hpp>
+
 #include <unordered_map>
 #include <unordered_set>
 #include <queue>
@@ -18,15 +20,31 @@ void LocalGraphDiffusion(const GraphType& G,
     const double *svalues = s.locked_values();
     int nseeds = s.nonzeros();
 
-    // TODO set N in a better way. It depends on gamma. For gamma=5, N=15
-    //      is more than enough, but for gamma=100 it is not (N=50 works).
-    int N = 12;
-    int NX = 4;
+    int NX = 4; // TODO as parameter
 
-    int NR = N / NX;  // Should be integer!
-
+    // Find minimum N, caching it since it involves costly computations of
+    // Bessel functions.
+    static std::unordered_map<std::pair<double, double>, int,
+                              utility::pair_hasher_t> Nmap;
+    auto epsgamma = std::make_pair(epsilon, gamma);
+    int minN;
     const double pi = boost::math::constants::pi<double>();
-    double LC = 1 + (2 / pi) * log(N);
+    if (Nmap.count(epsgamma))
+        minN = Nmap[epsgamma];
+    else {
+        minN = 10;
+        double C = 20.0 * std::sqrt(minN) * std::exp(-gamma/2);
+        while (C * boost::math::cyl_bessel_i(minN, gamma) * pow(0.8, minN) >
+            epsilon / (gamma * (1 + (2 / pi) * log(minN - 1))))
+            minN++;
+        Nmap[epsgamma] = minN;
+    }
+
+    int N = (minN / NX + 1) * NX;   // This verifies that N is a multiple of NX.
+    int NR = N / NX;
+
+
+    double LC = 1 + (2 / pi) * log(N - 1);
     double C = (alpha < 1) ?
         (1-alpha) * epsilon / ((1 - exp((alpha - 1) * gamma)) * LC) :
         epsilon / (gamma * LC);
@@ -34,12 +52,15 @@ void LocalGraphDiffusion(const GraphType& G,
     // Setup matrices associated with Chebyshev spectral diff
     // We cache them to keep costs low (can be crucial for
     // when finding the cluster is very fast).
-    static std::unordered_map<int, El::Matrix<T>*> DZmap;
+    static std::unordered_map<std::pair<int, double>, El::Matrix<T>*,
+                              utility::pair_hasher_t> DZmap;
 
     El::Matrix<T> *DZ;
-    if (DZmap.count(N))
-        DZ = DZmap[N];
-    else {
+    auto ngamma = std::make_pair(N, gamma);
+    if (DZmap.count(ngamma)) {
+        DZ = DZmap[ngamma];
+        nla::ChebyshevPoints(N, x, 0, gamma);
+    } else {
         El::Matrix<T> DO, D1, x1;
         nla::ChebyshevDiffMatrix(N, DO, x1, 0, gamma);
         for(int i = 0; i < N; i++)
@@ -61,21 +82,19 @@ void LocalGraphDiffusion(const GraphType& G,
         base::RowView(V, *DZ, N, N-1);
         V = Z;
 
-
-        DZmap[N] = DZ;
+        DZmap[ngamma] = DZ;
 
         x.Resize(NX, 1);
         for(int i = 0; i < NX; i++)
             x.Set(i, 0, x1.Get(i * NR, 0));
     }
 
-
-    typedef std::pair<bool, El::Matrix<T>*> respair_t;
-    std::unordered_map<int, respair_t> rymap;
+    typedef std::pair<bool, El::Matrix<T>*> rypair_t;
+    std::unordered_map<int, rypair_t> rymap;
     std::queue<int> violating;
 
     // Initialize non-zero functions, and their residual, which is not
-    // fully computed yet.
+    // fully computed yet (but we know that needs to be inserted into the queue).
     for (int i = 0; i < nseeds; i++) {
         int node = seeds[i];
 
@@ -86,7 +105,10 @@ void LocalGraphDiffusion(const GraphType& G,
             ry->Set(N + j, 0, svalues != nullptr ? svalues[i] : 1.0);
 
 
-        rymap[node] = respair_t(false, ry);
+        //El::Print(*ry, "Seed 1");
+
+        rymap[node] = rypair_t(true, ry);
+        violating.push(node);
     }
 
     // Initialize to just zero for all nodes adjanct to seeds, that
@@ -98,7 +120,7 @@ void LocalGraphDiffusion(const GraphType& G,
             if (rymap.count(onode) == 0) {
                 El::Matrix<T> *ry = new El::Matrix<T>(N + NX, 1);
                 El::Zero(*ry);
-                rymap[onode] = respair_t(false, ry);
+                rymap[onode] = rypair_t(false, ry);
             }
         }
     }
@@ -111,24 +133,26 @@ void LocalGraphDiffusion(const GraphType& G,
 
         int deg = G.degree(node);
         const int *adjnodes = G.adjanct(node);
+        double v = alpha * ry->Get(N,0) / deg;
         for (int l = 0; l < deg; l++) {
             int onode = adjnodes[l];
             int odeg = G.degree(onode);
-            double v = alpha * ry->Get(N,0) / odeg;
-            for(int j = 0; j < N; j++)
-                ry->Update(j, 0, v);
+
+            rypair_t& ryopair = rymap[onode];
+            T *robuf = ryopair.second->Buffer();
+            bool inq = false;
+            for(int j = 0; j < N; j++) {
+                robuf[j] += v;
+                inq = inq || (std::abs(robuf[j]) > C * odeg);
+            }
+            inq = inq || (std::abs(robuf[N-1]) > C * odeg);
+            if (!ryopair.first && inq) {
+                violating.push(onode);
+                ryopair.first = true;
+            }
         }
 
-        bool inq = false;
-        for(int j = 0; j < N; j++)
-            if (std::abs(ry->Get(j, 0)) > C * deg) {
-                inq = true;
-                break;
-            }
-
-        rymap[node].first = inq;
-        if (inq)
-            violating.push(node);
+        //El::Print(*ry, "Seed 2");
     }
 
     // Initialize r and y for nodes that are adjanct to seeds
@@ -141,13 +165,15 @@ void LocalGraphDiffusion(const GraphType& G,
         violating.pop();
 
         // Solve locally, and update rymap[node].
-        respair_t& rpair = rymap[node];
+        rypair_t& rpair = rymap[node];
         El::Matrix<T>& ry = *(rpair.second);
 
         // Compute change in sample values, and r value (of this node)
         base::RowView(r, ry, 0, N);
         El::Gemv(El::NORMAL, 1.0, *DZ, r, 0.0, dry);
+        //El::Print(r, "Before");
         El::Axpy(-1.0, dr, r);
+        //El::Print(r, "After");
         T *ybuf = ry.Buffer() + N;
         for(int i = 0; i < NX; i++)
             ybuf[i] += dybuf[i * NR];
@@ -165,20 +191,20 @@ void LocalGraphDiffusion(const GraphType& G,
             if (rymap.count(onode) == 0) {
                 El::Matrix<T> *rynew = new El::Matrix<T>(N + NX, 1);
                 El::Zero(*rynew);
-                rymap[onode] = respair_t(false, rynew);
+                rymap[onode] = rypair_t(false, rynew);
             }
 
-            respair_t& rpair1 = rymap[onode];
+            rypair_t& ryopair = rymap[onode];
             bool inq = false;
-            T *robuf = rpair1.second->Buffer();
+            T *robuf = ryopair.second->Buffer();
             for(int i = 0; i < N - 1; i++) {
                 robuf[i] += alpha * dybuf[i] / deg;
                 inq = inq || (std::abs(robuf[i]) > C * odeg);
             }
             inq = inq || (std::abs(robuf[N - 1]) > C * odeg);
-            if (!rpair1.first && inq) {
+            if (!ryopair.first && inq) {
                 violating.push(onode);
-                rpair1.first = true;
+                ryopair.first = true;
             }
         }
     }

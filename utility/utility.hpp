@@ -7,6 +7,7 @@
 #include "quasirand.hpp"
 #include "get_communicator.hpp"
 #include "typer.hpp"
+#include "hash.hpp"
 #include "elem_extender.hpp"
 #include "io/io.hpp"
 

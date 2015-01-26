@@ -12,15 +12,16 @@ namespace skylark { namespace ml {
 template<typename GraphType, typename T>
 void LocalGraphDiffusion(const GraphType& G,
     const base::sparse_matrix_t<T>& s, base::sparse_matrix_t<T>& y,
-    El::Matrix<T> &x, double alpha, double gamma, double epsilon) {
+    El::Matrix<T> &x, double alpha, double gamma, double epsilon, int NX = 4) {
 
-    // TODO verify one column in s.
+    if (s.width() != 1)
+        SKYLARK_THROW_EXCEPTION (
+            base::invalid_parameters()
+               << base::error_msg("input should be a vector") );
 
     const int *seeds = s.indices();
     const double *svalues = s.locked_values();
     int nseeds = s.nonzeros();
-
-    int NX = 4; // TODO as parameter
 
     // Find minimum N, caching it since it involves costly computations of
     // Bessel functions.
@@ -42,7 +43,6 @@ void LocalGraphDiffusion(const GraphType& G,
 
     int N = (minN / NX + 1) * NX;   // This verifies that N is a multiple of NX.
     int NR = N / NX;
-
 
     double LC = 1 + (2 / pi) * log(N - 1);
     double C = (alpha < 1) ?
@@ -104,9 +104,6 @@ void LocalGraphDiffusion(const GraphType& G,
         for(int j = 0; j < NX; j++)
             ry->Set(N + j, 0, svalues != nullptr ? svalues[i] : 1.0);
 
-
-        //El::Print(*ry, "Seed 1");
-
         rymap[node] = rypair_t(true, ry);
         violating.push(node);
     }
@@ -151,8 +148,6 @@ void LocalGraphDiffusion(const GraphType& G,
                 ryopair.first = true;
             }
         }
-
-        //El::Print(*ry, "Seed 2");
     }
 
     // Initialize r and y for nodes that are adjanct to seeds
@@ -171,9 +166,7 @@ void LocalGraphDiffusion(const GraphType& G,
         // Compute change in sample values, and r value (of this node)
         base::RowView(r, ry, 0, N);
         El::Gemv(El::NORMAL, 1.0, *DZ, r, 0.0, dry);
-        //El::Print(r, "Before");
         El::Axpy(-1.0, dr, r);
-        //El::Print(r, "After");
         T *ybuf = ry.Buffer() + N;
         for(int i = 0; i < NX; i++)
             ybuf[i] += dybuf[i * NR];
@@ -234,7 +227,8 @@ void LocalGraphDiffusion(const GraphType& G,
 template<typename GraphType>
 double FindLocalCluster(const GraphType& G,
     const std::vector<int>& seeds, std::vector<int>& cluster,
-    double alpha, double gamma, double epsilon, bool recursive = true) {
+    double alpha, double gamma, double epsilon, int NX = 4,
+    bool recursive = true) {
 
     double currentcond = -1;
     cluster = seeds;
@@ -250,7 +244,7 @@ double FindLocalCluster(const GraphType& G,
 
         // Run the diffusion
         base::sparse_matrix_t<double> y;
-        LocalGraphDiffusion(G, s, y, x, alpha, gamma, epsilon);
+        LocalGraphDiffusion(G, s, y, x, alpha, gamma, epsilon, NX);
 
         // Go over the y output at the different time samples,
         // find the best prefix and if better conductance, store it.

@@ -19,6 +19,11 @@ void LocalGraphDiffusion(const GraphType& G,
             base::invalid_parameters()
                << base::error_msg("input should be a vector") );
 
+    if (!El::Initialized())
+        SKYLARK_THROW_EXCEPTION (
+            base::skylark_exception()
+               << base::error_msg("Elemental was not initialized") );
+
     const int *seeds = s.indices();
     const double *svalues = s.locked_values();
     int nseeds = s.nonzeros();
@@ -28,66 +33,67 @@ void LocalGraphDiffusion(const GraphType& G,
     static std::unordered_map<std::pair<double, double>, int,
                               utility::pair_hasher_t> Nmap;
     auto epsgamma = std::make_pair(epsilon, gamma);
-    int minN;
     const double pi = boost::math::constants::pi<double>();
-    if (Nmap.count(epsgamma))
-        minN = Nmap[epsgamma];
-    else {
-        minN = 10;
+    if (Nmap.count(epsgamma) == 0) {
+        int minN = 10;
         double C = 20.0 * std::sqrt(minN) * std::exp(-gamma/2);
         while (C * boost::math::cyl_bessel_i(minN, gamma) * pow(0.8, minN) >
             epsilon / (gamma * (1 + (2 / pi) * log(minN - 1))))
             minN++;
         Nmap[epsgamma] = minN;
     }
+    int minN = Nmap[epsgamma];
 
-    int N = (minN / NX + 1) * NX;   // This verifies that N is a multiple of NX.
+    // N is taken to be the minimum multiple of NX that is bigger or equal
+    // to minN.
+    int N = minN % NX == 0 ? minN : (minN / NX + 1) * NX;
     int NR = N / NX;
-
-    double LC = 1 + (2 / pi) * log(N - 1);
-    double C = (alpha < 1) ?
-        (1-alpha) * epsilon / ((1 - exp((alpha - 1) * gamma)) * LC) :
-        epsilon / (gamma * LC);
 
     // Setup matrices associated with Chebyshev spectral diff
     // We cache them to keep costs low (can be crucial for
     // when finding the cluster is very fast).
     static std::unordered_map<std::pair<int, double>, El::Matrix<T>*,
-                              utility::pair_hasher_t> DZmap;
+                              utility::pair_hasher_t> Dmap;
 
-    El::Matrix<T> *DZ;
     auto ngamma = std::make_pair(N, gamma);
-    if (DZmap.count(ngamma)) {
-        DZ = DZmap[ngamma];
-        nla::ChebyshevPoints(N, x, 0, gamma);
-    } else {
-        El::Matrix<T> DO, D1, x1;
-        nla::ChebyshevDiffMatrix(N, DO, x1, 0, gamma);
+    if (Dmap.count(ngamma) == 0) {
+        El::Matrix<T> *D = new El::Matrix<T>(N, N);
+        Dmap[ngamma] = D;
+
+        El::Matrix<T> D0;
+        nla::ChebyshevDiffMatrix(N, D0, x, 0, gamma);
         for(int i = 0; i < N; i++)
-            DO.Set(i, i, DO.Get(i, i) + 1.0);
-        base::ColumnView(D1, DO, 0, N - 1);
+            D0.Set(i, i, D0.Get(i, i) + 1.0);
 
-        El::Matrix<T> Z(N, N - 1);
-        Z = D1;
-        El::Pseudoinverse(Z);
+        El::Matrix<T> R(N, N);
+        El::qr::Explicit(D0, R);
 
-        El::Matrix<T> D(N, N);
-        El::Gemm(El::NORMAL, El::NORMAL, 1.0, D1, Z, 0.0, D);
+        for(int j = 0; j < N; j++)
+            D->Set(N-1, j, D0.Get(j, N-1));
 
-        DZ = new El::Matrix<T>(2 * N - 1, N);
+        El::Matrix<T> Q1, R1;
+        base::ColumnView(Q1, D0, 0, N - 1);
+        El::View(R1, R, 0, 0, N-1, N-1);
 
-        El::Matrix<T> V;
-        base::RowView(V, *DZ, 0, N);
-        V = D;
-        base::RowView(V, *DZ, N, N-1);
-        V = Z;
+        El::Pseudoinverse(R1);
 
-        DZmap[ngamma] = DZ;
-
-        x.Resize(NX, 1);
-        for(int i = 0; i < NX; i++)
-            x.Set(i, 0, x1.Get(i * NR, 0));
+        El::Matrix<T> DU;
+        base::RowView(DU, *D, 0, N-1);
+        El::Gemm(El::NORMAL, El::TRANSPOSE, 1.0, R1, Q1, 0.0, DU);
     }
+
+    const El::Matrix<T> *D = Dmap[ngamma];
+
+    // TODO the following line is very correct.
+    nla::ChebyshevPoints(N, x, 0, gamma);
+
+    // Constants for convergence.
+    double LC = 1 + (2 / pi) * log(N - 1);
+    double C = (alpha < 1) ?
+        (1-alpha) * epsilon / ((1 - exp((alpha - 1) * gamma)) * LC) :
+        epsilon / (gamma * LC);
+
+    const T *u = D->LockedBuffer() + N - 1;
 
     typedef std::pair<bool, El::Matrix<T>*> rypair_t;
     std::unordered_map<int, rypair_t> rymap;
@@ -150,10 +156,9 @@ void LocalGraphDiffusion(const GraphType& G,
         }
     }
 
-    // Initialize r and y for nodes that are adjanct to seeds
-    El::Matrix<T> dry(2 * N - 1, 1);
-    El::Matrix<T> dr = base::RowView(dry, 0, N);
-    T *dybuf = dry.Buffer() + N;
+    // Main loop
+    El::Matrix<T> dyp(N, 1);
+    T *dybuf = dyp.Buffer();
     El::Matrix<T> r;
     while(!violating.empty()) {
         int node = violating.front();
@@ -165,8 +170,11 @@ void LocalGraphDiffusion(const GraphType& G,
 
         // Compute change in sample values, and r value (of this node)
         base::RowView(r, ry, 0, N);
-        El::Gemv(El::NORMAL, 1.0, *DZ, r, 0.0, dry);
-        El::Axpy(-1.0, dr, r);
+        El::Gemv(El::NORMAL, 1.0, *D, r, 0.0, dyp);
+        T *rbuf = ry.Buffer();
+        T v = dyp.Get(N-1, 0);
+        for(int i = 0; i < N; i++)
+            rbuf[i] = v * u[i * N];
         T *ybuf = ry.Buffer() + N;
         for(int i = 0; i < NX; i++)
             ybuf[i] += dybuf[i * NR];

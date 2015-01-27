@@ -84,7 +84,7 @@ void LocalGraphDiffusion(const GraphType& G,
 
     const El::Matrix<T> *D = Dmap[ngamma];
 
-    // TODO the following line is very correct.
+    // TODO the following line is not correct.
     nla::ChebyshevPoints(N, x, 0, gamma);
 
     // Constants for convergence.

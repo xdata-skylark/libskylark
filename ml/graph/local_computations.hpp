@@ -7,6 +7,18 @@
 #include <unordered_set>
 #include <queue>
 
+extern "C" {
+
+void EL_BLAS(sgemv)(const char*, const El::Int *, const El::Int *,
+    const float *, const float *, const El::Int *,
+    const float *, const El::Int *, const float *, float *, const El::Int *);
+
+void EL_BLAS(dgemv)(const char*, const El::Int *, const El::Int *,
+    const double *, const double *, const El::Int *,
+    const double *, const El::Int *, const double *, double *, const El::Int *);
+
+}
+
 namespace skylark { namespace ml {
 
 template<typename GraphType, typename T>
@@ -82,7 +94,7 @@ void LocalGraphDiffusion(const GraphType& G,
         El::Gemm(El::NORMAL, El::TRANSPOSE, 1.0, R1, Q1, 0.0, DU);
     }
 
-    const El::Matrix<T> *D = Dmap[ngamma];
+    const El::Matrix<T> *D_ = Dmap[ngamma];
 
     // TODO the following line is not correct.
     nla::ChebyshevPoints(N, x, 0, gamma);
@@ -93,23 +105,22 @@ void LocalGraphDiffusion(const GraphType& G,
         (1-alpha) * epsilon / ((1 - exp((alpha - 1) * gamma)) * LC) :
         epsilon / (gamma * LC);
 
-    const T *u = D->LockedBuffer() + N - 1;
+    // From now on, do not use Elemental to avoid overheads.
+    const T *D = D_->LockedBuffer();
+    const T *u = D_->LockedBuffer() + N - 1;
 
-    typedef std::pair<bool, El::Matrix<T>*> rypair_t;
+    typedef std::pair<bool, T*> rypair_t;
     std::unordered_map<int, rypair_t> rymap;
     std::queue<int> violating;
 
     // Initialize non-zero functions, and their residual, which is not
     // fully computed yet (but we know that needs to be inserted into the queue).
     for (int i = 0; i < nseeds; i++) {
+        T *ry = new T[N + NX];
+        std::fill(ry, ry + N, svalues != nullptr ? -alpha * svalues[i] : -alpha);
+        std::fill(ry + N, ry + N + NX, svalues != nullptr ? svalues[i] : 1.0);
+
         int node = seeds[i];
-
-        El::Matrix<T> *ry = new El::Matrix<T>(N + NX, 1);
-        for(int j = 0; j < N; j++)
-            ry->Set(j, 0, svalues != nullptr ? -alpha * svalues[i] : -alpha);
-        for(int j = 0; j < NX; j++)
-            ry->Set(N + j, 0, svalues != nullptr ? svalues[i] : 1.0);
-
         rymap[node] = rypair_t(true, ry);
         violating.push(node);
     }
@@ -121,8 +132,8 @@ void LocalGraphDiffusion(const GraphType& G,
         for (int l = 0; l < G.degree(seeds[i]); l++) {
             int onode = adjnodes[l];
             if (rymap.count(onode) == 0) {
-                El::Matrix<T> *ry = new El::Matrix<T>(N + NX, 1);
-                El::Zero(*ry);
+                T *ry = new T[N + NX];
+                std::fill(ry, ry + N + NX, 0);
                 rymap[onode] = rypair_t(false, ry);
             }
         }
@@ -132,23 +143,23 @@ void LocalGraphDiffusion(const GraphType& G,
     for (int i = 0; i < nseeds; i++) {
         int node = seeds[i];
 
-        El::Matrix<T> *ry = rymap[node].second;
+        T *ry = rymap[node].second;
 
         int deg = G.degree(node);
         const int *adjnodes = G.adjanct(node);
-        double v = alpha * ry->Get(N,0) / deg;
+        double v = alpha * ry[N] / deg;
         for (int l = 0; l < deg; l++) {
             int onode = adjnodes[l];
             int odeg = G.degree(onode);
 
             rypair_t& ryopair = rymap[onode];
-            T *robuf = ryopair.second->Buffer();
+            T *ro = ryopair.second;
             bool inq = false;
+            double B = C * odeg;
             for(int j = 0; j < N; j++) {
-                robuf[j] += v;
-                inq = inq || (std::abs(robuf[j]) > C * odeg);
+                ro[j] += v;
+                inq = inq || (std::abs(ro[j]) > B);
             }
-            inq = inq || (std::abs(robuf[N-1]) > C * odeg);
             if (!ryopair.first && inq) {
                 violating.push(onode);
                 ryopair.first = true;
@@ -157,28 +168,32 @@ void LocalGraphDiffusion(const GraphType& G,
     }
 
     // Main loop
-    El::Matrix<T> dyp(N, 1);
-    T *dybuf = dyp.Buffer();
-    El::Matrix<T> r;
+    T dyp[N];
     while(!violating.empty()) {
         int node = violating.front();
         violating.pop();
 
         // Solve locally, and update rymap[node].
         rypair_t& rpair = rymap[node];
-        El::Matrix<T>& ry = *(rpair.second);
+        T *ry = rpair.second;
 
-        // Compute change in sample values, and r value (of this node)
-        base::RowView(r, ry, 0, N);
-        El::Gemv(El::NORMAL, 1.0, *D, r, 0.0, dyp);
-        T *rbuf = ry.Buffer();
-        T v = dyp.Get(N-1, 0);
-        for(int i = 0; i < N; i++)
-            rbuf[i] = v * u[i * N];
-        T *ybuf = ry.Buffer() + N;
+        // Compute correction to y, and the new residual.
+        // TODO double or single
+        T done = 1.0, dzero = 0.0;
+        El::Int ione = 1;
+        if (std::is_same<T, float>::value)
+            EL_BLAS(sgemv)("Normal", &N, &N, (float *)&done, (float *)D, &N,
+                (float *)ry, &ione, (float *)&dzero, (float *)dyp, &ione);
+        else
+            EL_BLAS(dgemv)("Normal", &N, &N, (double *)&done, (double *)D, &N,
+                (double *)ry, &ione, (double *)&dzero, (double *)dyp, &ione);
         for(int i = 0; i < NX; i++)
-            ybuf[i] += dybuf[i * NR];
+            ry[N + i] += dyp[i * NR];
+        T v = dyp[N-1];
+        for(int i = 0; i < N; i++)
+            ry[i] = v * u[i * N];
 
+        // No longer in queue.
         rpair.first = false;
 
         // Update residuals
@@ -190,19 +205,21 @@ void LocalGraphDiffusion(const GraphType& G,
 
             // Add it to rymap, if not already there.
             if (rymap.count(onode) == 0) {
-                El::Matrix<T> *rynew = new El::Matrix<T>(N + NX, 1);
-                El::Zero(*rynew);
+                T *rynew = new T[N + NX];
+                std::fill(rynew, rynew + N + NX, 0);
                 rymap[onode] = rypair_t(false, rynew);
             }
 
             rypair_t& ryopair = rymap[onode];
             bool inq = false;
-            T *robuf = ryopair.second->Buffer();
+            T *ryo = ryopair.second;
+            double c = alpha / deg;
+            double B = C * odeg;
             for(int i = 0; i < N - 1; i++) {
-                robuf[i] += alpha * dybuf[i] / deg;
-                inq = inq || (std::abs(robuf[i]) > C * odeg);
+                ryo[i] += c *  dyp[i];
+                inq = inq || (std::abs(ryo[i]) > B);
             }
-            inq = inq || (std::abs(robuf[N - 1]) > C * odeg);
+            inq = inq || (std::abs(ryo[N - 1]) > B);
             if (!ryopair.first && inq) {
                 violating.push(onode);
                 ryopair.first = true;
@@ -223,7 +240,7 @@ void LocalGraphDiffusion(const GraphType& G,
     for(auto it = rymap.begin(); it != rymap.end(); it++) {
         for(int i = 0; i < NX; i++) {
             yindices[idx + i * nnzcol] = it->first;
-            yvalues[idx + i * nnzcol] = it->second.second->Get(N + i, 0);
+            yvalues[idx + i * nnzcol] = it->second.second[N + i];
         }
         delete it->second.second;
         idx++;

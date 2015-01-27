@@ -178,7 +178,6 @@ void LocalGraphDiffusion(const GraphType& G,
         T *ry = rpair.second;
 
         // Compute correction to y, and the new residual.
-        // TODO double or single
         T done = 1.0, dzero = 0.0;
         El::Int ione = 1;
         if (std::is_same<T, float>::value)

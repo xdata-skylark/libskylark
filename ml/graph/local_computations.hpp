@@ -228,7 +228,13 @@ void LocalGraphDiffusion(const GraphType& G,
 
     // Yank values to y, freeing ry in the process.
     // (we yank at all N time points)
-    int nnzcol = rymap.size();
+
+    // First find number of non-zeros
+    int nnzcol = 0;
+    for(auto it = rymap.begin(); it != rymap.end(); it++)
+        if (it->second.second[N] != 0)
+            nnzcol++;
+
     int *yindptr = new int[NX + 1];
     for(int i = 0; i < NX + 1; i++)
         yindptr[i] = i * nnzcol;
@@ -237,14 +243,17 @@ void LocalGraphDiffusion(const GraphType& G,
 
     int idx = 0;
     for(auto it = rymap.begin(); it != rymap.end(); it++) {
-        for(int i = 0; i < NX; i++) {
-            yindices[idx + i * nnzcol] = it->first;
-            yvalues[idx + i * nnzcol] = it->second.second[N + i];
+        if (it->second.second[N] != 0) {
+            for(int i = 0; i < NX; i++) {
+                yindices[idx + i * nnzcol] = it->first;
+                yvalues[idx + i * nnzcol] = it->second.second[N + i];
+            }
+            idx++;
         }
         delete it->second.second;
-        idx++;
     }
-    y.attach(yindptr, yindices, yvalues, rymap.size(), G.num_vertices(),
+
+    y.attach(yindptr, yindices, yvalues, nnzcol, G.num_vertices(),
         NX, true);
 }
 

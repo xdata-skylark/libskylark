@@ -2,6 +2,7 @@
 #define SKYLARK_ML_MODEL_HPP
 
 #include <El.hpp>
+#include <El/core/types.h>
 #include <skylark.hpp>
 #include <cmath>
 #include <boost/mpi.hpp>
@@ -270,11 +271,11 @@ double model_t<InputType, OutputType>::evaluate(OutputType& Yt,
 
     int rank = comm.rank();
 
-    int correct = classification_accuracy(Yt, Yp);
+    ElInt correct = classification_accuracy(Yt, Yp);
     double accuracy = 0.0;
-    int totalcorrect, total;
-    boost::mpi::reduce(comm, correct, totalcorrect, std::plus<double>(), 0);
-    boost::mpi::reduce(comm, Yt.Height(), total, std::plus<size_t>(), 0);
+    ElInt totalcorrect, total;
+    boost::mpi::reduce(comm, correct, totalcorrect, std::plus<ElInt>(), 0);
+    boost::mpi::reduce(comm, Yt.Height(), total, std::plus<ElInt>(), 0);
 
     if(rank ==0)
         accuracy =  totalcorrect*100.0/total;

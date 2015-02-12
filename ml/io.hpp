@@ -13,6 +13,7 @@
 #include <cstdlib>
 #include <string>
 #include <El.hpp>
+#include <El/core/types.h>
 #include "../base/sparse_matrix.hpp"
 #include "options.hpp"
 
@@ -29,8 +30,8 @@ int write_hdf5(const boost::mpi::communicator &comm,
     std::string fName, El::Matrix<double>& X,
     El::Matrix<double>& Y) {
 
-    int n, d;
-    boost::mpi::reduce(comm, X.Width(), n, std::plus<int>(), 0);
+    ElInt n, d;
+    boost::mpi::reduce(comm, X.Width(), n, std::plus<ElInt>(), 0);
     d = X.Height();
 
 

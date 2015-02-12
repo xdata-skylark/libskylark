@@ -429,7 +429,7 @@ skylark::ml::model_t<T, LocalMatrixType>* BlockADMMSolver<T>::train(T& X, LocalM
                    El::Matrix<double> Ones;
                    El::Ones(Ones, sj, 1);
                    El::Gemm(El::NORMAL, El::TRANSPOSE, 1.0, z, z, 0.0, *Cache[j]);
-                   Cache[j]->UpdateDiagonal(1.0, Ones);
+                   El::UpdateDiagonal(*Cache[j], 1.0, Ones);
                    El::Inverse(*Cache[j]);
 
                    if (CacheTransforms)

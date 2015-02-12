@@ -22,13 +22,13 @@ namespace skylark { namespace sketch {
 /* Specialization: SpParMat for input, distributed Elemental for output */
 template <typename IndexType,
           typename ValueType,
-          elem::Distribution ColDist,
-          elem::Distribution RowDist,
+          El::Distribution ColDist,
+          El::Distribution RowDist,
           template <typename> class IdxDistributionType,
           template <typename> class ValueDistribution>
 struct hash_transform_t <
     SpParMat<IndexType, ValueType, SpDCCols<IndexType, ValueType> >,
-    elem::DistMatrix<ValueType, ColDist, RowDist>,
+    El::DistMatrix<ValueType, ColDist, RowDist>,
     IdxDistributionType,
     ValueDistribution > :
         public hash_transform_data_t<IdxDistributionType,
@@ -38,7 +38,7 @@ struct hash_transform_t <
     typedef SpDCCols< index_type, value_type > col_t;
     typedef FullyDistVec< index_type, value_type> mpi_vector_t;
     typedef SpParMat< index_type, value_type, col_t > matrix_type;
-    typedef elem::DistMatrix< value_type, ColDist, RowDist > output_matrix_type;
+    typedef El::DistMatrix< value_type, ColDist, RowDist > output_matrix_type;
     typedef hash_transform_data_t<IdxDistributionType,
                                   ValueDistribution> data_type;
 
@@ -273,7 +273,7 @@ template <typename IndexType,
           template <typename> class ValueDistribution>
 struct hash_transform_t <
     SpParMat<IndexType, ValueType, SpDCCols<IndexType, ValueType> >,
-    elem::Matrix<ValueType>,
+    El::Matrix<ValueType>,
     IdxDistributionType,
     ValueDistribution > :
         public hash_transform_data_t<IdxDistributionType,
@@ -283,7 +283,7 @@ struct hash_transform_t <
     typedef SpDCCols< index_type, value_type > col_t;
     typedef FullyDistVec< index_type, value_type> mpi_vector_t;
     typedef SpParMat< index_type, value_type, col_t > matrix_type;
-    typedef elem::Matrix< value_type > output_matrix_type;
+    typedef El::Matrix< value_type > output_matrix_type;
     typedef hash_transform_data_t<IdxDistributionType,
                                   ValueDistribution> data_type;
 
@@ -408,7 +408,7 @@ template <typename IndexType,
           template <typename> class ValueDistribution>
 struct hash_transform_t <
     SpParMat<IndexType, ValueType, SpDCCols<IndexType, ValueType> >,
-    elem::DistMatrix<ValueType, elem::STAR, elem::STAR>,
+    El::DistMatrix<ValueType, El::STAR, El::STAR>,
     IdxDistributionType,
     ValueDistribution > :
         public hash_transform_data_t<IdxDistributionType,
@@ -418,7 +418,7 @@ struct hash_transform_t <
     typedef SpDCCols< index_type, value_type > col_t;
     typedef FullyDistVec< index_type, value_type> mpi_vector_t;
     typedef SpParMat< index_type, value_type, col_t > matrix_type;
-    typedef elem::DistMatrix< value_type, elem::STAR, elem::STAR > output_matrix_type;
+    typedef El::DistMatrix< value_type, El::STAR, El::STAR > output_matrix_type;
     typedef hash_transform_data_t<IdxDistributionType,
                                   ValueDistribution> data_type;
 

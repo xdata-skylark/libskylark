@@ -8,10 +8,11 @@
 # Random123_FOUND       - boolean indicating if Random123 was found.
 
 FIND_PATH(Random123_INCLUDE_DIR Random123/threefry.h Random123/MicroURNG.hpp
+  $ENV{RANDOM123_ROOT}/include
+  $ENV{HOME}/Software/include
   /usr/local/include
   /usr/include
-  $ENV{HOME}/Software/include
-  $ENV{RANDOM123_ROOT}/include
+  NO_DEFAULT_PATH
 )
 
 IF(Random123_INCLUDE_DIR)

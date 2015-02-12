@@ -9,30 +9,36 @@
 # CombBLAS_FOUND       - do not attempt to use if "no" or undefined.
 
 FIND_PATH(CombBLAS_INCLUDE_DIR CombBLAS.h SpParMat.h SpParVec.h DenseParVec.h
+  $ENV{COMBBLAS_ROOT}
+  $ENV{HOME}/Software/include
   /usr/local/include
   /usr/local/include/CombBLAS
   /usr/include
-  $ENV{HOME}/Software/include
-  $ENV{COMBBLAS_ROOT}
+  NO_DEFAULT_PATH
 )
 
 find_library(MPITypelib_LIBRARY MPITypelib
+  $ENV{COMBBLAS_ROOT}
+  $ENV{HOME}/Software/lib
   /usr/local/lib
   /usr/lib
-  $ENV{HOME}/Software/lib
-  $ENV{COMBBLAS_ROOT}
+  NO_DEFAULT_PATH
 )
+
 find_library(CommGridlib_LIBRARY CommGridlib
+  $ENV{COMBBLAS_ROOT}
+  $ENV{HOME}/Software/lib
   /usr/local/lib
   /usr/lib
-  $ENV{HOME}/Software/lib
-  $ENV{COMBBLAS_ROOT}
+  NO_DEFAULT_PATH
 )
+
 find_library(MemoryPoollib_LIBRARY MemoryPoollib
+  $ENV{COMBBLAS_ROOT}
+  $ENV{HOME}/Software/lib
   /usr/local/lib
   /usr/lib
-  $ENV{HOME}/Software/lib
-  $ENV{COMBBLAS_ROOT}
+  NO_DEFAULT_PATH
 )
 
 IF(MPITypelib_LIBRARY AND CommGridlib_LIBRARY AND MemoryPoollib_LIBRARY)

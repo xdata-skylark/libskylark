@@ -9,24 +9,27 @@
 # Elemental_FOUND       - do not attempt to use if "no" or undefined.
 
 FIND_PATH(Elemental_INCLUDE_DIR El/core.hpp
+  $ENV{ELEMENTAL_ROOT}/include
+  $ENV{HOME}/Software/include
   /usr/local/include
   /usr/include
-  $ENV{HOME}/Software/include
-  $ENV{ELEMENTAL_ROOT}/include
+  NO_DEFAULT_PATH
 )
 
 FIND_LIBRARY(Elemental_LIBRARY El
+   $ENV{ELEMENTAL_ROOT}/lib
+   $ENV{HOME}/Software/lib
    /usr/local/lib
    /usr/lib
-   $ENV{HOME}/Software/lib
-   $ENV{ELEMENTAL_ROOT}/lib
+   NO_DEFAULT_PATH
 )
 
 FIND_LIBRARY(Pmrrr_LIBRARY pmrrr
+   $ENV{ELEMENTAL_ROOT}/lib
+   $ENV{HOME}/Software/lib
    /usr/local/lib
    /usr/lib
-   $ENV{HOME}/Software/lib
-   $ENV{ELEMENTAL_ROOT}/lib
+   NO_DEFAULT_PATH
 )
 
 IF(Elemental_INCLUDE_DIR AND Elemental_LIBRARY AND Pmrrr_LIBRARY)

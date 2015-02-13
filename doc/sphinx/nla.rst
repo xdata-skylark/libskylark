@@ -53,8 +53,8 @@ Note: it is assume that a :math:`s \times n` matrix can fit in the memory of a s
 
 *****
 
-.. cpp:function:: void ApproximateLeastSquares(elem::Orientation orientation, const elem::Matrix<T>& A, const elem::Matrix<T>& B, elem::Matrix<T>& X, base::context_t& context, int sketch_size = -1)
-.. cpp:function:: void ApproximateLeastSquares(elem::Orientation orientation, const elem::DistMatrix<T, elem::VC, elem::STAR>& A, const elem::DistMatrix<T, elem::VC, elem::STAR>& B, elem::DistMatrix<T, elem::STAR, elem::STAR>& X, base::context_t& context, int sketch_size = -1)
+.. cpp:function:: void ApproximateLeastSquares(El::Orientation orientation, const El::Matrix<T>& A, const El::Matrix<T>& B, El::Matrix<T>& X, base::context_t& context, int sketch_size = -1)
+.. cpp:function:: void ApproximateLeastSquares(El::Orientation orientation, const El::DistMatrix<T, El::VC, El::STAR>& A, const El::DistMatrix<T, El::VC, El::STAR>& B, El::DistMatrix<T, El::STAR, El::STAR>& X, base::context_t& context, int sketch_size = -1)
 
 If `orientation` is set to ``NORMAL``, then approximate :math:`\arg\min_X \|A * X - B\|_F`, otherwise
 `orientation` must be equal to ``ADJOINT`` and :math:`\arg\min_X \|A^H * X - B\|_F` is approximated.
@@ -76,7 +76,7 @@ A flavor of usage is given in the code snippet below.
      skybase::context_t context(23234);
 
      // Solve the Least Squres problem of minimizing || AX - B||_2 over X
-     skylark::nla::ApproximateLeastSquares(elem::NORMAL, A, X, B, context);
+     skylark::nla::ApproximateLeastSquares(El::NORMAL, A, X, B, context);
 
 Faster Least-squares
 --------------------
@@ -97,7 +97,7 @@ Note: it is assume that a :math:`4 n^2` matrix can fit in the memory of a single
 
 *****
 
-.. cpp:function:: void FastLeastSquares(elem::Orientation orientation, const elem::DistMatrix<T, elem::VC, elem::STAR>& A, const elem::DistMatrix<T, elem::VC, elem::STAR>& B, elem::DistMatrix<T, elem::STAR, elem::STAR>& X, base::context_t& context)
+.. cpp:function:: void FastLeastSquares(El::Orientation orientation, const El::DistMatrix<T, El::VC, El::STAR>& A, const El::DistMatrix<T, El::VC, El::STAR>& B, El::DistMatrix<T, El::STAR, El::STAR>& X, base::context_t& context)
 
 If `orientation` is set to ``NORMAL``, then approximate :math:`\arg\min_X \|A * X - B\|_F`, otherwise
 `orientation` must be equal to ``ADJOINT`` and :math:`\arg\min_X \|A^H * X - B\|_F` is approximated.
@@ -117,7 +117,7 @@ A flavor of usage is given in the code snippet below.
      skybase::context_t context(23234);
 
      // Solve the Least Squres problem of minimizing || AX - B||_2 over X
-     skylark::nla::FasterLeastSquares(elem::NORMAL, A, X, B, context);
+     skylark::nla::FasterLeastSquares(El::NORMAL, A, X, B, context);
 
 Randomized Singular Value Decomposition
 ========================================
@@ -186,7 +186,7 @@ A flavor of usage is given in the code snippet below.
      rand_svd(A, target_rank, U, S, V, params, context);
 
 The **rand_svd** function accepts certain combinations of matrix types for the input A and the SVD factors:
-U, S and V. Currently, the matrix types are Elemental MC/MR or elem::Matrix types.
+U, S and V. Currently, the matrix types are Elemental MC/MR or El::Matrix types.
 
 For a running example, please see *libskylark/examples/rand_svd.cpp*.
 

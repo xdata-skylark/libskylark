@@ -275,17 +275,17 @@ The sketching is done using *Johnson-Lindenstrauss (JLT)* transform.
      ...
 
      /* Local Matrix Type */
-     typedef elem::Matrix<double> MatrixType;
+     typedef El::Matrix<double> MatrixType;
 
      /* Row distributed Matrix Type */
-     typedef elem::DistMatrix<double, elem::VC, elem::STAR> DistMatrixType;
+     typedef El::DistMatrix<double, El::VC, El::STAR> DistMatrixType;
 
       /* Initialize libSkylark context with a seed */
      skylark::base::context_t context (12345);
 
      /* Row distributed Elemental Matrix A of size N x M */
-     elem::DistMatrix<double, elem::VR, elem::STAR> A(grid);
-     elem::Uniform (A, N, M);
+     El::DistMatrix<double, El::VR, El::STAR> A(grid);
+     El::Uniform (A, N, M);
 
      /* Create the Johnson-Lindenstrauss Sketch object to map R^N to R^S*/
      skys::JLT_t<DistMatrixType, MatrixType> JLT (N,S, context);

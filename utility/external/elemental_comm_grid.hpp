@@ -11,9 +11,9 @@ namespace utility {
 
 /// computes the rank owning the global (row_idx, col_idx) element
 //template<typename index_type, typename value_type,
-         //elem::Distribution ColDist,
-         //elem::Distribution RowDist>
-//index_type owner(const elem::DistMatrix<value_type, ColDist, RowDist> &A,
+         //El::Distribution ColDist,
+         //El::Distribution RowDist>
+//index_type owner(const El::DistMatrix<value_type, ColDist, RowDist> &A,
                  //const index_type row_idx, const index_type col_idx) {
 
     //return A.Owner(row_idx, col_idx);

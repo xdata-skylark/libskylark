@@ -178,7 +178,9 @@ private:
                            sketch_of_A11_STAR_STAR.Matrix());
 
                 // Reduce-scatter within process grid
-                sketch_of_A11.SumScatterFrom(sketch_of_A11_STAR_STAR);
+                El::Zero(sketch_of_A11);
+                El::AxpyContract(value_type(1), sketch_of_A11_STAR_STAR,
+                    sketch_of_A11);
 
                 El::SlideLockedPartitionDown
                 ( A_Top,    A0,
@@ -299,7 +301,9 @@ private:
                            sketch_of_A11_STAR_STAR.Matrix());
 
                 // Reduce-scatter within process grid
-                sketch_of_A11.SumScatterFrom(sketch_of_A11_STAR_STAR);
+                El::Zero(sketch_of_A11);
+                El::AxpyContract(value_type(1), sketch_of_A11_STAR_STAR,
+                    sketch_of_A11);
 
                 El::SlideLockedPartitionRight
                 ( A_Left,     /**/ A_Right,
@@ -446,7 +450,7 @@ private:
             // Allgather within process columns
             // TODO: Describe cache benefits from transposition:
             //       why not simply use A1[STAR, MR]?
-            A1.TransposeColAllGather(A1Trans_MR_STAR);
+            El::Transpose(A1, A1Trans_MR_STAR);
 
             // Local Gemm
             base::Gemm(El::NORMAL,
@@ -523,7 +527,8 @@ private:
                        sketch_of_A_temp.Matrix());
 
             // Reduce-scatter within row communicators
-            sketch_of_A1.RowSumScatterFrom(sketch_of_A_temp);
+            El::Zero(sketch_of_A1);
+            El::AxpyContract(value_type(1), sketch_of_A_temp, sketch_of_A1);
 
             base = base + b;
 
@@ -593,7 +598,8 @@ private:
                        sketch_of_A_temp.Matrix());
 
             // Reduce-scatter within column communicators
-            sketch_of_A1.ColSumScatterFrom(sketch_of_A_temp);
+            El::Zero(sketch_of_A1);
+            El::AxpyContract(value_type(1), sketch_of_A_temp, sketch_of_A1);
 
             // Reduce-scatter within column communicators
             // sketch_of_A1.ColSumScatterUpdate(value_type(1),

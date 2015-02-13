@@ -14,7 +14,7 @@ namespace skylark { namespace sketch {
 
 /**
  * Specialization local input (sparse of dense), local output.
- * InputType should either be elem::Matrix, or base:sparse_matrix_t.
+ * InputType should either be El::Matrix, or base:sparse_matrix_t.
  */
 template <typename ValueType,
           template <typename> class InputType,

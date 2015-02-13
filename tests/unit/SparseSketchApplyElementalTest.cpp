@@ -4,7 +4,7 @@
  *  to true matrix multiplication).
  *  This test builds on the following assumptions:
  *
- *      - elem::Gemm returns the correct result, and
+ *      - El::Gemm returns the correct result, and
  *      - the random numbers in row_idx and row_value (see
  *        hash_transform_data_t) are drawn from the promised distributions.
  */

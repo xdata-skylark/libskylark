@@ -26,11 +26,11 @@ int main (int argc, char** argv) {
         int rank = comm.rank();
 
         skylark::base::context_t context (12345);
-	elem::Initialize (argc, argv);
+	El::Initialize (argc, argv);
 	MPI_Comm mpi_world(comm);
 	DistInputMatrixType X, Y;
 	int m,n;
-	elem::Matrix<double> W;
+	El::Matrix<double> W;
 
 
 	if (rank == 0) {
@@ -49,10 +49,10 @@ int main (int argc, char** argv) {
 
 	read_libsvm_dense(context, testfile, X, Y);
 
-	elem::DistMatrix<double, elem::VC, elem::STAR>  O(X.Height(), W.Width());
-	elem::MakeZeros(O);
+	El::DistMatrix<double, El::VC, El::STAR>  O(X.Height(), W.Width());
+	El::MakeZeros(O);
 
-	elem::Gemm(elem::NORMAL,elem::NORMAL,1.0, X.Matrix(), W, 0.0, O.Matrix());
+	El::Gemm(El::NORMAL,El::NORMAL,1.0, X.Matrix(), W, 0.0, O.Matrix());
 
 	int correct = 0;
 	double o, o1;

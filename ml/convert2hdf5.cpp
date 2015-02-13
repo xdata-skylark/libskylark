@@ -37,7 +37,7 @@ int main (int argc, char** argv) {
     boost::mpi::communicator comm;
     int rank = comm.rank();
 
-    elem::Initialize (argc, argv);
+    El::Initialize (argc, argv);
 
 
     if (rank == 0)

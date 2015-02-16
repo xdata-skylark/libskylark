@@ -58,8 +58,8 @@ void LocalGraphDiffusion(const GraphType& G,
 
     // N is taken to be the minimum multiple of NX that is bigger or equal
     // to minN.
-    int N = minN % NX == 0 ? minN : (minN / NX + 1) * NX;
-    int NR = N / NX;
+    const El::Int N = minN % NX == 0 ? minN : (minN / NX + 1) * NX;
+    const El::Int NR = N / NX;
 
     // Setup matrices associated with Chebyshev spectral diff
     // We cache them to keep costs low (can be crucial for

@@ -338,7 +338,8 @@ private:
         // For [*, VC/VR] you need only O(sd).
 
         // Create space to hold local part of SA
-        El::Matrix<value_type> SA_part(this->_S, A.Width(), this->_S);
+        El::Matrix<value_type> SA_part((El::Int)(this->_S), A.Width(),
+            (El::Int)(this->_S));
 
         // Construct Pi * A (directly on the fly)
         El::Zero(SA_part);

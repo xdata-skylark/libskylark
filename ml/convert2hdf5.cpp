@@ -9,7 +9,6 @@
 #include <string>
 #include <skylark.hpp>
 #include <boost/mpi.hpp>
-#include <elemental.hpp>
 #include <cstdlib>
 #include "io.hpp"
 #include "../base/context.hpp"

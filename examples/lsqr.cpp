@@ -9,7 +9,6 @@
 #include <utility>
 #include <ext/hash_map>
 
-#include <elemental.hpp>
 #include <CombBLAS.h>
 #include <boost/mpi.hpp>
 #include <skylark.hpp>

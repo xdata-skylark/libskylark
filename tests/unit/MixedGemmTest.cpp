@@ -3,7 +3,9 @@
 #include <boost/mpi.hpp>
 #include <boost/test/minimal.hpp>
 
-#include <elemental.hpp>
+
+#include <El.hpp>
+
 #include <CombBLAS.h>
 #include <SpParMat.h>
 

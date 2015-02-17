@@ -22,7 +22,7 @@ void EL_BLAS(dgemv)(const char*, const El::Int *, const El::Int *,
 namespace skylark { namespace ml {
 
 template<typename GraphType, typename T>
-int LocalGraphDiffusion(const GraphType& G,
+void LocalGraphDiffusion(const GraphType& G,
     const base::sparse_matrix_t<T>& s, base::sparse_matrix_t<T>& y,
     El::Matrix<T> &x, double alpha, double gamma, double epsilon, int NX = 4) {
 
@@ -169,11 +169,9 @@ int LocalGraphDiffusion(const GraphType& G,
 
     // Main loop
     T dyp[N];
-    int pops = 0;
     while(!violating.empty()) {
         int node = violating.front();
         violating.pop();
-        pops++;
 
         // Solve locally, and update rymap[node].
         rypair_t& rpair = rymap[node];
@@ -257,14 +255,12 @@ int LocalGraphDiffusion(const GraphType& G,
 
     y.attach(yindptr, yindices, yvalues, nnzcol, G.num_vertices(),
         NX, true);
-
-    return pops;
 }
 
 template<typename GraphType>
 double FindLocalCluster(const GraphType& G,
     const std::vector<int>& seeds, std::vector<int>& cluster,
-    double alpha, double gamma, double epsilon, int *pops = NULL, int NX = 4,
+    double alpha, double gamma, double epsilon, int NX = 4,
     bool recursive = true) {
 
     double currentcond = -1;
@@ -281,9 +277,7 @@ double FindLocalCluster(const GraphType& G,
 
         // Run the diffusion
         base::sparse_matrix_t<double> y;
-        int pp = LocalGraphDiffusion(G, s, y, x, alpha, gamma, epsilon, NX);
-        if (pops != NULL)
-            *pops = pp;
+        LocalGraphDiffusion(G, s, y, x, alpha, gamma, epsilon, NX);
 
         // Go over the y output at the different time samples,
         // find the best prefix and if better conductance, store it.

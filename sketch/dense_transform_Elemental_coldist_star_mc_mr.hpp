@@ -113,10 +113,30 @@ private:
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::columnwise_tag) const {
 
-        SKYLARK_THROW_EXCEPTION (
-          base::sketch_exception()
-              << base::error_msg(
-                 "This type of sketched_gemm has not been implemented yet."));
+        const elem::Grid& grid = A.Grid();
+
+        elem::DistMatrix<value_type, elem::STAR, ColDist> R(grid);
+        elem::DistMatrix<value_type, elem::STAR, elem::STAR>
+            sketch_of_A_STAR_STAR(grid);
+
+        data_type::realize_matrix_view(R);
+
+        // TODO: is alignment necessary?
+
+        // Global size of the result of the Local Gemm that follows
+        sketch_of_A_STAR_STAR.Resize(R.Height(),
+                                     A.Width());
+
+        // Local Gemm
+        base::Gemm(elem::NORMAL,
+                   elem::NORMAL,
+                   value_type(1),
+                   R.LockedMatrix(),
+                   A.LockedMatrix(),
+                   sketch_of_A_STAR_STAR.Matrix());
+
+        // Reduce-scatter within process grid
+        sketch_of_A.SumScatterFrom(sketch_of_A_STAR_STAR);
 
     }
 

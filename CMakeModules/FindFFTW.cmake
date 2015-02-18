@@ -9,17 +9,19 @@
 # FFTW_FOUND       - do not attempt to use if "no" or undefined.
 
 FIND_PATH(FFTW_INCLUDE_DIR fftw3.h
+  $ENV{FFTW_ROOT}/include
+  $ENV{HOME}/Software/include
   /usr/local/include
   /usr/include
-  $ENV{HOME}/Software/include
-  $ENV{FFTW_ROOT}/include
+  NO_DEFAULT_PATH
 )
 
 FIND_LIBRARY(FFTW_LIBRARY fftw3
+   $ENV{FFTW_ROOT}/lib
+   $ENV{HOME}/Software/lib
    /usr/local/lib
    /usr/lib
-   $ENV{HOME}/Software/lib
-   $ENV{FFTW_ROOT}/lib
+   NO_DEFAULT_PATH
 )
 
 IF(FFTW_INCLUDE_DIR AND FFTW_LIBRARY)

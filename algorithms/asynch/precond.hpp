@@ -15,7 +15,7 @@ struct asy_precond_t :
     bool is_id() const { return false; }
 
     void apply(const RhsType& B, SolType& X) const {
-        elem::MakeZeros(X);
+        El::Zero(X);
         AsyRGS(_A, B, X, _context, _params);
     }
 

@@ -78,15 +78,15 @@ fftw<float>::executebfun_t fftw<float>::executebfun = fftwf_execute_dft_c2r;
  */
 template<typename ValueType>
 struct PPT_t <
-    elem::Matrix<ValueType>,
-    elem::Matrix<ValueType> > :
+    El::Matrix<ValueType>,
+    El::Matrix<ValueType> > :
         public PPT_data_t,
-        virtual public sketch_transform_t<elem::Matrix<ValueType>,
-                                          elem::Matrix<ValueType> >{
+        virtual public sketch_transform_t<El::Matrix<ValueType>,
+                                          El::Matrix<ValueType> >{
 
     typedef ValueType value_type;
-    typedef elem::Matrix<value_type> matrix_type;
-    typedef elem::Matrix<value_type> output_matrix_type;
+    typedef El::Matrix<value_type> matrix_type;
+    typedef El::Matrix<value_type> output_matrix_type;
 
     typedef PPT_data_t data_type;
     typedef data_type::params_t params_t;
@@ -154,7 +154,7 @@ struct PPT_t <
 #       pragma omp for
 #       endif
         for(int i = 0; i < A.Width(); i++) {
-            elem::LockedView(Av, A, 0, i, A.Height(), 1);
+            El::LockedView(Av, A, 0, i, A.Height(), 1);
 
             for(int j = 0; j < S; j++)
                 P[j] = 1.0;
@@ -164,7 +164,7 @@ struct PPT_t <
             for(it = _cwts.begin(); it != _cwts.end(); it++, qc++) {
                 const _CWT_t &C = *it;
                 C.apply(Av, W, columnwise_tag());
-                elem::Scal(std::sqrt(data_type::_gamma), W);
+                El::Scale(std::sqrt(data_type::_gamma), W);
                 W.Update(data_type::_hash_idx[qc], 0,
                     std::sqrt(data_type::_c) * data_type::_hash_val[qc]);
                 internal::fftw<value_type>::executeffun(_fftw_fplan, W.Buffer(),
@@ -178,7 +178,7 @@ struct PPT_t <
             for(int j = 0; j < S; j++)
                 P[j] /= (value_type)S;
 
-            elem::View(SAv, sketch_of_A, 0, i, A.Height(), 1);
+            El::View(SAv, sketch_of_A, 0, i, A.Height(), 1);
             internal::fftw<value_type>::executebfun(_fftw_bplan,
                 reinterpret_cast<_fftw_complex_t*>(P), SAv.Buffer());
         }
@@ -217,8 +217,8 @@ struct PPT_t <
 #       pragma omp for
 #       endif
         for(int i = 0; i < A.Height(); i++) {
-            elem::LockedView(Av, A, i, 0, 1, A.Width());
-            elem::Transpose(Av, ATv);
+            El::LockedView(Av, A, i, 0, 1, A.Width());
+            El::Transpose(Av, ATv);
 
             for(int j = 0; j < S; j++)
                 P[j] = 1.0;
@@ -228,7 +228,7 @@ struct PPT_t <
             for(it = _cwts.begin(); it != _cwts.end(); it++, qc++) {
                 const _CWT_t &C = *it;
                 C.apply(ATv, W, columnwise_tag());
-                elem::Scal(std::sqrt(data_type::_gamma), W);
+                El::Scale(std::sqrt(data_type::_gamma), W);
                 W.Update(data_type::_hash_idx[qc], 0,
                     std::sqrt(data_type::_c) * data_type::_hash_val[qc]);
                 internal::fftw<value_type>::executeffun(_fftw_fplan, W.Buffer(),
@@ -244,8 +244,8 @@ struct PPT_t <
 
             internal::fftw<value_type>::executebfun(_fftw_bplan,
                 reinterpret_cast<_fftw_complex_t*>(P), SATv.Buffer());
-            elem::View(ASv, sketch_of_A, i, 0, 1, sketch_of_A.Width());
-            elem::Transpose(SATv, ASv);
+            El::View(ASv, sketch_of_A, i, 0, 1, sketch_of_A.Width());
+            El::Transpose(SATv, ASv);
         }
 
         delete[] FW;
@@ -296,14 +296,14 @@ protected:
 template<typename ValueType>
 struct PPT_t <
     base::sparse_matrix_t<ValueType>,
-    elem::Matrix<ValueType> > :
+    El::Matrix<ValueType> > :
         public PPT_data_t,
         virtual public sketch_transform_t<base::sparse_matrix_t<ValueType>,
-                                          elem::Matrix<ValueType> >{
+                                          El::Matrix<ValueType> >{
 
     typedef ValueType value_type;
     typedef base::sparse_matrix_t<value_type> matrix_type;
-    typedef elem::Matrix<value_type> output_matrix_type;
+    typedef El::Matrix<value_type> output_matrix_type;
 
     typedef PPT_data_t data_type;
     typedef data_type::params_t params_t;
@@ -385,7 +385,7 @@ struct PPT_t <
             for(it = _cwts.begin(); it != _cwts.end(); it++, qc++) {
                 const _CWT_t &C = *it;
                 C.apply(Av, W, columnwise_tag());
-                elem::Scal(std::sqrt(data_type::_gamma), W);
+                El::Scale(std::sqrt(data_type::_gamma), W);
                 W.Update(data_type::_hash_idx[qc], 0,
                     std::sqrt(data_type::_c) * data_type::_hash_val[qc]);
                 internal::fftw<value_type>::executeffun(_fftw_fplan, W.Buffer(),
@@ -399,7 +399,7 @@ struct PPT_t <
             for(int j = 0; j < S; j++)
                 P[j] /= (value_type)S;
 
-            elem::View(SAv, sketch_of_A, 0, i, base::Height(A), 1);
+            El::View(SAv, sketch_of_A, 0, i, base::Height(A), 1);
             internal::fftw<value_type>::executebfun(_fftw_bplan,
                 reinterpret_cast<_fftw_complex_t*>(P), SAv.Buffer());
         }
@@ -422,7 +422,7 @@ struct PPT_t <
         base::Transpose(A, AT);
         output_matrix_type SAT(sketch_of_A.Width(), sketch_of_A.Height());
         apply(AT, SAT, columnwise_tag());
-        elem::Transpose(SAT, sketch_of_A);
+        El::Transpose(SAT, sketch_of_A);
     }
 
     int get_N() const { return data_type::_N; } /**< Get input dimesion. */
@@ -466,14 +466,14 @@ protected:
  */
 template <typename ValueType>
 struct PPT_t <
-    elem::DistMatrix<ValueType, elem::STAR, elem::STAR>,
-    elem::DistMatrix<ValueType, elem::STAR, elem::STAR> > :
+    El::DistMatrix<ValueType, El::STAR, El::STAR>,
+    El::DistMatrix<ValueType, El::STAR, El::STAR> > :
         public PPT_data_t {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
-    typedef elem::DistMatrix<value_type, elem::STAR, elem::STAR> matrix_type;
-    typedef elem::DistMatrix<value_type, elem::STAR, elem::STAR> output_matrix_type;
+    typedef El::DistMatrix<value_type, El::STAR, El::STAR> matrix_type;
+    typedef El::DistMatrix<value_type, El::STAR, El::STAR> output_matrix_type;
     typedef PPT_data_t data_type;
 
 public:
@@ -510,7 +510,7 @@ public:
 
 private:
 
-    const PPT_t<elem::Matrix<value_type>, elem::Matrix<value_type> > _local;
+    const PPT_t<El::Matrix<value_type>, El::Matrix<value_type> > _local;
 };
 
 /**
@@ -518,14 +518,14 @@ private:
  */
 template <typename ValueType>
 struct PPT_t <
-    elem::DistMatrix<ValueType, elem::CIRC, elem::CIRC>,
-    elem::DistMatrix<ValueType, elem::CIRC, elem::CIRC> > :
+    El::DistMatrix<ValueType, El::CIRC, El::CIRC>,
+    El::DistMatrix<ValueType, El::CIRC, El::CIRC> > :
         public PPT_data_t {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
-    typedef elem::DistMatrix<value_type, elem::CIRC, elem::CIRC> matrix_type;
-    typedef elem::DistMatrix<value_type, elem::CIRC, elem::CIRC> output_matrix_type;
+    typedef El::DistMatrix<value_type, El::CIRC, El::CIRC> matrix_type;
+    typedef El::DistMatrix<value_type, El::CIRC, El::CIRC> output_matrix_type;
     typedef PPT_data_t data_type;
 
 public:
@@ -565,22 +565,22 @@ public:
 
 private:
 
-    const PPT_t<elem::Matrix<value_type>, elem::Matrix<value_type> > _local;
+    const PPT_t<El::Matrix<value_type>, El::Matrix<value_type> > _local;
 };
 
 /**
  * Specialization [VC/VR, STAR] to same distribution.
  */
-template <typename ValueType, elem::Distribution ColDist>
+template <typename ValueType, El::Distribution ColDist>
 struct PPT_t <
-    elem::DistMatrix<ValueType, ColDist, elem::STAR>,
-    elem::DistMatrix<ValueType, ColDist, elem::STAR> > :
+    El::DistMatrix<ValueType, ColDist, El::STAR>,
+    El::DistMatrix<ValueType, ColDist, El::STAR> > :
         public PPT_data_t {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
-    typedef elem::DistMatrix<value_type, ColDist, elem::STAR> matrix_type;
-    typedef elem::DistMatrix<value_type, ColDist, elem::STAR> output_matrix_type;
+    typedef El::DistMatrix<value_type, ColDist, El::STAR> matrix_type;
+    typedef El::DistMatrix<value_type, ColDist, El::STAR> output_matrix_type;
     typedef PPT_data_t data_type;
 
 public:
@@ -612,8 +612,8 @@ public:
                 output_matrix_type& sketch_of_A,
                 Dimension dimension) const {
         switch (ColDist) {
-        case elem::VR:
-        case elem::VC:
+        case El::VR:
+        case El::VC:
             try {
                 apply_impl_vdist (A, sketch_of_A, dimension);
             } catch (std::logic_error e) {
@@ -647,12 +647,12 @@ private:
         // Naive implementation: tranpose and uses the columnwise implementation
         // Can we do better?
         matrix_type A_t(A.Grid());
-        elem::Transpose(A, A_t);
+        El::Transpose(A, A_t);
         output_matrix_type sketch_of_A_t(sketch_of_A.Width(),
             sketch_of_A.Height(), sketch_of_A.Grid());
         apply_impl_vdist(A_t, sketch_of_A_t,
             skylark::sketch::rowwise_tag());
-        elem::Transpose(sketch_of_A_t, sketch_of_A);
+        El::Transpose(sketch_of_A_t, sketch_of_A);
     }
 
     /**
@@ -669,22 +669,22 @@ private:
 
 private:
 
-    const PPT_t<elem::Matrix<value_type>, elem::Matrix<value_type> > _local;
+    const PPT_t<El::Matrix<value_type>, El::Matrix<value_type> > _local;
 };
 
 /**
  * Specialization [STAR, VC/VR] to same distribution.
  */
-template <typename ValueType, elem::Distribution RowDist>
+template <typename ValueType, El::Distribution RowDist>
 struct PPT_t <
-    elem::DistMatrix<ValueType, elem::STAR, RowDist>,
-    elem::DistMatrix<ValueType, elem::STAR, RowDist> > :
+    El::DistMatrix<ValueType, El::STAR, RowDist>,
+    El::DistMatrix<ValueType, El::STAR, RowDist> > :
         public PPT_data_t {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
-    typedef elem::DistMatrix<value_type, elem::STAR, RowDist> matrix_type;
-    typedef elem::DistMatrix<value_type, elem::STAR, RowDist> output_matrix_type;
+    typedef El::DistMatrix<value_type, El::STAR, RowDist> matrix_type;
+    typedef El::DistMatrix<value_type, El::STAR, RowDist> output_matrix_type;
     typedef PPT_data_t data_type;
 
 public:
@@ -716,8 +716,8 @@ public:
                 output_matrix_type& sketch_of_A,
                 Dimension dimension) const {
         switch (RowDist) {
-        case elem::VR:
-        case elem::VC:
+        case El::VR:
+        case El::VC:
             try {
                 apply_impl_vdist (A, sketch_of_A, dimension);
             } catch (std::logic_error e) {
@@ -764,17 +764,17 @@ private:
         // Naive implementation: tranpose and uses the columnwise implementation
         // Can we do better?
         matrix_type A_t(A.Grid());
-        elem::Transpose(A, A_t);
+        El::Transpose(A, A_t);
         output_matrix_type sketch_of_A_t(sketch_of_A.Width(),
             sketch_of_A.Height(), sketch_of_A.Grid());
         apply_impl_vdist(A_t, sketch_of_A_t,
             skylark::sketch::rowwise_tag());
-        elem::Transpose(sketch_of_A_t, sketch_of_A);
+        El::Transpose(sketch_of_A_t, sketch_of_A);
     }
 
 private:
 
-    const PPT_t<elem::Matrix<value_type>, elem::Matrix<value_type> > _local;
+    const PPT_t<El::Matrix<value_type>, El::Matrix<value_type> > _local;
 };
 
 

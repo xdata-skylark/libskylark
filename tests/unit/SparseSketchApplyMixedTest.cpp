@@ -81,7 +81,7 @@ void compute_sketch_matrix(sketch_t sketch, const DistMatrixType &A,
 }
 
 void compare_result(size_t rank, DistMatrixType &expected_A,
-                    elem::DistMatrix<double, elem::STAR, elem::STAR> &result) {
+                    El::DistMatrix<double, El::STAR, El::STAR> &result) {
 
     col_t &data = expected_A.seq();
 
@@ -133,9 +133,9 @@ int test_main(int argc, char *argv[]) {
     mpi::communicator world;
     const size_t rank = world.rank();
 
-    elem::Initialize(argc, argv);
+    El::Initialize(argc, argv);
     MPI_Comm mpi_world(world);
-    elem::Grid grid(mpi_world);
+    El::Grid grid(mpi_world);
 
     skylark::base::context_t context (0);
 
@@ -157,13 +157,13 @@ int test_main(int argc, char *argv[]) {
     mpi_vector_t zero;
 
     count = 1.0;
-    elem::Matrix<double> local_A(n, m);
+    El::Matrix<double> local_A(n, m);
     for( size_t j = 0; j < local_A.Height(); j++ )
         for( size_t i = 0; i < local_A.Width(); i++ )
             local_A.Set(j, i, count++);
 
 
-    elem::DistMatrix<double, elem::STAR, elem::STAR> result;
+    El::DistMatrix<double, El::STAR, El::STAR> result;
 
     // columnwise application
     DistMatrixType expected_A;
@@ -176,14 +176,14 @@ int test_main(int argc, char *argv[]) {
     //////////////////////////////////////////////////////////////////////////
     //[> Column wise application DistSparseMatrix -> DistMatrix[MC/MR] <]
 
-    typedef elem::DistMatrix<double> mcmr_target_t;
+    typedef El::DistMatrix<double> mcmr_target_t;
 
     //[> 1. Create the sketching matrix <]
     Dummy_t<DistMatrixType, mcmr_target_t> Sparse(n, n_s, context);
 
     //[> 2. Create space for the sketched matrix <]
     mcmr_target_t sketch_A(n_s, m, grid);
-    elem::Zero(sketch_A);
+    El::Zero(sketch_A);
 
     //[> 3. Apply the transform <]
     Sparse.apply(A, sketch_A, skylark::sketch::columnwise_tag());
@@ -191,7 +191,7 @@ int test_main(int argc, char *argv[]) {
     //[> 4. Build structure to compare <]
     // easier to check if all processors own result
     result = sketch_A;
-    elem::Display(result);
+    El::Display(result);
 
     compute_sketch_matrix(Sparse, A, pi_sketch);
     expected_A = Mult_AnXBn_Synch<PTDD, double, col_t>(
@@ -202,14 +202,14 @@ int test_main(int argc, char *argv[]) {
     //////////////////////////////////////////////////////////////////////////
     //[> Column wise application DistSparseMatrix -> DistMatrix[VC/*] <]
 
-    typedef elem::DistMatrix<double, elem::VC, elem::STAR> vcs_target_t;
+    typedef El::DistMatrix<double, El::VC, El::STAR> vcs_target_t;
 
     //[> 1. Create the sketching matrix <]
     Dummy_t<DistMatrixType, vcs_target_t> SparseVC(n, n_s, context);
 
     //[> 2. Create space for the sketched matrix <]
     vcs_target_t sketch_A_vcs(n_s, m, grid);
-    elem::Zero(sketch_A_vcs);
+    El::Zero(sketch_A_vcs);
 
     //[> 3. Apply the transform <]
     SparseVC.apply(A, sketch_A_vcs, skylark::sketch::columnwise_tag());
@@ -227,14 +227,14 @@ int test_main(int argc, char *argv[]) {
     //////////////////////////////////////////////////////////////////////////
     //[> Column wise application DistSparseMatrix -> DistMatrix[*/VR] <]
 
-    typedef elem::DistMatrix<double, elem::STAR, elem::VR> svr_target_t;
+    typedef El::DistMatrix<double, El::STAR, El::VR> svr_target_t;
 
     //[> 1. Create the sketching matrix <]
     Dummy_t<DistMatrixType, svr_target_t> SparseVR(n, n_s, context);
 
     //[> 2. Create space for the sketched matrix <]
     svr_target_t sketch_A_svr(n_s, m, grid);
-    elem::Zero(sketch_A_svr);
+    El::Zero(sketch_A_svr);
 
     //[> 3. Apply the transform <]
     SparseVR.apply(A, sketch_A_svr, skylark::sketch::columnwise_tag());
@@ -252,14 +252,14 @@ int test_main(int argc, char *argv[]) {
     //////////////////////////////////////////////////////////////////////////
     //[> Column wise application DistSparseMatrix -> DistMatrix[*/*] <]
 
-    typedef elem::DistMatrix<double, elem::STAR, elem::STAR> st_target_t;
+    typedef El::DistMatrix<double, El::STAR, El::STAR> st_target_t;
 
     //[> 1. Create the sketching matrix <]
     Dummy_t<DistMatrixType, st_target_t> SparseST(n, n_s, context);
 
     //[> 2. Create space for the sketched matrix <]
     st_target_t sketch_A_st(n_s, m, grid);
-    elem::Zero(sketch_A_st);
+    El::Zero(sketch_A_st);
 
     //[> 3. Apply the transform <]
     SparseST.apply(A, sketch_A_st, skylark::sketch::columnwise_tag());
@@ -274,15 +274,15 @@ int test_main(int argc, char *argv[]) {
     //////////////////////////////////////////////////////////////////////////
     //[> Column wise application DistSparseMatrix -> LocalDenseMatrix <]
 
-    Dummy_t<DistMatrixType, elem::Matrix<double>> LocalSparse(n, n_s, context);
-    elem::Matrix<double> local_sketch_A(n_s, m);
-    elem::Zero(local_sketch_A);
+    Dummy_t<DistMatrixType, El::Matrix<double>> LocalSparse(n, n_s, context);
+    El::Matrix<double> local_sketch_A(n_s, m);
+    El::Zero(local_sketch_A);
     LocalSparse.apply(A, local_sketch_A, skylark::sketch::columnwise_tag());
 
-    elem::Matrix<double> pi_sketch_l(n_s, n);
-    elem::Zero(pi_sketch_l);
-    elem::Matrix<double> expected_A_l(n_s, m);
-    elem::Zero(expected_A_l);
+    El::Matrix<double> pi_sketch_l(n_s, n);
+    El::Zero(pi_sketch_l);
+    El::Matrix<double> expected_A_l(n_s, m);
+    El::Zero(expected_A_l);
 
     if(rank == 0) {
         // PI generated by random number gen
@@ -295,7 +295,7 @@ int test_main(int argc, char *argv[]) {
         for(int i = 0; i < sketch_size; ++i)
             pi_sketch_l.Set(row_idx[i], i, row_val[i]);
 
-        elem::Gemm(elem::NORMAL, elem::NORMAL, 1.0, pi_sketch_l, local_A,
+        El::Gemm(El::NORMAL, El::NORMAL, 1.0, pi_sketch_l, local_A,
                    0.0, expected_A_l);
 
         for(int col = 0; col < expected_A_l.Width(); col++) {
@@ -316,7 +316,7 @@ int test_main(int argc, char *argv[]) {
 
     //[> 2. Create space for the sketched matrix <]
     mcmr_target_t sketch_A_r(n, m_s, grid);
-    elem::Zero(sketch_A_r);
+    El::Zero(sketch_A_r);
 
     //[> 3. Apply the transform <]
     Sparse_r.apply(A, sketch_A_r, skylark::sketch::rowwise_tag());
@@ -340,7 +340,7 @@ int test_main(int argc, char *argv[]) {
 
     //[> 2. Create space for the sketched matrix <]
     vcs_target_t sketch_A_r_vcs(n, m_s, grid);
-    elem::Zero(sketch_A_r_vcs);
+    El::Zero(sketch_A_r_vcs);
 
     //[> 3. Apply the transform <]
     Sparse_r_vcs.apply(A, sketch_A_r_vcs, skylark::sketch::rowwise_tag());
@@ -360,15 +360,15 @@ int test_main(int argc, char *argv[]) {
     //////////////////////////////////////////////////////////////////////////
     //[> Row wise application DistSparseMatrix -> LocalDenseMatrix <]
 
-    Dummy_t<DistMatrixType, elem::Matrix<double>> LocalSparse_r(m, m_s, context);
-    elem::Matrix<double> local_sketch_A_r(n, m_s);
-    elem::Zero(local_sketch_A_r);
+    Dummy_t<DistMatrixType, El::Matrix<double>> LocalSparse_r(m, m_s, context);
+    El::Matrix<double> local_sketch_A_r(n, m_s);
+    El::Zero(local_sketch_A_r);
     LocalSparse_r.apply(A, local_sketch_A_r, skylark::sketch::rowwise_tag());
 
-    elem::Matrix<double> local_pi_sketch_r(m_s, m);
-    elem::Zero(local_pi_sketch_r);
-    elem::Matrix<double> expected_A_r(n, m_s);
-    elem::Zero(expected_A_r);
+    El::Matrix<double> local_pi_sketch_r(m_s, m);
+    El::Zero(local_pi_sketch_r);
+    El::Matrix<double> expected_A_r(n, m_s);
+    El::Zero(expected_A_r);
 
     if(rank == 0) {
         // PI generated by random number gen
@@ -381,7 +381,7 @@ int test_main(int argc, char *argv[]) {
         for(int i = 0; i < sketch_size; ++i)
             local_pi_sketch_r.Set(row_idx[i], i, row_val[i]);
 
-        elem::Gemm(elem::NORMAL, elem::TRANSPOSE, 1.0, local_A, local_pi_sketch_r,
+        El::Gemm(El::NORMAL, El::TRANSPOSE, 1.0, local_A, local_pi_sketch_r,
                    0.0, expected_A_r);
 
         for(int col = 0; col < expected_A_r.Width(); col++) {

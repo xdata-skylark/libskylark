@@ -8,7 +8,7 @@
 #include <CombBLAS.h>
 #endif
 
-#include <elemental.hpp>
+#include <El.hpp>
 
 namespace skylark { namespace utility {
 
@@ -126,10 +126,10 @@ struct uniform_matrix_t <SpParMat<IndexType,
 #if SKYLARK_HAVE_BOOST
 
 template <typename ValueType>
-struct uniform_matrix_t <elem::Matrix<ValueType> > {
+struct uniform_matrix_t <El::Matrix<ValueType> > {
     typedef int index_t;
     typedef ValueType value_t;
-    typedef elem::Matrix<ValueType> matrix_t;
+    typedef El::Matrix<ValueType> matrix_t;
     typedef uniform_distribution_t<value_t> distribution_t;
 
     static matrix_t generate (index_t M,
@@ -153,17 +153,17 @@ struct uniform_matrix_t <elem::Matrix<ValueType> > {
 
 
 template <typename ValueType,
-          elem::Distribution CD,
-          elem::Distribution RD>
-struct uniform_matrix_t <elem::DistMatrix<ValueType, CD, RD> > {
+          El::Distribution CD,
+          El::Distribution RD>
+struct uniform_matrix_t <El::DistMatrix<ValueType, CD, RD> > {
     typedef int index_t;
     typedef ValueType value_t;
-    typedef elem::DistMatrix<ValueType, CD, RD> mpi_matrix_t;
+    typedef El::DistMatrix<ValueType, CD, RD> mpi_matrix_t;
     typedef uniform_distribution_t<value_t> distribution_t;
 
     static mpi_matrix_t generate (index_t M,
         index_t N,
-        const elem::Grid& grid,
+        const El::Grid& grid,
         skylark::base::context_t& context) {
 
         mpi_matrix_t A(M, N, grid);

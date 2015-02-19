@@ -16,22 +16,22 @@ int Width(const sparse_matrix_t<T>& A) {
 }
 
 template<typename T>
-int Height(const elem::Matrix<T>& A) {
+int Height(const El::Matrix<T>& A) {
     return A.Height();
 }
 
 template<typename T>
-int Width(const elem::Matrix<T>& A) {
+int Width(const El::Matrix<T>& A) {
     return A.Width();
 }
 
-template<typename T, elem::Distribution U, elem::Distribution V>
-int Height(const elem::DistMatrix<T, U, V>& A) {
+template<typename T, El::Distribution U, El::Distribution V>
+int Height(const El::DistMatrix<T, U, V>& A) {
     return A.Height();
 }
 
-template<typename T, elem::Distribution U, elem::Distribution V>
-int Width(const elem::DistMatrix<T, U, V>& A) {
+template<typename T, El::Distribution U, El::Distribution V>
+int Width(const El::DistMatrix<T, U, V>& A) {
     return A.Width();
 }
 

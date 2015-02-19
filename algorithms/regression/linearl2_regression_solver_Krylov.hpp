@@ -43,8 +43,9 @@ public:
 
     regression_solver_t (const problem_type& problem,
         algorithms::krylov_iter_params_t iter_params =
-        algorithms::krylov_iter_params_t()) :
-        m(problem.m), n(problem.n), A(problem.input_matrix),
+        algorithms::krylov_iter_params_t())
+        : _id_precond_obj(), m(problem.m), n(problem.n)
+        , A(problem.input_matrix),
         R(_id_precond_obj), iter_params(iter_params)
     { /* Check if m<n? */ }
 

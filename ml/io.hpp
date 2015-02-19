@@ -12,25 +12,26 @@
 #include <sstream>
 #include <cstdlib>
 #include <string>
-#include <elemental.hpp>
+#include <El.hpp>
+#include <El/core/types.h>
 #include "../base/sparse_matrix.hpp"
 #include "options.hpp"
 
 namespace bmpi =  boost::mpi;
 
-typedef elem::DistMatrix<double, elem::CIRC, elem::CIRC> DistCircMatrixType;
+typedef El::DistMatrix<double, El::CIRC, El::CIRC> DistCircMatrixType;
 typedef skylark::base::sparse_matrix_t<double> sparse_matrix_t;
-typedef elem::Matrix<double> LocalMatrixType;
+typedef El::Matrix<double> LocalMatrixType;
 
 #ifdef SKYLARK_HAVE_HDF5
 #include <H5Cpp.h>
 
 int write_hdf5(const boost::mpi::communicator &comm,
-    std::string fName, elem::Matrix<double>& X,
-    elem::Matrix<double>& Y) {
+    std::string fName, El::Matrix<double>& X,
+    El::Matrix<double>& Y) {
 
-    int n, d;
-    boost::mpi::reduce(comm, X.Width(), n, std::plus<int>(), 0);
+    ElInt n, d;
+    boost::mpi::reduce(comm, X.Width(), n, std::plus<ElInt>(), 0);
     d = X.Height();
 
 
@@ -63,7 +64,7 @@ int write_hdf5(const boost::mpi::communicator &comm,
 
             int sumn = 0;
             for(int p = 0; p < comm.size(); p++) {
-                elem::Matrix<double> XX, YY;
+                El::Matrix<double> XX, YY;
                 if (p == 0) {
                     XX = X;
                     YY = Y;
@@ -132,7 +133,7 @@ int write_hdf5(const boost::mpi::communicator &comm,
 }
 
 int write_hdf5(std::string fName, sparse_matrix_t& X,
-        elem::Matrix<double>& Y) {
+        El::Matrix<double>& Y) {
 
     try {
 
@@ -265,7 +266,7 @@ void read_hdf5_dataset(H5::H5File& file, std::string name, double* buf, int offs
 
 void read_hdf5(const boost::mpi::communicator &comm, std::string fName,
         sparse_matrix_t& X,
-        elem::Matrix<double>& Y, int min_d = 0) {
+        El::Matrix<double>& Y, int min_d = 0) {
 
 	try {
         int rank = comm.rank();
@@ -440,8 +441,8 @@ void read_hdf5(const boost::mpi::communicator &comm, std::string fName,
                     std::cout << "Reading Dense matrix from HDF5 file " << fName << std::endl;
 
 
-        elem::DistMatrix<double, elem::STAR, elem::VC> X;
-        elem::DistMatrix<double, elem::VC, elem::STAR> Y;
+        El::DistMatrix<double, El::STAR, El::VC> X;
+        El::DistMatrix<double, El::VC, El::STAR> Y;
 
        H5::H5File file( fName, H5F_ACC_RDONLY );
        H5::DataSet datasetX = file.openDataSet( "X" );
@@ -471,11 +472,11 @@ void read_hdf5(const boost::mpi::communicator &comm, std::string fName,
         X.Resize(d, n);
         Y.Resize(n,1);
 
-        elem::Zeros(Xlocal, X.LocalHeight(), X.LocalWidth());
-        elem::Zeros(Ylocal, Y.LocalHeight(), 1);
+        El::Zeros(Xlocal, X.LocalHeight(), X.LocalWidth());
+        El::Zeros(Ylocal, Y.LocalHeight(), 1);
 
-        X.Attach(d,n,0,0,Xlocal,elem::DefaultGrid());
-        Y.Attach(n,1,0,0,Ylocal,elem::DefaultGrid());
+        X.Attach(d,n,El::DefaultGrid(), 0,0,Xlocal);
+        Y.Attach(n,1,El::DefaultGrid(), 0,0,Ylocal);
 
         for(int i=0; i<numblocks+1; i++) {
 
@@ -487,7 +488,7 @@ void read_hdf5(const boost::mpi::communicator &comm, std::string fName,
             DistCircMatrixType x(d, block), y(block, 1);
             x.SetRoot(0);
             y.SetRoot(0);
-            elem::MakeZeros(x);
+            El::Zero(x);
 
 
             offsetX[0] = i*blocksize;
@@ -518,11 +519,11 @@ void read_hdf5(const boost::mpi::communicator &comm, std::string fName,
 
             }
 
-            elem::DistMatrix<double, elem::STAR, elem::VC> viewX;
-            elem::DistMatrix<double, elem::VC, elem::STAR> viewY;
+            El::DistMatrix<double, El::STAR, El::VC> viewX;
+            El::DistMatrix<double, El::VC, El::STAR> viewY;
 
-            elem::View(viewX, X, 0, i*blocksize, x.Height(), x.Width());
-            elem::View(viewY, Y, i*blocksize, 0, x.Width(), 1);
+            El::View(viewX, X, 0, i*blocksize, x.Height(), x.Width());
+            El::View(viewY, Y, i*blocksize, 0, x.Width(), 1);
 
             viewX = x;
             viewY = y;
@@ -537,12 +538,13 @@ void read_hdf5(const boost::mpi::communicator &comm, std::string fName,
 
 template<typename T>
 void read_libsvm(const boost::mpi::communicator &comm, std::string fName,
-		elem::Matrix<T>& Xlocal, elem::Matrix<T>& Ylocal,
+		El::Matrix<T>& Xlocal, El::Matrix<T>& Ylocal,
 		int min_d = 0, int blocksize = 10000) {
 
-    elem::Grid grid(comm);
-    elem::DistMatrix<T, elem::STAR, elem::VC> X(grid);
-    elem::DistMatrix<T, elem::VC, elem::STAR> Y(grid);
+    MPI_Comm mpi_comm(comm);
+    El::Grid grid(mpi_comm);
+    El::DistMatrix<T, El::STAR, El::VC> X(grid);
+    El::DistMatrix<T, El::VC, El::STAR> Y(grid);
 
         int rank = comm.rank();
 	if (rank==0)
@@ -599,11 +601,11 @@ void read_libsvm(const boost::mpi::communicator &comm, std::string fName,
 	X.Resize(d, n);
 	Y.Resize(n,1);
 
-	elem::Zeros(Xlocal, X.LocalHeight(), X.LocalWidth());
-	elem::Zeros(Ylocal, Y.LocalHeight(), 1);
+	El::Zeros(Xlocal, X.LocalHeight(), X.LocalWidth());
+	El::Zeros(Ylocal, Y.LocalHeight(), 1);
 
-	X.Attach(d,n,0,0,Xlocal,elem::DefaultGrid());
-	Y.Attach(n,1,0,0,Ylocal,elem::DefaultGrid());
+	X.Attach(d,n,El::DefaultGrid(),0,0,Xlocal);
+	Y.Attach(n,1,El::DefaultGrid(),0,0,Ylocal);
 
 
 	for(int i=0; i<numblocks+1; i++) {
@@ -616,7 +618,7 @@ void read_libsvm(const boost::mpi::communicator &comm, std::string fName,
 	            DistCircMatrixType x(d, block), y(block, 1);
 	            x.SetRoot(0);
 	            y.SetRoot(0);
-	            elem::MakeZeros(x);
+	            El::Zero(x);
 
                 if(rank==0) {
 
@@ -652,11 +654,11 @@ void read_libsvm(const boost::mpi::communicator &comm, std::string fName,
                // if (rank==0)
                 //    std::cout << "Distributing Data.." << std::endl;
 
-                elem::DistMatrix<T, elem::STAR, elem::VC> viewX;
-                elem::DistMatrix<T, elem::VC, elem::STAR> viewY;
+                El::DistMatrix<T, El::STAR, El::VC> viewX;
+                El::DistMatrix<T, El::VC, El::STAR> viewY;
 
-                elem::View(viewX, X, 0, i*blocksize, x.Height(), x.Width());
-                elem::View(viewY, Y, i*blocksize, 0, x.Width(), 1);
+                El::View(viewX, X, 0, i*blocksize, x.Height(), x.Width());
+                El::View(viewY, Y, i*blocksize, 0, x.Width(), 1);
 
                 viewX = x;
                 viewY = y;
@@ -668,13 +670,13 @@ void read_libsvm(const boost::mpi::communicator &comm, std::string fName,
 	double readtime = timer.elapsed();
 	if (rank==0) {
 		std::cout << "Read Matrix with dimensions: " << n << " by " << d << " (" << readtime << "secs)" << std::endl;
-		// elem::Print(X,"X",std::cout);
+		// El::Print(X,"X",std::cout);
 	}
 }
 
 template<typename T>
 void read_libsvm(const boost::mpi::communicator &comm, std::string fName,
-    skylark::base::sparse_matrix_t<T>& X, elem::Matrix<T>& Y, int min_d = 0) {
+    skylark::base::sparse_matrix_t<T>& X, El::Matrix<T>& Y, int min_d = 0) {
 
     int rank = comm.rank();
     int size = comm.size();
@@ -804,7 +806,7 @@ void read_libsvm(const boost::mpi::communicator &comm, std::string fName,
 
                     X.attach(_col_ptr, _rowind, _values, nnz_local, d, examples_local, true);
 
-                    elem::Matrix<T> Y2(examples_local, 1, &y[0], 0);
+                    El::Matrix<T> Y2(examples_local, 1, &y[0], 0);
 
                     //  Y.Resize(examples_local,1);
                     // but this is not!
@@ -851,7 +853,7 @@ void read_libsvm(const boost::mpi::communicator &comm, std::string fName,
                 // TODO why not resize Y, and then just recive into buffer?
                 double* y = new double[t];
                 comm.recv(0, 7, y, t);
-                elem::Matrix<T> Y2(t, 1, y, 0);
+                El::Matrix<T> Y2(t, 1, y, 0);
                 Y = Y2; // copy
                 delete[] y;
 
@@ -897,7 +899,7 @@ void read(const boost::mpi::communicator &comm,
 
 }
 
-void read_model_file(std::string fName, elem::Matrix<double>& W) {
+void read_model_file(std::string fName, El::Matrix<double>& W) {
     std::ifstream file(fName.c_str());
 	std::string line, token;
 	std::string prefix = "# Dimensions";

@@ -13,14 +13,14 @@ template <typename ValueType,
           template <typename> class QMCSequenceType>
 struct QRLT_t <
     InputType,
-    elem::Matrix<ValueType>,
+    El::Matrix<ValueType>,
     KernelDistribution, QMCSequenceType> :
         public QRLT_data_t<KernelDistribution, QMCSequenceType> {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
     typedef InputType matrix_type;
-    typedef elem::Matrix<value_type> output_matrix_type;
+    typedef El::Matrix<value_type> output_matrix_type;
     typedef QRLT_data_t<KernelDistribution, QMCSequenceType> data_type;
     typedef typename data_type::sequence_type sequence_type;
 
@@ -97,19 +97,19 @@ public:
  */
 template <typename ValueType,
           typename InputType,
-          elem::Distribution OC, elem::Distribution OR,
+          El::Distribution OC, El::Distribution OR,
           template <typename, typename> class KernelDistribution,
           template <typename> class QMCSequenceType>
 struct QRLT_t <
     InputType,
-    elem::DistMatrix<ValueType, OC, OR>,
+    El::DistMatrix<ValueType, OC, OR>,
     KernelDistribution, QMCSequenceType> :
         public QRLT_data_t<KernelDistribution, QMCSequenceType> {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
     typedef InputType matrix_type;
-    typedef elem::DistMatrix<value_type, OC, OR> output_matrix_type;
+    typedef El::DistMatrix<value_type, OC, OR> output_matrix_type;
 
     typedef QRLT_data_t<KernelDistribution, QMCSequenceType> data_type;
     typedef typename data_type::sequence_type sequence_type;
@@ -161,7 +161,7 @@ public:
             underlying_t underlying(*data_type::_underlying_data);
             underlying.apply(A, sketch_of_A, dimension);
 
-            elem::Matrix<value_type> &SAl = sketch_of_A.Matrix();
+            El::Matrix<value_type> &SAl = sketch_of_A.Matrix();
 
 #           if SKYLARK_HAVE_OPENMP
 #           pragma omp parallel for collapse(2)

@@ -14,17 +14,17 @@ namespace skylark { namespace sketch {
 /**
  * Specialization distributed input and output in [SOMETHING, *]
  */
-template <typename ValueType, elem::Distribution ColDist,
+template <typename ValueType, El::Distribution ColDist,
           typename ValuesAccessor>
 struct dense_transform_t <
-    elem::DistMatrix<ValueType, ColDist, elem::STAR>,
-    elem::DistMatrix<ValueType, ColDist, elem::STAR>,
+    El::DistMatrix<ValueType, ColDist, El::STAR>,
+    El::DistMatrix<ValueType, ColDist, El::STAR>,
     ValuesAccessor> :
         public dense_transform_data_t<ValuesAccessor> {
     // Typedef matrix and distribution types so that we can use them regularly
     typedef ValueType value_type;
-    typedef elem::DistMatrix<value_type, ColDist, elem::STAR> matrix_type;
-    typedef elem::DistMatrix<value_type, ColDist, elem::STAR>
+    typedef El::DistMatrix<value_type, ColDist, El::STAR> matrix_type;
+    typedef El::DistMatrix<value_type, ColDist, El::STAR>
     output_matrix_type;
     typedef dense_transform_data_t<ValuesAccessor> data_type;
 
@@ -61,8 +61,8 @@ struct dense_transform_t <
                 Dimension dimension) const {
 
         switch(ColDist) {
-        case elem::VR:
-        case elem::VC:
+        case El::VR:
+        case El::VC:
             try {
                 apply_impl_vdist (A, sketch_of_A, dimension);
             } catch (std::logic_error e) {
@@ -97,16 +97,16 @@ private:
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::rowwise_tag) const {
 
-        const elem::Grid& grid = A.Grid();
+        const El::Grid& grid = A.Grid();
 
-        elem::DistMatrix<value_type, elem::STAR, elem::STAR> R1(grid);
-        elem::DistMatrix<value_type, ColDist, elem::STAR>
+        El::DistMatrix<value_type, El::STAR, El::STAR> R1(grid);
+        El::DistMatrix<value_type, ColDist, El::STAR>
             A_Top(grid),
             A_Bottom(grid),
             A0(grid),
             A1(grid),
             A2(grid);
-        elem::DistMatrix<value_type, ColDist, elem::STAR>
+        El::DistMatrix<value_type, ColDist, El::STAR>
             sketch_of_A_Left(grid),
             sketch_of_A_Right(grid),
             sketch_of_A0(grid),
@@ -120,7 +120,7 @@ private:
 
         // TODO: are alignments necessary?
 
-        elem::PartitionRight
+        El::PartitionRight
         ( sketch_of_A,
           sketch_of_A_Left, sketch_of_A_Right, 0 );
 
@@ -137,46 +137,46 @@ private:
             data_type::realize_matrix_view(R1, base, 0,
                                                b,    A.Width());
 
-            elem::RepartitionRight
+            El::RepartitionRight
             ( sketch_of_A_Left, /**/               sketch_of_A_Right,
               sketch_of_A0,     /**/ sketch_of_A1, sketch_of_A2,      b );
 
-            elem::LockedPartitionDown
+            El::LockedPartitionDown
             ( A, A_Top,
                  A_Bottom, 0 );
 
-            elem::PartitionDown
+            El::PartitionDown
             ( sketch_of_A1, sketch_of_A1_Top,
                             sketch_of_A1_Bottom, 0 );
 
             while(A_Bottom.Height() > 0) {
-                elem::LockedRepartitionDown
+                El::LockedRepartitionDown
                 ( A_Top,    A0,
                   /**/      /**/
                             A1,
                   A_Bottom, A2, b );
 
-                elem::RepartitionDown
+                El::RepartitionDown
                 ( sketch_of_A1_Top,    sketch_of_A10,
                   /**/                 /**/
                                        sketch_of_A11,
                   sketch_of_A1_Bottom, sketch_of_A12, b );
 
                 // Local Gemm
-                base::Gemm(elem::NORMAL,
-                           elem::TRANSPOSE,
+                base::Gemm(El::NORMAL,
+                           El::TRANSPOSE,
                            value_type(1),
                            A1.LockedMatrix(),
                            R1.LockedMatrix(),
                            sketch_of_A11.Matrix());
 
-                elem::SlideLockedPartitionDown
+                El::SlideLockedPartitionDown
                 ( A_Top,    A0,
                             A1,
                   /**/      /**/
                   A_Bottom, A2 );
 
-                elem::SlidePartitionDown
+                El::SlidePartitionDown
                 ( sketch_of_A1_Top,    sketch_of_A10,
                                        sketch_of_A11,
                   /**/                 /**/
@@ -185,7 +185,7 @@ private:
 
             base = base + b;
 
-            elem::SlidePartitionRight
+            El::SlidePartitionRight
             ( sketch_of_A_Left,               /**/ sketch_of_A_Right,
               sketch_of_A0,     sketch_of_A1, /**/ sketch_of_A2 );
         }
@@ -202,10 +202,10 @@ private:
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::columnwise_tag) const {
 
-        const elem::Grid& grid = A.Grid();
+        const El::Grid& grid = A.Grid();
 
-        elem::DistMatrix<value_type, elem::STAR, ColDist> R(grid);
-        elem::DistMatrix<value_type, elem::STAR, elem::STAR>
+        El::DistMatrix<value_type, El::STAR, ColDist> R(grid);
+        El::DistMatrix<value_type, El::STAR, El::STAR>
             sketch_of_A_STAR_STAR(grid);
 
         data_type::realize_matrix_view(R);
@@ -217,16 +217,16 @@ private:
                                      A.Width());
 
         // Local Gemm
-        base::Gemm(elem::NORMAL,
-                   elem::NORMAL,
+        base::Gemm(El::NORMAL,
+                   El::NORMAL,
                    value_type(1),
                    R.LockedMatrix(),
                    A.LockedMatrix(),
                    sketch_of_A_STAR_STAR.Matrix());
 
         // Reduce-scatter within process grid
-        sketch_of_A.SumScatterFrom(sketch_of_A_STAR_STAR);
-
+        El::Zero(sketch_of_A);
+        El::AxpyContract(value_type(1), sketch_of_A_STAR_STAR, sketch_of_A);
     }
 
 
@@ -237,10 +237,10 @@ private:
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::rowwise_tag) const {
 
-        const elem::Grid& grid = A.Grid();
+        const El::Grid& grid = A.Grid();
 
-        elem::DistMatrix<value_type, elem::STAR, elem::STAR> R1(grid);
-        elem::DistMatrix<value_type, ColDist, elem::STAR>
+        El::DistMatrix<value_type, El::STAR, El::STAR> R1(grid);
+        El::DistMatrix<value_type, ColDist, El::STAR>
             A_Left(grid),
             A_Right(grid),
             A0(grid),
@@ -248,12 +248,12 @@ private:
             A2(grid);
 
         // Zero sketch_of_A
-        elem::Zero(sketch_of_A);
+        El::Zero(sketch_of_A);
 
         // TODO: is alignment necessary?
         R1.AlignWith(sketch_of_A);
 
-        elem::LockedPartitionRight
+        El::LockedPartitionRight
         ( A,
           A_Left, A_Right, 0 );
 
@@ -268,13 +268,13 @@ private:
             data_type::realize_matrix_view(R1, 0,                   base,
                                                sketch_of_A.Width(), b);
 
-            elem::RepartitionRight
+            El::RepartitionRight
             ( A_Left, /**/     A_Right,
               A0,     /**/ A1, A2,      b );
 
             // Local Gemm
-            base::Gemm(elem::NORMAL,
-                       elem::TRANSPOSE,
+            base::Gemm(El::NORMAL,
+                       El::TRANSPOSE,
                        value_type(1),
                        A1.LockedMatrix(),
                        R1.LockedMatrix(),
@@ -283,7 +283,7 @@ private:
 
             base = base + b;
 
-            elem::SlidePartitionRight
+            El::SlidePartitionRight
             ( A_Left,     /**/ A_Right,
               A0,     A1, /**/ A2 );
 
@@ -301,10 +301,10 @@ private:
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::columnwise_tag) const {
 
-        const elem::Grid& grid = A.Grid();
+        const El::Grid& grid = A.Grid();
 
-        elem::DistMatrix<value_type, ColDist, elem::STAR> R(grid);
-        elem::DistMatrix<value_type, elem::STAR, elem::STAR>
+        El::DistMatrix<value_type, ColDist, El::STAR> R(grid);
+        El::DistMatrix<value_type, El::STAR, El::STAR>
             A_STAR_STAR(grid);
 
         // TODO: are alignments necessary?
@@ -314,14 +314,14 @@ private:
         data_type::realize_matrix_view(R);
 
         // Zero sketch_of_A
-        elem::Zero(sketch_of_A);
+        El::Zero(sketch_of_A);
 
         // Allgather within process grid
         A_STAR_STAR = A;
 
         // Local Gemm
-        base::Gemm(elem::NORMAL,
-                   elem::NORMAL,
+        base::Gemm(El::NORMAL,
+                   El::NORMAL,
                    value_type(1),
                    R.LockedMatrix(),
                    A_STAR_STAR.LockedMatrix(),
@@ -337,10 +337,10 @@ private:
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::rowwise_tag) const {
 
-        const elem::Grid& grid = A.Grid();
+        const El::Grid& grid = A.Grid();
 
-        elem::DistMatrix<value_type, elem::STAR, elem::STAR> R1(grid);
-        elem::DistMatrix<value_type, ColDist, elem::STAR>
+        El::DistMatrix<value_type, El::STAR, El::STAR> R1(grid);
+        El::DistMatrix<value_type, ColDist, El::STAR>
             sketch_of_A_Left(grid),
             sketch_of_A_Right(grid),
             sketch_of_A0(grid),
@@ -350,7 +350,7 @@ private:
         // TODO: is alignment necessary?
         R1.AlignWith(sketch_of_A);
 
-        elem::PartitionRight
+        El::PartitionRight
         ( sketch_of_A,
           sketch_of_A_Left, sketch_of_A_Right, 0 );
 
@@ -365,13 +365,13 @@ private:
             data_type::realize_matrix_view(R1, base, 0,
                                                b,    A.Width());
 
-            elem::RepartitionRight
+            El::RepartitionRight
             ( sketch_of_A_Left, /**/               sketch_of_A_Right,
               sketch_of_A0,     /**/ sketch_of_A1, sketch_of_A2,      b );
 
             // Local Gemm
-            base::Gemm(elem::NORMAL,
-                       elem::TRANSPOSE,
+            base::Gemm(El::NORMAL,
+                       El::TRANSPOSE,
                        value_type(1),
                        A.LockedMatrix(),
                        R1.LockedMatrix(),
@@ -379,7 +379,7 @@ private:
 
             base = base + b;
 
-            elem::SlidePartitionRight
+            El::SlidePartitionRight
             ( sketch_of_A_Left,               /**/ sketch_of_A_Right,
               sketch_of_A0,     sketch_of_A1, /**/ sketch_of_A2 );
 
@@ -397,10 +397,10 @@ private:
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::columnwise_tag) const {
 
-        const elem::Grid& grid = A.Grid();
+        const El::Grid& grid = A.Grid();
 
-        elem::DistMatrix<value_type, elem::STAR, ColDist> R(grid);
-        elem::DistMatrix<value_type, elem::STAR, elem::STAR>
+        El::DistMatrix<value_type, El::STAR, ColDist> R(grid);
+        El::DistMatrix<value_type, El::STAR, El::STAR>
             sketch_of_A_STAR_STAR(grid);
 
         // TODO: is alignment necessary?
@@ -413,15 +413,16 @@ private:
                                      A.Width());
 
         // Local Gemm
-        base::Gemm(elem::NORMAL,
-                   elem::NORMAL,
+        base::Gemm(El::NORMAL,
+                   El::NORMAL,
                    value_type(1),
                    R.LockedMatrix(),
                    A.LockedMatrix(),
                    sketch_of_A_STAR_STAR.Matrix());
 
         // Reduce-scatter within process grid
-        sketch_of_A.SumScatterFrom(sketch_of_A_STAR_STAR);
+        El::Zero(sketch_of_A);
+        El::AxpyContract(value_type(1), sketch_of_A_STAR_STAR, sketch_of_A);
     }
 
     void apply_impl_vdist (const matrix_type& A,

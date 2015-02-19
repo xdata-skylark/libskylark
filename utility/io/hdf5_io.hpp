@@ -52,7 +52,7 @@ public:
  * @param X output matrix.
  */
 template<typename T>
-void ReadHDF5(H5::H5File& in, const std::string& name, elem::Matrix<T>& X) {
+void ReadHDF5(H5::H5File& in, const std::string& name, El::Matrix<T>& X) {
 
     H5::DataSet dataset = in.openDataSet(name);
     H5::DataSpace fs = dataset.getSpace();

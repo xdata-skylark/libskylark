@@ -1,7 +1,7 @@
 #ifndef SKYLARK_LINEARL2_REGRESSION_SOLVER_ELEMENTAL_HPP
 #define SKYLARK_LINEARL2_REGRESSION_SOLVER_ELEMENTAL_HPP
 
-#include <elemental.hpp>
+#include <El.hpp>
 #include "../../base/base.hpp"
 
 #include "regression_problem.hpp"
@@ -21,28 +21,28 @@ namespace algorithms {
  */
 template <typename ValueType>
 class regression_solver_t<
-    regression_problem_t<elem::Matrix<ValueType>,
+    regression_problem_t<El::Matrix<ValueType>,
                          linear_tag, l2_tag, no_reg_tag>,
-    elem::Matrix<ValueType>,
-    elem::Matrix<ValueType>,
+    El::Matrix<ValueType>,
+    El::Matrix<ValueType>,
     qr_l2_solver_tag> {
 
 public:
 
     typedef ValueType value_type;
 
-    typedef elem::Matrix<ValueType> matrix_type;
-    typedef elem::Matrix<ValueType> rhs_type;
-    typedef elem::Matrix<ValueType> sol_type;
+    typedef El::Matrix<ValueType> matrix_type;
+    typedef El::Matrix<ValueType> rhs_type;
+    typedef El::Matrix<ValueType> sol_type;
 
     typedef regression_problem_t<
-        elem::Matrix<ValueType>, linear_tag, l2_tag, no_reg_tag> problem_type;
+        El::Matrix<ValueType>, linear_tag, l2_tag, no_reg_tag> problem_type;
 
 private:
     const int _m;
     const int _n;
     matrix_type _QR;
-    matrix_type _t;
+    matrix_type _t, _d;
     matrix_type _R;
 
 public:
@@ -55,8 +55,8 @@ public:
         _m(problem.m), _n(problem.n) {
         // TODO n < m
         _QR = problem.input_matrix;
-        elem::QR(_QR, _t);
-        elem::LockedView(_R, _QR, 0, 0, _n, _n);
+        El::QR(_QR, _t, _d);
+        El::LockedView(_R, _QR, 0, 0, _n, _n);
     }
 
     /**
@@ -68,9 +68,9 @@ public:
     void solve(const rhs_type& B, rhs_type& X) const {
         // TODO error checking
         X = B;
-        elem::qr::ApplyQ(elem::LEFT, elem::ADJOINT, _QR, _t, X);
+        El::qr::ApplyQ(El::LEFT, El::ADJOINT, _QR, _t, _d, X);
         X.Resize(_n, B.Width());
-        elem::Trsm(elem::LEFT, elem::UPPER, elem::NORMAL, elem::NON_UNIT,
+        El::Trsm(El::LEFT, El::UPPER, El::NORMAL, El::NON_UNIT,
             1.0, _R, X, true);
     }
 };
@@ -87,29 +87,29 @@ public:
  */
 template <typename ValueType>
 class regression_solver_t<
-    regression_problem_t<elem::DistMatrix<ValueType, elem::STAR, elem::STAR>,
+    regression_problem_t<El::DistMatrix<ValueType, El::STAR, El::STAR>,
                          linear_tag, l2_tag, no_reg_tag>,
-    elem::DistMatrix<ValueType, elem::STAR, elem::STAR>,
-    elem::DistMatrix<ValueType, elem::STAR, elem::STAR>,
+    El::DistMatrix<ValueType, El::STAR, El::STAR>,
+    El::DistMatrix<ValueType, El::STAR, El::STAR>,
     qr_l2_solver_tag> {
 
 public:
 
     typedef ValueType value_type;
 
-    typedef elem::DistMatrix<ValueType, elem::STAR, elem::STAR> matrix_type;
-    typedef elem::DistMatrix<ValueType, elem::STAR, elem::STAR> rhs_type;
-    typedef elem::DistMatrix<ValueType, elem::STAR, elem::STAR> sol_type;
+    typedef El::DistMatrix<ValueType, El::STAR, El::STAR> matrix_type;
+    typedef El::DistMatrix<ValueType, El::STAR, El::STAR> rhs_type;
+    typedef El::DistMatrix<ValueType, El::STAR, El::STAR> sol_type;
 
     typedef regression_problem_t<
-        elem::DistMatrix<ValueType, elem::STAR, elem::STAR>,
+        El::DistMatrix<ValueType, El::STAR, El::STAR>,
         linear_tag, l2_tag, no_reg_tag> problem_type;
 
 private:
     const int _m;
     const int _n;
     matrix_type _QR;
-    matrix_type _t;
+    matrix_type _t, _d;
     matrix_type _R;
 
 public:
@@ -122,8 +122,9 @@ public:
         _m(problem.m), _n(problem.n) {
         // TODO n < m
         _QR = problem.input_matrix;
-        elem::QR(_QR.Matrix(), _t.Matrix());
-        elem::LockedView(_R.Matrix(), _QR.Matrix(), 0, 0, _n, _n);
+        // TODO in 0.85, still use Matrix()?
+        El::QR(_QR.Matrix(), _t.Matrix(), _d.Matrix());
+        El::LockedView(_R.Matrix(), _QR.Matrix(), 0, 0, _n, _n);
     }
 
     /**
@@ -135,10 +136,10 @@ public:
     void solve(const rhs_type& B, rhs_type& X) const {
         // TODO error checking
         X = B;
-        elem::qr::ApplyQ(elem::LEFT, elem::ADJOINT,
-            _QR.LockedMatrix(), _t.LockedMatrix(), X.Matrix());
+        El::qr::ApplyQ(El::LEFT, El::ADJOINT,
+            _QR.LockedMatrix(), _t.LockedMatrix(), _d.LockedMatrix(), X.Matrix());
         X.Resize(_n, B.Width());
-        elem::Trsm(elem::LEFT, elem::UPPER, elem::NORMAL, elem::NON_UNIT,
+        El::Trsm(El::LEFT, El::UPPER, El::NORMAL, El::NON_UNIT,
             1.0, _R.LockedMatrix(), X.Matrix(), true);
     }
 };
@@ -155,19 +156,19 @@ public:
  */
 template <typename ValueType>
 class regression_solver_t<
-    regression_problem_t<elem::DistMatrix<ValueType>,
+    regression_problem_t<El::DistMatrix<ValueType>,
                          linear_tag, l2_tag, no_reg_tag>,
-    elem::DistMatrix<ValueType>,
-    elem::DistMatrix<ValueType>,
+    El::DistMatrix<ValueType>,
+    El::DistMatrix<ValueType>,
     qr_l2_solver_tag> {
 
 public:
 
     typedef ValueType value_type;
 
-    typedef elem::DistMatrix<ValueType> matrix_type;
-    typedef elem::DistMatrix<ValueType> rhs_type;
-    typedef elem::DistMatrix<ValueType> sol_type;
+    typedef El::DistMatrix<ValueType> matrix_type;
+    typedef El::DistMatrix<ValueType> rhs_type;
+    typedef El::DistMatrix<ValueType> sol_type;
 
     typedef regression_problem_t<matrix_type,
                                  linear_tag, l2_tag, no_reg_tag> problem_type;
@@ -177,7 +178,7 @@ private:
     const int _n;
     matrix_type _QR;
     matrix_type _R;
-    elem::DistMatrix<ValueType, elem::MD, elem::STAR> _t;
+    El::DistMatrix<ValueType, El::MD, El::STAR> _t, _d; // TODO: still use MD,STAR?
 
 public:
     /**
@@ -191,8 +192,8 @@ public:
         _t(problem.input_matrix.Grid()) {
         // TODO n < m
         _QR = problem.input_matrix;
-        elem::QR(_QR, _t);
-        elem::LockedView(_R, _QR, 0, 0, _n, _n);
+        El::QR(_QR, _t, _d);
+        El::LockedView(_R, _QR, 0, 0, _n, _n);
     }
 
     /**
@@ -204,9 +205,9 @@ public:
     void solve (const rhs_type& B, sol_type& X) const {
         // TODO error checking
         X = B;
-        elem::qr::ApplyQ(elem::LEFT, elem::ADJOINT, _QR, _t, X);
+        El::qr::ApplyQ(El::LEFT, El::ADJOINT, _QR, _t, _d, X);
         X.Resize(_n, B.Width());
-        elem::Trsm(elem::LEFT, elem::UPPER, elem::NORMAL, elem::NON_UNIT,
+        El::Trsm(El::LEFT, El::UPPER, El::NORMAL, El::NON_UNIT,
             1.0, _R, X);
     }
 };
@@ -222,21 +223,21 @@ public:
  * The regression problem is fixed, so it is a parameter of the function
  * constructing the regressoion.
  */
-template <typename ValueType, elem::Distribution VD>
+template <typename ValueType, El::Distribution VD>
 class regression_solver_t<
-    regression_problem_t<elem::DistMatrix<ValueType, VD, elem::STAR>,
+    regression_problem_t<El::DistMatrix<ValueType, VD, El::STAR>,
                          linear_tag, l2_tag, no_reg_tag>,
-    elem::DistMatrix<ValueType, VD, elem::STAR>,
-    elem::DistMatrix<ValueType, elem::STAR, elem::STAR>,
+    El::DistMatrix<ValueType, VD, El::STAR>,
+    El::DistMatrix<ValueType, El::STAR, El::STAR>,
     qr_l2_solver_tag> {
 
 public:
 
     typedef ValueType value_type;
 
-    typedef elem::DistMatrix<ValueType, VD, elem::STAR> matrix_type;
-    typedef elem::DistMatrix<ValueType, VD, elem::STAR> rhs_type;
-    typedef elem::DistMatrix<ValueType, elem::STAR, elem::STAR> sol_type;
+    typedef El::DistMatrix<ValueType, VD, El::STAR> matrix_type;
+    typedef El::DistMatrix<ValueType, VD, El::STAR> rhs_type;
+    typedef El::DistMatrix<ValueType, El::STAR, El::STAR> sol_type;
 
     typedef regression_problem_t<matrix_type,
                                  linear_tag, l2_tag, no_reg_tag> problem_type;
@@ -258,7 +259,7 @@ public:
         _Q(problem.input_matrix.Grid()), _R(problem.input_matrix.Grid()) {
         // TODO n < m ???
         _Q = problem.input_matrix;
-        elem::qr::ExplicitTS(_Q, _R);
+        El::qr::ExplicitTS(_Q, _R);
     }
 
     /**
@@ -270,8 +271,8 @@ public:
     void solve (const rhs_type& B, sol_type& X) const {
         // TODO error checking
 
-        base::Gemm(elem::ADJOINT, elem::NORMAL, 1.0, _Q, B, X);
-        base::Trsm(elem::LEFT, elem::UPPER, elem::NORMAL, elem::NON_UNIT,
+        base::Gemm(El::ADJOINT, El::NORMAL, 1.0, _Q, B, X);
+        base::Trsm(El::LEFT, El::UPPER, El::NORMAL, El::NON_UNIT,
             1.0, _R, X);
     }
 
@@ -288,21 +289,21 @@ public:
  * The regression problem is fixed, so it is a parameter of the function
  * constructing the regressoion.
  */
-template <typename ValueType, elem::Distribution VD>
+template <typename ValueType, El::Distribution VD>
 class regression_solver_t<
-    regression_problem_t<elem::DistMatrix<ValueType, VD, elem::STAR>,
+    regression_problem_t<El::DistMatrix<ValueType, VD, El::STAR>,
                          linear_tag, l2_tag, no_reg_tag>,
-    elem::DistMatrix<ValueType, VD, elem::STAR>,
-    elem::DistMatrix<ValueType, elem::STAR, elem::STAR>,
+    El::DistMatrix<ValueType, VD, El::STAR>,
+    El::DistMatrix<ValueType, El::STAR, El::STAR>,
     svd_l2_solver_tag> {
 
 public:
 
     typedef ValueType value_type;
 
-    typedef elem::DistMatrix<ValueType, VD, elem::STAR> matrix_type;
-    typedef elem::DistMatrix<ValueType, VD, elem::STAR> rhs_type;
-    typedef elem::DistMatrix<ValueType, elem::STAR, elem::STAR> sol_type;
+    typedef El::DistMatrix<ValueType, VD, El::STAR> matrix_type;
+    typedef El::DistMatrix<ValueType, VD, El::STAR> rhs_type;
+    typedef El::DistMatrix<ValueType, El::STAR, El::STAR> sol_type;
 
     typedef regression_problem_t<matrix_type,
                                  linear_tag, l2_tag, no_reg_tag> problem_type;
@@ -339,9 +340,9 @@ public:
     void solve (const rhs_type& B, sol_type& X) const {
         // TODO error checking
         sol_type UB(X); // Not copying -- just taking grid and size.
-        base::Gemm(elem::ADJOINT, elem::NORMAL, 1.0, _U, B, UB);
-        elem::DiagonalScale(elem::LEFT, elem::NORMAL, _S, UB);
-        base::Gemm(elem::NORMAL, elem::NORMAL, 1.0, _V, UB, X);
+        base::Gemm(El::ADJOINT, El::NORMAL, 1.0, _U, B, UB);
+        El::DiagonalScale(El::LEFT, El::NORMAL, _S, UB);
+        base::Gemm(El::NORMAL, El::NORMAL, 1.0, _V, UB, X);
     }
 
 };
@@ -360,21 +361,21 @@ public:
  * The regression problem is fixed, so it is a parameter of the function
  * constructing the regressoion.
  */
-template <typename ValueType, elem::Distribution VD>
+template <typename ValueType, El::Distribution VD>
 class regression_solver_t<
-    regression_problem_t<elem::DistMatrix<ValueType, VD, elem::STAR>,
+    regression_problem_t<El::DistMatrix<ValueType, VD, El::STAR>,
                          linear_tag, l2_tag, no_reg_tag>,
-    elem::DistMatrix<ValueType, VD, elem::STAR>,
-    elem::DistMatrix<ValueType, elem::STAR, elem::STAR>,
+    El::DistMatrix<ValueType, VD, El::STAR>,
+    El::DistMatrix<ValueType, El::STAR, El::STAR>,
     sne_l2_solver_tag> {
 
 public:
 
     typedef ValueType value_type;
 
-    typedef elem::DistMatrix<ValueType, VD, elem::STAR> matrix_type;
-    typedef elem::DistMatrix<ValueType, VD, elem::STAR> rhs_type;
-    typedef elem::DistMatrix<ValueType, elem::STAR, elem::STAR> sol_type;
+    typedef El::DistMatrix<ValueType, VD, El::STAR> matrix_type;
+    typedef El::DistMatrix<ValueType, VD, El::STAR> rhs_type;
+    typedef El::DistMatrix<ValueType, El::STAR, El::STAR> sol_type;
 
     typedef regression_problem_t<matrix_type,
                                  linear_tag, l2_tag, no_reg_tag> problem_type;
@@ -396,7 +397,7 @@ public:
         _A(problem.input_matrix), _R(problem.input_matrix.Grid()) {
         // TODO n < m ???
         matrix_type _Q = problem.input_matrix;
-        elem::qr::ExplicitTS(_Q, _R);
+        El::qr::ExplicitTS(_Q, _R);
     }
 
     /**
@@ -408,10 +409,10 @@ public:
     void solve (const rhs_type& B, sol_type& X) const {
         // TODO error checking
 
-        base::Gemm(elem::ADJOINT, elem::NORMAL, 1.0, _A, B, X);
-        base::Trsm(elem::LEFT, elem::UPPER, elem::ADJOINT, elem::NON_UNIT,
+        base::Gemm(El::ADJOINT, El::NORMAL, 1.0, _A, B, X);
+        base::Trsm(El::LEFT, El::UPPER, El::ADJOINT, El::NON_UNIT,
             1.0, _R, X);
-        base::Trsm(elem::LEFT, elem::UPPER, elem::NORMAL, elem::NON_UNIT,
+        base::Trsm(El::LEFT, El::UPPER, El::NORMAL, El::NON_UNIT,
             1.0, _R, X);
     }
 
@@ -432,23 +433,23 @@ public:
  * The regression problem is fixed, so it is a parameter of the function
  * constructing the regressoion.
  */
-template <typename ValueType, elem::Distribution VD>
+template <typename ValueType, El::Distribution VD>
 class regression_solver_t<
     regression_problem_t<
-        base::computed_matrix_t< elem::DistMatrix<ValueType, VD, elem::STAR> >,
+        base::computed_matrix_t< El::DistMatrix<ValueType, VD, El::STAR> >,
         linear_tag, l2_tag, no_reg_tag>,
-    elem::DistMatrix<ValueType, VD, elem::STAR>,
-    elem::DistMatrix<ValueType, elem::STAR, elem::STAR>,
+    El::DistMatrix<ValueType, VD, El::STAR>,
+    El::DistMatrix<ValueType, El::STAR, El::STAR>,
     sne_l2_solver_tag> {
 
 public:
 
     typedef ValueType value_type;
 
-    typedef base::computed_matrix_t< elem::DistMatrix<ValueType, VD, elem::STAR> >
+    typedef base::computed_matrix_t< El::DistMatrix<ValueType, VD, El::STAR> >
     matrix_type;
-    typedef elem::DistMatrix<ValueType, VD, elem::STAR> rhs_type;
-    typedef elem::DistMatrix<ValueType, elem::STAR, elem::STAR> sol_type;
+    typedef El::DistMatrix<ValueType, VD, El::STAR> rhs_type;
+    typedef El::DistMatrix<ValueType, El::STAR, El::STAR> sol_type;
 
     typedef regression_problem_t<matrix_type,
                                  linear_tag, l2_tag, no_reg_tag> problem_type;
@@ -468,9 +469,9 @@ public:
     regression_solver_t(const problem_type& problem) :
         _m(problem.m), _n(problem.n),_A(problem.input_matrix)  {
         // TODO n < m ???
-        elem::DistMatrix<ValueType, VD, elem::STAR> _Q =
+        El::DistMatrix<ValueType, VD, El::STAR> _Q =
             problem.input_matrix.materialize();
-        elem::qr::ExplicitTS(_Q, _R);
+        El::qr::ExplicitTS(_Q, _R);
     }
 
     /**
@@ -482,10 +483,10 @@ public:
     void solve (const rhs_type& B, sol_type& X) const {
         // TODO error checking
 
-        base::Gemm(elem::ADJOINT, elem::NORMAL, 1.0, _A, B, X);
-        base::Trsm(elem::LEFT, elem::UPPER, elem::ADJOINT, elem::NON_UNIT,
+        base::Gemm(El::ADJOINT, El::NORMAL, 1.0, _A, B, X);
+        base::Trsm(El::LEFT, El::UPPER, El::ADJOINT, El::NON_UNIT,
             1.0, _R, X);
-        base::Trsm(elem::LEFT, elem::UPPER, elem::NORMAL, elem::NON_UNIT,
+        base::Trsm(El::LEFT, El::UPPER, El::NORMAL, El::NON_UNIT,
             1.0, _R, X);
     }
 

@@ -59,17 +59,17 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
     base::ColumnNrm2(U, beta);
     for (index_t i=0; i<k; ++i)
         i_beta[i] = 1 / beta[i];
-    base::DiagonalScale(elem::RIGHT, elem::NORMAL, i_beta, U);
+    base::DiagonalScale(El::RIGHT, El::NORMAL, i_beta, U);
     rhs_print_t::apply(U, "U Init", params.am_i_printing, params.debug_level);
 
     sol_type V(X);     // No need to really copy, just want sizes&comm correct.
-    base::Gemm(elem::ADJOINT, elem::NORMAL, 1.0, A, U, V);
+    base::Gemm(El::ADJOINT, El::NORMAL, 1.0, A, U, V);
     R.apply_adjoint(V);
     scalar_cont_type alpha(beta), i_alpha(beta);
     base::ColumnNrm2(V, alpha);
     for (index_t i=0; i<k; ++i)
         i_alpha[i] = 1 / alpha[i];
-    base::DiagonalScale(elem::RIGHT, elem::NORMAL, i_alpha, V);
+    base::DiagonalScale(El::RIGHT, El::NORMAL, i_alpha, V);
     sol_type Z(V);
     R.apply(Z);
     sol_print_t::apply(V, "V Init", params.am_i_printing, params.debug_level);
@@ -81,7 +81,7 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
         // /!\ Actually copied for init
     scalar_cont_type nrm_a(beta), cnd_a(beta), sq_d(beta), nrm_ar_0(beta);
     base::Zero(nrm_a); base::Zero(cnd_a); base::Zero(sq_d);
-    elem::Hadamard(alpha, beta, nrm_ar_0);
+    El::Hadamard(alpha, beta, nrm_ar_0);
 
     /** Return from here */
     for (index_t i=0; i<k; ++i)
@@ -89,7 +89,7 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
             return 0;
 
     scalar_cont_type nrm_x(beta), sq_x(beta), z(beta), cs2(beta), sn2(beta);
-    elem::Zero(nrm_x); elem::Zero(sq_x); elem::Zero(z); elem::Zero(sn2);
+    El::Zero(nrm_x); El::Zero(sq_x); El::Zero(z); El::Zero(sn2);
     for (index_t i=0; i<k; ++i)
         cs2[i] = -1.0;
 
@@ -111,13 +111,13 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
     for (index_t itn=0; itn<params.iter_lim; ++itn) {
 
         /** 1. Update u and beta */
-        elem::Scal(-1.0, alpha);   // Can safely overwrite based on subseq ops.
-        base::DiagonalScale(elem::RIGHT, elem::NORMAL, alpha, U);
-        base::Gemm(elem::NORMAL, elem::NORMAL, 1.0, A, Z, 1.0, U);
+        El::Scale(-1.0, alpha);   // Can safely overwrite based on subseq ops.
+        base::DiagonalScale(El::RIGHT, El::NORMAL, alpha, U);
+        base::Gemm(El::NORMAL, El::NORMAL, 1.0, A, Z, 1.0, U);
         base::ColumnNrm2(U, beta);
         for (index_t i=0; i<k; ++i)
             i_beta[i] = 1 / beta[i];
-        base::DiagonalScale(elem::RIGHT, elem::NORMAL, i_beta, U);
+        base::DiagonalScale(El::RIGHT, El::NORMAL, i_beta, U);
 
         /** 2. Estimate norm of A */
         for (index_t i=0; i<k; ++i) {
@@ -128,14 +128,14 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
         /** 3. Update v */
         for (index_t i=0; i<k; ++i)
             minus_beta[i] = -beta[i];
-        base::DiagonalScale(elem::RIGHT, elem::NORMAL, minus_beta, V);
-        base::Gemm(elem::ADJOINT, elem::NORMAL, 1.0, A, U, AU);
+        base::DiagonalScale(El::RIGHT, El::NORMAL, minus_beta, V);
+        base::Gemm(El::ADJOINT, El::NORMAL, 1.0, A, U, AU);
         R.apply_adjoint(AU);
         base::Axpy(1.0, AU, V);
         base::ColumnNrm2(V, alpha);
         for (index_t i=0; i<k; ++i)
             i_alpha[i] = 1 / alpha[i];
-        base::DiagonalScale(elem::RIGHT, elem::NORMAL, i_alpha, V);
+        base::DiagonalScale(El::RIGHT, El::NORMAL, i_alpha, V);
         Z = V; R.apply(Z);
 
        /** 4. Define some variables */
@@ -157,7 +157,7 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
 
         for (index_t i=0; i<k; ++i)
             minus_theta_by_rho[i] = -theta[i]/rho[i];
-        base::DiagonalScale(elem::RIGHT, elem::NORMAL, minus_theta_by_rho, W);
+        base::DiagonalScale(El::RIGHT, El::NORMAL, minus_theta_by_rho, W);
         base::Axpy(1.0, Z, W);
         sol_print_t::apply(W, "W", params.am_i_printing, params.debug_level);
 

@@ -10,7 +10,6 @@
 #include "../../sketch/sketch.hpp"
 
 // TODO: Are these includes really needed?
-#include <elemental.hpp>
 #include <skylark.hpp>
 #include "../../sketch/CT.hpp"
 #include "../../sketch/CWT.hpp"

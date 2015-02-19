@@ -11,20 +11,20 @@ namespace skylark { namespace sketch {
  */
 template < typename ValueType,
            typename FUT,
-           elem::Distribution RowDist,
+           El::Distribution RowDist,
            typename ValueDistributionType>
 struct RFUT_t<
-    elem::DistMatrix<ValueType, elem::STAR, RowDist>,
+    El::DistMatrix<ValueType, El::STAR, RowDist>,
     FUT,
     ValueDistributionType> :
         public RFUT_data_t<ValueDistributionType> {
     // Typedef value, matrix, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
-    typedef elem::Matrix<ValueType> local_type;
-    typedef elem::DistMatrix<ValueType, elem::STAR, RowDist> matrix_type;
-    typedef elem::DistMatrix<ValueType,
-                             elem::STAR, RowDist> output_matrix_type;
+    typedef El::Matrix<ValueType> local_type;
+    typedef El::DistMatrix<ValueType, El::STAR, RowDist> matrix_type;
+    typedef El::DistMatrix<ValueType,
+                             El::STAR, RowDist> output_matrix_type;
     typedef ValueDistributionType value_distribution_type;
     typedef RFUT_data_t<ValueDistributionType> data_type;
 
@@ -59,8 +59,8 @@ struct RFUT_t<
         output_matrix_type& mixed_A,
         Dimension dimension) const {
         switch (RowDist) {
-        case elem::VC:
-        case elem::VR:
+        case El::VC:
+        case El::VR:
             try {
                 apply_impl_vdist(A, mixed_A, dimension);
             } catch (std::logic_error e) {
@@ -114,20 +114,20 @@ private:
  */
 template < typename ValueType,
            typename FUT,
-           elem::Distribution RowDist,
+           El::Distribution RowDist,
            typename ValueDistributionType>
 struct RFUT_t<
-    elem::DistMatrix<ValueType, RowDist, elem::STAR>,
+    El::DistMatrix<ValueType, RowDist, El::STAR>,
     FUT,
     ValueDistributionType> :
         public RFUT_data_t<ValueDistributionType> {
     // Typedef value, matrix, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
-    typedef elem::Matrix<ValueType> local_type;
-    typedef elem::DistMatrix<ValueType, RowDist, elem::STAR> matrix_type;
-    typedef elem::DistMatrix<ValueType, RowDist, elem::STAR> output_matrix_type;
-    typedef elem::DistMatrix<ValueType, elem::STAR, RowDist> intermediate_type;
+    typedef El::Matrix<ValueType> local_type;
+    typedef El::DistMatrix<ValueType, RowDist, El::STAR> matrix_type;
+    typedef El::DistMatrix<ValueType, RowDist, El::STAR> output_matrix_type;
+    typedef El::DistMatrix<ValueType, El::STAR, RowDist> intermediate_type;
     /**< Intermediate type for columnwise applications */
     typedef ValueDistributionType value_distribution_type;
     typedef RFUT_data_t<ValueDistributionType> data_type;
@@ -163,8 +163,8 @@ struct RFUT_t<
                Dimension dimension) const {
 
         switch (RowDist) {
-            case elem::VC:
-            case elem::VR:
+            case El::VC:
+            case El::VR:
                 try {
                     apply_impl_vdist(A, mixed_A, dimension);
                 } catch (std::logic_error e) {
@@ -192,8 +192,8 @@ struct RFUT_t<
                        Dimension dimension) const {
 
         switch (RowDist) {
-            case elem::VC:
-            case elem::VR:
+            case El::VC:
+            case El::VR:
                 try {
                     apply_inverse_impl_vdist(A, mixed_A, dimension);
                 } catch (std::logic_error e) {

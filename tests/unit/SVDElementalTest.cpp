@@ -9,7 +9,7 @@
 namespace po = boost::program_options;
 
 int test_main(int argc, char* argv[]) {
-    elem::Initialize(argc, argv);
+    El::Initialize(argc, argv);
 
     int height;
     int width;
@@ -44,13 +44,13 @@ int test_main(int argc, char* argv[]) {
     }
 
     // Declare distributed matrices
-    elem::DistMatrix<double> A;
-    elem::DistMatrix<double, elem::VC,   elem::STAR>  A_VC_STAR;
-    elem::DistMatrix<double, elem::STAR, elem::VC>    A_STAR_VC;
-    elem::DistMatrix<double, elem::VR,   elem::STAR>  A_VR_STAR;
-    elem::DistMatrix<double, elem::STAR, elem::VR>    A_STAR_VR;
+    El::DistMatrix<double> A;
+    El::DistMatrix<double, El::VC,   El::STAR>  A_VC_STAR;
+    El::DistMatrix<double, El::STAR, El::VC>    A_STAR_VC;
+    El::DistMatrix<double, El::VR,   El::STAR>  A_VR_STAR;
+    El::DistMatrix<double, El::STAR, El::VR>    A_STAR_VR;
 
-    elem::Uniform(A, height, width);
+    El::Uniform(A, height, width);
     A_VC_STAR = A;
     A_VR_STAR = A;
     Transpose(A, A_STAR_VC);
@@ -63,6 +63,6 @@ int test_main(int argc, char* argv[]) {
     check(A_VR_STAR);
     check(A_STAR_VR);
 
-    elem::Finalize();
+    El::Finalize();
     return 0;
 }

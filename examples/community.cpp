@@ -1,6 +1,6 @@
 #include <iostream>
 #include <unordered_map>
-#include <elemental.hpp>
+#include <El.hpp>
 #include <boost/mpi.hpp>
 #include <boost/format.hpp>
 #include <boost/program_options.hpp>
@@ -114,7 +114,7 @@ simple_unweighted_graph_t::simple_unweighted_graph_t(const std::string &gf) {
 
 int main(int argc, char** argv) {
 
-    elem::Initialize(argc, argv);
+    El::Initialize(argc, argv);
 
     boost::mpi::timer timer;
 

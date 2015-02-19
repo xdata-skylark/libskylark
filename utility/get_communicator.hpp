@@ -12,7 +12,7 @@
 #endif
 
 
-#include <elemental.hpp>
+#include <El.hpp>
 
 #include <boost/mpi.hpp>
 
@@ -29,15 +29,15 @@ mpi::communicator get_communicator(const base::sparse_matrix_t<T>& A,
 }
 
 template<typename T>
-mpi::communicator get_communicator(const elem::Matrix<T>& A,
+mpi::communicator get_communicator(const El::Matrix<T>& A,
     mpi::comm_create_kind kind = mpi::comm_attach) {
     return mpi::communicator(MPI_COMM_SELF, kind);
 }
 
-template<typename T, elem::Distribution U, elem::Distribution V>
-mpi::communicator get_communicator(const elem::DistMatrix<T, U, V>& A,
+template<typename T, El::Distribution U, El::Distribution V>
+mpi::communicator get_communicator(const El::DistMatrix<T, U, V>& A,
     mpi::comm_create_kind kind = mpi::comm_attach) {
-    return mpi::communicator(A.DistComm(), kind);
+    return mpi::communicator(A.DistComm().comm, kind);
 }
 
 

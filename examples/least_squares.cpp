@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include <elemental.hpp>
+#include <El.hpp>
 #include <boost/mpi.hpp>
 #include <boost/format.hpp>
 #include <skylark.hpp>
@@ -17,20 +17,20 @@ namespace skyutil = skylark::utility;
 const int m = 50000;
 const int n = 500;
 
-typedef elem::DistMatrix<double, elem::VC, elem::STAR> matrix_type;
-typedef elem::DistMatrix<double, elem::VC, elem::STAR> rhs_type;
-typedef elem::DistMatrix<double, elem::STAR, elem::STAR> sol_type;
+typedef El::DistMatrix<double, El::VC, El::STAR> matrix_type;
+typedef El::DistMatrix<double, El::VC, El::STAR> rhs_type;
+typedef El::DistMatrix<double, El::STAR, El::STAR> sol_type;
 
 template<typename MatrixType, typename RhsType, typename SolType>
 void check_solution(const MatrixType &A, const RhsType &b, const SolType &x, 
     const RhsType &r0,
     double &res, double &resAtr, double &resFac) {
     RhsType r(b);
-    skybase::Gemv(elem::NORMAL, -1.0, A, x, 1.0, r);
+    skybase::Gemv(El::NORMAL, -1.0, A, x, 1.0, r);
     res = skybase::Nrm2(r);
 
     SolType Atr(x.Height(), x.Width(), x.Grid());
-    skybase::Gemv(elem::TRANSPOSE, 1.0, A, r, 0.0, Atr);
+    skybase::Gemv(El::TRANSPOSE, 1.0, A, r, 0.0, Atr);
     resAtr = skybase::Nrm2(Atr);
 
     skybase::Axpy(-1.0, r0, r);
@@ -42,7 +42,7 @@ void check_solution(const MatrixType &A, const RhsType &b, const SolType &x,
 int main(int argc, char** argv) {
     double res, resAtr, resFac;
 
-    elem::Initialize(argc, argv);
+    El::Initialize(argc, argv);
 
     bmpi::communicator world;
     int rank = world.rank();
@@ -55,10 +55,10 @@ int main(int argc, char** argv) {
     // of processors.
     matrix_type A =
         skyutil::uniform_matrix_t<matrix_type>::generate(m,
-            n, elem::DefaultGrid(), context);
+            n, El::DefaultGrid(), context);
     matrix_type b =
         skyutil::uniform_matrix_t<matrix_type>::generate(m,
-            1, elem::DefaultGrid(), context);
+            1, El::DefaultGrid(), context);
 
     sol_type x(n,1);
     rhs_type r(b);
@@ -67,9 +67,9 @@ int main(int argc, char** argv) {
     double telp;
 
     // Solve using Elemental. Note: Elemental only supports [MC,MR]...
-    elem::DistMatrix<double> A1 = A, b1 = b, x1;
+    El::DistMatrix<double> A1 = A, b1 = b, x1;
     timer.restart();
-    elem::LeastSquares(elem::NORMAL, A1, b1, x1);
+    El::LeastSquares(El::NORMAL, A1, b1, x1);
     telp = timer.elapsed();
     x = x1;
     check_solution(A, b, x, r, res, resAtr, resFac);
@@ -81,11 +81,11 @@ int main(int argc, char** argv) {
                   << std::endl;
     double res_opt = res;
 
-    skybase::Gemv(elem::NORMAL, -1.0, A, x, 1.0, r);
+    skybase::Gemv(El::NORMAL, -1.0, A, x, 1.0, r);
 
     // Solve using Sylark
     timer.restart();
-    skynla::FastLeastSquares(elem::NORMAL, A, b, x, context);
+    skynla::FastLeastSquares(El::NORMAL, A, b, x, context);
     telp = timer.elapsed();
     check_solution(A, b, x, r, res, resAtr, resFac);
     if (rank == 0)
@@ -99,7 +99,7 @@ int main(int argc, char** argv) {
 
     // Approximately solve using Sylark
     timer.restart();
-    skynla::ApproximateLeastSquares(elem::NORMAL, A, b, x, context);
+    skynla::ApproximateLeastSquares(El::NORMAL, A, b, x, context);
     telp = timer.elapsed();
     check_solution(A, b, x, r, res, resAtr, resFac);
     if (rank == 0)

@@ -20,7 +20,7 @@ template<typename index_type, typename value_type>
 inline void mixed_gemm_local_part_nn (
         const double alpha,
         const SpParMat<index_type, value_type, SpDCCols<index_type, value_type> > &A,
-        const elem::DistMatrix<value_type, elem::STAR, elem::STAR> &S,
+        const El::DistMatrix<value_type, El::STAR, El::STAR> &S,
         const double beta,
         std::vector<value_type> &local_matrix) {
 
@@ -55,13 +55,13 @@ inline void mixed_gemm_local_part_nn (
 
 /// implementing gemm for CB * (*/*) = (SOMETHING/*)
 //FIXME: benchmark against one-sided
-template<typename index_type, typename value_type, elem::Distribution col_d>
+template<typename index_type, typename value_type, El::Distribution col_d>
 inline void inner_panel_mixed_gemm_impl_nn(
         const double alpha,
         const SpParMat<index_type, value_type, SpDCCols<index_type, value_type> > &A,
-        const elem::DistMatrix<value_type, elem::STAR, elem::STAR> &S,
+        const El::DistMatrix<value_type, El::STAR, El::STAR> &S,
         const double beta,
-        elem::DistMatrix<value_type, col_d, elem::STAR> &C) {
+        El::DistMatrix<value_type, col_d, El::STAR> &C) {
 
     int n_proc_side   = A.getcommgrid()->GetGridRows();
     int output_width  = S.Width();
@@ -159,13 +159,13 @@ inline void inner_panel_mixed_gemm_impl_nn(
 
 
 //FIXME: benchmark against one-sided
-template<typename index_type, typename value_type, elem::Distribution col_d>
+template<typename index_type, typename value_type, El::Distribution col_d>
 inline void outer_panel_mixed_gemm_impl_nn(
         const double alpha,
         const SpParMat<index_type, value_type, SpDCCols<index_type, value_type> > &A,
-        const elem::DistMatrix<value_type, elem::STAR, elem::STAR> &S,
+        const El::DistMatrix<value_type, El::STAR, El::STAR> &S,
         const double beta,
-        elem::DistMatrix<value_type, col_d, elem::STAR> &C) {
+        El::DistMatrix<value_type, col_d, El::STAR> &C) {
 
     utility::combblas_slab_view_t<index_type, value_type> cbview(A, false);
 
@@ -178,7 +178,7 @@ inline void outer_panel_mixed_gemm_impl_nn(
             std::min(slab_size, cbview.nrows() - cur_row_idx);
 
         // get the next slab_size columns of B
-        elem::DistMatrix<value_type, col_d, elem::STAR>
+        El::DistMatrix<value_type, col_d, El::STAR>
             A_row(cur_slab_size, S.Height());
 
         cbview.extract_elemental_row_slab_view(A_row, cur_slab_size);
@@ -201,27 +201,27 @@ inline void outer_panel_mixed_gemm_impl_nn(
             }
         }
 
-        elem::DistMatrix<value_type, col_d, elem::STAR>
+        El::DistMatrix<value_type, col_d, El::STAR>
             C_slice(cur_slab_size, C.Width());
-        elem::View(C_slice, C, cur_row_idx, 0, cur_slab_size, C.Width());
-        elem::LocalGemm(elem::NORMAL, elem::NORMAL, alpha, A_row, S,
+        El::View(C_slice, C, cur_row_idx, 0, cur_slab_size, C.Width());
+        El::LocalGemm(El::NORMAL, El::NORMAL, alpha, A_row, S,
                         beta, C_slice);
     }
 }
 
 
 //FIXME: benchmark against one-sided
-template<typename index_type, typename value_type, elem::Distribution col_d>
+template<typename index_type, typename value_type, El::Distribution col_d>
 inline void outer_panel_mixed_gemm_impl_tn(
         const double alpha,
         const SpParMat<index_type, value_type, SpDCCols<index_type, value_type> > &A,
-        const elem::DistMatrix<value_type, col_d, elem::STAR> &S,
+        const El::DistMatrix<value_type, col_d, El::STAR> &S,
         const double beta,
-        elem::DistMatrix<value_type, elem::STAR, elem::STAR> &C) {
+        El::DistMatrix<value_type, El::STAR, El::STAR> &C) {
 
-    elem::DistMatrix<value_type, elem::STAR, elem::STAR>
+    El::DistMatrix<value_type, El::STAR, El::STAR>
         tmp_C(C.Height(), C.Width());
-    elem::Zero(tmp_C);
+    El::Zero(tmp_C);
 
     utility::combblas_slab_view_t<index_type, value_type> cbview(A, false);
 
@@ -234,7 +234,7 @@ inline void outer_panel_mixed_gemm_impl_tn(
             std::min(slab_size, cbview.ncols() - cur_row_idx);
 
         // get the next slab_size columns of B
-        elem::DistMatrix<value_type, elem::STAR, elem::STAR>
+        El::DistMatrix<value_type, El::STAR, El::STAR>
             A_row(cur_slab_size, S.Height());
 
         // transpose is column

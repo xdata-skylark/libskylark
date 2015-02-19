@@ -6,19 +6,19 @@ namespace skylark { namespace base {
 // TODO copy sparse to sparse.
 
 template<typename T>
-inline void Copy(const elem::Matrix<T>& A, elem::Matrix<T>& B) {
-    elem::Copy(A, B);
+inline void Copy(const El::Matrix<T>& A, El::Matrix<T>& B) {
+    El::Copy(A, B);
 }
 
 /**
  * Copy matrix A into B, densifiying it in the process.
  */
 template<typename T>
-inline void DenseCopy(const sparse_matrix_t<T>& A, elem::Matrix<T>& B) {
+inline void DenseCopy(const sparse_matrix_t<T>& A, El::Matrix<T>& B) {
     if (B.Height() != A.height() || B.Width() != A.width())
         B.Resize(A.height(), A.width());
 
-    elem::Zero(B);
+    El::Zero(B);
 
     const int *indptr = A.indptr();
     const int *indices = A.indices();
@@ -29,11 +29,11 @@ inline void DenseCopy(const sparse_matrix_t<T>& A, elem::Matrix<T>& B) {
 }
 
 /**
- * An alias to elem::Copy
+ * An alias to El::Copy
  */
 template<typename T>
-inline void DenseCopy(const elem::Matrix<T>& A, elem::Matrix<T>& B) {
-    elem::Copy(A, B);
+inline void DenseCopy(const El::Matrix<T>& A, El::Matrix<T>& B) {
+    El::Copy(A, B);
 }
 
 } } // namespace skylark::base

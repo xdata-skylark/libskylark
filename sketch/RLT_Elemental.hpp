@@ -12,14 +12,14 @@ template <typename ValueType,
           template <typename> class KernelDistribution>
 struct RLT_t <
     InputType,
-    elem::Matrix<ValueType>,
+    El::Matrix<ValueType>,
     KernelDistribution> :
         public RLT_data_t<KernelDistribution> {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
     typedef InputType matrix_type;
-    typedef elem::Matrix<value_type> output_matrix_type;
+    typedef El::Matrix<value_type> output_matrix_type;
     typedef RLT_data_t<KernelDistribution> data_type;
 
 private:
@@ -94,18 +94,18 @@ public:
  */
 template <typename ValueType,
           typename InputType,
-          elem::Distribution OC, elem::Distribution OR,
+          El::Distribution OC, El::Distribution OR,
           template <typename> class KernelDistribution>
 struct RLT_t <
     InputType,
-    elem::DistMatrix<ValueType, OC, OR>,
+    El::DistMatrix<ValueType, OC, OR>,
     KernelDistribution> :
         public RLT_data_t<KernelDistribution> {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
     typedef InputType matrix_type;
-    typedef elem::DistMatrix<value_type, OC, OR> output_matrix_type;
+    typedef El::DistMatrix<value_type, OC, OR> output_matrix_type;
     typedef RLT_data_t<KernelDistribution> data_type;
 
 private:
@@ -154,7 +154,7 @@ public:
             underlying_t underlying(*data_type::_underlying_data);
             underlying.apply(A, sketch_of_A, dimension);
 
-            elem::Matrix<value_type> &SAl = sketch_of_A.Matrix();
+            El::Matrix<value_type> &SAl = sketch_of_A.Matrix();
 
 #           if SKYLARK_HAVE_OPENMP
 #           pragma omp parallel for collapse(2)

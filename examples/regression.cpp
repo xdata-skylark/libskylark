@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include <elemental.hpp>
+#include <El.hpp>
 #include <boost/mpi.hpp>
 #include <boost/format.hpp>
 #include <skylark.hpp>
@@ -25,11 +25,11 @@ const int n = 500;
 const int t = 2000;
 #endif
 
-typedef elem::DistMatrix<double, elem::VC, elem::STAR> matrix_type;
-typedef elem::DistMatrix<double, elem::VC, elem::STAR> rhs_type;
-typedef elem::DistMatrix<double, elem::STAR, elem::STAR> sol_type;
-typedef elem::DistMatrix<double, elem::STAR, elem::STAR> sketch_type;
-typedef elem::DistMatrix<double, elem::STAR, elem::STAR> precond_type;
+typedef El::DistMatrix<double, El::VC, El::STAR> matrix_type;
+typedef El::DistMatrix<double, El::VC, El::STAR> rhs_type;
+typedef El::DistMatrix<double, El::STAR, El::STAR> sol_type;
+typedef El::DistMatrix<double, El::STAR, El::STAR> sketch_type;
+typedef El::DistMatrix<double, El::STAR, El::STAR> precond_type;
 
 typedef skyalg::regression_problem_t<matrix_type,
                                      skyalg::linear_tag,
@@ -196,11 +196,11 @@ void check_solution(const ProblemType &pr, const RhsType &b, const SolType &x,
     const RhsType &r0,
     double &res, double &resAtr, double &resFac) {
     RhsType r(b);
-    skybase::Gemv(elem::NORMAL, -1.0, pr.input_matrix, x, 1.0, r);
+    skybase::Gemv(El::NORMAL, -1.0, pr.input_matrix, x, 1.0, r);
     res = skybase::Nrm2(r);
 
     SolType Atr(x.Height(), x.Width(), x.Grid());
-    skybase::Gemv(elem::TRANSPOSE, 1.0, pr.input_matrix, r, 0.0, Atr);
+    skybase::Gemv(El::TRANSPOSE, 1.0, pr.input_matrix, r, 0.0, Atr);
     resAtr = skybase::Nrm2(Atr);
 
     skybase::Axpy(-1.0, r0, r);
@@ -212,7 +212,7 @@ void check_solution(const ProblemType &pr, const RhsType &b, const SolType &x,
 int main(int argc, char** argv) {
     double res, resAtr, resFac;
 
-    elem::Initialize(argc, argv);
+    El::Initialize(argc, argv);
 
     bmpi::communicator world;
     int rank = world.rank();
@@ -225,10 +225,10 @@ int main(int argc, char** argv) {
     // of processors.
     matrix_type A =
         skyutil::uniform_matrix_t<matrix_type>::generate(m,
-            n, elem::DefaultGrid(), context);
+            n, El::DefaultGrid(), context);
     matrix_type b =
         skyutil::uniform_matrix_t<matrix_type>::generate(m,
-            1, elem::DefaultGrid(), context);
+            1, El::DefaultGrid(), context);
 
     regression_problem_type problem(m, n, A);
 
@@ -253,7 +253,7 @@ int main(int argc, char** argv) {
                   << std::endl;
     double res_opt = res;
 
-    skybase::Gemv(elem::NORMAL, -1.0, problem.input_matrix, x, 1.0, r);
+    skybase::Gemv(El::NORMAL, -1.0, problem.input_matrix, x, 1.0, r);
 
     // Using SNE (semi-normal equations)
     timer.restart();

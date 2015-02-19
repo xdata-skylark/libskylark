@@ -14,20 +14,20 @@ namespace skylark { namespace sketch {
 
 /**
  * Specialization local input (sparse of dense), local output.
- * InputType should either be elem::Matrix, or base:sparse_matrix_t.
+ * InputType should either be El::Matrix, or base:sparse_matrix_t.
  */
 template <typename ValueType,
           template <typename> class InputType,
           typename ValuesAccessor>
 struct dense_transform_t <
     InputType<ValueType>,
-    elem::Matrix<ValueType>,
+    El::Matrix<ValueType>,
     ValuesAccessor> :
         public dense_transform_data_t<ValuesAccessor> {
 
     typedef ValueType value_type;
     typedef InputType<value_type> matrix_type;
-    typedef elem::Matrix<value_type> output_matrix_type;
+    typedef El::Matrix<value_type> output_matrix_type;
     typedef dense_transform_data_t<ValuesAccessor> data_type;
 
     /**
@@ -84,8 +84,8 @@ private:
         output_matrix_type R;
         data_type::realize_matrix_view(R);
 
-        base::Gemm (elem::NORMAL,
-                    elem::TRANSPOSE,
+        base::Gemm (El::NORMAL,
+                    El::TRANSPOSE,
                     value_type(1),
                     A,
                     R,
@@ -102,8 +102,8 @@ private:
         output_matrix_type R;
         data_type::realize_matrix_view(R);
 
-        base::Gemm (elem::NORMAL,
-                    elem::NORMAL,
+        base::Gemm (El::NORMAL,
+                    El::NORMAL,
                     value_type(1),
                     R,
                     A,

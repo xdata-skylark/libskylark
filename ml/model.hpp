@@ -1,7 +1,8 @@
 #ifndef SKYLARK_ML_MODEL_HPP
 #define SKYLARK_ML_MODEL_HPP
 
-#include <elemental.hpp>
+#include <El.hpp>
+#include <El/core/types.h>
 #include <skylark.hpp>
 #include <cmath>
 #include <boost/mpi.hpp>
@@ -20,7 +21,7 @@
 
 namespace skylark { namespace ml {
 
-int classification_accuracy(elem::Matrix<double>& Yt, elem::Matrix<double>& Yp) {
+int classification_accuracy(El::Matrix<double>& Yt, El::Matrix<double>& Yp) {
     int correct = 0;
     double o, o1;
     int pred;
@@ -55,8 +56,8 @@ public:
 
     // TODO the following two should depend on the input type
     // TODO explicit doubles is not desired.
-    typedef elem::Matrix<double> intermediate_type;
-    typedef elem::Matrix<double> coef_type;
+    typedef El::Matrix<double> intermediate_type;
+    typedef El::Matrix<double> coef_type;
 
     typedef skylark::sketch::sketch_transform_t<input_type, intermediate_type>
     feature_transform_type;
@@ -68,7 +69,7 @@ public:
 
         // TODO verify all N dimension of the maps match
 
-        elem::MakeZeros(_coef);
+        El::Zero(_coef);
 
         int nf = 0;
         for(int i = 0; i < _maps.size(); i++) {
@@ -120,7 +121,7 @@ public:
         pt.add_child("feature_mapping", ptfmap);
 
         std::stringstream scoef;
-        elem::Print(_coef, "", scoef);
+        El::Print(_coef, "", scoef);
         pt.put("coef_matrix", scoef.str());
 
         return pt;
@@ -149,14 +150,14 @@ public:
             // No maps (linear case)
 
             DV.Resize(n, k);
-            base::Gemm(elem::TRANSPOSE,elem::NORMAL,1.0, X, _coef, 0.0, DV);
+            base::Gemm(El::TRANSPOSE,El::NORMAL,1.0, X, _coef, 0.0, DV);
         } else {
             // Non-linear case
 
             coef_type Wslice;
             int j, start, finish, sj;
 
-            elem::Zeros(DV, n, k);
+            El::Zeros(DV, n, k);
 #           ifdef SKYLARK_HAVE_OPENMP
 #           pragma omp parallel for if(num_threads > 1) private(j, start, finish, sj) num_threads(num_threads)
 #           endif
@@ -169,12 +170,12 @@ public:
                 _maps[j]->apply(X, z, sketch::columnwise_tag());
 
                 if (_scale_maps)
-                    elem::Scal(sqrt(double(sj) / d), z);
+                    El::Scale(sqrt(double(sj) / d), z);
 
                 output_type o(n, k);
 
-                elem::LockedView(Wslice, _coef, start, 0, sj, k);
-                base::Gemm(elem::TRANSPOSE, elem::NORMAL, 1.0, z, Wslice, o);
+                El::LockedView(Wslice, _coef, start, 0, sj, k);
+                base::Gemm(El::TRANSPOSE, El::NORMAL, 1.0, z, Wslice, o);
 
 #               ifdef SKYLARK_HAVE_OPENMP
 #               pragma omp critical
@@ -270,11 +271,11 @@ double model_t<InputType, OutputType>::evaluate(OutputType& Yt,
 
     int rank = comm.rank();
 
-    int correct = classification_accuracy(Yt, Yp);
+    ElInt correct = classification_accuracy(Yt, Yp);
     double accuracy = 0.0;
-    int totalcorrect, total;
-    boost::mpi::reduce(comm, correct, totalcorrect, std::plus<double>(), 0);
-    boost::mpi::reduce(comm, Yt.Height(), total, std::plus<size_t>(), 0);
+    ElInt totalcorrect, total;
+    boost::mpi::reduce(comm, correct, totalcorrect, std::plus<ElInt>(), 0);
+    boost::mpi::reduce(comm, Yt.Height(), total, std::plus<ElInt>(), 0);
 
     if(rank ==0)
         accuracy =  totalcorrect*100.0/total;

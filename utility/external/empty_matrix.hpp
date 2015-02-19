@@ -7,7 +7,7 @@
 #include <CombBLAS.h>
 #endif
 
-#include <elemental.hpp>
+#include <El.hpp>
 
 namespace skylark { namespace utility {
 
@@ -76,10 +76,10 @@ struct empty_matrix_t <SpParMat<IndexType,
 #endif // SKYLARK_HAVE_COMBBLAS
 
 template <typename ValueType>
-struct empty_matrix_t <elem::Matrix<ValueType> > {
+struct empty_matrix_t <El::Matrix<ValueType> > {
   typedef int index_t;
   typedef ValueType value_t;
-  typedef elem::Matrix<ValueType> matrix_t;
+  typedef El::Matrix<ValueType> matrix_t;
 
   static matrix_t generate (index_t M,
                          index_t N) {
@@ -88,16 +88,16 @@ struct empty_matrix_t <elem::Matrix<ValueType> > {
 };
 
 template <typename ValueType,
-          elem::Distribution CD,
-          elem::Distribution RD>
-struct empty_matrix_t <elem::DistMatrix<ValueType, CD, RD> > {
+          El::Distribution CD,
+          El::Distribution RD>
+struct empty_matrix_t <El::DistMatrix<ValueType, CD, RD> > {
   typedef int index_t;
   typedef ValueType value_t;
-  typedef elem::DistMatrix<ValueType, CD, RD> mpi_matrix_t;
+  typedef El::DistMatrix<ValueType, CD, RD> mpi_matrix_t;
 
   static mpi_matrix_t generate (index_t M,
                              index_t N,
-                             elem::Grid& grid) {
+                             El::Grid& grid) {
     return mpi_matrix_t (M, N, grid);
   }
 };

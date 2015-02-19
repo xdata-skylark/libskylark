@@ -5,7 +5,7 @@
 #include <utility>
 #include <ext/hash_map>
 
-#include <elemental.hpp>
+#include <El.hpp>
 #include <boost/mpi.hpp>
 #include <skylark.hpp>
 
@@ -25,12 +25,12 @@ char* chr_params[NUM_CHR_PARAMETERS];
 /** Typedef DistMatrix and Matrix */
 typedef std::vector<int> IntContainer;
 typedef std::vector<double> DblContainer;
-typedef elem::DistMatrix<double, elem::CIRC, elem::CIRC> MatrixType;
-typedef elem::DistMatrix<double, elem::VC, elem::STAR> DistMatrixType;
+typedef El::DistMatrix<double, El::CIRC, El::CIRC> MatrixType;
+typedef El::DistMatrix<double, El::VC, El::STAR> DistMatrixType;
 
 int main (int argc, char** argv) {
     /* Initialize Elemental */
-    elem::Initialize (argc, argv);
+    El::Initialize (argc, argv);
 
     /* MPI sends argc and argv everywhere --- parse everywhere */
     parse_parameters (argc,argv);
@@ -41,17 +41,17 @@ int main (int argc, char** argv) {
     /* Create matrices A and B */
     bmpi::communicator world;
     MPI_Comm mpi_world(world);
-    elem::Grid grid (mpi_world);
-    elem::DistMatrix<double, elem::VR, elem::STAR> A(grid);
-    elem::DistMatrix<double, elem::VR, elem::STAR> B(grid);
+    El::Grid grid (mpi_world);
+    El::DistMatrix<double, El::VR, El::STAR> A(grid);
+    El::DistMatrix<double, El::VR, El::STAR> B(grid);
 
     /** Only randomization is supported for now */
     if (0==int_params[USE_RANDOM_INDEX]) {
         /** TODO: Read the entries! */
         std::cout << "We don't support reading --- yet --" << std::endl;
     } else {
-        elem::Uniform (A, int_params[M_INDEX], int_params[N_INDEX]);
-        elem::Uniform (B, int_params[M_INDEX], int_params[N_RHS_INDEX]);
+        El::Uniform (A, int_params[M_INDEX], int_params[N_INDEX]);
+        El::Uniform (B, int_params[M_INDEX], int_params[N_RHS_INDEX]);
     }
 
     /**
@@ -83,7 +83,7 @@ int main (int argc, char** argv) {
             /* 4. Print and see the result (if small enough) */
             if (int_params[S_INDEX] * int_params[N_INDEX] < 100 &&
                 world.rank() == 0)
-                elem::Display(sketch_A);
+                El::Display(sketch_A);
 
             /** TODO: Do that same to B, and solve the system! */
 
@@ -105,7 +105,7 @@ int main (int argc, char** argv) {
             /* 4. Print and see the result */
             if (int_params[S_INDEX] * int_params[M_INDEX] < 100 &&
                 world.rank() == 0)
-                elem::Display(sketch_A);
+                El::Display(sketch_A);
 
             /** TODO: Do that same to B, and solve the system! */
 
@@ -130,7 +130,7 @@ int main (int argc, char** argv) {
             /* 4. Print and see the result */
             if (int_params[S_INDEX] * int_params[M_INDEX] < 100 &&
                 world.rank() == 0)
-                elem::Display(sketch_A);
+                El::Display(sketch_A);
 
             /** TODO: Do that same to B, and solve the system! */
 
@@ -141,7 +141,7 @@ int main (int argc, char** argv) {
             std::endl;
     }
 
-    elem::Finalize();
+    El::Finalize();
 
     return 0;
 

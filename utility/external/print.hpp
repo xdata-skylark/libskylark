@@ -5,7 +5,7 @@
 
 #include "config.h"
 
-#include <elemental.hpp>
+#include <El.hpp>
 
 #if SKYLARK_HAVE_COMBBLAS
 #include <CombBLAS.h>
@@ -18,11 +18,11 @@ template <typename DataType>
 struct print_t { };
 
 template <typename ValueType>
-struct print_t <elem::Matrix<ValueType> > {
+struct print_t <El::Matrix<ValueType> > {
 
   typedef int index_t;
   typedef ValueType value_t;
-  typedef elem::Matrix<ValueType> matrix_t;
+  typedef El::Matrix<ValueType> matrix_t;
 
   static void apply(const matrix_t& X,
                     const char* msg,
@@ -61,13 +61,13 @@ struct print_t <elem::Matrix<ValueType> > {
 };
 
 template <typename ValueType,
-          elem::Distribution CD,
-          elem::Distribution RD>
-struct print_t <elem::DistMatrix<ValueType, CD, RD> > {
+          El::Distribution CD,
+          El::Distribution RD>
+struct print_t <El::DistMatrix<ValueType, CD, RD> > {
 
     typedef int index_t;
     typedef ValueType value_t;
-    typedef elem::DistMatrix<ValueType, CD, RD> mpi_matrix_t;
+    typedef El::DistMatrix<ValueType, CD, RD> mpi_matrix_t;
 
     static void apply(const mpi_matrix_t& X,
         const char* msg,
@@ -76,7 +76,7 @@ struct print_t <elem::DistMatrix<ValueType, CD, RD> > {
 
         if (1>=debug_level) return;
 
-        elem::DistMatrix<value_t, elem::STAR, elem::STAR> Xss(X);
+        El::DistMatrix<value_t, El::STAR, El::STAR> Xss(X);
         if (am_i_printing) {
             printf ("Dump of %s\n", msg);
             for (index_t i=0; i<Xss.Height(); ++i) {
@@ -95,7 +95,7 @@ struct print_t <elem::DistMatrix<ValueType, CD, RD> > {
                     int debug_level=0) {
     if (1>=debug_level) return;
 
-    elem::DistMatrix<value_t, elem::STAR, elem::STAR> Xss(X), Yss(Y);
+    El::DistMatrix<value_t, El::STAR, El::STAR> Xss(X), Yss(Y);
     if (am_i_printing) {
       printf ("Dump of %s\n", msg);
       for (index_t i=0; i<Xss.Height(); ++i) {

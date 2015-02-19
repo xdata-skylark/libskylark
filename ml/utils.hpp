@@ -1,14 +1,14 @@
 #ifndef UTILS_HPP_
 #define UTILS_HPP_
 
-#include <elemental.hpp>
+#include <El.hpp>
 
-int max(elem::Matrix<double> Y) {
+int max(El::Matrix<double> Y) {
     int k =  (int) *std::max_element(Y.Buffer(), Y.Buffer() + Y.Height());
     return k;
 }
 
-int min(elem::Matrix<double> Y) {
+int min(El::Matrix<double> Y) {
     int k =  (int) *std::min_element(Y.Buffer(), Y.Buffer() + Y.Height());
     return k;
 }

@@ -9,7 +9,6 @@
 #include <utility>
 #include <ext/hash_map>
 
-#include <elemental.hpp>
 #include <CombBLAS.h>
 #include <boost/mpi.hpp>
 #include <skylark.hpp>
@@ -33,8 +32,8 @@ char* chr_params[NUM_CHR_PARAMETERS];
 /** Typedef DistMatrix and Matrix */
 typedef std::vector<int> IntContainer;
 typedef std::vector<double> DblContainer;
-typedef elem::Matrix<double> DenseMatrixType;
-typedef elem::DistMatrix<double> DenseDistMatrixType;
+typedef El::Matrix<double> DenseMatrixType;
+typedef El::DistMatrix<double> DenseDistMatrixType;
 
 typedef SpDCCols<int, double> SparseMatrixType;
 typedef SpParMat<int, double, SparseMatrixType> SparseDistMatrixType;
@@ -87,9 +86,9 @@ int main (int argc, char** argv) {
     /** Run the test for elemental matrices */
 
     /* Initialize elemental */
-    elem::Initialize (argc, argv);
+    El::Initialize (argc, argv);
     MPI_Comm mpi_world(world);
-    elem::Grid grid (mpi_world);
+    El::Grid grid (mpi_world);
   
     DenseDistMatrixType A=uni_dense_dist_mat_t::generate
             (int_params[M_INDEX], int_params[N_INDEX], grid, context);
@@ -105,7 +104,7 @@ int main (int argc, char** argv) {
     /***********************************************************************/
     /* Hack to make sure that we can sketch matrices with MC,MR distributn */
     /***********************************************************************/
-    typedef elem::DistMatrix<double, elem::VC, elem::STAR> CheatDistMatrixType;
+    typedef El::DistMatrix<double, El::VC, El::STAR> CheatDistMatrixType;
     CheatDistMatrixType A_cheat(A), B_cheat(B);
     /***********************************************************************/
     if (0==strcmp("JLT", chr_params[TRANSFORM_INDEX]) ) {
@@ -152,9 +151,9 @@ int main (int argc, char** argv) {
     if (1<int_params[DEBUG_INDEX] && 
         (int_params[M_INDEX]*int_params[N_INDEX])<100 && 
         world.rank() == 0) {
-      elem::Display(A, "A"); 
-      elem::Display(B, "B");
-      elem::Display(X, "X");
+      El::Display(A, "A"); 
+      El::Display(B, "B");
+      El::Display(X, "X");
     }
 
     /** Solve the sketched problem---change to using the sketched regressor */
@@ -190,7 +189,7 @@ int main (int argc, char** argv) {
     }
 
     /** Finalize Elemental */
-    elem::Finalize();
+    El::Finalize();
 
   } else {
     /** Run the test for CombBLAS matrices */

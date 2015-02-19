@@ -14,69 +14,70 @@
 namespace skylark { namespace base {
 
 /**
- * Rename the elemental Gemm function, so that we have unified access.
+ * Rename the Elental Gemm function, so that we have unified access.
  */
 
 template<typename T>
-inline void Gemm(elem::Orientation oA, elem::Orientation oB,
-    T alpha, const elem::Matrix<T>& A, const elem::Matrix<T>& B,
-    T beta, elem::Matrix<T>& C) {
-    elem::Gemm(oA, oB, alpha, A, B, beta, C);
+inline void Gemm(El::Orientation oA, El::Orientation oB,
+    T alpha, const El::Matrix<T>& A, const El::Matrix<T>& B,
+    T beta, El::Matrix<T>& C) {
+    El::Gemm(oA, oB, alpha, A, B, beta, C);
 }
 
 template<typename T>
-inline void Gemm(elem::Orientation oA, elem::Orientation oB,
-    T alpha, const elem::Matrix<T>& A, const elem::Matrix<T>& B,
-    elem::Matrix<T>& C) {
-    elem::Gemm(oA, oB, alpha, A, B, C);
+inline void Gemm(El::Orientation oA, El::Orientation oB,
+    T alpha, const El::Matrix<T>& A, const El::Matrix<T>& B,
+    El::Matrix<T>& C) {
+    El::Gemm(oA, oB, alpha, A, B, C);
 }
 
 template<typename T>
-inline void Gemm(elem::Orientation oA, elem::Orientation oB,
-    T alpha, const elem::DistMatrix<T, elem::STAR, elem::STAR>& A,
-    const elem::DistMatrix<T, elem::STAR, elem::STAR>& B,
-    T beta, elem::DistMatrix<T, elem::STAR, elem::STAR>& C) {
-    elem::Gemm(oA, oB, alpha, A.LockedMatrix(), B.LockedMatrix(), beta, C.Matrix());
+inline void Gemm(El::Orientation oA, El::Orientation oB,
+    T alpha, const El::DistMatrix<T, El::STAR, El::STAR>& A,
+    const El::DistMatrix<T, El::STAR, El::STAR>& B,
+    T beta, El::DistMatrix<T, El::STAR, El::STAR>& C) {
+    El::Gemm(oA, oB, alpha, A.LockedMatrix(), B.LockedMatrix(), beta, C.Matrix());
 }
 
 template<typename T>
-inline void Gemm(elem::Orientation oA, elem::Orientation oB,
-    T alpha, const elem::DistMatrix<T, elem::STAR, elem::STAR>& A,
-    const elem::DistMatrix<T, elem::STAR, elem::STAR>& B,
-    elem::DistMatrix<T, elem::STAR, elem::STAR>& C) {
-    elem::Gemm(oA, oB, alpha, A.LockedMatrix(), B.LockedMatrix(), C.Matrix());
+inline void Gemm(El::Orientation oA, El::Orientation oB,
+    T alpha, const El::DistMatrix<T, El::STAR, El::STAR>& A,
+    const El::DistMatrix<T, El::STAR, El::STAR>& B,
+    El::DistMatrix<T, El::STAR, El::STAR>& C) {
+    El::Gemm(oA, oB, alpha, A.LockedMatrix(), B.LockedMatrix(), C.Matrix());
 }
 
 template<typename T>
-inline void Gemm(elem::Orientation oA, elem::Orientation oB,
-    T alpha, const elem::DistMatrix<T>& A, const elem::DistMatrix<T>& B,
-    T beta, elem::DistMatrix<T>& C) {
-    elem::Gemm(oA, oB, alpha, A, B, beta, C);
+inline void Gemm(El::Orientation oA, El::Orientation oB,
+    T alpha, const El::DistMatrix<T>& A, const El::DistMatrix<T>& B,
+    T beta, El::DistMatrix<T>& C) {
+    El::Gemm(oA, oB, alpha, A, B, beta, C);
 }
 
 template<typename T>
-inline void Gemm(elem::Orientation oA, elem::Orientation oB,
-    T alpha, const elem::DistMatrix<T>& A, const elem::DistMatrix<T>& B,
-    elem::DistMatrix<T>& C) {
-    elem::Gemm(oA, oB, alpha, A, B, C);
+inline void Gemm(El::Orientation oA, El::Orientation oB,
+    T alpha, const El::DistMatrix<T>& A, const El::DistMatrix<T>& B,
+    El::DistMatrix<T>& C) {
+    El::Gemm(oA, oB, alpha, A, B, C);
 }
 
 /**
- * The following combinations is not offered by Elemental, but is useful for us.
+ * The following combinations is not offered by Elental, but is useful for us.
  * We implement it partially.
  */
 
 template<typename T>
-inline void Gemm(elem::Orientation oA, elem::Orientation oB,
-    T alpha, const elem::DistMatrix<T, elem::VC, elem::STAR>& A,
-    const elem::DistMatrix<T, elem::VC, elem::STAR>& B,
-    T beta, elem::DistMatrix<T, elem::STAR, elem::STAR>& C) {
+inline void Gemm(El::Orientation oA, El::Orientation oB,
+    T alpha, const El::DistMatrix<T, El::VC, El::STAR>& A,
+    const El::DistMatrix<T, El::VC, El::STAR>& B,
+    T beta, El::DistMatrix<T, El::STAR, El::STAR>& C) {
     // TODO verify sizes etc.
 
-    if ((oA == elem::TRANSPOSE || oA == elem::ADJOINT) && oB == elem::NORMAL) {
-        boost::mpi::communicator comm(C.Grid().Comm(), boost::mpi::comm_attach);
-        elem::Matrix<T> Clocal(C.Matrix());
-        elem::Gemm(oA, elem::NORMAL,
+    if ((oA == El::TRANSPOSE || oA == El::ADJOINT) && oB == El::NORMAL) {
+        boost::mpi::communicator comm(C.Grid().Comm().comm, 
+            boost::mpi::comm_attach);
+        El::Matrix<T> Clocal(C.Matrix());
+        El::Gemm(oA, El::NORMAL,
             alpha, A.LockedMatrix(), B.LockedMatrix(),
             beta / T(comm.size()), Clocal);
         boost::mpi::all_reduce(comm,
@@ -88,26 +89,26 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
 }
 
 template<typename T>
-inline void Gemm(elem::Orientation oA, elem::Orientation oB,
-    T alpha, const elem::DistMatrix<T, elem::VC, elem::STAR>& A,
-    const elem::DistMatrix<T, elem::VC, elem::STAR>& B,
-    elem::DistMatrix<T, elem::STAR, elem::STAR>& C) {
+inline void Gemm(El::Orientation oA, El::Orientation oB,
+    T alpha, const El::DistMatrix<T, El::VC, El::STAR>& A,
+    const El::DistMatrix<T, El::VC, El::STAR>& B,
+    El::DistMatrix<T, El::STAR, El::STAR>& C) {
 
-    int C_height = (oA == elem::NORMAL ? A.Height() : A.Width());
-    int C_width = (oB == elem::NORMAL ? B.Width() : B.Height());
-    elem::Zeros(C, C_height, C_width);
+    int C_height = (oA == El::NORMAL ? A.Height() : A.Width());
+    int C_width = (oB == El::NORMAL ? B.Width() : B.Height());
+    El::Zeros(C, C_height, C_width);
     base::Gemm(oA, oB, alpha, A, B, T(0), C);
 }
 
 template<typename T>
-inline void Gemm(elem::Orientation oA, elem::Orientation oB,
-    T alpha, const elem::DistMatrix<T, elem::VC, elem::STAR>& A,
-    const elem::DistMatrix<T, elem::STAR, elem::STAR>& B,
-    T beta, elem::DistMatrix<T, elem::VC, elem::STAR>& C) {
+inline void Gemm(El::Orientation oA, El::Orientation oB,
+    T alpha, const El::DistMatrix<T, El::VC, El::STAR>& A,
+    const El::DistMatrix<T, El::STAR, El::STAR>& B,
+    T beta, El::DistMatrix<T, El::VC, El::STAR>& C) {
     // TODO verify sizes etc.
 
-    if (oA == elem::NORMAL && oB == elem::NORMAL) {
-        elem::Gemm(elem::NORMAL, elem::NORMAL,
+    if (oA == El::NORMAL && oB == El::NORMAL) {
+        El::Gemm(El::NORMAL, El::NORMAL,
             alpha, A.LockedMatrix(), B.LockedMatrix(),
             beta, C.Matrix());
     } else {
@@ -116,29 +117,29 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
 }
 
 template<typename T>
-inline void Gemm(elem::Orientation oA, elem::Orientation oB,
-    T alpha, const elem::DistMatrix<T, elem::VC, elem::STAR>& A,
-    const elem::DistMatrix<T, elem::STAR, elem::STAR>& B,
-    elem::DistMatrix<T, elem::VC, elem::STAR>& C) {
+inline void Gemm(El::Orientation oA, El::Orientation oB,
+    T alpha, const El::DistMatrix<T, El::VC, El::STAR>& A,
+    const El::DistMatrix<T, El::STAR, El::STAR>& B,
+    El::DistMatrix<T, El::VC, El::STAR>& C) {
 
-    int C_height = (oA == elem::NORMAL ? A.Height() : A.Width());
-    int C_width = (oB == elem::NORMAL ? B.Width() : B.Height());
-    elem::Zeros(C, C_height, C_width);
+    int C_height = (oA == El::NORMAL ? A.Height() : A.Width());
+    int C_width = (oB == El::NORMAL ? B.Width() : B.Height());
+    El::Zeros(C, C_height, C_width);
     base::Gemm(oA, oB, alpha, A, B, T(0), C);
 }
 
 
 template<typename T>
-inline void Gemm(elem::Orientation oA, elem::Orientation oB,
-    T alpha, const elem::DistMatrix<T, elem::VR, elem::STAR>& A,
-    const elem::DistMatrix<T, elem::VR, elem::STAR>& B,
-    T beta, elem::DistMatrix<T, elem::STAR, elem::STAR>& C) {
+inline void Gemm(El::Orientation oA, El::Orientation oB,
+    T alpha, const El::DistMatrix<T, El::VR, El::STAR>& A,
+    const El::DistMatrix<T, El::VR, El::STAR>& B,
+    T beta, El::DistMatrix<T, El::STAR, El::STAR>& C) {
     // TODO verify sizes etc.
 
-    if ((oA == elem::TRANSPOSE || oA == elem::ADJOINT) && oB == elem::NORMAL) {
+    if ((oA == El::TRANSPOSE || oA == El::ADJOINT) && oB == El::NORMAL) {
         boost::mpi::communicator comm(C.Grid().Comm(), boost::mpi::comm_attach);
-        elem::Matrix<T> Clocal(C.Matrix());
-        elem::Gemm(oA, elem::NORMAL,
+        El::Matrix<T> Clocal(C.Matrix());
+        El::Gemm(oA, El::NORMAL,
             alpha, A.LockedMatrix(), B.LockedMatrix(),
             beta / T(comm.size()), Clocal);
         boost::mpi::all_reduce(comm,
@@ -150,26 +151,26 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
 }
 
 template<typename T>
-inline void Gemm(elem::Orientation oA, elem::Orientation oB,
-    T alpha, const elem::DistMatrix<T, elem::VR, elem::STAR>& A,
-    const elem::DistMatrix<T, elem::VR, elem::STAR>& B,
-    elem::DistMatrix<T, elem::STAR, elem::STAR>& C) {
+inline void Gemm(El::Orientation oA, El::Orientation oB,
+    T alpha, const El::DistMatrix<T, El::VR, El::STAR>& A,
+    const El::DistMatrix<T, El::VR, El::STAR>& B,
+    El::DistMatrix<T, El::STAR, El::STAR>& C) {
 
-    int C_height = (oA == elem::NORMAL ? A.Height() : A.Width());
-    int C_width = (oB == elem::NORMAL ? B.Width() : B.Height());
-    elem::Zeros(C, C_height, C_width);
+    int C_height = (oA == El::NORMAL ? A.Height() : A.Width());
+    int C_width = (oB == El::NORMAL ? B.Width() : B.Height());
+    El::Zeros(C, C_height, C_width);
     base::Gemm(oA, oB, alpha, A, B, T(0), C);
 }
 
 template<typename T>
-inline void Gemm(elem::Orientation oA, elem::Orientation oB,
-    T alpha, const elem::DistMatrix<T, elem::VR, elem::STAR>& A,
-    const elem::DistMatrix<T, elem::STAR, elem::STAR>& B,
-    T beta, elem::DistMatrix<T, elem::VR, elem::STAR>& C) {
+inline void Gemm(El::Orientation oA, El::Orientation oB,
+    T alpha, const El::DistMatrix<T, El::VR, El::STAR>& A,
+    const El::DistMatrix<T, El::STAR, El::STAR>& B,
+    T beta, El::DistMatrix<T, El::VR, El::STAR>& C) {
     // TODO verify sizes etc.
 
-    if (oA == elem::NORMAL && oB == elem::NORMAL) {
-        elem::Gemm(elem::NORMAL, elem::NORMAL,
+    if (oA == El::NORMAL && oB == El::NORMAL) {
+        El::Gemm(El::NORMAL, El::NORMAL,
             alpha, A.LockedMatrix(), B.LockedMatrix(),
             beta, C.Matrix());
     } else {
@@ -178,25 +179,25 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
 }
 
 template<typename T>
-inline void Gemm(elem::Orientation oA, elem::Orientation oB,
-    T alpha, const elem::DistMatrix<T, elem::VR, elem::STAR>& A,
-    const elem::DistMatrix<T, elem::STAR, elem::STAR>& B,
-    elem::DistMatrix<T, elem::VR, elem::STAR>& C) {
+inline void Gemm(El::Orientation oA, El::Orientation oB,
+    T alpha, const El::DistMatrix<T, El::VR, El::STAR>& A,
+    const El::DistMatrix<T, El::STAR, El::STAR>& B,
+    El::DistMatrix<T, El::VR, El::STAR>& C) {
 
-    int C_height = (oA == elem::NORMAL ? A.Height() : A.Width());
-    int C_width = (oB == elem::NORMAL ? B.Width() : B.Height());
-    elem::Zeros(C, C_height, C_width);
+    int C_height = (oA == El::NORMAL ? A.Height() : A.Width());
+    int C_width = (oB == El::NORMAL ? B.Width() : B.Height());
+    El::Zeros(C, C_height, C_width);
     base::Gemm(oA, oB, alpha, A, B, T(0), C);
 }
 
 /**
- * Gemm between mixed elemental, sparse input. Output is dense elemental.
+ * Gemm between mixed Elental, sparse input. Output is dense Elental.
  */
 
 template<typename T>
-inline void Gemm(elem::Orientation oA, elem::Orientation oB,
-    T alpha, const elem::Matrix<T>& A, const sparse_matrix_t<T>& B,
-    T beta, elem::Matrix<T>& C) {
+inline void Gemm(El::Orientation oA, El::Orientation oB,
+    T alpha, const El::Matrix<T>& A, const sparse_matrix_t<T>& B,
+    T beta, El::Matrix<T>& C) {
     // TODO verify sizes etc.
 
     const int* indptr = B.indptr();
@@ -207,64 +208,64 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
     int n = B.width();
     int m = A.Height();
 
-    if (oA == elem::ADJOINT && std::is_same<T, elem::Base<T> >::value)
-        oA = elem::TRANSPOSE;
+    if (oA == El::ADJOINT && std::is_same<T, El::Base<T> >::value)
+        oA = El::TRANSPOSE;
 
-    if (oB == elem::ADJOINT && std::is_same<T, elem::Base<T> >::value)
-        oB = elem::TRANSPOSE;
+    if (oB == El::ADJOINT && std::is_same<T, El::Base<T> >::value)
+        oB = El::TRANSPOSE;
 
-    if (oA == elem::ADJOINT || oB == elem::ADJOINT)
+    if (oA == El::ADJOINT || oB == El::ADJOINT)
         SKYLARK_THROW_EXCEPTION(base::unsupported_base_operation());
 
     // NN
-    if (oA == elem::NORMAL && oB == elem::NORMAL) {
+    if (oA == El::NORMAL && oB == El::NORMAL) {
 
-        elem::Scal(beta, C);
+        El::Scale(beta, C);
 
-        elem::Matrix<T> Ac;
-        elem::Matrix<T> Cc;
+        El::Matrix<T> Ac;
+        El::Matrix<T> Cc;
 
 #       if SKYLARK_HAVE_OPENMP
 #       pragma omp parallel for private(Cc, Ac)
 #       endif
         for(int col = 0; col < n; col++) {
-            elem::View(Cc, C, 0, col, m, 1);
+            El::View(Cc, C, 0, col, m, 1);
             for (int j = indptr[col]; j < indptr[col + 1]; j++) {
                 int row = indices[j];
                 T val = values[j];
-                elem::LockedView(Ac, A, 0, row, m, 1);
-                elem::Axpy(alpha * val, Ac, Cc);
+                El::LockedView(Ac, A, 0, row, m, 1);
+                El::Axpy(alpha * val, Ac, Cc);
             }
         }
     }
 
     // NT
-    if (oA == elem::NORMAL && oB == elem::TRANSPOSE) {
+    if (oA == El::NORMAL && oB == El::TRANSPOSE) {
 
-        elem::Scal(beta, C);
+        El::Scale(beta, C);
 
-        elem::Matrix<T> Ac;
-        elem::Matrix<T> Cc;
+        El::Matrix<T> Ac;
+        El::Matrix<T> Cc;
 
         // Now, we simply think of B has being in CSR mode...
         int row = 0;
         for(int row = 0; row < n; row++) {
-            elem::LockedView(Ac, A, 0, row, m, 1);
+            El::LockedView(Ac, A, 0, row, m, 1);
 #           if SKYLARK_HAVE_OPENMP
 #           pragma omp parallel for private(Cc)
 #           endif
             for (int j = indptr[row]; j < indptr[row + 1]; j++) {
                 int col = indices[j];
                 T val = values[j];
-                elem::View(Cc, C, 0, col, m, 1);
-                elem::Axpy(alpha * val, Ac, Cc);
+                El::View(Cc, C, 0, col, m, 1);
+                El::Axpy(alpha * val, Ac, Cc);
             }
         }
     }
 
 
     // TN - TODO: Not tested!
-    if (oA == elem::TRANSPOSE && oB == elem::NORMAL) {
+    if (oA == El::TRANSPOSE && oB == El::NORMAL) {
         double *c = C.Buffer();
         int ldc = C.LDim();
 
@@ -286,8 +287,8 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
     }
 
     // TT - TODO: Not tested!
-    if (oA == elem::TRANSPOSE && oB == elem::TRANSPOSE) {
-        elem::Scal(beta, C);
+    if (oA == El::TRANSPOSE && oB == El::TRANSPOSE) {
+        El::Scale(beta, C);
 
         double *c = C.Buffer();
         int ldc = C.LDim();
@@ -308,9 +309,9 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
 }
 
 template<typename T>
-inline void Gemm(elem::Orientation oA, elem::Orientation oB,
-    T alpha, const sparse_matrix_t<T>& A, const elem::Matrix<T>& B,
-    T beta, elem::Matrix<T>& C) {
+inline void Gemm(El::Orientation oA, El::Orientation oB,
+    T alpha, const sparse_matrix_t<T>& A, const El::Matrix<T>& B,
+    T beta, El::Matrix<T>& C) {
     // TODO verify sizes etc.
 
     const int* indptr = A.indptr();
@@ -321,16 +322,16 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
     int n = B.Width();
     int m = B.Height();
 
-    if (oA == elem::ADJOINT && std::is_same<T, elem::Base<T> >::value)
-        oA = elem::TRANSPOSE;
+    if (oA == El::ADJOINT && std::is_same<T, El::Base<T> >::value)
+        oA = El::TRANSPOSE;
 
-    if (oB == elem::ADJOINT && std::is_same<T, elem::Base<T> >::value)
-        oB = elem::TRANSPOSE;
+    if (oB == El::ADJOINT && std::is_same<T, El::Base<T> >::value)
+        oB = El::TRANSPOSE;
 
     // NN
-    if (oA == elem::NORMAL && oB == elem::NORMAL) {
+    if (oA == El::NORMAL && oB == El::NORMAL) {
 
-        elem::Scal(beta, C);
+        El::Scale(beta, C);
 
         double *c = C.Buffer();
         int ldc = C.LDim();
@@ -351,31 +352,31 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
     }
 
     // NT
-    if (oA == elem::NORMAL && (oB == elem::TRANSPOSE || oB == elem::ADJOINT)) {
+    if (oA == El::NORMAL && (oB == El::TRANSPOSE || oB == El::ADJOINT)) {
 
-        elem::Scal(beta, C);
+        El::Scale(beta, C);
 
-        elem::Matrix<T> Bc;
-        elem::Matrix<T> BTr;
-        elem::Matrix<T> Cr;
+        El::Matrix<T> Bc;
+        El::Matrix<T> BTr;
+        El::Matrix<T> Cr;
 
         for(int col = 0; col < k; col++) {
-            elem::LockedView(Bc, B, 0, col, m, 1);
-            elem::Transpose(Bc, BTr, oB == elem::ADJOINT);
+            El::LockedView(Bc, B, 0, col, m, 1);
+            El::Transpose(Bc, BTr, oB == El::ADJOINT);
 #           if SKYLARK_HAVE_OPENMP
 #           pragma omp parallel for private(Cr)
 #           endif
             for (int j = indptr[col]; j < indptr[col + 1]; j++) {
                 int row = indices[j];
                 T val = values[j];
-                elem::View(Cr, C, row, 0, 1, m);
-                elem::Axpy(alpha * val, BTr, Cr);
+                El::View(Cr, C, row, 0, 1, m);
+                El::Axpy(alpha * val, BTr, Cr);
             }
         }
     }
 
     // TN - TODO: Not tested!
-    if (oA == elem::TRANSPOSE && oB == elem::NORMAL) {
+    if (oA == El::TRANSPOSE && oB == El::NORMAL) {
         double *c = C.Buffer();
         int ldc = C.LDim();
 
@@ -397,7 +398,7 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
     }
 
     // AN - TODO: Not tested!
-    if (oA == elem::ADJOINT && oB == elem::NORMAL) {
+    if (oA == El::ADJOINT && oB == El::NORMAL) {
         double *c = C.Buffer();
         int ldc = C.LDim();
 
@@ -412,7 +413,7 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
                 c[j * ldc + row] *= beta;
                  for (int l = indptr[row]; l < indptr[row + 1]; l++) {
                      int col = indices[l];
-                     T val = elem::Conj(values[l]);
+                     T val = El::Conj(values[l]);
                      c[j * ldc + row] += val * b[j * ldb + col];
                  }
             }
@@ -420,79 +421,79 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
 
 
     // TT - TODO: Not tested!
-    if (oA == elem::TRANSPOSE && (oB == elem::TRANSPOSE || oB == elem::ADJOINT)) {
+    if (oA == El::TRANSPOSE && (oB == El::TRANSPOSE || oB == El::ADJOINT)) {
 
-        elem::Scal(beta, C);
+        El::Scale(beta, C);
 
-        elem::Matrix<T> Bc;
-        elem::Matrix<T> BTr;
-        elem::Matrix<T> Cr;
+        El::Matrix<T> Bc;
+        El::Matrix<T> BTr;
+        El::Matrix<T> Cr;
 
 #       if SKYLARK_HAVE_OPENMP
 #       pragma omp parallel for private(Cr, Bc, BTr)
 #       endif
         for(int row = 0; row < k; row++) {
-            elem::View(Cr, C, row, 0, 1, m);
+            El::View(Cr, C, row, 0, 1, m);
             for (int l = indptr[row]; l < indptr[row + 1]; l++) {
                 int col = indices[l];
                 T val = values[l];
-                elem::LockedView(Bc, B, 0, col, m, 1);
-                elem::Transpose(Bc, BTr, oB == elem::ADJOINT);
-                elem::Axpy(alpha * val, BTr, Cr);
+                El::LockedView(Bc, B, 0, col, m, 1);
+                El::Transpose(Bc, BTr, oB == El::ADJOINT);
+                El::Axpy(alpha * val, BTr, Cr);
             }
         }
     }
 
     // AT - TODO: Not tested!
-    if (oA == elem::ADJOINT && (oB == elem::TRANSPOSE || oB == elem::ADJOINT)) {
+    if (oA == El::ADJOINT && (oB == El::TRANSPOSE || oB == El::ADJOINT)) {
 
-        elem::Scal(beta, C);
+        El::Scale(beta, C);
 
-        elem::Matrix<T> Bc;
-        elem::Matrix<T> BTr;
-        elem::Matrix<T> Cr;
+        El::Matrix<T> Bc;
+        El::Matrix<T> BTr;
+        El::Matrix<T> Cr;
 
 #       if SKYLARK_HAVE_OPENMP
 #       pragma omp parallel for private(Cr, Bc, BTr)
 #       endif
         for(int row = 0; row < k; row++) {
-            elem::View(Cr, C, row, 0, 1, m);
+            El::View(Cr, C, row, 0, 1, m);
             for (int l = indptr[row]; l < indptr[row + 1]; l++) {
                 int col = indices[l];
-                T val = elem::Conj(values[l]);
-                elem::LockedView(Bc, B, 0, col, m, 1);
-                elem::Transpose(Bc, BTr, oB == elem::ADJOINT);
-                elem::Axpy(alpha * val, BTr, Cr);
+                T val = El::Conj(values[l]);
+                El::LockedView(Bc, B, 0, col, m, 1);
+                El::Transpose(Bc, BTr, oB == El::ADJOINT);
+                El::Axpy(alpha * val, BTr, Cr);
             }
         }
     }
 }
 
 template<typename T>
-inline void Gemm(elem::Orientation oA, elem::Orientation oB,
-    T alpha, const sparse_matrix_t<T>& A, const elem::Matrix<T>& B,
-    elem::Matrix<T>& C) {
-    int C_height = (oA == elem::NORMAL ? A.height() : A.width());
-    int C_width = (oB == elem::NORMAL ? B.Width() : B.Height());
-    elem::Zeros(C, C_height, C_width);
+inline void Gemm(El::Orientation oA, El::Orientation oB,
+    T alpha, const sparse_matrix_t<T>& A, const El::Matrix<T>& B,
+    El::Matrix<T>& C) {
+    int C_height = (oA == El::NORMAL ? A.height() : A.width());
+    int C_width = (oB == El::NORMAL ? B.Width() : B.Height());
+    El::Zeros(C, C_height, C_width);
     base::Gemm(oA, oB, alpha, A, B, T(0), C);
 }
 
 #if SKYLARK_HAVE_COMBBLAS
 /**
- * Mixed GEMM for Elemental and CombBLAS matrices. For a distributed Elemental
+ * Mixed GEMM for Elental and CombBLAS matrices. For a distributed Elental
  * input matrix, the output has the same distribution.
  */
 
-/// Gemm for distCombBLAS x distElemental(* / *) -> distElemental (SOMETHING / *)
-template<typename index_type, typename value_type, elem::Distribution col_d>
-void Gemm(elem::Orientation oA, elem::Orientation oB, double alpha,
+/// Gemm for distCombBLAS x distElental(* / *) -> distElental (SOMETHING / *)
+template<typename index_type, typename value_type, El::Distribution col_d>
+void Gemm(El::Orientation oA, El::Orientation oB, double alpha,
           const SpParMat<index_type, value_type, SpDCCols<index_type, value_type> > &A,
-          const elem::DistMatrix<value_type, elem::STAR, elem::STAR> &B,
+          const El::DistMatrix<value_type, El::STAR, El::STAR> &B,
           double beta,
-          elem::DistMatrix<value_type, col_d, elem::STAR> &C) {
+          El::DistMatrix<value_type, col_d, El::STAR> &C) {
 
-    if(oA == elem::NORMAL && oB == elem::NORMAL) {
+    if(oA == El::NORMAL && oB == El::NORMAL) {
 
         if(A.getnol() != B.Height())
             SKYLARK_THROW_EXCEPTION (
@@ -518,15 +519,15 @@ void Gemm(elem::Orientation oA, elem::Orientation oB, double alpha,
     }
 }
 
-/// Gemm for distCombBLAS x distElemental(SOMETHING / *) -> distElemental (* / *)
-template<typename index_type, typename value_type, elem::Distribution col_d>
-void Gemm(elem::Orientation oA, elem::Orientation oB, double alpha,
+/// Gemm for distCombBLAS x distElental(SOMETHING / *) -> distElental (* / *)
+template<typename index_type, typename value_type, El::Distribution col_d>
+void Gemm(El::Orientation oA, El::Orientation oB, double alpha,
           const SpParMat<index_type, value_type, SpDCCols<index_type, value_type> > &A,
-          const elem::DistMatrix<value_type, col_d, elem::STAR> &B,
+          const El::DistMatrix<value_type, col_d, El::STAR> &B,
           double beta,
-          elem::DistMatrix<value_type, elem::STAR, elem::STAR> &C) {
+          El::DistMatrix<value_type, El::STAR, El::STAR> &C) {
 
-    if(oA == elem::TRANSPOSE && oB == elem::NORMAL) {
+    if(oA == El::TRANSPOSE && oB == El::NORMAL) {
 
         if(A.getrow() != B.Height())
             SKYLARK_THROW_EXCEPTION (
@@ -553,21 +554,21 @@ void Gemm(elem::Orientation oA, elem::Orientation oB, double alpha,
 /* All combinations with computed matrix */
 
 template<typename CT, typename RT, typename OT>
-inline void Gemm(elem::Orientation oA, elem::Orientation oB,
+inline void Gemm(El::Orientation oA, El::Orientation oB,
     typename utility::typer_t<OT>::value_type alpha, const computed_matrix_t<CT>& A,
     const RT& B, typename utility::typer_t<OT>::value_type beta, OT& C) {
     base::Gemm(oA, oB, alpha, A.materialize(), B, beta, C);
 }
 
 template<typename CT, typename RT, typename OT>
-inline void Gemm(elem::Orientation oA, elem::Orientation oB,
+inline void Gemm(El::Orientation oA, El::Orientation oB,
     typename utility::typer_t<OT>::value_type alpha, const computed_matrix_t<CT>& A,
     const RT& B, OT& C) {
     base::Gemm(oA, oB, alpha, A.materialize(), B, C);
 }
 
 template<typename CT, typename RT, typename OT>
-inline void Gemm(elem::Orientation oA, elem::Orientation oB,
+inline void Gemm(El::Orientation oA, El::Orientation oB,
     typename utility::typer_t<OT>::value_type alpha, const RT& A,
     const computed_matrix_t<CT>& B,
     typename utility::typer_t<OT>::value_type beta, OT& C) {
@@ -575,14 +576,14 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
 }
 
 template<typename CT, typename RT, typename OT>
-inline void Gemm(elem::Orientation oA, elem::Orientation oB,
+inline void Gemm(El::Orientation oA, El::Orientation oB,
     typename utility::typer_t<OT>::value_type alpha, const RT& A,
     const computed_matrix_t<CT>& B, OT& C) {
     base::Gemm(oA, oB, alpha, A, B.materialize(), C);
 }
 
 template<typename CT1, typename CT2, typename OT>
-inline void Gemm(elem::Orientation oA, elem::Orientation oB,
+inline void Gemm(El::Orientation oA, El::Orientation oB,
     typename utility::typer_t<OT>::value_type alpha, const computed_matrix_t<CT1>& A,
     const computed_matrix_t<CT2>& B, typename utility::typer_t<OT>::value_type beta,
     OT& C) {
@@ -590,7 +591,7 @@ inline void Gemm(elem::Orientation oA, elem::Orientation oB,
 }
 
 template<typename CT1, typename CT2, typename OT>
-inline void Gemm(elem::Orientation oA, elem::Orientation oB,
+inline void Gemm(El::Orientation oA, El::Orientation oB,
     typename utility::typer_t<OT>::value_type alpha, const computed_matrix_t<CT1>& A,
     const computed_matrix_t<CT2>& B, OT& C) {
     base::Gemm(oA, oB, alpha, A.materialize(), B.materialize(), C);

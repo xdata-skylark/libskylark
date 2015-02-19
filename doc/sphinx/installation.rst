@@ -192,7 +192,7 @@ such as ODEPACK, QUADPACK, and MINPACK).
 
 	sudo apt-get install python-numpy python-scipy
 
-.. note:: Elemental-0.83 requires a NumPy version >= 1.7. On Ubuntu Precise the deb sources only contain version 1.6.x. To upgrade use either:
+.. note:: Elemental-0.85 requires a NumPy version >= 1.7. On Ubuntu Precise the deb sources only contain version 1.6.x. To upgrade use either:
 
     ::
 
@@ -298,35 +298,30 @@ compiles the selected boost libraries (you might need to adapt the path to
     see http://www-01.ibm.com/support/docview.wss?uid=swg1LI77249.
 
 
-Elemental 0.83
+Elemental 0.85
 ---------------
 
 Elemental is a framework for distributed-memory dense linear algebra that
 strives to be both fast and convenient. It combines ideas including:
-element-wise matrix distributions ( Hendrickson et al.), object-oriented
-submatrix tracking ( FLAME, van de Geijn et al.), and first-class matrix
-distributions ( PLAPACK, van de Geijn et al.).
+element-wise matrix distributions (Hendrickson et al.), object-oriented
+submatrix tracking (FLAME, van de Geijn et al.), and first-class matrix
+distributions (PLAPACK, van de Geijn et al.).
 
-We support version 0.83. Elemental's API is a moving target, so new version
-might not work as-is. In order to build the Swig bindings you need a NumPy
-version >= 1.7 (see NumPy installation above) and the Swig toolchain
-
-::
-
-	sudo apt-get install swig
+We support version 0.85. Elemental's API is a moving target, so newer versions
+might not work as-is. 
 
 *Installation: (make sure to use a compiler with c++11 support)*
 
 ::
 
-	wget http://libelemental.org/pub/releases/elemental-0.83.tgz
-	tar xvfz elemental-0.83.tgz
-	cd elemental-0.83/
-	mkdir build
-	cd build
-	cmake -D USE_SWIG=ON ..
-	make
-	sudo make install
+        wget http://libelemental.org/pub/releases/Elemental-0.85.tgz
+        tar xvfz Elemental-0.85.tgz
+        cd Elemental-0.85/
+        mkdir build
+        cd build
+        cmake ..
+        make
+        sudo make install
 
 The installation prefix can be set using the ``CMAKE_INSTALL_PREFIX``.
 
@@ -336,29 +331,12 @@ For example for OpenBLAS, run cmake along the following lines:
 
 ::
 
-	cmake -D CMAKE_INSTALL_PREFIX=$HOME/software/elemental-0.81/install \
-	   -D MATH_LIBS="$HOME/software/xianyi-OpenBLAS-9c51cdf/libopenblas.so;-lm" \
-	   -D SHARED_LIBRARIES=ON -D CMAKE_BUILD_TYPE=HybridRelease -D ELEM_EXAMPLES=ON ..
+        cmake -D MATH_LIBS="-L/usr/local/lib -llapack -lopenblas -lm" ..
 
 .. note:: Note that the cmake comamnd above may require additional options for
     non-standard Python installations, e.g. Anaconda,
     ``-D  PYTHON_LIBRARY=/path/to/libpython2.7.so  -D PYTHON_INCLUDE_DIR=/path/to/include/python2.7``
 
-.. note:: Swig needs > 1024 MB of memory otherwise the compiler crashes while
-    generating the Swig Python interface (make sure to have enough memory available
-    if you compile in a VM and increase if the compiler crashes).
-
-This installs the main Elemental library. However, we still need to install the Python interface:
-
-::
-
-	sudo cp *.py /usr/local/lib/python2.7/dist-packages/
-	sudo cp _*.so /usr/local/lib/python2.7/dist-packages/
-
-.. note:: The location of the python library changes between versions of Ubuntu, and
-    obviously across distributions. In case you do not want to copy the python
-    interface around, append the build directory to the :envvar:`$PYTHONPATH`
-    environment variable.
 
 Combinatorial BLAS (CombBLAS) 1.4
 ----------------------------------
@@ -509,6 +487,22 @@ should work out of the box. To that end execute
 In case you have a more specific setup or this does not work on your
 machine continue reading the next sections.
 
+Python only user-level installation
+-----------------------------------
+In case you do not have root access, and are satisfied with an Python only
+installation, you can install the Python package only at user-level.
+
+::
+
+	cd $BUILD_DIR
+	CC=mpicc CXX=mpicxx cmake $SRC_DIR
+	make
+	cd python-skylark
+        python ./setup.py install --user
+
+The Python package will be installed under :file:`~/.local`. The directory :file:`~/.local/lib` should
+be in the library load path for the installation to function properly.
+
 Directory setup
 ----------------
 
@@ -579,7 +573,7 @@ HDF5_ROOT              Looks for headers in :envvar:`$HDF5_ROOT`/include and lib
 ====================== =============================================================================
 
 Configuring, compiling and installing libSkylark
-----------------------------------------------
+------------------------------------------------
 
 Finally we are ready to configure, compile and install libSkylark. The default configuration (compiling Elemental and Python
 support, installed system-wide) can be compiled and installed with:
@@ -694,7 +688,7 @@ The elemental.cpp shows how C++ code can utilize libSkylark. Run
 in the :envvar:`$BUILD_DIR` to get a list of available command line options.
 
 Linking against libSkylark
-------------------------
+--------------------------
 
 If you plan to use libSkylark as a library in your project, the following steps
 are necessary to build and link your application:

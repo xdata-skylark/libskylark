@@ -9,7 +9,6 @@
 #include <string>
 #include <skylark.hpp>
 #include <boost/mpi.hpp>
-#include <elemental.hpp>
 #include <cstdlib>
 #include "io.hpp"
 #include "../base/context.hpp"
@@ -37,7 +36,7 @@ int main (int argc, char** argv) {
     boost::mpi::communicator comm;
     int rank = comm.rank();
 
-    elem::Initialize (argc, argv);
+    El::Initialize (argc, argv);
 
 
     if (rank == 0)

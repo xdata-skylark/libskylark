@@ -79,8 +79,8 @@ inline void jstep1(const int *colptr, const int *rowind, const T1 *vals,
  * @param X output - must be preallocated. The content is used as initial X.
  */
 template<typename T1, typename T2, typename T3>
-int AsyRGS(const base::sparse_matrix_t<T1>& A, const elem::Matrix<T2>& B,
-    elem::Matrix<T3>& X, base::context_t& context,
+int AsyRGS(const base::sparse_matrix_t<T1>& A, const El::Matrix<T2>& B,
+    El::Matrix<T3>& X, base::context_t& context,
     asy_iter_params_t params = asy_iter_params_t()) {
 
     int ret;
@@ -123,8 +123,8 @@ int AsyRGS(const base::sparse_matrix_t<T1>& A, const elem::Matrix<T2>& B,
            done_sweeps += sweeps;
 
            if (params.tolerance > 0) {
-               elem::Matrix<double> R(B);
-               base::Gemv(elem::ADJOINT, -1.0, A, X, 1.0, R);
+               El::Matrix<double> R(B);
+               base::Gemv(El::ADJOINT, -1.0, A, X, 1.0, R);
                double res = base::Nrm2(R);
                double relres = res / nrmb;
 
@@ -144,10 +144,10 @@ int AsyRGS(const base::sparse_matrix_t<T1>& A, const elem::Matrix<T2>& B,
      } else {
         int j;
 
-        elem::Matrix<T2> BT;
-        elem::Transpose(B, BT);
-        elem::Matrix<T3> XT;
-        elem::Transpose(X, XT);
+        El::Matrix<T2> BT;
+        El::Transpose(B, BT);
+        El::Matrix<T3> XT;
+        El::Transpose(X, XT);
 
         const T2 *Bd = BT.LockedBuffer();
         T3 *Xd = XT.Buffer();
@@ -155,7 +155,7 @@ int AsyRGS(const base::sparse_matrix_t<T1>& A, const elem::Matrix<T2>& B,
         int k = B.Width();
         T3 d[k];
 
-        typedef elem::Matrix<T2> rhs_type;
+        typedef El::Matrix<T2> rhs_type;
         typedef utility::elem_extender_t<
             typename internal::scalar_cont_typer_t<rhs_type>::type >
             scalar_cont_type;
@@ -189,8 +189,8 @@ int AsyRGS(const base::sparse_matrix_t<T1>& A, const elem::Matrix<T2>& B,
 
            if (params.tolerance > 0) {
 
-               elem::Matrix<double> RT(BT);
-               base::Gemm(elem::NORMAL, elem::NORMAL, -1.0, XT, A, 1.0, RT);
+               El::Matrix<double> RT(BT);
+               base::Gemm(El::NORMAL, El::NORMAL, -1.0, XT, A, 1.0, RT);
                base::RowDot(RT, RT, ressqr);
 
                int convg = 0;
@@ -214,13 +214,13 @@ int AsyRGS(const base::sparse_matrix_t<T1>& A, const elem::Matrix<T2>& B,
                    if (log_lev1)
                        params.log_stream << "AsyRGS: Convergence!" << std::endl;
                    ret = -1;
-                   elem::Transpose(XT, X);
+                   El::Transpose(XT, X);
                    goto cleanup;
                }
            }
         }
 
-        elem::Transpose(XT, X);
+        El::Transpose(XT, X);
     }
 
     ret = -6;

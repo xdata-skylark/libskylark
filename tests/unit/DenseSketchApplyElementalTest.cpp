@@ -1,5 +1,5 @@
 #include <boost/mpi.hpp>
-#include <elemental.hpp>
+#include <El.hpp>
 #include <skylark.hpp>
 #include <iostream>
 #include <boost/test/minimal.hpp>
@@ -10,9 +10,9 @@
 
 /** Aliases */
 
-typedef elem::Matrix<double>     dense_matrix_t;
-typedef elem::DistMatrix<double> dist_dense_matrix_t;
-typedef elem::DistMatrix<double, elem::CIRC, elem::CIRC>
+typedef El::Matrix<double>     dense_matrix_t;
+typedef El::DistMatrix<double> dist_dense_matrix_t;
+typedef El::DistMatrix<double, El::CIRC, El::CIRC>
 dist_CIRC_CIRC_dense_matrix_t;
 
 typedef dist_dense_matrix_t input_matrix_t;
@@ -27,14 +27,14 @@ sketch_transform_local_t;
 int test_main(int argc, char* argv[]) {
 
     /** Initialize Elemental */
-    elem::Initialize (argc, argv);
+    El::Initialize (argc, argv);
 
     /** Initialize MPI  */
     boost::mpi::environment env(argc, argv);
     boost::mpi::communicator world;
 
     MPI_Comm mpi_world(world);
-    elem::Grid grid(mpi_world);
+    El::Grid grid(mpi_world);
 
     /** Example parameters */
     int height      = 20;
@@ -43,7 +43,7 @@ int test_main(int argc, char* argv[]) {
 
     dist_CIRC_CIRC_dense_matrix_t A_CIRC_CIRC(grid);
     input_matrix_t A(grid);
-    elem::Uniform(A_CIRC_CIRC, height, width);
+    El::Uniform(A_CIRC_CIRC, height, width);
     A = A_CIRC_CIRC;
     int size;
 
@@ -100,6 +100,6 @@ int test_main(int argc, char* argv[]) {
     }
 
 
-    elem::Finalize();
+    El::Finalize();
     return 0;
 }

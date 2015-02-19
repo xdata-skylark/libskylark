@@ -3,7 +3,9 @@
 #include <boost/mpi.hpp>
 #include <boost/test/minimal.hpp>
 
-#include <elemental.hpp>
+
+#include <El.hpp>
+
 #include <CombBLAS.h>
 #include <SpParMat.h>
 
@@ -13,9 +15,9 @@
 #include "../../base/Gemm_detail.hpp"
 
 /** Typedef DistMatrix and Matrix */
-typedef elem::Matrix<double> MatrixType;
-typedef elem::DistMatrix<double, elem::VC, elem::STAR> DistMatrixVCSType;
-typedef elem::DistMatrix<double> DistMatrixType;
+typedef El::Matrix<double> MatrixType;
+typedef El::DistMatrix<double, El::VC, El::STAR> DistMatrixVCSType;
+typedef El::DistMatrix<double> DistMatrixType;
 
 typedef SpDCCols< size_t, double> col_t;
 typedef SpParMat< size_t, double, col_t > cbDistMatrixType;
@@ -31,7 +33,7 @@ template <typename dist_matrix_t>
 void check_matrix(const dist_matrix_t &result, const MatrixType &expected,
                   const std::string error) {
 
-    elem::DistMatrix<double, elem::STAR, elem::STAR> full_result = result;
+    El::DistMatrix<double, El::STAR, El::STAR> full_result = result;
     for(size_t j = 0; j < full_result.Height(); j++ )
         for(size_t i = 0; i < full_result.Width(); i++ ) {
             if(full_result.GetLocal(j, i) != expected.Get(j, i)) {
@@ -57,9 +59,9 @@ int test_main(int argc, char *argv[]) {
     mpi::environment env (argc, argv);
     mpi::communicator world;
 
-    elem::Initialize (argc, argv);
+    El::Initialize (argc, argv);
     MPI_Comm mpi_world(world);
-    elem::Grid grid (mpi_world);
+    El::Grid grid (mpi_world);
 
     // compute local expected value
     MatrixType localA(matrix_size, matrix_size);
@@ -70,23 +72,23 @@ int test_main(int argc, char *argv[]) {
         }
     }
 
-    elem::Ones(nn_expected, matrix_size, matrix_size);
-    elem::Gemm(elem::NORMAL, elem::NORMAL, -1.0, localA, localA,
+    El::Ones(nn_expected, matrix_size, matrix_size);
+    El::Gemm(El::NORMAL, El::NORMAL, -1.0, localA, localA,
                 1.5, nn_expected);
-    elem::Ones(nt_expected, matrix_size, matrix_size);
-    elem::Gemm(elem::NORMAL, elem::TRANSPOSE, -1.0, localA, localA,
+    El::Ones(nt_expected, matrix_size, matrix_size);
+    El::Gemm(El::NORMAL, El::TRANSPOSE, -1.0, localA, localA,
                 1.5, nt_expected);
-    elem::Ones(tn_expected, matrix_size, matrix_size);
-    elem::Gemm(elem::TRANSPOSE, elem::NORMAL, -1.0, localA, localA,
+    El::Ones(tn_expected, matrix_size, matrix_size);
+    El::Gemm(El::TRANSPOSE, El::NORMAL, -1.0, localA, localA,
                 1.5, tn_expected);
-    elem::Ones(tt_expected, matrix_size, matrix_size);
-    elem::Gemm(elem::TRANSPOSE, elem::TRANSPOSE, -1.0, localA, localA,
+    El::Ones(tt_expected, matrix_size, matrix_size);
+    El::Gemm(El::TRANSPOSE, El::TRANSPOSE, -1.0, localA, localA,
                 1.5, tt_expected);
 
 
     // prepare an Elemental matrix with the test data
     double val = 0.0;
-    elem::DistMatrix<double, elem::STAR, elem::STAR>
+    El::DistMatrix<double, El::STAR, El::STAR>
         A_stst(matrix_size, matrix_size, grid);
     for( size_t j = 0; j < A_stst.LocalHeight(); j++ ) {
         for( size_t i = 0; i < A_stst.LocalWidth(); i++ ) {
@@ -121,7 +123,7 @@ int test_main(int argc, char *argv[]) {
     if(world.rank() == 0)
         std::cout << "Testing CombBLAS^T x Elemental (VX/*) = Elemental (*/*) :";
 
-    elem::DistMatrix<double, elem::STAR, elem::STAR>
+    El::DistMatrix<double, El::STAR, El::STAR>
         result_stst(matrix_size, matrix_size, grid);
     for( size_t j = 0; j < result_stst.LocalHeight(); j++ )
         for( size_t i = 0; i < result_stst.LocalWidth(); i++ )
@@ -164,7 +166,7 @@ int test_main(int argc, char *argv[]) {
     if(world.rank() == 0)
         std::cout << "inner panel: OK" << std::endl;
 
-    elem::Finalize();
+    El::Finalize();
 
     return 0;
 }

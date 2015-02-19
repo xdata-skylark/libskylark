@@ -6,35 +6,35 @@
 namespace skylark { namespace base {
 
 template<typename T>
-inline void Trsm(elem::LeftOrRight s, elem::UpperOrLower ul,
-    elem::Orientation oA, elem::UnitOrNonUnit diag, T alpha,
-    const elem::Matrix<T>& A, elem::Matrix<T>& B) {
-    elem::Trsm(s, ul, oA, diag, alpha, A, B);
+inline void Trsm(El::LeftOrRight s, El::UpperOrLower ul,
+    El::Orientation oA, El::UnitOrNonUnit diag, T alpha,
+    const El::Matrix<T>& A, El::Matrix<T>& B) {
+    El::Trsm(s, ul, oA, diag, alpha, A, B);
 }
 
 template<typename T>
-inline void Trsm(elem::LeftOrRight s, elem::UpperOrLower ul,
-    elem::Orientation oA, elem::UnitOrNonUnit diag, T alpha,
-    const elem::DistMatrix<T, elem::STAR, elem::STAR>& A,
-    elem::DistMatrix<T, elem::STAR, elem::STAR>& B) {
-    elem::Trsm(s, ul, oA, diag, alpha, A.LockedMatrix(), B.Matrix());
+inline void Trsm(El::LeftOrRight s, El::UpperOrLower ul,
+    El::Orientation oA, El::UnitOrNonUnit diag, T alpha,
+    const El::DistMatrix<T, El::STAR, El::STAR>& A,
+    El::DistMatrix<T, El::STAR, El::STAR>& B) {
+    El::Trsm(s, ul, oA, diag, alpha, A.LockedMatrix(), B.Matrix());
 }
 
 template<typename T>
-inline void Trsm(elem::LeftOrRight s, elem::UpperOrLower ul,
-    elem::Orientation oA, elem::UnitOrNonUnit diag, T alpha,
-    const elem::DistMatrix<T, elem::CIRC, elem::CIRC>& A,
-    elem::DistMatrix<T, elem::CIRC, elem::CIRC>& B) {
+inline void Trsm(El::LeftOrRight s, El::UpperOrLower ul,
+    El::Orientation oA, El::UnitOrNonUnit diag, T alpha,
+    const El::DistMatrix<T, El::CIRC, El::CIRC>& A,
+    El::DistMatrix<T, El::CIRC, El::CIRC>& B) {
     // TODO: check passing A, B with same grid.
     if (B.Grid().Rank() == 0)
-        elem::Trsm(s, ul, oA, diag, alpha, A.LockedMatrix(), B.Matrix());
+        El::Trsm(s, ul, oA, diag, alpha, A.LockedMatrix(), B.Matrix());
 }
 
 template<typename T>
-inline void Trsm(elem::LeftOrRight s, elem::UpperOrLower ul,
-    elem::Orientation oA, elem::UnitOrNonUnit diag, T alpha,
-    const elem::DistMatrix<T>& A, elem::DistMatrix<T>& B) {
-    elem::Trsm(s, ul, oA, diag, alpha, A, B);
+inline void Trsm(El::LeftOrRight s, El::UpperOrLower ul,
+    El::Orientation oA, El::UnitOrNonUnit diag, T alpha,
+    const El::DistMatrix<T>& A, El::DistMatrix<T>& B) {
+    El::Trsm(s, ul, oA, diag, alpha, A, B);
 }
 
 } } // namespace skylark::base

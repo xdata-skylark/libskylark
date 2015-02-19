@@ -1,12 +1,13 @@
 from distutils.core import setup
 
 setup(name='skylark',
-      version='0.1',
-      description='Python-Skylark: A Big Data Package',
-      author='Skylark Team',
-      author_email='vsindhw@us.ibm.com',
-      url='http://www.skylark.org',
+      version='0.11',
+      description='libSkylark: Sketching-based Matrix Computations for Machine Learning',
+      author='IBM Corporation, Research Division',
+      author_email='klclarks@us.ibm.com',
+      url='http://xdata-skylark.github.io/libskylark/',
       packages=['skylark', 'skylark.nla', 'skylark.ml'],
-      package_data={'skylark': ['datasets/*', 'examples/*']}, 
+      package_data={'skylark' : ['datasets/*', 'examples/*']}, 
+      data_files= [('lib', ['../sketch/capi/libcskylark.so'])],
       package_dir = {'': '${CMAKE_CURRENT_SOURCE_DIR}'}
      )

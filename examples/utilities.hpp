@@ -35,23 +35,23 @@ static const int MATRIX_TYPE_INDEX       = 4;
 static const int NUM_CHR_PARAMETERS      = 5;
 extern char* chr_params[NUM_CHR_PARAMETERS];
 
-namespace std {
-  /* Specialize std::equal_to for strings; used for parameter passing */
-  template <> 
-  struct equal_to<const char*> {
-    bool operator()(const char* one, const char* two) const {
-      return (0==strcmp(one,two));
-    }
-  };
+// namespace std {
+//   /* Specialize std::equal_to for strings; used for parameter passing */
+//   template <> 
+//   struct equal_to<const char*> {
+//     bool operator()(const char* one, const char* two) const {
+//       return (0==strcmp(one,two));
+//     }
+//   };
 
-  /* Specialize std::equal_to for pairs; used for parameter passing */
-  template <typename T1, typename T2> 
-  struct equal_to<std::pair<T1,T2> >{
-    bool operator()(const std::pair<T1,T2>& one, 
-                    const std::pair<T1,T2>& two) const {
-      return (one.first==two.first && one.second==two.second);
-    }
-  };
-}
+//   /* Specialize std::equal_to for pairs; used for parameter passing */
+//   template <typename T1, typename T2> 
+//   struct equal_to<std::pair<T1,T2> >{
+//     bool operator()(const std::pair<T1,T2>& one, 
+//                     const std::pair<T1,T2>& two) const {
+//       return (one.first==two.first && one.second==two.second);
+//     }
+//   };
+// }
 
 #endif // UTILITIES_HPP

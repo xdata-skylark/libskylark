@@ -8,7 +8,7 @@
 #ifndef FUNCTIONPROX_HPP_
 #define FUNCTIONPROX_HPP_
 
-#include <elemental.hpp>
+#include <El.hpp>
 #include "options.hpp"
 #include <cstdlib>
 #include <cmath>
@@ -19,8 +19,8 @@
 
 // Simple abstract class to represent a function and its prox operator
 // these are defined for local matrices.
-typedef elem::Matrix<double> LocalDenseMatrixType;
-typedef elem::Matrix<double>  LocalTargetMatrixType;
+typedef El::Matrix<double> LocalDenseMatrixType;
+typedef El::Matrix<double>  LocalTargetMatrixType;
 
 // abstract class for representing loss functions and their prox operators
 class lossfunction
@@ -501,7 +501,7 @@ int logisticloss::logexp(int index, double* v, int n, double lambda, double* x, 
 }
 
 double l2::evaluate(LocalDenseMatrixType& W) {
-		double norm = elem::Norm(W);
+		double norm = El::Norm(W);
 		return 0.5*norm*norm;
 	}
 
@@ -518,9 +518,9 @@ void l2::proxoperator(LocalDenseMatrixType& W, double lambda, LocalDenseMatrixTy
 	}
 
 double l1::evaluate(LocalDenseMatrixType& W) {
-		double norm = elem::EntrywiseOneNorm(W);
-		return norm;
-	}
+    double norm = El::EntrywiseNorm(W, 1);
+    return norm;
+}
 
 double l1::soft_threshold(double x, double lambda) {
 	double v = 0;

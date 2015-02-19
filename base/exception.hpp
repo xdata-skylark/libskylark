@@ -7,7 +7,7 @@
 #include <boost/exception/all.hpp>
 
 const char* const skylark_errmsg[] = {
-      "Skylark failure"
+    "Skylark failure"
     , "Skylark failed while communicating (MPI)"
     , "Skylark failed in a call to Elemental"
     , "Skylark failed due to a unsupported matrix distribution"
@@ -18,6 +18,7 @@ const char* const skylark_errmsg[] = {
     , "Skylark failed in a call into the Random123 layer"
     , "Skylark failed due to a unsupported base operation"
     , "Skylark failed in I/O calls"
+    , "Skylark failed because invalid parameter was passed"
 };
 
 /// resolves an error_code to a human readable failure message
@@ -190,6 +191,16 @@ public:
 
     unsupported_base_operation() {
         *this << error_code(109);
+    }
+};
+
+/// exceptions for invalid parameters passed
+struct invalid_parameters : virtual skylark_exception {
+public:
+    using skylark_exception::operator<<;
+
+    invalid_parameters() {
+        *this << error_code(111);
     }
 };
 

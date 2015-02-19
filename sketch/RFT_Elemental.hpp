@@ -12,14 +12,14 @@ template <typename ValueType,
           template <typename> class KernelDistribution>
 struct RFT_t <
     InputType,
-    elem::Matrix<ValueType>,
+    El::Matrix<ValueType>,
     KernelDistribution> :
         public RFT_data_t<KernelDistribution> {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
     typedef InputType matrix_type;
-    typedef elem::Matrix<value_type> output_matrix_type;
+    typedef El::Matrix<value_type> output_matrix_type;
     typedef RFT_data_t<KernelDistribution> data_type;
 
 private:
@@ -164,18 +164,18 @@ private:
  */
 template <typename ValueType,
           typename InputType,
-          elem::Distribution OC, elem::Distribution OR,
+          El::Distribution OC, El::Distribution OR,
           template <typename> class KernelDistribution>
 struct RFT_t <
     InputType,
-    elem::DistMatrix<ValueType, OC, OR>,
+    El::DistMatrix<ValueType, OC, OR>,
     KernelDistribution> :
         public RFT_data_t<KernelDistribution> {
     // Typedef value, matrix, transform, distribution and transform data types
     // so that we can use them regularly and consistently.
     typedef ValueType value_type;
     typedef InputType matrix_type;
-    typedef elem::DistMatrix<value_type, OC, OR> output_matrix_type;
+    typedef El::DistMatrix<value_type, OC, OR> output_matrix_type;
 
     typedef RFT_data_t<KernelDistribution> data_type;
 
@@ -248,7 +248,7 @@ private:
         underlying_t underlying(*data_type::_underlying_data);
         underlying.apply(A, sketch_of_A, tag);
 
-        elem::Matrix<value_type> &SAl = sketch_of_A.Matrix();
+        El::Matrix<value_type> &SAl = sketch_of_A.Matrix();
         size_t col_shift = sketch_of_A.ColShift();
         size_t col_stride = sketch_of_A.ColStride();
 
@@ -293,7 +293,7 @@ private:
         underlying_t underlying(*data_type::_underlying_data);
         underlying.apply(A, sketch_of_A, tag);
 
-        elem::Matrix<value_type> &SAl = sketch_of_A.Matrix();
+        El::Matrix<value_type> &SAl = sketch_of_A.Matrix();
         size_t row_shift = sketch_of_A.RowShift();
         size_t row_stride = sketch_of_A.RowStride();
 

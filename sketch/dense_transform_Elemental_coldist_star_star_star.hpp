@@ -15,17 +15,17 @@ namespace skylark { namespace sketch {
 /**
  * Specialization: [VC/VR, *] -> [STAR, STAR]
  */
-template <typename ValueType, elem::Distribution ColDist,
+template <typename ValueType, El::Distribution ColDist,
           typename ValuesAccessor>
 struct dense_transform_t <
-    elem::DistMatrix<ValueType, ColDist, elem::STAR>,
-    elem::DistMatrix<ValueType, elem::STAR, elem::STAR>,
+    El::DistMatrix<ValueType, ColDist, El::STAR>,
+    El::DistMatrix<ValueType, El::STAR, El::STAR>,
     ValuesAccessor > :
         public dense_transform_data_t<ValuesAccessor> {
     // Typedef matrix and distribution types so that we can use them regularly
     typedef ValueType value_type;
-    typedef elem::DistMatrix<value_type, ColDist, elem::STAR> matrix_type;
-    typedef elem::DistMatrix<value_type, elem::STAR, elem::STAR>
+    typedef El::DistMatrix<value_type, ColDist, El::STAR> matrix_type;
+    typedef El::DistMatrix<value_type, El::STAR, El::STAR>
      output_matrix_type;
     typedef dense_transform_data_t<ValuesAccessor> data_type;
 
@@ -62,8 +62,8 @@ struct dense_transform_t <
                 Dimension dimension) const {
 
         switch(ColDist) {
-        case elem::VR:
-        case elem::VC:
+        case El::VR:
+        case El::VC:
             try {
                 apply_impl_vdist (A, sketch_of_A, dimension);
             } catch (std::logic_error e) {

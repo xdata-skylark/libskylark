@@ -136,7 +136,8 @@ private:
                    sketch_of_A_STAR_STAR.Matrix());
 
         // Reduce-scatter within process grid
-        sketch_of_A.SumScatterFrom(sketch_of_A_STAR_STAR);
+        El::Zero(sketch_of_A);
+        El::AxpyContract(value_type(1), sketch_of_A_STAR_STAR, sketch_of_A);
 
     }
 

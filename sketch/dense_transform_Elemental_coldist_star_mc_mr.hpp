@@ -113,10 +113,10 @@ private:
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::columnwise_tag) const {
 
-        const elem::Grid& grid = A.Grid();
+        const El::Grid& grid = A.Grid();
 
-        elem::DistMatrix<value_type, elem::STAR, ColDist> R(grid);
-        elem::DistMatrix<value_type, elem::STAR, elem::STAR>
+        El::DistMatrix<value_type, El::STAR, ColDist> R(grid);
+        El::DistMatrix<value_type, El::STAR, El::STAR>
             sketch_of_A_STAR_STAR(grid);
 
         data_type::realize_matrix_view(R);
@@ -128,8 +128,8 @@ private:
                                      A.Width());
 
         // Local Gemm
-        base::Gemm(elem::NORMAL,
-                   elem::NORMAL,
+        base::Gemm(El::NORMAL,
+                   El::NORMAL,
                    value_type(1),
                    R.LockedMatrix(),
                    A.LockedMatrix(),

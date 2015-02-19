@@ -176,6 +176,8 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
         SKDEF(GaussianRFT, DistMatrix_STAR_VC, SharedMatrix)
         SKDEF(GaussianRFT, DistMatrix_STAR_VR, DistMatrix_STAR_VR)
         SKDEF(GaussianRFT, DistMatrix_STAR_VC, DistMatrix_STAR_VC)
+        SKDEF(GaussianRFT, DistMatrix_VR_STAR, DistMatrix)
+        SKDEF(GaussianRFT, DistMatrix_VC_STAR, DistMatrix)
 
         SKDEF(LaplacianRFT, Matrix, Matrix)
         SKDEF(LaplacianRFT, SparseMatrix, Matrix)
@@ -194,6 +196,8 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
         SKDEF(LaplacianRFT, DistMatrix_STAR_VC, SharedMatrix)
         SKDEF(LaplacianRFT, DistMatrix_STAR_VR, DistMatrix_STAR_VR)
         SKDEF(LaplacianRFT, DistMatrix_STAR_VC, DistMatrix_STAR_VC)
+        SKDEF(LaplacianRFT, DistMatrix_VR_STAR, DistMatrix)
+        SKDEF(LaplacianRFT, DistMatrix_VC_STAR, DistMatrix)
 
         SKDEF(MaternRFT, Matrix, Matrix)
         SKDEF(MaternRFT, SparseMatrix, Matrix)
@@ -212,6 +216,8 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
         SKDEF(MaternRFT, DistMatrix_STAR_VC, SharedMatrix)
         SKDEF(MaternRFT, DistMatrix_STAR_VR, DistMatrix_STAR_VR)
         SKDEF(MaternRFT, DistMatrix_STAR_VC, DistMatrix_STAR_VC)
+        SKDEF(MaternRFT, DistMatrix_VR_STAR, DistMatrix)
+        SKDEF(MaternRFT, DistMatrix_VC_STAR, DistMatrix)
 
         SKDEF(GaussianQRFT, Matrix, Matrix)
         SKDEF(GaussianQRFT, SparseMatrix, Matrix)
@@ -230,6 +236,8 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
         SKDEF(GaussianQRFT, DistMatrix_STAR_VC, SharedMatrix)
         SKDEF(GaussianQRFT, DistMatrix_STAR_VR, DistMatrix_STAR_VR)
         SKDEF(GaussianQRFT, DistMatrix_STAR_VC, DistMatrix_STAR_VC)
+        SKDEF(GaussianQRFT, DistMatrix_VR_STAR, DistMatrix)
+        SKDEF(GaussianQRFT, DistMatrix_VC_STAR, DistMatrix)
 
         SKDEF(LaplacianQRFT, Matrix, Matrix)
         SKDEF(LaplacianQRFT, SparseMatrix, Matrix)
@@ -248,6 +256,8 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
         SKDEF(LaplacianQRFT, DistMatrix_STAR_VC, SharedMatrix)
         SKDEF(LaplacianQRFT, DistMatrix_STAR_VR, DistMatrix_STAR_VR)
         SKDEF(LaplacianQRFT, DistMatrix_STAR_VC, DistMatrix_STAR_VC)
+        SKDEF(LaplacianQRFT, DistMatrix_VR_STAR, DistMatrix)
+        SKDEF(LaplacianQRFT, DistMatrix_VC_STAR, DistMatrix)
 
         SKDEF(ExpSemigroupRLT, Matrix, Matrix)
         SKDEF(ExpSemigroupRLT, SparseMatrix, Matrix)
@@ -266,6 +276,8 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
         SKDEF(ExpSemigroupRLT, DistMatrix_STAR_VC, SharedMatrix)
         SKDEF(ExpSemigroupRLT, DistMatrix_STAR_VR, DistMatrix_STAR_VR)
         SKDEF(ExpSemigroupRLT, DistMatrix_STAR_VC, DistMatrix_STAR_VC)
+        SKDEF(ExpSemigroupRLT, DistMatrix_VR_STAR, DistMatrix)
+        SKDEF(ExpSemigroupRLT, DistMatrix_VC_STAR, DistMatrix)
 
         SKDEF(ExpSemigroupQRLT, Matrix, Matrix)
         SKDEF(ExpSemigroupQRLT, SparseMatrix, Matrix)
@@ -284,6 +296,8 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
         SKDEF(ExpSemigroupQRLT, DistMatrix_STAR_VC, SharedMatrix)
         SKDEF(ExpSemigroupQRLT, DistMatrix_STAR_VR, DistMatrix_STAR_VR)
         SKDEF(ExpSemigroupQRLT, DistMatrix_STAR_VC, DistMatrix_STAR_VC)
+        SKDEF(ExpSemigroupQRLT, DistMatrix_VR_STAR, DistMatrix)
+        SKDEF(ExpSemigroupQRLT, DistMatrix_VC_STAR, DistMatrix)
 
 #ifdef SKYLARK_HAVE_COMBBLAS
         SKDEF(CWT, DistSparseMatrix, Matrix)
@@ -1037,6 +1051,101 @@ SKYLARK_EXTERN_API int
         sketch::GaussianRFT_t, DistMatrix_STAR_VC, DistMatrix_STAR_VC,
         sketch::GaussianRFT_data_t);
 
+    AUTO_APPLY_DISPATCH(sketchc::GaussianRFT,
+        sketchc::DIST_MATRIX_VR_STAR, sketchc::DIST_MATRIX,
+        sketch::GaussianRFT_t, DistMatrix_VR_STAR, DistMatrix,
+        sketch::GaussianRFT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::GaussianRFT,
+        sketchc::DIST_MATRIX_VC_STAR, sketchc::DIST_MATRIX,
+        sketch::GaussianRFT_t, DistMatrix_VC_STAR, DistMatrix,
+        sketch::GaussianRFT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
+        sketchc::MATRIX, sketchc::MATRIX,
+        sketch::LaplacianRFT_t, Matrix, Matrix,
+        sketch::LaplacianRFT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
+        sketchc::SPARSE_MATRIX, sketchc::MATRIX,
+        sketch::LaplacianRFT_t, SparseMatrix, Matrix,
+        sketch::LaplacianRFT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
+        sketchc::DIST_MATRIX, sketchc::ROOT_MATRIX,
+        sketch::LaplacianRFT_t, DistMatrix, RootMatrix,
+        sketch::LaplacianRFT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
+        sketchc::DIST_MATRIX, sketchc::SHARED_MATRIX,
+        sketch::LaplacianRFT_t, DistMatrix, SharedMatrix,
+        sketch::LaplacianRFT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
+        sketchc::DIST_MATRIX, sketchc::DIST_MATRIX,
+        sketch::LaplacianRFT_t, DistMatrix, DistMatrix,
+        sketch::LaplacianRFT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
+        sketchc::DIST_MATRIX_VR_STAR, sketchc::ROOT_MATRIX,
+        sketch::LaplacianRFT_t, DistMatrix_VR_STAR, RootMatrix,
+        sketch::LaplacianRFT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
+        sketchc::DIST_MATRIX_VC_STAR, sketchc::ROOT_MATRIX,
+        sketch::LaplacianRFT_t, DistMatrix_VC_STAR, RootMatrix,
+        sketch::LaplacianRFT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
+        sketchc::DIST_MATRIX_VR_STAR, sketchc::SHARED_MATRIX,
+        sketch::LaplacianRFT_t, DistMatrix_VR_STAR, SharedMatrix,
+        sketch::LaplacianRFT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
+        sketchc::DIST_MATRIX_VC_STAR, sketchc::SHARED_MATRIX,
+        sketch::LaplacianRFT_t, DistMatrix_VC_STAR, SharedMatrix,
+        sketch::LaplacianRFT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
+        sketchc::DIST_MATRIX_VR_STAR, sketchc::DIST_MATRIX_VR_STAR,
+        sketch::LaplacianRFT_t, DistMatrix_VR_STAR, DistMatrix_VR_STAR,
+        sketch::LaplacianRFT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
+        sketchc::DIST_MATRIX_VC_STAR, sketchc::DIST_MATRIX_VC_STAR,
+        sketch::LaplacianRFT_t, DistMatrix_VC_STAR, DistMatrix_VC_STAR,
+        sketch::LaplacianRFT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
+        sketchc::DIST_MATRIX_STAR_VR, sketchc::ROOT_MATRIX,
+        sketch::LaplacianRFT_t, DistMatrix_STAR_VR, RootMatrix,
+        sketch::LaplacianRFT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
+        sketchc::DIST_MATRIX_STAR_VC, sketchc::ROOT_MATRIX,
+        sketch::LaplacianRFT_t, DistMatrix_STAR_VC, RootMatrix,
+        sketch::LaplacianRFT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
+        sketchc::DIST_MATRIX_STAR_VR, sketchc::SHARED_MATRIX,
+        sketch::LaplacianRFT_t, DistMatrix_STAR_VR, SharedMatrix,
+        sketch::LaplacianRFT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
+        sketchc::DIST_MATRIX_STAR_VC, sketchc::SHARED_MATRIX,
+        sketch::LaplacianRFT_t, DistMatrix_STAR_VC, SharedMatrix,
+        sketch::LaplacianRFT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
+        sketchc::DIST_MATRIX_STAR_VR, sketchc::DIST_MATRIX_STAR_VR,
+        sketch::LaplacianRFT_t, DistMatrix_STAR_VR, DistMatrix_STAR_VR,
+        sketch::LaplacianRFT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
+        sketchc::DIST_MATRIX_STAR_VC, sketchc::DIST_MATRIX_STAR_VC,
+        sketch::LaplacianRFT_t, DistMatrix_STAR_VC, DistMatrix_STAR_VC,
+        sketch::LaplacianRFT_data_t);
+
     AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
         sketchc::MATRIX, sketchc::MATRIX,
         sketch::LaplacianRFT_t, Matrix, Matrix,
@@ -1123,88 +1232,13 @@ SKYLARK_EXTERN_API int
         sketch::LaplacianRFT_data_t);
 
     AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
-        sketchc::MATRIX, sketchc::MATRIX,
-        sketch::LaplacianRFT_t, Matrix, Matrix,
+        sketchc::DIST_MATRIX_VR_STAR, sketchc::DIST_MATRIX,
+        sketch::LaplacianRFT_t, DistMatrix_VR_STAR, DistMatrix,
         sketch::LaplacianRFT_data_t);
 
     AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
-        sketchc::SPARSE_MATRIX, sketchc::MATRIX,
-        sketch::LaplacianRFT_t, SparseMatrix, Matrix,
-        sketch::LaplacianRFT_data_t);
-
-    AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
-        sketchc::DIST_MATRIX, sketchc::ROOT_MATRIX,
-        sketch::LaplacianRFT_t, DistMatrix, RootMatrix,
-        sketch::LaplacianRFT_data_t);
-
-    AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
-        sketchc::DIST_MATRIX, sketchc::SHARED_MATRIX,
-        sketch::LaplacianRFT_t, DistMatrix, SharedMatrix,
-        sketch::LaplacianRFT_data_t);
-
-    AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
-        sketchc::DIST_MATRIX, sketchc::DIST_MATRIX,
-        sketch::LaplacianRFT_t, DistMatrix, DistMatrix,
-        sketch::LaplacianRFT_data_t);
-
-    AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
-        sketchc::DIST_MATRIX_VR_STAR, sketchc::ROOT_MATRIX,
-        sketch::LaplacianRFT_t, DistMatrix_VR_STAR, RootMatrix,
-        sketch::LaplacianRFT_data_t);
-
-    AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
-        sketchc::DIST_MATRIX_VC_STAR, sketchc::ROOT_MATRIX,
-        sketch::LaplacianRFT_t, DistMatrix_VC_STAR, RootMatrix,
-        sketch::LaplacianRFT_data_t);
-
-    AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
-        sketchc::DIST_MATRIX_VR_STAR, sketchc::SHARED_MATRIX,
-        sketch::LaplacianRFT_t, DistMatrix_VR_STAR, SharedMatrix,
-        sketch::LaplacianRFT_data_t);
-
-    AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
-        sketchc::DIST_MATRIX_VC_STAR, sketchc::SHARED_MATRIX,
-        sketch::LaplacianRFT_t, DistMatrix_VC_STAR, SharedMatrix,
-        sketch::LaplacianRFT_data_t);
-
-    AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
-        sketchc::DIST_MATRIX_VR_STAR, sketchc::DIST_MATRIX_VR_STAR,
-        sketch::LaplacianRFT_t, DistMatrix_VR_STAR, DistMatrix_VR_STAR,
-        sketch::LaplacianRFT_data_t);
-
-    AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
-        sketchc::DIST_MATRIX_VC_STAR, sketchc::DIST_MATRIX_VC_STAR,
-        sketch::LaplacianRFT_t, DistMatrix_VC_STAR, DistMatrix_VC_STAR,
-        sketch::LaplacianRFT_data_t);
-
-    AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
-        sketchc::DIST_MATRIX_STAR_VR, sketchc::ROOT_MATRIX,
-        sketch::LaplacianRFT_t, DistMatrix_STAR_VR, RootMatrix,
-        sketch::LaplacianRFT_data_t);
-
-    AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
-        sketchc::DIST_MATRIX_STAR_VC, sketchc::ROOT_MATRIX,
-        sketch::LaplacianRFT_t, DistMatrix_STAR_VC, RootMatrix,
-        sketch::LaplacianRFT_data_t);
-
-    AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
-        sketchc::DIST_MATRIX_STAR_VR, sketchc::SHARED_MATRIX,
-        sketch::LaplacianRFT_t, DistMatrix_STAR_VR, SharedMatrix,
-        sketch::LaplacianRFT_data_t);
-
-    AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
-        sketchc::DIST_MATRIX_STAR_VC, sketchc::SHARED_MATRIX,
-        sketch::LaplacianRFT_t, DistMatrix_STAR_VC, SharedMatrix,
-        sketch::LaplacianRFT_data_t);
-
-    AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
-        sketchc::DIST_MATRIX_STAR_VR, sketchc::DIST_MATRIX_STAR_VR,
-        sketch::LaplacianRFT_t, DistMatrix_STAR_VR, DistMatrix_STAR_VR,
-        sketch::LaplacianRFT_data_t);
-
-    AUTO_APPLY_DISPATCH(sketchc::LaplacianRFT,
-        sketchc::DIST_MATRIX_STAR_VC, sketchc::DIST_MATRIX_STAR_VC,
-        sketch::LaplacianRFT_t, DistMatrix_STAR_VC, DistMatrix_STAR_VC,
+        sketchc::DIST_MATRIX_VC_STAR, sketchc::DIST_MATRIX,
+        sketch::LaplacianRFT_t, DistMatrix_VC_STAR, DistMatrix,
         sketch::LaplacianRFT_data_t);
 
     AUTO_APPLY_DISPATCH(sketchc::MaternRFT,
@@ -1292,6 +1326,15 @@ SKYLARK_EXTERN_API int
         sketch::MaternRFT_t, DistMatrix_STAR_VC, DistMatrix_STAR_VC,
         sketch::MaternRFT_data_t);
 
+    AUTO_APPLY_DISPATCH(sketchc::MaternRFT,
+        sketchc::DIST_MATRIX_VR_STAR, sketchc::DIST_MATRIX,
+        sketch::MaternRFT_t, DistMatrix_VR_STAR, DistMatrix,
+        sketch::MaternRFT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::MaternRFT,
+        sketchc::DIST_MATRIX_VC_STAR, sketchc::DIST_MATRIX,
+        sketch::MaternRFT_t, DistMatrix_VC_STAR, DistMatrix,
+        sketch::MaternRFT_data_t);
 
 # define AUTO_APPLY_DISPATCH_QUASI(T, I, O, C, IT, OT, CD)               \
     if (type == T && input == I && output == O) {                        \
@@ -1394,6 +1437,16 @@ SKYLARK_EXTERN_API int
         sketch::GaussianQRFT_t, DistMatrix_STAR_VC, DistMatrix_STAR_VC,
         sketch::GaussianQRFT_data_t);
 
+    AUTO_APPLY_DISPATCH_QUASI(sketchc::GaussianQRFT,
+        sketchc::DIST_MATRIX_VR_STAR, sketchc::DIST_MATRIX,
+        sketch::GaussianQRFT_t, DistMatrix_VR_STAR, DistMatrix,
+        sketch::GaussianQRFT_data_t);
+
+    AUTO_APPLY_DISPATCH_QUASI(sketchc::GaussianQRFT,
+        sketchc::DIST_MATRIX_VC_STAR, sketchc::DIST_MATRIX,
+        sketch::GaussianQRFT_t, DistMatrix_VC_STAR, DistMatrix,
+        sketch::GaussianQRFT_data_t);
+
     AUTO_APPLY_DISPATCH_QUASI(sketchc::LaplacianQRFT,
         sketchc::MATRIX, sketchc::MATRIX,
         sketch::LaplacianQRFT_t, Matrix, Matrix,
@@ -1477,6 +1530,16 @@ SKYLARK_EXTERN_API int
     AUTO_APPLY_DISPATCH_QUASI(sketchc::LaplacianQRFT,
         sketchc::DIST_MATRIX_STAR_VC, sketchc::DIST_MATRIX_STAR_VC,
         sketch::LaplacianQRFT_t, DistMatrix_STAR_VC, DistMatrix_STAR_VC,
+        sketch::LaplacianQRFT_data_t);
+
+    AUTO_APPLY_DISPATCH_QUASI(sketchc::LaplacianQRFT,
+        sketchc::DIST_MATRIX_VR_STAR, sketchc::DIST_MATRIX,
+        sketch::LaplacianQRFT_t, DistMatrix_VR_STAR, DistMatrix,
+        sketch::LaplacianQRFT_data_t);
+
+    AUTO_APPLY_DISPATCH_QUASI(sketchc::LaplacianQRFT,
+        sketchc::DIST_MATRIX_VC_STAR, sketchc::DIST_MATRIX,
+        sketch::LaplacianQRFT_t, DistMatrix_VC_STAR, DistMatrix,
         sketch::LaplacianQRFT_data_t);
 
     AUTO_APPLY_DISPATCH(sketchc::ExpSemigroupRLT,
@@ -1564,6 +1627,16 @@ SKYLARK_EXTERN_API int
         sketch::ExpSemigroupRLT_t, DistMatrix_STAR_VC, DistMatrix_STAR_VC,
         sketch::ExpSemigroupRLT_data_t);
 
+    AUTO_APPLY_DISPATCH(sketchc::ExpSemigroupRLT,
+        sketchc::DIST_MATRIX_VR_STAR, sketchc::DIST_MATRIX,
+        sketch::ExpSemigroupRLT_t, DistMatrix_VR_STAR, DistMatrix,
+        sketch::ExpSemigroupRLT_data_t);
+
+    AUTO_APPLY_DISPATCH(sketchc::ExpSemigroupRLT,
+        sketchc::DIST_MATRIX_VC_STAR, sketchc::DIST_MATRIX,
+        sketch::ExpSemigroupRLT_t, DistMatrix_VC_STAR, DistMatrix,
+        sketch::ExpSemigroupRLT_data_t);
+
    AUTO_APPLY_DISPATCH_QUASI(sketchc::ExpSemigroupQRLT,
         sketchc::MATRIX, sketchc::MATRIX,
         sketch::ExpSemigroupQRLT_t, Matrix, Matrix,
@@ -1647,6 +1720,16 @@ SKYLARK_EXTERN_API int
     AUTO_APPLY_DISPATCH_QUASI(sketchc::ExpSemigroupQRLT,
         sketchc::DIST_MATRIX_STAR_VC, sketchc::DIST_MATRIX_STAR_VC,
         sketch::ExpSemigroupQRLT_t, DistMatrix_STAR_VC, DistMatrix_STAR_VC,
+        sketch::ExpSemigroupQRLT_data_t);
+
+    AUTO_APPLY_DISPATCH_QUASI(sketchc::ExpSemigroupQRLT,
+        sketchc::DIST_MATRIX_VR_STAR, sketchc::DIST_MATRIX,
+        sketch::ExpSemigroupQRLT_t, DistMatrix_VR_STAR, DistMatrix,
+        sketch::ExpSemigroupQRLT_data_t);
+
+    AUTO_APPLY_DISPATCH_QUASI(sketchc::ExpSemigroupQRLT,
+        sketchc::DIST_MATRIX_VC_STAR, sketchc::DIST_MATRIX,
+        sketch::ExpSemigroupQRLT_t, DistMatrix_VC_STAR, DistMatrix,
         sketch::ExpSemigroupQRLT_data_t);
 
 #if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT

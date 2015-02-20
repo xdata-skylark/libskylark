@@ -54,6 +54,7 @@ simple_unweighted_graph_t::simple_unweighted_graph_t(const std::string &gf) {
 
     std::ifstream in(gf);
     std::string line, token;
+    vertex_type u, v;
 
     _num_edges = 0;
     while(true) {
@@ -64,16 +65,14 @@ simple_unweighted_graph_t::simple_unweighted_graph_t(const std::string &gf) {
             continue;
 
         std::istringstream tokenstream(line);
-        tokenstream >> token;
-        vertex_type i = atoi(token.c_str());
-        tokenstream >> token;
-        vertex_type j = atoi(token.c_str());
+        tokenstream >> u;
+        tokenstream >> v;
 
-        if (i == j)
+        if (u == v)
             continue;
 
-        _nodepairs[i].first++;
-        _nodepairs[j].first++;
+        _nodepairs[u].first++;
+        _nodepairs[v].first++;
         _num_edges += 2;
     }
 
@@ -101,20 +100,18 @@ simple_unweighted_graph_t::simple_unweighted_graph_t(const std::string &gf) {
             continue;
 
         std::istringstream tokenstream(line);
-        tokenstream >> token;
-        vertex_type i = atoi(token.c_str());
-        tokenstream >> token;
-        vertex_type j = atoi(token.c_str());
+        tokenstream >> u;
+        tokenstream >> v;
 
-        if (i == j)
+        if (u == v)
             continue;
 
-        nodepair_t &npi = _nodepairs[i];
-        npi.second[npi.first] = j;
+        nodepair_t &npi = _nodepairs[u];
+        npi.second[npi.first] = v;
         npi.first++;
 
-        nodepair_t &npj = _nodepairs[j];
-        npj.second[npj.first] = i;
+        nodepair_t &npj = _nodepairs[v];
+        npj.second[npj.first] = u;
         npj.first++;
     }
 
@@ -273,7 +270,7 @@ int main(int argc, char** argv) {
         timer.restart();
         std::unordered_set<int> cluster;
         double cond = skyml::FindLocalCluster(G, seeds, cluster,
-            alpha, gamma, epsilon, recursive);
+            alpha, gamma, epsilon, 4, recursive);
         std::cout <<"Analysis complete! Took "
                   << boost::format("%.2e") % timer.elapsed() << " sec\n";
         std::cout << "Cluster found:" << std::endl;

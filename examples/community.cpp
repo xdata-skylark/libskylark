@@ -18,6 +18,7 @@ namespace skyutil = skylark::utility;
 
 struct simple_unweighted_graph_t {
 
+    typedef int vertex_type;
 
     simple_unweighted_graph_t(const std::string &gf);
 
@@ -25,18 +26,20 @@ struct simple_unweighted_graph_t {
         delete[] _out;
     }
 
-    int num_vertices() const { return _num_vertices; }
-    int num_edges() const { return _num_edges; }
-    int degree(int vertex) const { return _nodepairs.at(vertex).first; }
-    const int *adjanct(int vertex) const { return _nodepairs.at(vertex).second; }
+    size_t num_vertices() const { return _num_vertices; }
+    size_t num_edges() const { return _num_edges; }
+    size_t degree(vertex_type vertex) const { return _nodepairs.at(vertex).first; }
+    const vertex_type *adjanct(vertex_type vertex) const {
+        return _nodepairs.at(vertex).second;
+    }
 
 private:
-    typedef std::pair<int, int *> nodepair_t;
+    typedef std::pair<size_t, vertex_type *> nodepair_t;
 
-    std::unordered_map<int, nodepair_t> _nodepairs;
-    int *_out;
-    int _num_vertices;
-    int _num_edges;
+    std::unordered_map<vertex_type, nodepair_t> _nodepairs;
+    vertex_type *_out;
+    size_t _num_vertices;
+    size_t _num_edges;
 };
 
 
@@ -55,9 +58,9 @@ simple_unweighted_graph_t::simple_unweighted_graph_t(const std::string &gf) {
 
         std::istringstream tokenstream(line);
         tokenstream >> token;
-        int i = atoi(token.c_str());
+        vertex_type i = atoi(token.c_str());
         tokenstream >> token;
-        int j = atoi(token.c_str());
+        vertex_type j = atoi(token.c_str());
 
         if (i == j)
             continue;
@@ -71,13 +74,13 @@ simple_unweighted_graph_t::simple_unweighted_graph_t(const std::string &gf) {
 
     std::cout << "Finished first pass. Vertices = " << _num_vertices
               << " Edges = " << _num_edges << std::endl;
-    _out = new int[_num_edges];
+    _out = new vertex_type[_num_edges];
 
     // Set pointers and zero degrees.
-    int count = 0;
+    size_t count = 0;
     for(auto it = _nodepairs.begin(); it != _nodepairs.end(); it++) {
-        int nodeid = it->first;
-        int deg = it->second.first;
+        vertex_type nodeid = it->first;
+        size_t deg = it->second.first;
         _nodepairs[nodeid] = nodepair_t(0, _out + count);
         count += deg;
     }
@@ -92,9 +95,9 @@ simple_unweighted_graph_t::simple_unweighted_graph_t(const std::string &gf) {
 
         std::istringstream tokenstream(line);
         tokenstream >> token;
-        int i = atoi(token.c_str());
+        vertex_type i = atoi(token.c_str());
         tokenstream >> token;
-        int j = atoi(token.c_str());
+        vertex_type j = atoi(token.c_str());
 
         if (i == j)
             continue;

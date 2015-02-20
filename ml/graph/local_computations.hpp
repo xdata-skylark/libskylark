@@ -23,22 +23,16 @@ namespace skylark { namespace ml {
 
 template<typename GraphType, typename T>
 void LocalGraphDiffusion(const GraphType& G,
-    const base::sparse_matrix_t<T>& s, base::sparse_matrix_t<T>& y,
+    const std::unordered_map<typename GraphType::vertex_type, T>& s,
+    std::unordered_map<typename GraphType::vertex_type, El::Matrix<T> *>& y,
     El::Matrix<T> &x, double alpha, double gamma, double epsilon, int NX = 4) {
 
-    if (s.width() != 1)
-        SKYLARK_THROW_EXCEPTION (
-            base::invalid_parameters()
-               << base::error_msg("input should be a vector") );
+    typedef typename GraphType::vertex_type vertex_type;
 
     if (!El::Initialized())
         SKYLARK_THROW_EXCEPTION (
             base::skylark_exception()
                << base::error_msg("Elemental was not initialized") );
-
-    const int *seeds = s.indices();
-    const double *svalues = s.locked_values();
-    int nseeds = s.nonzeros();
 
     // Find minimum N, caching it since it involves costly computations of
     // Bessel functions.
@@ -96,8 +90,11 @@ void LocalGraphDiffusion(const GraphType& G,
 
     const El::Matrix<T> *D_ = Dmap[ngamma];
 
-    // TODO the following line is not correct.
-    nla::ChebyshevPoints(N, x, 0, gamma);
+    El::Matrix<T> x1;
+    nla::ChebyshevPoints(N, x1, 0, gamma);
+    x.Resize(NX, 1);
+    for(int i = 0; i < NX; i++)
+        x.Set(i, 0, x1.Get(i * NR, 0));
 
     // Constants for convergence.
     double LC = 1 + (2 / pi) * log(N - 1);
@@ -110,27 +107,30 @@ void LocalGraphDiffusion(const GraphType& G,
     const T *u = D_->LockedBuffer() + N - 1;
 
     typedef std::pair<bool, T*> rypair_t;
-    std::unordered_map<int, rypair_t> rymap;
-    std::queue<int> violating;
+    std::unordered_map<vertex_type, rypair_t> rymap;
+    std::queue<vertex_type> violating;
 
     // Initialize non-zero functions, and their residual, which is not
     // fully computed yet (but we know that needs to be inserted into the queue).
-    for (int i = 0; i < nseeds; i++) {
-        T *ry = new T[N + NX];
-        std::fill(ry, ry + N, svalues != nullptr ? -alpha * svalues[i] : -alpha);
-        std::fill(ry + N, ry + N + NX, svalues != nullptr ? svalues[i] : 1.0);
+    for(auto it = s.begin(); it != s.end(); it++) {
+        const vertex_type &node = it->first;
+        const T &v = it->second;
 
-        int node = seeds[i];
+        T *ry = new T[N + NX];
+        std::fill(ry, ry + N, -alpha * v);
+        std::fill(ry + N, ry + N + NX, v);
         rymap[node] = rypair_t(true, ry);
         violating.push(node);
     }
 
     // Initialize to just zero for all nodes adjanct to seeds, that
     // are not seeds themselves. Residual is not fully computed yet.
-    for (int i = 0; i < nseeds; i++) {
-        const int *adjnodes = G.adjanct(seeds[i]);
-        for (int l = 0; l < G.degree(seeds[i]); l++) {
-            int onode = adjnodes[l];
+    for(auto it = s.begin(); it != s.end(); it++) {
+        const vertex_type &node = it->first;
+
+        const vertex_type *adjnodes = G.adjanct(node);
+        for (size_t l = 0; l < G.degree(node); l++) {
+            vertex_type onode = adjnodes[l];
             if (rymap.count(onode) == 0) {
                 T *ry = new T[N + NX];
                 std::fill(ry, ry + N + NX, 0);
@@ -140,14 +140,14 @@ void LocalGraphDiffusion(const GraphType& G,
     }
 
     // Update the residual based on seeds
-    for (int i = 0; i < nseeds; i++) {
-        int node = seeds[i];
+    for(auto it = s.begin(); it != s.end(); it++) {
+        const vertex_type &node = it->first;
 
         T *ry = rymap[node].second;
 
-        int deg = G.degree(node);
-        const int *adjnodes = G.adjanct(node);
-        double v = alpha * ry[N] / deg;
+        size_t deg = G.degree(node);
+        const vertex_type *adjnodes = G.adjanct(node);
+        T v = alpha * ry[N] / deg;
         for (int l = 0; l < deg; l++) {
             int onode = adjnodes[l];
             int odeg = G.degree(onode);
@@ -170,7 +170,7 @@ void LocalGraphDiffusion(const GraphType& G,
     // Main loop
     T dyp[N];
     while(!violating.empty()) {
-        int node = violating.front();
+        vertex_type node = violating.front();
         violating.pop();
 
         // Solve locally, and update rymap[node].
@@ -196,11 +196,11 @@ void LocalGraphDiffusion(const GraphType& G,
         rpair.first = false;
 
         // Update residuals
-        int deg = G.degree(node);
-        const int *adjnodes = G.adjanct(node);
+        size_t deg = G.degree(node);
+        const vertex_type *adjnodes = G.adjanct(node);
         for (int l = 0; l < deg; l++) {
-            int onode = adjnodes[l];
-            int odeg = G.degree(onode);
+            const vertex_type &onode = adjnodes[l];
+            size_t odeg = G.degree(onode);
 
             // Add it to rymap, if not already there.
             if (rymap.count(onode) == 0) {
@@ -212,7 +212,7 @@ void LocalGraphDiffusion(const GraphType& G,
             rypair_t& ryopair = rymap[onode];
             bool inq = false;
             T *ryo = ryopair.second;
-            double c = alpha / deg;
+            T c = alpha / deg;
             double B = C * odeg;
             for(int i = 0; i < N - 1; i++) {
                 ryo[i] += c *  dyp[i];
@@ -226,75 +226,55 @@ void LocalGraphDiffusion(const GraphType& G,
         }
     }
 
-    // Yank values to y, freeing ry in the process.
-    // (we yank at all N time points)
-
-    // First find number of non-zeros
-    int nnzcol = 0;
-    for(auto it = rymap.begin(); it != rymap.end(); it++)
-        if (it->second.second[N] != 0)
-            nnzcol++;
-
-    int *yindptr = new int[NX + 1];
-    for(int i = 0; i < NX + 1; i++)
-        yindptr[i] = i * nnzcol;
-    int *yindices = new int[nnzcol * NX];
-    double *yvalues = new double[nnzcol * NX];
-
-    int idx = 0;
+    // Yank values to y, freeing other parts of ry in the process.
+    y.clear();
     for(auto it = rymap.begin(); it != rymap.end(); it++) {
         if (it->second.second[N] != 0) {
-            for(int i = 0; i < NX; i++) {
-                yindices[idx + i * nnzcol] = it->first;
-                yvalues[idx + i * nnzcol] = it->second.second[N + i];
-            }
-            idx++;
+            El::Matrix<T> *yv = new El::Matrix<T>(NX, 1);
+            for(int i = 0; i < NX; i++)
+                yv->Set(i, 0, it->second.second[N + i]);
+            y[it->first] = yv;
         }
         delete it->second.second;
     }
-
-    y.attach(yindptr, yindices, yvalues, nnzcol, G.num_vertices(),
-        NX, true);
 }
 
 template<typename GraphType>
 double FindLocalCluster(const GraphType& G,
-    const std::vector<int>& seeds, std::vector<int>& cluster,
-    double alpha, double gamma, double epsilon, int NX = 4,
+    const std::vector<typename GraphType::vertex_type>& seeds,
+    std::vector<typename GraphType::vertex_type>& cluster,
+    double alpha = 0.85, double gamma = 5.0, double epsilon = 0.001, int NX = 4,
     bool recursive = true) {
 
+    typedef typename GraphType::vertex_type vertex_type;
     double currentcond = -1;
     cluster = seeds;
     bool improve;
     El::Matrix<double> x;
 
     do {
-        // Create seed vector.
-        int sindptr[2] = {0, static_cast<int>(cluster.size())};
-        base::sparse_matrix_t<double> s;
-        s.attach(sindptr, cluster.data(), nullptr, cluster.size(),
-            G.num_vertices(), 1);
+        // Create seed set.
+        std::unordered_map<vertex_type, double> s;
+        for(auto it = seeds.begin(); it != seeds.end(); it++)
+            s[*it] = 1.0 / seeds.size();
 
         // Run the diffusion
-        base::sparse_matrix_t<double> y;
+        std::unordered_map<vertex_type, El::Matrix<double>*> y;
         LocalGraphDiffusion(G, s, y, x, alpha, gamma, epsilon, NX);
 
         // Go over the y output at the different time samples,
         // find the best prefix and if better conductance, store it.
         improve = false;
-        const int *indptr = y.indptr();
-        const int *indices = y.indices();
-        const double *values = y.locked_values();
-        for (int t = 0; t < y.width(); t++) {
+        for (int t = 0; t < NX; t++) {
             // Sort (descending) the non-zero components based on their normalized
             // y values (normalized by degree).
-            std::vector<std::pair<double, int> > vals(indptr[t + 1] - indptr[t]);
-            const double *yvalues = values + indptr[t];
-            const int *yindices = indices + indptr[t];
-            for(int i = 0; i < y.nonzeros(); i++) {
-                int idx = yindices[i];
-                double val = - yvalues[i] / G.degree(idx);
-                vals[i] = std::pair<double, int>(val, idx);
+            std::vector<std::pair<double, vertex_type> > vals(y.size());
+            int i = 0;
+            for(auto it = y.begin(); it != y.end(); it++) {
+                vertex_type node = it->first;
+                double val = - it->second->Get(t, 0) / G.degree(node);
+                vals[i] = std::make_pair(val, node);
+                i++;
             }
             std::sort(vals.begin(), vals.end());
 
@@ -303,14 +283,14 @@ double FindLocalCluster(const GraphType& G,
             double bestcond = 1.0;
             int bestprefix = 0;
             int Gvol = G.num_edges();
-            std::unordered_set<int> currentset;
+            std::unordered_set<vertex_type> currentset;
             for (int i = 0; i < vals.size(); i++) {
-                int node = vals[i].second;
-                int deg = G.degree(node);
-                const int *adjnodes = G.adjanct(node);
+                vertex_type node = vals[i].second;
+                size_t deg = G.degree(node);
+                const vertex_type *adjnodes = G.adjanct(node);
                 volS += deg;
-                for(int l = 0; l < deg; l++) {
-                    int onode = adjnodes[l];
+                for(size_t l = 0; l < deg; l++) {
+                    vertex_type onode = adjnodes[l];
                     if (currentset.count(onode))
                         cutS--;
                     else
@@ -335,6 +315,10 @@ double FindLocalCluster(const GraphType& G,
                 currentcond = bestcond;
             }
         }
+
+        // Clear y
+        for(auto it = y.begin(); it != y.end(); it++)
+            delete it->second;
     } while (recursive && improve);
 
     return currentcond;

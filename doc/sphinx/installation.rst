@@ -298,7 +298,7 @@ compiles the selected boost libraries (you might need to adapt the path to
     see http://www-01.ibm.com/support/docview.wss?uid=swg1LI77249.
 
 
-Elemental 0.85
+Elemental 0.86
 ---------------
 
 Elemental is a framework for distributed-memory dense linear algebra that
@@ -307,16 +307,20 @@ element-wise matrix distributions (Hendrickson et al.), object-oriented
 submatrix tracking (FLAME, van de Geijn et al.), and first-class matrix
 distributions (PLAPACK, van de Geijn et al.).
 
-We support version 0.85. Elemental's API is a moving target, so newer versions
-might not work as-is. 
+We support version 0.86. Elemental's API is a moving target, so newer versions
+might not work as-is.
+
+.. note:: Currently version 0.86 is not officially released yet. Please,
+    checkout and build the github version (see
+    https://github.com/elemental/Elemental).
 
 *Installation: (make sure to use a compiler with c++11 support)*
 
 ::
 
-        wget http://libelemental.org/pub/releases/Elemental-0.85.tgz
-        tar xvfz Elemental-0.85.tgz
-        cd Elemental-0.85/
+        wget http://libelemental.org/pub/releases/Elemental-0.86.tgz
+        tar xvfz Elemental-0.86.tgz
+        cd Elemental-0.86/
         mkdir build
         cd build
         cmake ..

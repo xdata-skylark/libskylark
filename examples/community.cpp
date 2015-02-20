@@ -19,6 +19,7 @@ namespace skyutil = skylark::utility;
 struct simple_unweighted_graph_t {
 
     typedef int vertex_type;
+    typedef const vertex_type *iterator_type;
 
     simple_unweighted_graph_t(const std::string &gf);
 
@@ -29,12 +30,18 @@ struct simple_unweighted_graph_t {
     size_t num_vertices() const { return _num_vertices; }
     size_t num_edges() const { return _num_edges; }
     size_t degree(vertex_type vertex) const { return _nodepairs.at(vertex).first; }
-    const vertex_type *adjanct(vertex_type vertex) const {
+
+    iterator_type adjanct_begin(const vertex_type &vertex) const {
         return _nodepairs.at(vertex).second;
     }
 
+    iterator_type adjanct_end(const vertex_type &vertex) const {
+        const nodepair_t &pr = _nodepairs.at(vertex);
+        return pr.second + pr.first;
+    }
+
 private:
-    typedef std::pair<size_t, vertex_type *> nodepair_t;
+    typedef std::pair<size_t, vertex_type*> nodepair_t;
 
     std::unordered_map<vertex_type, nodepair_t> _nodepairs;
     vertex_type *_out;
@@ -126,7 +133,7 @@ int main(int argc, char** argv) {
     bool recursive, interactive;
     std::string graphfile, indexfile;
     std::vector<std::string> seedss;
-    std::vector<int> seeds;
+    std::unordered_set<int> seeds;
     bpo::options_description
         desc("Options:");
     desc.add_options()
@@ -239,7 +246,7 @@ int main(int argc, char** argv) {
                 std::string seed;
                 int c = 0;
                 while (strs >> seed) {
-                    seeds.push_back(name_to_id_map[seed]);
+                    seeds.insert(name_to_id_map[seed]);
                     c++;
                     if (c == 200)
                         exit(-1);
@@ -248,7 +255,7 @@ int main(int argc, char** argv) {
                 int seed;
                 int c = 0;
                 while(strs >> seed) {
-                    seeds.push_back(seed);
+                    seeds.insert(seed);
                     c++;
                     if (c == 200)
                         exit(-1);
@@ -257,14 +264,14 @@ int main(int argc, char** argv) {
         } else {
             for(auto it = seedss.begin(); it != seedss.end(); it++)
                 if (use_index)
-                    seeds.push_back(name_to_id_map[*it]);
+                    seeds.insert(name_to_id_map[*it]);
                 else
-                    seeds.push_back(atoi(it->c_str()));
+                    seeds.insert(atoi(it->c_str()));
         }
 
 
         timer.restart();
-        std::vector<int> cluster;
+        std::unordered_set<int> cluster;
         double cond = skyml::FindLocalCluster(G, seeds, cluster,
             alpha, gamma, epsilon, recursive);
         std::cout <<"Analysis complete! Took "

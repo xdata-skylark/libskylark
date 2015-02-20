@@ -128,9 +128,8 @@ void LocalGraphDiffusion(const GraphType& G,
     for(auto it = s.begin(); it != s.end(); it++) {
         const vertex_type &node = it->first;
 
-        const vertex_type *adjnodes = G.adjanct(node);
-        for (size_t l = 0; l < G.degree(node); l++) {
-            vertex_type onode = adjnodes[l];
+        for(auto it = G.adjanct_begin(node); it != G.adjanct_end(node); it++) {
+            const vertex_type &onode = *it;
             if (rymap.count(onode) == 0) {
                 T *ry = new T[N + NX];
                 std::fill(ry, ry + N + NX, 0);
@@ -146,11 +145,10 @@ void LocalGraphDiffusion(const GraphType& G,
         T *ry = rymap[node].second;
 
         size_t deg = G.degree(node);
-        const vertex_type *adjnodes = G.adjanct(node);
         T v = alpha * ry[N] / deg;
-        for (int l = 0; l < deg; l++) {
-            int onode = adjnodes[l];
-            int odeg = G.degree(onode);
+        for(auto it = G.adjanct_begin(node); it != G.adjanct_end(node); it++) {
+            const vertex_type &onode = *it;
+            size_t odeg = G.degree(onode);
 
             rypair_t& ryopair = rymap[onode];
             T *ro = ryopair.second;
@@ -197,9 +195,8 @@ void LocalGraphDiffusion(const GraphType& G,
 
         // Update residuals
         size_t deg = G.degree(node);
-        const vertex_type *adjnodes = G.adjanct(node);
-        for (int l = 0; l < deg; l++) {
-            const vertex_type &onode = adjnodes[l];
+        for(auto it = G.adjanct_begin(node); it != G.adjanct_end(node); it++) {
+            const vertex_type &onode = *it;
             size_t odeg = G.degree(onode);
 
             // Add it to rymap, if not already there.
@@ -241,8 +238,8 @@ void LocalGraphDiffusion(const GraphType& G,
 
 template<typename GraphType>
 double FindLocalCluster(const GraphType& G,
-    const std::vector<typename GraphType::vertex_type>& seeds,
-    std::vector<typename GraphType::vertex_type>& cluster,
+    const std::unordered_set<typename GraphType::vertex_type>& seeds,
+    std::unordered_set<typename GraphType::vertex_type>& cluster,
     double alpha = 0.85, double gamma = 5.0, double epsilon = 0.001, int NX = 4,
     bool recursive = true) {
 
@@ -287,10 +284,10 @@ double FindLocalCluster(const GraphType& G,
             for (int i = 0; i < vals.size(); i++) {
                 vertex_type node = vals[i].second;
                 size_t deg = G.degree(node);
-                const vertex_type *adjnodes = G.adjanct(node);
                 volS += deg;
-                for(size_t l = 0; l < deg; l++) {
-                    vertex_type onode = adjnodes[l];
+                for(auto it = G.adjanct_begin(node);
+                    it != G.adjanct_end(node); it++) {
+                    const vertex_type &onode = *it;
                     if (currentset.count(onode))
                         cutS--;
                     else
@@ -311,7 +308,7 @@ double FindLocalCluster(const GraphType& G,
                 improve = true;
                 cluster.clear();
                 for(int i = 0; i <= bestprefix; i++)
-                    cluster.push_back(vals[i].second);
+                    cluster.insert(vals[i].second);
                 currentcond = bestcond;
             }
         }

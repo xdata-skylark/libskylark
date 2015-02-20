@@ -19,33 +19,27 @@ namespace skyutil = skylark::utility;
 struct simple_unweighted_graph_t {
 
     typedef int vertex_type;
-    typedef const vertex_type *iterator_type;
+    typedef std::vector<vertex_type>::const_iterator iterator_type;
 
     simple_unweighted_graph_t(const std::string &gf);
 
-    ~simple_unweighted_graph_t() {
-        delete[] _out;
+    size_t num_vertices() const { return _nodemap.size(); }
+    size_t num_edges() const { return _num_edges; }
+
+    size_t degree(const vertex_type &vertex) const {
+        return _nodemap.at(vertex).size();
     }
 
-    size_t num_vertices() const { return _num_vertices; }
-    size_t num_edges() const { return _num_edges; }
-    size_t degree(vertex_type vertex) const { return _nodepairs.at(vertex).first; }
-
     iterator_type adjanct_begin(const vertex_type &vertex) const {
-        return _nodepairs.at(vertex).second;
+        return _nodemap.at(vertex).begin();
     }
 
     iterator_type adjanct_end(const vertex_type &vertex) const {
-        const nodepair_t &pr = _nodepairs.at(vertex);
-        return pr.second + pr.first;
+        return _nodemap.at(vertex).end();
     }
 
 private:
-    typedef std::pair<size_t, vertex_type*> nodepair_t;
-
-    std::unordered_map<vertex_type, nodepair_t> _nodepairs;
-    vertex_type *_out;
-    size_t _num_vertices;
+    std::unordered_map<vertex_type, std::vector<vertex_type> > _nodemap;
     size_t _num_edges;
 };
 
@@ -55,6 +49,9 @@ simple_unweighted_graph_t::simple_unweighted_graph_t(const std::string &gf) {
     std::ifstream in(gf);
     std::string line, token;
     vertex_type u, v;
+
+    std::unordered_set<std::pair<vertex_type, vertex_type>,
+                       skylark::utility::pair_hasher_t> added;
 
     _num_edges = 0;
     while(true) {
@@ -71,48 +68,14 @@ simple_unweighted_graph_t::simple_unweighted_graph_t(const std::string &gf) {
         if (u == v)
             continue;
 
-        _nodepairs[u].first++;
-        _nodepairs[v].first++;
+        if (added.count(std::make_pair(u, v)) > 0)
+            continue;
+
+        added.insert(std::make_pair(u, v));
         _num_edges += 2;
-    }
 
-    _num_vertices = _nodepairs.size();
-
-    std::cout << "Finished first pass. Vertices = " << _num_vertices
-              << " Edges = " << _num_edges << std::endl;
-    _out = new vertex_type[_num_edges];
-
-    // Set pointers and zero degrees.
-    size_t count = 0;
-    for(auto it = _nodepairs.begin(); it != _nodepairs.end(); it++) {
-        vertex_type nodeid = it->first;
-        size_t deg = it->second.first;
-        _nodepairs[nodeid] = nodepair_t(0, _out + count);
-        count += deg;
-    }
-
-    // Second pass
-    in.clear();
-    in.seekg(0, std::ios::beg);
-    while(!in.eof()) {
-        getline(in, line);
-        if (line[0] == '#')
-            continue;
-
-        std::istringstream tokenstream(line);
-        tokenstream >> u;
-        tokenstream >> v;
-
-        if (u == v)
-            continue;
-
-        nodepair_t &npi = _nodepairs[u];
-        npi.second[npi.first] = v;
-        npi.first++;
-
-        nodepair_t &npj = _nodepairs[v];
-        npj.second[npj.first] = u;
-        npj.first++;
+        _nodemap[u].push_back(v);
+        _nodemap[v].push_back(u);
     }
 
     std::cout << "Finished reading... ";

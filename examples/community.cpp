@@ -16,10 +16,11 @@ namespace skyml = skylark::ml;
 namespace skyutil = skylark::utility;
 
 
+template<typename VertexType>
 struct simple_unweighted_graph_t {
 
-    typedef int vertex_type;
-    typedef std::vector<vertex_type>::const_iterator iterator_type;
+    typedef VertexType vertex_type;
+    typedef typename std::vector<vertex_type>::const_iterator iterator_type;
 
     simple_unweighted_graph_t(const std::string &gf);
 
@@ -43,8 +44,8 @@ private:
     size_t _num_edges;
 };
 
-
-simple_unweighted_graph_t::simple_unweighted_graph_t(const std::string &gf) {
+template<typename VertexType>
+simple_unweighted_graph_t<VertexType>::simple_unweighted_graph_t(const std::string &gf) {
 
     std::ifstream in(gf);
     std::string line, token;
@@ -72,6 +73,7 @@ simple_unweighted_graph_t::simple_unweighted_graph_t(const std::string &gf) {
             continue;
 
         added.insert(std::make_pair(u, v));
+        added.insert(std::make_pair(v, u));
         _num_edges += 2;
 
         _nodemap[u].push_back(v);
@@ -82,85 +84,28 @@ simple_unweighted_graph_t::simple_unweighted_graph_t(const std::string &gf) {
     in.close();
 }
 
-int main(int argc, char** argv) {
+double gamma_, alpha, epsilon;
+bool recursive, interactive;
+std::string graphfile, indexfile;
+std::vector<std::string> seedss;
 
-    El::Initialize(argc, argv);
+
+template<typename VertexType>
+void execute() {
+    typedef VertexType vertex_type;
 
     boost::mpi::timer timer;
-
-    // Parse options
-    double gamma, alpha, epsilon;
-    bool recursive, interactive;
-    std::string graphfile, indexfile;
-    std::vector<std::string> seedss;
-    std::unordered_set<int> seeds;
-    bpo::options_description
-        desc("Options:");
-    desc.add_options()
-        ("help,h", "produce a help message")
-        ("graphfile,g",
-            bpo::value<std::string>(&graphfile),
-            "File holding the graph. REQUIRED.")
-        ("indexfile,d",
-            bpo::value<std::string>(&indexfile)->default_value(""),
-            "Index files mapping node-ids to strings. OPTIONAL.")
-        ("interactive,i", "Whether to run in interactive mode.")
-        ("seed,s",
-            bpo::value<std::vector<std::string> >(&seedss),
-            "Seed node. Use multiple times for multiple seeds. REQUIRED. ")
-        ("recursive,r",
-            bpo::value<bool>(&recursive)->default_value(true),
-            "Whether to try to recursively improve clusters "
-            "(use cluster found as a seed)" )
-        ("gamma",
-            bpo::value<double>(&gamma)->default_value(5.0),
-            "Time to derive the diffusion. As gamma->inf we get closer to ppr.")
-        ("alpha",
-            bpo::value<double>(&alpha)->default_value(0.85),
-            "PPR component parameter. alpha=1 will result in pure heat-kernel.")
-        ("epsilon",
-            bpo::value<double>(&epsilon)->default_value(0.001),
-            "Accuracy parameter for convergence.");
-
-    bpo::variables_map vm;
-    try {
-        bpo::store(bpo::command_line_parser(argc, argv)
-            .options(desc).run(), vm);
-
-        if (vm.count("help")) {
-            std::cout << desc;
-            return 0;
-        }
-
-        interactive = vm.count("interactive");
-
-        if (!vm.count("graphfile")) {
-            std::cout << "Input graph-file is required." << std::endl;
-            return -1;
-        }
-
-        if (!interactive && !vm.count("seed")) {
-            std::cout << "A seed is required in non-interactive mode."
-                      << std::endl;
-            return -1;
-        }
-
-        bpo::notify(vm);
-    } catch(bpo::error& e) {
-        std::cerr << e.what() << std::endl;
-        std::cerr << desc << std::endl;
-        return -1;
-    }
+    std::unordered_set<vertex_type> seeds;
 
     std::cout << "Reading the adjacency matrix... " << std::endl;
     std::cout.flush();
     timer.restart();
-    simple_unweighted_graph_t G(graphfile);
+    simple_unweighted_graph_t<vertex_type> G(graphfile);
     std::cout <<"took " << boost::format("%.2e") % timer.elapsed() << " sec\n";
 
     bool use_index = !indexfile.empty();
-    std::unordered_map<int, std::string> id_to_name_map;
-    std::unordered_map<std::string, int> name_to_id_map;
+    std::unordered_map<vertex_type, std::string> id_to_name_map;
+    std::unordered_map<std::string, vertex_type> name_to_id_map;
     if (use_index) {
         std::cout << "Reading index files... ";
         std::cout.flush();
@@ -178,10 +123,10 @@ int main(int argc, char** argv) {
                 continue;
 
             std::istringstream tokenstream(line);
-            tokenstream >> token;
-            std::string name = token;
-            tokenstream >> token;
-            int node = atoi(token.c_str());
+            std::string name;
+            tokenstream >> name;
+            vertex_type node;
+            tokenstream >> node;
 
             id_to_name_map[node] = name;
             name_to_id_map[name] = node;
@@ -212,7 +157,7 @@ int main(int argc, char** argv) {
                         exit(-1);
                 }
             } else {
-                int seed;
+                vertex_type seed;
                 int c = 0;
                 while(strs >> seed) {
                     seeds.insert(seed);
@@ -225,15 +170,19 @@ int main(int argc, char** argv) {
             for(auto it = seedss.begin(); it != seedss.end(); it++)
                 if (use_index)
                     seeds.insert(name_to_id_map[*it]);
-                else
-                    seeds.insert(atoi(it->c_str()));
+                else {
+                    std::stringstream its(*it);
+                    vertex_type seed;
+                    its >> seed;
+                    seeds.insert(seed);
+                }
         }
 
 
         timer.restart();
-        std::unordered_set<int> cluster;
+        std::unordered_set<vertex_type> cluster;
         double cond = skyml::FindLocalCluster(G, seeds, cluster,
-            alpha, gamma, epsilon, 4, recursive);
+            alpha, gamma_, epsilon, 4, recursive);
         std::cout <<"Analysis complete! Took "
                   << boost::format("%.2e") % timer.elapsed() << " sec\n";
         std::cout << "Cluster found:" << std::endl;
@@ -246,6 +195,81 @@ int main(int argc, char** argv) {
             std::cout << std::endl;
         std::cout << "Conductivity = " << cond << std::endl;
     } while (interactive);
+
+}
+
+int main(int argc, char** argv) {
+
+    El::Initialize(argc, argv);
+
+    bool numeric;
+
+    // Parse options
+    bpo::options_description
+        desc("Options:");
+    desc.add_options()
+        ("help,h", "produce a help message")
+        ("graphfile,g",
+            bpo::value<std::string>(&graphfile),
+            "File holding the graph. REQUIRED.")
+        ("indexfile,d",
+            bpo::value<std::string>(&indexfile)->default_value(""),
+            "Index files mapping node-ids to strings. OPTIONAL.")
+        ("interactive,i", "Whether to run in interactive mode.")
+        ("seed,s",
+            bpo::value<std::vector<std::string> >(&seedss),
+            "Seed node. Use multiple times for multiple seeds. REQUIRED. ")
+        ("recursive,r",
+            bpo::value<bool>(&recursive)->default_value(true),
+            "Whether to try to recursively improve clusters "
+            "(use cluster found as a seed)" )
+        ("gamma",
+            bpo::value<double>(&gamma_)->default_value(5.0),
+            "Time to derive the diffusion. As gamma->inf we get closer to ppr.")
+        ("alpha",
+            bpo::value<double>(&alpha)->default_value(0.85),
+            "PPR component parameter. alpha=1 will result in pure heat-kernel.")
+        ("epsilon",
+            bpo::value<double>(&epsilon)->default_value(0.001),
+            "Accuracy parameter for convergence.")
+        ("numeric,n",
+            "If present, node labels are numeric and the code exploits that.");
+
+    bpo::variables_map vm;
+    try {
+        bpo::store(bpo::command_line_parser(argc, argv)
+            .options(desc).run(), vm);
+
+        if (vm.count("help")) {
+            std::cout << desc;
+            return 0;
+        }
+
+        interactive = vm.count("interactive");
+        numeric = vm.count("numeric");
+
+        if (!vm.count("graphfile")) {
+            std::cout << "Input graph-file is required." << std::endl;
+            return -1;
+        }
+
+        if (!interactive && !vm.count("seed")) {
+            std::cout << "A seed is required in non-interactive mode."
+                      << std::endl;
+            return -1;
+        }
+
+        bpo::notify(vm);
+    } catch(bpo::error& e) {
+        std::cerr << e.what() << std::endl;
+        std::cerr << desc << std::endl;
+        return -1;
+    }
+
+    if (numeric)
+        execute<int>();
+    else
+        execute<std::string>();
 
     return 0;
 }

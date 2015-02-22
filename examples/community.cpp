@@ -21,6 +21,9 @@ struct simple_unweighted_graph_t {
 
     typedef VertexType vertex_type;
     typedef typename std::vector<vertex_type>::const_iterator iterator_type;
+    typedef typename std::unordered_map<vertex_type,
+                                        std::vector<vertex_type> >::const_iterator
+    vertex_iterator_type;
 
     simple_unweighted_graph_t(const std::string &gf);
 
@@ -37,6 +40,14 @@ struct simple_unweighted_graph_t {
 
     iterator_type adjanct_end(const vertex_type &vertex) const {
         return _nodemap.at(vertex).end();
+    }
+
+    vertex_iterator_type vertex_begin() const {
+        return _nodemap.begin();
+    }
+
+    vertex_iterator_type vertex_end() const {
+        return _nodemap.end();
     }
 
 private:
@@ -195,14 +206,83 @@ void execute() {
             std::cout << std::endl;
         std::cout << "Conductivity = " << cond << std::endl;
     } while (interactive);
-
 }
+
+template<typename VertexType>
+void execute_all() {
+    typedef VertexType vertex_type;
+
+    boost::mpi::timer timer;
+    std::unordered_set<vertex_type> seeds;
+
+    std::cout << "Reading the adjacency matrix... " << std::endl;
+    std::cout.flush();
+    timer.restart();
+    simple_unweighted_graph_t<vertex_type> G(graphfile);
+    std::cout <<"took " << boost::format("%.2e") % timer.elapsed() << " sec\n";
+
+    bool use_index = !indexfile.empty();
+    std::unordered_map<vertex_type, std::string> id_to_name_map;
+    std::unordered_map<std::string, vertex_type> name_to_id_map;
+    if (use_index) {
+        std::cout << "Reading index files... ";
+        std::cout.flush();
+        timer.restart();
+
+        std::ifstream in(indexfile);
+        std::string line, token;
+
+        while(true) {
+            getline(in, line);
+            if (in.eof())
+                break;
+
+            if (line[0] == '#')
+                continue;
+
+            std::istringstream tokenstream(line);
+            std::string name;
+            tokenstream >> name;
+            vertex_type node;
+            tokenstream >> node;
+
+            id_to_name_map[node] = name;
+            name_to_id_map[name] = node;
+        }
+
+        in.close();
+
+        std::cout <<"took " << boost::format("%.2e") % timer.elapsed() << " sec\n";
+    }
+
+    for(auto it = G.vertex_begin(); it != G.vertex_end(); it++) {
+        vertex_type seed = it->first;
+        std::unordered_set<vertex_type> seeds;
+        seeds.insert(seed);
+        std::unordered_set<vertex_type> cluster;
+        double cond = skyml::FindLocalCluster(G, seeds, cluster,
+            alpha, gamma_, epsilon, 4, recursive);
+
+        std::cout << "Seed: " << seed
+                  << " Size: " << cluster.size()
+                  << " Cond: " << boost::format("%.3f") % cond 
+                  << " Community: ";
+        for (auto it1 = cluster.begin(); it1 != cluster.end(); it1++)
+            if (use_index)
+                std::cout << id_to_name_map[*it1] << std::endl;
+            else
+                std::cout << *it1 << " ";
+        if (!use_index)
+            std::cout << std::endl;
+    }
+}
+
 
 int main(int argc, char** argv) {
 
     El::Initialize(argc, argv);
 
-    bool numeric;
+    bool numeric, doall;
 
     // Parse options
     bpo::options_description
@@ -216,6 +296,7 @@ int main(int argc, char** argv) {
             bpo::value<std::string>(&indexfile)->default_value(""),
             "Index files mapping node-ids to strings. OPTIONAL.")
         ("interactive,i", "Whether to run in interactive mode.")
+        ("all,a", "Do all vertexs as seed.")
         ("seed,s",
             bpo::value<std::vector<std::string> >(&seedss),
             "Seed node. Use multiple times for multiple seeds. REQUIRED. ")
@@ -247,14 +328,21 @@ int main(int argc, char** argv) {
 
         interactive = vm.count("interactive");
         numeric = vm.count("numeric");
+        doall = vm.count("all");
 
         if (!vm.count("graphfile")) {
             std::cout << "Input graph-file is required." << std::endl;
             return -1;
         }
 
-        if (!interactive && !vm.count("seed")) {
+        if (!interactive && !doall && !vm.count("seed")) {
             std::cout << "A seed is required in non-interactive mode."
+                      << std::endl;
+            return -1;
+        }
+
+        if (interactive && doall) {
+            std::cout << "All and interactive do not mix."
                       << std::endl;
             return -1;
         }
@@ -266,10 +354,18 @@ int main(int argc, char** argv) {
         return -1;
     }
 
-    if (numeric)
-        execute<int>();
-    else
-        execute<std::string>();
+    if (doall) {
+        if (numeric)
+            execute_all<int>();
+        else
+            execute_all<std::string>();
+
+    } else {
+        if (numeric)
+            execute<int>();
+        else
+            execute<std::string>();
+    }
 
     return 0;
 }

@@ -51,7 +51,7 @@ int test_main(int argc, char* argv[]) {
     /** Sketch transform rowwise (rw) */
     size = width;
     skylark::base::context_t context_rw(0);
-    output_matrix_t sketched_A_rw(height, sketch_size);
+    output_matrix_t sketched_A_rw(height, sketch_size, grid);
     sketch_transform_t sketch_transform_rw(size, sketch_size, context_rw);
     sketch_transform_rw.apply(A, sketched_A_rw,
         skylark::sketch::rowwise_tag());
@@ -77,7 +77,7 @@ int test_main(int argc, char* argv[]) {
     /** Sketch transform columnwise (cw) */
     size = height;
     skylark::base::context_t context_cw(0);
-    output_matrix_t sketched_A_cw(sketch_size, width);
+    output_matrix_t sketched_A_cw(sketch_size, width, grid);
     sketch_transform_t sketch_transform_cw(size, sketch_size, context_cw);
     sketch_transform_cw.apply(A, sketched_A_cw,
         skylark::sketch::columnwise_tag());

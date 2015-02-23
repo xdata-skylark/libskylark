@@ -129,7 +129,7 @@ so the solution&#8217;s accuracy is close to the full accuracy possible on a mac
 <dt>The algorithm used is the one described in:</dt>
 <dd><ul class="first last">
 <li><div class="first line-block">
-<div class="line">Haim Avron, Petar Maymounkov, and Sivan Toledo</div>
+<div class="line">H. Avron, P. Maymounkov, and S. Toledo</div>
 <div class="line"><a class="reference external" href="http://epubs.siam.org/doi/abs/10.1137/090767911">Blendenpik: Supercharging LAPACK&#8217;s Least-Squares Solver</a></div>
 <div class="line">SIAM Journal on Scientific Computing 32(3), 1217-1236, 2010</div>
 </div>
@@ -246,6 +246,36 @@ and an optimization flag (skip_qr) to skip a step in the algorithm.</p>
 U, S and V. Currently, the matrix types are Elemental MC/MR or El::Matrix types.</p>
 <p>For a running example, please see <em>libskylark/examples/rand_svd.cpp</em>.</p>
 </div>
+</div>
+<div class="section" id="condition-number-estimation">
+<h2>Condition Number Estimation<a class="headerlink" href="#condition-number-estimation" title="Permalink to this headline">¶</a></h2>
+<p>Estimate the condition number of a matrix using a low-memory iterative method. Only
+the ability to multiply the matrix by a vector, and its transpose by a vector is
+required. No factorization is involved, so can estimate the condition number of very
+large and unstructured matrices.</p>
+<dl class="docutils">
+<dt>The algorithm used is the one described in:</dt>
+<dd><ul class="first last">
+<li><div class="first line-block">
+<div class="line">H. Avron, A. Durinsky, and S. Toledo</div>
+<div class="line">&#8216;Spectral Condition-Number Estimation of Large Sparse Matrices &lt;<a class="reference external" href="http://arxiv.org/pdf/1301.1107v3.pdf">http://arxiv.org/pdf/1301.1107v3.pdf</a>&gt;`_</div>
+</div>
+</li>
+</ul>
+</dd>
+</dl>
+<dl class="function">
+<dt id="_CPP7CondEstRK10MatrixTypeRdRdR9RightTypeR8LeftTypeRdRdR9RightTypeR8LeftTypeRN4base9context_tE16condest_params_t">
+int <code class="descclassname"></code><code class="descname">CondEst</code><span class="sig-paren">(</span><em class="property">const</em> MatrixType &amp;<em>A</em>, double &amp;<em>cond</em>, double &amp;<em>sigma_max</em>, RightType &amp;<em>v_max</em>, LeftType &amp;<em>u_max</em>, double &amp;<em>sigma_min</em>, double &amp;<em>sigma_min_c</em>, RightType &amp;<em>v_min</em>, LeftType &amp;<em>u_min</em>, base::context_t &amp;<em>context</em>, condest_params_t <em>params</em> = condest_params_t()<span class="sig-paren">)</span><a class="headerlink" href="#_CPP7CondEstRK10MatrixTypeRdRdR9RightTypeR8LeftTypeRdRdR9RightTypeR8LeftTypeRN4base9context_tE16condest_params_t" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate the condition number of <img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/>: estimate the largest and smallest
+singular value. The estimate of the largest is highly accurate, and the
+estimate of the lowest is typically a  not-too-bad upper bound. Returns also
+certificate left and right vectors. For the
+smallest singular vector, two estimates are returned: one with a certificate, and
+one that is potentially (but not always) smaller but without certificate (it will
+never be bigger than the estimate with certificate).</p>
+</dd></dl>
+
 </div>
 </div>
 

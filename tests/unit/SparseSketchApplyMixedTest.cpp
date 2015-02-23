@@ -163,7 +163,7 @@ int test_main(int argc, char *argv[]) {
             local_A.Set(j, i, count++);
 
 
-    El::DistMatrix<double, El::STAR, El::STAR> result;
+    El::DistMatrix<double, El::STAR, El::STAR> result(grid);
 
     // columnwise application
     DistMatrixType expected_A;

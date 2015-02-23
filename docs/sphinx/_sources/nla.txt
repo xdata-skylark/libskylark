@@ -200,7 +200,7 @@ large and unstructured matrices.
 
 The algorithm used is the one described in:
  * | H. Avron, A. Durinsky, and S. Toledo
-   | 'Spectral Condition-Number Estimation of Large Sparse Matrices <http://arxiv.org/pdf/1301.1107v3.pdf>`_
+   | `Spectral Condition-Number Estimation of Large Sparse Matrices <http://arxiv.org/pdf/1301.1107v3.pdf>`_
 
 .. cpp:function:: int CondEst(const MatrixType& A, double &cond, double &sigma_max, RightType &v_max, LeftType &u_max, double &sigma_min, double &sigma_min_c, RightType &v_min, LeftType &u_min, base::context_t &context, condest_params_t params = condest_params_t())
 

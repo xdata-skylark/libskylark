@@ -88,7 +88,7 @@ of an iterative method), the threshold is set close to machine precision
 so the solution's accuracy is close to the full accuracy possible on a machine.
 
 The algorithm used is the one described in:
- * | Haim Avron, Petar Maymounkov, and Sivan Toledo
+ * | H. Avron, P. Maymounkov, and S. Toledo
    | `Blendenpik: Supercharging LAPACK's Least-Squares Solver <http://epubs.siam.org/doi/abs/10.1137/090767911>`_
    | SIAM Journal on Scientific Computing 32(3), 1217-1236, 2010
 
@@ -190,5 +190,24 @@ U, S and V. Currently, the matrix types are Elemental MC/MR or El::Matrix types.
 
 For a running example, please see *libskylark/examples/rand_svd.cpp*.
 
+Condition Number Estimation
+===========================
 
+Estimate the condition number of a matrix using a low-memory iterative method. Only
+the ability to multiply the matrix by a vector, and its transpose by a vector is
+required. No factorization is involved, so can estimate the condition number of very
+large and unstructured matrices.
 
+The algorithm used is the one described in:
+ * | H. Avron, A. Durinsky, and S. Toledo
+   | 'Spectral Condition-Number Estimation of Large Sparse Matrices <http://arxiv.org/pdf/1301.1107v3.pdf>`_
+
+.. cpp:function:: int CondEst(const MatrixType& A, double &cond, double &sigma_max, RightType &v_max, LeftType &u_max, double &sigma_min, double &sigma_min_c, RightType &v_min, LeftType &u_min, base::context_t &context, condest_params_t params = condest_params_t())
+
+   Estimate the condition number of :math:`A`: estimate the largest and smallest 
+   singular value. The estimate of the largest is highly accurate, and the 
+   estimate of the lowest is typically a  not-too-bad upper bound. Returns also  
+   certificate left and right vectors. For the 
+   smallest singular vector, two estimates are returned: one with a certificate, and 
+   one that is potentially (but not always) smaller but without certificate (it will 
+   never be bigger than the estimate with certificate).

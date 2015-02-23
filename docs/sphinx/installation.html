@@ -195,7 +195,7 @@ such as ODEPACK, QUADPACK, and MINPACK).</p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p>Elemental-0.83 requires a NumPy version &gt;= 1.7. On Ubuntu Precise the deb sources only contain version 1.6.x. To upgrade use either:</p>
+<p>Elemental-0.85 requires a NumPy version &gt;= 1.7. On Ubuntu Precise the deb sources only contain version 1.6.x. To upgrade use either:</p>
 <div class="highlight-rst"><div class="highlight"><pre>wget https://launchpad.net/~tukss/+archive/ppa/+build/4055943/+files/python-numpy_1.7.0~b2-1~precise1_amd64.deb
 sudo dpkg -i python-numpy_1.7.0~b2-1~precise1_amd64.deb
 </pre></div>
@@ -281,26 +281,28 @@ segfault in the compiler for some packages (e.g. <strong class="command">program
 see <a class="reference external" href="http://www-01.ibm.com/support/docview.wss?uid=swg1LI77249">http://www-01.ibm.com/support/docview.wss?uid=swg1LI77249</a>.</p>
 </div>
 </div>
-<div class="section" id="elemental-0-83">
-<h3>Elemental 0.83<a class="headerlink" href="#elemental-0-83" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="elemental-0-86">
+<h3>Elemental 0.86<a class="headerlink" href="#elemental-0-86" title="Permalink to this headline">¶</a></h3>
 <p>Elemental is a framework for distributed-memory dense linear algebra that
 strives to be both fast and convenient. It combines ideas including:
-element-wise matrix distributions ( Hendrickson et al.), object-oriented
-submatrix tracking ( FLAME, van de Geijn et al.), and first-class matrix
-distributions ( PLAPACK, van de Geijn et al.).</p>
-<p>We support version 0.83. Elemental&#8217;s API is a moving target, so new version
-might not work as-is. In order to build the Swig bindings you need a NumPy
-version &gt;= 1.7 (see NumPy installation above) and the Swig toolchain</p>
-<div class="highlight-rst"><div class="highlight"><pre>sudo apt-get install swig
-</pre></div>
+element-wise matrix distributions (Hendrickson et al.), object-oriented
+submatrix tracking (FLAME, van de Geijn et al.), and first-class matrix
+distributions (PLAPACK, van de Geijn et al.).</p>
+<p>We support version 0.86. Elemental&#8217;s API is a moving target, so newer versions
+might not work as-is.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Currently version 0.86 is not officially released yet. Please,
+checkout and build the github version (see
+<a class="reference external" href="https://github.com/elemental/Elemental">https://github.com/elemental/Elemental</a>).</p>
 </div>
 <p><em>Installation: (make sure to use a compiler with c++11 support)</em></p>
-<div class="highlight-rst"><div class="highlight"><pre>wget http://libelemental.org/pub/releases/elemental-0.83.tgz
-tar xvfz elemental-0.83.tgz
-cd elemental-0.83/
+<div class="highlight-rst"><div class="highlight"><pre>wget http://libelemental.org/pub/releases/Elemental-0.86.tgz
+tar xvfz Elemental-0.86.tgz
+cd Elemental-0.86/
 mkdir build
 cd build
-cmake -D USE_SWIG=ON ..
+cmake ..
 make
 sudo make install
 </pre></div>
@@ -309,9 +311,7 @@ sudo make install
 <p>If you want to use non-default math libraries specify the <code class="docutils literal"><span class="pre">MATH_LIBS</span></code>
 variable.
 For example for OpenBLAS, run cmake along the following lines:</p>
-<div class="highlight-rst"><div class="highlight"><pre>cmake -D CMAKE_INSTALL_PREFIX=$HOME/software/elemental-0.81/install \
-   -D MATH_LIBS=&quot;$HOME/software/xianyi-OpenBLAS-9c51cdf/libopenblas.so;-lm&quot; \
-   -D SHARED_LIBRARIES=ON -D CMAKE_BUILD_TYPE=HybridRelease -D ELEM_EXAMPLES=ON ..
+<div class="highlight-rst"><div class="highlight"><pre>cmake -D MATH_LIBS=&quot;-L/usr/local/lib -llapack -lopenblas -lm&quot; ..
 </pre></div>
 </div>
 <div class="admonition note">
@@ -319,24 +319,6 @@ For example for OpenBLAS, run cmake along the following lines:</p>
 <p class="last">Note that the cmake comamnd above may require additional options for
 non-standard Python installations, e.g. Anaconda,
 <code class="docutils literal"><span class="pre">-D</span>&nbsp; <span class="pre">PYTHON_LIBRARY=/path/to/libpython2.7.so</span>&nbsp; <span class="pre">-D</span> <span class="pre">PYTHON_INCLUDE_DIR=/path/to/include/python2.7</span></code></p>
-</div>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">Swig needs &gt; 1024 MB of memory otherwise the compiler crashes while
-generating the Swig Python interface (make sure to have enough memory available
-if you compile in a VM and increase if the compiler crashes).</p>
-</div>
-<p>This installs the main Elemental library. However, we still need to install the Python interface:</p>
-<div class="highlight-rst"><div class="highlight"><pre>sudo cp *.py /usr/local/lib/python2.7/dist-packages/
-sudo cp _*.so /usr/local/lib/python2.7/dist-packages/
-</pre></div>
-</div>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">The location of the python library changes between versions of Ubuntu, and
-obviously across distributions. In case you do not want to copy the python
-interface around, append the build directory to the <span class="target" id="index-2"></span><code class="xref std std-envvar docutils literal"><span class="pre">$PYTHONPATH</span></code>
-environment variable.</p>
 </div>
 </div>
 <div class="section" id="combinatorial-blas-combblas-1-4">
@@ -355,7 +337,7 @@ make
 </div>
 <p><em>Shared Libs</em></p>
 <p>In order to use libSkylark through Python, make sure to compile and append the
-directory containing the <code class="docutils literal"><span class="pre">*.so</span></code> files to your <span class="target" id="index-3"></span><code class="xref std std-envvar docutils literal"><span class="pre">LD_LIBRARY_PATH</span></code>.</p>
+directory containing the <code class="docutils literal"><span class="pre">*.so</span></code> files to your <span class="target" id="index-2"></span><code class="xref std std-envvar docutils literal"><span class="pre">LD_LIBRARY_PATH</span></code>.</p>
 <div class="highlight-rst"><div class="highlight"><pre>cd CombBLAS/
 rm CMakeCache.txt
 cmake -DBUILD_SHARED_LIBS:BOOL=ON .
@@ -457,19 +439,33 @@ may overwrite the compiler specified in the CXX flag.</p>
 </div>
 <p>In case you have a more specific setup or this does not work on your
 machine continue reading the next sections.</p>
+<div class="section" id="python-only-user-level-installation">
+<h3>Python only user-level installation<a class="headerlink" href="#python-only-user-level-installation" title="Permalink to this headline">¶</a></h3>
+<p>In case you do not have root access, and are satisfied with an Python only
+installation, you can install the Python package only at user-level.</p>
+<div class="highlight-rst"><div class="highlight"><pre>cd $BUILD_DIR
+CC=mpicc CXX=mpicxx cmake $SRC_DIR
+make
+cd python-skylark
+python ./setup.py install --user
+</pre></div>
+</div>
+<p>The Python package will be installed under <code class="file docutils literal"><span class="pre">~/.local</span></code>. The directory <code class="file docutils literal"><span class="pre">~/.local/lib</span></code> should
+be in the library load path for the installation to function properly.</p>
+</div>
 <div class="section" id="directory-setup">
 <h3>Directory setup<a class="headerlink" href="#directory-setup" title="Permalink to this headline">¶</a></h3>
 <p>For the rest of this section let&#8217;s keep the following conventions:</p>
 <blockquote>
 <div><ul>
-<li><p class="first">the source code is checked out and <span class="target" id="index-4"></span><code class="xref std std-envvar docutils literal"><span class="pre">$SRC_DIR</span></code> points to the base directory in the libSkylark repository, e.g.</p>
+<li><p class="first">the source code is checked out and <span class="target" id="index-3"></span><code class="xref std std-envvar docutils literal"><span class="pre">$SRC_DIR</span></code> points to the base directory in the libSkylark repository, e.g.</p>
 <blockquote>
 <div><div class="highlight-rst"><div class="highlight"><pre>export SRC_DIR=/home/user/workspace/libskylark
 </pre></div>
 </div>
 </div></blockquote>
 </li>
-<li><p class="first">you created a <strong>separate</strong> (do not build in the $SRC_DIR$) build directory <span class="target" id="index-5"></span><code class="xref std std-envvar docutils literal"><span class="pre">$BUILD_DIR</span></code> that is used to generate object files, libraries and executables, e.g.</p>
+<li><p class="first">you created a <strong>separate</strong> (do not build in the $SRC_DIR$) build directory <span class="target" id="index-4"></span><code class="xref std std-envvar docutils literal"><span class="pre">$BUILD_DIR</span></code> that is used to generate object files, libraries and executables, e.g.</p>
 <blockquote>
 <div><div class="highlight-rst"><div class="highlight"><pre>export BUILD_DIR=/home/user/build/libskylark
 </pre></div>
@@ -558,7 +554,7 @@ where <code class="docutils literal"><span class="pre">STRING</span></code> is a
 <blockquote>
 <div><ul class="simple">
 <li>the CMake parameter <code class="docutils literal"><span class="pre">CMAKE_INSTALL_PREFIX</span></code> (i.e. pass <code class="docutils literal"><span class="pre">-DCMAKE_INSTALL_PREFIX=/home/user/software</span></code> when calling <strong class="command">cmake</strong>), and</li>
-<li>the environment variable <span class="target" id="index-6"></span><code class="xref std std-envvar docutils literal"><span class="pre">$PYTHON_SITE_PACKAGES</span></code> to determine the installation location for python packages. Don&#8217;t forget to adapt the <span class="target" id="index-7"></span><code class="xref std std-envvar docutils literal"><span class="pre">$PYTHONPATH</span></code> environment variable as well. Example: If <span class="target" id="index-8"></span><code class="xref std std-envvar docutils literal"><span class="pre">$PYTHON_SITE_PACKAGES</span></code> is set to <code class="file docutils literal"><span class="pre">/home/user/local</span></code>, CMake will install the Python bindings under <code class="file docutils literal"><span class="pre">/home/user/local/lib/python2.7/site-packages/skylark</span></code>. At this point, you will have to append <span class="target" id="index-9"></span><code class="xref std std-envvar docutils literal"><span class="pre">$PYTHONPATH</span></code> with <code class="file docutils literal"><span class="pre">/home/user/local/lib/python2.7/site-packages</span></code>!</li>
+<li>the environment variable <span class="target" id="index-5"></span><code class="xref std std-envvar docutils literal"><span class="pre">$PYTHON_SITE_PACKAGES</span></code> to determine the installation location for python packages. Don&#8217;t forget to adapt the <span class="target" id="index-6"></span><code class="xref std std-envvar docutils literal"><span class="pre">$PYTHONPATH</span></code> environment variable as well. Example: If <span class="target" id="index-7"></span><code class="xref std std-envvar docutils literal"><span class="pre">$PYTHON_SITE_PACKAGES</span></code> is set to <code class="file docutils literal"><span class="pre">/home/user/local</span></code>, CMake will install the Python bindings under <code class="file docutils literal"><span class="pre">/home/user/local/lib/python2.7/site-packages/skylark</span></code>. At this point, you will have to append <span class="target" id="index-8"></span><code class="xref std std-envvar docutils literal"><span class="pre">$PYTHONPATH</span></code> with <code class="file docutils literal"><span class="pre">/home/user/local/lib/python2.7/site-packages</span></code>!</li>
 </ul>
 </div></blockquote>
 <p>To help CMake to locate installed dependencies (system-wide installed dependencies should be found automatically), you should set the following environment variables:</p>
@@ -574,22 +570,22 @@ where <code class="docutils literal"><span class="pre">STRING</span></code> is a
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>ELEMENTAL_ROOT</td>
-<td>Looks for headers in <span class="target" id="index-10"></span><code class="xref std std-envvar docutils literal"><span class="pre">$ELEMENTAL_ROOT</span></code>/include and libs in <span class="target" id="index-11"></span><code class="xref std std-envvar docutils literal"><span class="pre">$ELEMENTAL_ROOT</span></code>/lib</td>
+<td>Looks for headers in <span class="target" id="index-9"></span><code class="xref std std-envvar docutils literal"><span class="pre">$ELEMENTAL_ROOT</span></code>/include and libs in <span class="target" id="index-10"></span><code class="xref std std-envvar docutils literal"><span class="pre">$ELEMENTAL_ROOT</span></code>/lib</td>
 </tr>
 <tr class="row-odd"><td>COMBBLAS_ROOT</td>
-<td>Looks for headers in <span class="target" id="index-12"></span><code class="xref std std-envvar docutils literal"><span class="pre">$COMBBLAS_ROOT</span></code>/ and libs in <span class="target" id="index-13"></span><code class="xref std std-envvar docutils literal"><span class="pre">$COMBBLAS_ROOT</span></code>/lib</td>
+<td>Looks for headers in <span class="target" id="index-11"></span><code class="xref std std-envvar docutils literal"><span class="pre">$COMBBLAS_ROOT</span></code>/ and libs in <span class="target" id="index-12"></span><code class="xref std std-envvar docutils literal"><span class="pre">$COMBBLAS_ROOT</span></code>/lib</td>
 </tr>
 <tr class="row-even"><td>FTW_ROOT</td>
-<td>Looks for headers in <span class="target" id="index-14"></span><code class="xref std std-envvar docutils literal"><span class="pre">$FFTW_ROOT</span></code>/include and libs in <span class="target" id="index-15"></span><code class="xref std std-envvar docutils literal"><span class="pre">$FFTW_ROOT</span></code>/lib</td>
+<td>Looks for headers in <span class="target" id="index-13"></span><code class="xref std std-envvar docutils literal"><span class="pre">$FFTW_ROOT</span></code>/include and libs in <span class="target" id="index-14"></span><code class="xref std std-envvar docutils literal"><span class="pre">$FFTW_ROOT</span></code>/lib</td>
 </tr>
 <tr class="row-odd"><td>BOOST_ROOT</td>
 <td>For non system-wide boost installations</td>
 </tr>
 <tr class="row-even"><td>RANDOM123_ROOT</td>
-<td>Looks for headers in <span class="target" id="index-16"></span><code class="xref std std-envvar docutils literal"><span class="pre">$RANDOM_123_ROOT</span></code>/include</td>
+<td>Looks for headers in <span class="target" id="index-15"></span><code class="xref std std-envvar docutils literal"><span class="pre">$RANDOM_123_ROOT</span></code>/include</td>
 </tr>
 <tr class="row-odd"><td>HDF5_ROOT</td>
-<td>Looks for headers in <span class="target" id="index-17"></span><code class="xref std std-envvar docutils literal"><span class="pre">$HDF5_ROOT</span></code>/include and libs in <span class="target" id="index-18"></span><code class="xref std std-envvar docutils literal"><span class="pre">$HDF5_ROOT</span></code>/lib</td>
+<td>Looks for headers in <span class="target" id="index-16"></span><code class="xref std std-envvar docutils literal"><span class="pre">$HDF5_ROOT</span></code>/include and libs in <span class="target" id="index-17"></span><code class="xref std std-envvar docutils literal"><span class="pre">$HDF5_ROOT</span></code>/lib</td>
 </tr>
 </tbody>
 </table>
@@ -623,7 +619,7 @@ make
 make install
 </pre></div>
 </div>
-<p>Notice that we set the <span class="target" id="index-19"></span><code class="xref std std-envvar docutils literal"><span class="pre">PYTHON_SITE_PACKAGES</span></code> and passed a
+<p>Notice that we set the <span class="target" id="index-18"></span><code class="xref std std-envvar docutils literal"><span class="pre">PYTHON_SITE_PACKAGES</span></code> and passed a
 <code class="docutils literal"><span class="pre">CMAKE_INSTALL_PREFIX</span></code> to the <strong class="command">cmake</strong> command above. Additionally we
 enabled CombBLAS support. Note that you have to make sure that the required
 libraries are compiled and the environment variables correctly point to the
@@ -691,7 +687,7 @@ The elemental.cpp shows how C++ code can utilize libSkylark. Run</p>
 <div class="highlight-rst"><div class="highlight"><pre>examples/elemental -help
 </pre></div>
 </div>
-<p>in the <span class="target" id="index-20"></span><code class="xref std std-envvar docutils literal"><span class="pre">$BUILD_DIR</span></code> to get a list of available command line options.</p>
+<p>in the <span class="target" id="index-19"></span><code class="xref std std-envvar docutils literal"><span class="pre">$BUILD_DIR</span></code> to get a list of available command line options.</p>
 </div>
 <div class="section" id="linking-against-libskylark">
 <h3>Linking against libSkylark<a class="headerlink" href="#linking-against-libskylark" title="Permalink to this headline">¶</a></h3>

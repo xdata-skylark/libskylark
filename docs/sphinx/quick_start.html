@@ -417,7 +417,7 @@ sketching. Below, three types of sketches are illustrated in the highlighted lin
 <span class="cp">#include &lt;utility&gt;</span>
 <span class="cp">#include &lt;ext/hash_map&gt;</span>
 
-<span class="cp">#include &lt;elemental.hpp&gt;</span>
+<span class="cp">#include &lt;El.hpp&gt;</span>
 <span class="cp">#include &lt;boost/mpi.hpp&gt;</span>
 <span class="cp">#include &lt;skylark.hpp&gt;</span>
 
@@ -437,12 +437,12 @@ sketching. Below, three types of sketches are illustrated in the highlighted lin
 <span class="cm">/** Typedef DistMatrix and Matrix */</span>
 <span class="k">typedef</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">IntContainer</span><span class="p">;</span>
 <span class="k">typedef</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="n">DblContainer</span><span class="p">;</span>
-<span class="k">typedef</span> <span class="n">elem</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">CIRC</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">CIRC</span><span class="o">&gt;</span> <span class="n">MatrixType</span><span class="p">;</span>
-<span class="k">typedef</span> <span class="n">elem</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">VC</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="n">DistMatrixType</span><span class="p">;</span>
+<span class="k">typedef</span> <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">CIRC</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">CIRC</span><span class="o">&gt;</span> <span class="n">MatrixType</span><span class="p">;</span>
+<span class="k">typedef</span> <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">VC</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="n">DistMatrixType</span><span class="p">;</span>
 
 <span class="kt">int</span> <span class="nf">main</span> <span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">**</span> <span class="n">argv</span><span class="p">)</span> <span class="p">{</span>
     <span class="cm">/* Initialize Elemental */</span>
-    <span class="n">elem</span><span class="o">::</span><span class="n">Initialize</span> <span class="p">(</span><span class="n">argc</span><span class="p">,</span> <span class="n">argv</span><span class="p">);</span>
+    <span class="n">El</span><span class="o">::</span><span class="n">Initialize</span> <span class="p">(</span><span class="n">argc</span><span class="p">,</span> <span class="n">argv</span><span class="p">);</span>
 
     <span class="cm">/* MPI sends argc and argv everywhere --- parse everywhere */</span>
     <span class="n">parse_parameters</span> <span class="p">(</span><span class="n">argc</span><span class="p">,</span><span class="n">argv</span><span class="p">);</span>
@@ -453,17 +453,17 @@ sketching. Below, three types of sketches are illustrated in the highlighted lin
     <span class="cm">/* Create matrices A and B */</span>
     <span class="n">bmpi</span><span class="o">::</span><span class="n">communicator</span> <span class="n">world</span><span class="p">;</span>
     <span class="n">MPI_Comm</span> <span class="n">mpi_world</span><span class="p">(</span><span class="n">world</span><span class="p">);</span>
-    <span class="n">elem</span><span class="o">::</span><span class="n">Grid</span> <span class="n">grid</span> <span class="p">(</span><span class="n">mpi_world</span><span class="p">);</span>
-    <span class="n">elem</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">VR</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="n">A</span><span class="p">(</span><span class="n">grid</span><span class="p">);</span>
-    <span class="n">elem</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">VR</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="n">B</span><span class="p">(</span><span class="n">grid</span><span class="p">);</span>
+    <span class="n">El</span><span class="o">::</span><span class="n">Grid</span> <span class="n">grid</span> <span class="p">(</span><span class="n">mpi_world</span><span class="p">);</span>
+    <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">VR</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="n">A</span><span class="p">(</span><span class="n">grid</span><span class="p">);</span>
+    <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">VR</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="n">B</span><span class="p">(</span><span class="n">grid</span><span class="p">);</span>
 
     <span class="cm">/** Only randomization is supported for now */</span>
     <span class="k">if</span> <span class="p">(</span><span class="mi">0</span><span class="o">==</span><span class="n">int_params</span><span class="p">[</span><span class="n">USE_RANDOM_INDEX</span><span class="p">])</span> <span class="p">{</span>
         <span class="cm">/** TODO: Read the entries! */</span>
         <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;We don&#39;t support reading --- yet --&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
     <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-        <span class="n">elem</span><span class="o">::</span><span class="n">Uniform</span> <span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">int_params</span><span class="p">[</span><span class="n">M_INDEX</span><span class="p">],</span> <span class="n">int_params</span><span class="p">[</span><span class="n">N_INDEX</span><span class="p">]);</span>
-        <span class="n">elem</span><span class="o">::</span><span class="n">Uniform</span> <span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">int_params</span><span class="p">[</span><span class="n">M_INDEX</span><span class="p">],</span> <span class="n">int_params</span><span class="p">[</span><span class="n">N_RHS_INDEX</span><span class="p">]);</span>
+        <span class="n">El</span><span class="o">::</span><span class="n">Uniform</span> <span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">int_params</span><span class="p">[</span><span class="n">M_INDEX</span><span class="p">],</span> <span class="n">int_params</span><span class="p">[</span><span class="n">N_INDEX</span><span class="p">]);</span>
+        <span class="n">El</span><span class="o">::</span><span class="n">Uniform</span> <span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">int_params</span><span class="p">[</span><span class="n">M_INDEX</span><span class="p">],</span> <span class="n">int_params</span><span class="p">[</span><span class="n">N_RHS_INDEX</span><span class="p">]);</span>
     <span class="p">}</span>
 
     <span class="cm">/**</span>
@@ -495,7 +495,7 @@ sketching. Below, three types of sketches are illustrated in the highlighted lin
             <span class="cm">/* 4. Print and see the result (if small enough) */</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">int_params</span><span class="p">[</span><span class="n">S_INDEX</span><span class="p">]</span> <span class="o">*</span> <span class="n">int_params</span><span class="p">[</span><span class="n">N_INDEX</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">100</span> <span class="o">&amp;&amp;</span>
                 <span class="n">world</span><span class="p">.</span><span class="n">rank</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
-                <span class="n">elem</span><span class="o">::</span><span class="n">Display</span><span class="p">(</span><span class="n">sketch_A</span><span class="p">);</span>
+                <span class="n">El</span><span class="o">::</span><span class="n">Display</span><span class="p">(</span><span class="n">sketch_A</span><span class="p">);</span>
 
             <span class="cm">/** TODO: Do that same to B, and solve the system! */</span>
 
@@ -517,7 +517,7 @@ sketching. Below, three types of sketches are illustrated in the highlighted lin
             <span class="cm">/* 4. Print and see the result */</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">int_params</span><span class="p">[</span><span class="n">S_INDEX</span><span class="p">]</span> <span class="o">*</span> <span class="n">int_params</span><span class="p">[</span><span class="n">M_INDEX</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">100</span> <span class="o">&amp;&amp;</span>
                 <span class="n">world</span><span class="p">.</span><span class="n">rank</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
-                <span class="n">elem</span><span class="o">::</span><span class="n">Display</span><span class="p">(</span><span class="n">sketch_A</span><span class="p">);</span>
+                <span class="n">El</span><span class="o">::</span><span class="n">Display</span><span class="p">(</span><span class="n">sketch_A</span><span class="p">);</span>
 
             <span class="cm">/** TODO: Do that same to B, and solve the system! */</span>
 
@@ -542,7 +542,7 @@ sketching. Below, three types of sketches are illustrated in the highlighted lin
             <span class="cm">/* 4. Print and see the result */</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">int_params</span><span class="p">[</span><span class="n">S_INDEX</span><span class="p">]</span> <span class="o">*</span> <span class="n">int_params</span><span class="p">[</span><span class="n">M_INDEX</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">100</span> <span class="o">&amp;&amp;</span>
                 <span class="n">world</span><span class="p">.</span><span class="n">rank</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
-                <span class="n">elem</span><span class="o">::</span><span class="n">Display</span><span class="p">(</span><span class="n">sketch_A</span><span class="p">);</span>
+                <span class="n">El</span><span class="o">::</span><span class="n">Display</span><span class="p">(</span><span class="n">sketch_A</span><span class="p">);</span>
 
             <span class="cm">/** TODO: Do that same to B, and solve the system! */</span>
 
@@ -553,7 +553,7 @@ sketching. Below, three types of sketches are illustrated in the highlighted lin
             <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
     <span class="p">}</span>
 
-    <span class="n">elem</span><span class="o">::</span><span class="n">Finalize</span><span class="p">();</span>
+    <span class="n">El</span><span class="o">::</span><span class="n">Finalize</span><span class="p">();</span>
 
     <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
 
@@ -693,7 +693,7 @@ preconditioner to obtain high-precision solutions faster.</p>
 114
 115</pre></div></td><td class="code"><div class="highlight"><pre><span class="cp">#include &lt;iostream&gt;</span>
 
-<span class="cp">#include &lt;elemental.hpp&gt;</span>
+<span class="cp">#include &lt;El.hpp&gt;</span>
 <span class="cp">#include &lt;boost/mpi.hpp&gt;</span>
 <span class="cp">#include &lt;boost/format.hpp&gt;</span>
 <span class="cp">#include &lt;skylark.hpp&gt;</span>
@@ -710,20 +710,20 @@ preconditioner to obtain high-precision solutions faster.</p>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">m</span> <span class="o">=</span> <span class="mi">50000</span><span class="p">;</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">n</span> <span class="o">=</span> <span class="mi">500</span><span class="p">;</span>
 
-<span class="k">typedef</span> <span class="n">elem</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">VC</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="n">matrix_type</span><span class="p">;</span>
-<span class="k">typedef</span> <span class="n">elem</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">VC</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="n">rhs_type</span><span class="p">;</span>
-<span class="k">typedef</span> <span class="n">elem</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">STAR</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="n">sol_type</span><span class="p">;</span>
+<span class="k">typedef</span> <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">VC</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="n">matrix_type</span><span class="p">;</span>
+<span class="k">typedef</span> <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">VC</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="n">rhs_type</span><span class="p">;</span>
+<span class="k">typedef</span> <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">STAR</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="n">sol_type</span><span class="p">;</span>
 
 <span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">MatrixType</span><span class="p">,</span> <span class="k">typename</span> <span class="n">RhsType</span><span class="p">,</span> <span class="k">typename</span> <span class="n">SolType</span><span class="o">&gt;</span>
 <span class="kt">void</span> <span class="n">check_solution</span><span class="p">(</span><span class="k">const</span> <span class="n">MatrixType</span> <span class="o">&amp;</span><span class="n">A</span><span class="p">,</span> <span class="k">const</span> <span class="n">RhsType</span> <span class="o">&amp;</span><span class="n">b</span><span class="p">,</span> <span class="k">const</span> <span class="n">SolType</span> <span class="o">&amp;</span><span class="n">x</span><span class="p">,</span> 
     <span class="k">const</span> <span class="n">RhsType</span> <span class="o">&amp;</span><span class="n">r0</span><span class="p">,</span>
     <span class="kt">double</span> <span class="o">&amp;</span><span class="n">res</span><span class="p">,</span> <span class="kt">double</span> <span class="o">&amp;</span><span class="n">resAtr</span><span class="p">,</span> <span class="kt">double</span> <span class="o">&amp;</span><span class="n">resFac</span><span class="p">)</span> <span class="p">{</span>
     <span class="n">RhsType</span> <span class="n">r</span><span class="p">(</span><span class="n">b</span><span class="p">);</span>
-    <span class="n">skybase</span><span class="o">::</span><span class="n">Gemv</span><span class="p">(</span><span class="n">elem</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">r</span><span class="p">);</span>
+    <span class="n">skybase</span><span class="o">::</span><span class="n">Gemv</span><span class="p">(</span><span class="n">El</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">r</span><span class="p">);</span>
     <span class="n">res</span> <span class="o">=</span> <span class="n">skybase</span><span class="o">::</span><span class="n">Nrm2</span><span class="p">(</span><span class="n">r</span><span class="p">);</span>
 
     <span class="n">SolType</span> <span class="nf">Atr</span><span class="p">(</span><span class="n">x</span><span class="p">.</span><span class="n">Height</span><span class="p">(),</span> <span class="n">x</span><span class="p">.</span><span class="n">Width</span><span class="p">(),</span> <span class="n">x</span><span class="p">.</span><span class="n">Grid</span><span class="p">());</span>
-    <span class="n">skybase</span><span class="o">::</span><span class="n">Gemv</span><span class="p">(</span><span class="n">elem</span><span class="o">::</span><span class="n">TRANSPOSE</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">Atr</span><span class="p">);</span>
+    <span class="n">skybase</span><span class="o">::</span><span class="n">Gemv</span><span class="p">(</span><span class="n">El</span><span class="o">::</span><span class="n">TRANSPOSE</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">Atr</span><span class="p">);</span>
     <span class="n">resAtr</span> <span class="o">=</span> <span class="n">skybase</span><span class="o">::</span><span class="n">Nrm2</span><span class="p">(</span><span class="n">Atr</span><span class="p">);</span>
 
     <span class="n">skybase</span><span class="o">::</span><span class="n">Axpy</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">r0</span><span class="p">,</span> <span class="n">r</span><span class="p">);</span>
@@ -735,7 +735,7 @@ preconditioner to obtain high-precision solutions faster.</p>
 <span class="kt">int</span> <span class="n">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">**</span> <span class="n">argv</span><span class="p">)</span> <span class="p">{</span>
     <span class="kt">double</span> <span class="n">res</span><span class="p">,</span> <span class="n">resAtr</span><span class="p">,</span> <span class="n">resFac</span><span class="p">;</span>
 
-    <span class="n">elem</span><span class="o">::</span><span class="n">Initialize</span><span class="p">(</span><span class="n">argc</span><span class="p">,</span> <span class="n">argv</span><span class="p">);</span>
+    <span class="n">El</span><span class="o">::</span><span class="n">Initialize</span><span class="p">(</span><span class="n">argc</span><span class="p">,</span> <span class="n">argv</span><span class="p">);</span>
 
     <span class="n">bmpi</span><span class="o">::</span><span class="n">communicator</span> <span class="n">world</span><span class="p">;</span>
     <span class="kt">int</span> <span class="n">rank</span> <span class="o">=</span> <span class="n">world</span><span class="p">.</span><span class="n">rank</span><span class="p">();</span>
@@ -748,10 +748,10 @@ preconditioner to obtain high-precision solutions faster.</p>
     <span class="c1">// of processors.</span>
     <span class="n">matrix_type</span> <span class="n">A</span> <span class="o">=</span>
         <span class="n">skyutil</span><span class="o">::</span><span class="kt">uniform_matrix_t</span><span class="o">&lt;</span><span class="n">matrix_type</span><span class="o">&gt;::</span><span class="n">generate</span><span class="p">(</span><span class="n">m</span><span class="p">,</span>
-            <span class="n">n</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">DefaultGrid</span><span class="p">(),</span> <span class="n">context</span><span class="p">);</span>
+            <span class="n">n</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">DefaultGrid</span><span class="p">(),</span> <span class="n">context</span><span class="p">);</span>
     <span class="n">matrix_type</span> <span class="n">b</span> <span class="o">=</span>
         <span class="n">skyutil</span><span class="o">::</span><span class="kt">uniform_matrix_t</span><span class="o">&lt;</span><span class="n">matrix_type</span><span class="o">&gt;::</span><span class="n">generate</span><span class="p">(</span><span class="n">m</span><span class="p">,</span>
-            <span class="mi">1</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">DefaultGrid</span><span class="p">(),</span> <span class="n">context</span><span class="p">);</span>
+            <span class="mi">1</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">DefaultGrid</span><span class="p">(),</span> <span class="n">context</span><span class="p">);</span>
 
     <span class="n">sol_type</span> <span class="nf">x</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
     <span class="n">rhs_type</span> <span class="nf">r</span><span class="p">(</span><span class="n">b</span><span class="p">);</span>
@@ -760,9 +760,9 @@ preconditioner to obtain high-precision solutions faster.</p>
     <span class="kt">double</span> <span class="n">telp</span><span class="p">;</span>
 
     <span class="c1">// Solve using Elemental. Note: Elemental only supports [MC,MR]...</span>
-    <span class="n">elem</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="n">A1</span> <span class="o">=</span> <span class="n">A</span><span class="p">,</span> <span class="n">b1</span> <span class="o">=</span> <span class="n">b</span><span class="p">,</span> <span class="n">x1</span><span class="p">;</span>
+    <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="n">A1</span> <span class="o">=</span> <span class="n">A</span><span class="p">,</span> <span class="n">b1</span> <span class="o">=</span> <span class="n">b</span><span class="p">,</span> <span class="n">x1</span><span class="p">;</span>
     <span class="n">timer</span><span class="p">.</span><span class="n">restart</span><span class="p">();</span>
-    <span class="n">elem</span><span class="o">::</span><span class="n">LeastSquares</span><span class="p">(</span><span class="n">elem</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">A1</span><span class="p">,</span> <span class="n">b1</span><span class="p">,</span> <span class="n">x1</span><span class="p">);</span>
+    <span class="n">El</span><span class="o">::</span><span class="n">LeastSquares</span><span class="p">(</span><span class="n">El</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">A1</span><span class="p">,</span> <span class="n">b1</span><span class="p">,</span> <span class="n">x1</span><span class="p">);</span>
     <span class="n">telp</span> <span class="o">=</span> <span class="n">timer</span><span class="p">.</span><span class="n">elapsed</span><span class="p">();</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">x1</span><span class="p">;</span>
     <span class="n">check_solution</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">resAtr</span><span class="p">,</span> <span class="n">resFac</span><span class="p">);</span>
@@ -774,11 +774,11 @@ preconditioner to obtain high-precision solutions faster.</p>
                   <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
     <span class="kt">double</span> <span class="n">res_opt</span> <span class="o">=</span> <span class="n">res</span><span class="p">;</span>
 
-    <span class="n">skybase</span><span class="o">::</span><span class="n">Gemv</span><span class="p">(</span><span class="n">elem</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">r</span><span class="p">);</span>
+    <span class="n">skybase</span><span class="o">::</span><span class="n">Gemv</span><span class="p">(</span><span class="n">El</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">r</span><span class="p">);</span>
 
     <span class="c1">// Solve using Sylark</span>
     <span class="n">timer</span><span class="p">.</span><span class="n">restart</span><span class="p">();</span>
-<span class="hll">    <span class="n">skynla</span><span class="o">::</span><span class="n">FastLeastSquares</span><span class="p">(</span><span class="n">elem</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+<span class="hll">    <span class="n">skynla</span><span class="o">::</span><span class="n">FastLeastSquares</span><span class="p">(</span><span class="n">El</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
 </span>    <span class="n">telp</span> <span class="o">=</span> <span class="n">timer</span><span class="p">.</span><span class="n">elapsed</span><span class="p">();</span>
     <span class="n">check_solution</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">resAtr</span><span class="p">,</span> <span class="n">resFac</span><span class="p">);</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
@@ -792,7 +792,7 @@ preconditioner to obtain high-precision solutions faster.</p>
 
     <span class="c1">// Approximately solve using Sylark</span>
     <span class="n">timer</span><span class="p">.</span><span class="n">restart</span><span class="p">();</span>
-<span class="hll">    <span class="n">skynla</span><span class="o">::</span><span class="n">ApproximateLeastSquares</span><span class="p">(</span><span class="n">elem</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+<span class="hll">    <span class="n">skynla</span><span class="o">::</span><span class="n">ApproximateLeastSquares</span><span class="p">(</span><span class="n">El</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
 </span>    <span class="n">telp</span> <span class="o">=</span> <span class="n">timer</span><span class="p">.</span><span class="n">elapsed</span><span class="p">();</span>
     <span class="n">check_solution</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">resAtr</span><span class="p">,</span> <span class="n">resFac</span><span class="p">);</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
@@ -907,7 +907,7 @@ mpiexec -np <span class="m">4</span> python <span class="nv">$SKYLARK_SRC_DIR</s
 87
 88</pre></div></td><td class="code"><div class="highlight"><pre><span class="cp">#include &lt;skylark.hpp&gt;</span>
 <span class="cp">#include &lt;boost/mpi.hpp&gt;</span>
-<span class="cp">#include &lt;elemental.hpp&gt;</span>
+<span class="cp">#include &lt;El.hpp&gt;</span>
 <span class="cp">#include &lt;iostream&gt;</span>
 <span class="cp">#include &quot;../base/QR.hpp&quot;</span>
 <span class="cp">#include &lt;cfloat&gt;</span>
@@ -915,10 +915,10 @@ mpiexec -np <span class="m">4</span> python <span class="nv">$SKYLARK_SRC_DIR</s
 
 
 <span class="cm">/** Aliases for matrix types */</span>
-<span class="k">typedef</span> <span class="n">elem</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="kt">dist_matrix_t</span><span class="p">;</span>
-<span class="k">typedef</span> <span class="n">elem</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="kt">matrix_t</span><span class="p">;</span>
-<span class="k">typedef</span> <span class="n">elem</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">VR</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="kt">vr_star_dist_matrix_t</span><span class="p">;</span>
-<span class="k">typedef</span> <span class="n">elem</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">STAR</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="kt">star_star_matrix_t</span><span class="p">;</span>
+<span class="k">typedef</span> <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="kt">dist_matrix_t</span><span class="p">;</span>
+<span class="k">typedef</span> <span class="n">El</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="kt">matrix_t</span><span class="p">;</span>
+<span class="k">typedef</span> <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">VR</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="kt">vr_star_dist_matrix_t</span><span class="p">;</span>
+<span class="k">typedef</span> <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">STAR</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="kt">star_star_matrix_t</span><span class="p">;</span>
 <span class="k">typedef</span> <span class="n">skylark</span><span class="o">::</span><span class="n">sketch</span><span class="o">::</span><span class="n">JLT_t</span><span class="o">&lt;</span><span class="kt">dist_matrix_t</span><span class="p">,</span> <span class="kt">dist_matrix_t</span><span class="o">&gt;</span> <span class="kt">sketch_transform_t</span><span class="p">;</span>
 
 <span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
@@ -933,25 +933,25 @@ mpiexec -np <span class="m">4</span> python <span class="nv">$SKYLARK_SRC_DIR</s
     <span class="n">boost</span><span class="o">::</span><span class="n">mpi</span><span class="o">::</span><span class="n">environment</span> <span class="n">env</span><span class="p">(</span><span class="n">argc</span><span class="p">,</span> <span class="n">argv</span><span class="p">);</span>
     <span class="n">boost</span><span class="o">::</span><span class="n">mpi</span><span class="o">::</span><span class="n">communicator</span> <span class="n">world</span><span class="p">;</span>
     <span class="n">MPI_Comm</span> <span class="n">mpi_world</span><span class="p">(</span><span class="n">world</span><span class="p">);</span>
-    <span class="n">elem</span><span class="o">::</span><span class="n">Grid</span> <span class="n">grid</span><span class="p">(</span><span class="n">mpi_world</span><span class="p">);</span>
+    <span class="n">El</span><span class="o">::</span><span class="n">Grid</span> <span class="n">grid</span><span class="p">(</span><span class="n">mpi_world</span><span class="p">);</span>
 
     <span class="cm">/** Initialize Elemental */</span>
-    <span class="n">elem</span><span class="o">::</span><span class="n">Initialize</span> <span class="p">(</span><span class="n">argc</span><span class="p">,</span> <span class="n">argv</span><span class="p">);</span>
+    <span class="n">El</span><span class="o">::</span><span class="n">Initialize</span> <span class="p">(</span><span class="n">argc</span><span class="p">,</span> <span class="n">argv</span><span class="p">);</span>
 
     <span class="cm">/** Initialize context */</span>
     <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="kt">context_t</span> <span class="n">context</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
 
     <span class="cm">/** Declare matrices */</span>
     <span class="kt">dist_matrix_t</span> <span class="n">A</span><span class="p">(</span><span class="n">grid</span><span class="p">),</span> <span class="n">B</span><span class="p">(</span><span class="n">grid</span><span class="p">),</span> <span class="n">C</span><span class="p">(</span><span class="n">grid</span><span class="p">);</span>
-    <span class="n">elem</span><span class="o">::</span><span class="n">Uniform</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="mi">5000</span><span class="p">,</span> <span class="mi">100</span><span class="p">);</span>
-    <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">qr</span><span class="o">::</span><span class="n">Explicit</span><span class="p">(</span><span class="n">B</span><span class="p">);</span>
+    <span class="n">El</span><span class="o">::</span><span class="n">Uniform</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="mi">5000</span><span class="p">,</span> <span class="mi">100</span><span class="p">);</span>
+    <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">qr</span><span class="o">::</span><span class="n">ExplicitUnitary</span><span class="p">(</span><span class="n">B</span><span class="p">);</span>
 
-    <span class="n">elem</span><span class="o">::</span><span class="n">Uniform</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">);</span>
-    <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">qr</span><span class="o">::</span><span class="n">Explicit</span><span class="p">(</span><span class="n">C</span><span class="p">);</span>
+    <span class="n">El</span><span class="o">::</span><span class="n">Uniform</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">);</span>
+    <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">qr</span><span class="o">::</span><span class="n">ExplicitUnitary</span><span class="p">(</span><span class="n">C</span><span class="p">);</span>
 
     <span class="c1">//star_star_matrix_t S(100,100);</span>
     <span class="kt">dist_matrix_t</span> <span class="n">S</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span><span class="mi">100</span><span class="p">);</span>
-    <span class="n">elem</span><span class="o">::</span><span class="n">Zero</span><span class="p">(</span><span class="n">S</span><span class="p">);</span>
+    <span class="n">El</span><span class="o">::</span><span class="n">Zero</span><span class="p">(</span><span class="n">S</span><span class="p">);</span>
 	
     <span class="n">vector</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="n">diag</span><span class="p">(</span><span class="mi">100</span><span class="p">);</span>
 
@@ -961,19 +961,19 @@ mpiexec -np <span class="m">4</span> python <span class="nv">$SKYLARK_SRC_DIR</s
         <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">j</span><span class="p">)</span> <span class="o">*</span><span class="mi">100</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">;</span>
     <span class="p">}</span>
 
-    <span class="n">elem</span><span class="o">::</span><span class="n">Diagonal</span><span class="p">(</span><span class="n">S</span><span class="p">,</span> <span class="n">diag</span><span class="p">);</span>
+    <span class="n">El</span><span class="o">::</span><span class="n">Diagonal</span><span class="p">(</span><span class="n">S</span><span class="p">,</span> <span class="n">diag</span><span class="p">);</span>
     <span class="kt">dist_matrix_t</span> <span class="n">tmp</span><span class="p">(</span><span class="n">grid</span><span class="p">);</span>
 
-    <span class="n">elem</span><span class="o">::</span><span class="n">Gemm</span><span class="p">(</span><span class="n">elem</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="kt">double</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">B</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">tmp</span><span class="p">);</span>
-    <span class="n">elem</span><span class="o">::</span><span class="n">Gemm</span><span class="p">(</span><span class="n">elem</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">ADJOINT</span><span class="p">,</span> <span class="kt">double</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">tmp</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">A</span><span class="p">);</span>
+    <span class="n">El</span><span class="o">::</span><span class="n">Gemm</span><span class="p">(</span><span class="n">El</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="kt">double</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">B</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">tmp</span><span class="p">);</span>
+    <span class="n">El</span><span class="o">::</span><span class="n">Gemm</span><span class="p">(</span><span class="n">El</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">ADJOINT</span><span class="p">,</span> <span class="kt">double</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">tmp</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">A</span><span class="p">);</span>
 
     <span class="kt">dist_matrix_t</span> <span class="n">U</span><span class="p">(</span><span class="n">grid</span><span class="p">),</span> <span class="n">V</span><span class="p">(</span><span class="n">grid</span><span class="p">);</span>
     <span class="kt">vr_star_dist_matrix_t</span> <span class="n">S1</span><span class="p">;</span>
 
     <span class="kt">dist_matrix_t</span> <span class="n">A1</span><span class="p">(</span><span class="n">A</span><span class="p">);</span>
-    <span class="n">elem</span><span class="o">::</span><span class="n">SVD</span><span class="p">(</span><span class="n">A1</span><span class="p">,</span><span class="n">S1</span><span class="p">,</span><span class="n">V</span><span class="p">);</span>
+    <span class="n">El</span><span class="o">::</span><span class="n">SVD</span><span class="p">(</span><span class="n">A1</span><span class="p">,</span><span class="n">S1</span><span class="p">,</span><span class="n">V</span><span class="p">);</span>
 
-    <span class="n">elem</span><span class="o">::</span><span class="n">Print</span><span class="p">(</span><span class="n">S1</span><span class="p">,</span> <span class="s">&quot;S1&quot;</span><span class="p">);</span>
+    <span class="n">El</span><span class="o">::</span><span class="n">Print</span><span class="p">(</span><span class="n">S1</span><span class="p">,</span> <span class="s">&quot;S1&quot;</span><span class="p">);</span>
 
     <span class="cm">/** Declare matrices */</span>
     <span class="kt">dist_matrix_t</span> <span class="n">A2</span><span class="p">(</span><span class="n">A</span><span class="p">);</span>
@@ -988,9 +988,9 @@ mpiexec -np <span class="m">4</span> python <span class="nv">$SKYLARK_SRC_DIR</s
 <span class="hll">    <span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="kt">randsvd_t</span><span class="o">&lt;</span><span class="n">skylark</span><span class="o">::</span><span class="n">sketch</span><span class="o">::</span><span class="n">JLT_t</span><span class="o">&gt;</span> <span class="n">rand_svd</span><span class="p">;</span>
 </span><span class="hll">    <span class="n">rand_svd</span><span class="p">(</span><span class="n">A2</span><span class="p">,</span> <span class="n">target_rank</span><span class="p">,</span> <span class="n">U1</span><span class="p">,</span> <span class="n">S2</span><span class="p">,</span> <span class="n">V1</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
 </span>
-    <span class="n">elem</span><span class="o">::</span><span class="n">Print</span><span class="p">(</span><span class="n">S2</span><span class="p">,</span> <span class="s">&quot;S2&quot;</span><span class="p">);</span>
+    <span class="n">El</span><span class="o">::</span><span class="n">Print</span><span class="p">(</span><span class="n">S2</span><span class="p">,</span> <span class="s">&quot;S2&quot;</span><span class="p">);</span>
 
-    <span class="n">elem</span><span class="o">::</span><span class="n">Finalize</span><span class="p">();</span>
+    <span class="n">El</span><span class="o">::</span><span class="n">Finalize</span><span class="p">();</span>
     <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
 <span class="p">}</span>
 </pre></div>

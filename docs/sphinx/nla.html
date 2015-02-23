@@ -91,13 +91,13 @@ There is also a default value, but it is much lower than the one suggested by th
 (<img class="math" src="_images/math/413f8a8e40062a9090d9d50b88bc7b551b314c26.png" alt="n"/> is the number of columns in <img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/>).</p>
 <hr class="docutils" />
 <dl class="function">
-<dt id="_CPP23ApproximateLeastSquaresN4elem11OrientationERKN4elem6MatrixI1TEERKN4elem6MatrixI1TEERN4elem6MatrixI1TEERN4base9context_tEi">
-void <code class="descclassname"></code><code class="descname">ApproximateLeastSquares</code><span class="sig-paren">(</span>elem::Orientation <em>orientation</em>, <em class="property">const</em> elem::Matrix&lt;T&gt; &amp;<em>A</em>, <em class="property">const</em> elem::Matrix&lt;T&gt; &amp;<em>B</em>, elem::Matrix&lt;T&gt; &amp;<em>X</em>, base::context_t &amp;<em>context</em>, int <em>sketch_size</em> = -1<span class="sig-paren">)</span><a class="headerlink" href="#_CPP23ApproximateLeastSquaresN4elem11OrientationERKN4elem6MatrixI1TEERKN4elem6MatrixI1TEERN4elem6MatrixI1TEERN4base9context_tEi" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPP23ApproximateLeastSquaresN2El11OrientationERKN2El6MatrixI1TEERKN2El6MatrixI1TEERN2El6MatrixI1TEERN4base9context_tEi">
+void <code class="descclassname"></code><code class="descname">ApproximateLeastSquares</code><span class="sig-paren">(</span>El::Orientation <em>orientation</em>, <em class="property">const</em> El::Matrix&lt;T&gt; &amp;<em>A</em>, <em class="property">const</em> El::Matrix&lt;T&gt; &amp;<em>B</em>, El::Matrix&lt;T&gt; &amp;<em>X</em>, base::context_t &amp;<em>context</em>, int <em>sketch_size</em> = -1<span class="sig-paren">)</span><a class="headerlink" href="#_CPP23ApproximateLeastSquaresN2El11OrientationERKN2El6MatrixI1TEERKN2El6MatrixI1TEERN2El6MatrixI1TEERN4base9context_tEi" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="_CPP23ApproximateLeastSquaresN4elem11OrientationERKN4elem10DistMatrixI1TN4elem2VCEN4elem4STAREEERKN4elem10DistMatrixI1TN4elem2VCEN4elem4STAREEERN4elem10DistMatrixI1TN4elem4STAREN4elem4STAREEERN4base9context_tEi">
-void <code class="descclassname"></code><code class="descname">ApproximateLeastSquares</code><span class="sig-paren">(</span>elem::Orientation <em>orientation</em>, <em class="property">const</em> elem::DistMatrix&lt;T, elem::VC, elem::STAR&gt; &amp;<em>A</em>, <em class="property">const</em> elem::DistMatrix&lt;T, elem::VC, elem::STAR&gt; &amp;<em>B</em>, elem::DistMatrix&lt;T, elem::STAR, elem::STAR&gt; &amp;<em>X</em>, base::context_t &amp;<em>context</em>, int <em>sketch_size</em> = -1<span class="sig-paren">)</span><a class="headerlink" href="#_CPP23ApproximateLeastSquaresN4elem11OrientationERKN4elem10DistMatrixI1TN4elem2VCEN4elem4STAREEERKN4elem10DistMatrixI1TN4elem2VCEN4elem4STAREEERN4elem10DistMatrixI1TN4elem4STAREN4elem4STAREEERN4base9context_tEi" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPP23ApproximateLeastSquaresN2El11OrientationERKN2El10DistMatrixI1TN2El2VCEN2El4STAREEERKN2El10DistMatrixI1TN2El2VCEN2El4STAREEERN2El10DistMatrixI1TN2El4STAREN2El4STAREEERN4base9context_tEi">
+void <code class="descclassname"></code><code class="descname">ApproximateLeastSquares</code><span class="sig-paren">(</span>El::Orientation <em>orientation</em>, <em class="property">const</em> El::DistMatrix&lt;T, El::VC, El::STAR&gt; &amp;<em>A</em>, <em class="property">const</em> El::DistMatrix&lt;T, El::VC, El::STAR&gt; &amp;<em>B</em>, El::DistMatrix&lt;T, El::STAR, El::STAR&gt; &amp;<em>X</em>, base::context_t &amp;<em>context</em>, int <em>sketch_size</em> = -1<span class="sig-paren">)</span><a class="headerlink" href="#_CPP23ApproximateLeastSquaresN2El11OrientationERKN2El10DistMatrixI1TN2El2VCEN2El4STAREEERKN2El10DistMatrixI1TN2El2VCEN2El4STAREEERN2El10DistMatrixI1TN2El4STAREN2El4STAREEERN4base9context_tEi" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <p>If <cite>orientation</cite> is set to <code class="docutils literal"><span class="pre">NORMAL</span></code>, then approximate <img class="math" src="_images/math/485e12a6c8da2e147f54242e795622ddb82bed52.png" alt="\arg\min_X \|A * X - B\|_F"/>, otherwise
@@ -114,7 +114,7 @@ void <code class="descclassname"></code><code class="descname">ApproximateLeastS
 <span class="n">skybase</span><span class="o">::</span><span class="kt">context_t</span> <span class="n">context</span><span class="p">(</span><span class="mi">23234</span><span class="p">);</span>
 
 <span class="c1">// Solve the Least Squres problem of minimizing || AX - B||_2 over X</span>
-<span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="n">ApproximateLeastSquares</span><span class="p">(</span><span class="n">elem</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+<span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="n">ApproximateLeastSquares</span><span class="p">(</span><span class="n">El</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -141,8 +141,8 @@ so the solution&#8217;s accuracy is close to the full accuracy possible on a mac
 (<img class="math" src="_images/math/413f8a8e40062a9090d9d50b88bc7b551b314c26.png" alt="n"/> is the number of columns in <img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/>).</p>
 <hr class="docutils" />
 <dl class="function">
-<dt id="_CPP16FastLeastSquaresN4elem11OrientationERKN4elem10DistMatrixI1TN4elem2VCEN4elem4STAREEERKN4elem10DistMatrixI1TN4elem2VCEN4elem4STAREEERN4elem10DistMatrixI1TN4elem4STAREN4elem4STAREEERN4base9context_tE">
-void <code class="descclassname"></code><code class="descname">FastLeastSquares</code><span class="sig-paren">(</span>elem::Orientation <em>orientation</em>, <em class="property">const</em> elem::DistMatrix&lt;T, elem::VC, elem::STAR&gt; &amp;<em>A</em>, <em class="property">const</em> elem::DistMatrix&lt;T, elem::VC, elem::STAR&gt; &amp;<em>B</em>, elem::DistMatrix&lt;T, elem::STAR, elem::STAR&gt; &amp;<em>X</em>, base::context_t &amp;<em>context</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPP16FastLeastSquaresN4elem11OrientationERKN4elem10DistMatrixI1TN4elem2VCEN4elem4STAREEERKN4elem10DistMatrixI1TN4elem2VCEN4elem4STAREEERN4elem10DistMatrixI1TN4elem4STAREN4elem4STAREEERN4base9context_tE" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPP16FastLeastSquaresN2El11OrientationERKN2El10DistMatrixI1TN2El2VCEN2El4STAREEERKN2El10DistMatrixI1TN2El2VCEN2El4STAREEERN2El10DistMatrixI1TN2El4STAREN2El4STAREEERN4base9context_tE">
+void <code class="descclassname"></code><code class="descname">FastLeastSquares</code><span class="sig-paren">(</span>El::Orientation <em>orientation</em>, <em class="property">const</em> El::DistMatrix&lt;T, El::VC, El::STAR&gt; &amp;<em>A</em>, <em class="property">const</em> El::DistMatrix&lt;T, El::VC, El::STAR&gt; &amp;<em>B</em>, El::DistMatrix&lt;T, El::STAR, El::STAR&gt; &amp;<em>X</em>, base::context_t &amp;<em>context</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPP16FastLeastSquaresN2El11OrientationERKN2El10DistMatrixI1TN2El2VCEN2El4STAREEERKN2El10DistMatrixI1TN2El2VCEN2El4STAREEERN2El10DistMatrixI1TN2El4STAREN2El4STAREEERN4base9context_tE" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <p>If <cite>orientation</cite> is set to <code class="docutils literal"><span class="pre">NORMAL</span></code>, then approximate <img class="math" src="_images/math/485e12a6c8da2e147f54242e795622ddb82bed52.png" alt="\arg\min_X \|A * X - B\|_F"/>, otherwise
@@ -158,7 +158,7 @@ void <code class="descclassname"></code><code class="descname">FastLeastSquares<
 <span class="n">skybase</span><span class="o">::</span><span class="kt">context_t</span> <span class="n">context</span><span class="p">(</span><span class="mi">23234</span><span class="p">);</span>
 
 <span class="c1">// Solve the Least Squres problem of minimizing || AX - B||_2 over X</span>
-<span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="n">FasterLeastSquares</span><span class="p">(</span><span class="n">elem</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+<span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="n">FasterLeastSquares</span><span class="p">(</span><span class="n">El</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -243,7 +243,7 @@ and an optimization flag (skip_qr) to skip a step in the algorithm.</p>
 </pre></div>
 </div>
 <p>The <strong>rand_svd</strong> function accepts certain combinations of matrix types for the input A and the SVD factors:
-U, S and V. Currently, the matrix types are Elemental MC/MR or elem::Matrix types.</p>
+U, S and V. Currently, the matrix types are Elemental MC/MR or El::Matrix types.</p>
 <p>For a running example, please see <em>libskylark/examples/rand_svd.cpp</em>.</p>
 </div>
 </div>

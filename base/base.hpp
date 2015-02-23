@@ -23,5 +23,6 @@
 #include "inner.hpp"
 #include "svd.hpp"
 #include "context.hpp"
+#include "random_matrices.hpp"
 
 #endif // SKYLARK_BASE_HPP

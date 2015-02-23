@@ -58,6 +58,19 @@ if (SKYLARK_HAVE_FFTW)
 
 endif (SKYLARK_HAVE_FFTW)
 
+if (SKYLARK_HAVE_HDF5)
+  add_executable(condest condest.cpp)
+  target_link_libraries(condest
+                        ${Elemental_LIBRARY}
+                        ${FFTW_LIBRARY}
+                        ${Pmrrr_LIBRARY}
+                        ${SKYLARK_LIBS}
+                        ${Boost_LIBRARIES}
+                        ${HDF5_LIBRARIES}
+                        ${ZLIB_LIBRARIES})
+  install_targets(/bin/examples condest)
+endif (SKYLARK_HAVE_HDF5)
+
 if (SKYLARK_HAVE_OPENMP AND SKYLARK_HAVE_HDF5)
   add_executable(asynch asynch.cpp)
   target_link_libraries(asynch

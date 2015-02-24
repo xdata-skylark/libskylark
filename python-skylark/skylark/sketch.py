@@ -464,7 +464,7 @@ def _adapt(obj):
     return _DistMatrixAdapter(obj)
 
   elif haskdt and isinstance(obj, kdt.Mat):
-      return _KDTAdapter(obj)
+    return _KDTAdapter(obj)
 
   else:
     raise errors.InvalidObjectError("Invalid/unsupported object passed as A or SA")

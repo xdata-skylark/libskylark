@@ -153,7 +153,7 @@ The interface is as follows:
 .. cpp:function:: double FindLocalCluster(const GraphType& G, const std::unordered_set<typename GraphType::vertex_type>& seeds, std::unordered_set<typename GraphType::vertex_type>& cluster, double alpha, double gamma, double epsilon, int NX, bool recursive)
 
 seeds is the set of input seeds, cluster is the set of output cluster. alpha, gamma, epsilon and NX are 
-parameters of the algorithm. See paper for details. Default are specified.
+parameters of the algorithm. See paper for details. Defaults are specified.
 If recursive is set to true (default is false)
 the algorithm will recursively use the output cluster as seed until the cluster stops
 improving (as measured using conductance).
@@ -179,3 +179,45 @@ Return an iterator to the end of the list of adjanct nodes of the input
 node. 
 
 See ``examples/community.cpp`` for an example of use.
+
+Time-Dependent Personalized PageRank
+------------------------------------
+
+The community detection algorithm is based on a localized solution of 
+a Time-Dependent Personlized PageRank diffusion problem. See the 
+paper for details:
+ * | H. Avron and L. Horesh
+   | Community Detection Using Time-Dependent Personalized PageRank
+
+The library also exposes the ability to solve the diffusion problem.
+In this functionality, the input is a scalar function on nodes, and the 
+output is a vector function on nodes. Each entry of the vector 
+represents a different time point.
+
+The interface is as follows:
+
+.. cpp:function:: void TimeDependentPPR(const GraphType& G, const std::unordered_map<typename GraphType::vertex_type, T>& s, std::unordered_map<typename GraphType::vertex_type, El::Matrix<T> *>& y, El::Matrix<T> &x, double alpha, double gamma, double epsilon, int NX)
+
+s is the input function of nodes, while y is the output. x specifies the time points which 
+corresponds to the entries of x[node]. alpha, gamma, epsilon and NX are 
+parameters of the algorithm. See paper for details. Defaults are specified.
+
+The graph is specified using parameter G. The type is generic: the GraphType class is expected to
+support the following:
+
+.. cpp:type:: GraphType::vertex_type
+Type of the graph nodes
+
+.. cpp:function:: size_t GraphType::num_edges()
+Return the number of edges in the graph.
+
+.. cpp:function:: size_t GraphType::deg(vertex_type node)
+Return the degree of the given node.
+
+.. cpp:function:: iterator GraphType::adjanct_begin(vertex_type node)
+Return an iterator to the start of the list of adjanct nodes of the input 
+node. The iterator can be of any kind (must support increment, deref and comparison).
+
+.. cpp:function:: iterator GraphType::adjanct_end(vertex_type node)
+Return an iterator to the end of the list of adjanct nodes of the input 
+node. 

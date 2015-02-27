@@ -214,7 +214,7 @@ double <code class="descclassname"></code><code class="descname">FindLocalCluste
 <dd></dd></dl>
 
 <p>seeds is the set of input seeds, cluster is the set of output cluster. alpha, gamma, epsilon and NX are
-parameters of the algorithm. See paper for details. Default are specified.
+parameters of the algorithm. See paper for details. Defaults are specified.
 If recursive is set to true (default is false)
 the algorithm will recursively use the output cluster as seed until the cluster stops
 improving (as measured using conductance).</p>
@@ -253,6 +253,68 @@ iterator <code class="descclassname">GraphType::</code><code class="descname">ad
 <p>Return an iterator to the end of the list of adjanct nodes of the input
 node.</p>
 <p>See <code class="docutils literal"><span class="pre">examples/community.cpp</span></code> for an example of use.</p>
+</div>
+<div class="section" id="time-dependent-personalized-pagerank">
+<h3>Time-Dependent Personalized PageRank<a class="headerlink" href="#time-dependent-personalized-pagerank" title="Permalink to this headline">¶</a></h3>
+<p>The community detection algorithm is based on a localized solution of
+a Time-Dependent Personlized PageRank diffusion problem. See the
+paper for details:</p>
+<blockquote>
+<div><ul>
+<li><div class="first line-block">
+<div class="line">H. Avron and L. Horesh</div>
+<div class="line">Community Detection Using Time-Dependent Personalized PageRank</div>
+</div>
+</li>
+</ul>
+</div></blockquote>
+<p>The library also exposes the ability to solve the diffusion problem.
+In this functionality, the input is a scalar function on nodes, and the
+output is a vector function on nodes. Each entry of the vector
+represents a different time point.</p>
+<p>The interface is as follows:</p>
+<dl class="function">
+<dt id="_CPP16TimeDependentPPRRK9GraphTypeRKNSt13unordered_mapIN9GraphType11vertex_typeE1TEERNSt13unordered_mapIN9GraphType11vertex_typeEPN2El6MatrixI1TEEEERN2El6MatrixI1TEEdddi">
+void <code class="descclassname"></code><code class="descname">TimeDependentPPR</code><span class="sig-paren">(</span><em class="property">const</em> GraphType &amp;<em>G</em>, <em class="property">const</em> std::unordered_map&lt;<em class="property">typename</em> GraphType::<a class="reference internal" href="#_CPPN9GraphType11vertex_typeE" title="GraphType::vertex_type">vertex_type</a>, T&gt; &amp;<em>s</em>, std::unordered_map&lt;<em class="property">typename</em> GraphType::<a class="reference internal" href="#_CPPN9GraphType11vertex_typeE" title="GraphType::vertex_type">vertex_type</a>, El::Matrix&lt;T&gt;*&gt; &amp;<em>y</em>, El::Matrix&lt;T&gt; &amp;<em>x</em>, double <em>alpha</em>, double <em>gamma</em>, double <em>epsilon</em>, int <em>NX</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPP16TimeDependentPPRRK9GraphTypeRKNSt13unordered_mapIN9GraphType11vertex_typeE1TEERNSt13unordered_mapIN9GraphType11vertex_typeEPN2El6MatrixI1TEEEERN2El6MatrixI1TEEdddi" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>s is the input function of nodes, while y is the output. x specifies the time points which
+corresponds to the entries of x[node]. alpha, gamma, epsilon and NX are
+parameters of the algorithm. See paper for details. Defaults are specified.</p>
+<p>The graph is specified using parameter G. The type is generic: the GraphType class is expected to
+support the following:</p>
+<dl class="type">
+<dt>
+<em class="property">type </em><code class="descclassname">GraphType::</code><code class="descname">vertex_type</code></dt>
+<dd></dd></dl>
+
+<p>Type of the graph nodes</p>
+<dl class="function">
+<dt>
+size_t <code class="descclassname">GraphType::</code><code class="descname">num_edges</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+<dd></dd></dl>
+
+<p>Return the number of edges in the graph.</p>
+<dl class="function">
+<dt>
+size_t <code class="descclassname">GraphType::</code><code class="descname">deg</code><span class="sig-paren">(</span>vertex_type <em>node</em><span class="sig-paren">)</span></dt>
+<dd></dd></dl>
+
+<p>Return the degree of the given node.</p>
+<dl class="function">
+<dt>
+iterator <code class="descclassname">GraphType::</code><code class="descname">adjanct_begin</code><span class="sig-paren">(</span>vertex_type <em>node</em><span class="sig-paren">)</span></dt>
+<dd></dd></dl>
+
+<p>Return an iterator to the start of the list of adjanct nodes of the input
+node. The iterator can be of any kind (must support increment, deref and comparison).</p>
+<dl class="function">
+<dt>
+iterator <code class="descclassname">GraphType::</code><code class="descname">adjanct_end</code><span class="sig-paren">(</span>vertex_type <em>node</em><span class="sig-paren">)</span></dt>
+<dd></dd></dl>
+
+<p>Return an iterator to the end of the list of adjanct nodes of the input
+node.</p>
 </div>
 </div>
 </div>

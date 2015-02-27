@@ -68,41 +68,14 @@ void ApproximateLeastSquares(El::Orientation orientation,
 }
 
 /**
- * Solve the linear least-squares problem
- *
- *   argmin_X ||A * X - B||_F
- *
- * approximately using sketching. This algorithm uses the sketch-and-solve
- * strategy. The algorithm implemented is the one described in:
- *
- * P. Drineas, M. W. Mahoney, S. Muthukrishnan, and T. Sarlos
- * Faster Least Squares Approximation
- * Numerische Mathematik, 117, 219-249 (2011).
- *
- * although we allow the user to set the sketch size. The default value is also
- * much lower than the one advocated in that paper, so use default options with
- * care.
- *
- * Note: it is assume that a sketch_size x Width(A) matrix can fit in memory
- * of a single node.
- *
- * \param orientation If El::NORMAL will approximate
- *                    argmin_X ||A * X - B||_F
- *                    If El::ADJOINT will approximate (NOT YET SUPPORTED)
- *                    argmin_X ||A^H * X - B||_F
- * \param A input matrix
- * \param B right-hand side
- * \param X solution matrix
- * \param sketch_size Sketch size to use. Higher values will produce better
- *                    approximations. Default is 4 * Width(A).
+ * See documentation for local matrix variant.
  */
-template<typename T, El::Distribution CA, El::Distribution RA,
-         El::Distribution CB, El::Distribution RB, El::Distribution CX,
-         El::Distribution RX>
+template<typename T, El::Distribution U, El::Distribution V>
 void ApproximateLeastSquares(El::Orientation orientation,
-    const El::DistMatrix<T, CA, RA>& A, const El::DistMatrix<T, CB, RB>& B,
-    El::DistMatrix<T, CX, RX>& X, base::context_t& context,
-    int sketch_size = -1) {
+    const El::DistMatrix<T, U, V>& A,
+    const El::DistMatrix<T, U, V>& B,
+    El::DistMatrix<T, U, V>& X,
+    base::context_t& context, int sketch_size = -1) {
 
     if (orientation != El::NORMAL)
         SKYLARK_THROW_EXCEPTION (
@@ -113,7 +86,7 @@ void ApproximateLeastSquares(El::Orientation orientation,
     if (sketch_size == -1)
         sketch_size = 4 * base::Width(A);
 
-    typedef algorithms::regression_problem_t<El::DistMatrix<T, CA, RA>,
+    typedef algorithms::regression_problem_t<El::DistMatrix<T, U, V>,
                                              algorithms::linear_tag,
                                              algorithms::l2_tag,
                                              algorithms::no_reg_tag> ptype;
@@ -121,8 +94,84 @@ void ApproximateLeastSquares(El::Orientation orientation,
 
     algorithms::sketched_regression_solver_t<
         ptype,
-        El::DistMatrix<T, CB, RB>,
-        El::DistMatrix<T, CX, RX>,
+        El::DistMatrix<T, U, V>,
+        El::DistMatrix<T, U, V>,
+        algorithms::linear_tag,
+        El::DistMatrix<T, U, V>,
+        El::DistMatrix<T, U, V>,
+        sketch::FJLT_t,
+        algorithms::qr_l2_solver_tag> solver(problem, sketch_size, context);
+
+    solver.solve(B, X);
+}
+
+/**
+ * See documentation for local matrix variant.
+ */
+template<typename T>
+void ApproximateLeastSquares(El::Orientation orientation,
+    const El::DistMatrix<T, El::VC, El::STAR>& A,
+    const El::DistMatrix<T, El::VC, El::STAR>& B,
+    El::DistMatrix<T, El::STAR, El::STAR>& X,
+    base::context_t& context, int sketch_size = -1) {
+
+    if (orientation != El::NORMAL)
+        SKYLARK_THROW_EXCEPTION (
+          base::nla_exception()
+              << base::error_msg(
+                 "Only NORMAL orientation is supported for ApproximateLeastSquares"));
+
+    if (sketch_size == -1)
+        sketch_size = 4 * base::Width(A);
+
+    typedef algorithms::regression_problem_t<El::DistMatrix<T, El::VC, El::STAR>,
+                                             algorithms::linear_tag,
+                                             algorithms::l2_tag,
+                                             algorithms::no_reg_tag> ptype;
+    ptype problem(base::Height(A), base::Width(A), A);
+
+    algorithms::sketched_regression_solver_t<
+        ptype,
+        El::DistMatrix<T, El::VC, El::STAR>,
+        El::DistMatrix<T, El::STAR, El::STAR>,
+        algorithms::linear_tag,
+        El::DistMatrix<T, El::STAR, El::STAR>,
+        El::DistMatrix<T, El::STAR, El::STAR>,
+        sketch::FJLT_t,
+        algorithms::qr_l2_solver_tag> solver(problem, sketch_size, context);
+
+    solver.solve(B, X);
+}
+
+/**
+ * See documentation for local matrix variant.
+ */
+template<typename T>
+void ApproximateLeastSquares(El::Orientation orientation,
+    const El::DistMatrix<T, El::VR, El::STAR>& A,
+    const El::DistMatrix<T, El::VR, El::STAR>& B,
+    El::DistMatrix<T, El::STAR, El::STAR>& X,
+    base::context_t& context, int sketch_size = -1) {
+
+    if (orientation != El::NORMAL)
+        SKYLARK_THROW_EXCEPTION (
+          base::nla_exception()
+              << base::error_msg(
+                 "Only NORMAL orientation is supported for ApproximateLeastSquares"));
+
+    if (sketch_size == -1)
+        sketch_size = 4 * base::Width(A);
+
+    typedef algorithms::regression_problem_t<El::DistMatrix<T, El::VR, El::STAR>,
+                                             algorithms::linear_tag,
+                                             algorithms::l2_tag,
+                                             algorithms::no_reg_tag> ptype;
+    ptype problem(base::Height(A), base::Width(A), A);
+
+    algorithms::sketched_regression_solver_t<
+        ptype,
+        El::DistMatrix<T, El::VR, El::STAR>,
+        El::DistMatrix<T, El::STAR, El::STAR>,
         algorithms::linear_tag,
         El::DistMatrix<T, El::STAR, El::STAR>,
         El::DistMatrix<T, El::STAR, El::STAR>,

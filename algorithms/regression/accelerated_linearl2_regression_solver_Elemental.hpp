@@ -51,6 +51,20 @@ inline double utcondest(const El::DistMatrix<T, El::STAR, El::STAR>& A) {
     return utcondest(A.LockedMatrix());
 }
 
+template<typename T>
+inline double utcondest(const El::DistMatrix<T, El::CIRC, El::CIRC>& A) {
+    return utcondest(A.LockedMatrix());
+}
+
+template<typename T>
+inline double utcondest(const El::DistMatrix<T>& A) {
+    // Might be a bit slower than actually the condition number estimation
+    // algorithm in LAPACK.
+    El::DistMatrix<T> invA(A);
+    El::TriangularInverse(A, El::UPPER, El::NON_UNIT);
+    return El::OneNorm(A) * El::OneNorm(invA);
+}
+
 template<typename SolType, typename SketchType, typename PrecondType>
 double build_precond(SketchType& SA,
     PrecondType& R, algorithms::inplace_precond_t<SolType> *&P, qr_precond_tag) {
@@ -58,6 +72,7 @@ double build_precond(SketchType& SA,
     P =
         new algorithms::inplace_tri_inverse_precond_t<SolType, PrecondType,
                                        El::UPPER, El::NON_UNIT>(R);
+
     return utcondest(R);
 }
 
@@ -144,7 +159,9 @@ public:
     }
 };
 
-/// Specialization for Blendenpik algorithm
+/**
+ * Specialization: Blendenpik, [VC/VR,STAR] input, [STAR, STAR] solution.
+ */
 template <typename ValueType, El::Distribution VD,
           typename PrecondTag>
 class accelerated_regression_solver_t<
@@ -247,7 +264,114 @@ public:
     }
 };
 
-/// Specialization for LSRN algorithm.
+/**
+ * Specialization: Blendenpik, [MC, MR] input, [MC, MR] solution.
+ */
+template <typename ValueType, El::Distribution U, El::Distribution V,
+          typename PrecondTag>
+class accelerated_regression_solver_t<
+    regression_problem_t<El::DistMatrix<ValueType, U, V>,
+                         linear_tag, l2_tag, no_reg_tag>,
+    El::DistMatrix<ValueType>,
+    El::DistMatrix<ValueType>,
+    blendenpik_tag<PrecondTag> > {
+
+public:
+
+    typedef ValueType value_type;
+
+    typedef El::DistMatrix<ValueType> matrix_type;
+    typedef El::DistMatrix<ValueType> rhs_type;
+    typedef El::DistMatrix<ValueType> sol_type;
+
+    typedef regression_problem_t<matrix_type,
+                                 linear_tag, l2_tag, no_reg_tag> problem_type;
+
+private:
+
+    typedef El::DistMatrix<ValueType> precond_type;
+    typedef precond_type sketch_type;
+    // The assumption is that the sketch is not much bigger than the
+    // preconditioner, so we should use the same matrix distribution.
+
+    const int _m;
+    const int _n;
+    const matrix_type &_A;
+    precond_type _R;
+    algorithms::inplace_precond_t<sol_type> *_precond_R;
+
+    regression_solver_t<problem_type, rhs_type, sol_type, svd_l2_solver_tag>
+    *_alt_solver;
+
+public:
+    /**
+     * Prepares the regressor to quickly solve given a right-hand side.
+     *
+     * @param problem Problem to solve given right-hand side.
+     */
+    accelerated_regression_solver_t(const problem_type& problem, base::context_t& context) :
+        _m(problem.m), _n(problem.n), _A(problem.input_matrix),
+        _R(_n, _n, problem.input_matrix.Grid()) {
+        // TODO n < m ???
+
+        int t = 4 * _n;    // TODO parameter.
+        double scale = std::sqrt((double)_m / (double)t);
+
+        El::DistMatrix<ValueType, El::STAR, El::VR> Ar(_A.Grid());
+        El::DistMatrix<ValueType, El::STAR, El::VR> dist_SA(t, _n, _A.Grid());
+        sketch_type SA(t, _n, _A.Grid());
+        boost::random::uniform_int_distribution<int> distribution(0, _m- 1);
+
+        Ar = _A;
+        double condest = 0;
+        int attempts = 0;
+        do {
+            sketch::RFUT_t<El::DistMatrix<ValueType, El::STAR, El::VR>,
+                           sketch::fft_futs<double>::DCT_t,
+                           utility::rademacher_distribution_t<value_type> >
+                F(_m, context);
+            F.apply(Ar, Ar, sketch::columnwise_tag());
+
+            std::vector<int> samples =
+                context.generate_random_samples_array(t, distribution);
+            for (int j = 0; j < Ar.LocalWidth(); j++)
+                for (int i = 0; i < t; i++) {
+                    int row = samples[i];
+                    dist_SA.Matrix().Set(i, j, scale * Ar.Matrix().Get(row, j));
+                }
+
+            SA = dist_SA;
+            condest = flinl2_internal::build_precond(SA, _R, _precond_R, PrecondTag());
+            attempts++;
+        } while (condest > 1e14 && attempts < 3); // TODO parameters
+
+        if (condest <= 1e14)
+            _alt_solver = nullptr;
+        else {
+            _alt_solver =
+                new regression_solver_t<problem_type,
+                                      rhs_type,
+                                      sol_type, svd_l2_solver_tag>(problem);
+            delete _precond_R;
+            _precond_R = nullptr;
+        }
+    }
+
+    ~accelerated_regression_solver_t() {
+        if (_precond_R != nullptr)
+            delete _precond_R;
+        if (_alt_solver != nullptr)
+            delete _alt_solver;
+    }
+
+    int solve(const rhs_type& b, sol_type& x) {
+        return LSQR(_A, b, x, algorithms::krylov_iter_params_t(), *_precond_R);
+    }
+};
+
+/**
+ * Specialization: LSRN, [VC/VR,STAR] input, [STAR, STAR] solution.
+ */
 template <typename ValueType, El::Distribution VD,
           typename PrecondTag>
 class accelerated_regression_solver_t<

@@ -86,7 +86,7 @@ inline void ColumnNrm2(const El::DistMatrix<T, El::VC, El::STAR>& A,
 
 template<typename T>
 inline void ColumnDot(const El::Matrix<T>& A, const El::Matrix<T>& B,
-    El::Matrix<El::Base<T> >& N) {
+    El::Matrix<T>& N) {
 
     // TODO just assuming sizes are OK for now.
 
@@ -103,7 +103,7 @@ inline void ColumnDot(const El::Matrix<T>& A, const El::Matrix<T>& B,
 template<typename T>
 inline void ColumnDot(const El::DistMatrix<T, El::STAR, El::STAR>& A,
     const El::DistMatrix<T, El::STAR, El::STAR>& B,
-    El::DistMatrix<El::Base<T>, El::STAR, El::STAR>& N) {
+    El::DistMatrix<T, El::STAR, El::STAR>& N) {
 
     // TODO just assuming sizes are OK for now.
 
@@ -120,7 +120,7 @@ inline void ColumnDot(const El::DistMatrix<T, El::STAR, El::STAR>& A,
 template<typename T>
 inline void ColumnDot(const El::DistMatrix<T, El::VC, El::STAR>& A,
     const El::DistMatrix<T, El::VC, El::STAR>& B,
-    El::DistMatrix<El::Base<T>, El::STAR, El::STAR>& N) {
+    El::DistMatrix<T, El::STAR, El::STAR>& N) {
 
     // TODO just assuming sizes are OK for now.
 
@@ -141,8 +141,31 @@ inline void ColumnDot(const El::DistMatrix<T, El::VC, El::STAR>& A,
 }
 
 template<typename T>
-inline void RowDot(const El::Matrix<T>& A, const El::Matrix<T>& B,
-    El::Matrix<El::Base<T> >& N) {
+inline void ColumnDot(const El::DistMatrix<T>& A, const El::DistMatrix<T>& B,
+    El::DistMatrix<T>& N) {
+
+    // TODO just assuming sizes are OK for now.
+    El::Matrix<T>
+    std::vector<T> n(A.Width(), 1);
+    const El::Matrix<T> &Al = A.LockedMatrix();
+    const double *a = Al.LockedBuffer();
+    const El::Matrix<T> &Bl = B.LockedMatrix();
+    const double *b = Bl.LockedBuffer();
+   for(int j = 0; j < Al.Width(); j++) {
+        n[j] = 0.0;
+        for(int i = 0; i < Al.Height(); i++)
+            n[j] += a[j * Al.LDim() + i] * El::Conj(b[j * Bl.LDim() + i]);
+    }
+ 
+   N.Resize(A.Width(), 1);
+   El::Zero(N);
+    boost::mpi::communicator comm(N.Grid().Comm(), boost::mpi::comm_attach);
+    boost::mpi::all_reduce(comm, n.data(), A.Width(), N.Buffer(), std::plus<T>());
+}
+
+template<typename T>
+inline void RowDot(const El::Matrix<T>& A, const El::Matrix<T>& B, 
+    El::Matrix<T>& N) {
 
     // TODO just assuming sizes are OK for now.
 

@@ -132,9 +132,8 @@ sparse format.</p>
 <p class="last">For all fileformats described above, the current implementation is geared towards classification problems and requires the label to assume values from 0 to (K-1) for a K-class problem, or +1/-1 for binary classification problems. This assumption will be relaxed.</p>
 </div>
 </div>
-</div>
 <div class="section" id="example-and-commandline-usage">
-<h2>Example and Commandline Usage<a class="headerlink" href="#example-and-commandline-usage" title="Permalink to this headline">¶</a></h2>
+<h3>Example and Commandline Usage<a class="headerlink" href="#example-and-commandline-usage" title="Permalink to this headline">¶</a></h3>
 <p>Please see <a class="reference internal" href="quick_start.html#ml-example"><em>ML</em></a></p>
 <div class="highlight-python"><div class="highlight"><pre>Training mode usage: skylark_ml [options] --trainfile trainfile --modelfile modelfile
 Testing mode usage: skylark_ml --modelfile modelfile --testfile testfile
@@ -183,8 +182,78 @@ Testing mode usage: skylark_ml --modelfile modelfile --testfile testfile
 </div>
 </div>
 <div class="section" id="library-usage">
-<h2>Library Usage<a class="headerlink" href="#library-usage" title="Permalink to this headline">¶</a></h2>
+<h3>Library Usage<a class="headerlink" href="#library-usage" title="Permalink to this headline">¶</a></h3>
 <p>To be documented (please see <code class="docutils literal"><span class="pre">ml/run.hpp</span></code> for a driver program).</p>
+</div>
+</div>
+<div class="section" id="local-graph-computations">
+<h2>Local Graph Computations<a class="headerlink" href="#local-graph-computations" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="community-detection-using-seed-nodes">
+<h3>Community Detection using Seed Nodes<a class="headerlink" href="#community-detection-using-seed-nodes" title="Permalink to this headline">¶</a></h3>
+<p>In community detection problems (i.e., graph clustering problems), one seeks to identify a set
+of nodes in a graph that are both internally cohesive and also well separated from the remainder
+of the graph. Such sets are then referred to as communities or clusters. In one important variant
+of community detection, the goal is to build a community around a given seed node or set of seed
+nodes. That is, the algorithm is given, as an input, a node (or nodes) in the graph, and the
+goal is to find a cluster in which it is a member.</p>
+<dl class="docutils">
+<dt>The library implements the algorithm reported in the following paper:</dt>
+<dd><ul class="first last">
+<li><div class="first line-block">
+<div class="line">H. Avron and L. Horesh</div>
+<div class="line">Community Detection Using Time-Dependent Personalized PageRank</div>
+</div>
+</li>
+</ul>
+</dd>
+</dl>
+<p>The interface is as follows:</p>
+<dl class="function">
+<dt id="_CPP16FindLocalClusterRK9GraphTypeRKNSt13unordered_setIN9GraphType11vertex_typeEEERNSt13unordered_setIN9GraphType11vertex_typeEEEdddib">
+double <code class="descclassname"></code><code class="descname">FindLocalCluster</code><span class="sig-paren">(</span><em class="property">const</em> GraphType &amp;<em>G</em>, <em class="property">const</em> std::unordered_set&lt;<em class="property">typename</em> GraphType::<a class="reference internal" href="#_CPPN9GraphType11vertex_typeE" title="GraphType::vertex_type">vertex_type</a>&gt; &amp;<em>seeds</em>, std::unordered_set&lt;<em class="property">typename</em> GraphType::<a class="reference internal" href="#_CPPN9GraphType11vertex_typeE" title="GraphType::vertex_type">vertex_type</a>&gt; &amp;<em>cluster</em>, double <em>alpha</em>, double <em>gamma</em>, double <em>epsilon</em>, int <em>NX</em>, bool <em>recursive</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPP16FindLocalClusterRK9GraphTypeRKNSt13unordered_setIN9GraphType11vertex_typeEEERNSt13unordered_setIN9GraphType11vertex_typeEEEdddib" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>seeds is the set of input seeds, cluster is the set of output cluster. alpha, gamma, epsilon and NX are
+parameters of the algorithm. See paper for details. Default are specified.
+If recursive is set to true (default is false)
+the algorithm will recursively use the output cluster as seed until the cluster stops
+improving (as measured using conductance).</p>
+<p>The graph is specified using parameter G. The type is generic: the GraphType class is expected to
+support the following:</p>
+<dl class="type">
+<dt id="_CPPN9GraphType11vertex_typeE">
+<em class="property">type </em><code class="descclassname">GraphType::</code><code class="descname">vertex_type</code><a class="headerlink" href="#_CPPN9GraphType11vertex_typeE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Type of the graph nodes</p>
+<dl class="function">
+<dt id="_CPPN9GraphType9num_edgesEv">
+size_t <code class="descclassname">GraphType::</code><code class="descname">num_edges</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPN9GraphType9num_edgesEv" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Return the number of edges in the graph.</p>
+<dl class="function">
+<dt id="_CPPN9GraphType3degE11vertex_type">
+size_t <code class="descclassname">GraphType::</code><code class="descname">deg</code><span class="sig-paren">(</span>vertex_type <em>node</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPN9GraphType3degE11vertex_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Return the degree of the given node.</p>
+<dl class="function">
+<dt id="_CPPN9GraphType13adjanct_beginE11vertex_type">
+iterator <code class="descclassname">GraphType::</code><code class="descname">adjanct_begin</code><span class="sig-paren">(</span>vertex_type <em>node</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPN9GraphType13adjanct_beginE11vertex_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Return an iterator to the start of the list of adjanct nodes of the input
+node. The iterator can be of any kind (must support increment, deref and comparison).</p>
+<dl class="function">
+<dt id="_CPPN9GraphType11adjanct_endE11vertex_type">
+iterator <code class="descclassname">GraphType::</code><code class="descname">adjanct_end</code><span class="sig-paren">(</span>vertex_type <em>node</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPN9GraphType11adjanct_endE11vertex_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Return an iterator to the end of the list of adjanct nodes of the input
+node.</p>
+<p>See <code class="docutils literal"><span class="pre">examples/community.cpp</span></code> for an example of use.</p>
+</div>
 </div>
 </div>
 

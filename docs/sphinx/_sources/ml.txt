@@ -74,7 +74,7 @@ Examples of such files can be downloaded from `here <http://vikas.sindhwani.org/
 
 
 Example and Commandline Usage
-==============================
+-----------------------------
 
 Please see :ref:`ml_example`
 
@@ -126,6 +126,56 @@ Please see :ref:`ml_example`
 
 
 Library Usage
-===============
+------------
  
 To be documented (please see ``ml/run.hpp`` for a driver program).
+
+Local Graph Computations
+========================
+
+
+Community Detection using Seed Nodes
+------------------------------------
+
+In community detection problems (i.e., graph clustering problems), one seeks to identify a set 
+of nodes in a graph that are both internally cohesive and also well separated from the remainder 
+of the graph. Such sets are then referred to as communities or clusters. In one important variant 
+of community detection, the goal is to build a community around a given seed node or set of seed 
+nodes. That is, the algorithm is given, as an input, a node (or nodes) in the graph, and the 
+goal is to find a cluster in which it is a member.
+
+The library implements the algorithm reported in the following paper:
+ * | H. Avron and L. Horesh
+   | Community Detection Using Time-Dependent Personalized PageRank
+
+The interface is as follows:
+
+.. cpp:function:: double FindLocalCluster(const GraphType& G, const std::unordered_set<typename GraphType::vertex_type>& seeds, std::unordered_set<typename GraphType::vertex_type>& cluster, double alpha, double gamma, double epsilon, int NX, bool recursive)
+
+seeds is the set of input seeds, cluster is the set of output cluster. alpha, gamma, epsilon and NX are 
+parameters of the algorithm. See paper for details. Default are specified.
+If recursive is set to true (default is false)
+the algorithm will recursively use the output cluster as seed until the cluster stops
+improving (as measured using conductance).
+
+The graph is specified using parameter G. The type is generic: the GraphType class is expected to
+support the following:
+
+.. cpp:type:: GraphType::vertex_type
+Type of the graph nodes
+
+.. cpp:function:: size_t GraphType::num_edges()
+Return the number of edges in the graph.
+
+.. cpp:function:: size_t GraphType::deg(vertex_type node)
+Return the degree of the given node.
+
+.. cpp:function:: iterator GraphType::adjanct_begin(vertex_type node)
+Return an iterator to the start of the list of adjanct nodes of the input 
+node. The iterator can be of any kind (must support increment, deref and comparison).
+
+.. cpp:function:: iterator GraphType::adjanct_end(vertex_type node)
+Return an iterator to the end of the list of adjanct nodes of the input 
+node. 
+
+See ``examples/community.cpp`` for an example of use.

@@ -8,7 +8,7 @@ from skylark import sketch
 from helper.test import test_helper
 from collections import namedtuple
 
-import elem
+import El
 
 _M = 10000
 _N = 100
@@ -85,13 +85,13 @@ class SVD_test(unittest.TestCase):
 
 
     def test_apply_colwise(self):
-        A = elem.DistMatrix_d_VR_STAR()
+        A = El.DistMatrix(El.dTag, El.VR, El.STAR)
 
         #FIXME: Christos, use your matrix problem factory here
-        elem.Uniform(A, _M, _N)
+        El.Uniform(A, _M, _N)
 
         #FIXME: A.Matrix will not work in parallel
-        self.sv  = np.linalg.svd(A.Matrix, full_matrices=1, compute_uv=0)
+        self.sv  = np.linalg.svd(A.Matrix().ToNumPy(), full_matrices=1, compute_uv=0)
 
         for sketch in self.sketches:
             results = test_helper(A, _M, _N, _R, sketch, [self.svd_bound], MPI)
@@ -99,13 +99,13 @@ class SVD_test(unittest.TestCase):
 
 
     def test_apply_rowwise(self):
-        A = elem.DistMatrix_d_VR_STAR()
+        A = El.DistMatrix(El.dTag, El.VR, El.STAR)
 
         #FIXME: Christos, use your matrix problem factory here
-        elem.Uniform(A, _N, _M)
+        El.Uniform(A, _N, _M)
 
         #FIXME: A.Matrix will not work in parallel
-        self.sv  = np.linalg.svd(A.Matrix, full_matrices=1, compute_uv=0)
+        self.sv  = np.linalg.svd(A.Matrix().ToNumPy(), full_matrices=1, compute_uv=0)
 
         for sketch in self.sketches:
             results = test_helper(A, _N, _M, _R, sketch, [self.svd_bound], MPI, 5, "rowwise")

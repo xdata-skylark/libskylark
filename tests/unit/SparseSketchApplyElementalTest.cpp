@@ -58,19 +58,16 @@ int test_main(int argc, char *argv[]) {
     //[> Setup test <]
     namespace mpi = boost::mpi;
 
-#ifdef SKYLARK_HAVE_OPENMP
-    int provided;
-    MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
-#endif
-    typedef El::DistMatrix<double, El::CIRC, El::CIRC> MatrixType;
-    typedef El::DistMatrix<double, El::VR, El::STAR> DistMatrixType;
+    El::Initialize(argc, argv);
 
     mpi::environment env(argc, argv);
     mpi::communicator world;
 
-    El::Initialize(argc, argv);
     MPI_Comm mpi_world(world);
     El::Grid grid(mpi_world);
+
+    typedef El::DistMatrix<double, El::CIRC, El::CIRC> MatrixType;
+    typedef El::DistMatrix<double, El::VR, El::STAR> DistMatrixType;
 
     skylark::base::context_t context (0);
 

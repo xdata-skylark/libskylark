@@ -1,5 +1,4 @@
-import numpy as np
-import elem
+import El
 
 def test_helper(A, M, N, R, sketch, measures, MPI, num_repeats=5, direction="columnwise"):
     """
@@ -12,14 +11,16 @@ def test_helper(A, M, N, R, sketch, measures, MPI, num_repeats=5, direction="col
 
         if direction == "columnwise":
             S  = sketch(M, R)
-            SA = elem.DistMatrix_d_STAR_STAR(R, N)
+            SA = El.DistMatrix(El.dTag, El.STAR, El.STAR)
+            El.Uniform(SA, R, N)
         else:
             S  = sketch(N, R)
-            SA = elem.DistMatrix_d_STAR_STAR(M, R)
+            SA = El.DistMatrix(El.dTag, El.STAR, El.STAR)
+            El.Uniform(SA, M, R)
 
         S.apply(A, SA, direction)
 
         for m in measures:
-            results.append(m(SA.Matrix))
+            results.append(m(SA.Matrix().ToNumPy()))
 
     return results

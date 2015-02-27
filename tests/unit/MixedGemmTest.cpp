@@ -51,16 +51,20 @@ int test_main(int argc, char *argv[]) {
 
     namespace mpi = boost::mpi;
 
+
+    //FIXME: why does the Elemental initialization with MPICH cause problems
+    //when finalizing? (I guess this is caused by CombBLAS, but no idea why).
 #ifdef SKYLARK_HAVE_OPENMP
     int provided;
     MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
 #endif
 
+
     mpi::environment env (argc, argv);
     mpi::communicator world;
 
-    El::Initialize (argc, argv);
     MPI_Comm mpi_world(world);
+    El::Initialize (argc, argv);
     El::Grid grid (mpi_world);
 
     // compute local expected value
@@ -167,7 +171,6 @@ int test_main(int argc, char *argv[]) {
         std::cout << "inner panel: OK" << std::endl;
 
     El::Finalize();
-
     return 0;
 }
 

@@ -21,11 +21,37 @@ void EL_BLAS(dgemv)(const char*, const El::Int *, const El::Int *,
 
 namespace skylark { namespace ml {
 
+/**
+ * Localized solution of Time-Dependent Personalized PageRank.
+ *
+ * For details on Time-Dependent PPR, the algorithm, the gaureentess of the
+ * output, and the parameters, see:
+ *
+ * "Community Detection Using Time-Dependent PageRank"
+ * by Haim Avron and Lior Horesh
+ *
+ * @tparam GraphType type of graph object. Needs to support the following:
+ *                   GraphType::vertex_type - type of vertex.
+ *                   GraphType::num_edges() - number of edges.
+ *                   GraphType::deg(node) - debgree of a node.
+ *                   GraphType::adjanct_begin(node),
+ *                   GraphType::adjanct_end(node) -
+ *                    begining and end iterators to adjancy container
+ *                    container can be any type.
+ * @tparam T datatype (e.g. double) for the function on nodes. Must be numeric.
+ * @param G input graph
+ * @param s seed function on nodes (i.e. map from node to numeric value).
+ * @param y output function - or each node the function defines NX values
+ *          for NX different time points in [0, gamma].
+ * @param x NX-sized vector with the time values on which y reports the values.
+ * @param alpha,gamma,epsilon, NX - parameters (see paper).
+ */
 template<typename GraphType, typename T>
-void LocalGraphDiffusion(const GraphType& G,
+void TimeDependentPPR(const GraphType& G,
     const std::unordered_map<typename GraphType::vertex_type, T>& s,
     std::unordered_map<typename GraphType::vertex_type, El::Matrix<T> *>& y,
-    El::Matrix<T> &x, double alpha, double gamma, double epsilon, int NX = 4) {
+    El::Matrix<T> &x, double alpha = 0.85, double gamma = 5.0,
+    double epsilon = 0.001, int NX = 4) {
 
     typedef typename GraphType::vertex_type vertex_type;
 
@@ -236,12 +262,34 @@ void LocalGraphDiffusion(const GraphType& G,
     }
 }
 
+/**
+ * Find a local cluster in a graph using a set of seed nodes.
+ *
+ * Based on the algorithm in
+ * "Community Detection Using Time-Dependent PageRank"
+ * by Haim Avron and Lior Horesh
+ *
+ * @tparam GraphType type of graph object. Needs to support the following:
+ *                   GraphType::vertex_type - type of vertex.
+ *                   GraphType::num_edges() - number of edges.
+ *                   GraphType::deg(node) - debgree of a node.
+ *                   GraphType::adjanct_begin(node),
+ *                   GraphType::adjanct_end(node) -
+ *                    begining and end iterators to adjancy container
+ *                    container can be any type.
+ * @param G input graph
+ * @param seeds seed nodes
+ * @param cluster output cluster of nodes
+ * @param alpha,gamma,epsilon, NX - parameters (see paper).
+ * @param recursive - recursively run on output as seed until conductance
+ *                    steps reducing.
+ */
 template<typename GraphType>
 double FindLocalCluster(const GraphType& G,
     const std::unordered_set<typename GraphType::vertex_type>& seeds,
     std::unordered_set<typename GraphType::vertex_type>& cluster,
     double alpha = 0.85, double gamma = 5.0, double epsilon = 0.001, int NX = 4,
-    bool recursive = true) {
+    bool recursive = false) {
 
     typedef typename GraphType::vertex_type vertex_type;
     double currentcond = -1;
@@ -257,7 +305,7 @@ double FindLocalCluster(const GraphType& G,
 
         // Run the diffusion
         std::unordered_map<vertex_type, El::Matrix<double>*> y;
-        LocalGraphDiffusion(G, s, y, x, alpha, gamma, epsilon, NX);
+        TimeDependentPPR(G, s, y, x, alpha, gamma, epsilon, NX);
 
         // Go over the y output at the different time samples,
         // find the best prefix and if better conductance, store it.

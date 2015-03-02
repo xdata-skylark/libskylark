@@ -312,10 +312,10 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
 #endif
 
 #if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT
-        SKDEF(FJLT, DistMatrix_VR_STAR, Matrix)
-        SKDEF(FJLT, DistMatrix_VC_STAR, Matrix)
-        SKDEF(FJLT, DistMatrix_STAR_VR, Matrix)
-        SKDEF(FJLT, DistMatrix_STAR_VC, Matrix)
+        SKDEF(FJLT, DistMatrix_VR_STAR, RootMatrix)
+        SKDEF(FJLT, DistMatrix_VC_STAR, RootMatrix)
+        SKDEF(FJLT, DistMatrix_STAR_VR, RootMatrix)
+        SKDEF(FJLT, DistMatrix_STAR_VC, RootMatrix)
         SKDEF(FJLT, DistMatrix_VR_STAR, SharedMatrix)
         SKDEF(FJLT, DistMatrix_VC_STAR, SharedMatrix)
         SKDEF(FJLT, DistMatrix_STAR_VR, SharedMatrix)
@@ -1735,23 +1735,23 @@ SKYLARK_EXTERN_API int
 #if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT
 
     AUTO_APPLY_DISPATCH(sketchc::FJLT,
-        sketchc::DIST_MATRIX_VR_STAR, sketchc::MATRIX,
-        sketch::FJLT_t, DistMatrix_VR_STAR, Matrix,
+        sketchc::DIST_MATRIX_VR_STAR, sketchc::ROOT_MATRIX,
+        sketch::FJLT_t, DistMatrix_VR_STAR, RootMatrix,
         sketch::FJLT_data_t);
 
     AUTO_APPLY_DISPATCH(sketchc::FJLT,
-        sketchc::DIST_MATRIX_VC_STAR, sketchc::MATRIX,
-        sketch::FJLT_t, DistMatrix_VC_STAR, Matrix,
+        sketchc::DIST_MATRIX_VC_STAR, sketchc::ROOT_MATRIX,
+        sketch::FJLT_t, DistMatrix_VC_STAR, RootMatrix,
         sketch::FJLT_data_t);
 
     AUTO_APPLY_DISPATCH(sketchc::FJLT,
-        sketchc::DIST_MATRIX_STAR_VR, sketchc::MATRIX,
-        sketch::FJLT_t, DistMatrix_STAR_VR, Matrix,
+        sketchc::DIST_MATRIX_STAR_VR, sketchc::ROOT_MATRIX,
+        sketch::FJLT_t, DistMatrix_STAR_VR, RootMatrix,
         sketch::FJLT_data_t);
 
     AUTO_APPLY_DISPATCH(sketchc::FJLT,
-        sketchc::DIST_MATRIX_STAR_VC, sketchc::MATRIX,
-        sketch::FJLT_t, DistMatrix_STAR_VC, Matrix,
+        sketchc::DIST_MATRIX_STAR_VC, sketchc::ROOT_MATRIX,
+        sketch::FJLT_t, DistMatrix_STAR_VC, RootMatrix,
         sketch::FJLT_data_t);
 
     AUTO_APPLY_DISPATCH(sketchc::FJLT,

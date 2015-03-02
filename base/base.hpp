@@ -9,6 +9,7 @@
 #include <CombBLAS.h>
 #endif
 
+#include "params.hpp"
 #include "exception.hpp"
 #include "sparse_matrix.hpp"
 #include "computed_matrix.hpp"

@@ -5,7 +5,7 @@
 
 namespace skylark { namespace algorithms {
 
-struct asy_iter_params_t {
+struct asy_iter_params_t : public base::params_t {
 
     double tolerance;    /**< Tolerance on ||Ax-||_2/||b||_2 for convergence.
                               If <=0 then no convergence test is done. */
@@ -22,11 +22,6 @@ struct asy_iter_params_t {
     int iter_lim;
     int iter_res_print;
 
-    bool am_i_printing;
-    int log_level;
-    std::ostream& log_stream;
-    int debug_level;
-
     asy_iter_params_t(double tolerance = 1e-3,
         int syn_sweeps = 10,
         int sweeps_lim = 100,
@@ -35,17 +30,14 @@ struct asy_iter_params_t {
         bool am_i_printing = 0,
         int log_level = 0,
         std::ostream &log_stream = std::cout,
-        int debug_level = 0) : tolerance(tolerance),
-                               syn_sweeps(syn_sweeps),
-                               sweeps_lim(sweeps_lim),
-                               iter_lim(iter_lim),
-                               iter_res_print(iter_res_print),
-                               am_i_printing(am_i_printing),
-                               log_level(log_level),
-                               log_stream(log_stream),
-                               debug_level(debug_level) {
-
-  }
+        int debug_level = 0) :
+        base::params_t(am_i_printing, log_level, log_stream, debug_level),
+        tolerance(tolerance),
+        syn_sweeps(syn_sweeps),
+        sweeps_lim(sweeps_lim),
+        iter_lim(iter_lim),
+        iter_res_print(iter_res_print) {
+    }
 
 };
 

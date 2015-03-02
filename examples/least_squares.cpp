@@ -17,9 +17,9 @@ namespace skyutil = skylark::utility;
 const int m = 50000;
 const int n = 500;
 
-// typedef El::DistMatrix<double, El::VC, El::STAR> matrix_type;
-// typedef El::DistMatrix<double, El::VC, El::STAR> rhs_type;
-// typedef El::DistMatrix<double, El::STAR, El::STAR> sol_type;
+//typedef El::DistMatrix<double, El::VC, El::STAR> matrix_type;
+//typedef El::DistMatrix<double, El::VC, El::STAR> rhs_type;
+//typedef El::DistMatrix<double, El::STAR, El::STAR> sol_type;
 
 typedef El::DistMatrix<double> matrix_type;
 typedef El::DistMatrix<double> rhs_type;

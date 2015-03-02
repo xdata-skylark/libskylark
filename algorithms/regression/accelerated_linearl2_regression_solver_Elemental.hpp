@@ -58,17 +58,16 @@ inline double utcondest(const El::DistMatrix<T, El::CIRC, El::CIRC>& A) {
 
 template<typename T>
 inline double utcondest(const El::DistMatrix<T>& A) {
-    // Might be a bit slower than actually the condition number estimation
-    // algorithm in LAPACK.
+    // Probably slower than condition number estimation in LAPACK
     El::DistMatrix<T> invA(A);
-    El::TriangularInverse(A, El::UPPER, El::NON_UNIT);
+    El::TriangularInverse(El::UPPER, El::NON_UNIT, invA);
     return El::OneNorm(A) * El::OneNorm(invA);
 }
 
 template<typename SolType, typename SketchType, typename PrecondType>
 double build_precond(SketchType& SA,
     PrecondType& R, algorithms::inplace_precond_t<SolType> *&P, qr_precond_tag) {
-    El::qr::Explicit(SA.Matrix(), R.Matrix()); // TODO
+    El::qr::Explicit(SA, R);
     P =
         new algorithms::inplace_tri_inverse_precond_t<SolType, PrecondType,
                                        El::UPPER, El::NON_UNIT>(R);
@@ -81,9 +80,9 @@ double build_precond(SketchType& SA,
     PrecondType& V, algorithms::inplace_precond_t<SolType> *&P, svd_precond_tag) {
 
     int n = SA.Width();
-    PrecondType s(SA);
+    PrecondType s(SA); // TODO should s be PrecondType or STAR,STAR ?
     s.Resize(n, 1);
-    El::SVD(SA.Matrix(), s.Matrix(), V.Matrix()); // TODO
+    El::SVD(SA, s, V);
     for(int i = 0; i < n; i++)
         s.Set(i, 0, 1 / s.Get(i, 0));
     base::DiagonalScale(El::RIGHT, El::NORMAL, s, V);
@@ -260,7 +259,13 @@ public:
     }
 
     int solve(const rhs_type& b, sol_type& x) {
-        return LSQR(_A, b, x, algorithms::krylov_iter_params_t(), *_precond_R);
+        if (_precond_R != nullptr)
+            return LSQR(_A, b, x, algorithms::krylov_iter_params_t(),
+                *_precond_R);
+        else {
+            _alt_solver->solve(b, x);
+            return 0;
+        }
     }
 };
 
@@ -341,7 +346,8 @@ public:
                 }
 
             SA = dist_SA;
-            condest = flinl2_internal::build_precond(SA, _R, _precond_R, PrecondTag());
+            condest = flinl2_internal::build_precond(SA, _R, _precond_R,
+                PrecondTag());
             attempts++;
         } while (condest > 1e14 && attempts < 3); // TODO parameters
 
@@ -353,6 +359,7 @@ public:
                                       rhs_type,
                                       sol_type, svd_l2_solver_tag>(problem);
             delete _precond_R;
+            std::cout << "FAILED to create!" << std::endl;
             _precond_R = nullptr;
         }
     }
@@ -365,7 +372,13 @@ public:
     }
 
     int solve(const rhs_type& b, sol_type& x) {
-        return LSQR(_A, b, x, algorithms::krylov_iter_params_t(), *_precond_R);
+        if (_precond_R != nullptr)
+            return LSQR(_A, b, x, algorithms::krylov_iter_params_t(),
+                *_precond_R);
+        else {
+            _alt_solver->solve(b, x);
+            return 0;
+        }
     }
 };
 

@@ -64,18 +64,19 @@ inline void ColumnNrm2(const El::DistMatrix<T, El::STAR, El::STAR>& A,
     }
 }
 
-template<typename T>
-inline void ColumnNrm2(const El::DistMatrix<T, El::VC, El::STAR>& A,
+template<typename T, El::Distribution U, El::Distribution V>
+inline void ColumnNrm2(const El::DistMatrix<T, U, V>& A,
     El::DistMatrix<El::Base<T>, El::STAR, El::STAR>& N) {
 
     std::vector<T> n(A.Width(), 1);
+    std::fill(n.begin(), n.end(), 0.0);
     const El::Matrix<T> &Al = A.LockedMatrix();
     const double *a = Al.LockedBuffer();
-    for(int j = 0; j < Al.Width(); j++) {
-        n[j] = 0.0;
+    for(int j = 0; j < Al.Width(); j++)
         for(int i = 0; i < Al.Height(); i++)
-            n[j] += a[j * Al.LDim() + i] * El::Conj(a[j * Al.LDim() + i]);
-    }
+            n[A.GlobalCol(j)] +=
+                a[j * Al.LDim() + i] * El::Conj(a[j * Al.LDim() + i]);
+
     N.Resize(A.Width(), 1);
     El::Zero(N);
     boost::mpi::communicator comm(N.Grid().Comm().comm, boost::mpi::comm_attach);
@@ -117,50 +118,27 @@ inline void ColumnDot(const El::DistMatrix<T, El::STAR, El::STAR>& A,
     }
 }
 
-template<typename T>
-inline void ColumnDot(const El::DistMatrix<T, El::VC, El::STAR>& A,
-    const El::DistMatrix<T, El::VC, El::STAR>& B,
+template<typename T, El::Distribution U, El::Distribution V>
+inline void ColumnDot(const El::DistMatrix<T, U, V>& A,
+    const El::DistMatrix<T, U, V>& B,
     El::DistMatrix<T, El::STAR, El::STAR>& N) {
 
-    // TODO just assuming sizes are OK for now.
-
+    // TODO just assuming sizes are OK for now, and grid aligned.
     std::vector<T> n(A.Width(), 1);
+    std::fill(n.begin(), n.end(), 0);
     const El::Matrix<T> &Al = A.LockedMatrix();
     const double *a = Al.LockedBuffer();
     const El::Matrix<T> &Bl = B.LockedMatrix();
     const double *b = Bl.LockedBuffer();
-   for(int j = 0; j < Al.Width(); j++) {
-        n[j] = 0.0;
+    for(int j = 0; j < Al.Width(); j++)
         for(int i = 0; i < Al.Height(); i++)
-            n[j] += a[j * Al.LDim() + i] * El::Conj(b[j * Bl.LDim() + i]);
-    }
-    N.Resize(A.Width(), 1);
-    El::Zero(N);
-    boost::mpi::communicator comm(N.Grid().Comm(), boost::mpi::comm_attach);
-    boost::mpi::all_reduce(comm, n.data(), A.Width(), N.Buffer(), std::plus<T>());
-}
+            n[A.GlobalCol(j)] +=
+                a[j * Al.LDim() + i] * El::Conj(b[j * Bl.LDim() + i]);
 
-template<typename T>
-inline void ColumnDot(const El::DistMatrix<T>& A, const El::DistMatrix<T>& B,
-    El::DistMatrix<T>& N) {
-
-    // TODO just assuming sizes are OK for now.
-    El::Matrix<T>
-    std::vector<T> n(A.Width(), 1);
-    const El::Matrix<T> &Al = A.LockedMatrix();
-    const double *a = Al.LockedBuffer();
-    const El::Matrix<T> &Bl = B.LockedMatrix();
-    const double *b = Bl.LockedBuffer();
-   for(int j = 0; j < Al.Width(); j++) {
-        n[j] = 0.0;
-        for(int i = 0; i < Al.Height(); i++)
-            n[j] += a[j * Al.LDim() + i] * El::Conj(b[j * Bl.LDim() + i]);
-    }
- 
    N.Resize(A.Width(), 1);
    El::Zero(N);
-    boost::mpi::communicator comm(N.Grid().Comm(), boost::mpi::comm_attach);
-    boost::mpi::all_reduce(comm, n.data(), A.Width(), N.Buffer(), std::plus<T>());
+   boost::mpi::communicator comm(N.Grid().Comm(), boost::mpi::comm_attach);
+   boost::mpi::all_reduce(comm, n.data(), A.Width(), N.Buffer(), std::plus<T>());
 }
 
 template<typename T>

@@ -5,15 +5,11 @@
 
 namespace skylark { namespace algorithms {
 
-struct krylov_iter_params_t {
+struct krylov_iter_params_t : public base::params_t {
 
     double tolerance;
     int iter_lim;
-    bool am_i_printing;
-    int log_level;
     int res_print;
-    std::ostream& log_stream;
-    int debug_level;
 
     krylov_iter_params_t(double tolerance = 1e-14,
         int iter_lim = 100,
@@ -21,13 +17,11 @@ struct krylov_iter_params_t {
         int log_level = 0,
         int res_print = 1,
         std::ostream &log_stream = std::cout,
-        int debug_level = 0) : tolerance(tolerance),
-                               iter_lim(iter_lim),
-                               am_i_printing(am_i_printing),
-                               log_level(log_level),
-                               res_print(res_print),
-                               log_stream(log_stream),
-                               debug_level(debug_level) {
+        int debug_level = 0) :
+        base::params_t(am_i_printing, log_level, log_stream, debug_level),
+        tolerance(tolerance),
+        iter_lim(iter_lim),
+        res_print(res_print) {
 
   }
 

@@ -223,12 +223,9 @@ int main(int argc, char** argv) {
     // Using Skylark's uniform generator (as opposed to Elemental's)
     // will insure the same A and b are generated regardless of the number
     // of processors.
-    matrix_type A =
-        skyutil::uniform_matrix_t<matrix_type>::generate(m,
-            n, El::DefaultGrid(), context);
-    matrix_type b =
-        skyutil::uniform_matrix_t<matrix_type>::generate(m,
-            1, El::DefaultGrid(), context);
+    matrix_type A, b;
+    skylark::base::UniformMatrix(A, m, n, context);
+    skylark::base::UniformMatrix(b, m, 1, context);
 
     regression_problem_type problem(m, n, A);
 

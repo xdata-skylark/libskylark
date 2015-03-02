@@ -83,16 +83,3 @@ if (SKYLARK_HAVE_OPENMP AND SKYLARK_HAVE_HDF5)
                         ${ZLIB_LIBRARIES})
   install_targets(/bin/examples asynch)
 endif (SKYLARK_HAVE_OPENMP AND SKYLARK_HAVE_HDF5)
-
-if(FALSE)
-if (SKYLARK_HAVE_COMBBLAS)
-  add_executable(lsqr lsqr.cpp)
-  target_link_libraries(lsqr
-                        ${Elemental_LIBRARY}
-                        ${CombBLAS_LIBRARIES}
-                        ${FFTW_LIBRARY}
-                        ${Pmrrr_LIBRARY}
-                        ${SKYLARK_LIBS}
-                        ${Boost_LIBRARIES})
-endif (SKYLARK_HAVE_COMBBLAS)
-endif(FALSE)

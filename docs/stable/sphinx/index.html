@@ -1,0 +1,135 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Sketching-based Matrix Computations for Machine Learning &mdash; libSkylark  documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="libSkylark  documentation" href="#" />
+    <link rel="next" title="Introduction" href="introduction.html" /> 
+  </head>
+  <body>
+      <div class="header"><h1 class="heading"><a href="#">
+          <span>libSkylark  documentation</span></a></h1>
+        <h2 class="heading"><span>Sketching-based Matrix Computations for Machine Learning</span></h2>
+      </div>
+      <div class="topnav">
+      
+        <p>
+        <a class="uplink" href="#">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="introduction.html">Introduction</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="sketching-based-matrix-computations-for-machine-learning">
+<h1>Sketching-based Matrix Computations for Machine Learning<a class="headerlink" href="#sketching-based-matrix-computations-for-machine-learning" title="Permalink to this headline">¶</a></h1>
+<p><strong>Contents:</strong></p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#goals">Goals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#sketching-and-sampling-methods">Sketching and Sampling Methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#license-and-copyright">License and Copyright</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="quick_start.html">Quick Start Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="quick_start.html#vagrant-label">Vagrant</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quick_start.html#cluster-of-vagrant-controlled-vms">Cluster of vagrant-controlled VMs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quick_start.html#running-vagrant-on-aws">Running Vagrant on AWS</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quick_start.html#examples">Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Building from Source</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#getting-the-source-code">Getting the source code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#libskylark-software-dependencies">libSkylark Software Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#building-libskylark">Building libSkylark</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#software-pitfalls">Software Pitfalls</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#complete-bgq-installation-instructions">Complete BGQ Installation Instructions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="base.html">Base Layer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="base.html#random-values">Random Values</a></li>
+<li class="toctree-l2"><a class="reference internal" href="base.html#libskylark-context">libSkylark Context</a></li>
+<li class="toctree-l2"><a class="reference internal" href="base.html#local-sparse-matrices">Local sparse matrices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="base.html#cross-matrix-type-gemm-and-other-linear-algebra-routines">Cross matrix-type GEMM and other linear algebra routines</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="sketching.html">Sketching Layer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="sketching.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sketching.html#overview-of-high-performance-distributed-sketching-implementation">Overview of High-performance Distributed Sketching Implementation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sketching.html#libskylark-s-sketching-layer">libSkylark&#8217;s Sketching Layer</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="nla.html">Numerical Linear Algebra Primitives</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="nla.html#randomized-linear-least-squares">Randomized Linear Least-Squares</a></li>
+<li class="toctree-l2"><a class="reference internal" href="nla.html#randomized-singular-value-decomposition">Randomized Singular Value Decomposition</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ml.html">Machine Learning</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ml.html#randomized-kernel-methods">Randomized Kernel Methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ml.html#example-and-commandline-usage">Example and Commandline Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ml.html#library-usage">Library Usage</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="io.html">IO in libSkylark</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="io.html#io-from-c">IO from C++</a></li>
+<li class="toctree-l2"><a class="reference internal" href="io.html#io-from-python">IO from Python</a></li>
+<li class="toctree-l2"><a class="reference internal" href="io.html#sketch-serialization">Sketch Serialization</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contributing.html#coding-style">Coding style</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference internal" href="py-modindex.html"><em>Module Index</em></a></li>
+<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
+</ul>
+</div>
+
+
+      </div>
+      <div class="bottomnav">
+      
+        <p>
+        <a class="uplink" href="#">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="introduction.html">Introduction</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer">
+        &copy; Copyright IBM Corporation 2012-2014.  All Rights Reserved.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

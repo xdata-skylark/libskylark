@@ -1,0 +1,591 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Sketching Layer &mdash; libSkylark  documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="libSkylark  documentation" href="index.html" />
+    <link rel="next" title="Numerical Linear Algebra Primitives" href="nla.html" />
+    <link rel="prev" title="Base Layer" href="base.html" /> 
+  </head>
+  <body>
+      <div class="header"><h1 class="heading"><a href="index.html">
+          <span>libSkylark  documentation</span></a></h1>
+        <h2 class="heading"><span>Sketching Layer</span></h2>
+      </div>
+      <div class="topnav">
+      
+        <p>
+        «&#160;&#160;<a href="base.html">Base Layer</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="nla.html">Numerical Linear Algebra Primitives</a>&#160;&#160;»
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="sketching-layer">
+<h1>Sketching Layer<a class="headerlink" href="#sketching-layer" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>&#8216;Sketching&#8217; is the core algorithmic foundation on which libSkylark is built, and is
+able to deliver faster NLA kernels and ML algorithms.</p>
+<p>Dimensionality reduction in NLA and ML is often based on building an oblivious
+subspace embedding (OSE). An OSE can be thought of as a data-independent random
+“sketching” matrix <img class="math" src="_images/math/e5f95fc1cde614179b82c3ec15f0bab4fd380591.png" alt="S \in R^{s\times n}"/> whose approximate isometry
+properties (with respect to a norm <img class="math" src="_images/math/4fc4bd8b4a49eaf5eeefc07d0a682e8f8e842b7c.png" alt="\|\cdot\|_p"/>) over a subspace (e.g.,
+over the column space of a data input matrix A, and regression target vector b)
+imply that,</p>
+<div class="math">
+<p><img src="_images/math/94097032b40423ca34ac7142e9a7ae8857c32f38.png" alt="\|S(A x - b)\|\approx\|A x-b\|"/></p>
+</div><p>which in turn allows the regression coefficients, <img class="math" src="_images/math/188c175aac0a8a9c22499336711b5d7256407254.png" alt="x"/>, to be optimized
+over a “sketched” dataset - namely <img class="math" src="_images/math/01ce80763ec37a5a2e1d7099273408913740773f.png" alt="S*A"/> and <img class="math" src="_images/math/6e2fee3f37086d1205c14ad6d038d3b8c71437e2.png" alt="S*b"/> - of much smaller
+size without losing solution quality significantly.
+Sketching matrices include Gaussian random matrices, structured random matrices
+which admit fast matrix multiplication via FFT-like operations, hashing-based
+transforms, among others.</p>
+</div>
+<div class="section" id="overview-of-high-performance-distributed-sketching-implementation">
+<h2>Overview of High-performance Distributed Sketching Implementation<a class="headerlink" href="#overview-of-high-performance-distributed-sketching-implementation" title="Permalink to this headline">¶</a></h2>
+<p>Sketching a matrix A typically amounts to multiplying it by a random matrix
+<img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/>, i.e., <img class="math" src="_images/math/0d7318978493f219bebbae2cfe4f63bf8c56dadf.png" alt="A * S"/> for compressing the size of its rows
+(row-wise sketching) or <img class="math" src="_images/math/c67c5155fdbd0009e97486374043c815f140f276.png" alt="S * A"/> for compressing the size of its
+columns (column-wise sketching).</p>
+<p>In a distributed setting, this matrix-matrix multiplication primitive
+(sketching GEMM operation) is special in the sense that any part of matrix
+<img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> can be constructed without communication.
+In addition, depending on the relative sizes of <img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/>, <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> and the
+sketched matrix (output), we can organize the distributed GEMM so that no part
+of the largest-size matrix is communicated (SUMMA approach), thus resulting in
+communication savings.
+Further optimizing, we can perform local computations over blocks of <img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/>,
+<img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/>, and also assume transposed views of the operands for memory and
+cache use efficiency.</p>
+<p>In particular when both <img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/> and <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> are distributed dense matrices
+we represent them as Elemental matrices and support sketching over a rich set
+of combinations of vector and matrix-oriented data distributions: in vector
+distributions different processes own complete rows of columns of the matrix
+that are p apart (p is the number of processes) while in matrix distributions
+each process owns a strided view of the matrix with strides along rows and
+columns being equal to the dimensions of the process grid.</p>
+<p>In our sketching GEMM, local entries of the random matrix S are computed
+independently by indexing into a global stream of random values provided by a
+counter-based Parallel random number generator (supplied by
+<a class="reference external" href="http://www.deshawresearch.com/resources_random123.html">Random123 library</a>).
+No entries of <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> are communicated since they can be locally generated
+instead.
+<img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/> can be squarish (aka &#8220;matrix&#8221;) or tall-and-thin or short-and-fat
+(aka &#8220;panel&#8221;).
+In multiplying with <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/>, matrix-panel, panel-matrix, inner-panel-panel
+or outer-panel-panel products may arise.
+We provide separate implementations for these cases organized around the
+principle of communication-avoidance for the largest of the matrix terms
+involved in the GEMM, for each of the input/output matrix-data distribution
+combinations.
+The user can optionally set the relative sizes that differentiate between these
+cases.
+Local <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> entries can be incrementally realized in a distribution format that
+best matches the matrix indices of the local GEMM operation that follows
+it.
+Resulting <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> blocks typically traverse the smallest of matrix sizes in
+increments that can optionally be specified by the user.
+This has the extra benefit of minimizing the communication volume of a
+collective operation that generally follows this local GEMM - essentially to
+compensate for the stride-indexed matrix entries in the factors.</p>
+<p>As an example we provide a <em>pseudocode</em> snippet (in Python syntax) that describes
+the rowwise sketching of a squarish input matrix <img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/>, initially distributed
+across the process grid in <cite>[MC, MR]</cite> format (please refer
+<a class="reference external" href="http://libelemental.org/documentation/0.83/core/dist_matrix/DM.html">here</a> for a
+comprehensive documentation of distribution formats, here appearing in brackets):
+<img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> is first realized (its random entries are actually computed in the desired
+distribution format - in embarrassingly parallel mode) and then the local parts of
+<img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/> and <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> are multiplied together. Finally collective communications within
+subsets of the process grid take place to produce the resulting sketched matrix
+(<cite>C[MC, MR]</cite>). The corresponding C++ code (allowing also for incremental realization of
+<img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/>) can be found in
+<tt class="file docutils literal"><span class="pre">libskylark/sketch/dense_transform_Elemental_mc_mr.hpp</span></tt>.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">matrix_panel</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="n">MC</span><span class="p">,</span> <span class="n">MR</span><span class="p">],</span> <span class="n">S</span><span class="p">):</span>
+    <span class="n">S</span><span class="p">[</span><span class="n">MR</span><span class="p">,</span> <span class="n">STAR</span><span class="p">]</span>       <span class="o">=</span> <span class="n">realize</span><span class="p">(</span><span class="n">S</span><span class="p">)</span>
+    <span class="n">C_hat</span><span class="p">[</span><span class="n">MC</span><span class="p">,</span> <span class="n">STAR</span><span class="p">]</span>   <span class="o">=</span> <span class="n">local_gemm</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="n">MC</span><span class="p">,</span> <span class="n">MR</span><span class="p">],</span> <span class="n">S</span><span class="p">[</span><span class="n">MR</span><span class="p">,</span> <span class="n">STAR</span><span class="p">])</span>
+    <span class="n">C</span><span class="p">[</span><span class="n">MC</span><span class="p">,</span> <span class="n">MR</span><span class="p">]</span>         <span class="o">=</span> <span class="n">reduce_scatter_within_process_rows</span><span class="p">(</span><span class="n">C_hat</span><span class="p">[</span><span class="n">MC</span><span class="p">,</span> <span class="n">STAR</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">C</span><span class="p">[</span><span class="n">MC</span><span class="p">,</span> <span class="n">MR</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Quite interestingly and depending on the distribution format of the input and sketched
+matrices, sketching can be <em>communication free</em>. The following snippet illustrates this
+remark when both input and sketched matrices are in <cite>[VC, STAR]</cite> or <cite>[VR, STAR]</cite>
+distribution formats - same scenario as before, rowwise sketching of a squarish input matrix:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">matrix_panel</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="n">VC</span><span class="o">/</span><span class="n">VR</span><span class="p">,</span> <span class="n">STAR</span><span class="p">],</span> <span class="n">S</span><span class="p">):</span>
+    <span class="n">S</span><span class="p">[</span><span class="n">STAR</span><span class="p">,</span> <span class="n">STAR</span><span class="p">]</span>     <span class="o">=</span> <span class="n">realize</span><span class="p">(</span><span class="n">S</span><span class="p">)</span>
+    <span class="n">C</span><span class="p">[</span><span class="n">VC</span><span class="o">/</span><span class="n">VR</span><span class="p">,</span> <span class="n">STAR</span><span class="p">]</span>    <span class="o">=</span> <span class="n">local_gemm</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="n">VC</span><span class="o">/</span><span class="n">VR</span><span class="p">,</span> <span class="n">STAR</span><span class="p">],</span> <span class="n">S</span><span class="p">[</span><span class="n">STAR</span><span class="p">,</span> <span class="n">STAR</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">C</span><span class="p">[</span><span class="n">VC</span><span class="o">/</span><span class="n">VR</span><span class="p">,</span> <span class="n">STAR</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Sparse matrices <img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/> are currently represented as
+<abbr title="Combinatorial BLAS">CombBLAS</abbr> matrices.
+As for dense sketch matrices, any part of the sparse sketch matrix can be
+realized without communication. Since the sketch matrix is sparse, we only
+require a &#8220;sparse&#8221; realization of the sketch matrix <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> and the sketching
+GEMM can be computed on the random stream directly.
+Similar to the SUMMA approach for dense matrices we select what will be
+communicated depending on input and output dimensions.</p>
+<p>It is possible to sketch from a sparse matrix to a dense (and vice versa).
+The only restriction when using CombBLAS is that total number of processors
+has to be a square number.</p>
+</div>
+<div class="section" id="libskylark-s-sketching-layer">
+<h2>libSkylark&#8217;s Sketching Layer<a class="headerlink" href="#libskylark-s-sketching-layer" title="Permalink to this headline">¶</a></h2>
+<p>The purpose of the sketching layer is to provide optimized implementations
+of various sketching transforms and for various matrix arrangement in memory
+(e.g. local matrices, distributed matrices, sparse matrices ...).
+The majority of the sketching library is implemented in C++, but it is
+accessible in Python through <tt class="xref py py-mod docutils literal"><span class="pre">skylark.sketch</span></tt>.</p>
+<div class="section" id="sketching-transforms">
+<h3>Sketching Transforms<a class="headerlink" href="#sketching-transforms" title="Permalink to this headline">¶</a></h3>
+<p>The following table lists the sketching transforms currently provided by LibSkylark.
+These transforms are appropriate for specific downstream tasks, e.g.
+<img class="math" src="_images/math/a01b625bb6f1905a7f6f698c854f2b4ae161eeb4.png" alt="l2"/>-regression, <img class="math" src="_images/math/c3a1ea1c5ef9f9923d99db023a65c73d4b6dbc94.png" alt="l1"/>-regression, or kernel methods.</p>
+<p>The implementations are provided under <em>libskylark/sketch</em>.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="9%" />
+<col width="30%" />
+<col width="61%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Abbreviation</th>
+<th class="head">Name</th>
+<th class="head">Reference</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>JLT</td>
+<td>Johnson-Lindenstrauss Transform</td>
+<td>Johnson and Lindenstrauss, 1984</td>
+</tr>
+<tr class="row-odd"><td>FJLT</td>
+<td>Fast Johnson-Lindenstrauss Transform</td>
+<td><a class="reference external" href="http://www.cs.princeton.edu/~chazelle/pubs/FJLT-sicomp09.pdf">Ailon and Chazelle, 2009</a></td>
+</tr>
+<tr class="row-even"><td>CT</td>
+<td>Cauchy Transform</td>
+<td><a class="reference external" href="http://researcher.ibm.com/files/us-dpwoodru/sw.pdf">Sohler and Woodruff, 2011</a></td>
+</tr>
+<tr class="row-odd"><td>MMT</td>
+<td>Meng-Mahoney Transform</td>
+<td><a class="reference external" href="http://arxiv.org/abs/1210.3135">Meng and Mahoney, 2013</a></td>
+</tr>
+<tr class="row-even"><td>CWT</td>
+<td>Clarkson-Woodruff Transform</td>
+<td><a class="reference external" href="http://arxiv.org/abs/1207.6365">Clarkson and Woodruff, 2013</a></td>
+</tr>
+<tr class="row-odd"><td>WZT</td>
+<td>Woodruff-Zhang Transform</td>
+<td><a class="reference external" href="http://homes.soic.indiana.edu/qzhangcs/papers/subspace-full.pdf">Woodruff and Zhang, 2013</a></td>
+</tr>
+<tr class="row-even"><td>PPT</td>
+<td>Pahm-Pagh Transform</td>
+<td><a class="reference external" href="http://www.itu.dk/people/ndap/TensorSketch.pdf">Pahm and Pagh, 2013</a></td>
+</tr>
+<tr class="row-odd"><td>ESRLT</td>
+<td>Random Laplace Transform (Exp-semigroup)</td>
+<td><a class="reference external" href="http://vikas.sindhwani.org/RandomLaplace.pdf">Yang et al, 2014</a></td>
+</tr>
+<tr class="row-even"><td>LRFT</td>
+<td>Laplacian Random Fourier Transform</td>
+<td><a class="reference external" href="http://www.eecs.berkeley.edu/~brecht/papers/07.rah.rec.nips.pdf">Rahimi and Recht, 2007</a></td>
+</tr>
+<tr class="row-odd"><td>GRFT</td>
+<td>Gaussian Random Fourier Transform</td>
+<td><a class="reference external" href="http://www.eecs.berkeley.edu/~brecht/papers/07.rah.rec.nips.pdf">Rahimi and Recht, 2007</a></td>
+</tr>
+<tr class="row-even"><td>FGRFT</td>
+<td>Fast Gaussian Random Fourier Transform</td>
+<td><a class="reference external" href="http://jmlr.org/proceedings/papers/v28/le13.html">Le, Sarlos and Smola, 2013</a></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="sketching-layer-in-c">
+<h3>Sketching Layer in C++<a class="headerlink" href="#sketching-layer-in-c" title="Permalink to this headline">¶</a></h3>
+<p>The above sketch transforms can be instantiated for various combinations of
+distributed and local, sparse and dense input matrices and output sketches.
+The following table lists the input-output combinations currently implemented
+in the C++ sketching layer.</p>
+<p>In the table below, <em>LocalDense</em> refers to Elemental <a class="reference external" href="http://libelemental.org/documentation/0.83/core/matrix.html">sequential matrix</a> type,
+while STAR/STAR, VR/STAR, VC/STAR, STAR/VR, STAR/VC, MC/MR refer to
+specializations of <a class="reference external" href="http://libelemental.org/documentation/0.83/core/dist_matrix/DM.html">Elemental distributed matrices</a>.
+Each specialization involves choosing a sensical pairing of distributions for
+the rows and columns of the matrix:
+* CIRC : Only give the data to a single process
+* STAR : Give the data to every process
+* MC : Distribute round-robin within each column of the 2D process grid (M atrix C olumn)
+* MR : Distribute round-robin within each row of the 2D process grid (M atrix R ow)
+* VC : Distribute round-robin within a column-major ordering of the entire 2D process grid (V ector C olumn)
+* VR : Distribute round-robin within a row-major ordering of the entire 2D process grid (V ector R ow)</p>
+<p><em>LocalSparse</em> refers to a libSkylark-provided class for representing local
+sparse matrices, while <em>DistSparse</em> refers to CombBLAS sparse matrices.</p>
+<a class="reference internal image-reference" href="_images/sketch_transf_in_out_cpp.png"><img alt="_images/sketch_transf_in_out_cpp.png" class="align-center" src="_images/sketch_transf_in_out_cpp.png" style="width: 750px;" /></a>
+<i>Schematic views of input and output types for various sketch transforms.
+The <font color="#154685">blue</font> color marks sparse matrix or
+transforms, <font color="#ee9428">orange</font> is used for dense matrix or
+transforms.</i><div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">In the near future the local dense matrix will be replaced by
+CIRC/CIRC and STAR/STAR matrices.</p>
+</div>
+<div class="section" id="sketching-transforms-label">
+<span id="id2"></span><h4>Sketching Transforms<a class="headerlink" href="#sketching-transforms-label" title="Permalink to this headline">¶</a></h4>
+<dl class="type">
+<dt id="skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:__class">
+<em class="property">type </em>class <tt class="descclassname">skylark::sketch::</tt><tt class="descname">sketch_transform_t&lt;InputMatrixType, OutputMatrixType&gt;</tt><a class="headerlink" href="#skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:__class" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>Query dimensions</strong></p>
+<dl class="function">
+<dt id="skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::get_NC">
+int <tt class="descname">get_N</tt><big>(</big><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::get_NC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get input dimension.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::get_SC">
+int <tt class="descname">get_S</tt><big>(</big><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::get_SC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get output dimension.</p>
+</dd></dl>
+
+<p><strong>Sketch application</strong></p>
+<dl class="function">
+<dt id="skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::apply__InputMatrixTypeCR.OutputMatrixTypeR.columnwise_tagC">
+void <tt class="descname">apply</tt><big>(</big>const InputMatrixType&amp; <em>A</em>, OutputMatrixType&amp; <em>sketch_of_A</em>, <a class="reference internal" href="#skylark::sketch::columnwise_tag" title="skylark::sketch::columnwise_tag">columnwise_tag</a> <em>dimension</em><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::apply__InputMatrixTypeCR.OutputMatrixTypeR.columnwise_tagC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the sketch transform in column dimension.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::apply__InputMatrixTypeCR.OutputMatrixTypeR.rowwise_tagC">
+void <tt class="descname">apply</tt><big>(</big>const InputMatrixType&amp; <em>A</em>, OutputMatrixType&amp; <em>sketch_of_A</em>, <a class="reference internal" href="#skylark::sketch::rowwise_tag" title="skylark::sketch::rowwise_tag">rowwise_tag</a> <em>dimension</em><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::apply__InputMatrixTypeCR.OutputMatrixTypeR.rowwise_tagC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply the sketch transform in row dimension.</p>
+</dd></dl>
+
+<p><strong>Serialization</strong></p>
+<dl class="function">
+<dt id="skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::to_ptreeC">
+boost::property_tree::ptree <tt class="descname">to_ptree</tt><big>(</big><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::to_ptreeC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Serialize the sketch transform to a ptree structure.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::from_ptree__boost::property_tree::ptreeCR">
+<em class="property">static</em> sketch_transform_t* <tt class="descname">from_ptree</tt><big>(</big>const boost::property_tree::ptree&amp; <em>pt</em><big>)</big><a class="headerlink" href="#skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::from_ptree__boost::property_tree::ptreeCR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a sketch transform from a ptree structure.</p>
+</dd></dl>
+
+<p><strong>Accessors</strong></p>
+<dl class="function">
+<dt id="skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::get_data">
+const sketch_transform_data_t* <tt class="descname">get_data</tt><big>(</big><big>)</big><a class="headerlink" href="#skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType:::get_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the underlaying transform data.</p>
+</dd></dl>
+
+</dd></dl>
+
+<p>The sketch transformation class is coupled to a data class that is responsible
+to initialize and provide a lazy view on the random data required when
+applying the sketch transform.</p>
+<p>The sketching direction is specified using the following types:</p>
+<blockquote>
+<div><dl class="type">
+<dt id="skylark::sketch::columnwise_tag">
+<em class="property">type </em><tt class="descclassname">skylark::sketch::</tt><tt class="descname">columnwise_tag</tt><a class="headerlink" href="#skylark::sketch::columnwise_tag" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="type">
+<dt id="skylark::sketch::rowwise_tag">
+<em class="property">type </em><tt class="descclassname">skylark::sketch::</tt><tt class="descname">rowwise_tag</tt><a class="headerlink" href="#skylark::sketch::rowwise_tag" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div></blockquote>
+</div>
+<div class="section" id="using-the-c-sketching-layer">
+<h4>Using the C++ Sketching layer<a class="headerlink" href="#using-the-c-sketching-layer" title="Permalink to this headline">¶</a></h4>
+<p>To get a flavour of using the sketching layer, we provide a C++ code snippet
+here where an Elemental 1D-distributed matrix is sketched to reduce the column
+dimensionality (number of rows).
+The sketched matrix &#8211; the output of the sketching operation &#8211; is a local
+matrix.
+The sketching is done using <em>Johnson-Lindenstrauss (JLT)</em> transform.</p>
+<div class="highlight-cpp"><div class="highlight"><pre><span class="cp">#include &lt;elemental.hpp&gt;</span>
+<span class="cp">#include &lt;skylark.hpp&gt;</span>
+<span class="p">...</span>
+
+<span class="cm">/* Local Matrix Type */</span>
+<span class="k">typedef</span> <span class="n">elem</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="n">MatrixType</span><span class="p">;</span>
+
+<span class="cm">/* Row distributed Matrix Type */</span>
+<span class="k">typedef</span> <span class="n">elem</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">VC</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="n">DistMatrixType</span><span class="p">;</span>
+
+ <span class="cm">/* Initialize libSkylark context with a seed */</span>
+<span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="kt">context_t</span> <span class="n">context</span> <span class="p">(</span><span class="mi">12345</span><span class="p">);</span>
+
+<span class="cm">/* Row distributed Elemental Matrix A of size N x M */</span>
+<span class="n">elem</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">VR</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="n">A</span><span class="p">(</span><span class="n">grid</span><span class="p">);</span>
+<span class="n">elem</span><span class="o">::</span><span class="n">Uniform</span> <span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">M</span><span class="p">);</span>
+
+<span class="cm">/* Create the Johnson-Lindenstrauss Sketch object to map R^N to R^S*/</span>
+<span class="n">skys</span><span class="o">::</span><span class="n">JLT_t</span><span class="o">&lt;</span><span class="n">DistMatrixType</span><span class="p">,</span> <span class="n">MatrixType</span><span class="o">&gt;</span> <span class="n">JLT</span> <span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="n">S</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+
+<span class="cm">/* Create space for the sketched matrix with number of rows compressed to S */</span>
+<span class="n">MatrixType</span> <span class="nf">sketch_A</span><span class="p">(</span><span class="n">S</span><span class="p">,</span> <span class="n">M</span><span class="p">);</span>
+
+<span class="cm">/* Apply the sketch. We call this columnwise sketching since the column dimensionality is reduced. */</span>
+<span class="n">JLT</span><span class="p">.</span><span class="n">apply</span> <span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">sketch_A</span><span class="p">,</span> <span class="n">skys</span><span class="o">::</span><span class="n">columnwise_tag</span><span class="p">());</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="python-sketching-interface">
+<h3>Python Sketching Interface<a class="headerlink" href="#python-sketching-interface" title="Permalink to this headline">¶</a></h3>
+<p>Skylark also provides <cite>pure Python</cite> implementations of the various transforms, which it will default in case the C++ layers of
+Skylark are not compiled. Some transforms are currently implemented only in Python, but there are plans to implement them in
+C++ as well. Likewise, some transforms currently implemented in the C++ layer will be extended to Python in near-term
+releases.</p>
+<p>Skylark uses external libraries to represent distributed matrices. For dense distributed matrices it uses <a class="reference external" href="http://libelemental.org/">Elemental</a>. Currently it uses the c-types interface of Elemental, so be sure install that as well. For
+sparse distributed matrices it uses <a class="reference external" href="http://gauss.cs.ucsb.edu/~aydin/CombBLAS/html/">CombBLAS</a> interfaced through <a class="reference external" href="http://kdt.sourceforge.net/wiki/index.php/Main_Page">KDT</a>.</p>
+<p>The lower layers use MPI so it is advisable an MPI interface to Python be
+installed. One option is to use <a class="reference external" href="http://mpi4py.scipy.org/">mpi4py</a>.</p>
+<p>The following table lists currently supported sketching transforms available through Python.</p>
+<a class="reference internal image-reference" href="_images/sketch_transf_in_out_py.png"><img alt="_images/sketch_transf_in_out_py.png" class="align-center" src="_images/sketch_transf_in_out_py.png" style="width: 750px;" /></a>
+<i>Schematic views of input and output types for various sketch transforms.
+The <font color="#154685">blue</font> color marks sparse matrix or
+transforms, <font color="#ee9428">orange</font> is used for dense matrix or
+transforms.</i><div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">In the near future the local dense matrix will be replaced by
+CIRC/CIRC and STAR/STAR matrices.</p>
+</div>
+<div class="section" id="using-the-python-interface">
+<h4>Using the Python interface<a class="headerlink" href="#using-the-python-interface" title="Permalink to this headline">¶</a></h4>
+<p>Skylark is automatically initialized with a random seed when you import
+sketch. However, you can reinitialize it to a specific seed by calling
+initialize. While not required, you can finalize the library using
+finalize. However, note that that will not cause allocated objects
+(e.g. sketch transforms) to be freed. They are freed by the garbage collector
+when detected as garbage (no references).</p>
+<p>Python sketch classes inherit from the <em>SketchTransform</em> class.</p>
+<p>Specific python sketch classes are documented below.</p>
+</div>
+</div>
+<div class="section" id="python-examples">
+<h3>Python Examples<a class="headerlink" href="#python-examples" title="Permalink to this headline">¶</a></h3>
+<p><strong>Sketching Dense Distributed Matrices</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#!/usr/bin/env python</span>
+<span class="c"># MPI usage: </span>
+<span class="c"># mpiexec -np 2 python skylark/examples/example_sketch.py</span>
+
+<span class="c"># prevent mpi4py from calling MPI_Finalize()</span>
+<span class="kn">import</span> <span class="nn">mpi4py.rc</span>
+<span class="n">mpi4py</span><span class="o">.</span><span class="n">rc</span><span class="o">.</span><span class="n">finalize</span>   <span class="o">=</span> <span class="bp">False</span>
+
+<span class="kn">import</span> <span class="nn">elem</span>
+<span class="kn">from</span> <span class="nn">skylark</span> <span class="kn">import</span> <span class="n">sketch</span><span class="p">,</span> <span class="n">elemhelper</span>
+<span class="kn">from</span> <span class="nn">mpi4py</span> <span class="kn">import</span> <span class="n">MPI</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="c"># Configuration </span>
+<span class="n">m</span> <span class="o">=</span> <span class="mi">20000</span><span class="p">;</span>
+<span class="n">n</span> <span class="o">=</span> <span class="mi">300</span><span class="p">;</span>
+<span class="n">t</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">;</span>
+<span class="c">#sketches = { &quot;JLT&quot; : sketch.JLT, &quot;FJLT&quot; : sketch.FJLT, &quot;CWT&quot; : sketch.CWT }</span>
+<span class="n">sketches</span> <span class="o">=</span> <span class="p">{</span> <span class="s">&quot;JLT&quot;</span> <span class="p">:</span> <span class="n">sketch</span><span class="o">.</span><span class="n">JLT</span><span class="p">,</span> <span class="s">&quot;CWT&quot;</span> <span class="p">:</span> <span class="n">sketch</span><span class="o">.</span><span class="n">CWT</span> <span class="p">}</span>
+
+<span class="c"># Set up the random regression problem.</span>
+<span class="n">A</span> <span class="o">=</span> <span class="n">elem</span><span class="o">.</span><span class="n">DistMatrix_d_VR_STAR</span><span class="p">()</span>
+<span class="n">elem</span><span class="o">.</span><span class="n">Uniform</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">elem</span><span class="o">.</span><span class="n">DistMatrix_d_VR_STAR</span><span class="p">()</span>
+<span class="n">elem</span><span class="o">.</span><span class="n">Uniform</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="c"># Solve using Elemental</span>
+<span class="c"># Elemental currently does not support LS on VR,STAR.</span>
+<span class="c"># So we copy.</span>
+<span class="n">A1</span> <span class="o">=</span> <span class="n">elem</span><span class="o">.</span><span class="n">DistMatrix_d</span><span class="p">()</span>
+<span class="n">elem</span><span class="o">.</span><span class="n">Copy</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">A1</span><span class="p">)</span>
+<span class="n">b1</span> <span class="o">=</span> <span class="n">elem</span><span class="o">.</span><span class="n">DistMatrix_d</span><span class="p">()</span>
+<span class="n">elem</span><span class="o">.</span><span class="n">Copy</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">b1</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">elem</span><span class="o">.</span><span class="n">DistMatrix_d</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">elem</span><span class="o">.</span><span class="n">LeastSquares</span><span class="p">(</span><span class="n">elem</span><span class="o">.</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">A1</span><span class="p">,</span> <span class="n">b1</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+<span class="n">telp</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
+
+<span class="c"># Compute residual</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">elem</span><span class="o">.</span><span class="n">DistMatrix_d</span><span class="p">()</span>
+<span class="n">elem</span><span class="o">.</span><span class="n">Copy</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+<span class="n">elem</span><span class="o">.</span><span class="n">Gemv</span><span class="p">(</span><span class="n">elem</span><span class="o">.</span><span class="n">NORMAL</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">A1</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">elem</span><span class="o">.</span><span class="n">Norm</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span><span class="o">.</span><span class="n">Get_rank</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+  <span class="k">print</span> <span class="s">&quot;Exact solution residual </span><span class="si">%(res).3f</span><span class="se">\t\t\t</span><span class="s">took </span><span class="si">%(elp).2e</span><span class="s"> sec&quot;</span> <span class="o">%</span> \
+      <span class="p">{</span> <span class="s">&quot;res&quot;</span> <span class="p">:</span> <span class="n">res</span><span class="p">,</span> <span class="s">&quot;elp&quot;</span><span class="p">:</span> <span class="n">telp</span> <span class="p">}</span>
+
+<span class="c"># Lower-layers are automatically initilalized when you import Skylark,</span>
+<span class="c"># It will use system time to generate the seed. However, we can </span>
+<span class="c"># reinitialize for so to fix the seed.</span>
+<span class="n">sketch</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="mi">123834</span><span class="p">);</span>
+
+<span class="c">#</span>
+<span class="c"># Solve the problem using sketching</span>
+<span class="c">#</span>
+<span class="k">for</span> <span class="n">sname</span> <span class="ow">in</span> <span class="n">sketches</span><span class="p">:</span>
+  <span class="n">stype</span> <span class="o">=</span> <span class="n">sketches</span><span class="p">[</span><span class="n">sname</span><span class="p">]</span>
+  
+  <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+  <span class="c"># Create transform. </span>
+  <span class="n">S</span> <span class="o">=</span> <span class="n">stype</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">defouttype</span><span class="o">=</span><span class="s">&quot;DistMatrix_STAR_STAR&quot;</span><span class="p">)</span>
+
+  <span class="c"># Sketch both A and b using the same sketch</span>
+  <span class="n">SA</span> <span class="o">=</span> <span class="n">S</span> <span class="o">*</span> <span class="n">A</span>
+  <span class="n">Sb</span> <span class="o">=</span> <span class="n">S</span> <span class="o">*</span> <span class="n">b</span>
+  
+  <span class="c"># SA and Sb reside on rank zero, so solving the equation is </span>
+  <span class="c"># done there.</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span><span class="o">.</span><span class="n">Get_rank</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+    <span class="c"># Solve using NumPy</span>
+    <span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">rank</span><span class="p">,</span> <span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">SA</span><span class="o">.</span><span class="n">Matrix</span><span class="p">,</span> <span class="n">Sb</span><span class="o">.</span><span class="n">Matrix</span><span class="p">)</span>
+  <span class="k">else</span><span class="p">:</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="bp">None</span>
+
+  <span class="n">telp</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
+
+  <span class="c"># Distribute the solution so to compute residual in a distributed fashion</span>
+  <span class="n">x</span> <span class="o">=</span> <span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span><span class="o">.</span><span class="n">bcast</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    
+  <span class="c"># Convert x to a distributed matrix.</span>
+  <span class="c"># Here we give the type explictly, but the value used is the default.</span>
+  <span class="n">x</span> <span class="o">=</span> <span class="n">elemhelper</span><span class="o">.</span><span class="n">local2distributed</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">elem</span><span class="o">.</span><span class="n">DistMatrix_d</span><span class="p">)</span>
+
+  <span class="c"># Compute residual</span>
+  <span class="n">r</span> <span class="o">=</span> <span class="n">elem</span><span class="o">.</span><span class="n">DistMatrix_d</span><span class="p">()</span>
+  <span class="n">elem</span><span class="o">.</span><span class="n">Copy</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+  <span class="n">elem</span><span class="o">.</span><span class="n">Gemv</span><span class="p">(</span><span class="n">elem</span><span class="o">.</span><span class="n">NORMAL</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">A1</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+  <span class="n">res</span> <span class="o">=</span> <span class="n">elem</span><span class="o">.</span><span class="n">Norm</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span><span class="o">.</span><span class="n">Get_rank</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+    <span class="k">print</span> <span class="s">&quot;</span><span class="si">%(name)s</span><span class="s">:</span><span class="se">\t</span><span class="s">Sketched solution residual </span><span class="si">%(val).3f</span><span class="se">\t</span><span class="s">took </span><span class="si">%(elp).2e</span><span class="s"> sec&quot;</span> <span class="o">%</span>\
+        <span class="p">{</span><span class="s">&quot;name&quot;</span> <span class="p">:</span> <span class="n">sname</span><span class="p">,</span> <span class="s">&quot;val&quot;</span> <span class="p">:</span> <span class="n">res</span><span class="p">,</span> <span class="s">&quot;elp&quot;</span> <span class="p">:</span> <span class="n">telp</span><span class="p">}</span>
+
+  <span class="c"># As with all Python object they will be automatically garbage</span>
+  <span class="c"># collected, and the associated memory will be freed.</span>
+  <span class="c"># You can also explicitly free them.</span>
+  <span class="k">del</span> <span class="n">S</span>     <span class="c"># S = 0 will also free memory.</span>
+
+<span class="c"># Really no need to &quot;close&quot; the lower layers -- it will do it automatically.</span>
+<span class="c"># However, if you really want to you can do it.</span>
+<span class="n">sketch</span><span class="o">.</span><span class="n">finalize</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><strong>Sketching Sparse Distributed Matrices</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#!/usr/bin/env python</span>
+<span class="c"># MPI usage:</span>
+<span class="c"># mpiexec -np 2 python skylark/examples/example_sparse_sketch.py</span>
+
+<span class="c"># prevent mpi4py from calling MPI_Finalize()</span>
+<span class="kn">import</span> <span class="nn">mpi4py.rc</span>
+<span class="n">mpi4py</span><span class="o">.</span><span class="n">rc</span><span class="o">.</span><span class="n">finalize</span>   <span class="o">=</span> <span class="bp">False</span>
+
+<span class="kn">from</span> <span class="nn">mpi4py</span> <span class="kn">import</span> <span class="n">MPI</span>
+<span class="kn">from</span> <span class="nn">skylark</span> <span class="kn">import</span> <span class="n">sketch</span>
+
+<span class="kn">import</span> <span class="nn">kdt</span>
+<span class="kn">import</span> <span class="nn">math</span>
+
+<span class="n">comm</span> <span class="o">=</span> <span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span>
+<span class="n">rank</span> <span class="o">=</span> <span class="n">comm</span><span class="o">.</span><span class="n">Get_rank</span><span class="p">()</span>
+
+<span class="c"># Lower layers are automatically initilalized when you import Skylark,</span>
+<span class="c"># It will use system time to generate the seed. However, we can</span>
+<span class="c"># reinitialize for so to fix the seed.</span>
+<span class="n">sketch</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="mi">123834</span><span class="p">);</span>
+
+<span class="c"># creating an example matrix</span>
+<span class="c"># It seems that pySpParMat can only be created from dense vectors</span>
+<span class="n">rows</span> <span class="o">=</span> <span class="n">kdt</span><span class="o">.</span><span class="n">Vec</span><span class="p">(</span><span class="mi">60</span><span class="p">,</span> <span class="n">sparse</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">cols</span> <span class="o">=</span> <span class="n">kdt</span><span class="o">.</span><span class="n">Vec</span><span class="p">(</span><span class="mi">60</span><span class="p">,</span> <span class="n">sparse</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">vals</span> <span class="o">=</span> <span class="n">kdt</span><span class="o">.</span><span class="n">Vec</span><span class="p">(</span><span class="mi">60</span><span class="p">,</span> <span class="n">sparse</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">60</span><span class="p">):</span>
+  <span class="n">rows</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">i</span> <span class="o">/</span> <span class="mi">6</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">60</span><span class="p">):</span>
+  <span class="n">cols</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">6</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">60</span><span class="p">):</span>
+  <span class="n">vals</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+
+<span class="n">ACB</span> <span class="o">=</span> <span class="n">kdt</span><span class="o">.</span><span class="n">Mat</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">,</span> <span class="n">vals</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">ACB</span>
+
+<span class="n">nullVec</span> <span class="o">=</span> <span class="n">kdt</span><span class="o">.</span><span class="n">Vec</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">sparse</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">SACB</span>    <span class="o">=</span> <span class="n">kdt</span><span class="o">.</span><span class="n">Mat</span><span class="p">(</span><span class="n">nullVec</span><span class="p">,</span> <span class="n">nullVec</span><span class="p">,</span> <span class="n">nullVec</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+<span class="n">S</span>       <span class="o">=</span> <span class="n">sketch</span><span class="o">.</span><span class="n">CWT</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+<span class="n">S</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">ACB</span><span class="p">,</span> <span class="n">SACB</span><span class="p">,</span> <span class="s">&quot;columnwise&quot;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+  <span class="k">print</span><span class="p">(</span><span class="s">&quot;Sketched A (CWT sparse, columnwise)&quot;</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">SACB</span>
+
+<span class="c"># No need to free S -- it will be automatically garbage collected</span>
+<span class="c"># and the memory for the sketch reclaimed.</span>
+
+<span class="n">SACB</span> <span class="o">=</span> <span class="n">kdt</span><span class="o">.</span><span class="n">Mat</span><span class="p">(</span><span class="n">nullVec</span><span class="p">,</span> <span class="n">nullVec</span><span class="p">,</span> <span class="n">nullVec</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+<span class="n">S</span>    <span class="o">=</span> <span class="n">sketch</span><span class="o">.</span><span class="n">CWT</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">S</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">ACB</span><span class="p">,</span> <span class="n">SACB</span><span class="p">,</span> <span class="s">&quot;rowwise&quot;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+  <span class="k">print</span><span class="p">(</span><span class="s">&quot;Sketched A (CWT sparse, rowwise)&quot;</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">SACB</span>
+
+<span class="c"># Really no need to &quot;close&quot; the lower layers -- it will do it automatically.</span>
+<span class="c"># However, if you really want to you can do it.</span>
+<span class="n">sketch</span><span class="o">.</span><span class="n">finalize</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav">
+      
+        <p>
+        «&#160;&#160;<a href="base.html">Base Layer</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        &#160;&#160;::&#160;&#160;
+        <a href="nla.html">Numerical Linear Algebra Primitives</a>&#160;&#160;»
+        </p>
+
+      </div>
+
+    <div class="footer">
+        &copy; Copyright IBM Corporation 2012-2014.  All Rights Reserved.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

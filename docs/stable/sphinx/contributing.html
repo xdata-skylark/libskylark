@@ -1,0 +1,304 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Contributing &mdash; libSkylark  documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="libSkylark  documentation" href="index.html" />
+    <link rel="prev" title="IO in libSkylark" href="io.html" /> 
+  </head>
+  <body>
+      <div class="header"><h1 class="heading"><a href="index.html">
+          <span>libSkylark  documentation</span></a></h1>
+        <h2 class="heading"><span>Contributing</span></h2>
+      </div>
+      <div class="topnav">
+      
+        <p>
+        «&#160;&#160;<a href="io.html">IO in libSkylark</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="contributing">
+<h1>Contributing<a class="headerlink" href="#contributing" title="Permalink to this headline">¶</a></h1>
+<p>TODO.</p>
+<div class="section" id="coding-style">
+<h2>Coding style<a class="headerlink" href="#coding-style" title="Permalink to this headline">¶</a></h2>
+<p>Please make sure to use one of the provided editor configurations when
+contributing to libskylark.
+The following examples can be found in the <tt class="docutils literal"><span class="pre">doc/script</span></tt> folder:</p>
+<div class="highlight-rst"><div class="highlight"><pre>&quot; .vimrc
+&quot; Author: Yves Ineichen
+&quot; Very basic vim configuration file corresponding to skylark code style guide.
+&quot; ---------------------------------------------------------------------------
+&quot; basic options
+
+set autoindent smartindent    &quot; auto/smart indent
+set expandtab                 &quot; expand tabs to spaces
+set smarttab                  &quot; tab and backspace are smart
+set tabstop=4                 &quot; 4 spaces
+set shiftwidth=4              &quot; 4 spaces
+set backspace=indent,eol,start
+set tw=78                     &quot; default textwidth is a max of 78
+set list                      &quot; enable custom list chars
+set listchars=tab:▸\ ,eol:¬   &quot; explicitly show tabs and eol
+set colorcolumn=+1            &quot; show line where text should wrap
+set encoding=utf-8
+set hidden
+set magic
+
+
+&quot; ---------------------------------------------------------------------------
+&quot; auto load extensions for different file types
+if has(&#39;autocmd&#39;)
+        filetype plugin indent on
+        syntax on
+
+        &quot; strip all whitespaces at save
+        autocmd BufWritePre * :%s/\s\+$//e
+
+endif
+&quot; ---------------------------------------------------------------------------
+</pre></div>
+</div>
+<div class="highlight-rst"><div class="highlight"><pre>;; .emacs
+;; Author: Haim Avron
+;; Very basic emacs configuration file to help working with skylark 
+;; code style.
+
+; The following will highlight beyond column 80 in C and C++, so you will know you are
+; bad boy if you go over.
+(require &#39;whitespace)
+(setq whitespace-style &#39;(face empty tabs lines-tail trailing))
+(add-hook &#39;c++-mode-hook (lambda() (interactive) (whitespace-mode)))
+(add-hook &#39;c-mode-hook (lambda() (interactive) (whitespace-mode)))
+
+; Indentation setup
+(defun skylark-indent-setup ()
+  (setq c-basic-offset 4)
+  (c-set-offset &#39;arglist-cont-nonempty &#39;+)
+  (c-set-offset &#39;arglist-cont &#39;+)
+  (c-set-offset &#39;inextern-lang 0)
+  (c-set-offset &#39;innamespace 0))
+
+(add-hook &#39;c-mode-hook &#39;skylark-indent-setup)
+(add-hook &#39;c++-mode-hook &#39;skylark-indent-setup)
+
+(setq-default indent-tabs-mode nil) ; always replace tabs with spaces
+;;(setq-default tab-width 4) ; set tab width to 4 for all buffers
+;;(setq-default c-basic-offset 4) ; and especially for c mode
+</pre></div>
+</div>
+<div class="highlight-rst"><div class="highlight"><pre><span class="nt">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; standalone=&quot;no&quot;?&gt;</span>
+<span class="nt">&lt;profiles version=&quot;1&quot;&gt;</span>
+<span class="nt">&lt;profile kind=&quot;CodeFormatterProfile&quot; name=&quot;Skylark&quot; version=&quot;1&quot;&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_opening_paren_in_for&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_opening_paren_in_method_declaration&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_new_line_in_empty_block&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.lineSplit&quot; value=&quot;80&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.alignment_for_member_access&quot; value=&quot;16&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_comma_in_base_types&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.keep_else_statement_on_same_line&quot; value=&quot;false&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.alignment_for_constructor_initializer_list&quot; value=&quot;16&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.indent_switchstatements_compare_to_switch&quot; value=&quot;false&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_opening_brace_in_array_initializer&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_comma_in_method_declaration_parameters&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_opening_paren_in_if&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_opening_paren_in_exception_specification&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_closing_paren_in_parenthesized_expression&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_comma_in_base_types&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.indent_body_declarations_compare_to_access_specifier&quot; value=&quot;true&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_closing_paren_in_exception_specification&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_comma_in_template_arguments&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_opening_brace_in_block&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_closing_paren_in_method_declaration&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_colon_in_labeled_statement&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.use_tabs_only_for_leading_indentations&quot; value=&quot;false&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_colon_in_case&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_comma_in_enum_declarations&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_comma_in_array_initializer&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.comment.min_distance_between_code_and_line_comment&quot; value=&quot;1&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.alignment_for_expressions_in_array_initializer&quot; value=&quot;16&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_comma_in_declarator_list&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_closing_paren_in_for&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_opening_bracket&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_prefix_operator&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.tabulation.size&quot; value=&quot;4&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_new_line_before_else_in_if_statement&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_opening_paren_in_parenthesized_expression&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.alignment_for_enumerator_list&quot; value=&quot;48&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_between_empty_parens_in_method_declaration&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.alignment_for_declarator_list&quot; value=&quot;16&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_closing_paren_in_switch&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.indent_empty_lines&quot; value=&quot;false&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_opening_paren_in_parenthesized_expression&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.indent_switchstatements_compare_to_cases&quot; value=&quot;true&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_opening_brace_in_method_declaration&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.keep_empty_array_initializer_on_one_line&quot; value=&quot;false&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_opening_brace_in_switch&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.put_empty_statement_on_new_line&quot; value=&quot;true&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_closing_paren_in_cast&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.brace_position_for_method_declaration&quot; value=&quot;end_of_line&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_between_empty_braces_in_array_initializer&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_closing_paren_in_while&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_question_in_conditional&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_semicolon&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_closing_angle_bracket_in_template_arguments&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_colon_in_base_clause&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.indent_breaks_compare_to_cases&quot; value=&quot;true&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_unary_operator&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_comma_in_declarator_list&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.join_wrapped_lines&quot; value=&quot;true&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.alignment_for_arguments_in_method_invocation&quot; value=&quot;16&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_opening_paren_in_while&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_opening_bracket&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_between_empty_brackets&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.alignment_for_parameters_in_method_declaration&quot; value=&quot;16&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_new_line_before_closing_brace_in_array_initializer&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.number_of_empty_lines_to_preserve&quot; value=&quot;1&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_opening_paren_in_method_invocation&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_closing_brace_in_array_initializer&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.comment.preserve_white_space_between_code_and_line_comments&quot; value=&quot;false&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.brace_position_for_block&quot; value=&quot;end_of_line&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_colon_in_conditional&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_semicolon_in_for&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_assignment_operator&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.brace_position_for_type_declaration&quot; value=&quot;end_of_line&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_comma_in_expression_list&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_opening_angle_bracket_in_template_arguments&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_opening_angle_bracket_in_template_parameters&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.continuation_indentation&quot; value=&quot;2&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_opening_paren_in_method_declaration&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.alignment_for_expression_list&quot; value=&quot;0&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_comma_in_template_parameters&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_binary_operator&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_colon_in_default&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.alignment_for_conditional_expression&quot; value=&quot;18&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_between_empty_parens_in_method_invocation&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_comma_in_array_initializer&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_closing_paren_in_if&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.format_guardian_clause_on_one_line&quot; value=&quot;false&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_opening_paren_in_cast&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.indent_access_specifier_extra_spaces&quot; value=&quot;0&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.indent_access_specifier_compare_to_type_header&quot; value=&quot;false&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_opening_brace_in_type_declaration&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_comma_in_method_declaration_parameters&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_colon_in_labeled_statement&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.continuation_indentation_for_array_initializer&quot; value=&quot;2&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_semicolon_in_for&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_closing_paren_in_method_invocation&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.indent_body_declarations_compare_to_namespace_header&quot; value=&quot;false&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_closing_brace_in_block&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_assignment_operator&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.alignment_for_compact_if&quot; value=&quot;16&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_opening_brace_in_array_initializer&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.alignment_for_assignment&quot; value=&quot;16&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_new_line_at_end_of_file_if_missing&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_comma_in_template_parameters&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.alignment_for_conditional_expression_chain&quot; value=&quot;18&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_comma_in_expression_list&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_opening_paren_in_exception_specification&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_question_in_conditional&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_binary_operator&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.alignment_for_base_clause_in_type_declaration&quot; value=&quot;80&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_new_line_before_identifier_in_function_declaration&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_comma_in_method_declaration_throws&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.indent_declaration_compare_to_template_header&quot; value=&quot;false&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_comma_in_method_invocation_arguments&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_between_empty_parens_in_exception_specification&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_unary_operator&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_opening_paren_in_switch&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_comma_in_method_declaration_throws&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.indent_statements_compare_to_body&quot; value=&quot;true&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.alignment_for_binary_expression&quot; value=&quot;16&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.indent_statements_compare_to_block&quot; value=&quot;true&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.alignment_for_throws_clause_in_method_declaration&quot; value=&quot;16&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_new_line_before_catch_in_try_statement&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_comma_in_template_arguments&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_opening_paren_in_method_invocation&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_closing_paren_in_catch&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_closing_paren_in_cast&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_opening_angle_bracket_in_template_parameters&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.tabulation.char&quot; value=&quot;space&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_closing_angle_bracket_in_template_parameters&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_new_line_before_colon_in_constructor_initializer_list&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_opening_paren_in_while&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_comma_in_method_invocation_arguments&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.brace_position_for_block_in_case&quot; value=&quot;end_of_line&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_postfix_operator&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.compact_else_if&quot; value=&quot;true&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_colon_in_base_clause&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_new_line_after_template_declaration&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_opening_paren_in_catch&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.keep_then_statement_on_same_line&quot; value=&quot;false&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.brace_position_for_switch&quot; value=&quot;end_of_line&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.alignment_for_overloaded_left_shift_chain&quot; value=&quot;16&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_opening_paren_in_switch&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_opening_paren_in_if&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.indentation.size&quot; value=&quot;4&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_new_line_after_opening_brace_in_array_initializer&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.keep_imple_if_on_one_line&quot; value=&quot;false&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.brace_position_for_namespace_declaration&quot; value=&quot;end_of_line&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_colon_in_conditional&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_comma_in_enum_declarations&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_closing_angle_bracket_in_template_arguments&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_prefix_operator&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.brace_position_for_array_initializer&quot; value=&quot;end_of_line&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_colon_in_case&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_opening_paren_in_catch&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_opening_brace_in_namespace_declaration&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_postfix_operator&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_closing_bracket&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_new_line_before_while_in_do_statement&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_before_opening_paren_in_for&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_closing_angle_bracket_in_template_parameters&quot; value=&quot;insert&quot;/&gt;</span>
+<span class="nt">&lt;setting id=&quot;org.eclipse.cdt.core.formatter.insert_space_after_opening_angle_bracket_in_template_arguments&quot; value=&quot;do not insert&quot;/&gt;</span>
+<span class="nt">&lt;/profile&gt;</span>
+<span class="nt">&lt;/profiles&gt;</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav">
+      
+        <p>
+        «&#160;&#160;<a href="io.html">IO in libSkylark</a>
+        &#160;&#160;::&#160;&#160;
+        <a class="uplink" href="index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer">
+        &copy; Copyright IBM Corporation 2012-2014.  All Rights Reserved.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,127 @@
+# Copyright Vladimir Prus 2004.
+# Copyright Toon Knapen 2004.
+# Copyright Argonne National Laboratory 2011.
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt
+# or copy at http://www.boost.org/LICENSE_1_0.txt)
+
+#
+# Boost.Build V2 toolset for the IBM XL C++ compiler on the BG/Q
+#
+
+import toolset : flags ;
+import feature ;
+import common ;
+import generators ;
+import os ;
+
+feature.extend toolset : bgq ;
+toolset.inherit bgq : unix ;
+generators.override bgq.prebuilt : builtin.prebuilt ;
+generators.override bgq.searched-lib-generator : searched-lib-generator ;
+
+# Configure the bgq toolset
+rule init ( version ? : command * : options * )
+{
+    local condition = [
+        common.check-init-parameters bgq : version $(version) ] ;
+
+    command = [ common.get-invocation-command bgq : bgxlC
+        : $(command) : "/usr/bgq/bin/bgxlC" ] ;
+
+    common.handle-options bgq : $(condition) : $(command) : $(options) ;
+}
+
+# Declare generators
+generators.register-c-compiler bgq.compile.c : C : OBJ : <toolset>bgq ;
+generators.register-c-compiler bgq.compile.c++ : CPP : OBJ : <toolset>bgq ;
+
+# Allow C++ style comments in C files
+flags bgq CFLAGS : -qcpluscmt ;
+
+# Declare flags
+flags bgq CFLAGS <optimization>off : -qNOOPTimize ;
+flags bgq CFLAGS <optimization>speed : -O3 -qstrict -qarch=qp -qtune=qp ;
+flags bgq CFLAGS <optimization>space : -O2 -qcompact ;
+
+# Discretionary inlining (not recommended)
+flags bgq CFLAGS <inlining>off : -qnoinline ;
+flags bgq CFLAGS <inlining>on : -qinline ;
+#flags bgq CFLAGS <inlining>full : -qinline ;
+flags bgq CFLAGS <inlining>full : ;
+
+# Exception handling
+flags bgq C++FLAGS <exception-handling>off : -qnoeh ;
+flags bgq C++FLAGS <exception-handling>on : -qeh ;
+
+# Run-time Type Identification
+flags bgq C++FLAGS <rtti>off : -qnortti ;
+flags bgq C++FLAGS <rtti>on : -qrtti ;
+
+# Enable 64-bit memory addressing model
+flags bgq CFLAGS <address-model>64 : -q64 ;
+flags bgq LINKFLAGS <address-model>64 : -q64 ;
+flags bgq ARFLAGS <target-os>aix/<address-model>64 : -X 64 ;
+
+# Use absolute path when generating debug information
+flags bgq CFLAGS <debug-symbols>on : -g -qfullpath ;
+flags bgq LINKFLAGS <debug-symbols>on : -g -qfullpath ;
+flags bgq LINKFLAGS <debug-symbols>off : -s ;
+
+# Linux PPC
+flags bgq.compile CFLAGS <link>shared : -qpic=large ;
+flags bgq FINDLIBS : rt ;
+
+# Profiling
+flags bgq CFLAGS <profiling>on : -pg ;
+flags bgq LINKFLAGS <profiling>on : -pg ;
+
+flags bgq.compile OPTIONS <cflags> ;
+flags bgq.compile.c++ OPTIONS <cxxflags> ;
+flags bgq DEFINES <define> ;
+flags bgq UNDEFS <undef> ;
+flags bgq HDRS <include> ;
+flags bgq STDHDRS <sysinclude> ;
+flags bgq.link OPTIONS <linkflags> ;
+flags bgq ARFLAGS <arflags> ;
+
+flags bgq LIBPATH <library-path> ;
+flags bgq NEEDLIBS <library-file> ;
+flags bgq FINDLIBS <find-shared-library> ;
+flags bgq FINDLIBS <find-static-library> ;
+
+# Select the compiler name according to the threading model.
+flags bgq BGQ_C_COMPILER  <threading>single : bgxlc   ;
+flags bgq BGQ_C_COMPILER  <threading>multi : bgxlc_r ;
+flags bgq BGQ_CXX_COMPILER <threading>single : bgxlC   ;
+flags bgq BGQ_CXX_COMPILER <threading>multi : bgxlC_r ;
+
+SPACE = " " ;
+
+flags bgq.link.dll HAVE_SONAME <target-os>linux : "" ;
+
+actions bgq.link bind NEEDLIBS
+{
+    $(BGQ_CXX_COMPILER) $(EXE-LINKFLAGS) $(LINKFLAGS) -o "$(<[1])" -L$(LIBPATH) -L$(STDLIBPATH) "$(>)" "$(NEEDLIBS)" "$(NEEDLIBS)" -l$(FINDLIBS) $(OPTIONS) $(USER_OPTIONS)
+}
+
+actions bgq.link.dll bind NEEDLIBS
+{
+    bgxlC_r -G $(LINKFLAGS) -o "$(<[1])" $(HAVE_SONAME)-Wl,-soname$(SPACE)-Wl,$(<[-1]:D=) -L$(LIBPATH) -L$(STDLIBPATH) "$(>)" "$(NEEDLIBS)" "$(NEEDLIBS)" -l$(FINDLIBS) $(OPTIONS) $(USER_OPTIONS)
+}
+
+actions bgq.compile.c
+{
+    $(BGQ_C_COMPILER) -c $(OPTIONS) $(USER_OPTIONS) -I$(BOOST_ROOT) -U$(UNDEFS) -D$(DEFINES) $(CFLAGS) -I"$(HDRS)" -I"$(STDHDRS)" -o "$(<)" "$(>)"
+}
+
+actions bgq.compile.c++
+{
+    $(BGQ_CXX_COMPILER) -c $(OPTIONS) $(USER_OPTIONS) -I$(BOOST_ROOT) -U$(UNDEFS) -D$(DEFINES) $(CFLAGS) $(C++FLAGS) -I"$(HDRS)" -I"$(STDHDRS)" -o "$(<)" "$(>)"
+}
+
+actions updated together piecemeal bgq.archive
+{
+    ar $(ARFLAGS) ru "$(<)" "$(>)"
+}
+

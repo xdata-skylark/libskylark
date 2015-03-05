@@ -1,0 +1,127 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Algorithmic Layer &mdash; libSkylark  documentation</title>
+    
+    <link rel="stylesheet" href="_static/haiku.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="libSkylark  documentation" href="index.html" /> 
+  </head>
+  <body>
+      <div class="header"><h1 class="heading"><a href="index.html">
+          <span>libSkylark  documentation</span></a></h1>
+        <h2 class="heading"><span>Algorithmic Layer</span></h2>
+      </div>
+      <div class="topnav">
+      
+        <p>
+        <a class="uplink" href="index.html">Contents</a>
+        </p>
+
+      </div>
+      <div class="content">
+        
+        
+  <div class="section" id="algorithmic-layer">
+<h1>Algorithmic Layer<a class="headerlink" href="#algorithmic-layer" title="Permalink to this headline">¶</a></h1>
+<p>This layer implements various algorithms that are used by upper layers (NLA primitives and ML applications).</p>
+<div class="section" id="regression-framework">
+<h2>Regression Framework<a class="headerlink" href="#regression-framework" title="Permalink to this headline">¶</a></h2>
+<p>Located under <em>algorithms/regression</em> aims at providing a general framework for handling regression problems
+of the following form:</p>
+<div class="math">
+<p><img src="_images/math/1e222a022a85777be43a87afb889016208aeba92.png" alt="f^\star = \arg \min_{f \in {\cal H}} \frac{1}{n}\sum^n_{i=1} V(y_i, f(x_i)) + r(f)"/></p>
+</div><p>where <img class="math" src="_images/math/1ba561efe3f4402079a2104a10df5a00e15caf49.png" alt="\{ (x_i, y_i) \}^n_{i=1} \subset {\mathbb R}^d \times {\mathbb R}^t"/> is a training set of inputs
+and their associated outputs, <img class="math" src="_images/math/857e8f32cdd1aa699223d72ab9b74554d78d7ee0.png" alt="{\cal H}"/> is an hypothesis space of functions, <img class="math" src="_images/math/74c2c6f3b066277aa129503edab176c13ec0c3ee.png" alt="V(\cdot, \cdot)"/>
+is a loss function, <img class="math" src="_images/math/93b4bbe22eb93fa9c3192144a042900200f53f14.png" alt="r(\cdot)"/> is a regularizer.</p>
+<p><strong>At this point, the c
+ode only supports a linear hypothesis space and a least-square loss function without regularization.</strong>
+That is, solving problems of the form</p>
+<div class="math">
+<p><img src="_images/math/78fe473d4736c4b97480403b9527bf5a86a599d8.png" alt="\arg\min_X \|A * X - B\|_F"/></p>
+</div><p>However, the framework defines the API for defining problems of the form above, and the API for solvers for those
+problems. Implementation of additional solver is slated for future development.</p>
+<p>The framework is general, but complex: it relies on generic programming to supply a unified powerful interface.
+A much simpler functional interface is supplied in the NLA primitives layer. See <a class="reference internal" href="nla.html#simple-linearls"><em>Randomized Linear Least-Squares</em></a>.
+Note that not all the features supplied by the regression framework are exposed in the simplified interface.</p>
+<p>A running example is provided in <em>libskylark/examples/regression.cpp</em>.</p>
+<div class="section" id="basic-components">
+<h3>Basic Components<a class="headerlink" href="#basic-components" title="Permalink to this headline">¶</a></h3>
+<dl class="type">
+<dt id="struct-skylark::algorithms::regression_problem_t:InputMatrixType.RegressionType.PenaltyType.RegularizationType:">
+<em class="property">type </em><tt class="descname">struct skylark::algorithms::regression_problem_t&lt;InputMatrixType, RegressionType, PenaltyType, RegularizationType&gt;</tt><a class="headerlink" href="#struct-skylark::algorithms::regression_problem_t:InputMatrixType.RegressionType.PenaltyType.RegularizationType:" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Describes a regression problem on a data matrix. The target values are supplied when the solver is invoked).
+Except for the InputMatrixType template parameter, other template parameter accept tags that describe
+various choices in the general regression problem formulation from the start of this page.</p>
+<dl class="type">
+<dt id="skylark::algorithms::regression_solver_t:RegressionProblemType.RhsType.SolType.AlgTag:__class">
+<em class="property">type </em>class <tt class="descclassname">skylark::algorithms::</tt><tt class="descname">regression_solver_t&lt;RegressionProblemType, RhsType, SolType, AlgTag&gt;</tt><a class="headerlink" href="#skylark::algorithms::regression_solver_t:RegressionProblemType.RhsType.SolType.AlgTag:__class" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>A solver for the regression problem (aka <em>regression_problem_t</em>) supplied in the contructor. A solver can
+then solve specific instances given by the target values using the <em>solve</em> method. This class is for &#8216;classical solvers&#8217;,
+i.e. solvers that do not use sketching to accelerate the solution.</p>
+<p>The <em>RegressionProblemType</em> should be a specialization of <em>regression_problem_t</em>.</p>
+<p>The <em>AlgTag</em> template parameter allows flexability in defining more than one algorithm given a RegressionProblemType.</p>
+<dl class="type">
+<dt id="skylark::algorithms::accelerated_regression_solver_t:RegressionProblemType.RhsType.SolType.AlgTag:__class">
+<em class="property">type </em>class <tt class="descclassname">skylark::algorithms::</tt><tt class="descname">accelerated_regression_solver_t&lt;RegressionProblemType, RhsType, SolType, AlgTag&gt;</tt><a class="headerlink" href="#skylark::algorithms::accelerated_regression_solver_t:RegressionProblemType.RhsType.SolType.AlgTag:__class" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Like <em>regression_solver_t</em>, defines a solver for the regression problem supplied in the constructor. Here, one uses
+algorithms that are accelerated using sketching. Note, that the solver is accelerated, and not approximated. That is,
+the original, and not an approximation, of the regression problem is solved.</p>
+<dl class="type">
+<dt id="skylark::algorithms::sketched_regression_solver_t:RegressionProblemType.RhsType.SolType.SketchedRegressionType.SketchType.SketchRhsType.SketchTransformType.ExactAlgTag:__class">
+<em class="property">type </em>class <tt class="descclassname">skylark::algorithms::</tt><tt class="descname">sketched_regression_solver_t&lt;RegressionProblemType, RhsType, SolType, SketchedRegressionType, SketchType, SketchRhsType, SketchTransformType, ExactAlgTag&gt;</tt><a class="headerlink" href="#skylark::algorithms::sketched_regression_solver_t:RegressionProblemType.RhsType.SolType.SketchedRegressionType.SketchType.SketchRhsType.SketchTransformType.ExactAlgTag:__class" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Approximate regression solver using sketching (sketch-and-solve). The basic idea is that a regression problem is sketched, and then the new
+problem is solved exactly.</p>
+</div>
+<div class="section" id="to-be-expanded">
+<h3>To Be Expanded...<a class="headerlink" href="#to-be-expanded" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="krylov-methods">
+<h2>Krylov methods<a class="headerlink" href="#krylov-methods" title="Permalink to this headline">¶</a></h2>
+<p>To be added...</p>
+</div>
+</div>
+
+
+      </div>
+      <div class="bottomnav">
+      
+        <p>
+        <a class="uplink" href="index.html">Contents</a>
+        </p>
+
+      </div>
+
+    <div class="footer">
+        &copy; Copyright IBM Corporation 2012-2014.  All Rights Reserved.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

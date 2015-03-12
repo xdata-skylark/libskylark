@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "../utility/randgen.hpp"
 #include "boost/smart_ptr.hpp"
 
 namespace skylark { namespace sketch {

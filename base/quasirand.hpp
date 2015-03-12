@@ -4,7 +4,7 @@
 #include "boost/property_tree/ptree.hpp"
 #include "boost/math/special_functions/prime.hpp"
 
-namespace skylark { namespace utility {
+namespace skylark { namespace base {
 
 inline double RadialInverseFunction(int base, size_t idx)
 {

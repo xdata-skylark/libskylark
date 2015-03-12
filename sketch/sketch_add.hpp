@@ -32,9 +32,9 @@ sketch_transform_data_t::from_ptree(const boost::property_tree::ptree& pt) {
     AUTO_LOAD_DISPATCH(MaternRFT, MaternRFT_data_t);
 
     AUTO_LOAD_DISPATCH(GaussianQRFT,
-        GaussianQRFT_data_t<utility::qmc_sequence_container_t>);
+        GaussianQRFT_data_t<base::qmc_sequence_container_t>);
     AUTO_LOAD_DISPATCH(LaplacianQRFT,
-        LaplacianQRFT_data_t<utility::qmc_sequence_container_t>);
+        LaplacianQRFT_data_t<base::qmc_sequence_container_t>);
 
     AUTO_LOAD_DISPATCH(ExpSemigroupRLT, ExpSemigroupRLT_data_t);
     AUTO_LOAD_DISPATCH(FastGaussianRFT, FastGaussianRFT_data_t);
@@ -73,9 +73,9 @@ sketch_transform_t<IT, OT>::from_ptree(const boost::property_tree::ptree& pt) {
     AUTO_LOAD_DISPATCH(MaternRFT,  MaternRFT_t);
 
     if (type == "GaussianQRFT")
-        return new GaussianQRFT_t<IT, OT, utility::qmc_sequence_container_t>(pt);
+        return new GaussianQRFT_t<IT, OT, base::qmc_sequence_container_t>(pt);
     if (type == "LaplacianQRFT")
-        return new LaplacianQRFT_t<IT, OT, utility::qmc_sequence_container_t>(pt);
+        return new LaplacianQRFT_t<IT, OT, base::qmc_sequence_container_t>(pt);
 
     AUTO_LOAD_DISPATCH(GaussianQRFT,  GaussianRFT_t);
     AUTO_LOAD_DISPATCH(LaplacianQRFT, LaplacianRFT_t);

@@ -5,7 +5,6 @@
 
 #include "transforms.hpp"
 #include "dense_transform_data.hpp"
-#include "../utility/comm.hpp"
 #include "../utility/get_communicator.hpp"
 
 #include "sketch_params.hpp"

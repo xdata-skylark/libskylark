@@ -2,7 +2,6 @@
 #define SKYLARK_RFUT_ELEMENTAL_HPP
 
 #include <boost/mpi.hpp>
-#include "../utility/randgen.hpp"
 
 namespace skylark { namespace sketch {
 

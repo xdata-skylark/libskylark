@@ -6,7 +6,7 @@
 #include <Random123/threefry.h>
 #include <Random123/MicroURNG.hpp>
 
-namespace skylark { namespace utility {
+namespace skylark { namespace base {
 
 
 /**
@@ -192,6 +192,6 @@ private:
     const key_t _key;
 };
 
-} } /** skylark::utility */
+} } /** skylark::base */
 
 #endif // SKYLARK_RANDGEN_HPP

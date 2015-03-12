@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "../utility/randgen.hpp"
 #include "../utility/distributions.hpp"
 
 namespace skylark { namespace sketch {

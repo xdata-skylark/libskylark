@@ -41,7 +41,7 @@ struct gaussian_t {
     }
 
     int qrft_sequence_dim() const {
-        return sketch::GaussianQRFT_data_t<utility::qmc_sequence_container_t>::
+        return sketch::GaussianQRFT_data_t<base::qmc_sequence_container_t>::
             qmc_sequence_dim(_N);
     }
 
@@ -109,7 +109,7 @@ struct laplacian_t {
     }
 
     int qrft_sequence_dim() const {
-        return sketch::LaplacianQRFT_data_t<utility::qmc_sequence_container_t>::
+        return sketch::LaplacianQRFT_data_t<base::qmc_sequence_container_t>::
             qmc_sequence_dim(_N);
     }
 
@@ -149,7 +149,7 @@ struct expsemigroup_t {
     }
 
     int qrft_sequence_dim() const {
-        return sketch::ExpSemigroupQRLT_data_t<utility::qmc_sequence_container_t>::
+        return sketch::ExpSemigroupQRLT_data_t<base::qmc_sequence_container_t>::
             qmc_sequence_dim(_N);
     }
 

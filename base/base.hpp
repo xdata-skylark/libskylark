@@ -23,6 +23,8 @@
 #include "Gemv.hpp"
 #include "inner.hpp"
 #include "svd.hpp"
+#include "randgen.hpp"
+#include "quasirand.hpp"
 #include "context.hpp"
 #include "random_matrices.hpp"
 

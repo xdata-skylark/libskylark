@@ -4,7 +4,6 @@
 #include "config.h"
 
 #include "exception.hpp"
-#include "../utility/randgen.hpp"
 
 #include "boost/smart_ptr.hpp"
 #include "boost/property_tree/ptree.hpp"
@@ -91,9 +90,9 @@ struct context_t {
      * the internal state of the context synchronized.
      */
      template <typename Distribution>
-     skylark::utility::random_samples_array_t<Distribution>
+     random_samples_array_t<Distribution>
      allocate_random_samples_array(size_t size, Distribution& distribution) {
-         skylark::utility::random_samples_array_t<Distribution>
+         random_samples_array_t<Distribution>
              random_samples_array(_counter, size, _seed, distribution);
          _counter += size;
          return random_samples_array;
@@ -109,7 +108,7 @@ struct context_t {
     std::vector<typename Distribution::result_type>
       generate_random_samples_array(size_t size,
         Distribution& distribution) {
-        skylark::utility::random_samples_array_t<Distribution>
+        random_samples_array_t<Distribution>
             allocated_random_samples_array(_counter, size, _seed, distribution);
         _counter += size;
         std::vector<typename Distribution::result_type> random_samples_array;
@@ -117,8 +116,8 @@ struct context_t {
             random_samples_array.resize(size);
         } catch (std::bad_alloc ba) {
             SKYLARK_THROW_EXCEPTION (
-                base::allocation_exception()
-                    << base::error_msg(ba.what()) );
+                allocation_exception()
+                    << error_msg(ba.what()) );
         }
         for(size_t i = 0; i < size; i++) {
             random_samples_array[i] = allocated_random_samples_array[i];
@@ -135,8 +134,8 @@ struct context_t {
      * @caveat This should be used as a global operation to keep the
      * the internal state of the context synchronized.
      */
-    skylark::utility::random_array_t allocate_random_array(size_t size) {
-        skylark::utility::random_array_t random_array(_counter, size, _seed);
+    random_array_t allocate_random_array(size_t size) {
+        random_array_t random_array(_counter, size, _seed);
         _counter += size;
         return random_array;
     }
@@ -150,7 +149,7 @@ struct context_t {
      * the internal state of the context synchronized.
      */
      int random_int() {
-         skylark::utility::random_array_t random_array =
+         random_array_t random_array =
              allocate_random_array(1);
          int sample = random_array[0];
          return sample;

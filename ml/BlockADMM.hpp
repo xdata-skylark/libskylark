@@ -213,7 +213,7 @@ BlockADMMSolver<T>::BlockADMMSolver(skylark::base::context_t& context,
     this->regularizer = const_cast<regularization *> (regularizer);
     this->lambda = lambda;
     int blksize = int(ceil(double(NumFeatures) / NumFeaturePartitions));
-    skylark::utility::leaped_halton_sequence_t<double>
+    skylark::base::leaped_halton_sequence_t<double>
         qmcseq(kernel.qrft_sequence_dim()); // TODO size
     for(int i = 0; i < NumFeaturePartitions; i++) {
         starts[i] = i * blksize;
@@ -221,7 +221,7 @@ BlockADMMSolver<T>::BlockADMMSolver(skylark::base::context_t& context,
         int sj = finishes[i] - starts[i] + 1;
         featureMaps[i] =
             kernel.template create_qrft< T, LocalMatrixType,
-              skylark::utility::leaped_halton_sequence_t>(sj, qmcseq,
+              skylark::base::leaped_halton_sequence_t>(sj, qmcseq,
                   starts[i], context);
     }
     this->ScaleFeatureMaps = true;

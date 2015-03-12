@@ -8,7 +8,6 @@
 #include <vector>
 #include <boost/math/distributions.hpp>
 
-#include "../utility/quasirand.hpp"
 #include "boost/smart_ptr.hpp"
 
 namespace skylark { namespace sketch {

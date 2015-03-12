@@ -112,7 +112,7 @@ int AsyRGS(const base::sparse_matrix_t<T1>& A, const El::Matrix<T2>& B,
            int sweeps = params.syn_sweeps > 0 ?
                std::min(params.syn_sweeps, sweeps_left) : sweeps_left;
 
-           utility::random_samples_array_t<dtype> stepidxs =
+           base::random_samples_array_t<dtype> stepidxs =
                context.allocate_random_samples_array(sweeps * n, distribution);
 
 #          pragma omp parallel for default(shared) private(j)
@@ -177,7 +177,7 @@ int AsyRGS(const base::sparse_matrix_t<T1>& A, const El::Matrix<T2>& B,
             int sweeps = params.syn_sweeps > 0 ?
                 std::min(params.syn_sweeps, sweeps_left) : sweeps_left;
 
-            utility::random_samples_array_t<dtype> stepidxs =
+            base::random_samples_array_t<dtype> stepidxs =
                 context.allocate_random_samples_array(sweeps * n, distribution);
 
 #           pragma omp parallel for default(shared) private(j, d)

@@ -10,8 +10,6 @@
 #include "boost/foreach.hpp"
 #include "boost/property_tree/ptree.hpp"
 
-#include "../utility/randgen.hpp"
-
 namespace skylark { namespace sketch {
 
 /**

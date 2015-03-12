@@ -1,10 +1,7 @@
 #ifndef SKYLARK_UTILITY_HPP
 #define SKYLARK_UTILITY_HPP
 
-#include "comm.hpp"
 #include "distributions.hpp"
-#include "randgen.hpp"
-#include "quasirand.hpp"
 #include "get_communicator.hpp"
 #include "typer.hpp"
 #include "hash.hpp"

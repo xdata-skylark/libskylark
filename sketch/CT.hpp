@@ -23,7 +23,7 @@ struct CT_t :
 
     // We use composition to defer calls to dense_transform_t
     typedef boost::random::cauchy_distribution<double> distribution_type;
-    typedef utility::random_samples_array_t<distribution_type> accessor_type;
+    typedef base::random_samples_array_t<distribution_type> accessor_type;
     typedef dense_transform_t<InputMatrixType, OutputMatrixType, accessor_type>
     transform_t;
 

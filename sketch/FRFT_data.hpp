@@ -7,8 +7,6 @@
 
 #include <vector>
 
-#include "../utility/randgen.hpp"
-
 namespace skylark { namespace sketch {
 
 #if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT

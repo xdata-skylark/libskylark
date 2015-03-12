@@ -23,7 +23,7 @@ template<typename T, template<typename> class DistributionType>
 void RandomMatrix(El::Matrix<T> &A, El::Int m, El::Int n,
     DistributionType<T> &dist, context_t &context) {
 
-    utility::random_samples_array_t< DistributionType<T> > entries =
+    random_samples_array_t< DistributionType<T> > entries =
         context.allocate_random_samples_array(m * n, dist);
 
     A.Resize(m, n);
@@ -41,7 +41,7 @@ template<typename T, template<typename, typename> class DistributionType>
 void RandomMatrix(El::Matrix<T> &A, El::Int m, El::Int n,
     DistributionType<T, T> &dist, context_t &context) {
 
-    utility::random_samples_array_t< DistributionType<T, T> > entries =
+    random_samples_array_t< DistributionType<T, T> > entries =
         context.allocate_random_samples_array(m * n, dist);
 
     A.Resize(m, n);
@@ -71,7 +71,7 @@ template<typename T, El::Distribution CD, El::Distribution RD,
 void RandomMatrix(El::DistMatrix<T, CD, RD> &A, El::Int m, El::Int n,
     DistributionType<T> &dist, context_t &context) {
 
-    utility::random_samples_array_t< DistributionType<T> > entries =
+    random_samples_array_t< DistributionType<T> > entries =
         context.allocate_random_samples_array(m * n, dist);
 
     A.Resize(m, n);
@@ -104,7 +104,7 @@ template<typename T, El::Distribution CD, El::Distribution RD,
 void RandomMatrix(El::DistMatrix<T, CD, RD> &A, El::Int m, El::Int n,
     DistributionType<T, T> &dist, context_t &context) {
 
-    utility::random_samples_array_t< DistributionType<T, T> > entries =
+    random_samples_array_t< DistributionType<T, T> > entries =
         context.allocate_random_samples_array(m * n, dist);
 
     A.Resize(m, n);

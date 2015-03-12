@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "../utility/randgen.hpp"
 #include "boost/smart_ptr.hpp"
 
 namespace skylark { namespace sketch {
@@ -15,13 +14,13 @@ namespace skylark { namespace sketch {
 template <template <typename> class DistributionType>
 struct random_dense_transform_data_t :
         public dense_transform_data_t<
-    utility::random_samples_array_t< DistributionType<double> > > {
+    base::random_samples_array_t< DistributionType<double> > > {
 
     // Note: we always generate doubles for array values,
     // but when applying to floats the size can be reduced.
     typedef double value_type;
     typedef DistributionType<value_type> distribution_type;
-    typedef utility::random_samples_array_t<distribution_type>
+    typedef base::random_samples_array_t<distribution_type>
         accessor_type;
 
     typedef dense_transform_data_t<accessor_type> base_t;

@@ -13,7 +13,56 @@
 
 namespace skylark { namespace nla {
 
+/**
+ * Power iteration from a specific starting vector (the V input).
+ */
+template<typename MatrixType, typename LeftType, typename RightType>
+void PowerIteration(El::Orientation orientation, const MatrixType &A, 
+    RightType &V, LeftType &U,
+    int iternum, bool ortho = false) {
 
+    typedef typename utility::typer_t<MatrixType>::value_type value_t;
+    typedef typename utility::typer_t<MatrixType>::index_type index_t;
+
+    typedef MatrixType matrix_type;
+    typedef RightType right_type;
+    typedef LeftType left_type;
+
+    index_t m = base::Height(A);
+    index_t n = base::Width(A);
+    index_t k = base::Width(V);
+
+    El::Orientation adjorientation;
+    if (orientation == El::ADJOINT || orientation == El::TRANSPOSE) {
+        U.Resize(n, k);
+        adjorientation = El::NORMAL;
+    } else {
+        U.Resize(m, k);
+        adjorientation = El::ADJOINT;
+    }
+
+    if (k == 1) {
+        if (ortho) El::Scale(1.0 / El::Nrm2(V), V);
+        for(int i = 0; i < iternum; i++) {
+            base::Gemm(orientation, El::NORMAL, 1.0, A, V, U);
+            if (ortho) El::Scale(1.0 / El::Nrm2(U), U);
+            base::Gemm(adjorientation, El::NORMAL, 1.0, A, U, V);
+            if (ortho) El::Scale(1.0 / El::Nrm2(V), V);
+        }
+        base::Gemm(El::NORMAL, El::NORMAL, 1.0, A, V, U);
+        if (ortho) El::Scale(1.0 / El::Nrm2(U), U);
+    } else {
+        if (ortho) base::qr::ExplicitUnitary(V);
+        for(int i = 0; i < iternum; i++) {
+            base::Gemm(orientation, El::NORMAL, 1.0, A, V, U);
+            if (ortho) base::qr::ExplicitUnitary(U);
+            base::Gemm(adjorientation, El::NORMAL, 1.0, A, U, V);
+            if (ortho) base::qr::ExplicitUnitary(V);
+        }
+        base::Gemm(orientation, El::NORMAL, 1.0, A, V, U);
+        if (ortho) base::qr::ExplicitUnitary(U);
+    }
+}
 struct rand_svd_params_t : public base::params_t {
 
     int oversampling;
@@ -56,11 +105,7 @@ void operator()(InputMatrixType &A,
 
 
     /**
-     * Sanity checks, raise an exception if:
-     *   i)   the target rank is too large for the given input matrix or
-     *   ii)  the number of columns of the sketched matrix either:
-     *        - exceeds its width or
-     *        - is less than the target rank
+     * Check if sizes match.
      */
     if ((target_rank > std::min(input_height, input_width)) ||
         (sketch_size > input_width) ||
@@ -81,31 +126,13 @@ void operator()(InputMatrixType &A,
     SketchTransform<InputMatrixType, UMatrixType> sketch_transform(sketch_data);
     sketch_transform.apply(A, Q, sketch::rowwise_tag());
 
-    /** The three steps of the sketched svd approach follow:
-     *  - apply sketching
-     *  - approximate range of A (find Q)
-     *  - SVD
-     */
-    UMatrixType Y;
+    UMatrixType Y;  // TODO select type
+    PowerIteration(El::ADJOINT, A, Q, Y, params.num_iterations, !params.skip_qr);
 
-    /** Q = QR(Q) */
-    base::qr::ExplicitUnitary(Q);
-
-    /** q steps of subspace iteration */
-    for(int step = 0; step < params.num_iterations; step++) {
-        /** Q = QR(A^T * Q) */
-        base::Gemm(El::ADJOINT, El::NORMAL, double(1), A, Q, Y);
-        base::qr::ExplicitUnitary(Y);
-        base::Gemm(El::NORMAL, El::NORMAL, double(1), A,Y, Q);
-        if (!params.skip_qr)
-            base::qr::ExplicitUnitary(Q);
-    }
-
-    /** SVD of projected A and then project-back left singular vectors */
     UMatrixType B;
-    base::Gemm(El::ADJOINT, El::NORMAL, double(1), Q, A, B);
+    El::Transpose(Y, B);
     base::SVD(B, SV, V);
-    base::Gemm(El::NORMAL, El::NORMAL, double(1), Q, B, U);
+    base::Gemm(El::NORMAL, El::NORMAL, 1.0, Q, B, U);
 }
 };
 

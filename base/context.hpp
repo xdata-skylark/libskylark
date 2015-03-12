@@ -4,6 +4,7 @@
 #include "config.h"
 
 #include "exception.hpp"
+#include "randgen.hpp"
 
 #include "boost/smart_ptr.hpp"
 #include "boost/property_tree/ptree.hpp"

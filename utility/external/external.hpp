@@ -9,7 +9,4 @@
 /** Include the printing function */
 #include "print.hpp"
 
-/** Include the empty matrix utility */
-#include "empty_matrix.hpp"
-
 #endif /** SKYLARK_EXTERNAL_HPP */

@@ -14,18 +14,22 @@
 namespace skylark { namespace nla {
 
 
-struct rand_svd_params_t {
+struct rand_svd_params_t : public base::params_t {
 
     int oversampling;
-    sketch::c::transform_type_t	transform;
     int num_iterations;
     bool skip_qr;
 
     rand_svd_params_t(int oversampling,
-        sketch::c::transform_type_t transform = sketch::c::transform_type_t::JLT,
-        int num_iterations = 0, bool skip_qr = 0) : 
-        oversampling(oversampling), transform(transform),
-        num_iterations(num_iterations), skip_qr(skip_qr) {};
+        int num_iterations = 0,
+        bool skip_qr = 0,
+        bool am_i_printing = 0,
+        int log_level = 0,
+        std::ostream &log_stream = std::cout,
+        int debug_level = 0) :
+        base::params_t(am_i_printing, log_level, log_stream, debug_level),
+        oversampling(oversampling),  num_iterations(num_iterations),
+        skip_qr(skip_qr) {};
 };
 
 template < template <typename, typename> class SketchTransform >
@@ -43,7 +47,9 @@ void operator()(InputMatrixType &A,
     rand_svd_params_t params,
     skylark::base::context_t& context) {
 
-    // TODO: input matrix should provide Height() and Width()
+    bool log_lev1 = params.am_i_printing && params.log_level >= 1;
+    bool log_lev2 = params.am_i_printing && params.log_level >= 2;
+
     int input_height = A.Height();
     int input_width  = A.Width();
     int sketch_size = target_rank + params.oversampling;
@@ -59,10 +65,11 @@ void operator()(InputMatrixType &A,
     if ((target_rank > std::min(input_height, input_width)) ||
         (sketch_size > input_width) ||
         (sketch_size < target_rank)) {
-        std::ostringstream msg;
-        msg << "Incompatible matrix dimensions and target rank\n";
+        std::string msg = "Incompatible matrix dimensions and target rank";
+        if (log_lev1)
+            params.log_stream << msg << std::endl;
         SKYLARK_THROW_EXCEPTION(base::skylark_exception()
-            << base::error_msg(msg.str()));
+            << base::error_msg(msg));
     }
 
     /** Apply sketch transformation on the input matrix */
@@ -71,8 +78,6 @@ void operator()(InputMatrixType &A,
     typedef typename SketchTransform<InputMatrixType, UMatrixType>::data_type
         sketch_data_type;
     sketch_data_type sketch_data(input_width, sketch_size, context);
-    //typedef typename SketchTransform<InputMatrixType, UMatrixType>
-    //  sketch_transform_type;
     SketchTransform<InputMatrixType, UMatrixType> sketch_transform(sketch_data);
     sketch_transform.apply(A, Q, sketch::rowwise_tag());
 

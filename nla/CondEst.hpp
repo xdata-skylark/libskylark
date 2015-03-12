@@ -141,7 +141,7 @@ int CondEst(const MatrixType& A, double &cond,
     sol_print_t::apply(v, "v Init", params.am_i_printing, params.debug_level);
 
     /* Create w=v and x=0 */
-    base::Zero(x);
+    El::Zero(x);
     left_type w(v);
     double phibar = beta, rhobar = alpha, nrm_r;
 

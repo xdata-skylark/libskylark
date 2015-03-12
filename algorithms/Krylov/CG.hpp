@@ -85,7 +85,7 @@ int CG(const MatrixType& A, const RhsType& B, SolType& X,
             for(index_t i = 0; i < k; i++)
                 beta[i] = rho[i] / rho0[i];
 
-        base::DiagonalScale(El::RIGHT, El::NORMAL, beta, P);
+        El::DiagonalScale(El::RIGHT, El::NORMAL, beta, P);
         base::Axpy(1.0, Z, P);
 
         base::Gemm(El::ADJOINT, El::NORMAL, 1.0, A, P, Q);

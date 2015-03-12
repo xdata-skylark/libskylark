@@ -85,7 +85,7 @@ double build_precond(SketchType& SA,
     El::SVD(SA, s, V);
     for(int i = 0; i < n; i++)
         s.Set(i, 0, 1 / s.Get(i, 0));
-    base::DiagonalScale(El::RIGHT, El::NORMAL, s, V);
+    El::DiagonalScale(El::RIGHT, El::NORMAL, s, V);
     P =
         new algorithms::inplace_mat_precond_t<SolType, PrecondType>(V);
     return s.Get(0,0) / s.Get(n-1, 0);

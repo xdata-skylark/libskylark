@@ -104,8 +104,8 @@ int FlexibleCG(const MatrixType& A, const RhsType& B, SolType& X,
             malpha[i] = -alpha[i];
         }
 
-        base::DiagonalScale(El::RIGHT, El::NORMAL, beta, d);
-        base::DiagonalScale(El::RIGHT, El::NORMAL, beta, l);
+        El::DiagonalScale(El::RIGHT, El::NORMAL, beta, d);
+        El::DiagonalScale(El::RIGHT, El::NORMAL, beta, l);
 
         base::Axpy(alpha, d, X);
         base::Axpy(malpha, l, R);

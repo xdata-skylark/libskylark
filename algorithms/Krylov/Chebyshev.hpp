@@ -50,7 +50,7 @@ void ChebyshevLS(const MatrixType& A, const RhsType& B, SolType& X,
     double d = (sigma_U * sigma_U + sigma_L * sigma_L) / 2;
     double c = (sigma_U * sigma_U - sigma_L * sigma_L) / 2;
 
-    base::Zero(X);
+    El::Zero(X);
     rhs_type R(B);
     sol_type V(X), AR(X);
 
@@ -75,7 +75,7 @@ void ChebyshevLS(const MatrixType& A, const RhsType& B, SolType& X,
 
         base::Gemm(El::ADJOINT, El::NORMAL, 1.0, A, R, AR);
         P.apply_adjoint(AR);
-        base::Scale(beta, V);
+        El::Scale(beta, V);
         base::Axpy(1.0, AR, V);
         P.apply(V);
         base::Axpy(alpha, V, X);

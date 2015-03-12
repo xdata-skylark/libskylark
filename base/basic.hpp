@@ -1,32 +1,7 @@
-#ifndef SKYLARK_SCALE_HPP
-#define SKYLARK_SCALE_HPP
+#ifndef SKYLARK_BASIC_HPP
+#define SKYLARK_BASIC_HPP
 
 namespace skylark { namespace base {
-
-
-template<typename T>
-inline void Zero(El::Matrix<T>& A) {
-    El::Zero(A);
-}
-
-template<typename T, El::Distribution U, El::Distribution V>
-inline void Zero(El::DistMatrix<T, U, V>& A) {
-    El::Zero(A);
-}
-
-
-template<typename T>
-inline void DiagonalScale(El::LeftOrRight s, El::Orientation o,
-    const El::Matrix<T>& d, El::Matrix<T>& X) {
-    El::DiagonalScale(s, o, d, X);
-}
-
-template<typename T, El::Distribution U, El::Distribution V,
-         El::Distribution W, El::Distribution Z>
-inline void DiagonalScale(El::LeftOrRight s, El::Orientation o,
-    const El::DistMatrix<T, U, V>& d, El::DistMatrix<T, W, Z>& X) {
-    El::DiagonalScale(s, o, d, X);
-}
 
 template<typename T>
 inline void Axpy(T alpha, const El::Matrix<T>& X, El::Matrix<T>& Y) {
@@ -71,12 +46,6 @@ inline void Axpy(const El::DistMatrix<T, El::STAR, El::STAR> &alphas,
     }
 }
 
-template<typename T, El::Distribution U, El::Distribution V>
-inline void Scale(const T s, El::DistMatrix<T, U, V>& X) {
-    El::Scale(s, X);
-}
-
-
 } } // namespace skylark::base
 
-#endif // SKYLARK_COPY_HPP
+#endif // SKYLARK_BASIC_HPP

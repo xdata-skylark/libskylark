@@ -22,6 +22,7 @@
 #include "Gemm.hpp"
 #include "Gemv.hpp"
 #include "inner.hpp"
+#include "QR.hpp"
 #include "svd.hpp"
 #include "randgen.hpp"
 #include "quasirand.hpp"

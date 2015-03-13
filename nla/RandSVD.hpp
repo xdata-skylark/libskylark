@@ -1,15 +1,9 @@
 #ifndef SKYLARK_RAND_SVD_HPP
 #define SKYLARK_RAND_SVD_HPP
 
-#include "config.h"
-#include "../base/exception.hpp"
-#include "../base/svd.hpp"
-#include "../base/QR.hpp"
-#include "../base/Gemm.hpp"
-#include "../sketch/capi/sketchc.hpp"
-
 
 #include <El.hpp>
+#include <../sketch/sketch.hpp>
 
 namespace skylark { namespace nla {
 
@@ -63,13 +57,15 @@ void PowerIteration(El::Orientation orientation, const MatrixType &A,
         if (ortho) base::qr::ExplicitUnitary(U);
     }
 }
-struct rand_svd_params_t : public base::params_t {
 
-    int oversampling;
+struct approximate_svd_params_t : public base::params_t {
+
+    int oversampling_ratio, oversampling_additive;
     int num_iterations;
     bool skip_qr;
 
-    rand_svd_params_t(int oversampling,
+    approximate_svd_params_t(int oversampling_ratio = 2,
+        int oversampling_additive = 0,
         int num_iterations = 0,
         bool skip_qr = 0,
         bool am_i_printing = 0,
@@ -77,39 +73,27 @@ struct rand_svd_params_t : public base::params_t {
         std::ostream &log_stream = std::cout,
         int debug_level = 0) :
         base::params_t(am_i_printing, log_level, log_stream, debug_level),
-        oversampling(oversampling),  num_iterations(num_iterations),
-        skip_qr(skip_qr) {};
+        oversampling_ratio(oversampling_ratio),  
+        oversampling_additive(oversampling_additive),
+        num_iterations(num_iterations), skip_qr(skip_qr) {};
 };
 
-template < template <typename, typename> class SketchTransform >
-struct randsvd_t {
-
-template <typename InputMatrixType,
-          typename UMatrixType,
-          typename SingularValuesMatrixType,
-          typename VMatrixType>
-void operator()(InputMatrixType &A,
-    int target_rank,
-    UMatrixType &U,
-    SingularValuesMatrixType &SV,
-    VMatrixType &V,
-    rand_svd_params_t params,
-    skylark::base::context_t& context) {
+template <typename InputType, typename UType, typename SType, typename VType>
+void ApproximateSVD(InputType &A, UType &U, SType &S, VType &V, int rank,
+    base::context_t& context,
+    approximate_svd_params_t params = approximate_svd_params_t()) {
 
     bool log_lev1 = params.am_i_printing && params.log_level >= 1;
     bool log_lev2 = params.am_i_printing && params.log_level >= 2;
 
-    int input_height = A.Height();
-    int input_width  = A.Width();
-    int sketch_size = target_rank + params.oversampling;
-
-
+    int m = base::Height(A);
+    int n = base::Width(A);
+    int k = std::max(rank, std::min(n,
+            params.oversampling_ratio * rank + params.oversampling_additive));
     /**
      * Check if sizes match.
      */
-    if ((target_rank > std::min(input_height, input_width)) ||
-        (sketch_size > input_width) ||
-        (sketch_size < target_rank)) {
+    if (rank > std::min(m, n)) {
         std::string msg = "Incompatible matrix dimensions and target rank";
         if (log_lev1)
             params.log_stream << msg << std::endl;
@@ -118,23 +102,20 @@ void operator()(InputMatrixType &A,
     }
 
     /** Apply sketch transformation on the input matrix */
-    UMatrixType Q(input_height, sketch_size);
+    UType Q(m, k);
+    sketch::JLT_t<InputType, UType> Omega(n, k, context);
+    Omega.apply(A, Q, sketch::rowwise_tag());
 
-    typedef typename SketchTransform<InputMatrixType, UMatrixType>::data_type
-        sketch_data_type;
-    sketch_data_type sketch_data(input_width, sketch_size, context);
-    SketchTransform<InputMatrixType, UMatrixType> sketch_transform(sketch_data);
-    sketch_transform.apply(A, Q, sketch::rowwise_tag());
-
-    UMatrixType Y;  // TODO select type
+    UType Y;  // TODO select type
     PowerIteration(El::ADJOINT, A, Q, Y, params.num_iterations, !params.skip_qr);
 
-    UMatrixType B;
+    // TODO : skip_qr is incorrect
+
+    UType B;
     El::Transpose(Y, B);
-    base::SVD(B, SV, V);
+    base::SVD(B, S, V);
     base::Gemm(El::NORMAL, El::NORMAL, 1.0, Q, B, U);
 }
-};
 
 } } /** namespace skylark::nla */
 

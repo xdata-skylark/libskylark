@@ -23,6 +23,7 @@ int main(int argc, char* argv[]) {
     int provided;
     MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
 #endif
+
     boost::mpi::environment env(argc, argv);
     boost::mpi::communicator world;
     MPI_Comm mpi_world(world);
@@ -45,7 +46,7 @@ int main(int argc, char* argv[]) {
     //star_star_matrix_t S(100,100);
     dist_matrix_t S(100,100);
     El::Zero(S);
-	
+
     vector<double> diag(100);
 
     for( int j=0; j<100; ++j )
@@ -73,13 +74,9 @@ int main(int argc, char* argv[]) {
     dist_matrix_t U1(grid), V1(grid);
     vr_star_dist_matrix_t S2;
 
-    int sketch_size	=	50;
-    int target_rank	=	10;
+    int rank = 10;
 
-    skylark::nla::rand_svd_params_t params(sketch_size-target_rank);
-
-    skylark::nla::randsvd_t<skylark::sketch::JLT_t> rand_svd;
-    rand_svd(A2, target_rank, U1, S2, V1, params, context);
+    skylark::nla::ApproximateSVD(A2, U1, S2, V1, rank, context);
 
     El::Print(S2, "S2");
 

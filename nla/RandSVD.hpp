@@ -3,7 +3,7 @@
 
 
 #include <El.hpp>
-#include <../sketch/sketch.hpp>
+#include "../sketch/sketch.hpp"
 
 namespace skylark { namespace nla {
 

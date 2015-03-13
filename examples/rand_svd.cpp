@@ -1,84 +1,52 @@
-#include <skylark.hpp>
-#include <boost/mpi.hpp>
-#include <El.hpp>
 #include <iostream>
-#include "../base/QR.hpp"
-#include <cfloat>
-#include <vector>
 
+#include <El.hpp>
+#include <boost/mpi.hpp>
+#include <boost/format.hpp>
+#include <skylark.hpp>
 
-/** Aliases for matrix types */
-typedef El::DistMatrix<double> dist_matrix_t;
-typedef El::Matrix<double> matrix_t;
-typedef El::DistMatrix<double, El::VR, El::STAR> vr_star_dist_matrix_t;
-typedef El::DistMatrix<double, El::STAR, El::STAR> star_star_matrix_t;
-typedef skylark::sketch::JLT_t<dist_matrix_t, dist_matrix_t> sketch_transform_t;
-
-using namespace std;
+const int m = 5000;
+const int n = 100;
+const int k = 10;
 
 int main(int argc, char* argv[]) {
 
-   /** Initialize MPI  */
-#ifdef SKYLARK_HAVE_OPENMP
-    int provided;
-    MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
-#endif
+    El::Initialize(argc, argv);
 
-    boost::mpi::environment env(argc, argv);
     boost::mpi::communicator world;
-    MPI_Comm mpi_world(world);
-    El::Grid grid(mpi_world);
+    int rank = world.rank();
 
-    /** Initialize Elemental */
-    El::Initialize (argc, argv);
+    skylark::base::context_t context(38734);
 
-    /** Initialize context */
-    skylark::base::context_t context(0);
+    /** Generate matrices U, S, V*/
+    El::DistMatrix<double> U;
+    skylark::base::UniformMatrix(U, m, n, context);
+    skylark::base::qr::ExplicitUnitary(U);
 
-    /** Declare matrices */
-    dist_matrix_t A(grid), B(grid), C(grid);
-    El::Uniform(B, 5000, 100);
-    skylark::base::qr::ExplicitUnitary(B);
+    El::DistMatrix<double> V;
+    skylark::base::UniformMatrix(V, n, n, context);
+    skylark::base::qr::ExplicitUnitary(V);
 
-    El::Uniform(C, 100, 100);
-    skylark::base::qr::ExplicitUnitary(C);
+    El::DistMatrix<double> S(n, 1);
+    for(int i = 0; i < n; i++) S.Set(i, 0, exp(-i) * 100);
 
-    //star_star_matrix_t S(100,100);
-    dist_matrix_t S(100,100);
-    El::Zero(S);
+    /* Compute A = U * S * V^T */
+    El::DistMatrix<double> VS = V;
+    El::DiagonalScale(El::RIGHT, El::NORMAL, S, VS);
 
-    vector<double> diag(100);
+    El::DistMatrix<double> A;
+    El::Gemm(El::NORMAL, El::ADJOINT, 1.0, U, VS, A);
 
-    for( int j=0; j<100; ++j )
-    {
-	diag[j] = exp(-j)*100;
-        std::cout << exp(-j) *100 << "\n";
+    /* Compute approximate SVD */
+    El::DistMatrix<double> U1, S1, V1;
+    skylark::nla::ApproximateSVD(A, U1, S1, V1, k, context);
+
+    for(int i = 0; i < k; i++) {
+        std::cout << "TRUE: " << S.Get(i, 0) << "\tAPPROX: " << S1.Get(i, 0) 
+                  << "\tRelative error: " 
+                  << std::abs(S.Get(i, 0) - S1.Get(i, 0)) / S.Get(i, 0)
+                  << std::endl;
     }
-
-    El::Diagonal(S, diag);
-    dist_matrix_t tmp(grid);
-
-    El::Gemm(El::NORMAL, El::NORMAL, double(1), B, S, tmp);
-    El::Gemm(El::NORMAL, El::ADJOINT, double(1), tmp, C, A);
-
-    dist_matrix_t U(grid), V(grid);
-    vr_star_dist_matrix_t S1;
-
-    dist_matrix_t A1(A);
-    El::SVD(A1,S1,V);
-
-    El::Print(S1, "S1");
-
-    /** Declare matrices */
-    dist_matrix_t A2(A);
-    dist_matrix_t U1(grid), V1(grid);
-    vr_star_dist_matrix_t S2;
-
-    int rank = 10;
-
-    skylark::nla::ApproximateSVD(A2, U1, S2, V1, rank, context);
-
-    El::Print(S2, "S2");
 
     El::Finalize();
     return 0;

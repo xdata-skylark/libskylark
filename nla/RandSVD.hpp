@@ -43,9 +43,8 @@ void PowerIteration(El::Orientation orientation, const MatrixType &A,
             base::Gemm(adjorientation, El::NORMAL, 1.0, A, U, V);
             if (ortho) El::Scale(1.0 / El::Nrm2(V), V);
         }
-        base::Gemm(El::NORMAL, El::NORMAL, 1.0, A, V, U);
-        if (ortho) El::Scale(1.0 / El::Nrm2(U), U);
-    } else {
+        base::Gemm(orientation, El::NORMAL, 1.0, A, V, U);
+     } else {
         if (ortho) base::qr::ExplicitUnitary(V);
         for(int i = 0; i < iternum; i++) {
             base::Gemm(orientation, El::NORMAL, 1.0, A, V, U);
@@ -54,8 +53,7 @@ void PowerIteration(El::Orientation orientation, const MatrixType &A,
             if (ortho) base::qr::ExplicitUnitary(V);
         }
         base::Gemm(orientation, El::NORMAL, 1.0, A, V, U);
-        if (ortho) base::qr::ExplicitUnitary(U);
-    }
+     }
 }
 
 struct approximate_svd_params_t : public base::params_t {
@@ -90,6 +88,7 @@ void ApproximateSVD(InputType &A, UType &U, SType &S, VType &V, int rank,
     int n = base::Width(A);
     int k = std::max(rank, std::min(n,
             params.oversampling_ratio * rank + params.oversampling_additive));
+
     /**
      * Check if sizes match.
      */
@@ -109,11 +108,10 @@ void ApproximateSVD(InputType &A, UType &U, SType &S, VType &V, int rank,
     UType Y;  // TODO select type
     PowerIteration(El::ADJOINT, A, Q, Y, params.num_iterations, !params.skip_qr);
 
-    // TODO : skip_qr is incorrect
 
     UType B;
     El::Transpose(Y, B);
-    base::SVD(B, S, V);
+    El::SVD(B, S, V);
     base::Gemm(El::NORMAL, El::NORMAL, 1.0, Q, B, U);
 }
 

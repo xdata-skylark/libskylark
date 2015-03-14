@@ -11,7 +11,7 @@ namespace skylark { namespace nla {
  * Power iteration from a specific starting vector (the V input).
  */
 template<typename MatrixType, typename LeftType, typename RightType>
-void PowerIteration(El::Orientation orientation, const MatrixType &A, 
+void PowerIteration(El::Orientation orientation, const MatrixType &A,
     RightType &V, LeftType &U,
     int iternum, bool ortho = false) {
 
@@ -76,6 +76,15 @@ struct approximate_svd_params_t : public base::params_t {
         num_iterations(num_iterations), skip_qr(skip_qr) {};
 };
 
+/**
+ * Approximate SVD computation.
+ *
+ * Compute an approximate SVD-like decomposition of the input A (m-by-n).
+ * That is compute U (m-by-rank), S (rank-by-rank), and V (n-by-rank) such
+ * that A ~= U * S * V^T. S is diagonal, with positive values, U and V have
+ * orthonormal columns.
+ *
+ */
 template <typename InputType, typename UType, typename SType, typename VType>
 void ApproximateSVD(InputType &A, UType &U, SType &S, VType &V, int rank,
     base::context_t& context,
@@ -118,8 +127,9 @@ void ApproximateSVD(InputType &A, UType &U, SType &S, VType &V, int rank,
     /** Compute factorization & truncate to rank */
     VType B;
     El::SVD(V, S, B);
-    S.Resize(rank, 1); V.Resize(n, rank); B.Resize(n, rank);
-    base::Gemm(El::NORMAL, El::NORMAL, 1.0, Q, B, U);
+    S.Resize(rank, 1); V.Resize(n, rank); 
+    VType B1 = base::ColumnView(B, 0, rank);
+    base::Gemm(El::NORMAL, El::NORMAL, 1.0, Q, B1, U);
 }
 
 } } /** namespace skylark::nla */

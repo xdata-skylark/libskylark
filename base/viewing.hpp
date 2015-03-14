@@ -17,6 +17,15 @@ const El::Matrix<T> ColumnView(const El::Matrix<T>& B, int j, int width) {
     return A;
 }
 
+template<typename T, El::Distribution U, El::Distribution V>
+inline
+const El::DistMatrix<T,U,V> ColumnView(const El::DistMatrix<T,U,V>& B,
+    int j, int width) {
+    El::DistMatrix<T,U,V> A;
+    El::LockedView(A, B, 0, j, B.Height(), width);
+    return A;
+}
+
 template<typename T>
 inline void RowView(El::Matrix<T>& A, El::Matrix<T>& B,
     int i, int height) {

@@ -47,6 +47,7 @@ int main(int argc, char* argv[]) {
                   << "\tRelative error: "
                   << std::abs(S.Get(i, 0) - S1.Get(i, 0)) / S.Get(i, 0)
                   << std::endl;
+
     }
 
     El::Finalize();

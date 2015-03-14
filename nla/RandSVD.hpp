@@ -108,7 +108,7 @@ void ApproximateSVD(InputType &A, UType &U, SType &S, VType &V, int rank,
     UType Y;  // TODO select type
     PowerIteration(El::ADJOINT, A, Q, Y, params.num_iterations, !params.skip_qr);
 
-
+    // TODO can we avoid the transpose?
     UType B;
     El::Transpose(Y, B);
     El::SVD(B, S, V);

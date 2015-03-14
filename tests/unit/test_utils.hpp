@@ -1,8 +1,6 @@
 #ifndef TEST_UTILS_HPP
 #define TEST_UTILS_HPP
 
-#include "../../base/svd.hpp"
-
 #if SKYLARK_HAVE_BOOST
 #include <boost/test/minimal.hpp>
 #endif
@@ -71,7 +69,8 @@ void check(El::DistMatrix<double>& A,
     double threshold=1e-4) {
     El::DistMatrix<double> U, V;
     El::DistMatrix<double, El::VR, El::STAR> S_VR_STAR;
-    skylark::base::SVD(A, U, S_VR_STAR, V);
+    U = A;
+    El::SVD(U, S_VR_STAR, V);
     bool passed = equal_svd_product(A, U, S_VR_STAR, V, threshold);
     if (!passed) {
         BOOST_FAIL("Failure in [MC, MR] case");
@@ -86,7 +85,8 @@ void check(El::DistMatrix<double, ColDist, El::STAR>& A,
     El::DistMatrix<double, ColDist, El::STAR> A_CD_STAR, U_CD_STAR;
     El::DistMatrix<double, El::STAR, El::STAR> S_STAR_STAR, V_STAR_STAR;
     A_CD_STAR = A;
-    skylark::base::SVD(A_CD_STAR, U_CD_STAR, S_STAR_STAR, V_STAR_STAR);
+    U_CD_STAR = A_CD_STAR;
+    El::SVD(U_CD_STAR, S_STAR_STAR, V_STAR_STAR);
     bool passed = equal_svd_product(A_CD_STAR,
         U_CD_STAR, S_STAR_STAR, V_STAR_STAR, threshold);
     if (!passed) {
@@ -99,7 +99,8 @@ void check(El::DistMatrix<double, El::STAR, RowDist>& A,
     double threshold=1e-4) {
     El::DistMatrix<double, RowDist, El::STAR> V_RD_STAR;
     El::DistMatrix<double, El::STAR, El::STAR> S_STAR_STAR, U_STAR_STAR;
-    skylark::base::SVD(A, U_STAR_STAR, S_STAR_STAR, V_RD_STAR);
+    U_STAR_STAR = A;
+    El::SVD(U_STAR_STAR, S_STAR_STAR, V_RD_STAR);
     bool passed = equal_svd_product(A,
         U_STAR_STAR, S_STAR_STAR, V_RD_STAR, threshold);
     if (!passed) {

@@ -109,9 +109,10 @@ void ApproximateSVD(InputType &A, UType &U, SType &S, VType &V, int rank,
     PowerIteration(El::ADJOINT, A, Q, V,
         params.num_iterations, !params.skip_qr);
 
-    /** Compute factorization */
+    /** Compute factorization & truncate to rank */
     VType B;
     El::SVD(V, S, B);
+    S.Resize(rank, 1); V.Resize(n, rank); B.Resize(n, rank);
     base::Gemm(El::NORMAL, El::NORMAL, 1.0, Q, B, U);
 }
 

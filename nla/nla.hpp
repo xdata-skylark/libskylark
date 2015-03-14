@@ -2,7 +2,7 @@
 #define SKYLARK_NLA_HPP
 
 #include "spectral.hpp"
-#include "RandSVD.hpp"
+#include "svd.hpp"
 #include "least_squares.hpp"
 #include "CondEst.hpp"
 

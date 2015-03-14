@@ -47,14 +47,14 @@ if (SKYLARK_HAVE_FFTW)
                         ${ZLIB_LIBRARIES})
   install_targets(/bin/examples community)
 
-  add_executable(rand_svd rand_svd.cpp)
-  target_link_libraries(rand_svd
+  add_executable(svd svd.cpp)
+  target_link_libraries(svd
                         ${Elemental_LIBRARY}
                         ${FFTW_LIBRARY}
                         ${Pmrrr_LIBRARY}
                         ${SKYLARK_LIBS}
                         ${Boost_LIBRARIES})
-  install_targets(/bin/examples rand_svd)
+  install_targets(/bin/examples svd)
 
 endif (SKYLARK_HAVE_FFTW)
 

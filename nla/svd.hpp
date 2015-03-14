@@ -65,13 +65,13 @@ struct approximate_svd_params_t : public base::params_t {
     approximate_svd_params_t(int oversampling_ratio = 2,
         int oversampling_additive = 0,
         int num_iterations = 0,
-        bool skip_qr = 0,
-        bool am_i_printing = 0,
+        bool skip_qr = false,
+        bool am_i_printing = false,
         int log_level = 0,
         std::ostream &log_stream = std::cout,
         int debug_level = 0) :
         base::params_t(am_i_printing, log_level, log_stream, debug_level),
-        oversampling_ratio(oversampling_ratio),  
+        oversampling_ratio(oversampling_ratio),
         oversampling_additive(oversampling_additive),
         num_iterations(num_iterations), skip_qr(skip_qr) {};
 };
@@ -108,6 +108,12 @@ void ApproximateSVD(InputType &A, UType &U, SType &S, VType &V, int rank,
     /** Power iteration */
     PowerIteration(El::ADJOINT, A, Q, V,
         params.num_iterations, !params.skip_qr);
+
+    if (params.skip_qr) {
+        VType R;
+        El::qr::Explicit(Q, R);
+        El::Trsm(El::RIGHT, El::UPPER, El::NORMAL, El::NON_UNIT, 1.0, R, V);
+    }
 
     /** Compute factorization & truncate to rank */
     VType B;

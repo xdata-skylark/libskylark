@@ -36,12 +36,15 @@ int main(int argc, char* argv[]) {
     El::Gemm(El::NORMAL, El::ADJOINT, 1.0, U, VS, A);
 
     /* Compute approximate SVD */
+    skylark::nla::approximate_svd_params_t params;
+    params.skip_qr = false;
+
     El::DistMatrix<double> U1, S1, V1;
-    skylark::nla::ApproximateSVD(A, U1, S1, V1, k, context);
+    skylark::nla::ApproximateSVD(A, U1, S1, V1, k, context, params);
 
     for(int i = 0; i < k; i++) {
-        std::cout << "TRUE: " << S.Get(i, 0) << "\tAPPROX: " << S1.Get(i, 0) 
-                  << "\tRelative error: " 
+        std::cout << "TRUE: " << S.Get(i, 0) << "\tAPPROX: " << S1.Get(i, 0)
+                  << "\tRelative error: "
                   << std::abs(S.Get(i, 0) - S1.Get(i, 0)) / S.Get(i, 0)
                   << std::endl;
     }

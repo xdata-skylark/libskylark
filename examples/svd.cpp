@@ -1,8 +1,6 @@
 #include <iostream>
 
 #include <El.hpp>
-#include <boost/mpi.hpp>
-#include <boost/format.hpp>
 #include <skylark.hpp>
 
 const int m = 5000;

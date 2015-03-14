@@ -105,13 +105,14 @@ void ApproximateSVD(InputType &A, UType &U, SType &S, VType &V, int rank,
     sketch::JLT_t<InputType, UType> Omega(n, k, context);
     Omega.apply(A, Q, sketch::rowwise_tag());
 
-    UType Y;  // TODO select type
-    PowerIteration(El::ADJOINT, A, Q, Y, params.num_iterations, !params.skip_qr);
+    /** Power iteration */
+    PowerIteration(El::ADJOINT, A, Q, V,
+        params.num_iterations, !params.skip_qr);
 
-    // TODO can we avoid the transpose?
-    UType B;
-    El::Transpose(Y, B);
-    El::SVD(B, S, V);
+    /** Compute factorization & truncate to rank */
+    VType B;
+    El::SVD(V, S, B);
+    S.Resize(rank, 1); V.Resize(n, rank); B.Resize(n, rank);
     base::Gemm(El::NORMAL, El::NORMAL, 1.0, Q, B, U);
 }
 

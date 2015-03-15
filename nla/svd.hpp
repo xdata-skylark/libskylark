@@ -8,7 +8,22 @@
 namespace skylark { namespace nla {
 
 /**
- * Power iteration from a specific starting vector (the V input).
+ * Power iteration from a specific starting vectors (the V input).
+ *
+ * Performs power iteration on input A or A^T (depending on orientation).
+ * V is both the initial matrix on which the iteration is done, and
+ * the outuput of (A^T * A)^iternum * V (or (A* A^T)^iternum * V).
+ * U is  an auxilary variable (to specify types), but will also be equal to
+ * A * V on output (or A^T * V). ortho specifies whether to orthonomralize
+ * after each multipication by A or A^T -- essientally doing a subspace
+ * iteration. However, note that U = A * V (or A^T * V) always on output.
+ *
+ * \param orientation Whether to do on A or A^T.
+ * \param A input matrix
+ * \param V input starting vector, and output of iteration
+ * \param U on output: U = A*V or A^T*V.
+ * \param iternum how many iterations to do
+ * \param otho whether to orthonormalize after every multipication.
  */
 template<typename MatrixType, typename LeftType, typename RightType>
 void PowerIteration(El::Orientation orientation, const MatrixType &A,
@@ -56,6 +71,15 @@ void PowerIteration(El::Orientation orientation, const MatrixType &A,
      }
 }
 
+/**
+ * Parameter structure for approximate SVD
+ *
+ * oversampling_ratio, oversampling_additive:
+ *   given a rank r, the number of columns k in the iterates is
+ *   k = oversampling_ratio * r + oversampling_additive
+ * num_iterations: number of power iteration to do
+ * skip_qr: skip doing QR in every iteration (less accurate).
+ */
 struct approximate_svd_params_t : public base::params_t {
 
     int oversampling_ratio, oversampling_additive;
@@ -84,6 +108,19 @@ struct approximate_svd_params_t : public base::params_t {
  * that A ~= U * S * V^T. S is diagonal, with positive values, U and V have
  * orthonormal columns.
  *
+ * Based on:
+ *
+ * Halko, Martinsson and Tropp
+ * Finding Structure with Randomness: Probabilistic Algorithms for Constructing
+ * Approximate Matrix Decompositions
+ * SIAM Rev., 53(2), 217–288. (72 pages)
+ *
+ * \param A input matrix
+ * \param U output: approximate left-singular vectors
+ * \param S output: approximate singular values
+ * \param V output: approximate right-singular vectors
+ * \param rank target rank
+ * \param params parameter strcture
  */
 template <typename InputType, typename UType, typename SType, typename VType>
 void ApproximateSVD(InputType &A, UType &U, SType &S, VType &V, int rank,
@@ -127,7 +164,7 @@ void ApproximateSVD(InputType &A, UType &U, SType &S, VType &V, int rank,
     /** Compute factorization & truncate to rank */
     VType B;
     El::SVD(V, S, B);
-    S.Resize(rank, 1); V.Resize(n, rank); 
+    S.Resize(rank, 1); V.Resize(n, rank);
     VType B1 = base::ColumnView(B, 0, rank);
     base::Gemm(El::NORMAL, El::NORMAL, 1.0, Q, B1, U);
 }

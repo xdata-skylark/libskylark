@@ -19,6 +19,7 @@ namespace skylark { namespace nla {
  * iteration. However, note that U = A * V (or A^T * V) always on output.
  *
  * \param orientation Whether to do on A or A^T.
+ * \param iorientation Whether to hold iterates in tranpose or not.
  * \param A input matrix
  * \param V input starting vector, and output of iteration
  * \param U on output: U = A*V or A^T*V.
@@ -26,7 +27,8 @@ namespace skylark { namespace nla {
  * \param otho whether to orthonormalize after every multipication.
  */
 template<typename MatrixType, typename LeftType, typename RightType>
-void PowerIteration(El::Orientation orientation, const MatrixType &A,
+void PowerIteration(El::Orientation orientation, El::Orientation iorientation,
+    const MatrixType &A,
     RightType &V, LeftType &U,
     int iternum, bool ortho = false) {
 
@@ -39,35 +41,44 @@ void PowerIteration(El::Orientation orientation, const MatrixType &A,
 
     index_t m = base::Height(A);
     index_t n = base::Width(A);
-    index_t k = base::Width(V);
+    index_t k = (iorientation == El::NORMAL) ? base::Width(V) : base::Height(V);
 
     El::Orientation adjorientation;
     if (orientation == El::ADJOINT || orientation == El::TRANSPOSE) {
-        U.Resize(n, k);
+        if (iorientation == El::NORMAL)
+            U.Resize(n, k);
+        else
+            U.Resize(k, n);
         adjorientation = El::NORMAL;
     } else {
-        U.Resize(m, k);
+        if (iorientation == El::NORMAL)
+            U.Resize(m, k);
+        else
+            U.Resize(k, m);
         adjorientation = El::ADJOINT;
     }
 
     if (k == 1) {
         if (ortho) El::Scale(1.0 / El::Nrm2(V), V);
         for(int i = 0; i < iternum; i++) {
-            base::Gemm(orientation, El::NORMAL, 1.0, A, V, U);
+            base::Gemm(orientation, iorientation, 1.0, A, V, U);
             if (ortho) El::Scale(1.0 / El::Nrm2(U), U);
-            base::Gemm(adjorientation, El::NORMAL, 1.0, A, U, V);
+            base::Gemm(adjorientation, iorientation, 1.0, A, U, V);
             if (ortho) El::Scale(1.0 / El::Nrm2(V), V);
         }
-        base::Gemm(orientation, El::NORMAL, 1.0, A, V, U);
+        base::Gemm(orientation, iorientation, 1.0, A, V, U);
      } else {
-        if (ortho) base::qr::ExplicitUnitary(V);
+        if (ortho && iorientation == El::NORMAL) El::qr::ExplicitUnitary(V);
+        if (ortho && iorientation != El::NORMAL) El::lq::ExplicitUnitary(V);
         for(int i = 0; i < iternum; i++) {
-            base::Gemm(orientation, El::NORMAL, 1.0, A, V, U);
-            if (ortho) base::qr::ExplicitUnitary(U);
-            base::Gemm(adjorientation, El::NORMAL, 1.0, A, U, V);
-            if (ortho) base::qr::ExplicitUnitary(V);
+            base::Gemm(orientation, iorientation, 1.0, A, V, U);
+            if (ortho && iorientation == El::NORMAL) El::qr::ExplicitUnitary(U);
+            if (ortho && iorientation != El::NORMAL) El::lq::ExplicitUnitary(U);
+            base::Gemm(adjorientation, iorientation, 1.0, A, U, V);
+            if (ortho && iorientation == El::NORMAL) El::qr::ExplicitUnitary(V);
+            if (ortho && iorientation != El::NORMAL) El::lq::ExplicitUnitary(V);
         }
-        base::Gemm(orientation, El::NORMAL, 1.0, A, V, U);
+        base::Gemm(orientation, iorientation, 1.0, A, V, U);
      }
 }
 
@@ -132,8 +143,6 @@ void ApproximateSVD(InputType &A, UType &U, SType &S, VType &V, int rank,
 
     int m = base::Height(A);
     int n = base::Width(A);
-    int k = std::max(rank, std::min(n,
-            params.oversampling_ratio * rank + params.oversampling_additive));
 
     /**
      * Check if sizes match.
@@ -146,27 +155,83 @@ void ApproximateSVD(InputType &A, UType &U, SType &S, VType &V, int rank,
             << base::error_msg(msg));
     }
 
-    /** Apply sketch transformation on the input matrix */
-    UType Q(m, k);
-    sketch::JLT_t<InputType, UType> Omega(n, k, context);
-    Omega.apply(A, Q, sketch::rowwise_tag());
+    /** Code for m >= n */
+    if (m >= n) {
+        int k = std::max(rank, std::min(n,
+                params.oversampling_ratio * rank +
+                params.oversampling_additive));
 
-    /** Power iteration */
-    PowerIteration(El::ADJOINT, A, Q, V,
-        params.num_iterations, !params.skip_qr);
+        /** Apply sketch transformation on the input matrix */
+        UType Q(m, k);
+        sketch::JLT_t<InputType, UType> Omega(n, k, context);
+        Omega.apply(A, Q, sketch::rowwise_tag());
 
-    if (params.skip_qr) {
-        VType R;
-        El::qr::Explicit(Q, R);
-        El::Trsm(El::RIGHT, El::UPPER, El::NORMAL, El::NON_UNIT, 1.0, R, V);
+        /** Power iteration */
+        PowerIteration(El::ADJOINT, El::NORMAL, A, Q, V,
+            params.num_iterations, !params.skip_qr);
+
+        if (params.skip_qr) {
+            if (params.num_iterations == 0) {
+                VType R;
+                El::qr::Explicit(Q, R);
+                El::Trsm(El::RIGHT, El::UPPER, El::NORMAL, El::NON_UNIT, 1.0,
+                    R, V);
+            } else {
+                // The above computation, while mathemetically correct for
+                // any number of iterations, is not robust enough numerically
+                // when number of power iteration is greater than 0.
+                El::qr::ExplicitUnitary(Q);
+                base::Gemm(El::ADJOINT, El::NORMAL, 1.0, A, Q, V);
+            }
+        }
+
+        /** Compute factorization & truncate to rank */
+        VType B;
+        El::SVD(V, S, B);
+        S.Resize(rank, 1); V.Resize(n, rank);
+        VType B1 = base::ColumnView(B, 0, rank);
+        base::Gemm(El::NORMAL, El::NORMAL, 1.0, Q, B1, U);
     }
 
-    /** Compute factorization & truncate to rank */
-    VType B;
-    El::SVD(V, S, B);
-    S.Resize(rank, 1); V.Resize(n, rank);
-    VType B1 = base::ColumnView(B, 0, rank);
-    base::Gemm(El::NORMAL, El::NORMAL, 1.0, Q, B1, U);
+    /** Code for m < n */
+    if (m < n) {
+        int k = std::max(rank, std::min(m,
+                params.oversampling_ratio * rank +
+                params.oversampling_additive));
+
+        /** Apply sketch transformation on the input matrix */
+        VType Q(k, n);
+        sketch::JLT_t<InputType, UType> Omega(m, k, context);
+        Omega.apply(A, Q, sketch::columnwise_tag());
+
+        /** Power iteration */
+        PowerIteration(El::NORMAL, El::ADJOINT, A, Q, U,
+            params.num_iterations, !params.skip_qr);
+
+        if (params.skip_qr) {
+            if (params.num_iterations == 0) {
+                UType L;
+                El::lq::Explicit(Q, L);
+                El::Trsm(El::RIGHT, El::LOWER, El::ADJOINT, El::NON_UNIT, 1.0,
+                    L, U);
+            } else {
+                // The above computation, while mathemetically correct for
+                // any number of iterations, is not robust enough numerically
+                // when number of power iteration is greater than 0.
+                El::lq::ExplicitUnitary(Q);
+                base::Gemm(El::NORMAL, El::ADJOINT, 1.0, A, Q, U);
+            }
+        }
+
+        /** Compute factorization & truncate to rank */
+        UType B;
+        El::SVD(U, S, B);
+        S.Resize(rank, 1); U.Resize(m, rank);
+        VType B1 = base::ColumnView(B, 0, rank);
+        base::Gemm(El::ADJOINT, El::NORMAL, 1.0, Q, B1, V);
+    }
+
+
 }
 
 } } /** namespace skylark::nla */

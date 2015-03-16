@@ -90,7 +90,8 @@ int CondEst(const MatrixType& A, double &cond,
 
     /** Estimate the largest singular vector using power-iteration */
     base::GaussianMatrix(v_max, n, 1, context);
-    PowerIteration(El::NORMAL, A, v_max, u_max, params.powerits, true);
+    PowerIteration(El::NORMAL, El::NORMAL, El::NORMAL,
+        A, v_max, u_max, params.powerits, true);
     sigma_max = El::Nrm2(u_max);
     El::Scale(1.0 / sigma_max, u_max);
 

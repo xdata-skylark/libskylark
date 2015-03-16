@@ -40,11 +40,11 @@ int main(int argc, char* argv[]) {
     params.skip_qr = false;
     params.num_iterations = 0;
 
-    El::DistMatrix<double> A1;
-    El::Transpose(A, A1);
+    //El::DistMatrix<double> A1;
+    //El::Transpose(A, A1);
 
     El::DistMatrix<double> U1, S1, V1;
-    skylark::nla::ApproximateSVD(A1, U1, S1, V1, k, context, params);
+    skylark::nla::ApproximateSVD(A, U1, S1, V1, k, context, params);
 
     for(int i = 0; i < k; i++) {
         std::cout << "TRUE: " << S.Get(i, 0) << "\tAPPROX: " << S1.Get(i, 0)
@@ -60,18 +60,18 @@ int main(int argc, char* argv[]) {
     //El::Print(UU);
 
     //// Test V
-    //El::DistMatrix<double> VV;
-    //El::Gemm(El::ADJOINT, El::NORMAL, 1.0, V1, V1, VV);
-    //El::Print(VV);
+    // El::DistMatrix<double> VV;
+    // El::Gemm(El::ADJOINT, El::NORMAL, 1.0, V1, V1, VV);
+    // El::Print(VV);
 
     /* Compute E = A -  U1 * S1 * V1^T */
-    El::DistMatrix<double> VS1 = V1;
-    El::DiagonalScale(El::RIGHT, El::NORMAL, S1, VS1);
+    // El::DistMatrix<double> VS1 = V1;
+    // El::DiagonalScale(El::RIGHT, El::NORMAL, S1, VS1);
 
-    El::DistMatrix<double> E = A1;
-    El::Gemm(El::NORMAL, El::ADJOINT, -1.0, U1, VS1, 1.0, E);
+    // El::DistMatrix<double> E = A;
+    // El::Gemm(El::NORMAL, El::ADJOINT, -1.0, U1, VS1, 1.0, E);
 
-    std::cout << El::Norm(E, El::TWO_NORM) / S.Get(k, 0) << std::endl;
+    // std::cout << El::Norm(E, El::TWO_NORM) / S.Get(k, 0) << std::endl;
 
 
 

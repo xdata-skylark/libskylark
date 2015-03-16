@@ -191,7 +191,7 @@ inline void Gemm(El::Orientation oA, El::Orientation oB,
 }
 
 /**
- * Gemm between mixed Elental, sparse input. Output is dense Elental.
+ * Gemm between mixed Elental, sparse input. Output is dense Elemental.
  */
 
 template<typename T>
@@ -475,6 +475,16 @@ inline void Gemm(El::Orientation oA, El::Orientation oB,
     El::Matrix<T>& C) {
     int C_height = (oA == El::NORMAL ? A.height() : A.width());
     int C_width = (oB == El::NORMAL ? B.Width() : B.Height());
+    El::Zeros(C, C_height, C_width);
+    base::Gemm(oA, oB, alpha, A, B, T(0), C);
+}
+
+template<typename T>
+inline void Gemm(El::Orientation oA, El::Orientation oB,
+    T alpha, const El::Matrix<T>& A, const sparse_matrix_t<T>& B,
+    El::Matrix<T>& C) {
+    int C_height = (oA == El::NORMAL ? A.Height() : A.Width());
+    int C_width = (oB == El::NORMAL ? B.width() : B.height());
     El::Zeros(C, C_height, C_width);
     base::Gemm(oA, oB, alpha, A, B, T(0), C);
 }

@@ -27,8 +27,8 @@ namespace skylark { namespace nla {
  * \param otho whether to orthonormalize after every multipication.
  */
 template<typename MatrixType, typename LeftType, typename RightType>
-void PowerIteration(El::Orientation orientation, El::Orientation iorientation,
-    const MatrixType &A,
+void PowerIteration(El::Orientation orientation, El::Orientation vorientation,
+    El::Orientation uorientation, const MatrixType &A,
     RightType &V, LeftType &U,
     int iternum, bool ortho = false) {
 
@@ -41,17 +41,17 @@ void PowerIteration(El::Orientation orientation, El::Orientation iorientation,
 
     index_t m = base::Height(A);
     index_t n = base::Width(A);
-    index_t k = (iorientation == El::NORMAL) ? base::Width(V) : base::Height(V);
+    index_t k = (vorientation == El::NORMAL) ? base::Width(V) : base::Height(V);
 
     El::Orientation adjorientation;
     if (orientation == El::ADJOINT || orientation == El::TRANSPOSE) {
-        if (iorientation == El::NORMAL)
+        if (uorientation == El::NORMAL)
             U.Resize(n, k);
         else
             U.Resize(k, n);
         adjorientation = El::NORMAL;
     } else {
-        if (iorientation == El::NORMAL)
+        if (uorientation == El::NORMAL)
             U.Resize(m, k);
         else
             U.Resize(k, m);
@@ -61,28 +61,47 @@ void PowerIteration(El::Orientation orientation, El::Orientation iorientation,
     if (k == 1) {
         if (ortho) El::Scale(1.0 / El::Nrm2(V), V);
         for(int i = 0; i < iternum; i++) {
-            base::Gemm(orientation, iorientation, 1.0, A, V, U);
+            base::Gemm(orientation, vorientation, 1.0, A, V, U);
             if (ortho) El::Scale(1.0 / El::Nrm2(U), U);
-            base::Gemm(adjorientation, iorientation, 1.0, A, U, V);
+            base::Gemm(adjorientation, uorientation, 1.0, A, U, V);
             if (ortho) El::Scale(1.0 / El::Nrm2(V), V);
         }
-        base::Gemm(orientation, iorientation, 1.0, A, V, U);
+        base::Gemm(orientation, uorientation, 1.0, A, V, U);
      } else {
-        bool adjoint = iorientation != El::NORMAL;
-        if (ortho && !adjoint) El::qr::ExplicitUnitary(V);
-        if (ortho && adjoint) El::lq::ExplicitUnitary(V);
+        bool vadjoint = vorientation != El::NORMAL;
+        bool uadjoint = uorientation != El::NORMAL;
+        if (ortho && !vadjoint) El::qr::ExplicitUnitary(V);
+        if (ortho && vadjoint) El::lq::ExplicitUnitary(V);
         for(int i = 0; i < iternum; i++) {
-            if (!adjoint) base::Gemm(orientation, El::NORMAL, 1.0, A, V, U);
-            if (adjoint) base::Gemm(El::NORMAL, adjorientation, 1.0, V, A, U);
-            if (ortho && !adjoint) El::qr::ExplicitUnitary(U);
-            if (ortho && adjoint) El::lq::ExplicitUnitary(U);
-            if (!adjoint) base::Gemm(adjorientation, El::NORMAL, 1.0, A, U, V);
-            if (adjoint) base::Gemm(El::NORMAL, orientation, 1.0, U, A, V);
-            if (ortho && !adjoint) El::qr::ExplicitUnitary(V);
-            if (ortho && adjoint) El::lq::ExplicitUnitary(V);
+            if (!vadjoint && !uadjoint)
+                base::Gemm(orientation, El::NORMAL, 1.0, A, V, U);
+            if (vadjoint && !uadjoint)
+                base::Gemm(orientation, El::ADJOINT, 1.0, A, V, U);
+            if (!vadjoint && uadjoint)
+                base::Gemm(El::ADJOINT, adjorientation, 1.0, V, A, U);
+            if (vadjoint && uadjoint)
+                base::Gemm(El::NORMAL, adjorientation, 1.0, V, A, U);
+            if (ortho && !uadjoint) El::qr::ExplicitUnitary(U);
+            if (ortho && uadjoint) El::lq::ExplicitUnitary(U);
+            if (!vadjoint && !uadjoint)
+                base::Gemm(adjorientation, El::NORMAL, 1.0, A, U, V);
+            if (vadjoint && !uadjoint)
+                base::Gemm(El::ADJOINT, orientation, 1.0, U, A, V);
+            if (!vadjoint && uadjoint)
+                base::Gemm(adjorientation, El::ADJOINT, 1.0, A, U, V);
+            if (vadjoint && uadjoint)
+                base::Gemm(El::NORMAL, orientation, 1.0, U, A, V);
+            if (ortho && !vadjoint) El::qr::ExplicitUnitary(V);
+            if (ortho && vadjoint) El::lq::ExplicitUnitary(V);
         }
-        if (!adjoint) base::Gemm(orientation, El::NORMAL, 1.0, A, V, U);
-        if (adjoint) base::Gemm(El::NORMAL, adjorientation, 1.0, V, A, U);
+        if (!vadjoint && !uadjoint)
+            base::Gemm(orientation, El::NORMAL, 1.0, A, V, U);
+        if (vadjoint && !uadjoint)
+            base::Gemm(orientation, El::ADJOINT, 1.0, A, V, U);
+        if (!vadjoint && uadjoint)
+            base::Gemm(El::ADJOINT, adjorientation, 1.0, V, A, U);
+        if (vadjoint && uadjoint)
+            base::Gemm(El::NORMAL, adjorientation, 1.0, V, A, U);
      }
 }
 
@@ -171,7 +190,7 @@ void ApproximateSVD(InputType &A, UType &U, SType &S, VType &V, int rank,
         Omega.apply(A, Q, sketch::rowwise_tag());
 
         /** Power iteration */
-        PowerIteration(El::ADJOINT, El::NORMAL, A, Q, V,
+        PowerIteration(El::ADJOINT, El::NORMAL, El::NORMAL, A, Q, V,
             params.num_iterations, !params.skip_qr);
 
         if (params.skip_qr) {
@@ -209,34 +228,23 @@ void ApproximateSVD(InputType &A, UType &U, SType &S, VType &V, int rank,
         Omega.apply(A, Q, sketch::columnwise_tag());
 
         /** Power iteration */
-        VType B;
-        PowerIteration(El::NORMAL, El::ADJOINT, A, Q, B,
+        PowerIteration(El::NORMAL, El::ADJOINT, El::NORMAL, A, Q, U,
             params.num_iterations, !params.skip_qr);
 
         if (params.skip_qr) {
-            if (params.num_iterations == 0) {
-                UType L;
-                El::lq::Explicit(Q, L);
-                El::Trsm(El::RIGHT, El::LOWER, El::ADJOINT, El::NON_UNIT, 1.0,
-                    L, B);
-            } else {
-                // The above computation, while mathemetically correct for
-                // any number of iterations, is not robust enough numerically
-                // when number of power iteration is greater than 0.
-                El::lq::ExplicitUnitary(Q);
-                base::Gemm(El::NORMAL, El::ADJOINT, 1.0, A, Q, B);
-            }
+            // We should be able to do the same trick as for m>=n if
+            // num_iteration == 0, but the LQ factorization in Elemental
+            // does not work for this... (do not know why).
+            El::lq::ExplicitUnitary(Q);
+            base::Gemm(El::NORMAL, El::ADJOINT, 1.0, A, Q, U);
         }
 
         /** Compute factorization & truncate to rank */
-        std::cout << base::Height(B) << " " << base::Width(B) << std::endl;
-        El::SVD(B, S, U);
+        UType B;
+        El::SVD(U, S, B);
         S.Resize(rank, 1); U.Resize(m, rank);
         VType B1 = base::ColumnView(B, 0, rank);
         base::Gemm(El::ADJOINT, El::NORMAL, 1.0, Q, B1, V);
-        std::cout << base::Height(U) << " " << base::Width(U) << std::endl;
-        std::cout << base::Height(S) << " " << base::Width(S) << std::endl;
-        std::cout << base::Height(V) << " " << base::Width(V) << std::endl;
     }
 
 

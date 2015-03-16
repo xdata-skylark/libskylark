@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
     /* Compute approximate SVD */
     skylark::nla::approximate_svd_params_t params;
     params.skip_qr = false;
-    params.num_iterations = 2;
+    params.num_iterations = 0;
 
     El::DistMatrix<double> A1;
     El::Transpose(A, A1);

@@ -68,17 +68,21 @@ void PowerIteration(El::Orientation orientation, El::Orientation iorientation,
         }
         base::Gemm(orientation, iorientation, 1.0, A, V, U);
      } else {
-        if (ortho && iorientation == El::NORMAL) El::qr::ExplicitUnitary(V);
-        if (ortho && iorientation != El::NORMAL) El::lq::ExplicitUnitary(V);
+        bool adjoint = iorientation != El::NORMAL;
+        if (ortho && !adjoint) El::qr::ExplicitUnitary(V);
+        if (ortho && adjoint) El::lq::ExplicitUnitary(V);
         for(int i = 0; i < iternum; i++) {
-            base::Gemm(orientation, iorientation, 1.0, A, V, U);
-            if (ortho && iorientation == El::NORMAL) El::qr::ExplicitUnitary(U);
-            if (ortho && iorientation != El::NORMAL) El::lq::ExplicitUnitary(U);
-            base::Gemm(adjorientation, iorientation, 1.0, A, U, V);
-            if (ortho && iorientation == El::NORMAL) El::qr::ExplicitUnitary(V);
-            if (ortho && iorientation != El::NORMAL) El::lq::ExplicitUnitary(V);
+            if (!adjoint) base::Gemm(orientation, El::NORMAL, 1.0, A, V, U);
+            if (adjoint) base::Gemm(El::NORMAL, adjorientation, 1.0, V, A, U);
+            if (ortho && !adjoint) El::qr::ExplicitUnitary(U);
+            if (ortho && adjoint) El::lq::ExplicitUnitary(U);
+            if (!adjoint) base::Gemm(adjorientation, El::NORMAL, 1.0, A, U, V);
+            if (adjoint) base::Gemm(El::NORMAL, orientation, 1.0, U, A, V);
+            if (ortho && !adjoint) El::qr::ExplicitUnitary(V);
+            if (ortho && adjoint) El::lq::ExplicitUnitary(V);
         }
-        base::Gemm(orientation, iorientation, 1.0, A, V, U);
+        if (!adjoint) base::Gemm(orientation, El::NORMAL, 1.0, A, V, U);
+        if (adjoint) base::Gemm(El::NORMAL, adjorientation, 1.0, V, A, U);
      }
 }
 
@@ -205,7 +209,8 @@ void ApproximateSVD(InputType &A, UType &U, SType &S, VType &V, int rank,
         Omega.apply(A, Q, sketch::columnwise_tag());
 
         /** Power iteration */
-        PowerIteration(El::NORMAL, El::ADJOINT, A, Q, U,
+        VType B;
+        PowerIteration(El::NORMAL, El::ADJOINT, A, Q, B,
             params.num_iterations, !params.skip_qr);
 
         if (params.skip_qr) {
@@ -213,22 +218,25 @@ void ApproximateSVD(InputType &A, UType &U, SType &S, VType &V, int rank,
                 UType L;
                 El::lq::Explicit(Q, L);
                 El::Trsm(El::RIGHT, El::LOWER, El::ADJOINT, El::NON_UNIT, 1.0,
-                    L, U);
+                    L, B);
             } else {
                 // The above computation, while mathemetically correct for
                 // any number of iterations, is not robust enough numerically
                 // when number of power iteration is greater than 0.
                 El::lq::ExplicitUnitary(Q);
-                base::Gemm(El::NORMAL, El::ADJOINT, 1.0, A, Q, U);
+                base::Gemm(El::NORMAL, El::ADJOINT, 1.0, A, Q, B);
             }
         }
 
         /** Compute factorization & truncate to rank */
-        UType B;
-        El::SVD(U, S, B);
+        std::cout << base::Height(B) << " " << base::Width(B) << std::endl;
+        El::SVD(B, S, U);
         S.Resize(rank, 1); U.Resize(m, rank);
         VType B1 = base::ColumnView(B, 0, rank);
         base::Gemm(El::ADJOINT, El::NORMAL, 1.0, Q, B1, V);
+        std::cout << base::Height(U) << " " << base::Width(U) << std::endl;
+        std::cout << base::Height(S) << " " << base::Width(S) << std::endl;
+        std::cout << base::Height(V) << " " << base::Width(V) << std::endl;
     }
 
 

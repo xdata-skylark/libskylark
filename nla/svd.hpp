@@ -1,6 +1,5 @@
-#ifndef SKYLARK_RAND_SVD_HPP
-#define SKYLARK_RAND_SVD_HPP
-
+#ifndef SKYLARK_APPROXIMATE_SVD_HPP
+#define SKYLARK_APPROXIMATE_SVD_HPP
 
 #include <El.hpp>
 #include "../sketch/sketch.hpp"
@@ -19,7 +18,8 @@ namespace skylark { namespace nla {
  * iteration. However, note that U = A * V (or A^T * V) always on output.
  *
  * \param orientation Whether to do on A or A^T.
- * \param iorientation Whether to hold iterates in tranpose or not.
+ * \param vorientation Whether to hold V in tranpose or not.
+ * \param uorientation Whether to hold U in tranpose or not.
  * \param A input matrix
  * \param V input starting vector, and output of iteration
  * \param U on output: U = A*V or A^T*V.
@@ -58,51 +58,50 @@ void PowerIteration(El::Orientation orientation, El::Orientation vorientation,
         adjorientation = El::ADJOINT;
     }
 
-    if (k == 1) {
-        if (ortho) El::Scale(1.0 / El::Nrm2(V), V);
+    if (vorientation == El::NORMAL && uorientation == El::NORMAL) {
+        if (ortho) El::qr::ExplicitUnitary(V);
+        base::Gemm(orientation, El::NORMAL, 1.0, A, V, U);
         for(int i = 0; i < iternum; i++) {
-            base::Gemm(orientation, vorientation, 1.0, A, V, U);
-            if (ortho) El::Scale(1.0 / El::Nrm2(U), U);
-            base::Gemm(adjorientation, uorientation, 1.0, A, U, V);
-            if (ortho) El::Scale(1.0 / El::Nrm2(V), V);
-        }
-        base::Gemm(orientation, uorientation, 1.0, A, V, U);
-     } else {
-        bool vadjoint = vorientation != El::NORMAL;
-        bool uadjoint = uorientation != El::NORMAL;
-        if (ortho && !vadjoint) El::qr::ExplicitUnitary(V);
-        if (ortho && vadjoint) El::lq::ExplicitUnitary(V);
-        for(int i = 0; i < iternum; i++) {
-            if (!vadjoint && !uadjoint)
-                base::Gemm(orientation, El::NORMAL, 1.0, A, V, U);
-            if (vadjoint && !uadjoint)
-                base::Gemm(orientation, El::ADJOINT, 1.0, A, V, U);
-            if (!vadjoint && uadjoint)
-                base::Gemm(El::ADJOINT, adjorientation, 1.0, V, A, U);
-            if (vadjoint && uadjoint)
-                base::Gemm(El::NORMAL, adjorientation, 1.0, V, A, U);
-            if (ortho && !uadjoint) El::qr::ExplicitUnitary(U);
-            if (ortho && uadjoint) El::lq::ExplicitUnitary(U);
-            if (!vadjoint && !uadjoint)
-                base::Gemm(adjorientation, El::NORMAL, 1.0, A, U, V);
-            if (vadjoint && !uadjoint)
-                base::Gemm(El::ADJOINT, orientation, 1.0, U, A, V);
-            if (!vadjoint && uadjoint)
-                base::Gemm(adjorientation, El::ADJOINT, 1.0, A, U, V);
-            if (vadjoint && uadjoint)
-                base::Gemm(El::NORMAL, orientation, 1.0, U, A, V);
-            if (ortho && !vadjoint) El::qr::ExplicitUnitary(V);
-            if (ortho && vadjoint) El::lq::ExplicitUnitary(V);
-        }
-        if (!vadjoint && !uadjoint)
             base::Gemm(orientation, El::NORMAL, 1.0, A, V, U);
-        if (vadjoint && !uadjoint)
+            if (ortho) El::qr::ExplicitUnitary(U);
+            base::Gemm(adjorientation, El::NORMAL, 1.0, A, U, V);
+            if (ortho) El::qr::ExplicitUnitary(V);
+        }
+        base::Gemm(orientation, El::NORMAL, 1.0, A, V, U);
+    }
+
+    if (vorientation != El::NORMAL && uorientation == El::NORMAL) {
+        if (ortho) El::lq::ExplicitUnitary(V);
+        for(int i = 0; i < iternum; i++) {
             base::Gemm(orientation, El::ADJOINT, 1.0, A, V, U);
-        if (!vadjoint && uadjoint)
+            if (ortho) El::qr::ExplicitUnitary(U);
+            base::Gemm(El::ADJOINT, orientation, 1.0, U, A, V);
+            if (ortho) El::lq::ExplicitUnitary(V);
+        }
+        base::Gemm(orientation, El::ADJOINT, 1.0, A, V, U);
+    }
+
+    if (vorientation == El::NORMAL && uorientation != El::NORMAL) {
+        if (ortho) El::qr::ExplicitUnitary(V);
+        for(int i = 0; i < iternum; i++) {
             base::Gemm(El::ADJOINT, adjorientation, 1.0, V, A, U);
-        if (vadjoint && uadjoint)
+            if (ortho) El::lq::ExplicitUnitary(U);
+            base::Gemm(adjorientation, El::ADJOINT, 1.0, A, U, V);
+            if (ortho) El::qr::ExplicitUnitary(V);
+        }
+        base::Gemm(El::ADJOINT, adjorientation, 1.0, V, A, U);
+    }
+
+    if (vorientation != El::NORMAL && uorientation != El::NORMAL) {
+        if (ortho) El::lq::ExplicitUnitary(V);
+        for(int i = 0; i < iternum; i++) {
             base::Gemm(El::NORMAL, adjorientation, 1.0, V, A, U);
-     }
+            if (ortho) El::lq::ExplicitUnitary(U);
+            base::Gemm(El::NORMAL, orientation, 1.0, U, A, V);
+            if (ortho) El::lq::ExplicitUnitary(V);
+        }
+        base::Gemm(orientation, El::ADJOINT, 1.0, A, V, U);
+    }
 }
 
 /**
@@ -246,11 +245,8 @@ void ApproximateSVD(InputType &A, UType &U, SType &S, VType &V, int rank,
         VType B1 = base::ColumnView(B, 0, rank);
         base::Gemm(El::ADJOINT, El::NORMAL, 1.0, Q, B1, V);
     }
-
-
 }
 
 } } /** namespace skylark::nla */
 
-
-#endif /** SKYLARK_SKETCHED_SVD_HPP */
+#endif /** SKYLARK_APPROXIMATE_SVD_HPP */

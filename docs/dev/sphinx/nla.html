@@ -187,64 +187,17 @@ void <code class="descclassname"></code><code class="descname">FastLeastSquares<
 </dl>
 </div></blockquote>
 <p>The first step is accelerated using sketching.</p>
-<div class="section" id="rand-svd">
-<h3>Rand SVD<a class="headerlink" href="#rand-svd" title="Permalink to this headline">¶</a></h3>
-<p>Randomized SVD is implemented by the use of functors which are first initialized to the type of transform and then the arguments are passed
-to the constructed functor.</p>
-<dl class="type">
-<dt>
-<code class="descname">struct skylark::nla::randsvd_t&lt;skylark::sketch::sketch_transform_t&lt;InputMatrixType, OutputMatrixType&gt;&gt;</code></dt>
-<dd><p><strong>Constructor</strong></p>
+<div class="section" id="approximate-svd">
+<h3>Approximate SVD<a class="headerlink" href="#approximate-svd" title="Permalink to this headline">¶</a></h3>
+<p>Compute an approximate SVD in the sense that <img class="math" src="_images/math/893632b6baf3aac6618bbe86b297f72fd866b218.png" alt="A \approx U S V^T"/>. The inner
+dimension <img class="math" src="_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> is specified by the user as parameter.</p>
 <dl class="function">
-<dt id="_CPP9randsvd_tRN7skylark6sketch18sketch_transform_tE">
-<code class="descclassname"></code><code class="descname">randsvd_t</code><span class="sig-paren">(</span>skylark::sketch::sketch_transform_t &amp;<em>st</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPP9randsvd_tRN7skylark6sketch18sketch_transform_tE" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialize the functor with the sketching transform desired.</p>
-</dd></dl>
+<dt id="_CPP14ApproximateSVDR9InputTypeR5UTypeR5STypeR5VTypeiRN4base9context_tE24approximate_svd_params_t">
+void <code class="descclassname"></code><code class="descname">ApproximateSVD</code><span class="sig-paren">(</span>InputType &amp;<em>A</em>, UType &amp;<em>U</em>, SType &amp;<em>S</em>, VType &amp;<em>V</em>, int <em>rank</em>, base::context_t &amp;<em>context</em>, approximate_svd_params_t <em>params</em> = approximate_svd_params_t()<span class="sig-paren">)</span><a class="headerlink" href="#_CPP14ApproximateSVDR9InputTypeR5UTypeR5STypeR5VTypeiRN4base9context_tE24approximate_svd_params_t" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
-<p><strong>Accessors</strong></p>
-<dl class="function">
-<dt>
-<code class="descname">void operator()&lt;InputMatrixType, UMatrixType, SingularValuesMatrixType, VMatrixType&gt; (InputMatrixType &amp;A, int target_rank, UMatrixType &amp;U, SingularValuesMatrixType &amp;SV, VMatrixType &amp;V, rand_svd_params_t params, skylark::base::context_t&amp; context)</code></dt>
-<dd><p>The overloaded operator takes the input matrix A and produces the output matrices U, SV and V. In addition, a params object is passed which contains the parameters shown below.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="type">
-<dt>
-<code class="descname">struct skylark::nla::rand_svd_params_t</code></dt>
-<dd><p><strong>Constructor</strong></p>
-<dl class="function">
-<dt id="_CPP17rand_svd_params_tiib">
-<code class="descclassname"></code><code class="descname">rand_svd_params_t</code><span class="sig-paren">(</span>int <em>oversampling</em>, int <em>num_iterations</em> = 0, bool <em>skip_qr</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPP17rand_svd_params_tiib" title="Permalink to this definition">¶</a></dt>
-<dd><p>The arguments include how much oversampling needs to be performed (oversampling), the number of subspace iterations needed (num_iterations)
-and an optimization flag (skip_qr) to skip a step in the algorithm.</p>
-</dd></dl>
-
-</dd></dl>
-
-<hr class="docutils" />
-<p>A flavor of usage is given in the code snippet below.</p>
-<div class="highlight-cpp"><div class="highlight"><pre><span class="cp">#include &lt;elemental.hpp&gt;</span>
-<span class="cp">#include &lt;skylark.hpp&gt;</span>
-<span class="p">...</span>
-<span class="cm">/* params structure contains parameters of the randomized SVD algorithm */</span>
-<span class="cm">/* These parameters include oversampling, number of power iterations and</span>
-<span class="cm">whether repeated QR iterations should be skipped */</span>
-
-<span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="kt">rand_svd_params_t</span> <span class="n">params</span><span class="p">(</span><span class="n">oversampling_parameter</span><span class="p">);</span>
-
-<span class="cm">/* create a rand_svd object parameterized by the Sketch */</span>
-<span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="kt">randsvd_t</span><span class="o">&lt;</span><span class="n">skylark</span><span class="o">::</span><span class="n">sketch</span><span class="o">::</span><span class="n">JLT_t</span><span class="o">&gt;</span> <span class="n">rand_svd</span><span class="p">;</span>
-
-<span class="p">...</span>
-<span class="cm">/* Call the randomized SVD algorithm on Elemental or CombBLAS matrix A */</span>
-<span class="n">rand_svd</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">target_rank</span><span class="p">,</span> <span class="n">U</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
-</pre></div>
-</div>
-<p>The <strong>rand_svd</strong> function accepts certain combinations of matrix types for the input A and the SVD factors:
-U, S and V. Currently, the matrix types are Elemental MC/MR or El::Matrix types.</p>
-<p>For a running example, please see <em>libskylark/examples/rand_svd.cpp</em>.</p>
+<p>For a running example, please see <em>libskylark/examples/svd.cpp</em>. This example provides a
+complete driver for running this functionality from command-line.</p>
 </div>
 </div>
 <div class="section" id="condition-number-estimation">

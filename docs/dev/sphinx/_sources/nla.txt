@@ -133,62 +133,16 @@ The randomized SVD functionality provides a distributed implementation of algori
 
 The first step is accelerated using sketching.
 
-Rand SVD
---------
+Approximate SVD
+---------------
 
-Randomized SVD is implemented by the use of functors which are first initialized to the type of transform and then the arguments are passed
-to the constructed functor.
+Compute an approximate SVD in the sense that :math:`A \approx U S V^T`. The inner 
+dimension :math:`k` is specified by the user as parameter.
 
-.. cpp:type:: struct skylark::nla::randsvd_t<skylark::sketch::sketch_transform_t<InputMatrixType, OutputMatrixType>>
+.. cpp:function:: void ApproximateSVD(InputType &A, UType &U, SType &S, VType &V, int rank, base::context_t& context, approximate_svd_params_t params = approximate_svd_params_t())
 
-    **Constructor**
-
-    .. cpp:function:: randsvd_t (skylark::sketch::sketch_transform_t& st)
-
-        Initialize the functor with the sketching transform desired.
-
-    **Accessors**
-
-    .. cpp:function:: void operator()<InputMatrixType, UMatrixType, SingularValuesMatrixType, VMatrixType> (InputMatrixType &A, int target_rank, UMatrixType &U, SingularValuesMatrixType &SV, VMatrixType &V, rand_svd_params_t params, skylark::base::context_t& context)
-
-        The overloaded operator takes the input matrix A and produces the output matrices U, SV and V. In addition, a params object is passed which contains the parameters shown below.
-
-.. cpp:type:: struct skylark::nla::rand_svd_params_t
-
-    **Constructor**
-
-    .. cpp:function:: rand_svd_params_t (int oversampling,int num_iterations = 0, bool skip_qr = 0)
-
-	The arguments include how much oversampling needs to be performed (oversampling), the number of subspace iterations needed (num_iterations)
-	and an optimization flag (skip_qr) to skip a step in the algorithm.
-
-*****
-
-
-A flavor of usage is given in the code snippet below.
-
-.. code-block:: cpp
-
-     #include <elemental.hpp>
-     #include <skylark.hpp>
-     ...
-     /* params structure contains parameters of the randomized SVD algorithm */
-     /* These parameters include oversampling, number of power iterations and
-     whether repeated QR iterations should be skipped */
-
-     skylark::nla::rand_svd_params_t params(oversampling_parameter);
-
-     /* create a rand_svd object parameterized by the Sketch */
-     skylark::nla::randsvd_t<skylark::sketch::JLT_t> rand_svd;
-
-     ...
-     /* Call the randomized SVD algorithm on Elemental or CombBLAS matrix A */
-     rand_svd(A, target_rank, U, S, V, params, context);
-
-The **rand_svd** function accepts certain combinations of matrix types for the input A and the SVD factors:
-U, S and V. Currently, the matrix types are Elemental MC/MR or El::Matrix types.
-
-For a running example, please see *libskylark/examples/rand_svd.cpp*.
+For a running example, please see *libskylark/examples/svd.cpp*. This example provides a
+complete driver for running this functionality from command-line.
 
 Condition Number Estimation
 ===========================

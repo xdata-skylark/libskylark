@@ -204,10 +204,6 @@ inline void Gemm(El::Orientation oA, El::Orientation oB,
     const int* indices = B.indices();
     const T *values = B.locked_values();
 
-    int k = A.Width();
-    int n = B.width();
-    int m = A.Height();
-
     if (oA == El::ADJOINT && std::is_same<T, El::Base<T> >::value)
         oA = El::TRANSPOSE;
 
@@ -219,6 +215,9 @@ inline void Gemm(El::Orientation oA, El::Orientation oB,
 
     // NN
     if (oA == El::NORMAL && oB == El::NORMAL) {
+        int k = A.Width();
+        int n = B.width();
+        int m = A.Height();
 
         El::Scale(beta, C);
 
@@ -241,6 +240,9 @@ inline void Gemm(El::Orientation oA, El::Orientation oB,
 
     // NT
     if (oA == El::NORMAL && oB == El::TRANSPOSE) {
+        int k = A.Width();
+        int n = B.width();
+        int m = A.Height();
 
         El::Scale(beta, C);
 
@@ -266,6 +268,10 @@ inline void Gemm(El::Orientation oA, El::Orientation oB,
 
     // TN - TODO: Not tested!
     if (oA == El::TRANSPOSE && oB == El::NORMAL) {
+        int k = A.Height();
+        int n = B.width();
+        int m = A.Width();
+
         double *c = C.Buffer();
         int ldc = C.LDim();
 
@@ -276,18 +282,22 @@ inline void Gemm(El::Orientation oA, El::Orientation oB,
 #       pragma omp parallel for collapse(2)
 #       endif
         for (int j = 0; j < n; j++)
-            for(int row = 0; row < k; row++) {
+            for(int row = 0; row < m; row++) {
                 c[j * ldc + row] *= beta;
                  for (int l = indptr[j]; l < indptr[j + 1]; l++) {
                      int rr = indices[l];
                      T val = values[l];
-                     c[j * ldc + row] += val * a[j * lda + rr];
+                     c[j * ldc + row] += val * a[row * lda + rr];
                  }
             }
     }
 
     // TT - TODO: Not tested!
     if (oA == El::TRANSPOSE && oB == El::TRANSPOSE) {
+        int k = A.Height();
+        int n = B.width();
+        int m = A.Width();
+
         El::Scale(beta, C);
 
         double *c = C.Buffer();

@@ -1,6 +1,8 @@
 #ifndef SKYLARK_LIBSVM_IO_HPP
 #define SKYLARK_LIBSVM_IO_HPP
 
+#include <unordered_map>
+
 namespace skylark { namespace utility { namespace io {
 
 /**
@@ -12,12 +14,13 @@ namespace skylark { namespace utility { namespace io {
  * @param fname input file name.
  * @param X output X
  * @param Y output Y
+ * @param direction whether the examples are to be put in rows or columns
  * @param min_d minimum number of rows in the matrix.
  */
 template<typename T>
 void ReadLIBSVM(const std::string& fname,
     El::Matrix<T>& X, El::Matrix<T>& Y,
-    int min_d = 0) {
+    base::direction_t direction, int min_d = 0) {
 
     std::string line;
     std::string token, val, ind;
@@ -57,8 +60,13 @@ void ReadLIBSVM(const std::string& fname,
     in.clear();
     in.seekg(0, std::ios::beg);
 
-    X.Resize(d, n);
-    Y.Resize(1, n);
+    if (direction == base::COLUMNS) {
+        X.Resize(d, n);
+        Y.Resize(1, n);
+    } else {
+        X.Resize(n, d);
+        Y.Resize(n, 1);
+    }
 
     T *Xdata = X.Buffer();
     T *Ydata = Y.Buffer();
@@ -78,7 +86,10 @@ void ReadLIBSVM(const std::string& fname,
             ind = token.substr(0, delim);
             val = token.substr(delim+1); //.substr(delim+1);
             j = atoi(ind.c_str()) - 1;
-            Xdata[t * ldX + j] = atof(val.c_str());
+            if (direction == base::COLUMNS)
+                Xdata[t * ldX + j] = atof(val.c_str());
+            else
+                Xdata[j * ldX + t] = atof(val.c_str());
         }
     }
 }
@@ -92,6 +103,7 @@ void ReadLIBSVM(const std::string& fname,
  * @param fname input file name.
  * @param X output X
  * @param Y output Y
+ * @param direction whether the examples are to be put in rows or columns
  * @param min_d minimum number of rows in the matrix.
  * @param blocksize blocksize for blocking of read.
  */
@@ -99,7 +111,7 @@ template<typename T, El::Distribution UX, El::Distribution VX,
          El::Distribution UY, El::Distribution VY>
 void ReadLIBSVM(const std::string& fname,
     El::DistMatrix<T, UX, VX>& X, El::DistMatrix<T, UY, VY>& Y,
-    int min_d = 0, int blocksize = 10000) {
+    base::direction_t direction, int min_d = 0, int blocksize = 10000) {
 
 
     std::string line;
@@ -153,8 +165,13 @@ void ReadLIBSVM(const std::string& fname,
     int leftover = n % blocksize;
     int block = blocksize;
 
-    X.Resize(d, n);
-    Y.Resize(1, n);
+    if (direction == base::COLUMNS) {
+        X.Resize(d, n);
+        Y.Resize(1, n);
+    } else {
+        X.Resize(n, d);
+        Y.Resize(n, 1);
+    }
 
     El::DistMatrix<T, El::CIRC, El::CIRC> XB(X.Grid()), YB(Y.Grid());
     El::DistMatrix<T, UX, VX> Xv(X.Grid());
@@ -165,8 +182,13 @@ void ReadLIBSVM(const std::string& fname,
         if (block==0)
             break;
 
-        El::Zeros(XB, d, block);
-        El::Zeros(YB, 1, block);
+        if (direction == base::COLUMNS) {
+            El::Zeros(XB, d, block);
+            El::Zeros(YB, 1, block);
+        } else {
+            El::Zeros(XB, block, d);
+            El::Zeros(YB, block, 1);
+        }
 
         if(rank==0) {
             T *Xdata = XB.Matrix().Buffer();
@@ -188,7 +210,10 @@ void ReadLIBSVM(const std::string& fname,
                     ind = token.substr(0, delim);
                     val = token.substr(delim+1); //.substr(delim+1);
                     j = atoi(ind.c_str()) - 1;
-                    Xdata[t * ldX + j] = atof(val.c_str());
+                    if (direction == base::COLUMNS)
+                        Xdata[t * ldX + j] = atof(val.c_str());
+                    else
+                        Xdata[j * ldX + t] = atof(val.c_str());
                 }
 
                 t++;
@@ -196,8 +221,13 @@ void ReadLIBSVM(const std::string& fname,
         }
 
         // The calls below should distribute the data to all the nodes.
-        El::View(Xv, X, 0, i*blocksize, d, block);
-        El::View(Yv, Y, 0, i*blocksize, 1, block);
+        if (direction == base::COLUMNS) {
+            El::View(Xv, X, 0, i*blocksize, d, block);
+            El::View(Yv, Y, 0, i*blocksize, 1, block);
+        } else {
+            El::View(Xv, X, i*blocksize, 0, block, d);
+            El::View(Yv, Y, i*blocksize, 0, block, 1);
+        }
 
         Xv = XB;
         Yv = YB;
@@ -213,14 +243,16 @@ void ReadLIBSVM(const std::string& fname,
  * @param fname input file name
  * @param X output X
  * @param Y output Y
+ * @param direction whether the examples are to be put in rows or columns
  * @param min_d minimum number of rows in the matrix.
  */
 template<typename T>
 void ReadLIBSVM(const std::string& fname,
-    base::sparse_matrix_t<T>& X, El::Matrix<T>& Y, int min_d = 0) {
+    base::sparse_matrix_t<T>& X, El::Matrix<T>& Y, 
+    base::direction_t direction, int min_d = 0) {
 
     std::string line;
-    std::string token, val, ind;
+    std::string token;
     float label;
     unsigned int start = 0;
     unsigned int delim, t;
@@ -235,42 +267,69 @@ void ReadLIBSVM(const std::string& fname,
 
     // make one pass over the data to figure out dimensions and nnz
     // will pay in terms of preallocated storage.
+    // Also find number of non-zeros per column. 
+    std::unordered_map<int, int> colsize;
+
     while(!in.eof()) {
         getline(in, line);
         if(line.length()==0)
             break;
-
-        delim = line.find_last_of(":");
-        if(delim > line.length())
-            continue;
         n++;
-        t = delim;
-        while(line[t]!=' ')
-            t--;
 
-        val = line.substr(t+1, delim - t);
-        last = atoi(val.c_str());
-        if (last>d)
-            d = last;
+        if (direction == base::COLUMNS) {
+            delim = line.find_last_of(":");
+            if(delim > line.length())
+                continue;
+            t = delim;
+            while(line[t]!=' ')
+                t--;
+            std::string val = line.substr(t+1, delim - t);
+            last = atoi(val.c_str());
+            if (last>d)
+                d = last;
 
-        std::istringstream tokenstream (line);
-        tokenstream >> label;
-        while (tokenstream >> token)
-            nnz++;
+
+            std::istringstream tokenstream (line);
+            tokenstream >> label;
+            while (tokenstream >> token)
+                nnz++;
+        } else {
+            std::istringstream tokenstream (line);
+            tokenstream >> label;
+
+            while (tokenstream >> token) {
+                nnz++;
+                delim  = token.find(':');
+                int ind = atoi(token.substr(0, delim).c_str());
+
+                colsize[ind-1]++;
+
+                if (ind > d)
+                    d = ind;
+            }
+        }
     }
 
     T *values = new T[nnz];
     int *rowind = new int[nnz];
-    int *col_ptr = new int[n + 1];
+    int *col_ptr = new int[direction == base::COLUMNS ? n + 1 : d + 1];
 
-    Y.Resize(1, n);
+    if (direction == base::ROWS) {
+        col_ptr[0] = 0;
+        for(int i = 1; i <= d; i++)
+            col_ptr[i] = col_ptr[i-1] + colsize[i-1];
+        Y.Resize(n, 1);
+    } else
+        Y.Resize(1, n);
     T *Ydata = Y.Buffer();
 
     // prepare for second pass
     in.clear();
     in.seekg(0, std::ios::beg);
-    nnz = 0;
+    if (direction == base::COLUMNS)
+        nnz = 0;
 
+    colsize.clear();
     for (t = 0; t < n; t++) {
         getline(in, line);
         if( line.length()==0)
@@ -279,20 +338,31 @@ void ReadLIBSVM(const std::string& fname,
         std::istringstream tokenstream (line);
         tokenstream >> Ydata[t];
 
-        col_ptr[t] = nnz;
+        if (direction == base::COLUMNS)
+            col_ptr[t] = nnz;
+
         while (tokenstream >> token) {
             delim  = token.find(':');
-            ind = token.substr(0, delim);
-            val = token.substr(delim+1); //.substr(delim+1);
+            std::string ind = token.substr(0, delim);
+            std::string val = token.substr(delim+1); //.substr(delim+1);
             j = atoi(ind.c_str()) - 1;
-            rowind[nnz] = j;
-            values[nnz] = atof(val.c_str());
-            nnz++;
+
+            if (direction == base::COLUMNS) {
+                rowind[nnz] = j;
+                values[nnz] = atof(val.c_str());
+                nnz++;
+            } else {
+                rowind[col_ptr[j] + colsize[j]] = t;
+                values[col_ptr[j] + colsize[j]] = atof(val.c_str());
+                colsize[j]++;
+            }
         }
     }
-    col_ptr[n] = nnz; // last entry (total number of nnz)
-
-    X.attach(col_ptr, rowind, values, nnz, d, n, true);
+    if (direction == base::COLUMNS) {
+        col_ptr[n] = nnz; // last entry (total number of nnz)
+        X.attach(col_ptr, rowind, values, nnz, d, n, true);
+    } else
+        X.attach(col_ptr, rowind, values, nnz, n, d, true);
 }
 
 } } } // namespace skylark::utility::io

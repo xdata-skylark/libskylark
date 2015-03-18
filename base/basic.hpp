@@ -3,6 +3,11 @@
 
 namespace skylark { namespace base {
 
+enum direction_t {
+    ROWS = 0,
+    COLUMNS = 1
+};
+
 template<typename T>
 inline void Axpy(T alpha, const El::Matrix<T>& X, El::Matrix<T>& Y) {
     El::Axpy(alpha, X, Y);

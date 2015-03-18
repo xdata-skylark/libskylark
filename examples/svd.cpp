@@ -1,11 +1,9 @@
 #include <iostream>
 
 #include <El.hpp>
+#include <boost/mpi.hpp>
+#include <boost/format.hpp>
 #include <skylark.hpp>
-
-const int m = 5000;
-const int n = 100;
-const int k = 10;
 
 int main(int argc, char* argv[]) {
 
@@ -16,43 +14,40 @@ int main(int argc, char* argv[]) {
 
     skylark::base::context_t context(38734);
 
-    /** Generate matrices U, S, V*/
-    El::DistMatrix<double> U;
-    skylark::base::UniformMatrix(U, m, n, context);
-    skylark::base::qr::ExplicitUnitary(U);
-
-    El::DistMatrix<double> V;
-    skylark::base::UniformMatrix(V, n, n, context);
-    skylark::base::qr::ExplicitUnitary(V);
-
-    El::DistMatrix<double> S(n, 1);
-    for(int i = 0; i < n; i++) S.Set(i, 0, exp(-i) * 100);
-
-    /* Compute A = U * S * V^T */
-    El::DistMatrix<double> VS = V;
-    El::DiagonalScale(El::RIGHT, El::NORMAL, S, VS);
-
     El::DistMatrix<double> A;
-    El::Gemm(El::NORMAL, El::ADJOINT, 1.0, U, VS, A);
+    El::DistMatrix<double> U, S, V, Y;
+
+   boost::mpi::timer timer;
+
+    // Load A and Y (Y is thrown away)
+    if (rank == 0) {
+        std::cout << "Reading the matrix... ";
+        std::cout.flush();
+        timer.restart();
+    }
+
+    skylark::utility::io::ReadLIBSVM(argv[1], A, Y, skylark::base::ROWS);
+
+    if (rank == 0)
+        std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
+                  << " sec\n";
+
 
     /* Compute approximate SVD */
     skylark::nla::approximate_svd_params_t params;
     params.skip_qr = false;
     params.num_iterations = 2;
+    int k = 10;
 
-    El::DistMatrix<double> A1;
-    El::Transpose(A, A1);
+    if (rank == 0) std::cout << "Computing approximate SVD..." << std::endl;
+    skylark::nla::ApproximateSVD(A, U, S, V, k, context, params);
+    if (rank == 0)
+        std::cout <<"Took " << boost::format("%.2e") % timer.elapsed()
+                  << " sec\n";
 
-    El::DistMatrix<double> U1, S1, V1;
-    skylark::nla::ApproximateSVD(A1, U1, S1, V1, k, context, params);
-
-    for(int i = 0; i < k; i++) {
-        std::cout << "TRUE: " << S.Get(i, 0) << "\tAPPROX: " << S1.Get(i, 0)
-                  << "\tRelative error: "
-                  << std::abs(S.Get(i, 0) - S1.Get(i, 0)) / S.Get(i, 0)
-                  << std::endl;
-
-    }
+    El::Write(U, "out.U", El::ASCII);
+    El::Write(S, "out.S", El::ASCII);
+    El::Write(V, "out.V", El::ASCII);
 
     El::Finalize();
     return 0;

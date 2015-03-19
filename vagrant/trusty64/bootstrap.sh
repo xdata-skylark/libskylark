@@ -225,6 +225,9 @@ if [ ! -d "libskylark" ]; then
     yes | git clone https://github.com/xdata-skylark/libskylark.git
     cd libskylark
     git checkout development
+    cp /vagrant/find_fftw.patch .
+    git apply --ignore-space-change --ignore-whitespace find_fftw.patch
+    rm find_fftw.patch
     cd ..
 else
     cd libskylark

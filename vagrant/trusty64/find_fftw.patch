@@ -1,0 +1,12 @@
+diff --git a/CMakeModules/FindFFTW.cmake b/CMakeModules/FindFFTW.cmake
+index eccbda4..0303991 100644
+--- a/CMakeModules/FindFFTW.cmake
++++ b/CMakeModules/FindFFTW.cmake
+@@ -21,6 +21,7 @@ FIND_LIBRARY(FFTW_LIBRARY fftw3
+    $ENV{HOME}/Software/lib
+    /usr/local/lib
+    /usr/lib
++   /usr/lib/x86_64-linux-gnu/
+    NO_DEFAULT_PATH
+ )
+

@@ -40,6 +40,7 @@ template<typename T>
 inline void ColumnNrm2(const El::Matrix<T>& A,
     El::Matrix<El::Base<T> >& N) {
 
+    N.Resize(A.Width(), 1);
     double *n = N.Buffer();
     const double *a = A.LockedBuffer();
     for(int j = 0; j < A.Width(); j++) {
@@ -53,7 +54,7 @@ inline void ColumnNrm2(const El::Matrix<T>& A,
 template<typename T>
 inline void ColumnNrm2(const El::DistMatrix<T, El::STAR, El::STAR>& A,
     El::DistMatrix<El::Base<T>, El::STAR, El::STAR>& N) {
-
+    N.Resize(A.Width(), 1);
     double *n = N.Buffer();
     const double *a = A.LockedBuffer();
     for(int j = 0; j < A.Width(); j++) {
@@ -157,6 +158,38 @@ inline void RowDot(const El::Matrix<T>& A, const El::Matrix<T>& B,
         for(int i = 0; i < A.Height(); i++)
             n[i] += a[j * A.LDim() + i] * El::Conj(b[j * B.LDim() + i]);
     }
+}
+
+/**
+ * C = beta * C + alpha * square_euclidean_distance_matrix(A, B)
+ */
+template<typename T>
+void Euclidean(direction_t dirA, direction_t dirB, T alpha,
+    const El::Matrix<T> &A, const El::Matrix<T> &B,
+    T beta, El::Matrix<T> &C) {
+
+    T *c = C.Buffer();
+    int ldC = C.LDim();
+
+
+    if (dirA == base::COLUMNS && dirB == base::COLUMNS) {
+        base::Gemm(El::ADJOINT, El::NORMAL, -2.0 * alpha, A, B, beta, C);
+
+        El::Matrix<T> NA, NB;
+        ColumnNrm2(A, NA);
+        ColumnNrm2(B, NB);
+        T *na = NA.Buffer(), *nb = NB.Buffer();
+
+        int m = base::Width(A);
+        int n = base::Width(B);
+
+        for(int j = 0; j < n; j++)
+            for(int i = 0; i < m; i++)
+                c[j * ldC + i] += alpha * (na[i] * na[i] + nb[j] * nb[j]);
+
+    }
+
+    // TODO the rest of the cases.
 }
 
 } } // namespace skylark::base

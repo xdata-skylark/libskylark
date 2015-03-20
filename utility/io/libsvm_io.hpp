@@ -17,14 +17,14 @@ namespace skylark { namespace utility { namespace io {
  * @param direction whether the examples are to be put in rows or columns
  * @param min_d minimum number of rows in the matrix.
  */
-template<typename T>
+template<typename T, typename R>
 void ReadLIBSVM(const std::string& fname,
-    El::Matrix<T>& X, El::Matrix<T>& Y,
+    El::Matrix<T>& X, El::Matrix<R>& Y,
     base::direction_t direction, int min_d = 0) {
 
     std::string line;
     std::string token, val, ind;
-    float label;
+    R label;
     unsigned int start = 0;
     unsigned int delim, t;
     int n = 0;
@@ -69,7 +69,7 @@ void ReadLIBSVM(const std::string& fname,
     }
 
     T *Xdata = X.Buffer();
-    T *Ydata = Y.Buffer();
+    R *Ydata = Y.Buffer();
     int ldX = X.LDim();
 
     for (t = 0; t < n; t++) {
@@ -108,15 +108,15 @@ void ReadLIBSVM(const std::string& fname,
  * @param blocksize blocksize for blocking of read.
  */
 template<typename T, El::Distribution UX, El::Distribution VX,
-         El::Distribution UY, El::Distribution VY>
+         typename R, El::Distribution UY, El::Distribution VY>
 void ReadLIBSVM(const std::string& fname,
-    El::DistMatrix<T, UX, VX>& X, El::DistMatrix<T, UY, VY>& Y,
+    El::DistMatrix<T, UX, VX>& X, El::DistMatrix<R, UY, VY>& Y,
     base::direction_t direction, int min_d = 0, int blocksize = 10000) {
 
 
     std::string line;
     std::string token, val, ind;
-    float label;
+    R label;
     unsigned int start = 0;
     unsigned int delim, t;
     int n = 0;
@@ -173,9 +173,10 @@ void ReadLIBSVM(const std::string& fname,
         Y.Resize(n, 1);
     }
 
-    El::DistMatrix<T, El::CIRC, El::CIRC> XB(X.Grid()), YB(Y.Grid());
+    El::DistMatrix<T, El::CIRC, El::CIRC> XB(X.Grid());
+    El::DistMatrix<R, El::CIRC, El::CIRC> YB(Y.Grid());
     El::DistMatrix<T, UX, VX> Xv(X.Grid());
-    El::DistMatrix<T, UY, VY> Yv(Y.Grid());
+    El::DistMatrix<R, UY, VY> Yv(Y.Grid());
     for(int i=0; i<numblocks+1; i++) {
         if (i==numblocks)
             block = leftover;
@@ -192,7 +193,7 @@ void ReadLIBSVM(const std::string& fname,
 
         if(rank==0) {
             T *Xdata = XB.Matrix().Buffer();
-            T *Ydata = YB.Matrix().Buffer();
+            R *Ydata = YB.Matrix().Buffer();
             int ldX = XB.Matrix().LDim();
 
             t = 0;
@@ -246,14 +247,14 @@ void ReadLIBSVM(const std::string& fname,
  * @param direction whether the examples are to be put in rows or columns
  * @param min_d minimum number of rows in the matrix.
  */
-template<typename T>
+template<typename T, typename R>
 void ReadLIBSVM(const std::string& fname,
-    base::sparse_matrix_t<T>& X, El::Matrix<T>& Y, 
+    base::sparse_matrix_t<T>& X, El::Matrix<R>& Y, 
     base::direction_t direction, int min_d = 0) {
 
     std::string line;
     std::string token;
-    float label;
+    R label;
     unsigned int start = 0;
     unsigned int delim, t;
     int n = 0;
@@ -321,7 +322,7 @@ void ReadLIBSVM(const std::string& fname,
         Y.Resize(n, 1);
     } else
         Y.Resize(1, n);
-    T *Ydata = Y.Buffer();
+    R *Ydata = Y.Buffer();
 
     // prepare for second pass
     in.clear();

@@ -45,8 +45,22 @@ struct gaussian_t {
             qmc_sequence_dim(_N);
     }
 
-    // TODO method for gram matrix ?
 
+    template<typename XT, typename YT, typename KT>
+    void gram(base::direction_t dirX, base::direction_t dirY,
+        const XT &X, const YT &Y, KT &K) {
+
+        int m = dirX == base::COLUMNS ? base::Width(X) : base::Height(X);
+        int n = dirY == base::COLUMNS ? base::Width(Y) : base::Height(Y);
+
+        K.Resize(m, n);
+        base::Euclidean(dirX, dirY, 1.0, X, Y, 0.0, K);
+        typedef typename utility::typer_t<KT>::value_type value_type;
+        El::EntrywiseMap(K, std::function<value_type(value_type)> (
+            [this] (value_type x) {
+                return std::exp(-x / (2 * _sigma * _sigma));
+            }));
+    }
 
 private:
     const int _N;

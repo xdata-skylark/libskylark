@@ -30,6 +30,15 @@ if (SKYLARK_HAVE_FFTW)
                         ${Boost_LIBRARIES})
   install_targets(/bin/examples regression)
 
+  add_executable(kernel_regression kernel_regression.cpp)
+  target_link_libraries(kernel_regression
+                        ${Elemental_LIBRARY}
+                        ${FFTW_LIBRARY}
+                        ${Pmrrr_LIBRARY}
+                        ${SKYLARK_LIBS}
+                        ${Boost_LIBRARIES})
+  install_targets(/bin/examples kernel_regression)
+
   add_executable(least_squares least_squares)
   target_link_libraries(least_squares
                         ${Elemental_LIBRARY}

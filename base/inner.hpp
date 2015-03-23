@@ -192,6 +192,36 @@ void Euclidean(direction_t dirA, direction_t dirB, T alpha,
     // TODO the rest of the cases.
 }
 
+/**
+ * C = beta * C + alpha * square_euclidean_distance_matrix(A, A)
+ * Update only lower part.
+ */
+template<typename T>
+void SymmetricEuclidean(El::UpperOrLower uplo, direction_t dir, T alpha,
+    const El::Matrix<T> &A, T beta, El::Matrix<T> &C) {
+
+    T *c = C.Buffer();
+    int ldC = C.LDim();
+
+    if (dir == base::COLUMNS) {
+        El::Herk(uplo, El::ADJOINT, -2.0 * alpha, A, beta, C);
+
+        El::Matrix<T> N;
+        ColumnNrm2(A, N);
+        T *nn = N.Buffer();;
+
+        int n = base::Width(A);
+
+        for(int j = 0; j < n; j++)
+            for(int i = ((uplo == El::UPPER) ? 0 : j);
+                i < ((uplo == El::UPPER) ? j : n); i++)
+                c[j * ldC + i] += alpha * (nn[i] * nn[i] + nn[j] * nn[j]);
+
+    }
+
+    // TODO the rest of the cases.
+}
+
 } } // namespace skylark::base
 
 #endif // SKYLARK_INNER_HPP

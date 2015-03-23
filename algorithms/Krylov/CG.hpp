@@ -20,7 +20,7 @@ namespace skylark { namespace algorithms {
  * X should be allocated, and we use it as initial value.
  */
 template<typename MatrixType, typename RhsType, typename SolType>
-int CG(const MatrixType& A, const RhsType& B, SolType& X,
+int CG(El::UpperOrLower uplo, const MatrixType& A, const RhsType& B, SolType& X,
     krylov_iter_params_t params = krylov_iter_params_t(),
     const outplace_precond_t<RhsType, SolType>& M =
     outplace_id_precond_t<RhsType, SolType>()) {
@@ -59,7 +59,7 @@ int CG(const MatrixType& A, const RhsType& B, SolType& X,
     bool isprecond = !(M.is_id() && std::is_same<sol_type, rhs_type>::value);
     sol_type &Z =  !isprecond ? R : *(new sol_type(X));
 
-    base::Gemm(El::ADJOINT, El::NORMAL, -1.0, A, X, 1.0, R);
+    El::Hemm(El::LEFT, uplo, -1.0, A, X, 1.0, R);
 
     scalar_cont_type
         nrmb(internal::scalar_cont_typer_t<rhs_type>::build_compatible(k, 1, B));
@@ -88,7 +88,7 @@ int CG(const MatrixType& A, const RhsType& B, SolType& X,
         El::DiagonalScale(El::RIGHT, El::NORMAL, beta, P);
         base::Axpy(1.0, Z, P);
 
-        base::Gemm(El::ADJOINT, El::NORMAL, 1.0, A, P, Q);
+        El::Hemm(El::LEFT, uplo, 1.0, A, P, 0.0, Q);
 
         base::ColumnDot(P, Q, rhotmp);
         for(index_t i = 0; i < k; i++) {

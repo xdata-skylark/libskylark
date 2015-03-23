@@ -4,7 +4,7 @@
 #include "../sketch/sketch.hpp"
 #include "feature_transform_tags.hpp"
 
-namespace skylark { namespace ml { namespace kernels {
+namespace skylark { namespace ml { 
 
 struct gaussian_t {
 
@@ -45,6 +45,13 @@ struct gaussian_t {
             qmc_sequence_dim(_N);
     }
 
+    template<typename XT, typename YT, typename KT>
+    friend void Gram(base::direction_t dirX, base::direction_t dirY,
+        const gaussian_t& k, const XT &X, const YT &Y, KT &K);
+
+    template<typename XT, typename KT>
+    friend void SymmetricGram(El::UpperOrLower uplo, base::direction_t dir,
+        const gaussian_t& k, const XT &X, KT &K);
 
     template<typename XT, typename YT, typename KT>
     void gram(base::direction_t dirX, base::direction_t dirY,
@@ -66,6 +73,37 @@ private:
     const int _N;
     const double _sigma;
 };
+
+template<typename XT, typename YT, typename KT>
+void Gram(base::direction_t dirX, base::direction_t dirY,
+    const gaussian_t& k, const XT &X, const YT &Y, KT &K) {
+
+    int m = dirX == base::COLUMNS ? base::Width(X) : base::Height(X);
+    int n = dirY == base::COLUMNS ? base::Width(Y) : base::Height(Y);
+
+    K.Resize(m, n);
+    base::Euclidean(dirX, dirY, 1.0, X, Y, 0.0, K);
+    typedef typename utility::typer_t<KT>::value_type value_type;
+    El::EntrywiseMap(K, std::function<value_type(value_type)> (
+          [k] (value_type x) {
+              return std::exp(-x / (2 * k._sigma * k._sigma));
+          }));
+}
+
+template<typename XT, typename KT>
+void SymmetricGram(El::UpperOrLower uplo, base::direction_t dir,
+    const gaussian_t& k, const XT &X, KT &K) {
+
+    int n = dir == base::COLUMNS ? base::Width(X) : base::Height(X);
+
+    K.Resize(n, n);
+    base::SymmetricEuclidean(uplo, dir, 1.0, X, 0.0, K);
+    typedef typename utility::typer_t<KT>::value_type value_type;
+    El::EntrywiseMap(K, std::function<value_type(value_type)> (
+          [k] (value_type x) {
+              return std::exp(-x / (2 * k._sigma * k._sigma));
+          }));
+}
 
 struct polynomial_t {
 
@@ -209,6 +247,6 @@ private:
     const double _l;
 };
 
-} } }
+} } 
 
 #endif // SKYLARK_KERNELS_HPP

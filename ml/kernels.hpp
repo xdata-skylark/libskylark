@@ -99,7 +99,7 @@ void SymmetricGram(El::UpperOrLower uplo, base::direction_t dir,
     K.Resize(n, n);
     base::SymmetricEuclidean(uplo, dir, 1.0, X, 0.0, K);
     typedef typename utility::typer_t<KT>::value_type value_type;
-    El::EntrywiseMap(K, std::function<value_type(value_type)> (
+    base::SymmetricEntrywiseMap(uplo, K, std::function<value_type(value_type)> (
           [k] (value_type x) {
               return std::exp(-x / (2 * k._sigma * k._sigma));
           }));

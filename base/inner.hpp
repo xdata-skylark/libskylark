@@ -87,6 +87,34 @@ inline void ColumnNrm2(const El::DistMatrix<T, U, V>& A,
 }
 
 template<typename T>
+inline void ColumnNrm2(const El::AbstractDistMatrix<T>& A,
+    El::DistMatrix<El::Base<T>, El::STAR, El::STAR>& N) {
+
+    N.Resize(A.Width(), 1);
+
+    if (A.Participating()) {
+        std::vector<T> n(A.Width(), 1);
+        std::fill(n.begin(), n.end(), 0.0);
+        const El::Matrix<T> &Al = A.LockedMatrix();
+        const double *a = Al.LockedBuffer();
+        for(int j = 0; j < Al.Width(); j++)
+            for(int i = 0; i < Al.Height(); i++)
+                n[A.GlobalCol(j)] +=
+                    a[j * Al.LDim() + i] * El::Conj(a[j * Al.LDim() + i]);
+
+
+        El::Zero(N);
+        El::mpi::AllReduce(n.data(), N.Buffer(), A.Width(), MPI_SUM,
+            A.DistComm());
+        for(int j = 0; j < A.Width(); j++)
+            N.Set(j, 0, sqrt(N.Get(j, 0)));
+    }
+
+    El::mpi::Broadcast(N.Buffer(), A.Width(), A.Root(), A.CrossComm());
+}
+
+
+template<typename T>
 inline void ColumnDot(const El::Matrix<T>& A, const El::Matrix<T>& B,
     El::Matrix<T>& N) {
 
@@ -138,7 +166,7 @@ inline void ColumnDot(const El::DistMatrix<T, U, V>& A,
 
    N.Resize(A.Width(), 1);
    El::Zero(N);
-   boost::mpi::communicator comm(N.Grid().Comm(), boost::mpi::comm_attach);
+   boost::mpi::communicator comm(N.Grid().Comm().comm, boost::mpi::comm_attach);
    boost::mpi::all_reduce(comm, n.data(), A.Width(), N.Buffer(), std::plus<T>());
 }
 
@@ -169,8 +197,7 @@ void Euclidean(direction_t dirA, direction_t dirB, T alpha,
     T beta, El::Matrix<T> &C) {
 
     T *c = C.Buffer();
-    int ldC = C.LDim();
-
+    El::Int ldC = C.LDim();
 
     if (dirA == base::COLUMNS && dirB == base::COLUMNS) {
         base::Gemm(El::ADJOINT, El::NORMAL, -2.0 * alpha, A, B, beta, C);
@@ -180,13 +207,43 @@ void Euclidean(direction_t dirA, direction_t dirB, T alpha,
         ColumnNrm2(B, NB);
         T *na = NA.Buffer(), *nb = NB.Buffer();
 
-        int m = base::Width(A);
-        int n = base::Width(B);
+        El::Int m = base::Width(A);
+        El::Int n = base::Width(B);
 
-        for(int j = 0; j < n; j++)
-            for(int i = 0; i < m; i++)
+        for(El::Int j = 0; j < n; j++)
+            for(El::Int i = 0; i < m; i++)
                 c[j * ldC + i] += alpha * (na[i] * na[i] + nb[j] * nb[j]);
 
+    }
+
+    // TODO the rest of the cases.
+}
+
+template<typename T>
+void Euclidean(direction_t dirA, direction_t dirB, T alpha,
+    const El::AbstractDistMatrix<T> &A, const El::AbstractDistMatrix<T> &B,
+    T beta, El::AbstractDistMatrix<T> &C) {
+
+    T *c = C.Buffer();
+    El::Int ldC = C.LDim();
+
+    if (dirA == base::COLUMNS && dirB == base::COLUMNS) {
+        El::Gemm(El::ADJOINT, El::NORMAL, -2.0 * alpha, A, B, beta, C);
+
+        El::DistMatrix<T, El::STAR, El::STAR> NA, NB;
+        ColumnNrm2(A, NA);
+        ColumnNrm2(B, NB);
+        T *na = NA.Buffer(), *nb = NB.Buffer();
+
+        El::Int m = C.LocalHeight();
+        El::Int n = C.LocalWidth();
+
+        for(El::Int j = 0; j < n; j++)
+            for(El::Int i = 0; i < m; i++) {
+                T a = na[C.GlobalRow(i)];
+                T b = nb[C.GlobalCol(j)];
+                c[j * ldC + i] += alpha * (a * a + b * b);
+            }
     }
 
     // TODO the rest of the cases.
@@ -212,8 +269,8 @@ void SymmetricEuclidean(El::UpperOrLower uplo, direction_t dir, T alpha,
 
         int n = base::Width(A);
 
-        for(int j = 0; j < n; j++)
-            for(int i = ((uplo == El::UPPER) ? 0 : j);
+        for(El::Int j = 0; j < n; j++)
+            for(El::Int i = ((uplo == El::UPPER) ? 0 : j);
                 i < ((uplo == El::UPPER) ? j : n); i++)
                 c[j * ldC + i] += alpha * (nn[i] * nn[i] + nn[j] * nn[j]);
 
@@ -221,6 +278,37 @@ void SymmetricEuclidean(El::UpperOrLower uplo, direction_t dir, T alpha,
 
     // TODO the rest of the cases.
 }
+
+template<typename T>
+void SymmetricEuclidean(El::UpperOrLower uplo, direction_t dir, T alpha,
+    const El::AbstractDistMatrix<T> &A, T beta, El::AbstractDistMatrix<T> &C) {
+
+    T *c = C.Buffer();
+    int ldC = C.LDim();
+
+    if (dir == base::COLUMNS) {
+        El::Herk(uplo, El::ADJOINT, -2.0 * alpha, A, beta, C);
+
+        El::DistMatrix<El::Base<T>, El::STAR, El::STAR > N;
+        ColumnNrm2(A, N);
+        El::Base<T> *nn = N.Buffer();;
+
+        int n = C.LocalWidth();
+        int m = C.LocalHeight();
+
+        for(int j = 0; j < n; j++)
+            for(El::Int i =
+                    ((uplo == El::UPPER) ? 0 : C.LocalRowOffset(A.GlobalCol(j)+1));
+                i < ((uplo == El::UPPER) ? C.LocalRowOffset(A.GlobalCol(j)) : n); i++) {
+                El::Base<T> a = nn[C.GlobalRow(i)];
+                El::Base<T> b = nn[C.GlobalCol(j)];
+                c[j * ldC + i] += alpha * (a * a + b * b);
+            }
+    }
+
+    // TODO the rest of the cases.
+}
+
 
 } } // namespace skylark::base
 

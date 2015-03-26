@@ -1,12 +1,9 @@
 #include <iostream>
-#include <boost/program_options.hpp>
 
 #include <El.hpp>
 #include <boost/mpi.hpp>
 #include <boost/format.hpp>
 #include <skylark.hpp>
-
-namespace bpo = boost::program_options;
 
 template<typename MatrixType>
 class feature_map_precond_t :
@@ -57,15 +54,16 @@ private:
     matrix_type U, C;
 };
 
-int main(int argc, char* argv[]) {
+#ifndef SKYLARK_AVOID_BOOST_PO
 
-    El::Initialize(argc, argv);
+#include <boost/program_options.hpp>
+namespace bpo = boost::program_options;
 
-    int seed, s;
-    std::string fname, testname;
-    double sigma, lambda;
+int parse_program_options(int argc, char* argv[], 
+    int &seed, int &s, std::string &fname, std::string &testname,
+    double &sigma, double &lambda) {
 
-    // Parse options
+
     bpo::options_description desc("Options");
     desc.add_options()
         ("help,h", "produce a help message")
@@ -116,6 +114,73 @@ int main(int argc, char* argv[]) {
         std::cerr << desc << std::endl;
         return -1;
     }
+
+    return 1000;
+}
+
+
+#else
+
+int parse_program_options(int argc, char* argv[], 
+    int &seed, int &s, std::string &fname, std::string &testname,
+    double &sigma, double &lambda) {
+
+    seed = 38734;
+    sigma = 10.0;
+    lambda = 0.01;
+    s = 2000;
+
+    int poscount = 0;
+    for (int i = 1; i < argc; i += 2) {
+        std::string flag = argv[i];
+        std::string value = i + 1 < argc ? argv[i+1] : "";
+
+        if (flag == "--seed" || flag == "-s")
+                seed = boost::lexical_cast<int>(value);
+
+        if (flag == "--lambda" || flag == "-l")
+            lambda = boost::lexical_cast<double>(value);
+
+        if (flag == "--sigma" || flag == "-x")
+            sigma = boost::lexical_cast<double>(value);
+
+        if (flag == "--nunmfeatures" || flag == "-f")
+            s = boost::lexical_cast<int>(value);
+
+        if (flag == "--trainfile")
+            fname = value;
+        if (flag == "--testfile")
+            testname = value;
+
+        if (flag[0] != '-' && poscount != 0)
+            testname = flag;
+
+        if (flag[0] != '-' && poscount == 0) {
+            fname = flag;
+            poscount++;
+        }
+
+        if (flag[0] != '-')
+            i--;
+    }
+
+    return 1000;
+}
+
+#endif
+
+int main(int argc, char* argv[]) {
+
+    El::Initialize(argc, argv);
+
+    int seed, s;
+    std::string fname, testname;
+    double sigma, lambda;
+
+    int flag = parse_program_options(argc, argv, seed, s,
+        fname, testname, sigma, lambda);
+    if (flag != 1000)
+        return flag;
 
     skylark::base::context_t context(seed);
 

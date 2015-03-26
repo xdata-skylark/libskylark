@@ -47,7 +47,7 @@ template<typename T>
 inline void Axpy(const El::Matrix<T>& alphas,
     const El::Matrix<T>& X, El::Matrix<T>& Y) {
     El::Matrix<T> Xv, Yv;
-    for(int i = 0; i < X.Width(); i++) {
+    for(El::Int i = 0; i < X.Width(); i++) {
         El::View(Yv, Y, 0, i, Y.Height(), 1);
         El::LockedView(Xv, X, 0, i, Y.Height(), 1);
         El::Axpy(alphas.Get(i, 0), Xv, Yv);
@@ -62,7 +62,7 @@ inline void Axpy(const El::DistMatrix<T, El::STAR, El::STAR> &alphas,
     El::DistMatrix<T, U2, V2>& Y) {
     El::DistMatrix<T, U1, V1> Xv;
     El::DistMatrix<T, U2, V2> Yv;
-    for(int i = 0; i < X.Width(); i++) {
+    for(El::Int i = 0; i < X.Width(); i++) {
         El::View(Yv, Y, 0, i, Y.Height(), 1);
         El::LockedView(Xv, X, 0, i, Y.Height(), 1);
         El::Axpy(alphas.Get(i, 0), Xv, Yv);

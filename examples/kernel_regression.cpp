@@ -123,7 +123,7 @@ int main(int argc, char* argv[]) {
     int rank = world.rank();
 
     El::DistMatrix<double> X;
-    El::DistMatrix<int> L;
+    El::DistMatrix<El::Int> L;
 
     boost::mpi::timer timer;
 
@@ -181,8 +181,8 @@ int main(int argc, char* argv[]) {
 
     // Form right hand side
     El::DistMatrix<double> Y;
-    std::unordered_map<int, El::Int> coding;
-    std::vector<int> rcoding;
+    std::unordered_map<El::Int, El::Int> coding;
+    std::vector<El::Int> rcoding;
     skylark::ml::DummyCoding(El::NORMAL, Y, L, coding, rcoding);
 
     // Solve
@@ -210,7 +210,7 @@ int main(int argc, char* argv[]) {
         }
 
         El::DistMatrix<double> XT;
-        El::DistMatrix<int> LT;
+        El::DistMatrix<El::Int> LT;
         skylark::utility::io::ReadLIBSVM(testname, XT, LT,
             skylark::base::COLUMNS);
 
@@ -221,7 +221,7 @@ int main(int argc, char* argv[]) {
         El::DistMatrix<double> YP(Y.Width(), XT.Width());
         El::Gemm(El::ADJOINT, El::NORMAL, 1.0, A, KT, YP);
 
-        El::DistMatrix<int> LP;
+        El::DistMatrix<El::Int> LP;
         skylark::ml::DummyDecode(El::ADJOINT, YP, LP, rcoding);
 
         if (rank == 0)

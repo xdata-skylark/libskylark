@@ -17,7 +17,7 @@ void DummyCoding(El::Orientation orientation,
     rcoding.clear();
     El::Int num = 0;
     const LabelType *l = L.LockedBuffer();
-    for(int i = 0; i < L.Height() * L.Width(); i++) {
+    for(El::Int i = 0; i < L.Height() * L.Width(); i++) {
         const LabelType &label = l[i];
         if (coding.count(label) == 0) {
             coding[label] = num;
@@ -31,14 +31,14 @@ void DummyCoding(El::Orientation orientation,
         Y.Resize(L.Height() * L.Width(), num);
         El::EntrywiseMap(Y,
             std::function<T(T)>([nval] (T x) { return nval; }));
-        for(int i = 0; i < L.Height() * L.Width(); i++)
+        for(El::Int i = 0; i < L.Height() * L.Width(); i++)
             Y.Set(i, coding[l[i]], pval);
 
     } else {
         Y.Resize(num, L.Height() * L.Width());
         El::EntrywiseMap(Y,
             std::function<T(T)>([nval] (T x) { return nval; }));
-        for(int i = 0; i < L.Height() * L.Width(); i++)
+        for(El::Int i = 0; i < L.Height() * L.Width(); i++)
             Y.Set(coding[l[i]], i, pval);
 
     }
@@ -59,7 +59,7 @@ void DummyCoding(El::Orientation orientation,
     rcoding.clear();
     El::Int num = 0;
     const LabelType *l = Lc.LockedBuffer();
-    for(int i = 0; i < Lc.Height() * Lc.Width(); i++) {
+    for(El::Int i = 0; i < Lc.Height() * Lc.Width(); i++) {
         const LabelType &label = l[i];
         if (coding.count(label) == 0) {
             coding[label] = num;
@@ -74,7 +74,7 @@ void DummyCoding(El::Orientation orientation,
         El::EntrywiseMap(Yc,
             std::function<T(T)>([nval] (T x) { return nval; }));
         El::Matrix<T> &Yl = Yc.Matrix();
-        for(int i = 0; i < Yl.Height(); i++)
+        for(El::Int i = 0; i < Yl.Height(); i++)
             Yl.Set(i, coding[l[Yc.GlobalRow(i)]], pval);
 
         El::Copy(Yc, Y);
@@ -84,7 +84,7 @@ void DummyCoding(El::Orientation orientation,
         El::EntrywiseMap(Yc,
             std::function<T(T)>([nval] (T x) { return nval; }));
         El::Matrix<T> &Yl = Yc.Matrix();
-        for(int i = 0; i < Yl.Width(); i++)
+        for(El::Int i = 0; i < Yl.Width(); i++)
             Yl.Set(coding[l[Yc.GlobalCol(i)]], i, pval);
 
         El::Copy(Yc, Y);
@@ -102,9 +102,9 @@ void DummyDecode(El::Orientation orientation,
         LabelType *l = L.Buffer();
         const double *y = Y.LockedBuffer();
         El::Int ld = Y.LDim();
-        for(int j = 0; j < Y.Width(); j++) {
-            int idx = 0;
-            for(int i = 1; i < Y.Height(); i++)
+        for(El::Int j = 0; j < Y.Width(); j++) {
+            El::Int idx = 0;
+            for(El::Int i = 1; i < Y.Height(); i++)
                 if ((maxidx && y[j * ld + i] > y[j * ld + idx]) ||
                     (!maxidx && y[j * ld + i] < y[j * ld + idx]))
                     idx = i;

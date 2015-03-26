@@ -298,8 +298,8 @@ void SymmetricEuclidean(El::UpperOrLower uplo, direction_t dir, T alpha,
 
         for(int j = 0; j < n; j++)
             for(El::Int i =
-                    ((uplo == El::UPPER) ? 0 : C.LocalRowOffset(A.GlobalCol(j)+1));
-                i < ((uplo == El::UPPER) ? C.LocalRowOffset(A.GlobalCol(j)) : n); i++) {
+                    ((uplo == El::UPPER) ? 0 : C.LocalRowOffset(A.GlobalCol(j)));
+                i < ((uplo == El::UPPER) ? C.LocalRowOffset(A.GlobalCol(j) + 1) : m); i++) {
                 El::Base<T> a = nn[C.GlobalRow(i)];
                 El::Base<T> b = nn[C.GlobalCol(j)];
                 c[j * ldC + i] += alpha * (a * a + b * b);

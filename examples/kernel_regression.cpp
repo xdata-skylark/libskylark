@@ -277,7 +277,7 @@ int main(int argc, char* argv[]) {
         El::DistMatrix<double> XT;
         El::DistMatrix<El::Int> LT;
         skylark::utility::io::ReadLIBSVM(testname, XT, LT,
-            skylark::base::COLUMNS);
+            skylark::base::COLUMNS, X.Height());
 
         El::DistMatrix<double> KT;
         skylark::ml::Gram(skylark::base::COLUMNS, skylark::base::COLUMNS,

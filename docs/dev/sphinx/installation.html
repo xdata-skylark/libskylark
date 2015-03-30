@@ -437,6 +437,11 @@ make install
 <p class="last">If you have MPI compilers in your PATH environment variable, CMake
 may overwrite the compiler specified in the CXX flag.</p>
 </div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you want to specify the path for BLAS and/or LAPACK (e.g. use OpenBLAS), define
+the BLAS_LIBRARIES and LAPACK_LIBRARIES enviroment variable.</p>
+</div>
 <p>In case you have a more specific setup or this does not work on your
 machine continue reading the next sections.</p>
 <div class="section" id="python-only-user-level-installation">
@@ -1244,7 +1249,7 @@ set (SKYLARK_VERSION_MINOR 1)
 <span class="k">fi</span>
 </pre></div>
 </div>
-<p>which gives me</p>
+<p>which outputs</p>
 <div class="highlight-sh"><div class="highlight"><pre><span class="c"># cat error.out</span>
 
 <span class="c"># cat elemental.out</span>

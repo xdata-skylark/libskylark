@@ -488,6 +488,9 @@ should work out of the box. To that end execute
 .. note:: If you have MPI compilers in your PATH environment variable, CMake
     may overwrite the compiler specified in the CXX flag.
 
+.. note:: If you want to specify the path for BLAS and/or LAPACK (e.g. use OpenBLAS), define 
+    the BLAS_LIBRARIES and LAPACK_LIBRARIES enviroment variable.
+
 In case you have a more specific setup or this does not work on your
 machine continue reading the next sections.
 
@@ -1282,7 +1285,7 @@ On Watson Q the following SLURM script can be used to run examples:
             $RUN_EXE
     fi
 
-which gives me
+which outputs
 
 .. code-block:: sh
 

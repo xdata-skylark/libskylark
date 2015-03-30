@@ -8,6 +8,7 @@ if (SKYLARK_HAVE_FFTW)
                         ${Elemental_LIBRARY}
                         ${FFTW_LIBRARY}
                         ${Pmrrr_LIBRARY}
+                        ${Metis_LIBRARY}
                         ${Boost_LIBRARIES})
   add_test( sparse_elemental_apply_test sparse_elemental_apply )
 
@@ -18,6 +19,7 @@ if (SKYLARK_HAVE_FFTW)
                         ${Elemental_LIBRARY}
                         ${FFTW_LIBRARY}
                         ${Pmrrr_LIBRARY}
+                        ${Metis_LIBRARY}
                         ${Boost_LIBRARIES})
   add_test( dense_elemental_apply_test dense_elemental_apply )
 
@@ -31,6 +33,7 @@ if (SKYLARK_HAVE_COMBBLAS)
                         ${Elemental_LIBRARY}
                         ${FFTW_LIBRARY}
                         ${Pmrrr_LIBRARY}
+                        ${Metis_LIBRARY}
                         ${DEP_LIBRARIES}
                         ${CombBLAS_LIBRARIES}
                         ${Boost_LIBRARIES})
@@ -42,6 +45,7 @@ if (SKYLARK_HAVE_COMBBLAS)
                         ${Elemental_LIBRARY}
                         ${FFTW_LIBRARY}
                         ${Pmrrr_LIBRARY}
+                        ${Metis_LIBRARY}
                         ${CombBLAS_LIBRARIES}
                         ${Boost_LIBRARIES})
   add_test( sparse_mixed_apply_test mpirun -np 4 ./sparse_mixed_apply )
@@ -63,6 +67,7 @@ if (SKYLARK_HAVE_COMBBLAS AND SKYLARK_HAVE_FFTW)
   target_link_libraries( serialization_test
                         ${SKYLARK_LIBS}
                         ${Elemental_LIBRARY}
+                        ${Metis_LIBRARY}
                         ${FFTW_LIBRARY}
                         ${DEP_LIBRARIES}
                         ${CombBLAS_LIBRARIES}
@@ -74,6 +79,9 @@ endif (SKYLARK_HAVE_COMBBLAS AND SKYLARK_HAVE_FFTW)
 add_executable(local_sparse_apply LocalSparseSketchApply.cpp)
 target_link_libraries( local_sparse_apply
                        ${SKYLARK_LIBS}
+                       ${Elemental_LIBRARY}
+                       ${Pmrrr_LIBRARY}
+                       ${Metis_LIBRARY}	
                        ${FFTW_LIBRARY}
                        ${DEP_LIBRARIES}
                        ${Boost_LIBRARIES} )
@@ -84,6 +92,7 @@ target_link_libraries(svd_elemental_test
                       ${SKYLARK_LIBS}
                       ${Elemental_LIBRARY}
                       ${Pmrrr_LIBRARY}
+                      ${Metis_LIBRARY}	
                       ${Boost_LIBRARIES})
 add_test( svd_elemental_test svd_elemental_test )
 

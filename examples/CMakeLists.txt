@@ -5,6 +5,7 @@ if (SKYLARK_HAVE_FFTW)
                         ${Elemental_LIBRARY}
                         ${FFTW_LIBRARY}
                         ${Pmrrr_LIBRARY}
+                        ${Metis_LIBRARY}
                         ${SKYLARK_LIBS}
                         ${Boost_LIBRARIES})
   install_targets(/bin/examples hp_dense)
@@ -14,6 +15,7 @@ if (SKYLARK_HAVE_FFTW)
                         ${Elemental_LIBRARY}
                         ${FFTW_LIBRARY}
                         ${Pmrrr_LIBRARY}
+                        ${Metis_LIBRARY}
                         ${SKYLARK_LIBS}
                         ${Boost_LIBRARIES})
   install_targets(/bin/examples elemental)
@@ -23,6 +25,7 @@ if (SKYLARK_HAVE_FFTW)
                         ${Elemental_LIBRARY}
                         ${FFTW_LIBRARY}
                         ${Pmrrr_LIBRARY}
+                        ${Metis_LIBRARY}
                         ${SKYLARK_LIBS}
                         ${Boost_LIBRARIES})
   install_targets(/bin/examples regression)
@@ -32,6 +35,7 @@ if (SKYLARK_HAVE_FFTW)
                         ${Elemental_LIBRARY}
                         ${FFTW_LIBRARY}
                         ${Pmrrr_LIBRARY}
+                        ${Metis_LIBRARY}
                         ${SKYLARK_LIBS}
                         ${Boost_LIBRARIES})
   install_targets(/bin/examples least_squares)
@@ -41,6 +45,7 @@ if (SKYLARK_HAVE_FFTW)
                         ${Elemental_LIBRARY}
                         ${FFTW_LIBRARY}
                         ${Pmrrr_LIBRARY}
+                        ${Metis_LIBRARY}
                         ${SKYLARK_LIBS}
                         ${Boost_LIBRARIES}
                         ${HDF5_LIBRARIES}
@@ -52,6 +57,7 @@ if (SKYLARK_HAVE_FFTW)
                         ${Elemental_LIBRARY}
                         ${FFTW_LIBRARY}
                         ${Pmrrr_LIBRARY}
+                        ${Metis_LIBRARY}
                         ${SKYLARK_LIBS}
                         ${Boost_LIBRARIES})
   install_targets(/bin/examples svd)
@@ -64,6 +70,7 @@ if (SKYLARK_HAVE_HDF5)
                         ${Elemental_LIBRARY}
                         ${FFTW_LIBRARY}
                         ${Pmrrr_LIBRARY}
+                        ${Metis_LIBRARY}
                         ${SKYLARK_LIBS}
                         ${Boost_LIBRARIES}
                         ${HDF5_LIBRARIES}
@@ -77,6 +84,7 @@ if (SKYLARK_HAVE_OPENMP AND SKYLARK_HAVE_HDF5)
                         ${Elemental_LIBRARY}
                         ${FFTW_LIBRARY}
                         ${Pmrrr_LIBRARY}
+                        ${Metis_LIBRARY}
                         ${SKYLARK_LIBS}
                         ${Boost_LIBRARIES}
                         ${HDF5_LIBRARIES}

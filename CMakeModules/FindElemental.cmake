@@ -32,9 +32,18 @@ FIND_LIBRARY(Pmrrr_LIBRARY pmrrr
    NO_DEFAULT_PATH
 )
 
-IF(Elemental_INCLUDE_DIR AND Elemental_LIBRARY AND Pmrrr_LIBRARY)
+FIND_LIBRARY(Metis_LIBRARY metis
+   $ENV{ELEMENTAL_ROOT}/lib
+   $ENV{METIS_ROOT}/lib
+   $ENV{HOME}/Software/lib
+   /usr/local/lib
+   /usr/lib
+   NO_DEFAULT_PATH
+)
+
+IF(Elemental_INCLUDE_DIR AND Elemental_LIBRARY AND Pmrrr_LIBRARY AND Metis_LIBRARY)
   SET( Elemental_FOUND "YES")
-ENDIF(Elemental_INCLUDE_DIR AND Elemental_LIBRARY AND Pmrrr_LIBRARY)
+ENDIF(Elemental_INCLUDE_DIR AND Elemental_LIBRARY AND Pmrrr_LIBRARY AND Metis_LIBRARY)
 
 IF (Elemental_FOUND)
   IF (NOT Elemental_FIND_QUIETLY)
@@ -42,6 +51,8 @@ IF (Elemental_FOUND)
             "Found Elemental:${Elemental_LIBRARY}")
     MESSAGE(STATUS
             "Found pmrrr:${Pmrrr_LIBRARY}")
+    MESSAGE(STATUS
+            "Found metis:${Metis_LIBRARY}")
   ENDIF (NOT Elemental_FIND_QUIETLY)
 ELSE (Elemental_FOUND)
   IF (Elemental_FIND_REQUIRED)

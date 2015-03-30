@@ -266,6 +266,8 @@ int main(int argc, char* argv[]) {
         std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
                   << " sec\n";
 
+    El::Write(A, "A.dat", El::ASCII);
+
     // Test
     if (!testname.empty()) {
         if (rank == 0) {

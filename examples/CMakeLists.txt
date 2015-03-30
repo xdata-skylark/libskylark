@@ -35,6 +35,7 @@ if (SKYLARK_HAVE_FFTW)
                         ${Elemental_LIBRARY}
                         ${FFTW_LIBRARY}
                         ${Pmrrr_LIBRARY}
+                        ${Metis_LIBRARY}
                         ${SKYLARK_LIBS}
                         ${Boost_LIBRARIES})
   install_targets(/bin/examples kernel_regression)

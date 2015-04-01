@@ -192,7 +192,7 @@ such as ODEPACK, QUADPACK, and MINPACK).
 
 	sudo apt-get install python-numpy python-scipy
 
-.. note:: Elemental-0.85 requires a NumPy version >= 1.7. On Ubuntu Precise the deb sources only contain version 1.6.x. To upgrade use either:
+.. note:: Elemental-0.86 requires a NumPy version >= 1.7. On Ubuntu Precise the deb sources only contain version 1.6.x. To upgrade use either:
 
     ::
 
@@ -311,23 +311,28 @@ We support version 0.86. Elemental's API is a moving target, so newer versions
 might not work as-is.
 
 .. note:: Currently version 0.86 is not officially released yet. Please,
-    checkout and build the github version (see
-    https://github.com/elemental/Elemental).
+    use the release candidate, e.g.
+    https://github.com/elemental/Elemental/releases/tag/0.86-rc1.
 
 *Installation: (make sure to use a compiler with c++11 support)*
 
 ::
 
-        wget http://libelemental.org/pub/releases/Elemental-0.86.tgz
-        tar xvfz Elemental-0.86.tgz
-        cd Elemental-0.86/
+        wget https://github.com/elemental/Elemental/releases/tag/0.86-rc1
+        unzip 0.86-rc1.zip
+        cd Elemental-0.86-rc1/
+        rmdir external/metis
+        git clone https://github.com/poulson/metis.git external/metis
         mkdir build
         cd build
-        cmake ..
+        cmake -DEL_USE_64BIT_INTS=ON -DCMAKE_BUILD_TYPE=HybridRelease ../
         make
         sudo make install
 
 The installation prefix can be set using the ``CMAKE_INSTALL_PREFIX``.
+
+Note that instead of pulling Metis into the Elemental directory you can set
+the Metis path by setting the `METIS_ROOT` environment variable.
 
 If you want to use non-default math libraries specify the ``MATH_LIBS``
 variable.
@@ -488,7 +493,7 @@ should work out of the box. To that end execute
 .. note:: If you have MPI compilers in your PATH environment variable, CMake
     may overwrite the compiler specified in the CXX flag.
 
-.. note:: If you want to specify the path for BLAS and/or LAPACK (e.g. use OpenBLAS), define 
+.. note:: If you want to specify the path for BLAS and/or LAPACK (e.g. use OpenBLAS), define
     the BLAS_LIBRARIES and LAPACK_LIBRARIES enviroment variable.
 
 In case you have a more specific setup or this does not work on your
@@ -1094,7 +1099,9 @@ Finally, run the following to compile (and install) Elemental.
     rm -rf CMake*; \
     cmake -DCMAKE_TOOLCHAIN_FILE=BGQ-toolchain.cmake \
         -DCMAKE_INSTALL_PREFIX=$HOME/local \
-        -DCMAKE_BUILD_TYPE=PureDebug ..
+        -DCMAKE_BUILD_TYPE=HybridRelease -DEL_EXAMPLES=OFF \
+        -DBUILD_SHARED_LIBS=OFF \
+        -DEL_USE_64BIT_INTS=ON -DBUILD_METIS=OFF ..
     make install
 
 In case you run into errors or problems, check the `CMakeFiles/CMakeError.log`

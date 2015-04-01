@@ -195,7 +195,7 @@ such as ODEPACK, QUADPACK, and MINPACK).</p>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p>Elemental-0.85 requires a NumPy version &gt;= 1.7. On Ubuntu Precise the deb sources only contain version 1.6.x. To upgrade use either:</p>
+<p>Elemental-0.86 requires a NumPy version &gt;= 1.7. On Ubuntu Precise the deb sources only contain version 1.6.x. To upgrade use either:</p>
 <div class="highlight-rst"><div class="highlight"><pre>wget https://launchpad.net/~tukss/+archive/ppa/+build/4055943/+files/python-numpy_1.7.0~b2-1~precise1_amd64.deb
 sudo dpkg -i python-numpy_1.7.0~b2-1~precise1_amd64.deb
 </pre></div>
@@ -293,21 +293,25 @@ might not work as-is.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">Currently version 0.86 is not officially released yet. Please,
-checkout and build the github version (see
-<a class="reference external" href="https://github.com/elemental/Elemental">https://github.com/elemental/Elemental</a>).</p>
+use the release candidate, e.g.
+<a class="reference external" href="https://github.com/elemental/Elemental/releases/tag/0.86-rc1">https://github.com/elemental/Elemental/releases/tag/0.86-rc1</a>.</p>
 </div>
 <p><em>Installation: (make sure to use a compiler with c++11 support)</em></p>
-<div class="highlight-rst"><div class="highlight"><pre>wget http://libelemental.org/pub/releases/Elemental-0.86.tgz
-tar xvfz Elemental-0.86.tgz
-cd Elemental-0.86/
+<div class="highlight-rst"><div class="highlight"><pre>wget https://github.com/elemental/Elemental/releases/tag/0.86-rc1
+unzip 0.86-rc1.zip
+cd Elemental-0.86-rc1/
+rmdir external/metis
+git clone https://github.com/poulson/metis.git external/metis
 mkdir build
 cd build
-cmake ..
+cmake -DEL_USE_64BIT_INTS=ON -DCMAKE_BUILD_TYPE=HybridRelease ../
 make
 sudo make install
 </pre></div>
 </div>
 <p>The installation prefix can be set using the <code class="docutils literal"><span class="pre">CMAKE_INSTALL_PREFIX</span></code>.</p>
+<p>Note that instead of pulling Metis into the Elemental directory you can set
+the Metis path by setting the <cite>METIS_ROOT</cite> environment variable.</p>
 <p>If you want to use non-default math libraries specify the <code class="docutils literal"><span class="pre">MATH_LIBS</span></code>
 variable.
 For example for OpenBLAS, run cmake along the following lines:</p>
@@ -1074,7 +1078,9 @@ Finally, run the following to compile (and install) Elemental.</p>
 <div class="highlight-sh"><div class="highlight"><pre>rm -rf CMake*<span class="p">;</span> <span class="se">\</span>
 cmake -DCMAKE_TOOLCHAIN_FILE<span class="o">=</span>BGQ-toolchain.cmake <span class="se">\</span>
     -DCMAKE_INSTALL_PREFIX<span class="o">=</span><span class="nv">$HOME</span>/local <span class="se">\</span>
-    -DCMAKE_BUILD_TYPE<span class="o">=</span>PureDebug ..
+    -DCMAKE_BUILD_TYPE<span class="o">=</span>HybridRelease -DEL_EXAMPLES<span class="o">=</span>OFF <span class="se">\</span>
+    -DBUILD_SHARED_LIBS<span class="o">=</span>OFF <span class="se">\</span>
+    -DEL_USE_64BIT_INTS<span class="o">=</span>ON -DBUILD_METIS<span class="o">=</span>OFF ..
 make install
 </pre></div>
 </div>

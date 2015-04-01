@@ -366,6 +366,54 @@ void ReadLIBSVM(const std::string& fname,
 
 /**
  * Write X and Y from a file in libsvm format.
+ * X and Y are Elemental dense matrices.
+ *
+ * @param fname output file name.
+ * @param X input X
+ * @param Y output Y
+ * @param direction whether the examples are in the rows or columns of X and Y
+ */
+template<typename T, typename R>
+void WriteLIBSVM(const std::string& fname,
+    El::Matrix<T>& X, El::Matrix<R>& Y,
+    base::direction_t direction) {
+
+    std::ofstream out(fname);
+    El::Int n, d;
+
+    if (direction == base::COLUMNS) {
+        n = X.Width();
+        d = X.Height();
+    } else {
+        n = X.Height();
+        d = X.Width();
+    }
+
+    for(El::Int j = 0; j < n; j++) {
+        if (direction == base::COLUMNS) {
+            out << Y.Get(0, j) << " ";
+            for(El::Int r = 0; r < d; r++) {
+                T val = X.Get(r, j);
+                if (val != 0.0)
+                    out << (r+1) << ":" << val << " ";
+            }
+            out << std::endl;
+        } else {
+            out << Y.Get(j, 0) << " ";
+            for(El::Int r = 0; r < d; r++) {
+                T val = X.Get(j, r);
+                if (val != 0.0)
+                    out << (r+1) << ":" << val << " ";
+            }
+            out << std::endl;
+        }
+    }
+
+    out.close();
+}
+
+/**
+ * Write X and Y from a file in libsvm format.
  * X and Y are Elemental distributed matrices.
  *
  * @param fname output file name.
@@ -430,7 +478,6 @@ void WriteLIBSVM(const std::string& fname,
                     }
                     out << std::endl;
                 } else {
-                    if (direction == base::ROWS) {
                         out << YB.Get(j, 0) << " ";
                         for(El::Int r = 0; r < d; r++) {
                             T val = XB.Get(j, r);
@@ -439,10 +486,8 @@ void WriteLIBSVM(const std::string& fname,
                         }
                         out << std::endl;
                 }
-
             }
     }
-
     out.close();
 }
 

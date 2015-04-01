@@ -103,7 +103,7 @@ int parse_program_options(int argc, char* argv[],
             return 0;
         }
 
-        if (!vm.count("testfile")) {
+        if (!vm.count("trainfile")) {
             std::cout << "Input file is required." << std::endl;
             return -1;
         }

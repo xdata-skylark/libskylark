@@ -133,7 +133,7 @@ void DummyDecode(El::Orientation orientation,
 
     if (orientation == El::NORMAL) {
         El::DistMatrix<T, El::VC, El::STAR> Yc = Y;
-        El::DistMatrix<LabelType, El::STAR, El::VR> Lc(Y.Height(), 1);
+        El::DistMatrix<LabelType, El::VC, El::STAR> Lc(Y.Height(), 1);
 
         DummyDecode(orientation, Yc.Matrix(), Lc.Matrix(), rcoding, maxidx);
 

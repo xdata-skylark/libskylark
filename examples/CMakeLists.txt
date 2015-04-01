@@ -40,6 +40,16 @@ if (SKYLARK_HAVE_FFTW)
                         ${Boost_LIBRARIES})
   install_targets(/bin/examples kernel_regression)
 
+  add_executable(random_features random_features.cpp)
+  target_link_libraries(random_features
+                        ${Elemental_LIBRARY}
+                        ${FFTW_LIBRARY}
+                        ${Pmrrr_LIBRARY}
+                        ${Metis_LIBRARY}
+                        ${SKYLARK_LIBS}
+                        ${Boost_LIBRARIES})
+  install_targets(/bin/examples random_features)
+
   add_executable(least_squares least_squares)
   target_link_libraries(least_squares
                         ${Elemental_LIBRARY}

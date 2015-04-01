@@ -9,8 +9,6 @@ namespace skylark { namespace utility { namespace io {
  * Reads X and Y from a file in libsvm format.
  * X and Y are Elemental dense matrices.
  *
- * IMPORTANT: output is in column-major format (the rows are features).
- *
  * @param fname input file name.
  * @param X output X
  * @param Y output Y
@@ -97,8 +95,6 @@ void ReadLIBSVM(const std::string& fname,
 /**
  * Reads X and Y from a file in libsvm format.
  * X and Y are Elemental distributed matrices.
- *
- * IMPORTANT: output is in column-major format (the rows are features).
  *
  * @param fname input file name.
  * @param X output X
@@ -239,8 +235,6 @@ void ReadLIBSVM(const std::string& fname,
  * Reads X and Y from a file in libsvm format.
  * X is a Skylark local sparse matrix, and Y is Elemental dense matrices.
  *
- * IMPORTANT: output is in column-major format (the rows are features).
- *
  * @param fname input file name
  * @param X output X
  * @param Y output Y
@@ -359,11 +353,97 @@ void ReadLIBSVM(const std::string& fname,
             }
         }
     }
+
+    if (min_d > 0)
+        d = std::max(d, min_d);
+
     if (direction == base::COLUMNS) {
         col_ptr[n] = nnz; // last entry (total number of nnz)
         X.attach(col_ptr, rowind, values, nnz, d, n, true);
     } else
         X.attach(col_ptr, rowind, values, nnz, n, d, true);
+}
+
+/**
+ * Write X and Y from a file in libsvm format.
+ * X and Y are Elemental distributed matrices.
+ *
+ * @param fname output file name.
+ * @param X input X
+ * @param Y output Y
+ * @param direction whether the examples are in the rows or columns of X and Y
+ * @param blocksize blocksize for blocking of read.
+ */
+template<typename T, El::Distribution UX, El::Distribution VX,
+         typename R, El::Distribution UY, El::Distribution VY>
+void WriteLIBSVM(const std::string& fname,
+    El::DistMatrix<T, UX, VX>& X, El::DistMatrix<R, UY, VY>& Y,
+    base::direction_t direction, int blocksize = 10000) {
+
+    int rank = X.Grid().Rank();
+
+    std::ofstream out(fname);
+    El::Int n, d;
+
+    if (direction == base::COLUMNS) {
+        n = X.Width();
+        d = X.Height();
+    } else {
+        n = X.Height();
+        d = X.Width();
+    }
+
+    El::Int numblocks = ((int) n/ (int) blocksize); 
+    El::Int leftover = n % blocksize;
+    El::Int block = blocksize;
+
+    El::DistMatrix<T, El::CIRC, El::CIRC> XB(X.Grid());
+    El::DistMatrix<R, El::CIRC, El::CIRC> YB(Y.Grid());
+    El::DistMatrix<T, UX, VX> Xv(X.Grid());
+    El::DistMatrix<R, UY, VY> Yv(Y.Grid());
+    for(El::Int i = 0; i < numblocks + 1; i++) {
+        if (i == numblocks)
+            block = leftover;
+        if (block == 0)
+            break;
+
+        // The calls below should distribute the data to all the nodes.
+        if (direction == base::COLUMNS) {
+            El::View(Xv, X, 0, i*blocksize, d, block);
+            El::View(Yv, Y, 0, i*blocksize, 1, block);
+        } else {
+            El::View(Xv, X, i*blocksize, 0, block, d);
+            El::View(Yv, Y, i*blocksize, 0, block, 1);
+        }
+
+        XB = Xv;
+        YB = Yv;
+
+        if(rank==0)
+            for(El::Int j = 0; j < block; j++) {
+                if (direction == base::COLUMNS) {
+                    out << YB.Get(0, j) << " ";
+                    for(El::Int r = 0; r < d; r++) {
+                        T val = XB.Get(r, j);
+                        if (val != 0.0)
+                            out << (r+1) << ":" << val << " ";
+                    }
+                    out << std::endl;
+                } else {
+                    if (direction == base::ROWS) {
+                        out << YB.Get(j, 0) << " ";
+                        for(El::Int r = 0; r < d; r++) {
+                            T val = XB.Get(j, r);
+                            if (val != 0.0)
+                                out << (r+1) << ":" << val << " ";
+                        }
+                        out << std::endl;
+                }
+
+            }
+    }
+
+    out.close();
 }
 
 } } } // namespace skylark::utility::io

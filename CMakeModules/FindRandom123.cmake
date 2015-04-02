@@ -9,6 +9,8 @@
 
 FIND_PATH(Random123_INCLUDE_DIR Random123/threefry.h Random123/MicroURNG.hpp
   $ENV{RANDOM123_ROOT}/include
+  $ENV{HOME}/.local/include
+  $ENV{HOME}/local/include
   $ENV{HOME}/Software/include
   /usr/local/include
   /usr/include

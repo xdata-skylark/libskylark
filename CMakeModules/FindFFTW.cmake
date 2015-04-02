@@ -10,6 +10,8 @@
 
 FIND_PATH(FFTW_INCLUDE_DIR fftw3.h
   $ENV{FFTW_ROOT}/include
+  $ENV{HOME}/.local/lib
+  $ENV{HOME}/local/lib
   $ENV{HOME}/Software/include
   /usr/local/include
   /usr/include
@@ -18,6 +20,8 @@ FIND_PATH(FFTW_INCLUDE_DIR fftw3.h
 
 FIND_LIBRARY(FFTW_LIBRARY fftw3
    $ENV{FFTW_ROOT}/lib
+   $ENV{HOME}/.local/lib
+   $ENV{HOME}/local/lib
    $ENV{HOME}/Software/lib
    /usr/local/lib
    /usr/lib

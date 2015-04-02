@@ -1,7 +1,8 @@
 #
-# Find FFTW includes and library
+# Find HDF5 includes and library
 #
-# FFTW
+# HDF5
+#
 # It can be found at:
 #
 # HDF5_INCLUDE_DIR - where to find hdf5.h
@@ -9,33 +10,33 @@
 # HDF5_FOUND       - do not attempt to use if "no" or undefined.
 
 FIND_PATH(HDF5_INCLUDE_DIR hdf5.h
-  PATHS $ENV{HDF5_ROOT}/include
-  NO_DEFAULT_PATH
-)
-
-FIND_PATH(HDF5_INCLUDE_DIR hdf5.h
-  /usr/include
+  $ENV{HDF5_ROOT}/include
+  $ENV{HOME}/.local/include
+  $ENV{HOME}/local/include
+  $ENV{HOME}/Software/include
   /usr/local/include
-)
-
-FIND_LIBRARY(HDF5_LIBRARY hdf5
-  PATHS $ENV{HDF5_ROOT}/lib
+  /usr/include
   NO_DEFAULT_PATH
 )
 
 FIND_LIBRARY(HDF5_LIBRARY hdf5
-  /usr/lib
+  $ENV{HDF5_ROOT}/lib
+  $ENV{HOME}/.local/lib
+  $ENV{HOME}/local/lib
+  $ENV{HOME}/Software/lib
   /usr/local/lib
-)
-
-FIND_LIBRARY(HDF5_CPP_LIBRARY hdf5_cpp
-  PATHS $ENV{HDF5_ROOT}/lib
+  /usr/lib
   NO_DEFAULT_PATH
 )
 
-FIND_LIBRARY(HDF5_CPP_LIBRARY hdf5_cpp
-  /usr/lib
+FIND_LIBRARY(HDF5_CPP_LIBRARY hdf5
+  $ENV{HDF5_ROOT}/lib
+  $ENV{HOME}/.local/lib
+  $ENV{HOME}/local/lib
+  $ENV{HOME}/Software/lib
   /usr/local/lib
+  /usr/lib
+  NO_DEFAULT_PATH
 )
 
 IF(HDF5_INCLUDE_DIR AND HDF5_LIBRARY AND HDF5_CPP_LIBRARY)

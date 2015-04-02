@@ -10,6 +10,8 @@
 
 FIND_PATH(Elemental_INCLUDE_DIR El/core.hpp
   $ENV{ELEMENTAL_ROOT}/include
+  $ENV{HOME}/.local/include
+  $ENV{HOME}/local/include
   $ENV{HOME}/Software/include
   /usr/local/include
   /usr/include
@@ -18,6 +20,8 @@ FIND_PATH(Elemental_INCLUDE_DIR El/core.hpp
 
 FIND_LIBRARY(Elemental_LIBRARY El
    $ENV{ELEMENTAL_ROOT}/lib
+   $ENV{HOME}/.local/lib
+   $ENV{HOME}/local/lib
    $ENV{HOME}/Software/lib
    /usr/local/lib
    /usr/lib
@@ -26,6 +30,8 @@ FIND_LIBRARY(Elemental_LIBRARY El
 
 FIND_LIBRARY(Pmrrr_LIBRARY pmrrr
    $ENV{ELEMENTAL_ROOT}/lib
+   $ENV{HOME}/.local/lib
+   $ENV{HOME}/local/lib
    $ENV{HOME}/Software/lib
    /usr/local/lib
    /usr/lib
@@ -33,8 +39,10 @@ FIND_LIBRARY(Pmrrr_LIBRARY pmrrr
 )
 
 FIND_LIBRARY(Metis_LIBRARY metis
-   $ENV{ELEMENTAL_ROOT}/lib
    $ENV{METIS_ROOT}/lib
+   $ENV{ELEMENTAL_ROOT}/lib
+   $ENV{HOME}/.local/lib
+   $ENV{HOME}/local/lib
    $ENV{HOME}/Software/lib
    /usr/local/lib
    /usr/lib

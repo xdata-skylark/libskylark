@@ -59,7 +59,7 @@ void ReadHDF5(H5::H5File& in, const std::string& name, El::Matrix<T>& X) {
     hsize_t dims[2];
     fs.getSimpleExtentDims(dims);
     hsize_t m = dims[0];
-    hsize_t n = dims[1];
+    hsize_t n = fs.getSimpleExtentNdims() > 1 ? dims[1] : 1;
 
     X.Resize(n, m);
 

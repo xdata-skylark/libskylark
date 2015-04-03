@@ -23,8 +23,6 @@ typedef skylark::base::sparse_matrix_t<double> sparse_matrix_t;
 int main (int argc, char** argv) {
     /* Various MPI/Skylark/Elemental/OpenMP initializations */
 
-	std::cout << "Running skylark_ml" << std::endl;
-
     int provided;
     MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
     bmpi::environment env (argc, argv);

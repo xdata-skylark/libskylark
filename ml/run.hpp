@@ -258,7 +258,8 @@ int run(const boost::mpi::communicator& comm, skylark::base::context_t& context,
 
     else {
 
-    	std::cout << "Testing Mode (currently loads test data in memory)" << std::endl;
+        if (rank == 0)
+            std::cout << "Testing Mode (currently loads test data in memory)" << std::endl;
     	skylark::ml::model_t<InputType, LabelType> model(options.modelfile);
     	read(comm, options.fileformat, options.testfile, Xt, Yt,
             model.get_input_size());
@@ -267,7 +268,8 @@ int run(const boost::mpi::communicator& comm, skylark::base::context_t& context,
     	El::Zero(DecisionValues);
     	El::Zero(PredictedLabels);
 
-    	std::cout << "Starting predictions" << std::endl;
+        if (rank == 0)
+            std::cout << "Starting predictions" << std::endl;
     	model.predict(Xt, PredictedLabels, DecisionValues, options.numthreads);
     	double accuracy = model.evaluate(Yt, DecisionValues, comm);
     	if(rank == 0)

@@ -1,5 +1,5 @@
 if (SKYLARK_HAVE_FFTW)
-  add_executable(skylark_ml train.cpp)
+  add_executable(skylark_ml skylark_ml.cpp)
   target_link_libraries(skylark_ml
                         ${SKYLARK_LIBS}
                         ${Elemental_LIBRARY}

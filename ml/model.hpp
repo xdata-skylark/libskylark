@@ -265,24 +265,6 @@ private:
     std::vector<int> _starts, _finishes;
 };
 
-template <typename InputType, typename OutputType>
-double model_t<InputType, OutputType>::evaluate(OutputType& Yt,
-    OutputType& Yp, const boost::mpi::communicator& comm) {
-
-    int rank = comm.rank();
-
-    ElInt correct = classification_accuracy(Yt, Yp);
-    double accuracy = 0.0;
-    ElInt totalcorrect, total;
-    boost::mpi::reduce(comm, correct, totalcorrect, std::plus<ElInt>(), 0);
-    boost::mpi::reduce(comm, Yt.Height(), total, std::plus<ElInt>(), 0);
-
-    if(rank ==0)
-        accuracy =  totalcorrect*100.0/total;
-    return accuracy;
-}
-
-
 } }
 
 

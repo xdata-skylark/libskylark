@@ -11,7 +11,6 @@
 #endif
 
 #include "../utility/timer.hpp"
-#include "hilbert.hpp"
 
 // Columns are examples, rows are features
 typedef El::DistMatrix<double, El::STAR, El::VC> DistInputMatrixType;
@@ -506,7 +505,16 @@ skylark::ml::model_t<T, LocalMatrixType>* BlockADMMSolver<T>::train(T& X, LocalM
                El::Zero(Yp);
                El::Zero(Yp_labels);
                model->predict(Xv, Yp_labels, Yp, NumThreads);
-               accuracy = model->evaluate(Yv, Yp, comm);
+
+               El::Int correct = skylark::ml::classification_accuracy(Yv, Yp);
+               El::Int totalcorrect, total;
+               boost::mpi::reduce(comm, correct, totalcorrect,
+                   std::plus<El::Int>(), 0);
+               boost::mpi::reduce(comm, Y.Height(), total,
+                   std::plus<El::Int>(), 0);
+
+               if(comm.rank() == 0)
+                   accuracy =  totalcorrect * 100.0 / total;
            }
            SKYLARK_TIMER_ACCUMULATE(PREDICTION_PROFILE);
 
@@ -519,10 +527,17 @@ skylark::ml::model_t<T, LocalMatrixType>* BlockADMMSolver<T>::train(T& X, LocalM
            if(rank == 0) {
                obj = totalloss + lambda*regularizer->evaluate(Wbar);
                if (skylark::base::Width(Xv) <=0) {
-                   std::cout << "iteration " << iter << " objective " << obj << " time " << timer.elapsed() << " seconds" << std::endl;
+                   std::cout << "iteration " << iter
+                             << " objective " << obj
+                             << " time " << timer.elapsed()
+                             << " seconds" << std::endl;
                }
                else {
-                   std::cout << "iteration " << iter << " objective " << obj << " accuracy " << accuracy << " time " << timer.elapsed() << " seconds" << std::endl;
+                   std::cout << "iteration " << iter
+                             << " objective " << obj
+                             << " accuracy " << accuracy
+                             << " time " << timer.elapsed()
+                             << " seconds" << std::endl;
                }
            }
 

@@ -14,18 +14,12 @@
 #include "../base/context.hpp"
 
 
-namespace bmpi =  boost::mpi;
-namespace po = boost::program_options;
-
-typedef skylark::base::sparse_matrix_t<double> sparse_matrix_t;
-
-
-int main (int argc, char** argv) {
-    /* Various MPI/Skylark/Elemental/OpenMP initializations */
+int main(int argc, char* argv[]) {
 
     int provided;
     MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
-    bmpi::environment env (argc, argv);
+
+    boost::mpi::environment env (argc, argv);
     boost::mpi::communicator comm;
 
     hilbert_options_t options (argc, argv, comm.size());
@@ -37,16 +31,85 @@ int main (int argc, char** argv) {
     if (comm.rank() == 0)
         std::cout << options.print();
 
+    bool sparse = (options.fileformat == LIBSVM_SPARSE)
+        || (options.fileformat == HDF5_SPARSE);
 
-    bool sparse = (options.fileformat == LIBSVM_SPARSE) || (options.fileformat == HDF5_SPARSE);
-    int flag = 0;
 
-    if (sparse)
-        flag = run<sparse_matrix_t, El::Matrix<double> >(comm, context, options);
-    else
-        flag = run<LocalMatrixType, LocalMatrixType>(comm, context, options);
+
+    if (!options.trainfile.empty()) {
+        // Training
+        if (comm.rank() == 0)
+            std::cout << "Mode: Training. Loading data..." << std::endl;
+
+        if (sparse) {
+            skylark::base::sparse_matrix_t<double> X;
+            El::Matrix<double> Y;
+            read(comm, options.fileformat, options.trainfile, X, Y);
+            skylark::ml::LargeScaleKernelLearning(comm, X, Y, context, options);
+        } else {
+            El::Matrix<double> X, Y;
+            read(comm, options.fileformat, options.trainfile, X, Y);
+            skylark::ml::LargeScaleKernelLearning(comm, X, Y, context, options);
+        }
+    } else {
+        // Testing
+        if (comm.rank() == 0)
+            std::cout << "Mode: Prediciting. Loading data..." << std::endl;
+
+        El::Matrix<double> DecisionValues, PredictedLabels, Y;
+        // TODO model shouldn't depend on input-output types.
+        if (sparse) {
+            skylark::ml::model_t<skylark::base::sparse_matrix_t<double>,
+                                 El::Matrix<double> > model(options.modelfile);
+
+            skylark::base::sparse_matrix_t<double> X;
+            read(comm, options.fileformat, options.testfile, X, Y,
+                model.get_input_size());
+
+            DecisionValues.Resize(Y.Height(), model.get_num_outputs());
+            PredictedLabels.Resize(Y.Height(), 1);
+
+            El::Zero(DecisionValues);
+            El::Zero(PredictedLabels);
+
+            model.predict(X, PredictedLabels, DecisionValues, options.numthreads);
+        } else {
+            skylark::ml::model_t<El::Matrix<double>,
+                                 El::Matrix<double> > model(options.modelfile);
+
+            El::Matrix<double> X;
+            read(comm, options.fileformat, options.testfile, X, Y,
+                model.get_input_size());
+
+            DecisionValues.Resize(Y.Height(), model.get_num_outputs());
+            PredictedLabels.Resize(Y.Height(), 1);
+
+            El::Zero(DecisionValues);
+            El::Zero(PredictedLabels);
+
+            model.predict(X, PredictedLabels, DecisionValues, options.numthreads);
+        }
+
+        El::Int correct = skylark::ml::classification_accuracy(Y, 
+            DecisionValues);
+        double accuracy = 0.0;
+        El::Int totalcorrect, total;
+        boost::mpi::reduce(comm, correct, totalcorrect, std::plus<El::Int>(), 0);
+        boost::mpi::reduce(comm, Y.Height(), total, std::plus<El::Int>(), 0);
+
+        if(comm.rank() == 0) {
+            double accuracy =  totalcorrect*100.0/total;
+            std::cout << "Test Accuracy = " <<  accuracy << " %" << std::endl;
+        }
+
+        // TODO list?
+        // fix logistic case
+        // provide mechanism to dump predictions
+        // clean up evaluate
+    }
 
     comm.barrier();
     El::Finalize();
-    return flag;
+
+    return 0;
 }

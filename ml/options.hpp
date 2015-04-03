@@ -18,7 +18,7 @@ namespace po = boost::program_options;
 #define DEFAULT_FEATURE_PARTITIONS 1
 #define DEFAULT_KERPARAM 1.0
 #define DEFAULT_TOL 0.001
-#define DEFAULT_MAXITER 100
+#define DEFAULT_MAXITER 20
 #define DEFAULT_SEED 12345
 #define DEFAULT_RF 100
 #define DEFAULT_KERNEL 0
@@ -167,7 +167,7 @@ struct hilbert_options_t {
                 "Fileformat (default: 0 (libsvm->dense), 1 (libsvm->sparse), 2 (hdf5->dense), 3 (hdf5->sparse)")
             ("MAXITER,i",
                 po::value<int>(&MAXITER)->default_value(DEFAULT_MAXITER),
-                "Maximum Number of Iterations (default: 100)")
+                "Maximum Number of Iterations (default: 10)")
             ("trainfile",
                 po::value<std::string>(&trainfile)->default_value(""),
                 "Training data file (required in training mode)")

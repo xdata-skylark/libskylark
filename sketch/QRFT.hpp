@@ -232,6 +232,148 @@ private:
 
 };
 
+template<template <typename> class QMCSequenceType>
+class GaussianQRFT_t<boost::any, boost::any, QMCSequenceType> :
+        public GaussianQRFT_data_t<QMCSequenceType>,
+        virtual public sketch_transform_t<boost::any, boost::any> {
+
+public:
+
+    typedef GaussianQRFT_data_t<QMCSequenceType> data_type;
+    typedef typename data_type::sequence_type sequence_type;
+    typedef typename data_type::params_t params_t;
+
+    GaussianQRFT_t(int N, int S, double sigma,
+        const sequence_type& sequence, int skip, base::context_t& context)
+        : data_type(N, S, sigma, sequence, skip, context) {
+
+    }
+
+    GaussianQRFT_t(int N, int S, const params_t& params, base::context_t& context)
+        : data_type(N, S, params, context) {
+
+    }
+
+
+    GaussianQRFT_t(const boost::property_tree::ptree &pt)
+        : data_type(pt) {
+
+    }
+
+    /**
+     * Copy constructor
+     */
+    template <typename OtherInputMatrixType,
+              typename OtherOutputMatrixType>
+    GaussianQRFT_t (const GaussianQRFT_t<OtherInputMatrixType, 
+        OtherOutputMatrixType, QMCSequenceType>& other)
+        : data_type(other) {
+
+    }
+
+    /**
+     * Constructor from data
+     */
+    GaussianQRFT_t (const data_type& other)
+        : data_type(other) {
+
+    }
+
+    /**
+     * Apply columnwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply(const boost::any &A, const boost::any &sketch_of_A,
+                columnwise_tag dimension) const {
+        std::cout << "TODO\n";
+    }
+
+    /**
+     * Apply rowwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply (const boost::any &A, const boost::any &sketch_of_A,
+        rowwise_tag dimension) const {
+        std::cout << "TODO\n";
+    }
+
+    int get_N() const { return this->_N; } /**< Get input dimesion. */
+    int get_S() const { return this->_S; } /**< Get output dimesion. */
+
+    const sketch_transform_data_t* get_data() const { return this; }
+};
+
+template<template <typename> class QMCSequenceType>
+class LaplacianQRFT_t<boost::any, boost::any, QMCSequenceType> :
+        public LaplacianQRFT_data_t<QMCSequenceType>,
+        virtual public sketch_transform_t<boost::any, boost::any> {
+
+public:
+
+    typedef LaplacianQRFT_data_t<QMCSequenceType> data_type;
+    typedef typename data_type::sequence_type sequence_type;
+    typedef typename data_type::params_t params_t;
+
+    LaplacianQRFT_t(int N, int S, double sigma,
+        const sequence_type& sequence, int skip, base::context_t& context)
+        : data_type(N, S, sigma, sequence, skip, context) {
+
+    }
+
+    LaplacianQRFT_t(int N, int S, const params_t& params, base::context_t& context)
+        : data_type(N, S, params, context) {
+
+    }
+
+
+    LaplacianQRFT_t(const boost::property_tree::ptree &pt)
+        : data_type(pt) {
+
+    }
+
+    /**
+     * Copy constructor
+     */
+    template <typename OtherInputMatrixType,
+              typename OtherOutputMatrixType>
+    LaplacianQRFT_t (const LaplacianQRFT_t<OtherInputMatrixType,
+        OtherOutputMatrixType, QMCSequenceType>& other)
+        : data_type(other) {
+
+    }
+
+    /**
+     * Constructor from data
+     */
+    LaplacianQRFT_t (const data_type& other)
+        : data_type(other) {
+
+    }
+
+    /**
+     * Apply columnwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply(const boost::any &A, const boost::any &sketch_of_A,
+                columnwise_tag dimension) const {
+        std::cout << "TODO\n";
+    }
+
+    /**
+     * Apply rowwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply (const boost::any &A, const boost::any &sketch_of_A,
+        rowwise_tag dimension) const {
+        std::cout << "TODO\n";
+    }
+
+    int get_N() const { return this->_N; } /**< Get input dimesion. */
+    int get_S() const { return this->_S; } /**< Get output dimesion. */
+
+    const sketch_transform_data_t* get_data() const { return this; }
+};
+
 } } /** namespace skylark::sketch */
 
 

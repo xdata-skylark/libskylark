@@ -75,6 +75,74 @@ struct FJLT_t :
     const sketch_transform_data_t* get_data() const { return this; }
 };
 
+template<>
+class FJLT_t<boost::any, boost::any> :
+  public FJLT_data_t,
+  virtual public sketch_transform_t<boost::any, boost::any > {
+
+public:
+
+    typedef FJLT_data_t data_type;
+    typedef data_type::params_t params_t;
+
+    FJLT_t(int N, int S, base::context_t& context)
+        : data_type(N, S, context) {
+
+    }
+
+    FJLT_t(int N, int S, const params_t& params, base::context_t& context)
+        : data_type(N, S, params, context) {
+
+    }
+
+
+    FJLT_t(const boost::property_tree::ptree &pt)
+        : data_type(pt) {
+
+    }
+
+    /**
+     * Copy constructor
+     */
+    template <typename OtherInputMatrixType,
+              typename OtherOutputMatrixType>
+    FJLT_t (const FJLT_t<OtherInputMatrixType, OtherOutputMatrixType>& other)
+        : data_type(other) {
+
+    }
+
+    /**
+     * Constructor from data
+     */
+    FJLT_t (const data_type& other)
+        : data_type(other) {
+
+    }
+
+    /**
+     * Apply columnwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply(const boost::any &A, const boost::any &sketch_of_A,
+                columnwise_tag dimension) const {
+        std::cout << "TODO\n";
+    }
+
+    /**
+     * Apply rowwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply (const boost::any &A, const boost::any &sketch_of_A,
+        rowwise_tag dimension) const {
+        std::cout << "TODO\n";
+    }
+
+    int get_N() const { return this->_N; } /**< Get input dimesion. */
+    int get_S() const { return this->_S; } /**< Get output dimesion. */
+
+    const sketch_transform_data_t* get_data() const { return this; }
+};
+
 } } /** namespace skylark::sketch */
 
 # include "FJLT_Elemental.hpp"

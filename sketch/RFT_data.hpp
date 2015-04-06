@@ -47,7 +47,7 @@ struct RFT_data_t : public sketch_transform_data_t {
         return boost::property_tree::ptree();
     }
 
-    virtual sketch_transform_t<boost::any, boost::any> *get_transform() {
+    virtual sketch_transform_t<boost::any, boost::any> *get_transform() const {
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()
               << base::error_msg(
@@ -158,7 +158,7 @@ struct GaussianRFT_data_t :
     /**
      * Get a concrete sketch transform based on the data
      */
-    virtual sketch_transform_t<boost::any, boost::any> *get_transform();
+    virtual sketch_transform_t<boost::any, boost::any> *get_transform() const;
 
 protected:
     GaussianRFT_data_t(int N, int S, double sigma,
@@ -235,7 +235,7 @@ struct LaplacianRFT_data_t :
     /**
      * Get a concrete sketch transform based on the data
      */
-    virtual sketch_transform_t<boost::any, boost::any> *get_transform();
+    virtual sketch_transform_t<boost::any, boost::any> *get_transform() const;
 
 protected:
 
@@ -320,7 +320,7 @@ struct MaternRFT_data_t :
     /**
      * Get a concrete sketch transform based on the data
      */
-    virtual sketch_transform_t<boost::any, boost::any> *get_transform();
+    virtual sketch_transform_t<boost::any, boost::any> *get_transform() const;
 
 protected:
     MaternRFT_data_t(int N, int S, double nu, double l,

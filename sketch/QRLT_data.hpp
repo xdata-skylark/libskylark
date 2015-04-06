@@ -64,7 +64,7 @@ struct QRLT_data_t : public sketch_transform_data_t {
         return boost::property_tree::ptree();
     }
 
-    virtual sketch_transform_t<boost::any, boost::any> *get_transform() {
+    virtual sketch_transform_t<boost::any, boost::any> *get_transform() const {
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()
               << base::error_msg(
@@ -220,7 +220,7 @@ struct ExpSemigroupQRLT_data_t :
     /**
      * Get a concrete sketch transform based on the data
      */
-    virtual sketch_transform_t<boost::any, boost::any> *get_transform();
+    virtual sketch_transform_t<boost::any, boost::any> *get_transform() const;
 
 protected:
     ExpSemigroupQRLT_data_t(int N, int S, double beta,

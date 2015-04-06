@@ -59,12 +59,13 @@ public:
     typedef El::Matrix<double> intermediate_type;
     typedef El::Matrix<double> coef_type;
 
-    typedef sketch::sketch_transform_t<input_type, intermediate_type>
+    typedef sketch::sketch_transform_t<boost::any, boost::any>
     feature_transform_type;
 
-    model_t(std::vector<const feature_transform_type *>& maps, bool scale_maps,
+    template<typename SketchTransformType>
+    model_t(std::vector<const SketchTransformType *>& maps, bool scale_maps,
         int num_features, int num_outputs) :
-        _coef(num_features, num_outputs), _maps(maps), _scale_maps(scale_maps),
+        _coef(num_features, num_outputs), _maps(maps.size()), _scale_maps(scale_maps),
         _starts(maps.size()), _finishes(maps.size()) {
 
         // TODO verify all N dimension of the maps match
@@ -72,7 +73,8 @@ public:
         El::Zero(_coef);
 
         int nf = 0;
-        for(int i = 0; i < _maps.size(); i++) {
+        for(int i = 0; i < maps.size(); i++) {
+            _maps[i] = maps[i]->type_erased();
             _starts[i] = nf;
             _finishes[i] = nf + _maps[i]->get_S() - 1;
             nf += _maps[i]->get_S();
@@ -97,6 +99,11 @@ public:
         boost::property_tree::read_json(is, pt);
         is.close();
         build_from_ptree(pt);
+    }
+
+    ~model_t() {
+        for (auto it = _maps.begin(); it != _maps.end(); it++)
+            delete *it;
     }
 
     boost::property_tree::ptree to_ptree() const {
@@ -167,7 +174,7 @@ public:
                 sj = finish - start  + 1;
 
                 intermediate_type z(sj, n);
-                _maps[j]->apply(X, z, sketch::columnwise_tag());
+                _maps[j]->apply(&X, &z, sketch::columnwise_tag());
 
                 if (_scale_maps)
                     El::Scale(sqrt(double(sj) / d), z);

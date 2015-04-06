@@ -80,13 +80,17 @@ struct WZT_data_t : public hash_transform_data_t<
      *
      *  @param[out] property_tree describing the sketch.
      */
-    virtual
-    boost::property_tree::ptree to_ptree() const {
+    virtual boost::property_tree::ptree to_ptree() const {
         boost::property_tree::ptree pt;
         sketch_transform_data_t::add_common(pt);
         pt.put("P", _P);
         return pt;
     }
+
+    /**
+     * Get a concrete sketch transform based on the data
+     */
+    virtual sketch_transform_t<boost::any, boost::any> *get_transform() const;
 
 protected:
     WZT_data_t(int N, int S, double p, const base::context_t& context,

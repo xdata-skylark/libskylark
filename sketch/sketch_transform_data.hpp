@@ -31,7 +31,7 @@ struct sketch_transform_data_t {
     /**
      * Get a concrete sketch transform based on the data
      */
-    virtual sketch_transform_t<boost::any, boost::any> *get_transform() = 0;
+    virtual sketch_transform_t<boost::any, boost::any> *get_transform() const = 0;
 
     /**
      *  Serializes a sketch to a property_tree

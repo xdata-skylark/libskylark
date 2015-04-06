@@ -66,7 +66,7 @@ struct CWT_data_t : public hash_transform_data_t<
     /**
      * Get a concrete sketch transform based on the data
      */
-    virtual sketch_transform_t<boost::any, boost::any> *get_transform();
+    virtual sketch_transform_t<boost::any, boost::any> *get_transform() const;
 
 protected:
 

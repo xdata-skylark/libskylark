@@ -44,7 +44,7 @@ struct hash_transform_data_t : public sketch_transform_data_t {
         return boost::property_tree::ptree();
     }
 
-    virtual sketch_transform_t<boost::any, boost::any> *get_transform() {
+    virtual sketch_transform_t<boost::any, boost::any> *get_transform() const {
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()
               << base::error_msg(

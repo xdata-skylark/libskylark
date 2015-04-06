@@ -98,6 +98,74 @@ private:
     transform_t _transform;
 };
 
+template<>
+class WZT_t<boost::any, boost::any> :
+  public WZT_data_t,
+  virtual public sketch_transform_t<boost::any, boost::any > {
+
+public:
+
+    typedef WZT_data_t data_type;
+    typedef data_type::params_t params_t;
+
+    WZT_t(int N, int S, double p, base::context_t& context)
+        : data_type(N, S, p, context) {
+
+    }
+
+    WZT_t(int N, int S, const params_t& params, base::context_t& context)
+        : data_type(N, S, params, context) {
+
+    }
+
+
+    WZT_t(const boost::property_tree::ptree &pt)
+        : data_type(pt) {
+
+    }
+
+    /**
+     * Copy constructor
+     */
+    template <typename OtherInputMatrixType,
+              typename OtherOutputMatrixType>
+    WZT_t (const WZT_t<OtherInputMatrixType, OtherOutputMatrixType>& other)
+        : data_type(other) {
+
+    }
+
+    /**
+     * Constructor from data
+     */
+    WZT_t (const data_type& other)
+        : data_type(other) {
+
+    }
+
+    /**
+     * Apply columnwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply(const boost::any &A, const boost::any &sketch_of_A,
+                columnwise_tag dimension) const {
+        std::cout << "TODO\n";
+    }
+
+    /**
+     * Apply rowwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply (const boost::any &A, const boost::any &sketch_of_A,
+        rowwise_tag dimension) const {
+        std::cout << "TODO\n";
+    }
+
+    int get_N() const { return this->_N; } /**< Get input dimesion. */
+    int get_S() const { return this->_S; } /**< Get output dimesion. */
+
+    const sketch_transform_data_t* get_data() const { return this; }
+};
+
 } } /** namespace skylark::sketch */
 
 #endif // SKYLARK_WZT_HPP

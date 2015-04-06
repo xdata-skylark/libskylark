@@ -216,6 +216,142 @@ private:
 
 };
 
+template<>
+class FastGaussianRFT_t<boost::any, boost::any> :
+  public FastGaussianRFT_data_t,
+  virtual public sketch_transform_t<boost::any, boost::any > {
+
+public:
+
+    typedef FastGaussianRFT_data_t data_type;
+    typedef data_type::params_t params_t;
+
+    FastGaussianRFT_t(int N, int S, double sigma, base::context_t& context)
+        : data_type(N, S, sigma, context) {
+
+    }
+
+    FastGaussianRFT_t(int N, int S, const params_t& params, base::context_t& context)
+        : data_type(N, S, params, context) {
+
+    }
+
+
+    FastGaussianRFT_t(const boost::property_tree::ptree &pt)
+        : data_type(pt) {
+
+    }
+
+    /**
+     * Copy constructor
+     */
+    template <typename OtherInputMatrixType,
+              typename OtherOutputMatrixType>
+    FastGaussianRFT_t (const FastGaussianRFT_t<OtherInputMatrixType, OtherOutputMatrixType>& other)
+        : data_type(other) {
+
+    }
+
+    /**
+     * Constructor from data
+     */
+    FastGaussianRFT_t (const data_type& other)
+        : data_type(other) {
+
+    }
+
+    /**
+     * Apply columnwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply(const boost::any &A, const boost::any &sketch_of_A,
+                columnwise_tag dimension) const {
+        std::cout << "TODO\n";
+    }
+
+    /**
+     * Apply rowwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply (const boost::any &A, const boost::any &sketch_of_A,
+        rowwise_tag dimension) const {
+        std::cout << "TODO\n";
+    }
+
+    int get_N() const { return this->_N; } /**< Get input dimesion. */
+    int get_S() const { return this->_S; } /**< Get output dimesion. */
+
+    const sketch_transform_data_t* get_data() const { return this; }
+};
+
+template<>
+class FastMaternRFT_t<boost::any, boost::any> :
+  public FastMaternRFT_data_t,
+  virtual public sketch_transform_t<boost::any, boost::any > {
+
+public:
+
+    typedef FastMaternRFT_data_t data_type;
+    typedef data_type::params_t params_t;
+
+    FastMaternRFT_t(int N, int S, double nu, double l, base::context_t& context)
+        : data_type(N, S, nu, l, context) {
+
+    }
+
+    FastMaternRFT_t(int N, int S, const params_t& params, base::context_t& context)
+        : data_type(N, S, params, context) {
+
+    }
+
+
+    FastMaternRFT_t(const boost::property_tree::ptree &pt)
+        : data_type(pt) {
+
+    }
+
+    /**
+     * Copy constructor
+     */
+    template <typename OtherInputMatrixType,
+              typename OtherOutputMatrixType>
+    FastMaternRFT_t (const FastMaternRFT_t<OtherInputMatrixType, OtherOutputMatrixType>& other)
+        : data_type(other) {
+
+    }
+
+    /**
+     * Constructor from data
+     */
+    FastMaternRFT_t (const data_type& other)
+        : data_type(other) {
+
+    }
+
+    /**
+     * Apply columnwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply(const boost::any &A, const boost::any &sketch_of_A,
+                columnwise_tag dimension) const {
+        std::cout << "TODO\n";
+    }
+
+    /**
+     * Apply rowwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply (const boost::any &A, const boost::any &sketch_of_A,
+        rowwise_tag dimension) const {
+        std::cout << "TODO\n";
+    }
+
+    int get_N() const { return this->_N; } /**< Get input dimesion. */
+    int get_S() const { return this->_S; } /**< Get output dimesion. */
+
+    const sketch_transform_data_t* get_data() const { return this; }
+};
+
 } } /** namespace skylark::sketch */
 
 

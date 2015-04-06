@@ -47,13 +47,7 @@ int classification_accuracy(El::Matrix<double>& Yt, El::Matrix<double>& Yp) {
     return correct;
 }
 
-template <typename InputType, typename OutputType>
-struct model_t
-{
-public:
-    typedef InputType input_type;
-    typedef OutputType output_type;
-
+struct model_t {
     // TODO the following two should depend on the input type
     // TODO explicit doubles is not desired.
     typedef El::Matrix<double> intermediate_type;
@@ -146,7 +140,8 @@ public:
         of.close();
     }
 
-    void predict(input_type& X, output_type& PV, output_type& DV,
+    template<typename InputType, typename OutputType>
+    void predict(InputType& X, OutputType& PV, OutputType& DV,
         int num_threads = 1) const {
 
         int d = base::Height(X);
@@ -179,7 +174,7 @@ public:
                 if (_scale_maps)
                     El::Scale(sqrt(double(sj) / d), z);
 
-                output_type o(n, k);
+                OutputType o(n, k);
 
                 El::LockedView(Wslice, _coef, start, 0, sj, k);
                 base::Gemm(El::TRANSPOSE, El::NORMAL, 1.0, z, Wslice, o);

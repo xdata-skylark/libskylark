@@ -57,12 +57,16 @@ struct FJLT_data_t : public sketch_transform_data_t {
      *
      *  @param[out] property_tree describing the sketch.
      */
-    virtual
-    boost::property_tree::ptree to_ptree() const {
+    virtual boost::property_tree::ptree to_ptree() const {
         boost::property_tree::ptree pt;
         sketch_transform_data_t::add_common(pt);
         return pt;
     }
+
+    /**
+     * Get a concrete sketch transform based on the data
+     */
+    virtual sketch_transform_t<boost::any, boost::any> *get_transform();
 
 protected:
 

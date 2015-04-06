@@ -21,8 +21,8 @@ namespace skylark { namespace sketch {
  */
 template < typename InputMatrixType,
            typename OutputMatrixType = InputMatrixType>
-class FastRFT_t :
-    public FastGaussianRFT_data_t,
+struct FastRFT_t :
+    public FastRFT_data_t,
     virtual public sketch_transform_t<InputMatrixType, OutputMatrixType > {
 
     // To be specilized and derived. Just some guards here.
@@ -32,6 +32,14 @@ class FastRFT_t :
     typedef FastRFT_data_t data_type;
 
     FastRFT_t(int N, int S, base::context_t& context) : data_type(N, S, context) {
+        SKYLARK_THROW_EXCEPTION (
+          base::sketch_exception()
+              << base::error_msg(
+                 "This combination has not yet been implemented for FastRFT"));
+    }
+
+    FastRFT_t(const data_type& other_data)
+        : data_type(other_data) {
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()
               << base::error_msg(

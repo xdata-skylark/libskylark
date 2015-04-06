@@ -30,7 +30,7 @@ template < typename InputMatrixType,
            typename OutputMatrixType,
            template <typename, typename> class KernelDistribution,
            template <typename> class QMCSequenceType>
-class QRLT_t {
+struct QRLT_t : public QRLT_data_t<KernelDistribution, QMCSequenceType> {
     // To be specilized and derived.
     typedef InputMatrixType matrix_type;
     typedef OutputMatrixType output_matrix_type;

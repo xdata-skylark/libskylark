@@ -10,7 +10,7 @@ namespace skylark { namespace sketch {
 template < typename InputMatrixType,
            typename OutputMatrixType,
            typename ValuesAccessor >
-class dense_transform_t :
+struct dense_transform_t :
         public dense_transform_data_t<ValuesAccessor> {
 
     typedef InputMatrixType matrix_type;

@@ -38,14 +38,22 @@ struct RFT_data_t : public sketch_transform_data_t {
         context = build();
     }
 
-    virtual
-    boost::property_tree::ptree to_ptree() const {
+    virtual boost::property_tree::ptree to_ptree() const {
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()
               << base::error_msg(
                  "Do not yet support serialization of generic RFT transform"));
 
         return boost::property_tree::ptree();
+    }
+
+    virtual sketch_transform_t<boost::any, boost::any> *get_transform() {
+        SKYLARK_THROW_EXCEPTION (
+          base::sketch_exception()
+              << base::error_msg(
+                 "Trying to create concrete transform of RFT_data_t"));
+
+        return nullptr;
     }
 
 protected:
@@ -140,13 +148,17 @@ struct GaussianRFT_data_t :
      *
      *  @param[out] property_tree describing the sketch.
      */
-    virtual
-    boost::property_tree::ptree to_ptree() const {
+    virtual boost::property_tree::ptree to_ptree() const {
         boost::property_tree::ptree pt;
         sketch_transform_data_t::add_common(pt);
         pt.put("sigma", _sigma);
         return pt;
     }
+
+    /**
+     * Get a concrete sketch transform based on the data
+     */
+    virtual sketch_transform_t<boost::any, boost::any> *get_transform();
 
 protected:
     GaussianRFT_data_t(int N, int S, double sigma,
@@ -213,13 +225,17 @@ struct LaplacianRFT_data_t :
      *
      *  @param[out] property_tree describing the sketch.
      */
-    virtual
-    boost::property_tree::ptree to_ptree() const {
+    virtual boost::property_tree::ptree to_ptree() const {
         boost::property_tree::ptree pt;
         sketch_transform_data_t::add_common(pt);
         pt.put("sigma", _sigma);
         return pt;
     }
+
+    /**
+     * Get a concrete sketch transform based on the data
+     */
+    virtual sketch_transform_t<boost::any, boost::any> *get_transform();
 
 protected:
 
@@ -293,14 +309,18 @@ struct MaternRFT_data_t :
      *
      *  @param[out] property_tree describing the sketch.
      */
-    virtual
-    boost::property_tree::ptree to_ptree() const {
+    virtual boost::property_tree::ptree to_ptree() const {
         boost::property_tree::ptree pt;
         sketch_transform_data_t::add_common(pt);
         pt.put("nu", _nu);
         pt.put("l", _l);
         return pt;
     }
+
+    /**
+     * Get a concrete sketch transform based on the data
+     */
+    virtual sketch_transform_t<boost::any, boost::any> *get_transform();
 
 protected:
     MaternRFT_data_t(int N, int S, double nu, double l,

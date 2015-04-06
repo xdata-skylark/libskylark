@@ -35,14 +35,22 @@ struct hash_transform_data_t : public sketch_transform_data_t {
         context = build();
     }
 
-    virtual
-    boost::property_tree::ptree to_ptree() const {
+    virtual boost::property_tree::ptree to_ptree() const {
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()
               << base::error_msg(
                  "Do not yet support serialization of generic hash transform"));
 
         return boost::property_tree::ptree();
+    }
+
+    virtual sketch_transform_t<boost::any, boost::any> *get_transform() {
+        SKYLARK_THROW_EXCEPTION (
+          base::sketch_exception()
+              << base::error_msg(
+                 "Trying to create concrete transform of hash_transform_data_t"));
+
+        return nullptr;
     }
 
 protected:

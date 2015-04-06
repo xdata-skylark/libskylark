@@ -97,6 +97,73 @@ sketch_transform_t<IT, OT>::from_ptree(const boost::property_tree::ptree& pt) {
     return nullptr;
 }
 
+/** The get_transform methods: can only be done here... */
+sketch_transform_t<boost::any, boost::any> *JLT_data_t::get_transform() {
+    return new JLT_t<boost::any, boost::any>(*this);
+}
+
+sketch_transform_t<boost::any, boost::any> *CT_data_t::get_transform() {
+    return new CT_t<boost::any, boost::any>(*this);
+}
+
+sketch_transform_t<boost::any, boost::any> *CWT_data_t::get_transform() {
+    return new CWT_t<boost::any, boost::any>(*this);
+}
+
+sketch_transform_t<boost::any, boost::any> *MMT_data_t::get_transform() {
+    return new MMT_t<boost::any, boost::any>(*this);
+}
+
+sketch_transform_t<boost::any, boost::any> *FJLT_data_t::get_transform() {
+    return new FJLT_t<boost::any, boost::any>(*this);
+}
+
+sketch_transform_t<boost::any, boost::any> *PPT_data_t::get_transform() {
+    return new PPT_t<boost::any, boost::any>(*this);
+}
+
+sketch_transform_t<boost::any, boost::any> *GaussianRFT_data_t::get_transform() {
+    return new GaussianRFT_t<boost::any, boost::any>(*this);
+}
+
+sketch_transform_t<boost::any, boost::any> *LaplacianRFT_data_t::get_transform() {
+    return new LaplacianRFT_t<boost::any, boost::any>(*this);
+}
+
+sketch_transform_t<boost::any, boost::any> *MaternRFT_data_t::get_transform() {
+    return new MaternRFT_t<boost::any, boost::any>(*this);
+}
+
+template<template<class> class QMCSequenceType>
+sketch_transform_t<boost::any, boost::any> *
+GaussianQRFT_data_t<QMCSequenceType>::get_transform() {
+    return new GaussianQRFT_t<boost::any, boost::any, QMCSequenceType>(*this);
+}
+
+template<template<class> class QMCSequenceType>
+sketch_transform_t<boost::any, boost::any> *
+LaplacianQRFT_data_t<QMCSequenceType>::get_transform() {
+    return new LaplacianQRFT_t<boost::any, boost::any, QMCSequenceType>(*this);
+}
+
+sketch_transform_t<boost::any, boost::any> *ExpSemigroupRLT_data_t::get_transform() {
+    return new ExpSemigroupRLT_t<boost::any, boost::any>(*this);
+}
+
+template<template<class> class QMCSequenceType>
+sketch_transform_t<boost::any, boost::any> *
+ExpSemigroupQRLT_data_t<QMCSequenceType>::get_transform() {
+    return new ExpSemigroupQRLT_t<boost::any, boost::any, QMCSequenceType>(*this);
+}
+
+sketch_transform_t<boost::any, boost::any> *FastGaussianRFT_data_t::get_transform() {
+    return new FastGaussianRFT_t<boost::any, boost::any>(*this);
+}
+
+sketch_transform_t<boost::any, boost::any> *FastMaternRFT_data_t::get_transform() {
+    return new FastMaternRFT_t<boost::any, boost::any>(*this);
+}
+
 } }    // namespace skylark::sketch
 
 #endif // SKYLARK_SKETCH_ADD_HPP

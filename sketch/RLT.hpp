@@ -23,7 +23,7 @@ namespace bstrand = boost::random;
 template < typename InputMatrixType,
            typename OutputMatrixType,
            template <typename> class KernelDistribution>
-class RLT_t {
+struct RLT_t : public RLT_data_t<KernelDistribution> {
     // To be specilized and derived.
     typedef InputMatrixType matrix_type;
     typedef OutputMatrixType output_matrix_type;

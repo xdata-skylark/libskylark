@@ -66,13 +66,13 @@ int main(int argc, char* argv[]) {
             read(comm, options.fileformat, options.testfile, X, Y,
                 model.get_input_size());
 
-            DecisionValues.Resize(Y.Height(), model.get_num_outputs());
+            DecisionValues.Resize(Y.Height(), model.get_output_size());
             PredictedLabels.Resize(Y.Height(), 1);
 
             El::Zero(DecisionValues);
             El::Zero(PredictedLabels);
 
-            model.predict(X, PredictedLabels, DecisionValues, options.numthreads);
+            model.predict(X, PredictedLabels, DecisionValues);
         } else {
             skylark::ml::model_t<El::Matrix<double>,
                                  El::Matrix<double> > model(options.modelfile);
@@ -81,13 +81,13 @@ int main(int argc, char* argv[]) {
             read(comm, options.fileformat, options.testfile, X, Y,
                 model.get_input_size());
 
-            DecisionValues.Resize(Y.Height(), model.get_num_outputs());
+            DecisionValues.Resize(Y.Height(), model.get_output_size());
             PredictedLabels.Resize(Y.Height(), 1);
 
             El::Zero(DecisionValues);
             El::Zero(PredictedLabels);
 
-            model.predict(X, PredictedLabels, DecisionValues, options.numthreads);
+            model.predict(X, PredictedLabels, DecisionValues);
         }
 
         El::Int correct = skylark::ml::classification_accuracy(Y, 

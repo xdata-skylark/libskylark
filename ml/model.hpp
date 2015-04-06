@@ -59,7 +59,7 @@ public:
     typedef El::Matrix<double> intermediate_type;
     typedef El::Matrix<double> coef_type;
 
-    typedef skylark::sketch::sketch_transform_t<input_type, intermediate_type>
+    typedef sketch::sketch_transform_t<input_type, intermediate_type>
     feature_transform_type;
 
     model_t(std::vector<const feature_transform_type *>& maps, bool scale_maps,
@@ -78,7 +78,7 @@ public:
             nf += _maps[i]->get_S();
         }
 
-        _num_input_features = (_maps.size() == 0) ?
+        _input_size = (_maps.size() == 0) ?
             num_features : _maps[0]->get_N();
     }
 
@@ -106,7 +106,7 @@ public:
 
         pt.put("num_features", _coef.Height());
         pt.put("num_outputs", _coef.Width());
-        pt.put("num_input_features", _num_input_features);
+        pt.put("input_size", _input_size);
 
         boost::property_tree::ptree ptfmap;
         ptfmap.put("number_maps", _maps.size());
@@ -203,14 +203,10 @@ public:
         }
     }
 
-    void get_probabilities(input_type& X, output_type& P, int num_threads = 1)
-        const;
     coef_type& get_coef() { return _coef; }
-    static double evaluate(output_type& Yt, output_type& Yp,
-        const boost::mpi::communicator& comm);
 
-    int get_num_outputs() const { return _coef.Width(); }
-    int get_input_size() const { return _num_input_features; }
+    int get_output_size() const { return _coef.Width(); }
+    int get_input_size() const { return _input_size; }
 
 protected:
 
@@ -219,7 +215,7 @@ protected:
         int num_outputs = pt.get<int>("num_outputs");
         _coef.Resize(num_features, num_outputs);
 
-        _num_input_features = pt.get<int>("num_input_features");
+        _input_size = pt.get<int>("input_size");
 
         int num_maps = pt.get<int>("feature_mapping.number_maps");
         _maps.resize(num_maps);
@@ -258,7 +254,7 @@ protected:
 
 private:
     coef_type _coef;
-    int _num_input_features;
+    El::Int _input_size, _output_size;
     std::vector<const feature_transform_type *> _maps; // TODO use shared_ptr
     bool _scale_maps;
 

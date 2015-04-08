@@ -64,28 +64,29 @@ struct dense_transform_data_t : public sketch_transform_data_t {
 
     }
 
-
-    void realize_matrix_view(El::Matrix<value_type>& A) const {
+    template<typename T>
+    void realize_matrix_view(El::Matrix<T>& A) const {
         realize_matrix_view(A, 0, 0, _S, _N);
     }
 
-
-    void realize_matrix_view(El::Matrix<value_type>& A,
+    template<typename T>
+    void realize_matrix_view(El::Matrix<T>& A,
         int i, int j, int height, int width) const {
         realize_matrix_view(A, i, j, height, width, 1, 1);
     }
 
 
-    void realize_matrix_view(El::Matrix<value_type>& A,
+    template<typename T>
+    void realize_matrix_view(El::Matrix<T>& A,
         int i, int j, int height, int width,
         int col_stride, int row_stride) const {
 
         A.Resize(height, width);
-        value_type *data = A.Buffer();
+        T *data = A.Buffer();
 
-#ifdef SKYLARK_HAVE_OPENMP
-#pragma omp parallel for
-#endif
+#       ifdef SKYLARK_HAVE_OPENMP
+#       pragma omp parallel for
+#       endif
         for(size_t j_loc = 0; j_loc < width; j_loc++) {
             size_t j_glob = j + j_loc * row_stride;
             for (size_t i_loc = 0; i_loc < height; i_loc++) {
@@ -100,21 +101,21 @@ struct dense_transform_data_t : public sketch_transform_data_t {
     }
 
 
-    template<El::Distribution ColDist,
+    template<typename T, El::Distribution ColDist,
              El::Distribution RowDist>
-    void realize_matrix_view(El::DistMatrix<value_type,
+    void realize_matrix_view(El::DistMatrix<T,
                                               ColDist,
                                               RowDist>& A) const {
-        realize_matrix_view<ColDist, RowDist>(A, 0, 0, _S, _N);
+        realize_matrix_view<T, ColDist, RowDist>(A, 0, 0, _S, _N);
     }
 
 
-    template<El::Distribution ColDist,
+    template<typename T, El::Distribution ColDist,
              El::Distribution RowDist>
-    void realize_matrix_view(El::DistMatrix<value_type, ColDist, RowDist>& A,
+    void realize_matrix_view(El::DistMatrix<T, ColDist, RowDist>& A,
         int i, int j, int height, int width) const {
 
-        El::DistMatrix<value_type, ColDist, RowDist> parent;
+        El::DistMatrix<T, ColDist, RowDist> parent;
         const El::Grid& grid = parent.Grid();
 
         // for view (A) and parent matrices: stride, rank are the same
@@ -140,10 +141,10 @@ struct dense_transform_data_t : public sketch_transform_data_t {
 
         A.Empty();
 
-        A = El::DistMatrix<value_type, ColDist, RowDist>(height, width, grid);
+        A = El::DistMatrix<T, ColDist, RowDist>(height, width, grid);
         A.Align(col_alignment, row_alignment);
 
-        El::Matrix<value_type>& local_matrix = A.Matrix();
+        El::Matrix<T>& local_matrix = A.Matrix();
         realize_matrix_view(local_matrix,
             i + col_shift, j + row_shift,
             local_height, local_width,

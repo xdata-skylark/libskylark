@@ -45,7 +45,6 @@ fftw<double>::executebfun_t fftw<double>::executebfun = fftw_execute_dft_c2r;
 #endif /* SKYLARK_HAVE_FFTW */
 
 #ifdef SKYLARK_HAVE_FFTWF
-
 template <>
 struct fftw<float> {
     typedef fftwf_complex complex_t;
@@ -58,9 +57,9 @@ struct fftw<float> {
     typedef void (*destroyfun_t)(plan_t);
     static destroyfun_t destroyfun;
     typedef void (*executeffun_t)(plan_t, float*, complex_t*);
-    static executffun_t executeffun;
+    static executeffun_t executeffun;
     typedef void (*executebfun_t)(plan_t, complex_t*, float*);
-    static executbfun_t executebfun;
+    static executebfun_t executebfun;
 };
 
 fftw<float>::fplanfun_t fftw<float>::fplanfun = fftwf_plan_dft_r2c_1d;
@@ -164,7 +163,7 @@ struct PPT_t <
             for(it = _cwts.begin(); it != _cwts.end(); it++, qc++) {
                 const _CWT_t &C = *it;
                 C.apply(Av, W, columnwise_tag());
-                El::Scale(std::sqrt(data_type::_gamma), W);
+                El::Scale((value_type)std::sqrt(data_type::_gamma), W);
                 W.Update(data_type::_hash_idx[qc], 0,
                     std::sqrt(data_type::_c) * data_type::_hash_val[qc]);
                 internal::fftw<value_type>::executeffun(_fftw_fplan, W.Buffer(),
@@ -228,7 +227,7 @@ struct PPT_t <
             for(it = _cwts.begin(); it != _cwts.end(); it++, qc++) {
                 const _CWT_t &C = *it;
                 C.apply(ATv, W, columnwise_tag());
-                El::Scale(std::sqrt(data_type::_gamma), W);
+                El::Scale((value_type)std::sqrt(data_type::_gamma), W);
                 W.Update(data_type::_hash_idx[qc], 0,
                     std::sqrt(data_type::_c) * data_type::_hash_val[qc]);
                 internal::fftw<value_type>::executeffun(_fftw_fplan, W.Buffer(),
@@ -277,13 +276,13 @@ protected:
             it != data_type::_cwts_data.end(); it++)
             _cwts.push_back(_CWT_t(*it));
 
-        double *dtmp = new double[S];
-        std::complex<double> *ctmp = new std::complex<double>[S];
-        _fftw_fplan = fftw_plan_dft_r2c_1d(S, dtmp,
-            reinterpret_cast<fftw_complex*>(ctmp),
+        value_type *dtmp = new value_type[S];
+        std::complex<value_type> *ctmp = new std::complex<value_type>[S];
+        _fftw_fplan = internal::fftw<value_type>::fplanfun(S, dtmp,
+            reinterpret_cast<_fftw_complex_t*>(ctmp),
             FFTW_UNALIGNED | FFTW_ESTIMATE);
-        _fftw_bplan = fftw_plan_dft_c2r_1d(S,
-            reinterpret_cast<fftw_complex*>(ctmp), dtmp,
+        _fftw_bplan = internal::fftw<value_type>::bplanfun(S,
+            reinterpret_cast<_fftw_complex_t*>(ctmp), dtmp,
             FFTW_UNALIGNED | FFTW_ESTIMATE);
         delete[] dtmp;
         delete[] ctmp;
@@ -385,7 +384,7 @@ struct PPT_t <
             for(it = _cwts.begin(); it != _cwts.end(); it++, qc++) {
                 const _CWT_t &C = *it;
                 C.apply(Av, W, columnwise_tag());
-                El::Scale(std::sqrt(data_type::_gamma), W);
+                El::Scale((value_type)std::sqrt(data_type::_gamma), W);
                 W.Update(data_type::_hash_idx[qc], 0,
                     std::sqrt(data_type::_c) * data_type::_hash_val[qc]);
                 internal::fftw<value_type>::executeffun(_fftw_fplan, W.Buffer(),
@@ -448,13 +447,13 @@ protected:
             it != data_type::_cwts_data.end(); it++)
             _cwts.push_back(_CWT_t(*it));
 
-        double *dtmp = new double[S];
-        std::complex<double> *ctmp = new std::complex<double>[S];
-        _fftw_fplan = fftw_plan_dft_r2c_1d(S, dtmp,
-            reinterpret_cast<fftw_complex*>(ctmp),
+        value_type *dtmp = new value_type[S];
+        std::complex<value_type> *ctmp = new std::complex<value_type>[S];
+        _fftw_fplan = internal::fftw<value_type>::fplanfun(S, dtmp,
+            reinterpret_cast<_fftw_complex_t*>(ctmp),
             FFTW_UNALIGNED | FFTW_ESTIMATE);
-        _fftw_bplan = fftw_plan_dft_c2r_1d(S,
-            reinterpret_cast<fftw_complex*>(ctmp), dtmp,
+        _fftw_bplan = internal::fftw<value_type>::bplanfun(S,
+            reinterpret_cast<_fftw_complex_t*>(ctmp), dtmp,
             FFTW_UNALIGNED | FFTW_ESTIMATE);
         delete[] dtmp;
         delete[] ctmp;

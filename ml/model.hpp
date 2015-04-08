@@ -141,7 +141,7 @@ struct model_t {
     }
 
     template<typename InputType, typename OutputType>
-    void predict(InputType& X, OutputType& PV, OutputType& DV,
+    void predict(const InputType& X, OutputType& PV, OutputType& DV,
         int num_threads = 1) const {
 
         int d = base::Height(X);

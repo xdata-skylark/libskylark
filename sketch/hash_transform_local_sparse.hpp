@@ -136,7 +136,7 @@ private:
         int *indices_new = new int[nnz];
         std::copy(final_rows.begin(), final_rows.begin() + nnz, indices_new);
 
-        double *values_new = new double[nnz];
+        value_type *values_new = new value_type[nnz];
         std::copy(final_vals.begin(), final_vals.begin() + nnz, values_new);
 
         // let the sparse structure take ownership of the data
@@ -215,7 +215,7 @@ private:
         int *indices_new = new int[nnz];
         std::copy(final_rows.begin(), final_rows.begin() + nnz, indices_new);
 
-        double *values_new = new double[nnz];
+        value_type *values_new = new value_type[nnz];
         std::copy(final_vals.begin(), final_vals.begin() + nnz, values_new);
 
         sketch_of_A.attach(indptr_new, indices_new, values_new,

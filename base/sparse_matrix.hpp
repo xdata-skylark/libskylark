@@ -68,16 +68,16 @@ struct sparse_matrix_t {
     /**
      * Attach new structure and values.
      */
-    void attach(const index_type *indptr, const index_type *indices, double *values,
-        int nnz, int n_rows, int n_cols, bool _own = false) {
+    void attach(const index_type *indptr, const index_type *indices,
+        value_type *values, int nnz, int n_rows, int n_cols, bool _own = false) {
         attach(indptr, indices, values, nnz, n_rows, n_cols, _own, _own, _own);
     }
 
     /**
      * Attach new structure and values.
      */
-    void attach(const index_type *indptr, const index_type *indices, double *values,
-        int nnz, int n_rows, int n_cols,
+    void attach(const index_type *indptr, const index_type *indices,
+        value_type *values, int nnz, int n_rows, int n_cols,
         bool ownindptr, bool ownindices, bool ownvalues) {
         _free_data();
 
@@ -191,14 +191,14 @@ struct sparse_matrix_t {
         // check more carefully for unordered row indices
         const int* indptr  = _indptr;
         const int* indices = _indices;
-        const double* values = _values;
+        const value_type* values = _values;
 
         const int* indices_rhs   = rhs.indices();
-        const double* values_rhs = rhs.locked_values();
+        const value_type* values_rhs = rhs.locked_values();
 
         for(int col = 0; col < width(); col++) {
 
-            boost::unordered_map<int, double> col_values;
+            boost::unordered_map<int, value_type> col_values;
 
             for(int idx = indptr[col]; idx < indptr[col + 1]; idx++)
                 col_values.insert(std::make_pair(indices[idx], values[idx]));
@@ -252,7 +252,7 @@ template<typename T>
 void Transpose(const sparse_matrix_t<T>& A, sparse_matrix_t<T>& B) {
     const int* aindptr = A.indptr();
     const int* aindices = A.indices();
-    const double* avalues = A.locked_values();
+    const T* avalues = A.locked_values();
 
     int m = A.width();
     int n = A.height();
@@ -260,7 +260,7 @@ void Transpose(const sparse_matrix_t<T>& A, sparse_matrix_t<T>& B) {
 
     int *indptr = new int[n + 1];
     int *indices = new int[nnz];
-    double *values = new double[nnz];
+    T *values = new T[nnz];
 
     // Count nonzeros in each row
     int *nzrow = new int[n];
@@ -279,7 +279,7 @@ void Transpose(const sparse_matrix_t<T>& A, sparse_matrix_t<T>& B) {
     for(int col = 0; col < m; col++)
         for(int idx = aindptr[col]; idx < aindptr[col + 1]; idx++) {
             int row = aindices[idx];
-            double val = avalues[idx];
+            T val = avalues[idx];
             indices[indptr[row] + nzrow[row]] = col;
             values[indptr[row] + nzrow[row]] = val;
             nzrow[row]++;

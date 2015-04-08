@@ -204,7 +204,7 @@ private:
 
         El::Zero(sketch_of_A);
 
-        double *SA = sketch_of_A.Buffer();
+        value_type *SA = sketch_of_A.Buffer();
         int ld = sketch_of_A.LDim();
 
         const int* indptr = A.indptr();
@@ -234,7 +234,7 @@ private:
 
         El::Zero(sketch_of_A);
 
-        double *SA = sketch_of_A.Buffer();
+        value_type *SA = sketch_of_A.Buffer();
         int ld = sketch_of_A.LDim();
 
         const int* indptr = A.indptr();

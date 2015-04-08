@@ -26,10 +26,9 @@ add_library(cskylark
 )
 target_link_libraries(cskylark
                       ${SKYLARK_LIBS}
-                      ${FFTW_LIBRARY}
+                      ${OPTIONAL_LIBS}
                       ${Elemental_LIBRARY}
                       ${Boost_LIBRARIES}
-                      ${CombBLAS_LIBRARIES}
 )
 set_target_properties(cskylark PROPERTIES SUFFIX ".so")
 

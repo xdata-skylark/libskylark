@@ -75,6 +75,14 @@ struct PPT_t :
     const sketch_transform_data_t* get_data() const { return this; }
 };
 
+} } 
+
+/**** Now the implementations */
+#include "PPT_Elemental.hpp"
+
+/**** Now the any,any implementations */
+namespace skylark { namespace sketch {
+
 template<>
 class PPT_t<boost::any, boost::any> :
   public PPT_data_t,
@@ -125,7 +133,54 @@ public:
      */
     void apply(const boost::any &A, const boost::any &sketch_of_A,
                 columnwise_tag dimension) const {
-        std::cout << "TODO\n";
+
+#if SKYLARK_HAVE_FFTW
+
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::matrix_t, mdtypes::matrix_t,
+            PPT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::sparse_matrix_t,
+            mdtypes::matrix_t, PPT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::shared_matrix_t,
+            mdtypes::shared_matrix_t, PPT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::root_matrix_t,
+            mdtypes::root_matrix_t, PPT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
+            mdtypes::dist_matrix_vc_star_t, PPT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
+            mdtypes::dist_matrix_vr_star_t, PPT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vc_t,
+            mdtypes::dist_matrix_star_vc_t, PPT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t,
+            mdtypes::dist_matrix_star_vr_t, PPT_t);
+
+#endif
+
+#if SKYLARK_HAVE_FFTWF
+
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::matrix_t, mftypes::matrix_t,
+            PPT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::sparse_matrix_t,
+            mftypes::matrix_t, PPT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::shared_matrix_t,
+            mftypes::shared_matrix_t, PPT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::root_matrix_t,
+            mftypes::root_matrix_t, PPT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
+            mftypes::dist_matrix_vc_star_t, PPT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
+            mftypes::dist_matrix_vr_star_t, PPT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vc_t,
+            mftypes::dist_matrix_star_vc_t, PPT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
+            mftypes::dist_matrix_star_vr_t, PPT_t);
+
+#endif
+
+        SKYLARK_THROW_EXCEPTION (
+          base::sketch_exception()
+              << base::error_msg(
+                 "This combination has not yet been implemented for PPT"));
+
     }
 
     /**
@@ -134,7 +189,53 @@ public:
      */
     void apply (const boost::any &A, const boost::any &sketch_of_A,
         rowwise_tag dimension) const {
-        std::cout << "TODO\n";
+
+#if SKYLARK_HAVE_FFTW
+
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::matrix_t, mdtypes::matrix_t,
+            PPT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::sparse_matrix_t,
+            mdtypes::matrix_t, PPT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::shared_matrix_t,
+            mdtypes::shared_matrix_t, PPT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::root_matrix_t,
+            mdtypes::root_matrix_t, PPT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
+            mdtypes::dist_matrix_vc_star_t, PPT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
+            mdtypes::dist_matrix_vr_star_t, PPT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vc_t,
+            mdtypes::dist_matrix_star_vc_t, PPT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t,
+            mdtypes::dist_matrix_star_vr_t, PPT_t);
+
+#endif
+
+#if SKYLARK_HAVE_FFTWF
+
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::matrix_t, mftypes::matrix_t,
+            PPT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::sparse_matrix_t,
+            mftypes::matrix_t, PPT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::shared_matrix_t,
+            mftypes::shared_matrix_t, PPT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::root_matrix_t,
+            mftypes::root_matrix_t, PPT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
+            mftypes::dist_matrix_vc_star_t, PPT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
+            mftypes::dist_matrix_vr_star_t, PPT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vc_t,
+            mftypes::dist_matrix_star_vc_t, PPT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
+            mftypes::dist_matrix_star_vr_t, PPT_t);
+
+#endif
+
+        SKYLARK_THROW_EXCEPTION (
+          base::sketch_exception()
+              << base::error_msg(
+                 "This combination has not yet been implemented for PPT"));
     }
 
     int get_N() const { return this->_N; } /**< Get input dimesion. */
@@ -145,6 +246,5 @@ public:
 
 } } /** namespace skylark::sketch */
 
-# include "PPT_Elemental.hpp"
 
 #endif // SKYLARK_PPT_HPP

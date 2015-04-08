@@ -45,14 +45,14 @@ inline
 void ColumnView(sparse_matrix_t<T>& A, sparse_matrix_t<T>& B, int j, int width) {
     const int *bindptr = B.indptr();
     const int *bindices = B.indices();
-    double *bvalues = B.values();
+    T *bvalues = B.values();
 
     int start = bindptr[j];
     int *indptr = new int[width + 1];
     for (int i = 0; i <= width; i++)
         indptr[i] = bindptr[j + i] - start;
     const int *indices = bindices + start;
-    double *values = bvalues + start;
+    T *values = bvalues + start;
 
     A.attach(indptr, indices, values, indptr[width], A.height(), width,
         true, false, false);

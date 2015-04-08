@@ -272,10 +272,10 @@ inline void Gemm(El::Orientation oA, El::Orientation oB,
         int n = B.width();
         int m = A.Width();
 
-        double *c = C.Buffer();
+        T *c = C.Buffer();
         int ldc = C.LDim();
 
-        const double *a = A.LockedBuffer();
+        const T *a = A.LockedBuffer();
         int lda = A.LDim();
 
 #       if SKYLARK_HAVE_OPENMP
@@ -300,10 +300,10 @@ inline void Gemm(El::Orientation oA, El::Orientation oB,
 
         El::Scale(beta, C);
 
-        double *c = C.Buffer();
+        T *c = C.Buffer();
         int ldc = C.LDim();
 
-        const double *a = A.LockedBuffer();
+        const T *a = A.LockedBuffer();
         int lda = A.LDim();
 
 #       if SKYLARK_HAVE_OPENMP
@@ -326,7 +326,7 @@ inline void Gemm(El::Orientation oA, El::Orientation oB,
 
     const int* indptr = A.indptr();
     const int* indices = A.indices();
-    const double *values = A.locked_values();
+    const T *values = A.locked_values();
 
     int k = A.width();
     int n = B.Width();
@@ -343,10 +343,10 @@ inline void Gemm(El::Orientation oA, El::Orientation oB,
 
         El::Scale(beta, C);
 
-        double *c = C.Buffer();
+        T *c = C.Buffer();
         int ldc = C.LDim();
 
-        const double *b = B.LockedBuffer();
+        const T *b = B.LockedBuffer();
         int ldb = B.LDim();
 
 #       if SKYLARK_HAVE_OPENMP
@@ -387,10 +387,10 @@ inline void Gemm(El::Orientation oA, El::Orientation oB,
 
     // TN - TODO: Not tested!
     if (oA == El::TRANSPOSE && oB == El::NORMAL) {
-        double *c = C.Buffer();
+        T *c = C.Buffer();
         int ldc = C.LDim();
 
-        const double *b = B.LockedBuffer();
+        const T *b = B.LockedBuffer();
         int ldb = B.LDim();
 
 #       if SKYLARK_HAVE_OPENMP
@@ -409,10 +409,10 @@ inline void Gemm(El::Orientation oA, El::Orientation oB,
 
     // AN - TODO: Not tested!
     if (oA == El::ADJOINT && oB == El::NORMAL) {
-        double *c = C.Buffer();
+        T *c = C.Buffer();
         int ldc = C.LDim();
 
-        const double *b = B.LockedBuffer();
+        const T *b = B.LockedBuffer();
         int ldb = B.LDim();
 
 #       if SKYLARK_HAVE_OPENMP

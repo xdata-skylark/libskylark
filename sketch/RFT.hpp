@@ -294,7 +294,6 @@ private:
 
 };
 
-
 } } /** namespace skylark::sketch */
 
 /**** Now the implementations */
@@ -353,12 +352,97 @@ public:
      */
     void apply(const boost::any &A, const boost::any &sketch_of_A,
                 columnwise_tag dimension) const {
-        if (A.type() == typeid(El::Matrix<double>*) &&
-            sketch_of_A.type() == typeid(El::Matrix<double>*)) {
-            GaussianRFT_t<El::Matrix<double>, El::Matrix<double> > S(*this);
-            S.apply(*boost::any_cast<El::Matrix<double>*>(A),
-                *boost::any_cast<El::Matrix<double>*>(sketch_of_A), dimension);
-        }
+
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::matrix_t, mdtypes::matrix_t,
+            GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::sparse_matrix_t,
+            mdtypes::matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::shared_matrix_t,
+            mdtypes::shared_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::root_matrix_t,
+            mdtypes::root_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
+            mdtypes::shared_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
+            mdtypes::root_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
+            mdtypes::dist_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
+            mdtypes::root_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
+            mdtypes::shared_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
+            mdtypes::root_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
+            mdtypes::shared_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vc_t,
+            mdtypes::root_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vc_t,
+            mdtypes::shared_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t,
+            mdtypes::root_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t,
+            mdtypes::shared_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
+            mdtypes::dist_matrix_vc_star_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
+            mdtypes::dist_matrix_vr_star_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vc_t,
+            mdtypes::dist_matrix_star_vc_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t,
+            mdtypes::dist_matrix_star_vr_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
+            mdtypes::dist_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
+            mdtypes::dist_matrix_t, GaussianRFT_t);
+
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::matrix_t, mftypes::matrix_t,
+            GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::sparse_matrix_t,
+            mftypes::matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::shared_matrix_t,
+            mftypes::shared_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::root_matrix_t,
+            mftypes::root_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t,
+            mftypes::shared_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t,
+            mftypes::root_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t,
+            mftypes::dist_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
+            mftypes::root_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
+            mftypes::shared_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
+            mftypes::root_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
+            mftypes::shared_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vc_t,
+            mftypes::root_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vc_t,
+            mftypes::shared_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
+            mftypes::root_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
+            mftypes::shared_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
+            mftypes::dist_matrix_vc_star_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
+            mftypes::dist_matrix_vr_star_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vc_t,
+            mftypes::dist_matrix_star_vc_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
+            mftypes::dist_matrix_star_vr_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
+            mftypes::dist_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
+            mftypes::dist_matrix_t, GaussianRFT_t);
+
+        SKYLARK_THROW_EXCEPTION (
+          base::sketch_exception()
+              << base::error_msg(
+                 "This combination has not yet been implemented for GaussianRFT"));
     }
 
     /**
@@ -367,7 +451,97 @@ public:
      */
     void apply (const boost::any &A, const boost::any &sketch_of_A,
         rowwise_tag dimension) const {
-        std::cout << "TODO -- HAIM 2!!!\n";
+
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::matrix_t, mdtypes::matrix_t,
+            GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::sparse_matrix_t,
+            mdtypes::matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::shared_matrix_t,
+            mdtypes::shared_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::root_matrix_t,
+            mdtypes::root_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
+            mdtypes::shared_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
+            mdtypes::root_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
+            mdtypes::dist_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
+            mdtypes::root_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
+            mdtypes::shared_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
+            mdtypes::root_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
+            mdtypes::shared_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vc_t,
+            mdtypes::root_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vc_t,
+            mdtypes::shared_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t,
+            mdtypes::root_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t,
+            mdtypes::shared_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
+            mdtypes::dist_matrix_vc_star_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
+            mdtypes::dist_matrix_vr_star_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vc_t,
+            mdtypes::dist_matrix_star_vc_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t,
+            mdtypes::dist_matrix_star_vr_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
+            mdtypes::dist_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
+            mdtypes::dist_matrix_t, GaussianRFT_t);
+
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::matrix_t, mftypes::matrix_t,
+            GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::sparse_matrix_t,
+            mftypes::matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::shared_matrix_t,
+            mftypes::shared_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::root_matrix_t,
+            mftypes::root_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t,
+            mftypes::shared_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t,
+            mftypes::root_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t,
+            mftypes::dist_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
+            mftypes::root_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
+            mftypes::shared_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
+            mftypes::root_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
+            mftypes::shared_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vc_t,
+            mftypes::root_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vc_t,
+            mftypes::shared_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
+            mftypes::root_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
+            mftypes::shared_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
+            mftypes::dist_matrix_vc_star_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
+            mftypes::dist_matrix_vr_star_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vc_t,
+            mftypes::dist_matrix_star_vc_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
+            mftypes::dist_matrix_star_vr_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
+            mftypes::dist_matrix_t, GaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
+            mftypes::dist_matrix_t, GaussianRFT_t);
+
+        SKYLARK_THROW_EXCEPTION (
+          base::sketch_exception()
+              << base::error_msg(
+                 "This combination has not yet been implemented for GaussianRFT"));
     }
 
     int get_N() const { return this->_N; } /**< Get input dimesion. */
@@ -426,7 +600,97 @@ public:
      */
     void apply(const boost::any &A, const boost::any &sketch_of_A,
                 columnwise_tag dimension) const {
-        std::cout << "TODO\n";
+
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::matrix_t, mdtypes::matrix_t,
+            LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::sparse_matrix_t,
+            mdtypes::matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::shared_matrix_t,
+            mdtypes::shared_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::root_matrix_t,
+            mdtypes::root_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
+            mdtypes::shared_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
+            mdtypes::root_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
+            mdtypes::dist_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
+            mdtypes::root_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
+            mdtypes::shared_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
+            mdtypes::root_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
+            mdtypes::shared_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vc_t,
+            mdtypes::root_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vc_t,
+            mdtypes::shared_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t,
+            mdtypes::root_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t,
+            mdtypes::shared_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
+            mdtypes::dist_matrix_vc_star_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
+            mdtypes::dist_matrix_vr_star_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vc_t,
+            mdtypes::dist_matrix_star_vc_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t,
+            mdtypes::dist_matrix_star_vr_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
+            mdtypes::dist_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
+            mdtypes::dist_matrix_t, LaplacianRFT_t);
+
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::matrix_t, mftypes::matrix_t,
+            LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::sparse_matrix_t,
+            mftypes::matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::shared_matrix_t,
+            mftypes::shared_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::root_matrix_t,
+            mftypes::root_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t,
+            mftypes::shared_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t,
+            mftypes::root_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t,
+            mftypes::dist_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
+            mftypes::root_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
+            mftypes::shared_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
+            mftypes::root_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
+            mftypes::shared_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vc_t,
+            mftypes::root_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vc_t,
+            mftypes::shared_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
+            mftypes::root_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
+            mftypes::shared_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
+            mftypes::dist_matrix_vc_star_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
+            mftypes::dist_matrix_vr_star_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vc_t,
+            mftypes::dist_matrix_star_vc_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
+            mftypes::dist_matrix_star_vr_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
+            mftypes::dist_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
+            mftypes::dist_matrix_t, LaplacianRFT_t);
+
+        SKYLARK_THROW_EXCEPTION (
+          base::sketch_exception()
+              << base::error_msg(
+                 "This combination has not yet been implemented for LaplacianRFT"));
     }
 
     /**
@@ -435,7 +699,98 @@ public:
      */
     void apply (const boost::any &A, const boost::any &sketch_of_A,
         rowwise_tag dimension) const {
-        std::cout << "TODO\n";
+
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::matrix_t, mdtypes::matrix_t,
+            LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::sparse_matrix_t,
+            mdtypes::matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::shared_matrix_t,
+            mdtypes::shared_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::root_matrix_t,
+            mdtypes::root_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
+            mdtypes::shared_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
+            mdtypes::root_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
+            mdtypes::dist_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
+            mdtypes::root_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
+            mdtypes::shared_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
+            mdtypes::root_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
+            mdtypes::shared_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vc_t,
+            mdtypes::root_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vc_t,
+            mdtypes::shared_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t,
+            mdtypes::root_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t,
+            mdtypes::shared_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
+            mdtypes::dist_matrix_vc_star_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
+            mdtypes::dist_matrix_vr_star_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vc_t,
+            mdtypes::dist_matrix_star_vc_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t,
+            mdtypes::dist_matrix_star_vr_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
+            mdtypes::dist_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
+            mdtypes::dist_matrix_t, LaplacianRFT_t);
+
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::matrix_t, mftypes::matrix_t,
+            LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::sparse_matrix_t,
+            mftypes::matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::shared_matrix_t,
+            mftypes::shared_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::root_matrix_t,
+            mftypes::root_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t,
+            mftypes::shared_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t,
+            mftypes::root_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t,
+            mftypes::dist_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
+            mftypes::root_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
+            mftypes::shared_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
+            mftypes::root_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
+            mftypes::shared_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vc_t,
+            mftypes::root_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vc_t,
+            mftypes::shared_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
+            mftypes::root_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
+            mftypes::shared_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
+            mftypes::dist_matrix_vc_star_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
+            mftypes::dist_matrix_vr_star_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vc_t,
+            mftypes::dist_matrix_star_vc_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
+            mftypes::dist_matrix_star_vr_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
+            mftypes::dist_matrix_t, LaplacianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
+            mftypes::dist_matrix_t, LaplacianRFT_t);
+
+        SKYLARK_THROW_EXCEPTION (
+          base::sketch_exception()
+              << base::error_msg(
+                 "This combination has not yet been implemented for LaplacianRFT"));
+
     }
 
     int get_N() const { return this->_N; } /**< Get input dimesion. */
@@ -494,7 +849,98 @@ public:
      */
     void apply(const boost::any &A, const boost::any &sketch_of_A,
                 columnwise_tag dimension) const {
-        std::cout << "TODO\n";
+
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::matrix_t, mdtypes::matrix_t,
+            MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::sparse_matrix_t,
+            mdtypes::matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::shared_matrix_t,
+            mdtypes::shared_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::root_matrix_t,
+            mdtypes::root_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
+            mdtypes::shared_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
+            mdtypes::root_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
+            mdtypes::dist_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
+            mdtypes::root_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
+            mdtypes::shared_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
+            mdtypes::root_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
+            mdtypes::shared_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vc_t,
+            mdtypes::root_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vc_t,
+            mdtypes::shared_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t,
+            mdtypes::root_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t,
+            mdtypes::shared_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
+            mdtypes::dist_matrix_vc_star_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
+            mdtypes::dist_matrix_vr_star_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vc_t,
+            mdtypes::dist_matrix_star_vc_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t,
+            mdtypes::dist_matrix_star_vr_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
+            mdtypes::dist_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
+            mdtypes::dist_matrix_t, MaternRFT_t);
+
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::matrix_t, mftypes::matrix_t,
+            MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::sparse_matrix_t,
+            mftypes::matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::shared_matrix_t,
+            mftypes::shared_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::root_matrix_t,
+            mftypes::root_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t,
+            mftypes::shared_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t,
+            mftypes::root_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t,
+            mftypes::dist_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
+            mftypes::root_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
+            mftypes::shared_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
+            mftypes::root_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
+            mftypes::shared_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vc_t,
+            mftypes::root_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vc_t,
+            mftypes::shared_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
+            mftypes::root_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
+            mftypes::shared_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
+            mftypes::dist_matrix_vc_star_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
+            mftypes::dist_matrix_vr_star_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vc_t,
+            mftypes::dist_matrix_star_vc_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
+            mftypes::dist_matrix_star_vr_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
+            mftypes::dist_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
+            mftypes::dist_matrix_t, MaternRFT_t);
+
+        SKYLARK_THROW_EXCEPTION (
+          base::sketch_exception()
+              << base::error_msg(
+                 "This combination has not yet been implemented for MaternRFT"));
+
     }
 
     /**
@@ -503,7 +949,97 @@ public:
      */
     void apply (const boost::any &A, const boost::any &sketch_of_A,
         rowwise_tag dimension) const {
-        std::cout << "TODO\n";
+
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::matrix_t, mdtypes::matrix_t,
+            MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::sparse_matrix_t,
+            mdtypes::matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::shared_matrix_t,
+            mdtypes::shared_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::root_matrix_t,
+            mdtypes::root_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
+            mdtypes::shared_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
+            mdtypes::root_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
+            mdtypes::dist_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
+            mdtypes::root_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
+            mdtypes::shared_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
+            mdtypes::root_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
+            mdtypes::shared_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vc_t,
+            mdtypes::root_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vc_t,
+            mdtypes::shared_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t,
+            mdtypes::root_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t,
+            mdtypes::shared_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
+            mdtypes::dist_matrix_vc_star_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
+            mdtypes::dist_matrix_vr_star_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vc_t,
+            mdtypes::dist_matrix_star_vc_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t,
+            mdtypes::dist_matrix_star_vr_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
+            mdtypes::dist_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
+            mdtypes::dist_matrix_t, MaternRFT_t);
+
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::matrix_t, mftypes::matrix_t,
+            MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::sparse_matrix_t,
+            mftypes::matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::shared_matrix_t,
+            mftypes::shared_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::root_matrix_t,
+            mftypes::root_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t,
+            mftypes::shared_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t,
+            mftypes::root_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t,
+            mftypes::dist_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
+            mftypes::root_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
+            mftypes::shared_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
+            mftypes::root_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
+            mftypes::shared_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vc_t,
+            mftypes::root_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vc_t,
+            mftypes::shared_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
+            mftypes::root_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
+            mftypes::shared_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
+            mftypes::dist_matrix_vc_star_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
+            mftypes::dist_matrix_vr_star_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vc_t,
+            mftypes::dist_matrix_star_vc_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
+            mftypes::dist_matrix_star_vr_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
+            mftypes::dist_matrix_t, MaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
+            mftypes::dist_matrix_t, MaternRFT_t);
+
+        SKYLARK_THROW_EXCEPTION (
+          base::sketch_exception()
+              << base::error_msg(
+                 "This combination has not yet been implemented for MaternRFT"));
     }
 
     int get_N() const { return this->_N; } /**< Get input dimesion. */

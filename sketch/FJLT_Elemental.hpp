@@ -28,8 +28,8 @@ struct FJLT_t <
     output_matrix_type;
     typedef El::DistMatrix<ValueType,
                              El::STAR, ColDist> intermediate_type;
-    typedef fft_futs<double>::DCT_t transform_type;
-    typedef utility::rademacher_distribution_t<value_type>
+    typedef typename fft_futs<value_type>::DCT_t transform_type;
+    typedef utility::rademacher_distribution_t<double>
     underlying_value_distribution_type;
 
     typedef FJLT_data_t data_type;
@@ -209,8 +209,8 @@ struct FJLT_t <
     output_matrix_type;
     typedef El::DistMatrix<ValueType,
                              El::STAR, ColDist> intermediate_type;
-    typedef fft_futs<double>::DCT_t transform_type;
-    typedef utility::rademacher_distribution_t<value_type>
+    typedef typename fft_futs<value_type>::DCT_t transform_type;
+    typedef utility::rademacher_distribution_t<double>
     underlying_value_distribution_type;
 
     typedef FJLT_data_t data_type;
@@ -389,8 +389,8 @@ struct FJLT_t <
     output_matrix_type;
     typedef El::DistMatrix<ValueType,
                              El::STAR, RowDist> intermediate_type;
-    typedef fft_futs<double>::DCT_t transform_type;
-    typedef utility::rademacher_distribution_t<value_type>
+    typedef typename fft_futs<value_type>::DCT_t transform_type;
+    typedef utility::rademacher_distribution_t<double>
     underlying_value_distribution_type;
 
     typedef FJLT_data_t data_type;
@@ -570,8 +570,8 @@ struct FJLT_t <
     output_matrix_type;
     typedef El::DistMatrix<ValueType,
                              El::STAR, RowDist> intermediate_type;
-    typedef fft_futs<double>::DCT_t transform_type;
-    typedef utility::rademacher_distribution_t<value_type>
+    typedef typename fft_futs<value_type>::DCT_t transform_type;
+    typedef utility::rademacher_distribution_t<double>
     underlying_value_distribution_type;
 
     typedef FJLT_data_t data_type;
@@ -749,8 +749,8 @@ struct FJLT_t <
                              El::STAR, El::VR>
     intermediate_type;
 
-    typedef fft_futs<double>::DCT_t transform_type;
-    typedef utility::rademacher_distribution_t<value_type>
+    typedef typename fft_futs<value_type>::DCT_t transform_type;
+    typedef utility::rademacher_distribution_t<double>
     underlying_value_distribution_type;
 
     typedef FJLT_data_t data_type;

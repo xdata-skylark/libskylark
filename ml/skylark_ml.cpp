@@ -57,37 +57,26 @@ int main(int argc, char* argv[]) {
             std::cout << "Mode: Prediciting. Loading data..." << std::endl;
 
         El::Matrix<double> DecisionValues, PredictedLabels, Y;
-        // TODO model shouldn't depend on input-output types.
-        if (sparse) {
-            skylark::ml::model_t<skylark::base::sparse_matrix_t<double>,
-                                 El::Matrix<double> > model(options.modelfile);
+        skylark::ml::model_t model(options.modelfile);
 
+        if (sparse) {
             skylark::base::sparse_matrix_t<double> X;
             read(comm, options.fileformat, options.testfile, X, Y,
                 model.get_input_size());
 
-            DecisionValues.Resize(Y.Height(), model.get_num_outputs());
-            PredictedLabels.Resize(Y.Height(), 1);
+            El::Zeros(DecisionValues, Y.Height(), model.get_output_size());
+            El::Zeros(PredictedLabels, Y.Height(), 1);
 
-            El::Zero(DecisionValues);
-            El::Zero(PredictedLabels);
-
-            model.predict(X, PredictedLabels, DecisionValues, options.numthreads);
+            model.predict(X, PredictedLabels, DecisionValues);
         } else {
-            skylark::ml::model_t<El::Matrix<double>,
-                                 El::Matrix<double> > model(options.modelfile);
-
             El::Matrix<double> X;
             read(comm, options.fileformat, options.testfile, X, Y,
                 model.get_input_size());
 
-            DecisionValues.Resize(Y.Height(), model.get_num_outputs());
-            PredictedLabels.Resize(Y.Height(), 1);
+            El::Zeros(DecisionValues, Y.Height(), model.get_output_size());
+            El::Zeros(PredictedLabels, Y.Height(), 1);
 
-            El::Zero(DecisionValues);
-            El::Zero(PredictedLabels);
-
-            model.predict(X, PredictedLabels, DecisionValues, options.numthreads);
+            model.predict(X, PredictedLabels, DecisionValues);
         }
 
         El::Int correct = skylark::ml::classification_accuracy(Y, 

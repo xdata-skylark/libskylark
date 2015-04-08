@@ -60,18 +60,19 @@ private:
 
     void apply_impl(El::Matrix<ValueType>& A,
                     skylark::sketch::columnwise_tag) const {
-        double* AA = A.Buffer();
+        ValueType* AA = A.Buffer();
         int j;
-#ifdef SKYLARK_HAVE_OPENMP
-#pragma omp parallel for private(j)
-#endif
+
+#       ifdef SKYLARK_HAVE_OPENMP
+#       pragma omp parallel for private(j)
+#       endif
         for (j = 0; j < A.Width(); j++)
             ExecuteFun(_plan, AA + j * A.LDim(), AA + j * A.LDim());
     }
 
     void apply_inverse_impl(El::Matrix<ValueType>& A,
                             skylark::sketch::columnwise_tag) const {
-        double* AA = A.Buffer();
+        ValueType* AA = A.Buffer();
         int j;
 #ifdef SKYLARK_HAVE_OPENMP
 #pragma omp parallel for private(j)
@@ -86,11 +87,12 @@ private:
         // of FFTW
         El::Matrix<ValueType> matrix;
         El::Transpose(A, matrix);
-        double* matrix_buffer = matrix.Buffer();
+        ValueType* matrix_buffer = matrix.Buffer();
         int j;
-#ifdef SKYLARK_HAVE_OPENMP
-#pragma omp parallel for private(j)
-#endif
+
+#       ifdef SKYLARK_HAVE_OPENMP
+#       pragma omp parallel for private(j)
+#       endif
         for (j = 0; j < matrix.Width(); j++)
             ExecuteFun(_plan, matrix_buffer + j * matrix.LDim(),
                 matrix_buffer + j * matrix.LDim());
@@ -103,11 +105,12 @@ private:
         // of FFTW
         El::Matrix<ValueType> matrix;
         El::Transpose(A, matrix);
-        double* matrix_buffer = matrix.Buffer();
+        ValueType* matrix_buffer = matrix.Buffer();
         int j;
-#ifdef SKYLARK_HAVE_OPENMP
-#pragma omp parallel for private(j)
-#endif
+
+#       ifdef SKYLARK_HAVE_OPENMP
+#       pragma omp parallel for private(j)
+#       endif
         for (j = 0; j < matrix.Width(); j++)
             ExecuteFun(_plan_inverse, matrix_buffer + j * matrix.LDim(),
                 matrix_buffer + j * matrix.LDim());
@@ -199,33 +202,36 @@ private:
 
     void apply_impl(El::Matrix<value_type>& A,
                     skylark::sketch::columnwise_tag) const {
-        double* AA = A.Buffer();
+        ValueType* AA = A.Buffer();
         int j;
-#ifdef SKYLARK_HAVE_OPENMP
-#pragma omp parallel for private(j)
-#endif
+
+#       ifdef SKYLARK_HAVE_OPENMP
+#       pragma omp parallel for private(j)
+#       endif
         for (j = 0; j < A.Width(); j++)
             wht_apply(_tree, 1, AA + j * A.LDim());
     }
 
     void apply_inverse_impl(El::Matrix<value_type>& A,
         skylark::sketch::columnwise_tag) const {
-        double* AA = A.Buffer();
+        ValueType* AA = A.Buffer();
         int j;
-#ifdef SKYLARK_HAVE_OPENMP
-#pragma omp parallel for private(j)
-#endif
+
+#       ifdef SKYLARK_HAVE_OPENMP
+#       pragma omp parallel for private(j)
+#       endif
         for (j = 0; j < A.Width(); j++)
             wht_apply(_tree, 1, AA + j * A.LDim());
     }
 
     void apply_impl(El::Matrix<value_type>& A,
         skylark::sketch::rowwise_tag) const {
-        double* AA = A.Buffer();
+        ValueType* AA = A.Buffer();
         int j;
-#ifdef SKYLARK_HAVE_OPENMP
-#pragma omp parallel for private(j)
-#endif
+
+#       ifdef SKYLARK_HAVE_OPENMP
+#       pragma omp parallel for private(j)
+#       endif
         for (j = 0; j < A.Width(); j++)
             wht_apply(_tree, A.Height(), AA + j);
         // Not sure stride is used correctly here.
@@ -233,11 +239,12 @@ private:
 
     void apply_inverse_impl(El::Matrix<value_type>& A,
         skylark::sketch::rowwise_tag) const {
-        double* AA = A.Buffer();
+        ValueType* AA = A.Buffer();
         int j;
-#ifdef SKYLARK_HAVE_OPENMP
-#pragma omp parallel for private(j)
-#endif
+
+#       ifdef SKYLARK_HAVE_OPENMP
+#       pragma omp parallel for private(j)
+#       endif
         for (j = 0; j < A.Width(); j++)
             wht_apply(_tree, A.Height(), AA + j);
         // Not sure stride is used correctly here.

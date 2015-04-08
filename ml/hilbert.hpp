@@ -253,7 +253,7 @@ void LargeScaleKernelLearning(const boost::mpi::communicator& comm,
             ShiftForLogistic(Yv);
     }
 
-    skylark::ml::model_t<InputType, LabelType>* model =
+    skylark::ml::model_t* model =
         Solver->train(X, Y, Xv, Yv, comm);
 
     // TODO should be done "outside"

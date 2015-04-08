@@ -21,8 +21,8 @@ namespace skylark { namespace sketch {
  */
 template < typename InputMatrixType,
            typename OutputMatrixType = InputMatrixType>
-class FastRFT_t :
-    public FastGaussianRFT_data_t,
+struct FastRFT_t :
+    public FastRFT_data_t,
     virtual public sketch_transform_t<InputMatrixType, OutputMatrixType > {
 
     // To be specilized and derived. Just some guards here.
@@ -32,6 +32,14 @@ class FastRFT_t :
     typedef FastRFT_data_t data_type;
 
     FastRFT_t(int N, int S, base::context_t& context) : data_type(N, S, context) {
+        SKYLARK_THROW_EXCEPTION (
+          base::sketch_exception()
+              << base::error_msg(
+                 "This combination has not yet been implemented for FastRFT"));
+    }
+
+    FastRFT_t(const data_type& other_data)
+        : data_type(other_data) {
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()
               << base::error_msg(
@@ -208,9 +216,326 @@ private:
 
 };
 
-} } /** namespace skylark::sketch */
+} }
 
-
+/**** Now the implementations */
 #include "FRFT_Elemental.hpp"
+
+/**** Now the any,any implementations */
+namespace skylark { namespace sketch {
+
+template<>
+class FastGaussianRFT_t<boost::any, boost::any> :
+  public FastGaussianRFT_data_t,
+  virtual public sketch_transform_t<boost::any, boost::any > {
+
+public:
+
+    typedef FastGaussianRFT_data_t data_type;
+    typedef data_type::params_t params_t;
+
+    FastGaussianRFT_t(int N, int S, double sigma, base::context_t& context)
+        : data_type(N, S, sigma, context) {
+
+    }
+
+    FastGaussianRFT_t(int N, int S, const params_t& params, base::context_t& context)
+        : data_type(N, S, params, context) {
+
+    }
+
+
+    FastGaussianRFT_t(const boost::property_tree::ptree &pt)
+        : data_type(pt) {
+
+    }
+
+    /**
+     * Copy constructor
+     */
+    template <typename OtherInputMatrixType,
+              typename OtherOutputMatrixType>
+    FastGaussianRFT_t (const FastGaussianRFT_t<OtherInputMatrixType, OtherOutputMatrixType>& other)
+        : data_type(other) {
+
+    }
+
+    /**
+     * Constructor from data
+     */
+    FastGaussianRFT_t (const data_type& other)
+        : data_type(other) {
+
+    }
+
+    /**
+     * Apply columnwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply(const boost::any &A, const boost::any &sketch_of_A,
+                columnwise_tag dimension) const {
+
+#if SKYLARK_HAVE_FFTW
+
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::matrix_t, mdtypes::matrix_t,
+            FastGaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::sparse_matrix_t,
+            mdtypes::matrix_t, FastGaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::shared_matrix_t,
+            mdtypes::shared_matrix_t, FastGaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::root_matrix_t,
+            mdtypes::root_matrix_t, FastGaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
+            mdtypes::dist_matrix_vc_star_t, FastGaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
+            mdtypes::dist_matrix_vr_star_t, FastGaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vc_t,
+            mdtypes::dist_matrix_star_vc_t, FastGaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t,
+            mdtypes::dist_matrix_star_vr_t, FastGaussianRFT_t);
+
+#endif
+
+#if SKYLARK_HAVE_FFTWF
+
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::matrix_t, mftypes::matrix_t,
+            FastGaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::sparse_matrix_t,
+            mftypes::matrix_t, FastGaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::shared_matrix_t,
+            mftypes::shared_matrix_t, FastGaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::root_matrix_t,
+            mftypes::root_matrix_t, FastGaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
+            mftypes::dist_matrix_vc_star_t, FastGaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
+            mftypes::dist_matrix_vr_star_t, FastGaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vc_t,
+            mftypes::dist_matrix_star_vc_t, FastGaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
+            mftypes::dist_matrix_star_vr_t, FastGaussianRFT_t);
+
+#endif
+
+        SKYLARK_THROW_EXCEPTION (
+          base::sketch_exception()
+              << base::error_msg(
+                 "This combination has not yet been implemented for FastGaussianRFT"));
+    }
+
+    /**
+     * Apply rowwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply (const boost::any &A, const boost::any &sketch_of_A,
+        rowwise_tag dimension) const {
+
+#if SKYLARK_HAVE_FFTW
+
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::matrix_t, mdtypes::matrix_t,
+            FastGaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::sparse_matrix_t,
+            mdtypes::matrix_t, FastGaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::shared_matrix_t,
+            mdtypes::shared_matrix_t, FastGaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::root_matrix_t,
+            mdtypes::root_matrix_t, FastGaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
+            mdtypes::dist_matrix_vc_star_t, FastGaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
+            mdtypes::dist_matrix_vr_star_t, FastGaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vc_t,
+            mdtypes::dist_matrix_star_vc_t, FastGaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t,
+            mdtypes::dist_matrix_star_vr_t, FastGaussianRFT_t);
+
+#endif
+
+#if SKYLARK_HAVE_FFTWF
+
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::matrix_t, mftypes::matrix_t,
+            FastGaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::sparse_matrix_t,
+            mftypes::matrix_t, FastGaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::shared_matrix_t,
+            mftypes::shared_matrix_t, FastGaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::root_matrix_t,
+            mftypes::root_matrix_t, FastGaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
+            mftypes::dist_matrix_vc_star_t, FastGaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
+            mftypes::dist_matrix_vr_star_t, FastGaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vc_t,
+            mftypes::dist_matrix_star_vc_t, FastGaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
+            mftypes::dist_matrix_star_vr_t, FastGaussianRFT_t);
+
+#endif
+
+        SKYLARK_THROW_EXCEPTION (
+          base::sketch_exception()
+              << base::error_msg(
+                 "This combination has not yet been implemented for FastGaussianRFT"));
+    }
+
+    int get_N() const { return this->_N; } /**< Get input dimesion. */
+    int get_S() const { return this->_S; } /**< Get output dimesion. */
+
+    const sketch_transform_data_t* get_data() const { return this; }
+};
+
+template<>
+class FastMaternRFT_t<boost::any, boost::any> :
+  public FastMaternRFT_data_t,
+  virtual public sketch_transform_t<boost::any, boost::any > {
+
+public:
+
+    typedef FastMaternRFT_data_t data_type;
+    typedef data_type::params_t params_t;
+
+    FastMaternRFT_t(int N, int S, double nu, double l, base::context_t& context)
+        : data_type(N, S, nu, l, context) {
+
+    }
+
+    FastMaternRFT_t(int N, int S, const params_t& params, base::context_t& context)
+        : data_type(N, S, params, context) {
+
+    }
+
+
+    FastMaternRFT_t(const boost::property_tree::ptree &pt)
+        : data_type(pt) {
+
+    }
+
+    /**
+     * Copy constructor
+     */
+    template <typename OtherInputMatrixType,
+              typename OtherOutputMatrixType>
+    FastMaternRFT_t (const FastMaternRFT_t<OtherInputMatrixType, OtherOutputMatrixType>& other)
+        : data_type(other) {
+
+    }
+
+    /**
+     * Constructor from data
+     */
+    FastMaternRFT_t (const data_type& other)
+        : data_type(other) {
+
+    }
+
+    /**
+     * Apply columnwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply(const boost::any &A, const boost::any &sketch_of_A,
+                columnwise_tag dimension) const {
+
+#if SKYLARK_HAVE_FFTW
+
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::matrix_t, mdtypes::matrix_t,
+            FastMaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::sparse_matrix_t,
+            mdtypes::matrix_t, FastMaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::shared_matrix_t,
+            mdtypes::shared_matrix_t, FastMaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::root_matrix_t,
+            mdtypes::root_matrix_t, FastMaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
+            mdtypes::dist_matrix_vc_star_t, FastMaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
+            mdtypes::dist_matrix_vr_star_t, FastMaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vc_t,
+            mdtypes::dist_matrix_star_vc_t, FastMaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t,
+            mdtypes::dist_matrix_star_vr_t, FastMaternRFT_t);
+
+#endif
+
+#if SKYLARK_HAVE_FFTWF
+
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::matrix_t, mftypes::matrix_t,
+            FastMaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::sparse_matrix_t,
+            mftypes::matrix_t, FastMaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::shared_matrix_t,
+            mftypes::shared_matrix_t, FastMaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::root_matrix_t,
+            mftypes::root_matrix_t, FastMaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
+            mftypes::dist_matrix_vc_star_t, FastMaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
+            mftypes::dist_matrix_vr_star_t, FastMaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vc_t,
+            mftypes::dist_matrix_star_vc_t, FastMaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
+            mftypes::dist_matrix_star_vr_t, FastMaternRFT_t);
+
+#endif
+
+    }
+
+    /**
+     * Apply rowwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply (const boost::any &A, const boost::any &sketch_of_A,
+        rowwise_tag dimension) const {
+
+#if SKYLARK_HAVE_FFTW
+
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::matrix_t, mdtypes::matrix_t,
+            FastMaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::sparse_matrix_t,
+            mdtypes::matrix_t, FastMaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::shared_matrix_t,
+            mdtypes::shared_matrix_t, FastMaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::root_matrix_t,
+            mdtypes::root_matrix_t, FastMaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
+            mdtypes::dist_matrix_vc_star_t, FastMaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
+            mdtypes::dist_matrix_vr_star_t, FastMaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vc_t,
+            mdtypes::dist_matrix_star_vc_t, FastMaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t,
+            mdtypes::dist_matrix_star_vr_t, FastMaternRFT_t);
+
+#endif
+
+#if SKYLARK_HAVE_FFTWF
+
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::matrix_t, mftypes::matrix_t,
+            FastMaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::sparse_matrix_t,
+            mftypes::matrix_t, FastMaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::shared_matrix_t,
+            mftypes::shared_matrix_t, FastMaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::root_matrix_t,
+            mftypes::root_matrix_t, FastMaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
+            mftypes::dist_matrix_vc_star_t, FastMaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
+            mftypes::dist_matrix_vr_star_t, FastMaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vc_t,
+            mftypes::dist_matrix_star_vc_t, FastMaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
+            mftypes::dist_matrix_star_vr_t, FastMaternRFT_t);
+
+#endif
+
+    }
+
+    int get_N() const { return this->_N; } /**< Get input dimesion. */
+    int get_S() const { return this->_S; } /**< Get output dimesion. */
+
+    const sketch_transform_data_t* get_data() const { return this; }
+};
+
+} } /** namespace skylark::sketch */
 
 #endif // SKYLARK_FRFT_HPP

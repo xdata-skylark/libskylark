@@ -22,7 +22,7 @@ inline void DenseCopy(const sparse_matrix_t<T>& A, El::Matrix<T>& B) {
 
     const int *indptr = A.indptr();
     const int *indices = A.indices();
-    const double *values = A.locked_values();
+    const T *values = A.locked_values();
     for(int col = 0; col < A.width(); col++)
         for(int idx = indptr[col]; idx < indptr[col + 1]; idx++)
             B.Set(indices[idx], col, values[idx]);

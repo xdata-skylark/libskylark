@@ -47,24 +47,19 @@ int classification_accuracy(El::Matrix<double>& Yt, El::Matrix<double>& Yp) {
     return correct;
 }
 
-template <typename InputType, typename OutputType>
-struct model_t
-{
-public:
-    typedef InputType input_type;
-    typedef OutputType output_type;
-
+struct model_t {
     // TODO the following two should depend on the input type
     // TODO explicit doubles is not desired.
     typedef El::Matrix<double> intermediate_type;
     typedef El::Matrix<double> coef_type;
 
-    typedef skylark::sketch::sketch_transform_t<input_type, intermediate_type>
+    typedef sketch::sketch_transform_t<boost::any, boost::any>
     feature_transform_type;
 
-    model_t(std::vector<const feature_transform_type *>& maps, bool scale_maps,
+    template<typename SketchTransformType>
+    model_t(std::vector<const SketchTransformType *>& maps, bool scale_maps,
         int num_features, int num_outputs) :
-        _coef(num_features, num_outputs), _maps(maps), _scale_maps(scale_maps),
+        _coef(num_features, num_outputs), _maps(maps.size()), _scale_maps(scale_maps),
         _starts(maps.size()), _finishes(maps.size()) {
 
         // TODO verify all N dimension of the maps match
@@ -72,13 +67,14 @@ public:
         El::Zero(_coef);
 
         int nf = 0;
-        for(int i = 0; i < _maps.size(); i++) {
+        for(int i = 0; i < maps.size(); i++) {
+            _maps[i] = maps[i]->type_erased();
             _starts[i] = nf;
             _finishes[i] = nf + _maps[i]->get_S() - 1;
             nf += _maps[i]->get_S();
         }
 
-        _num_input_features = (_maps.size() == 0) ?
+        _input_size = (_maps.size() == 0) ?
             num_features : _maps[0]->get_N();
     }
 
@@ -99,6 +95,11 @@ public:
         build_from_ptree(pt);
     }
 
+    ~model_t() {
+        for (auto it = _maps.begin(); it != _maps.end(); it++)
+            delete *it;
+    }
+
     boost::property_tree::ptree to_ptree() const {
         boost::property_tree::ptree pt;
         pt.put("skylark_object_type", "model:linear-on-features");
@@ -106,7 +107,7 @@ public:
 
         pt.put("num_features", _coef.Height());
         pt.put("num_outputs", _coef.Width());
-        pt.put("num_input_features", _num_input_features);
+        pt.put("input_size", _input_size);
 
         boost::property_tree::ptree ptfmap;
         ptfmap.put("number_maps", _maps.size());
@@ -139,7 +140,8 @@ public:
         of.close();
     }
 
-    void predict(input_type& X, output_type& PV, output_type& DV,
+    template<typename InputType, typename OutputType>
+    void predict(const InputType& X, OutputType& PV, OutputType& DV,
         int num_threads = 1) const {
 
         int d = base::Height(X);
@@ -167,12 +169,12 @@ public:
                 sj = finish - start  + 1;
 
                 intermediate_type z(sj, n);
-                _maps[j]->apply(X, z, sketch::columnwise_tag());
+                _maps[j]->apply(&X, &z, sketch::columnwise_tag());
 
                 if (_scale_maps)
                     El::Scale(sqrt(double(sj) / d), z);
 
-                output_type o(n, k);
+                OutputType o(n, k);
 
                 El::LockedView(Wslice, _coef, start, 0, sj, k);
                 base::Gemm(El::TRANSPOSE, El::NORMAL, 1.0, z, Wslice, o);
@@ -203,14 +205,10 @@ public:
         }
     }
 
-    void get_probabilities(input_type& X, output_type& P, int num_threads = 1)
-        const;
     coef_type& get_coef() { return _coef; }
-    static double evaluate(output_type& Yt, output_type& Yp,
-        const boost::mpi::communicator& comm);
 
-    int get_num_outputs() const { return _coef.Width(); }
-    int get_input_size() const { return _num_input_features; }
+    int get_output_size() const { return _coef.Width(); }
+    int get_input_size() const { return _input_size; }
 
 protected:
 
@@ -219,7 +217,7 @@ protected:
         int num_outputs = pt.get<int>("num_outputs");
         _coef.Resize(num_features, num_outputs);
 
-        _num_input_features = pt.get<int>("num_input_features");
+        _input_size = pt.get<int>("input_size");
 
         int num_maps = pt.get<int>("feature_mapping.number_maps");
         _maps.resize(num_maps);
@@ -258,7 +256,7 @@ protected:
 
 private:
     coef_type _coef;
-    int _num_input_features;
+    El::Int _input_size, _output_size;
     std::vector<const feature_transform_type *> _maps; // TODO use shared_ptr
     bool _scale_maps;
 

@@ -78,15 +78,15 @@ private:
 #       endif
         {
         output_matrix_type W(data_type::_NB, 1);
-        double *w = W.Buffer();
+        value_type *w = W.Buffer();
 
         output_matrix_type Ac(data_type::_NB, 1);
-        double *ac = Ac.Buffer();
+        value_type *ac = Ac.Buffer();
 
         output_matrix_type Acv;
         El::View(Acv, Ac, 0, 0, data_type::_N, 1);
 
-        double *sa = sketch_of_A.Buffer();
+        value_type *sa = sketch_of_A.Buffer();
         int ldsa = sketch_of_A.LDim();
 
         value_type scal =
@@ -128,7 +128,7 @@ private:
                 _fut.apply(W, tag);
                 El::DiagonalScale(El::LEFT, El::NORMAL, Sm, W);
 
-                double *sac = sa + ldsa * c;
+                value_type *sac = sa + ldsa * c;
                 for(int l = s; l < e; l++) {
                     value_type x = w[l - s];
                     x += data_type::shifts[l];
@@ -194,7 +194,7 @@ private:
 
             _fut.apply(W, tag);
 
-            double *w = W.Buffer();
+            value_type *w = W.Buffer();
             for(int c = 0; c < base::Height(W); c++)
                 for(int l = 0; l < data_type::_N - 1; l++) {
                     int idx1 = c + (data_type::_N - 1 - l) * W.LDim();
@@ -248,7 +248,7 @@ private:
 #ifdef SKYLARK_HAVE_FFTW
     typename fft_futs<ValueType>::DCT_t _fut;
 #elif SKYLARK_HAVE_SPIRALWHT
-    WHT_t<double> _fut;
+    WHT_t<value_type> _fut;
 #endif
 
 };

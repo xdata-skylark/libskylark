@@ -50,14 +50,22 @@ struct QRFT_data_t : public sketch_transform_data_t {
      *
      *  @param[out] property_tree describing the sketch.
      */
-    virtual
-    boost::property_tree::ptree to_ptree() const {
+    virtual boost::property_tree::ptree to_ptree() const {
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()
               << base::error_msg(
                  "Do not yet support serialization of generic QRFT transform"));
 
         return boost::property_tree::ptree();
+    }
+
+    virtual sketch_transform_t<boost::any, boost::any> *get_transform() const {
+        SKYLARK_THROW_EXCEPTION (
+          base::sketch_exception()
+              << base::error_msg(
+                 "Trying to create concrete transform of QRFT_data_t"));
+
+        return nullptr;
     }
 
 protected:
@@ -156,8 +164,7 @@ struct GaussianQRFT_data_t :
      *
      *  @param[out] property_tree describing the sketch.
      */
-    virtual
-    boost::property_tree::ptree to_ptree() const {
+    virtual boost::property_tree::ptree to_ptree() const {
         boost::property_tree::ptree pt;
         sketch_transform_data_t::add_common(pt);
         pt.put_child("sequence", _sequence.to_ptree());
@@ -165,6 +172,11 @@ struct GaussianQRFT_data_t :
         pt.put("skip", _skip);
         return pt;
     }
+
+    /**
+     * Get a concrete sketch transform based on the data
+     */
+    virtual sketch_transform_t<boost::any, boost::any> *get_transform() const;
 
 protected:
     GaussianQRFT_data_t(int N, int S, double sigma,
@@ -242,8 +254,7 @@ struct LaplacianQRFT_data_t :
      *
      *  @param[out] property_tree describing the sketch.
      */
-    virtual
-    boost::property_tree::ptree to_ptree() const {
+    virtual boost::property_tree::ptree to_ptree() const {
         boost::property_tree::ptree pt;
         sketch_transform_data_t::add_common(pt);
         pt.put_child("sequence", _sequence.to_ptree());
@@ -251,6 +262,11 @@ struct LaplacianQRFT_data_t :
         pt.put("skip", _skip);
         return pt;
     }
+
+    /**
+     * Get a concrete sketch transform based on the data
+     */
+    virtual sketch_transform_t<boost::any, boost::any> *get_transform() const;
 
 protected:
 

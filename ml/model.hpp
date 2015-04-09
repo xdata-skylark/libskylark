@@ -156,6 +156,7 @@ struct model_t {
         } else {
             // Non-linear case
 
+
             coef_type Wslice;
             int j, start, finish, sj;
 

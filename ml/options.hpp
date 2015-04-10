@@ -73,7 +73,7 @@ struct hilbert_options_t {
     /** Randomization options */
     int seed;
     int randomfeatures;
-    bool regularmap;
+    bool usefast;
     SequenceType seqtype;
     bool cachetransforms;
 
@@ -151,18 +151,15 @@ struct hilbert_options_t {
             ("numthreads,t",
                 po::value<int>(&numthreads)->default_value(DEFAULT_THREADS),
                 "Number of Threads (default: 1)")
-            ("regular",
-                po::value<bool>(&regularmap)->default_value(true),
-                "Default is to use 'fast' feature mapping, if available."
-                "Use this flag to force regular mapping (default: false)")
+            ("usefast", "Use 'fast' feature mapping, if available."
+                "Default is to use 'regular' mapping.")
             ("usequasi,q",
                 po::value<int>((int*) &seqtype)->default_value(MONTECARLO),
                 "If possible, change the underlying sequence of samples"
                 " (0:Regular/Monte Carlo, 1:Leaped Halton)")
             ("cachetransforms",
-                po::value<bool>(&cachetransforms)->default_value(false),
-                "Default is to not cache feature transforms per iteration, but generate on fly"
-                 "Use this flag to force transform caching if you have enough memory (default: false)")
+                "Cache feature expanded data "
+                "(faster, but more memory demanding).")
             ("fileformat",
                 po::value<int>(&fileformat)->default_value(DEFAULT_FILEFORMAT),
                 "Fileformat (default: 0 (libsvm->dense), 1 (libsvm->sparse), 2 (hdf5->dense), 3 (hdf5->sparse)")
@@ -202,8 +199,12 @@ struct hilbert_options_t {
                 exit_on_return = true;
                 return;
             }
+
             po::notify(vm); // throws on error, so do after help in case
             // there are any problems
+
+            usefast = vm.count("usefast");
+            cachetransforms = vm.count("cachetransforms");
         }
         catch(po::error& e) {
             std::cerr << e.what() << std::endl;
@@ -229,7 +230,7 @@ struct hilbert_options_t {
         randomfeatures = DEFAULT_RF;
         numfeaturepartitions = DEFAULT_FEATURE_PARTITIONS;
         numthreads = DEFAULT_THREADS;
-        regularmap = true;
+        usefast = false;
         seqtype = MONTECARLO;
         fileformat = DEFAULT_FILEFORMAT;
         MAXITER = DEFAULT_MAXITER;
@@ -269,8 +270,14 @@ struct hilbert_options_t {
                 numfeaturepartitions = boost::lexical_cast<int>(value);
             if (flag == "--numthreads" || flag == "-t")
                 numthreads = boost::lexical_cast<int>(value);
-            if (flag == "--regular")
-                regularmap = value == "on";
+            if (flag == "--usefast") {
+                usefast = true;
+                i--;
+            }
+            if (flag == "--cachetransforms") {
+                cachetransforms = true;
+                i--;
+            }
             if (flag == "--useqausi" || flag == "-q")
                 seqtype =
                     static_cast<SequenceType>(boost::lexical_cast<int>(value));
@@ -332,9 +339,11 @@ struct hilbert_options_t {
         optionstring << "# rho = " << rho << std::endl;
         optionstring << "# Seed = " << seed << std::endl;
         optionstring << "# Random Features = " << randomfeatures << std::endl;
-        optionstring << "# Caching Transforms = " << cachetransforms << std::endl;
-        optionstring << "# Slow/Fast feature mapping = " << regularmap  << std::endl;
-        optionstring << "# Sequence = " << seqtype  
+        optionstring << "# Cache transforms? = "
+                     << (cachetransforms ? "True" : "False") << std::endl;
+        optionstring << "# Use fast, if availble? = "
+                     << (usefast ? "True" : "False")  << std::endl;
+        optionstring << "# Sequence = " << seqtype
                      << " (" << Sequences[seqtype] << ")" << std::endl;
         optionstring << "# Number of feature partitions = "
                      << numfeaturepartitions << std::endl;
@@ -347,4 +356,3 @@ struct hilbert_options_t {
 };
 
 #endif /* SKYLARK_HILBERT_OPTIONS_HPP */
-

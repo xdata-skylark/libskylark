@@ -319,6 +319,12 @@ The supported fileformats are described in :ref:`ml_io`.
 
 An output file named output.txt with the predicted labels is created.
 
+4. In the above, the entire test data is loaded to memory and the result is computed. This is the fast, but it is limited to cases where the test data is fixed. skylark_ml also supports an interactive (streaming) mode in which the software prompts for data line by line from stdin and outputs in prediction after each line is received. The mode is invoked by not passing either training data or testing data. An example for using this mode is the following:
+
+.. code-block:: sh
+
+         cut -d ' ' -f 1 --complement data/usps.test | ./skylark_ml --modelfile model
+
 .. note::
 
-	In testing mode, the entire test data is currently loaded in memory while ideally the model should be applied in a streaming fashion.
+	Interactive mode is much slower, since there is significant overhead that is repeated for each new line of data. In the future, batching will be supported, to avoid some of this overhead. 

@@ -155,8 +155,6 @@ struct model_t {
             base::Gemm(El::TRANSPOSE,El::NORMAL,1.0, X, _coef, 0.0, DV);
         } else {
             // Non-linear case
-
-
             coef_type Wslice;
             int j, start, finish, sj;
 

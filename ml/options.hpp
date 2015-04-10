@@ -151,7 +151,7 @@ struct hilbert_options_t {
             ("numthreads,t",
                 po::value<int>(&numthreads)->default_value(DEFAULT_THREADS),
                 "Number of Threads (default: 1)")
-            ("usefast", "Use 'fast' feature mapping, if available."
+            ("usefast", "Use 'fast' feature mapping, if available. "
                 "Default is to use 'regular' mapping.")
             ("usequasi,q",
                 po::value<int>((int*) &seqtype)->default_value(MONTECARLO),

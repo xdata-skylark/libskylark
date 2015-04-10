@@ -15,6 +15,7 @@
 #include <boost/mpi.hpp>
 #include <boost/test/minimal.hpp>
 
+#define SKYLARK_NO_ANY
 #include "../../utility/distributions.hpp"
 #include "../../base/sparse_matrix.hpp"
 #include "../../sketch/sketch.hpp"

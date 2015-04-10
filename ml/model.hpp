@@ -140,8 +140,8 @@ struct model_t {
         of.close();
     }
 
-    template<typename InputType, typename OutputType>
-    void predict(const InputType& X, OutputType& PV, OutputType& DV,
+    template<typename InputType, typename LabelType, typename DecisionType>
+    void predict(const InputType& X, LabelType& PV, DecisionType& DV,
         int num_threads = 1) const {
 
         int d = base::Height(X);
@@ -175,7 +175,7 @@ struct model_t {
                 if (_scale_maps)
                     El::Scale(sqrt(double(sj) / d), z);
 
-                OutputType o(n, k);
+                DecisionType o(n, k);
 
                 El::LockedView(Wslice, _coef, start, 0, sj, k);
                 base::Gemm(El::TRANSPOSE, El::NORMAL, 1.0, z, Wslice, o);
@@ -188,6 +188,7 @@ struct model_t {
         }
 
         double o, o1, pred;
+        PV.Resize(n, 1);
         for(int i=0; i < DV.Height(); i++) {
             o = DV.Get(i,0);
             pred = 0;

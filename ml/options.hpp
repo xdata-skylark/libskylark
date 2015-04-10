@@ -89,6 +89,7 @@ struct hilbert_options_t {
     std::string modelfile;
     std::string testfile;
     std::string valfile;
+    std::string outputfile;
     std::string str = "";
 
     /** A parameter indicating if we need to continue or not */
@@ -179,7 +180,10 @@ struct hilbert_options_t {
                 "Validation file (optional)")
             ("testfile",
                 po::value<std::string>(&testfile)->default_value(""),
-                "Test file (optional in training mode; required in testing mode)")
+                "Test file (required in testing mode)")
+            ("outputfile",
+                po::value<std::string>(&outputfile)->default_value(""),
+                "Base name for output file (will attach .txt suffix)")
             ; /* end options */
 
         po::positional_options_description positionalOptions;
@@ -283,6 +287,8 @@ struct hilbert_options_t {
                 valfile = value;
             if (flag == "--testfile")
                 testfile = value;
+            if (flag == "--outputfile")
+                outputfile = value;
         }
 #endif
 

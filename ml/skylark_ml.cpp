@@ -56,7 +56,9 @@ int main(int argc, char* argv[]) {
         if (comm.rank() == 0)
             std::cout << "Mode: Prediciting. Loading data..." << std::endl;
 
-        El::Matrix<double> DecisionValues, PredictedLabels, Y;
+        El::Matrix<double> DecisionValues, Y;
+        El::DistMatrix<El::Int, El::VC, El::STAR> PredictedLabels;
+        El::Int n;
         skylark::ml::model_t model(options.modelfile);
 
         if (sparse) {
@@ -65,18 +67,22 @@ int main(int argc, char* argv[]) {
                 model.get_input_size());
 
             El::Zeros(DecisionValues, Y.Height(), model.get_output_size());
-            El::Zeros(PredictedLabels, Y.Height(), 1);
 
-            model.predict(X, PredictedLabels, DecisionValues);
+            boost::mpi::reduce(comm, Y.Height(), n, std::plus<El::Int>(), 0);
+            PredictedLabels.Resize(n, 1);
+
+            model.predict(X, PredictedLabels.Matrix(), DecisionValues);
         } else {
             El::Matrix<double> X;
             read(comm, options.fileformat, options.testfile, X, Y,
                 model.get_input_size());
 
             El::Zeros(DecisionValues, Y.Height(), model.get_output_size());
-            El::Zeros(PredictedLabels, Y.Height(), 1);
 
-            model.predict(X, PredictedLabels, DecisionValues);
+            boost::mpi::reduce(comm, Y.Height(), n, std::plus<El::Int>(), 0);
+            PredictedLabels.Resize(n, 1);
+
+            model.predict(X, PredictedLabels.Matrix(), DecisionValues);
         }
 
         El::Int correct = skylark::ml::classification_accuracy(Y, 
@@ -84,16 +90,18 @@ int main(int argc, char* argv[]) {
         double accuracy = 0.0;
         El::Int totalcorrect, total;
         boost::mpi::reduce(comm, correct, totalcorrect, std::plus<El::Int>(), 0);
-        boost::mpi::reduce(comm, Y.Height(), total, std::plus<El::Int>(), 0);
 
         if(comm.rank() == 0) {
-            double accuracy =  totalcorrect*100.0/total;
+            double accuracy =  totalcorrect*100.0/n;
             std::cout << "Test Accuracy = " <<  accuracy << " %" << std::endl;
         }
 
+        if (!options.outputfile.empty())
+            El::Write(PredictedLabels, options.outputfile, El::ASCII);
+
         // TODO list?
         // fix logistic case
-        // provide mechanism to dump predictions
+        // option for probabilities in predicition
         // clean up evaluate
     }
 

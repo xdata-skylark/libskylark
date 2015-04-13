@@ -54,7 +54,7 @@ void ColumnView(sparse_matrix_t<T>& A, sparse_matrix_t<T>& B, int j, int width) 
     const int *indices = bindices + start;
     T *values = bvalues + start;
 
-    A.attach(indptr, indices, values, indptr[width], A.height(), width,
+    A.attach(indptr, indices, values, indptr[width], B.height(), width,
         true, false, false);
 }
 

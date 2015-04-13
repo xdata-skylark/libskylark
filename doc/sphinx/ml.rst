@@ -80,6 +80,7 @@ Example and Commandline Usage
 Please see :ref:`ml_example`
 
 ::
+
    Usage: skylark_ml [options] --trainfile trainfile --modelfile modelfile
    Usage: skylark_ml --modelfile modelfile --testfile testfile :
      -h [ --help ]                         produce a help message
@@ -186,6 +187,7 @@ Time-Dependent Personalized PageRank
 The community detection algorithm is based on a localized solution of 
 a Time-Dependent Personlized PageRank diffusion problem. See the 
 paper for details:
+
  * | H. Avron and L. Horesh
    | Community Detection Using Time-Dependent Personalized PageRank
 

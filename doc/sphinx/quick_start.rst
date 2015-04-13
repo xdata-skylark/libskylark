@@ -328,3 +328,14 @@ An output file named output.txt with the predicted labels is created.
 .. note::
 
 	Interactive mode is much slower, since there is significant overhead that is repeated for each new line of data. In the future, batching will be supported, to avoid some of this overhead. 
+
+5. It is also possible to load the model in Python and do predictions. Here is an example:
+
+.. code-block:: python
+
+         import skylark.io, skylark.ml.modeling
+         model = skylark.ml.modeling.LinearizedKernelModel('model')
+         testfile = skylark.io.libsvm('data/usps.test')
+         Xt, Yt = testfile.read(model.get_input_dimension())
+         Yp = model.predict(Xt)
+

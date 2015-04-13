@@ -9,6 +9,7 @@
 #include <CombBLAS.h>
 #include <SpParMat.h>
 
+#define SKYLARK_NO_ANY
 #include <skylark.hpp>
 
 #include "../../base/Gemm.hpp"

@@ -63,7 +63,7 @@ BlockADMMSolver<InputType>* GetSolver(skylark::base::context_t& context,
 
     case GAUSSIAN:
         features = options.randomfeatures;
-        if (options.regularmap)
+        if (!options.usefast)
             if (options.seqtype == LEAPED_HALTON)
                 Solver =
                     new BlockADMMSolver<InputType>(context,
@@ -115,7 +115,7 @@ BlockADMMSolver<InputType>* GetSolver(skylark::base::context_t& context,
 
     case MATERN:
         features = options.randomfeatures;
-        if (options.regularmap)
+        if (!options.usefast)
             Solver =
                 new BlockADMMSolver<InputType>(context,
                     loss,

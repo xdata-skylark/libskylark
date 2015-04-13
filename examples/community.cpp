@@ -4,6 +4,8 @@
 #include <boost/mpi.hpp>
 #include <boost/format.hpp>
 #include <boost/program_options.hpp>
+
+#define SKYLARK_NO_ANY
 #include <skylark.hpp>
 
 namespace bmpi =  boost::mpi;

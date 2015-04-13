@@ -5,6 +5,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
+#define SKYLARK_NO_ANY
 //#include "../../sketch/CT.hpp"
 //#include "../../sketch/CWT.hpp"
 #include "../../sketch/sketch.hpp"

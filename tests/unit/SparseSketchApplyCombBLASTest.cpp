@@ -18,6 +18,7 @@
 //FIXME: ugly
 #define SKYLARK_SKETCH_HPP 1
 
+#define SKYLARK_NO_ANY
 #include "../../base/context.hpp"
 #include "../../utility/distributions.hpp"
 #include "../../sketch/hash_transform.hpp"

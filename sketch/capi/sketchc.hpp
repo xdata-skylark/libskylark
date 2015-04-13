@@ -5,6 +5,8 @@
 #include "config.h"
 #include "../../utility/distributions.hpp"
 
+// TODO for now... but we can use the any,any to implement c-api
+#define SKYLARK_NO_ANY
 #include "../sketch.hpp"
 #include "../../base/context.hpp"
 

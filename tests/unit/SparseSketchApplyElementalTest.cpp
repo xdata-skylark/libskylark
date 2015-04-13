@@ -14,6 +14,7 @@
 
 #include <El.hpp>
 
+#define SKYLARK_NO_ANY
 #include "../../utility/distributions.hpp"
 #include "../../sketch/sketch.hpp"
 

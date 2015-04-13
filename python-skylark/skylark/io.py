@@ -562,7 +562,7 @@ class libsvm(object):
             yield labels, indices, features, values
         f.close()
 
-    def read(self):
+    def read(self, num_features=0):
         '''
         Read the (features matrix, labels vector) pair from a libsvm file.
 
@@ -580,7 +580,7 @@ class libsvm(object):
         '''
 
         vectors = self.read_vectors()
-        matrices = self.vectors_to_matrices(vectors)
+        matrices = self.vectors_to_matrices(vectors, num_features)
         return matrices
 
 

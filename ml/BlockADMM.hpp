@@ -510,7 +510,7 @@ skylark::ml::model_t* BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y, T& Xv,
                El::Int totalcorrect, total;
                boost::mpi::reduce(comm, correct, totalcorrect,
                    std::plus<El::Int>(), 0);
-               boost::mpi::reduce(comm, Y.Height(), total,
+               boost::mpi::reduce(comm, Yv.Height(), total,
                    std::plus<El::Int>(), 0);
 
                if(comm.rank() == 0)

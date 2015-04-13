@@ -14,8 +14,11 @@
 
 #include <boost/mpi.hpp>
 #include <El.hpp>
-#include <skylark.hpp>
 #include <iostream>
+
+#define SKYLARK_NO_ANY
+#include <skylark.hpp>
+
 
 
 /** Aliases */

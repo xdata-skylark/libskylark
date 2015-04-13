@@ -7,6 +7,8 @@
 
 #include <El.hpp>
 #include <boost/mpi.hpp>
+
+#define SKYLARK_NO_ANY
 #include <skylark.hpp>
 
 #include "utilities.hpp"

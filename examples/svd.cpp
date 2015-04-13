@@ -4,6 +4,8 @@
 #include <El.hpp>
 #include <boost/mpi.hpp>
 #include <boost/format.hpp>
+
+#define SKYLARK_NO_ANY
 #include <skylark.hpp>
 
 namespace bpo = boost::program_options;

@@ -130,6 +130,13 @@ typedef El::DistMatrix<float, El::STAR, El::VR> dist_matrix_star_vr_t;
 
 }
 
+#ifdef SKYLARK_NO_ANY
+
+#define SKYLARK_SKETCH_ANY_APPLY_DISPATCH(I, O, C)
+#define SKYLARK_SKETCH_ANY_APPLY_DISPATCH_QMC(I, O, C)
+
+#else
+
 #define SKYLARK_SKETCH_ANY_APPLY_DISPATCH(I, O, C)                      \
     if (sketch_of_A.type() == typeid(O*))  {                            \
         if (A.type() == typeid(I*)) {                                   \
@@ -161,6 +168,8 @@ typedef El::DistMatrix<float, El::STAR, El::VR> dist_matrix_star_vr_t;
             return;                                                     \
         }                                                               \
     }
+
+#endif
 
 } } /** namespace skylark::sketch */
 

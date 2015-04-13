@@ -1,9 +1,10 @@
 #include <boost/mpi.hpp>
 #include <El.hpp>
-#include <skylark.hpp>
 #include <iostream>
 #include <boost/test/minimal.hpp>
 
+#define SKYLARK_NO_ANY
+#include <skylark.hpp>
 
 #include "test_utils.hpp"
 

@@ -15,15 +15,16 @@
 #include <boost/mpi.hpp>
 #include <boost/test/minimal.hpp>
 
-//FIXME: ugly
+//FIXME: ugly, fix header problem!
 #define SKYLARK_SKETCH_HPP 1
 
 #define SKYLARK_NO_ANY
+#include "El.hpp"
+#include "../../base/sparse_matrix.hpp"
+
 #include "../../base/context.hpp"
 #include "../../utility/distributions.hpp"
 #include "../../sketch/hash_transform.hpp"
-
-#include "../../base/sparse_matrix.hpp"
 
 typedef FullyDistVec<size_t, double> mpi_vector_t;
 typedef SpDCCols<size_t, double> col_t;

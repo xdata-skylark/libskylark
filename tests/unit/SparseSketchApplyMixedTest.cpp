@@ -19,11 +19,12 @@
 #define SKYLARK_SKETCH_HPP 1
 
 #define SKYLARK_NO_ANY
+#include "El.hpp"
+#include "../../base/sparse_matrix.hpp"
+
 #include "../../utility/distributions.hpp"
 #include "../../base/context.hpp"
 #include "../../sketch/hash_transform.hpp"
-
-#include "../../base/sparse_matrix.hpp"
 
 #include "../../utility/external/combblas_comm_grid.hpp"
 

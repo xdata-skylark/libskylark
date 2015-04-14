@@ -1179,25 +1179,13 @@ make install
 <span class="gd">-find_package (MPI REQUIRED)</span>
 <span class="gi">+find_package (MPI)</span>
 set (CMAKE_CXX_COMPILER ${MPI_COMPILER})
-
-# 2. Find Boost with the relevant packages --- Use dynamic boost!
-<span class="gu">@@ -169,6 +172,11 @@ if (BOOST_ROOT)</span>
-set(Boost_NO_BOOST_CMAKE ON)
-endif (BOOST_ROOT)
-
-<span class="gi">+if (BOOST_STATIC)</span>
-<span class="gi">+  set(Boost_USE_STATIC_LIBS ON)</span>
-<span class="gi">+endif (BOOST_STATIC)</span>
-<span class="gi">+</span>
-<span class="gi">+</span>
-set(BOOST_MIN_VERSION 1.53.0)
-find_package (Boost REQUIRED mpi program_options serialization)
-if (Boost_FOUND)
 </pre></div>
 </div>
 <p>and compile:</p>
 <div class="highlight-sh"><div class="highlight"><pre>rm CMakeCache.txt
 rm -rf CMakeFiles
+
+<span class="nb">export </span><span class="nv">CLANG_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/bgclang/
 
 <span class="nb">export </span><span class="nv">FFTW_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/local/fftw-3.3.3/
 <span class="nb">export </span><span class="nv">HDF5_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/local
@@ -1231,6 +1219,22 @@ project (SKYLARK)
 <span class="gi">+</span>
 set (SKYLARK_VERSION_MAJOR 0)
 set (SKYLARK_VERSION_MINOR 1)
+</pre></div>
+</div>
+<p>For compiling the Async you need the following patch (the OpenMP statement
+seems to crash the clang):</p>
+<div class="highlight-diff"><div class="highlight"><pre><span class="gh">diff --git a/algorithms/asynch/AsyRGS.hpp b/algorithms/asynch/AsyRGS.hpp</span>
+<span class="gh">index 92158f1..5eadf94 100644</span>
+<span class="gd">--- a/algorithms/asynch/AsyRGS.hpp</span>
+<span class="gi">+++ b/algorithms/asynch/AsyRGS.hpp</span>
+<span class="gu">@@ -180,7 +180,7 @@ int AsyRGS(const base::sparse_matrix_t&lt;T1&gt;&amp; A, const El::Matrix&lt;T2&gt;&amp; B,</span>
+             utility::random_samples_array_t&lt;dtype&gt; stepidxs =
+                 context.allocate_random_samples_array(sweeps * n, distribution);
+
+<span class="gd">-#           pragma omp parallel for default(shared) private(j, d)</span>
+<span class="gi">+//#           pragma omp parallel for default(shared) private(j, d)</span>
+             for(j = 0; j &lt; sweeps * n ; j++)
+                 internal::jstep(colptr, rowind, vals, Bd, Xd, k, d, stepidxs[j]);
 </pre></div>
 </div>
 </div>

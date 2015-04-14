@@ -33,17 +33,20 @@ class LinearizedKernelModel:
         d = X.shape[1]
         D = numpy.zeros((n, self._k))
         end = 0
-        for S in self._maps:
-            sj = S.getsketchdim()
-            start = end
-            end = start + sj
-            
-            Z = numpy.zeros((X.shape[0], sj))
-            S.apply(X, Z, 'rowwise')
-            Wv = self._W[start:end, :]
-            if self._scale_maps:
-                D = D + math.sqrt(float(sj) / d) * scipy.dot(Z, Wv)
-            else:
-                D = D + scipy.dot(Z, Wv)
+        if self._maps == []:
+            D = X.dot(self._W)
+        else:
+            for S in self._maps:
+                sj = S.getsketchdim()
+                start = end
+                end = start + sj
+                
+                Z = numpy.zeros((X.shape[0], sj))
+                S.apply(X, Z, 'rowwise')
+                Wv = self._W[start:end, :]
+                if self._scale_maps:
+                    D = D + math.sqrt(float(sj) / d) * scipy.dot(Z, Wv)
+                else:
+                    D = D + scipy.dot(Z, Wv)
 
         return D.argmax(axis = 1)

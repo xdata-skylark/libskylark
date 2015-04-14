@@ -15,10 +15,7 @@ inline void Copy(const El::Matrix<T>& A, El::Matrix<T>& B) {
  */
 template<typename T>
 inline void DenseCopy(const sparse_matrix_t<T>& A, El::Matrix<T>& B) {
-    if (B.Height() != A.height() || B.Width() != A.width())
-        B.Resize(A.height(), A.width());
-
-    El::Zero(B);
+    El::Zeros(B, A.height(), A.width());
 
     const int *indptr = A.indptr();
     const int *indices = A.indices();
@@ -35,6 +32,31 @@ template<typename T>
 inline void DenseCopy(const El::Matrix<T>& A, El::Matrix<T>& B) {
     El::Copy(A, B);
 }
+
+template<typename T>
+inline void DenseSubmatrixCopy(const El::Matrix<T>& A, El::Matrix<T> &B,
+    El::Int i, El::Int j, El::Int height, El::Int width) {
+
+    El::Matrix<T> Av = El::View(const_cast<El::Matrix<T>&>(A), i, j,
+        height, width);
+    El::Copy(Av, B);
+}
+
+template<typename T>
+inline void DenseSubmatrixCopy(const sparse_matrix_t<T>& A, El::Matrix<T> &B,
+    El::Int i, El::Int j, El::Int height, El::Int width) {
+
+    El::Zeros(B, height, width);
+
+    const int *indptr = A.indptr();
+    const int *indices = A.indices();
+    const T *values = A.locked_values();
+    for(int col = j; col < j + width; col++)
+        for(int idx = indptr[col]; idx < indptr[col + 1]; idx++)
+            if (indices[idx] >= i && indices[idx] < i + height)
+                B.Set(indices[idx] - i, col - j, values[idx]);
+}
+
 
 } } // namespace skylark::base
 

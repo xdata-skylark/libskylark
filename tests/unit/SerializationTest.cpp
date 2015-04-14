@@ -6,14 +6,7 @@
 #include <boost/property_tree/json_parser.hpp>
 
 #define SKYLARK_NO_ANY
-//#include "../../sketch/CT.hpp"
-//#include "../../sketch/CWT.hpp"
 #include "../../sketch/sketch.hpp"
-
-// TODO: Are these includes really needed?
-#include <skylark.hpp>
-#include "../../sketch/CT.hpp"
-#include "../../sketch/CWT.hpp"
 
 #include "../../base/context.hpp"
 

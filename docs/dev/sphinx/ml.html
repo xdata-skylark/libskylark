@@ -62,8 +62,9 @@
 <p>The following kernels are supported:</p>
 <blockquote>
 <div><ul class="simple">
-<li>Gaussian and Laplacian Kernels via Random Fourier Transform (<a class="reference external" href="http://www.eecs.berkeley.edu/~brecht/papers/07.rah.rec.nips.pdf">Rahimi and Recht, 2007</a>)</li>
-<li>Gaussian and Laplacian Kernels via Fast Random Fourier Transform (<a class="reference external" href="http://jmlr.org/proceedings/papers/v28/le13.html">Le, Sarlos and Smola, 2013</a>)</li>
+<li>Gaussian, Laplacian and Matern Kernels via Random Fourier Transform (<a class="reference external" href="http://www.eecs.berkeley.edu/~brecht/papers/07.rah.rec.nips.pdf">Rahimi and Recht, 2007</a>)</li>
+<li>Gaussian and Matern Kernels via Fast Random Fourier Transform (<a class="reference external" href="http://jmlr.org/proceedings/papers/v28/le13.html">Le, Sarlos and Smola, 2013</a>)</li>
+<li>Gaussian and Matern Kernels via Quasi Random Fourier Transform (<a class="reference external" href="http://jmlr.org/proceedings/papers/v32/yangb14.pdf">Yang et al, 2014</a>)</li>
 <li>Polynomial Kernels via Tensor Sketch (<a class="reference external" href="http://www.itu.dk/people/ndap/TensorSketch.pdf">Pahm and Pagh, 2013</a>)</li>
 <li>Exponential Semigroup Kernels via Random Laplace Transform (<a class="reference external" href="http://vikas.sindhwani.org/RandomLaplace.pdf">Yang et al, 2014</a>)</li>
 </ul>
@@ -129,21 +130,21 @@ sparse format.</p>
 <a class="reference internal image-reference" href="_images/hdfview_screenshot.png"><img alt="_images/hdfview_screenshot.png" class="align-center" src="_images/hdfview_screenshot.png" style="width: 750px;" /></a>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">For all fileformats described above, the current implementation is geared towards classification problems and requires the label to assume values from 0 to (K-1) for a K-class problem, or +1/-1 for binary classification problems. This assumption will be relaxed.</p>
+<p class="last">For all fileformats described above, the current implementation is geared towards classification problems and requires the label to assume values from 0 to (K-1) for a K-class problem, or +1/-1 for binary classification problems. This assumption will be relaxed in the future</p>
 </div>
 </div>
 <div class="section" id="example-and-commandline-usage">
 <h3>Example and Commandline Usage<a class="headerlink" href="#example-and-commandline-usage" title="Permalink to this headline">¶</a></h3>
 <p>Please see <a class="reference internal" href="quick_start.html#ml-example"><em>ML</em></a></p>
-<div class="highlight-python"><div class="highlight"><pre>Training mode usage: skylark_ml [options] --trainfile trainfile --modelfile modelfile
-Testing mode usage: skylark_ml --modelfile modelfile --testfile testfile
+<div class="highlight-python"><div class="highlight"><pre>Usage: skylark_ml [options] --trainfile trainfile --modelfile modelfile
+Usage: skylark_ml --modelfile modelfile --testfile testfile :
   -h [ --help ]                         produce a help message
-  -l [ --lossfunction ] arg (=0)        Loss function (0:SQUARED (L2), 1:LAD
-                                        (L1), 2:HINGE, 3:LOGISTIC)
+  -l [ --lossfunction ] arg (=0)        Loss function (0:SQUARED, 1:LAD,
+                                        2:HINGE, 3:LOGISTIC)
   -r [ --regularizer ] arg (=0)         Regularizer (0:L2, 1:L1)
-  -k [ --kernel ] arg (=0)              Kernel (1:GAUSSIAN,
+  -k [ --kernel ] arg (=0)              Kernel (0:LINEAR, 1:GAUSSIAN,
                                         2:POLYNOMIAL, 3:LAPLACIAN,
-                                        4:EXPSEMIGROUP)
+                                        4:EXPSEMIGROUP, 5:MATERN)
   -g [ --kernelparam ] arg (=1)         Kernel Parameter
   -x [ --kernelparam2 ] arg (=0)        If Applicable - Second Kernel Parameter
                                         (Polynomial Kernel: c)
@@ -159,31 +160,32 @@ Testing mode usage: skylark_ml --modelfile modelfile --testfile testfile
                                         Number of Feature Partitions (default:
                                         1)
   -t [ --numthreads ] arg (=1)          Number of Threads (default: 1)
-  --regular arg (=1)                    Default is to use &#39;fast&#39; feature
-                                        mapping, if available.Use this flag to
-                                        force regular mapping (default: false)
-  --cachetransforms arg (=0)            Default is to not cache feature
-                                        transforms per iteration, but generate
-                                        on fly. Use this flag to force
-                                        transform caching if you have enough
-                                        memory (default: false)
+  --usefast                             Use &#39;fast&#39; feature mapping, if
+                                        available. Default is to use &#39;regular&#39;
+                                        mapping.
+  -q [ --usequasi ] arg (=0)            If possible, change the underlying
+                                        sequence of samples (0:Regular/Monte
+                                        Carlo, 1:Leaped Halton)
+  --cachetransforms                     Cache feature expanded data (faster,
+                                        but more memory demanding).
   --fileformat arg (=0)                 Fileformat (default: 0 (libsvm-&gt;dense),
                                         1 (libsvm-&gt;sparse), 2 (hdf5-&gt;dense), 3
                                         (hdf5-&gt;sparse)
-  -i [ --MAXITER ] arg (=100)           Maximum Number of Iterations (default:
-                                        100)
+  -i [ --MAXITER ] arg (=20)            Maximum Number of Iterations (default:
+                                        10)
   --trainfile arg                       Training data file (required in
                                         training mode)
   --modelfile arg                       Model output file
   --valfile arg                         Validation file (optional)
-  --testfile arg                        Test file (optional in training mode;
-                                        required in testing mode)
+  --testfile arg                        Test file (required in testing mode)
+  --outputfile arg                      Base name for output file (will attach
+                                        .txt suffix)
 </pre></div>
 </div>
 </div>
 <div class="section" id="library-usage">
 <h3>Library Usage<a class="headerlink" href="#library-usage" title="Permalink to this headline">¶</a></h3>
-<p>To be documented (please see <code class="docutils literal"><span class="pre">ml/run.hpp</span></code> for a driver program).</p>
+<p>To be documented (please see <code class="docutils literal"><span class="pre">ml/skylark_ml.cpp</span></code> for a driver program).</p>
 </div>
 </div>
 <div class="section" id="local-graph-computations">

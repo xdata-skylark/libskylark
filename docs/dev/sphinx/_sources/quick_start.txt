@@ -276,11 +276,11 @@ For an example of `sketch-and-solve` regression in Python, run:
 SVD
 ----
 
-In :file:`${SKYLARK_SRC_DIR}/examples/rand_svd.cpp` an example is provided that illustrates randomized singular value decompositions.
+In :file:`${SKYLARK_SRC_DIR}/examples/svd.cpp` an example is provided that illustrates randomized singular value decompositions.
 
-.. literalinclude:: ../../examples/rand_svd.cpp
+.. literalinclude:: ../../examples/svd.cpp
     :language: cpp
-    :emphasize-lines: 79,81-82
+    :emphasize-lines: 40
     :linenos:
 
 .. _ml_example:
@@ -288,7 +288,7 @@ In :file:`${SKYLARK_SRC_DIR}/examples/rand_svd.cpp` an example is provided that 
 ML
 ---
 
-In :file:`${SKYLARK_SRC_DIR}/ml/train.cpp` and :file:`${SKYLARK_SRC_DIR}/ml/run.hpp`, an ADMM-based solver is
+In :file:`${SKYLARK_SRC_DIR}/ml/skylark_ml.cpp`, an ADMM-based solver is
 setup to train and predict with a randomized kernel based model for
 nonlinear classification and regression problems.
 
@@ -311,12 +311,31 @@ The supported fileformats are described in :ref:`ml_io`.
 
         mpiexec -np 4 ./skylark_ml -g 10 -k 1 -l 2 -i 20 --trainfile data/usps.train --valfile data/usps.test --modelfile model
 
-3. Test accuracy of the generated model
+3. Test accuracy of the generated model and generate predictions
 
 .. code-block:: sh
 
-        mpiexec -np 4 ./skylark_ml --testfile data/usps.test --modelfile model
+        mpiexec -np 4 ./skylark_ml --outputfile output --testfile data/usps.test --modelfile model
+
+An output file named output.txt with the predicted labels is created.
+
+4. In the above, the entire test data is loaded to memory and the result is computed. This is the fast, but it is limited to cases where the test data is fixed. skylark_ml also supports an interactive (streaming) mode in which the software prompts for data line by line from stdin and outputs in prediction after each line is received. The mode is invoked by not passing either training data or testing data. An example for using this mode is the following:
+
+.. code-block:: sh
+
+         cut -d ' ' -f 1 --complement data/usps.test | ./skylark_ml --modelfile model
 
 .. note::
 
-	In testing mode, the entire test data is currently loaded in memory while ideally the model should be applied in a streaming fashion. A separate file containing predictions is currently not generated. These restrictions will be relaxed.
+	Interactive mode is much slower, since there is significant overhead that is repeated for each new line of data. In the future, batching will be supported, to avoid some of this overhead. 
+
+5. It is also possible to load the model in Python and do predictions. Here is an example:
+
+.. code-block:: python
+
+         import skylark.io, skylark.ml.modeling
+         model = skylark.ml.modeling.LinearizedKernelModel('model')
+         testfile = skylark.io.libsvm('data/usps.test')
+         Xt, Yt = testfile.read(model.get_input_dimension())
+         Yp = model.predict(Xt)
+

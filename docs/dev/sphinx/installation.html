@@ -1199,9 +1199,6 @@ if (Boost_FOUND)
 <div class="highlight-sh"><div class="highlight"><pre>rm CMakeCache.txt
 rm -rf CMakeFiles
 
-<span class="nb">export </span><span class="nv">BLAS_LIBRARIES</span><span class="o">=</span><span class="s2">&quot;/opt/ibmmath/lib64/libesslsmpbg.a;/opt/ibmcmp/xlf/bg/14.1/lib64/libxlfmath.a;/opt/ibmcmp/xlf/bg/14.1/lib64/libxlf90_r.a;/opt/ibmcmp/xlsmp/bg/3.1/bglib64/libxlsmp.a&quot;</span>
-<span class="nb">export </span><span class="nv">LAPACK_LIBRARIES</span><span class="o">=</span><span class="s2">&quot;/opt/ibmmath/lib64/libesslsmpbg.a;/opt/ibmcmp/xlf/bg/14.1/lib64/libxlfmath.a;/opt/ibmcmp/xlf/bg/14.1/lib64/libxlf90_r.a;/opt/ibmcmp/xlsmp/bg/3.1/bglib64/libxlsmp.a;/opt/ibmcmp/xlf/bg/14.1/bglib64/libxl.a;-Wl,--allow-multiple-definition&quot;</span>
-
 <span class="nb">export </span><span class="nv">FFTW_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/local/fftw-3.3.3/
 <span class="nb">export </span><span class="nv">HDF5_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/local
 <span class="nb">export </span><span class="nv">ELEMENTAL_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/local
@@ -1209,10 +1206,9 @@ rm -rf CMakeFiles
 <span class="nb">export </span><span class="nv">RANDOM123_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/local/Random123-1.08
 <span class="nb">export </span><span class="nv">BOOST_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/local/boost_1_53_0
 
-<span class="nv">CC</span><span class="o">=</span><span class="nv">$HOME</span>/bgclang/mpi/bgclang/bin/mpiclang <span class="se">\</span>
-<span class="nv">CXX</span><span class="o">=</span><span class="nv">$HOME</span>/bgclang/mpi/bgclang/bin/mpiclang++11 <span class="se">\</span>
-cmake -DUSE_FFTW<span class="o">=</span>ON -DUSE_COMBBLAS<span class="o">=</span>ON -DBUILD_PYTHON<span class="o">=</span>OFF -DUSE_HYBRID<span class="o">=</span>ON <span class="se">\</span>
--DBOOST_STATIC<span class="o">=</span>ON ../
+cmake -DCMAKE_TOOLCHAIN_FILE<span class="o">=</span>../cmake/toolchains/BGQ-clang-essl.cmake <span class="se">\</span>
+      -DUSE_FFTW<span class="o">=</span>ON -DUSE_COMBBLAS<span class="o">=</span>ON -DBUILD_PYTHON<span class="o">=</span>OFF -DUSE_HYBRID<span class="o">=</span>ON <span class="se">\</span>
+      ../
 </pre></div>
 </div>
 <div class="admonition note">

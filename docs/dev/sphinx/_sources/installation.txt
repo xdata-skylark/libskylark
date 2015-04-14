@@ -1233,9 +1233,6 @@ and compile:
     rm CMakeCache.txt
     rm -rf CMakeFiles
 
-    export BLAS_LIBRARIES="/opt/ibmmath/lib64/libesslsmpbg.a;/opt/ibmcmp/xlf/bg/14.1/lib64/libxlfmath.a;/opt/ibmcmp/xlf/bg/14.1/lib64/libxlf90_r.a;/opt/ibmcmp/xlsmp/bg/3.1/bglib64/libxlsmp.a"
-    export LAPACK_LIBRARIES="/opt/ibmmath/lib64/libesslsmpbg.a;/opt/ibmcmp/xlf/bg/14.1/lib64/libxlfmath.a;/opt/ibmcmp/xlf/bg/14.1/lib64/libxlf90_r.a;/opt/ibmcmp/xlsmp/bg/3.1/bglib64/libxlsmp.a;/opt/ibmcmp/xlf/bg/14.1/bglib64/libxl.a;-Wl,--allow-multiple-definition"
-
     export FFTW_ROOT=$HOME/local/fftw-3.3.3/
     export HDF5_ROOT=$HOME/local
     export ELEMENTAL_ROOT=$HOME/local
@@ -1243,10 +1240,9 @@ and compile:
     export RANDOM123_ROOT=$HOME/local/Random123-1.08
     export BOOST_ROOT=$HOME/local/boost_1_53_0
 
-    CC=$HOME/bgclang/mpi/bgclang/bin/mpiclang \
-    CXX=$HOME/bgclang/mpi/bgclang/bin/mpiclang++11 \
-    cmake -DUSE_FFTW=ON -DUSE_COMBBLAS=ON -DBUILD_PYTHON=OFF -DUSE_HYBRID=ON \
-    -DBOOST_STATIC=ON ../
+    cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/BGQ-clang-essl.cmake \
+          -DUSE_FFTW=ON -DUSE_COMBBLAS=ON -DBUILD_PYTHON=OFF -DUSE_HYBRID=ON \
+          ../
 
 .. note:: If you get a ``undefined reference to vtable for std::nested_exception``
           error this hints that you most likely are missing the gcc 4.7.2 toolchain

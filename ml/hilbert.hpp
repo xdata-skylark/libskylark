@@ -254,7 +254,7 @@ void LargeScaleKernelLearning(const boost::mpi::communicator& comm,
     }
 
     skylark::ml::model_t* model =
-        Solver->train(X, Y, Xv, Yv, comm);
+        Solver->train(X, Y, Xv, Yv, options.regression, comm);
 
     // TODO should be done "outside"
     if (comm.rank() == 0)

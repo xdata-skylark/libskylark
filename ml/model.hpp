@@ -58,9 +58,9 @@ struct model_t {
 
     template<typename SketchTransformType>
     model_t(std::vector<const SketchTransformType *>& maps, bool scale_maps,
-        int num_features, int num_outputs) :
+        int num_features, int num_outputs, bool regression) :
         _coef(num_features, num_outputs), _maps(maps.size()), _scale_maps(scale_maps),
-        _starts(maps.size()), _finishes(maps.size()) {
+        _regression(regression), _starts(maps.size()), _finishes(maps.size()) {
 
         // TODO verify all N dimension of the maps match
 
@@ -108,10 +108,12 @@ struct model_t {
         pt.put("num_features", _coef.Height());
         pt.put("num_outputs", _coef.Width());
         pt.put("input_size", _input_size);
+        pt.put("regression", _regression);
 
         boost::property_tree::ptree ptfmap;
         ptfmap.put("number_maps", _maps.size());
         ptfmap.put("scale_maps", _scale_maps);
+
 
         boost::property_tree::ptree ptmaps;
         for(int i = 0; i < _maps.size(); i++)
@@ -185,23 +187,24 @@ struct model_t {
             }
         }
 
-        double o, o1, pred;
-        PV.Resize(n, 1);
-        for(int i=0; i < DV.Height(); i++) {
-            o = DV.Get(i,0);
-            pred = 0;
-            if (DV.Width()==1)
-                pred = (o >= 0)? +1:-1;
+        if (!_regression) {
+            double o, o1, pred;
+            PV.Resize(n, 1);
+            for(int i=0; i < DV.Height(); i++) {
+                o = DV.Get(i,0);
+                pred = 0;
+                if (DV.Width()==1)
+                    pred = (o >= 0)? +1:-1;
 
-            for(int j=1; j < DV.Width(); j++) {
-                o1 = DV.Get(i,j);
-                if ( o1 > o) {
-                    o = o1;
-                    pred = j;
+                for(int j=1; j < DV.Width(); j++) {
+                    o1 = DV.Get(i,j);
+                    if ( o1 > o) {
+                        o = o1;
+                        pred = j;
+                    }
                 }
+                PV.Set(i,0, pred);
             }
-
-            PV.Set(i,0, pred);
         }
     }
 
@@ -209,6 +212,8 @@ struct model_t {
 
     int get_output_size() const { return _coef.Width(); }
     int get_input_size() const { return _input_size; }
+
+    bool is_regression() const { return _regression; }
 
 protected:
 
@@ -218,6 +223,7 @@ protected:
         _coef.Resize(num_features, num_outputs);
 
         _input_size = pt.get<int>("input_size");
+        _regression = pt.get<bool>("regression");
 
         int num_maps = pt.get<int>("feature_mapping.number_maps");
         _maps.resize(num_maps);
@@ -259,6 +265,7 @@ private:
     El::Int _input_size, _output_size;
     std::vector<const feature_transform_type *> _maps; // TODO use shared_ptr
     bool _scale_maps;
+    bool _regression;
 
     std::vector<int> _starts, _finishes;
 };

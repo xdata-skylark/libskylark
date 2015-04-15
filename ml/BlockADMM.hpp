@@ -80,7 +80,7 @@ public:
 
     skylark::ml::model_t* train(T& X,
         LocalMatrixType& Y, T& Xv, LocalMatrixType& Yv,
-        const boost::mpi::communicator& comm);
+        bool regression, const boost::mpi::communicator& comm);
 
     int get_numfeatures() {return NumFeatures;}
 
@@ -289,7 +289,7 @@ void GetSlice(skylark::base::sparse_matrix_t<T> &X, El::Matrix<T> &Z,
 template <class T>
 skylark::ml::model_t* BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y,
     T& Xv, LocalMatrixType& Yv,
-    const boost::mpi::communicator& comm) {
+    bool regression, const boost::mpi::communicator& comm) {
 
     int rank = comm.rank();
     int size = comm.size();
@@ -298,11 +298,11 @@ skylark::ml::model_t* BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y,
 
     int ni = skylark::base::Width(X);
     int d = skylark::base::Height(X);
-    int targets = GetNumTargets(comm, Y);
+    int targets = regression ? 1 : GetNumTargets(comm, Y);
 
     skylark::ml::model_t* model =
         new skylark::ml::model_t(featureMaps,
-            ScaleFeatureMaps, NumFeatures, targets);
+            ScaleFeatureMaps, NumFeatures, targets, regression);
 
     El::Matrix<double> Wbar;
     El::View(Wbar, model->get_coef());
@@ -511,15 +511,29 @@ skylark::ml::model_t* BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y,
             El::Zero(Yp_labels);
             model->predict(Xv, Yp_labels, Yp, NumThreads);
 
-            El::Int correct = skylark::ml::classification_accuracy(Yv, Yp);
-            El::Int totalcorrect, total;
-            boost::mpi::reduce(comm, correct, totalcorrect,
-                std::plus<El::Int>(), 0);
-            boost::mpi::reduce(comm, Yv.Height(), total,
-                std::plus<El::Int>(), 0);
+            if (regression) {
+                El::Axpy(-1.0, Yv, Yp);
+                double localerr = std::pow(El::Nrm2(Yp), 2);
+                double localnrm = std::pow(El::Nrm2(Yv), 2);
+                double err, nrm;
+                boost::mpi::reduce(comm, localerr, err,
+                    std::plus<double>(), 0);
+                boost::mpi::reduce(comm, localnrm, nrm,
+                    std::plus<double>(), 0);
 
-            if(comm.rank() == 0)
-                accuracy =  totalcorrect * 100.0 / total;
+                if (comm.rank() == 0)
+                    accuracy = std::sqrt(err / nrm);
+            } else {
+                El::Int correct = skylark::ml::classification_accuracy(Yv, Yp);
+                El::Int totalcorrect, total;
+                boost::mpi::reduce(comm, correct, totalcorrect,
+                    std::plus<El::Int>(), 0);
+                boost::mpi::reduce(comm, Yv.Height(), total,
+                    std::plus<El::Int>(), 0);
+
+                if(comm.rank() == 0)
+                    accuracy =  totalcorrect * 100.0 / total;
+            }
         }
         SKYLARK_TIMER_ACCUMULATE(PREDICTION_PROFILE);
 

@@ -69,10 +69,6 @@ Examples of such files can be downloaded from `here <http://vikas.sindhwani.org/
     :align: center
 
 
-.. note:: 
-
-	For all fileformats described above, the current implementation is geared towards classification problems and requires the label to assume values from 0 to (K-1) for a K-class problem, or +1/-1 for binary classification problems. This assumption will be relaxed in the future
-
 
 Example and Commandline Usage
 -----------------------------
@@ -105,6 +101,8 @@ Please see :ref:`ml_example`
                                            Number of Feature Partitions (default: 
                                            1)
      -t [ --numthreads ] arg (=1)          Number of Threads (default: 1)
+     --regression                          Build a regression model(default is 
+                                           classification).
      --usefast                             Use 'fast' feature mapping, if 
                                            available. Default is to use 'regular' 
                                            mapping.

@@ -1212,19 +1212,6 @@ Finally we can turn to building libSkylark. First change the CMake file:
     +find_package (MPI)
     set (CMAKE_CXX_COMPILER ${MPI_COMPILER})
 
-    # 2. Find Boost with the relevant packages --- Use dynamic boost!
-    @@ -169,6 +172,11 @@ if (BOOST_ROOT)
-    set(Boost_NO_BOOST_CMAKE ON)
-    endif (BOOST_ROOT)
-
-    +if (BOOST_STATIC)
-    +  set(Boost_USE_STATIC_LIBS ON)
-    +endif (BOOST_STATIC)
-    +
-    +
-    set(BOOST_MIN_VERSION 1.53.0)
-    find_package (Boost REQUIRED mpi program_options serialization)
-    if (Boost_FOUND)
 
 and compile:
 
@@ -1233,8 +1220,7 @@ and compile:
     rm CMakeCache.txt
     rm -rf CMakeFiles
 
-    export BLAS_LIBRARIES="/opt/ibmmath/lib64/libesslsmpbg.a;/opt/ibmcmp/xlf/bg/14.1/lib64/libxlfmath.a;/opt/ibmcmp/xlf/bg/14.1/lib64/libxlf90_r.a;/opt/ibmcmp/xlsmp/bg/3.1/bglib64/libxlsmp.a"
-    export LAPACK_LIBRARIES="/opt/ibmmath/lib64/libesslsmpbg.a;/opt/ibmcmp/xlf/bg/14.1/lib64/libxlfmath.a;/opt/ibmcmp/xlf/bg/14.1/lib64/libxlf90_r.a;/opt/ibmcmp/xlsmp/bg/3.1/bglib64/libxlsmp.a;/opt/ibmcmp/xlf/bg/14.1/bglib64/libxl.a;-Wl,--allow-multiple-definition"
+    export CLANG_ROOT=$HOME/bgclang/
 
     export FFTW_ROOT=$HOME/local/fftw-3.3.3/
     export HDF5_ROOT=$HOME/local
@@ -1243,10 +1229,9 @@ and compile:
     export RANDOM123_ROOT=$HOME/local/Random123-1.08
     export BOOST_ROOT=$HOME/local/boost_1_53_0
 
-    CC=$HOME/bgclang/mpi/bgclang/bin/mpiclang \
-    CXX=$HOME/bgclang/mpi/bgclang/bin/mpiclang++11 \
-    cmake -DUSE_FFTW=ON -DUSE_COMBBLAS=ON -DBUILD_PYTHON=OFF -DUSE_HYBRID=ON \
-    -DBOOST_STATIC=ON ../
+    cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/BGQ-clang-essl.cmake \
+          -DUSE_FFTW=ON -DUSE_COMBBLAS=ON -DBUILD_PYTHON=OFF -DUSE_HYBRID=ON \
+          ../
 
 .. note:: If you get a ``undefined reference to vtable for std::nested_exception``
           error this hints that you most likely are missing the gcc 4.7.2 toolchain
@@ -1270,6 +1255,26 @@ In order to be abl to compile skylark_ml apply the following patch:
     +
     set (SKYLARK_VERSION_MAJOR 0)
     set (SKYLARK_VERSION_MINOR 1)
+
+
+For compiling the Async you need the following patch (the OpenMP statement
+seems to crash the clang):
+
+.. code-block:: diff
+
+    diff --git a/algorithms/asynch/AsyRGS.hpp b/algorithms/asynch/AsyRGS.hpp
+    index 92158f1..5eadf94 100644
+    --- a/algorithms/asynch/AsyRGS.hpp
+    +++ b/algorithms/asynch/AsyRGS.hpp
+    @@ -180,7 +180,7 @@ int AsyRGS(const base::sparse_matrix_t<T1>& A, const El::Matrix<T2>& B,
+                 utility::random_samples_array_t<dtype> stepidxs =
+                     context.allocate_random_samples_array(sweeps * n, distribution);
+
+    -#           pragma omp parallel for default(shared) private(j, d)
+    +//#           pragma omp parallel for default(shared) private(j, d)
+                 for(j = 0; j < sweeps * n ; j++)
+                     internal::jstep(colptr, rowind, vals, Bd, Xd, k, d, stepidxs[j]);
+
 
 
 SLURM

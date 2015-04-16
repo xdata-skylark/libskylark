@@ -148,10 +148,14 @@ BlockADMMSolver<T>::BlockADMMSolver(
     this->regularizer = const_cast<regularization *> (regularizer);
     this->lambda = lambda;
     this->NumFeaturePartitions = NumFeaturePartitions;
-    int blksize = int(ceil(double(NumFeatures) / NumFeaturePartitions));
+    int cstart = 0, nf = NumFeatures, np = NumFeaturePartitions;
     for(int i = 0; i < NumFeaturePartitions; i++) {
-        starts[i] = i * blksize;
-        finishes[i] = std::min((i + 1) * blksize, NumFeatures) - 1;
+        int sj = int(floor(double(nf) / np));
+        starts[i] = cstart;
+        finishes[i] = cstart + sj - 1;
+        cstart += sj;
+        nf -= sj;
+        np--;
     }
     this->ScaleFeatureMaps = false;
     OwnFeatureMaps = false;
@@ -178,11 +182,15 @@ BlockADMMSolver<T>::BlockADMMSolver(skylark::base::context_t& context,
     this->loss = const_cast<lossfunction *> (loss);
     this->regularizer = const_cast<regularization *> (regularizer);
     this->lambda = lambda;
-    int blksize = int(ceil(double(NumFeatures) / NumFeaturePartitions));
+    int cstart = 0, nf = NumFeatures, np = NumFeaturePartitions;
     for(int i = 0; i < NumFeaturePartitions; i++) {
-        starts[i] = i * blksize;
-        finishes[i] = std::min((i + 1) * blksize, NumFeatures) - 1;
-        int sj = finishes[i] - starts[i] + 1;
+        int sj = int(floor(double(nf) / np));
+        starts[i] = cstart;
+        finishes[i] = cstart + sj - 1;
+        cstart += sj;
+        nf -= sj;
+        np--;
+
         featureMaps[i] =
             kernel.template create_rft< T, LocalMatrixType >(sj, tag, context);
     }
@@ -211,13 +219,17 @@ BlockADMMSolver<T>::BlockADMMSolver(skylark::base::context_t& context,
     this->loss = const_cast<lossfunction *> (loss);
     this->regularizer = const_cast<regularization *> (regularizer);
     this->lambda = lambda;
-    int blksize = int(ceil(double(NumFeatures) / NumFeaturePartitions));
     skylark::base::leaped_halton_sequence_t<double>
         qmcseq(kernel.qrft_sequence_dim()); // TODO size
+    int cstart = 0, nf = NumFeatures, np = NumFeaturePartitions;
     for(int i = 0; i < NumFeaturePartitions; i++) {
-        starts[i] = i * blksize;
-        finishes[i] = std::min((i + 1) * blksize, NumFeatures) - 1;
-        int sj = finishes[i] - starts[i] + 1;
+        int sj = int(floor(double(nf) / np));
+        starts[i] = cstart;
+        finishes[i] = cstart + sj - 1;
+        cstart += sj;
+        nf -= sj;
+        np--;
+
         featureMaps[i] =
             kernel.template create_qrft< T, LocalMatrixType,
               skylark::base::leaped_halton_sequence_t>(sj, qmcseq,

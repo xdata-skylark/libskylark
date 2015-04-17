@@ -161,6 +161,24 @@ The files usps.U.txt, usps.S.txt and usps.V.txt contain the approximate SVD that
 was computed.
 
 
+Linear Least-Squares
+--------------------
+
+Building libSkylark creates an executable called ``skylark_linear`` in 
+``$SKYLARK_INSTALL_DIR/bin``. This executable can be used in standalone mode to 
+approximately solve linear least squares problems. Here is an example command-line:
+
+.. code-block:: sh
+
+         skylark_linear cpu cpu.sol
+
+The file cpu.sol contains the computed approximate solution.
+
+.. note::
+
+   Currently, only overdetermined least squares of dense matrices is supported.
+   No regularization options are available. This will be relaxed in the future.
+
 .. _ml_example:
 
 Learning Non-Linear Models

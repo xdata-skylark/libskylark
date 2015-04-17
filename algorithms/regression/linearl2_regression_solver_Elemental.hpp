@@ -208,7 +208,7 @@ public:
         El::qr::ApplyQ(El::LEFT, El::ADJOINT, _QR, _t, _d, X);
         X.Resize(_n, B.Width());
         El::Trsm(El::LEFT, El::UPPER, El::NORMAL, El::NON_UNIT,
-            1.0, _R, X);
+            value_type(1.0), _R, X);
     }
 };
 
@@ -271,9 +271,9 @@ public:
     void solve (const rhs_type& B, sol_type& X) const {
         // TODO error checking
 
-        base::Gemm(El::ADJOINT, El::NORMAL, 1.0, _Q, B, X);
+        base::Gemm(El::ADJOINT, El::NORMAL, value_type(1.0), _Q, B, X);
         base::Trsm(El::LEFT, El::UPPER, El::NORMAL, El::NON_UNIT,
-            1.0, _R, X);
+            value_type(1.0), _R, X);
     }
 
 };
@@ -340,9 +340,9 @@ public:
     void solve (const rhs_type& B, sol_type& X) const {
         // TODO error checking
         sol_type UB(X); // Not copying -- just taking grid and size.
-        base::Gemm(El::ADJOINT, El::NORMAL, 1.0, _U, B, UB);
+        base::Gemm(El::ADJOINT, El::NORMAL, value_type(1.0), _U, B, UB);
         El::DiagonalScale(El::LEFT, El::NORMAL, _S, UB);
-        base::Gemm(El::NORMAL, El::NORMAL, 1.0, _V, UB, X);
+        base::Gemm(El::NORMAL, El::NORMAL, value_type(1.0), _V, UB, X);
     }
 
 };
@@ -409,9 +409,9 @@ public:
     void solve (const rhs_type& B, sol_type& X) const {
         // TODO error checking
         sol_type UB(X); // Not copying -- just taking grid and size.
-        base::Gemm(El::ADJOINT, El::NORMAL, 1.0, _U, B, UB);
+        base::Gemm(El::ADJOINT, El::NORMAL, value_type(1.0), _U, B, UB);
         El::DiagonalScale(El::LEFT, El::NORMAL, _S, UB);
-        base::Gemm(El::NORMAL, El::NORMAL, 1.0, _V, UB, X);
+        base::Gemm(El::NORMAL, El::NORMAL, value_type(1.0), _V, UB, X);
     }
 
 };
@@ -478,11 +478,11 @@ public:
     void solve (const rhs_type& B, sol_type& X) const {
         // TODO error checking
 
-        base::Gemm(El::ADJOINT, El::NORMAL, 1.0, _A, B, X);
+        base::Gemm(El::ADJOINT, El::NORMAL, value_type(1.0), _A, B, X);
         base::Trsm(El::LEFT, El::UPPER, El::ADJOINT, El::NON_UNIT,
-            1.0, _R, X);
+            value_type(1.0), _R, X);
         base::Trsm(El::LEFT, El::UPPER, El::NORMAL, El::NON_UNIT,
-            1.0, _R, X);
+            value_type(1.0), _R, X);
     }
 
 };
@@ -552,11 +552,11 @@ public:
     void solve (const rhs_type& B, sol_type& X) const {
         // TODO error checking
 
-        base::Gemm(El::ADJOINT, El::NORMAL, 1.0, _A, B, X);
+        base::Gemm(El::ADJOINT, El::NORMAL, value_type(1.0), _A, B, X);
         base::Trsm(El::LEFT, El::UPPER, El::ADJOINT, El::NON_UNIT,
-            1.0, _R, X);
+            value_type(1.0), _R, X);
         base::Trsm(El::LEFT, El::UPPER, El::NORMAL, El::NON_UNIT,
-            1.0, _R, X);
+            value_type(1.0), _R, X);
     }
 
 };

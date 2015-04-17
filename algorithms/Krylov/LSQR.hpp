@@ -21,8 +21,8 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
     krylov_iter_params_t params = krylov_iter_params_t(),
     const inplace_precond_t<SolType>& R = inplace_id_precond_t<SolType>()) {
 
-    typedef typename utility::typer_t<MatrixType>::value_type value_t;
-    typedef typename utility::typer_t<MatrixType>::index_type index_t;
+    typedef typename utility::typer_t<MatrixType>::value_type value_type;
+    typedef typename utility::typer_t<MatrixType>::index_type index_type;
 
     typedef MatrixType matrix_type;
     typedef RhsType rhs_type;        // Also serves as "long" vector type.
@@ -39,12 +39,12 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
     bool log_lev2 = params.am_i_printing && params.log_level >= 2;
 
     /** Throughout, we will use m, n, k to denote the problem dimensions */
-    index_t m = base::Height(A);
-    index_t n = base::Width(A);
-    index_t k = base::Width(B);
+    index_type m = base::Height(A);
+    index_type n = base::Width(A);
+    index_type k = base::Width(B);
 
     /** Set the parameter values accordingly */
-    const value_t eps = 32*std::numeric_limits<value_t>::epsilon();
+    const value_type eps = 32*std::numeric_limits<value_type>::epsilon();
     if (params.tolerance<eps) params.tolerance=eps;
     else if (params.tolerance>=1.0) params.tolerance=(1-eps);
     else {} /* nothing */
@@ -57,17 +57,17 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
         beta(internal::scalar_cont_typer_t<rhs_type>::build_compatible(k, 1, U));
     scalar_cont_type i_beta(beta);
     base::ColumnNrm2(U, beta);
-    for (index_t i=0; i<k; ++i)
+    for (index_type i=0; i<k; ++i)
         i_beta[i] = 1 / beta[i];
     El::DiagonalScale(El::RIGHT, El::NORMAL, i_beta, U);
     rhs_print_t::apply(U, "U Init", params.am_i_printing, params.debug_level);
 
     sol_type V(X);     // No need to really copy, just want sizes&comm correct.
-    base::Gemm(El::ADJOINT, El::NORMAL, 1.0, A, U, V);
+    base::Gemm(El::ADJOINT, El::NORMAL, value_type(1.0), A, U, V);
     R.apply_adjoint(V);
     scalar_cont_type alpha(beta), i_alpha(beta);
     base::ColumnNrm2(V, alpha);
-    for (index_t i=0; i<k; ++i)
+    for (index_type i=0; i<k; ++i)
         i_alpha[i] = 1 / alpha[i];
     El::DiagonalScale(El::RIGHT, El::NORMAL, i_alpha, V);
     sol_type Z(V);
@@ -84,13 +84,13 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
     El::Hadamard(alpha, beta, nrm_ar_0);
 
     /** Return from here */
-    for (index_t i=0; i<k; ++i)
+    for (index_type i=0; i<k; ++i)
         if (nrm_ar_0[i]==0)
             return 0;
 
     scalar_cont_type nrm_x(beta), sq_x(beta), z(beta), cs2(beta), sn2(beta);
     El::Zero(nrm_x); El::Zero(sq_x); El::Zero(z); El::Zero(sn2);
-    for (index_t i=0; i<k; ++i)
+    for (index_type i=0; i<k; ++i)
         cs2[i] = -1.0;
 
     int max_n_stag = 3;
@@ -108,38 +108,40 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
     scalar_cont_type delta(beta), gambar(beta), rhs(beta), zbar(beta);
 
     /** Main iteration loop */
-    for (index_t itn=0; itn<params.iter_lim; ++itn) {
+    for (index_type itn=0; itn<params.iter_lim; ++itn) {
 
         /** 1. Update u and beta */
-        El::Scale(-1.0, alpha);   // Can safely overwrite based on subseq ops.
+        El::Scale(value_type(-1.0), alpha);
+        // (Can safely overwrite based on subseq ops.)
         El::DiagonalScale(El::RIGHT, El::NORMAL, alpha, U);
-        base::Gemm(El::NORMAL, El::NORMAL, 1.0, A, Z, 1.0, U);
+        base::Gemm(El::NORMAL, El::NORMAL, value_type(1.0), A, Z,
+            value_type(1.0), U);
         base::ColumnNrm2(U, beta);
-        for (index_t i=0; i<k; ++i)
+        for (index_type i=0; i<k; ++i)
             i_beta[i] = 1 / beta[i];
         El::DiagonalScale(El::RIGHT, El::NORMAL, i_beta, U);
 
         /** 2. Estimate norm of A */
-        for (index_t i=0; i<k; ++i) {
+        for (index_type i=0; i<k; ++i) {
             double a = nrm_a[i], b = alpha[i], c = beta[i];
             nrm_a[i] = sqrt(a*a + b*b + c*c);
         }
 
         /** 3. Update v */
-        for (index_t i=0; i<k; ++i)
+        for (index_type i=0; i<k; ++i)
             minus_beta[i] = -beta[i];
         El::DiagonalScale(El::RIGHT, El::NORMAL, minus_beta, V);
-        base::Gemm(El::ADJOINT, El::NORMAL, 1.0, A, U, AU);
+        base::Gemm(El::ADJOINT, El::NORMAL, value_type(1.0), A, U, AU);
         R.apply_adjoint(AU);
-        base::Axpy(1.0, AU, V);
+        base::Axpy(value_type(1.0), AU, V);
         base::ColumnNrm2(V, alpha);
-        for (index_t i=0; i<k; ++i)
+        for (index_type i=0; i<k; ++i)
             i_alpha[i] = 1 / alpha[i];
         El::DiagonalScale(El::RIGHT, El::NORMAL, i_alpha, V);
         Z = V; R.apply(Z);
 
        /** 4. Define some variables */
-        for (index_t i=0; i<k; ++i) {
+        for (index_type i=0; i<k; ++i) {
             rho[i] = sqrt((rhobar[i]*rhobar[i]) + (beta[i]*beta[i]));
             cs[i] = rhobar[i]/rho[i];
             sn[i] =  beta[i]/rho[i];
@@ -150,23 +152,23 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
         }
 
         /** 5. Update X and W */
-        for (index_t i=0; i<k; ++i)
+        for (index_type i=0; i<k; ++i)
             phi_by_rho[i] = phi[i]/rho[i];
         base::Axpy(phi_by_rho, W, X);
         sol_print_t::apply(X, "X", params.am_i_printing, params.debug_level);
 
-        for (index_t i=0; i<k; ++i)
+        for (index_type i=0; i<k; ++i)
             minus_theta_by_rho[i] = -theta[i]/rho[i];
         El::DiagonalScale(El::RIGHT, El::NORMAL, minus_theta_by_rho, W);
-        base::Axpy(1.0, Z, W);
+        base::Axpy(value_type(1.0), Z, W);
         sol_print_t::apply(W, "W", params.am_i_printing, params.debug_level);
 
         /** 6. Estimate norm(r) */
         nrm_r = phibar;
 
         /** 7. estimate of norm(A'*r) */
-        index_t cond_s1 = 0, cond_s2 = 0;
-        for (index_t i=0; i<k; ++i) {
+        index_type cond_s1 = 0, cond_s2 = 0;
+        for (index_type i=0; i<k; ++i) {
             nrm_ar[i] = std::abs(phibar[i]*alpha[i]*cs[i]);
 
             if (log_lev2)
@@ -196,7 +198,7 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
 
         /** 9. estimate of cond(A) */
         base::ColumnNrm2(W, nrm_w);
-        for (index_t i=0; i<k; ++i) {
+        for (index_type i=0; i<k; ++i) {
             sq_w[i] = nrm_w[i]*nrm_w[i];
             sq_d[i] += sq_w[i]/(rho[i]*rho[i]);
             cnd_a[i] = nrm_a[i]*sqrt(sq_d[i]);
@@ -210,7 +212,7 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
         }
 
         /** 11. check stagnation */
-        for (index_t i=0; i<k; ++i) {
+        for (index_type i=0; i<k; ++i) {
             if (std::abs(phi[i]/rho[i])*nrm_w[i] < (eps*nrm_x[i]))
                 stag[i]++;
             else
@@ -224,7 +226,7 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
         }
 
         /** 12. estimate of norm(X) */
-        for (index_t i=0; i<k; ++i) {
+        for (index_type i=0; i<k; ++i) {
             delta[i] =  sn2[i]*rho[i];
             gambar[i] = -cs2[i]*rho[i];
             rhs[i] = phi[i] - delta[i]*z[i];

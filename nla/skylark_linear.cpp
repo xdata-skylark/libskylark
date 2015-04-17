@@ -10,17 +10,16 @@
 
 namespace bpo = boost::program_options;
 
-template<typename InputType, typename FactorType>
-void execute(const std::string &fname, int k,
-    const skylark::nla::approximate_svd_params_t &params,
-    const std::string &prefix,
+template<typename InputType, typename RhsType, typename SolType>
+void execute(const std::string &fname, 
+    const std::string &outname, bool high,
     skylark::base::context_t &context) {
 
     boost::mpi::communicator world;
     int rank = world.rank();
 
     InputType A;
-    FactorType U, S, V, Y;
+    RhsType b;
 
     boost::mpi::timer timer;
 
@@ -31,7 +30,7 @@ void execute(const std::string &fname, int k,
         timer.restart();
     }
 
-    skylark::utility::io::ReadLIBSVM(fname, A, Y, skylark::base::ROWS);
+    skylark::utility::io::ReadLIBSVM(fname, A, b, skylark::base::ROWS);
 
     if (rank == 0)
         std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
@@ -39,12 +38,21 @@ void execute(const std::string &fname, int k,
 
     /* Compute approximate SVD */
     if (rank == 0) {
-        std::cout << "Computing approximate SVD...";
+        std::cout << "Solving the least squares...";
         std::cout.flush();
         timer.restart();
     }
 
-    skylark::nla::ApproximateSVD(A, U, S, V, k, context, params);
+    // TODO shouldn't sizes be set inside?
+    El::Int m = skylark::base::Height(A);
+    El::Int n = skylark::base::Width(A);
+    El::Int k = skylark::base::Width(b);
+
+    SolType x(n, k);
+    if (high)
+        skylark::nla::FastLeastSquares(El::NORMAL, A, b, x, context);
+    else
+        skylark::nla::ApproximateLeastSquares(El::NORMAL, A, b, x, context);
 
     if (rank == 0)
         std::cout <<"Took " << boost::format("%.2e") % timer.elapsed()
@@ -57,9 +65,7 @@ void execute(const std::string &fname, int k,
         timer.restart();
     }
 
-    El::Write(U, prefix + ".U", El::ASCII);
-    El::Write(S, prefix + ".S", El::ASCII);
-    El::Write(V, prefix + ".V", El::ASCII);
+    El::Write(x, outname, El::ASCII);
 
     if (rank == 0)
         std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
@@ -70,10 +76,9 @@ int main(int argc, char* argv[]) {
 
     El::Initialize(argc, argv);
 
-    int seed, k, powerits;
-    std::string fname, prefix;
-    bool as_sparse, skipqr, use_single;
-    int oversampling_ratio, oversampling_additive;
+    int seed;
+    std::string fname, outfile;
+    bool as_sparse, high, use_single;
 
     // Parse options
     bpo::options_description desc("Options");
@@ -85,29 +90,17 @@ int main(int argc, char* argv[]) {
         ("seed,s",
             bpo::value<int>(&seed)->default_value(38734),
             "Seed for random number generation. OPTIONAL.")
-        ("rank,k",
-            bpo::value<int>(&k)->default_value(6),
-            "Target rank. OPTIONAL.")
-        ("powerits,i",
-            bpo::value<int>(&powerits)->default_value(2),
-            "Number of power iterations. OPTIONAL.")
-        ("skipqr", "Whether to skip QR in each iteration. Higher than one power"
-            " iterations is not recommended in this mode.")
-        ("ratio,r",
-            bpo::value<int>(&oversampling_ratio)->default_value(2),
-            "Ratio of oversampling of rank. OPTIONAL.")
-        ("additive,a",
-            bpo::value<int>(&oversampling_additive)->default_value(0),
-            "Additive factor for oversampling of rank. OPTIONAL.")
-        ("sparse", "Whether to load the matrix as a sparse one.")
-        ("single", "Whether to use single precision instead of double.")
-        ("prefix",
-            bpo::value<std::string>(&prefix)->default_value("out"),
-            "Prefix for output files (prefix.U.txt, prefix.S.txt"
-            " and prefix.V.txt. OPTIONAL.");
+
+        //("sparse", "Whether to load the matrix as a sparse one.")
+        ("highprecision,p", "Solve to high precision.")
+        ("single,f", "Whether to use single precision instead of double.")
+        ("outputfile",
+            bpo::value<std::string>(&outfile)->default_value("out"),
+            "Prefix for output files (prefix.txt). OPTIONAL.");
 
     bpo::positional_options_description positional;
     positional.add("inputfile", 1);
+    positional.add("outputfile", 2);
 
     bpo::variables_map vm;
     try {
@@ -128,9 +121,9 @@ int main(int argc, char* argv[]) {
 
         bpo::notify(vm);
 
-        as_sparse = vm.count("sparse");
-        skipqr = vm.count("skipqr");
+        //as_sparse = vm.count("sparse");
         use_single = vm.count("single");
+        high = vm.count("highprecision");
 
     } catch(bpo::error& e) {
         std::cerr << e.what() << std::endl;
@@ -140,27 +133,27 @@ int main(int argc, char* argv[]) {
 
     skylark::base::context_t context(seed);
 
-    skylark::nla::approximate_svd_params_t params;
-    params.skip_qr = skipqr;
-    params.num_iterations = powerits;
-    params.oversampling_ratio = oversampling_ratio;
-    params.oversampling_additive = oversampling_additive;
+;
 
     if (use_single) {
-        if (as_sparse)
-            execute<skylark::base::sparse_matrix_t<float>,
-                    El::Matrix<float> >(fname, k, params, prefix, context);
-        else
+        // if (as_sparse)
+        //     execute<skylark::base::sparse_matrix_t<float>,
+        //             El::Matrix<float>,
+        //             El::Matrix<float> >(fname, outfile, high, context);
+        // else
             execute<El::DistMatrix<float>,
-                    El::DistMatrix<float> >(fname, k, params, prefix, context);
+                    El::DistMatrix<float>,
+                    El::DistMatrix<float> >(fname, outfile, high, context);
 
     } else {
-        if (as_sparse)
-            execute<skylark::base::sparse_matrix_t<double>,
-                    El::Matrix<double> >(fname, k, params, prefix, context);
-        else
+        // if (as_sparse)
+        //     execute<skylark::base::sparse_matrix_t<double>,
+        //             El::Matrix<double>,
+        //             El::Matrix<double> >(fname, outfile, high, context);
+        // else
             execute<El::DistMatrix<double>,
-                    El::DistMatrix<double> >(fname, k, params, prefix, context);
+                    El::DistMatrix<double>,
+                    El::DistMatrix<double> >(fname, outfile, high,  context);
     }
 
     El::Finalize();

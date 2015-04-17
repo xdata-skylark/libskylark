@@ -38,16 +38,32 @@ void execute(std::string fname, int k,
                   << " sec\n";
 
     /* Compute approximate SVD */
-    if (rank == 0) std::cout << "Computing approximate SVD..." << std::endl;
+    if (rank == 0) {
+        std::cout << "Computing approximate SVD...";
+        std::cout.flush();
+        timer.restart();
+    }
+
     skylark::nla::ApproximateSVD(A, U, S, V, k, context, params);
+
     if (rank == 0)
         std::cout <<"Took " << boost::format("%.2e") % timer.elapsed()
                   << " sec\n";
 
     /* Write results */
+    if (rank == 0) {
+        std::cout << "Writing results...";
+        std::cout.flush();
+        timer.restart();
+    }
+
     El::Write(U, prefix + ".U", El::ASCII);
     El::Write(S, prefix + ".S", El::ASCII);
     El::Write(V, prefix + ".V", El::ASCII);
+
+    if (rank == 0)
+        std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
+                  << " sec\n";
 }
 
 int main(int argc, char* argv[]) {

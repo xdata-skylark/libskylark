@@ -386,6 +386,11 @@ if (BUILD_PYTHON)
   add_subdirectory(python-skylark)
 endif (BUILD_PYTHON)
 
+option (BUILD_NLA "Whether we should build the numerical linear algebra solves" ON)
+if (BUILD_NLA)
+  add_subdirectory(nla)
+endif (BUILD_NLA)
+
 option (BUILD_ML "Whether we should build the machine learning solvers" ON)
 if (BUILD_ML)
   add_subdirectory(ml)

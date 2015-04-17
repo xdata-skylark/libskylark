@@ -32,6 +32,9 @@ void PowerIteration(El::Orientation orientation, El::Orientation vorientation,
     RightType &V, LeftType &U,
     int iternum, bool ortho = false) {
 
+    typedef typename skylark::utility::typer_t<MatrixType>::value_type
+        value_type;
+
     typedef typename utility::typer_t<MatrixType>::value_type value_t;
     typedef typename utility::typer_t<MatrixType>::index_type index_t;
 
@@ -60,47 +63,47 @@ void PowerIteration(El::Orientation orientation, El::Orientation vorientation,
 
     if (vorientation == El::NORMAL && uorientation == El::NORMAL) {
         if (ortho) El::qr::ExplicitUnitary(V);
-        base::Gemm(orientation, El::NORMAL, 1.0, A, V, U);
+        base::Gemm(orientation, El::NORMAL, value_type(1.0), A, V, U);
         for(int i = 0; i < iternum; i++) {
-            base::Gemm(orientation, El::NORMAL, 1.0, A, V, U);
+            base::Gemm(orientation, El::NORMAL, value_type(1.0), A, V, U);
             if (ortho) El::qr::ExplicitUnitary(U);
-            base::Gemm(adjorientation, El::NORMAL, 1.0, A, U, V);
+            base::Gemm(adjorientation, El::NORMAL, value_type(1.0), A, U, V);
             if (ortho) El::qr::ExplicitUnitary(V);
         }
-        base::Gemm(orientation, El::NORMAL, 1.0, A, V, U);
+        base::Gemm(orientation, El::NORMAL, value_type(1.0), A, V, U);
     }
 
     if (vorientation != El::NORMAL && uorientation == El::NORMAL) {
         if (ortho) El::lq::ExplicitUnitary(V);
         for(int i = 0; i < iternum; i++) {
-            base::Gemm(orientation, El::ADJOINT, 1.0, A, V, U);
+            base::Gemm(orientation, El::ADJOINT, value_type(1.0), A, V, U);
             if (ortho) El::qr::ExplicitUnitary(U);
-            base::Gemm(El::ADJOINT, orientation, 1.0, U, A, V);
+            base::Gemm(El::ADJOINT, orientation, value_type(1.0), U, A, V);
             if (ortho) El::lq::ExplicitUnitary(V);
         }
-        base::Gemm(orientation, El::ADJOINT, 1.0, A, V, U);
+        base::Gemm(orientation, El::ADJOINT, value_type(1.0), A, V, U);
     }
 
     if (vorientation == El::NORMAL && uorientation != El::NORMAL) {
         if (ortho) El::qr::ExplicitUnitary(V);
         for(int i = 0; i < iternum; i++) {
-            base::Gemm(El::ADJOINT, adjorientation, 1.0, V, A, U);
+            base::Gemm(El::ADJOINT, adjorientation, value_type(1.0), V, A, U);
             if (ortho) El::lq::ExplicitUnitary(U);
-            base::Gemm(adjorientation, El::ADJOINT, 1.0, A, U, V);
+            base::Gemm(adjorientation, El::ADJOINT, value_type(1.0), A, U, V);
             if (ortho) El::qr::ExplicitUnitary(V);
         }
-        base::Gemm(El::ADJOINT, adjorientation, 1.0, V, A, U);
+        base::Gemm(El::ADJOINT, adjorientation, value_type(1.0), V, A, U);
     }
 
     if (vorientation != El::NORMAL && uorientation != El::NORMAL) {
         if (ortho) El::lq::ExplicitUnitary(V);
         for(int i = 0; i < iternum; i++) {
-            base::Gemm(El::NORMAL, adjorientation, 1.0, V, A, U);
+            base::Gemm(El::NORMAL, adjorientation, value_type(1.0), V, A, U);
             if (ortho) El::lq::ExplicitUnitary(U);
-            base::Gemm(El::NORMAL, orientation, 1.0, U, A, V);
+            base::Gemm(El::NORMAL, orientation, value_type(1.0), U, A, V);
             if (ortho) El::lq::ExplicitUnitary(V);
         }
-        base::Gemm(orientation, El::ADJOINT, 1.0, A, V, U);
+        base::Gemm(orientation, El::ADJOINT, value_type(1.0), A, V, U);
     }
 }
 
@@ -160,6 +163,9 @@ void ApproximateSVD(InputType &A, UType &U, SType &S, VType &V, int rank,
     base::context_t& context,
     approximate_svd_params_t params = approximate_svd_params_t()) {
 
+    typedef typename skylark::utility::typer_t<InputType>::value_type
+        value_type;
+
     bool log_lev1 = params.am_i_printing && params.log_level >= 1;
     bool log_lev2 = params.am_i_printing && params.log_level >= 2;
 
@@ -196,14 +202,14 @@ void ApproximateSVD(InputType &A, UType &U, SType &S, VType &V, int rank,
             if (params.num_iterations == 0) {
                 VType R;
                 El::qr::Explicit(Q, R);
-                El::Trsm(El::RIGHT, El::UPPER, El::NORMAL, El::NON_UNIT, 1.0,
-                    R, V);
+                El::Trsm(El::RIGHT, El::UPPER, El::NORMAL, El::NON_UNIT,
+                    value_type(1.0), R, V);
             } else {
                 // The above computation, while mathemetically correct for
                 // any number of iterations, is not robust enough numerically
                 // when number of power iteration is greater than 0.
                 El::qr::ExplicitUnitary(Q);
-                base::Gemm(El::ADJOINT, El::NORMAL, 1.0, A, Q, V);
+                base::Gemm(El::ADJOINT, El::NORMAL, value_type(1.0), A, Q, V);
             }
         }
 
@@ -212,7 +218,7 @@ void ApproximateSVD(InputType &A, UType &U, SType &S, VType &V, int rank,
         El::SVD(V, S, B);
         S.Resize(rank, 1); V.Resize(n, rank);
         VType B1 = base::ColumnView(B, 0, rank);
-        base::Gemm(El::NORMAL, El::NORMAL, 1.0, Q, B1, U);
+        base::Gemm(El::NORMAL, El::NORMAL, value_type(1.0), Q, B1, U);
     }
 
     /** Code for m < n */
@@ -235,7 +241,7 @@ void ApproximateSVD(InputType &A, UType &U, SType &S, VType &V, int rank,
             // num_iteration == 0, but the LQ factorization in Elemental
             // does not work for this... (do not know why).
             El::lq::ExplicitUnitary(Q);
-            base::Gemm(El::NORMAL, El::ADJOINT, 1.0, A, Q, U);
+            base::Gemm(El::NORMAL, El::ADJOINT, value_type(1.0), A, Q, U);
         }
 
         /** Compute factorization & truncate to rank */
@@ -243,7 +249,7 @@ void ApproximateSVD(InputType &A, UType &U, SType &S, VType &V, int rank,
         El::SVD(U, S, B);
         S.Resize(rank, 1); U.Resize(m, rank);
         VType B1 = base::ColumnView(B, 0, rank);
-        base::Gemm(El::ADJOINT, El::NORMAL, 1.0, Q, B1, V);
+        base::Gemm(El::ADJOINT, El::NORMAL, value_type(1.0), Q, B1, V);
     }
 }
 

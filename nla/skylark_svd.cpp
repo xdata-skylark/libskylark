@@ -56,7 +56,7 @@ int main(int argc, char* argv[]) {
 
     int seed, k, powerits;
     std::string fname, prefix;
-    bool as_sparse, skipqr;
+    bool as_sparse, skipqr, use_single;
     int oversampling_ratio, oversampling_additive;
 
     // Parse options
@@ -75,20 +75,16 @@ int main(int argc, char* argv[]) {
         ("powerits,i",
             bpo::value<int>(&powerits)->default_value(2),
             "Number of power iterations. OPTIONAL.")
-        ("skipqr",
-            bpo::bool_switch(&skipqr)->default_value(false),
-            "Whether to skip QR in each iteration. Higher than 1 power"
-            " iterations is not recommended. OPTIONAL.")
+        ("skipqr", "Whether to skip QR in each iteration. Higher than one power"
+            " iterations is not recommended in this mode.")
         ("ratio,r",
             bpo::value<int>(&oversampling_ratio)->default_value(2),
             "Ratio of oversampling of rank. OPTIONAL.")
         ("additive,a",
             bpo::value<int>(&oversampling_additive)->default_value(0),
             "Additive factor for oversampling of rank. OPTIONAL.")
-        ("sparse",
-            bpo::bool_switch(&as_sparse)->default_value(false),
-            "Whether to load matrix as a sparse one"
-            " (currently, no distributed support). OPTIONAL.")
+        ("sparse", "Whether to load the matrix as a sparse one.")
+        ("single", "Whether to use single precision instead of double.")
         ("prefix",
             bpo::value<std::string>(&prefix)->default_value("out"),
             "Prefix for output files (prefix.U.txt, prefix.S.txt"
@@ -115,6 +111,11 @@ int main(int argc, char* argv[]) {
         }
 
         bpo::notify(vm);
+
+        as_sparse = vm.count("sparse");
+        skipqr = vm.count("skipqr");
+        use_single = vm.count("single");
+
     } catch(bpo::error& e) {
         std::cerr << e.what() << std::endl;
         std::cerr << desc << std::endl;
@@ -129,12 +130,22 @@ int main(int argc, char* argv[]) {
     params.oversampling_ratio = oversampling_ratio;
     params.oversampling_additive = oversampling_additive;
 
-    if (as_sparse)
-        execute<skylark::base::sparse_matrix_t<double>,
-                El::Matrix<double> >(fname, k, params, prefix, context);
-    else
-        execute<El::DistMatrix<double>,
-                El::DistMatrix<double> >(fname, k, params, prefix, context);
+    if (use_single) {
+        if (as_sparse)
+            execute<skylark::base::sparse_matrix_t<float>,
+                    El::Matrix<float> >(fname, k, params, prefix, context);
+        else
+            execute<El::DistMatrix<float>,
+                    El::DistMatrix<float> >(fname, k, params, prefix, context);
+
+    } else {
+        if (as_sparse)
+            execute<skylark::base::sparse_matrix_t<double>,
+                    El::Matrix<double> >(fname, k, params, prefix, context);
+        else
+            execute<El::DistMatrix<double>,
+                    El::DistMatrix<double> >(fname, k, params, prefix, context);
+    }
 
     El::Finalize();
     return 0;

@@ -11,7 +11,19 @@ target_link_libraries(skylark_ml
   ${HDF5_LIBRARIES}
   ${ZLIB_LIBRARIES})
 
-install_targets(/bin/ml skylark_ml)
+install_targets(/bin skylark_ml)
 
+add_executable(skylark_community skylark_community.cpp)
+
+target_link_libraries(skylark_community
+  ${Elemental_LIBRARY}
+  ${OPTIONAL_LIBS}
+  ${Pmrrr_LIBRARY}
+  ${Metis_LIBRARY}
+  ${SKYLARK_LIBS}
+  ${Boost_LIBRARIES}
+  ${HDF5_LIBRARIES}
+  ${ZLIB_LIBRARIES})
+install_targets(/bin skylark_community)
 
 

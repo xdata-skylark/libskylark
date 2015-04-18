@@ -133,7 +133,7 @@ int main(int argc, char* argv[]) {
 
     skylark::base::context_t context(seed);
 
-;
+    SKYLARK_BEGIN_TRY()
 
     if (use_single) {
         // if (as_sparse)
@@ -155,6 +155,11 @@ int main(int argc, char* argv[]) {
                     El::DistMatrix<double>,
                     El::DistMatrix<double> >(fname, outfile, high,  context);
     }
+
+    SKYLARK_END_TRY()
+      catch (const skylark::base::skylark_exception& ex) {
+	SKYLARK_PRINT_EXCEPTION_DETAILS(ex);
+      }
 
     El::Finalize();
     return 0;

@@ -52,8 +52,11 @@ std::string FileFormats[] = {"libsvm-dense", "libsvm-sparse", "hdf5_dense", "hdf
  * has default values embedded. No accessor functions are being written.
  */
 struct hilbert_options_t {
-    /** Solver type options */
 
+    /** Whether to use regression or classification */
+    bool regression;
+
+    /** Solver type options */
     LossType lossfunction;
     RegularizerType regularizer;
     KernelType kernel;
@@ -151,6 +154,8 @@ struct hilbert_options_t {
             ("numthreads,t",
                 po::value<int>(&numthreads)->default_value(DEFAULT_THREADS),
                 "Number of Threads (default: 1)")
+            ("regression", "Build a regression model"
+                "(default is classification).")
             ("usefast", "Use 'fast' feature mapping, if available. "
                 "Default is to use 'regular' mapping.")
             ("usequasi,q",
@@ -203,6 +208,7 @@ struct hilbert_options_t {
             po::notify(vm); // throws on error, so do after help in case
             // there are any problems
 
+            regression = vm.count("regression");
             usefast = vm.count("usefast");
             cachetransforms = vm.count("cachetransforms");
         }
@@ -217,6 +223,7 @@ struct hilbert_options_t {
         // The following is much less robust, but should work even without
         // Boost::program_options.
 
+        regression = false;
         lossfunction = SQUARED;
         regularizer = L2;
         kernel = LINEAR;
@@ -270,6 +277,10 @@ struct hilbert_options_t {
                 numfeaturepartitions = boost::lexical_cast<int>(value);
             if (flag == "--numthreads" || flag == "-t")
                 numthreads = boost::lexical_cast<int>(value);
+            if (flag == "--regression") {
+                regression = true;
+                i--;
+            }
             if (flag == "--usefast") {
                 usefast = true;
                 i--;
@@ -315,6 +326,8 @@ struct hilbert_options_t {
         optionstring << "using the following command-line: " << std::endl;
         optionstring << "#\t" << str << std::endl;
         optionstring << "#" << std::endl;
+        optionstring << "# Regression? = "
+                     << (regression ? "True" : "False")  << std::endl;
         optionstring << "# Training File = " << trainfile << std::endl;
         optionstring << "# Model File = " << modelfile << std::endl;
         optionstring << "# Validation File = " << valfile << std::endl;

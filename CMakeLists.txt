@@ -218,21 +218,28 @@ if (Elemental_FOUND)
 endif (Elemental_FOUND)
 
 # 3.1 Elemental requires BLAS and LAPACK libraries
-set(BLAS_LIBRARIES $ENV{BLAS_LIBRARIES})
-set(LAPACK_LIBRARIES $ENV{LAPACK_LIBRARIES})
-if(NOT BLAS_LIBRARIES OR NOT LAPACK_LIBRARIES)
-  find_package(BLAS)
-  find_package(LAPACK)
-endif(NOT BLAS_LIBRARIES OR NOT LAPACK_LIBRARIES)
+if(NOT MATH_LIBS)
+  set(BLAS_LIBRARIES $ENV{BLAS_LIBRARIES})
+  set(LAPACK_LIBRARIES $ENV{LAPACK_LIBRARIES})
+  if(NOT BLAS_LIBRARIES OR NOT LAPACK_LIBRARIES)
+    find_package(BLAS)
+    find_package(LAPACK)
+  endif(NOT BLAS_LIBRARIES OR NOT LAPACK_LIBRARIES)
 
-if(NOT BLAS_LIBRARIES OR NOT LAPACK_LIBRARIES)
-    message(FATAL_ERROR "Elemental needs BLAS and LAPACK")
-endif(NOT BLAS_LIBRARIES OR NOT LAPACK_LIBRARIES)
-set (Elemental_LIBRARY
-  ${Elemental_LIBRARY}
-  ${LAPACK_LIBRARIES}
-  ${BLAS_LIBRARIES}
-)
+  if(NOT BLAS_LIBRARIES OR NOT LAPACK_LIBRARIES)
+      message(FATAL_ERROR "Elemental needs BLAS and LAPACK")
+  endif(NOT BLAS_LIBRARIES OR NOT LAPACK_LIBRARIES)
+  set (Elemental_LIBRARY
+    ${Elemental_LIBRARY}
+    ${LAPACK_LIBRARIES}
+    ${BLAS_LIBRARIES}
+  )
+else()
+  set (Elemental_LIBRARY
+    ${Elemental_LIBRARY}
+    ${MATH_LIBS}
+  )
+endif()
 
 # 4. Random123
 set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules")
@@ -325,9 +332,9 @@ if (SKYLARK_HAVE_FFTWF)
   set(OPTIONAL_LIBS "${FFTWF_LIBRARY};${OPTIONAL_LIBS}")
 endif (SKYLARK_HAVE_FFTWF)
 
-if (SKYLARK_HAVE_COMBLAS)
+if (SKYLARK_HAVE_COMBBLAS)
   set(OPTIONAL_LIBS "${CombBLAS_LIBRARIES};${OPTIONAL_LIBS}")
-endif (SKYLARK_HAVE_COMBLAS)
+endif (SKYLARK_HAVE_COMBBLAS)
 
 option (USE_PROFILER "Use Skylark profiling tools" OFF)
 if (USE_PROFILER)
@@ -378,6 +385,11 @@ if (BUILD_PYTHON)
   add_subdirectory(sketch/capi)
   add_subdirectory(python-skylark)
 endif (BUILD_PYTHON)
+
+option (BUILD_NLA "Whether we should build the numerical linear algebra solves" ON)
+if (BUILD_NLA)
+  add_subdirectory(nla)
+endif (BUILD_NLA)
 
 option (BUILD_ML "Whether we should build the machine learning solvers" ON)
 if (BUILD_ML)

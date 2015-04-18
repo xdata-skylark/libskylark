@@ -72,7 +72,7 @@ inline void ColumnNrm2(const El::DistMatrix<T, U, V>& A,
     std::vector<T> n(A.Width(), 1);
     std::fill(n.begin(), n.end(), 0.0);
     const El::Matrix<T> &Al = A.LockedMatrix();
-    const double *a = Al.LockedBuffer();
+    const T *a = Al.LockedBuffer();
     for(int j = 0; j < Al.Width(); j++)
         for(int i = 0; i < Al.Height(); i++)
             n[A.GlobalCol(j)] +=
@@ -120,9 +120,9 @@ inline void ColumnDot(const El::Matrix<T>& A, const El::Matrix<T>& B,
 
     // TODO just assuming sizes are OK for now.
 
-    double *n = N.Buffer();
-    const double *a = A.LockedBuffer();
-    const double *b = B.LockedBuffer();
+    T *n = N.Buffer();
+    const T *a = A.LockedBuffer();
+    const T *b = B.LockedBuffer();
     for(int j = 0; j < A.Width(); j++) {
         n[j] = 0.0;
         for(int i = 0; i < A.Height(); i++)

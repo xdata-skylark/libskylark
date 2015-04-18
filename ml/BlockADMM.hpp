@@ -80,7 +80,7 @@ public:
 
     skylark::ml::model_t* train(T& X,
         LocalMatrixType& Y, T& Xv, LocalMatrixType& Yv,
-        const boost::mpi::communicator& comm);
+        bool regression, const boost::mpi::communicator& comm);
 
     int get_numfeatures() {return NumFeatures;}
 
@@ -148,10 +148,14 @@ BlockADMMSolver<T>::BlockADMMSolver(
     this->regularizer = const_cast<regularization *> (regularizer);
     this->lambda = lambda;
     this->NumFeaturePartitions = NumFeaturePartitions;
-    int blksize = int(ceil(double(NumFeatures) / NumFeaturePartitions));
+    int cstart = 0, nf = NumFeatures, np = NumFeaturePartitions;
     for(int i = 0; i < NumFeaturePartitions; i++) {
-        starts[i] = i * blksize;
-        finishes[i] = std::min((i + 1) * blksize, NumFeatures) - 1;
+        int sj = int(floor(double(nf) / np));
+        starts[i] = cstart;
+        finishes[i] = cstart + sj - 1;
+        cstart += sj;
+        nf -= sj;
+        np--;
     }
     this->ScaleFeatureMaps = false;
     OwnFeatureMaps = false;
@@ -178,11 +182,15 @@ BlockADMMSolver<T>::BlockADMMSolver(skylark::base::context_t& context,
     this->loss = const_cast<lossfunction *> (loss);
     this->regularizer = const_cast<regularization *> (regularizer);
     this->lambda = lambda;
-    int blksize = int(ceil(double(NumFeatures) / NumFeaturePartitions));
+    int cstart = 0, nf = NumFeatures, np = NumFeaturePartitions;
     for(int i = 0; i < NumFeaturePartitions; i++) {
-        starts[i] = i * blksize;
-        finishes[i] = std::min((i + 1) * blksize, NumFeatures) - 1;
-        int sj = finishes[i] - starts[i] + 1;
+        int sj = int(floor(double(nf) / np));
+        starts[i] = cstart;
+        finishes[i] = cstart + sj - 1;
+        cstart += sj;
+        nf -= sj;
+        np--;
+
         featureMaps[i] =
             kernel.template create_rft< T, LocalMatrixType >(sj, tag, context);
     }
@@ -211,13 +219,17 @@ BlockADMMSolver<T>::BlockADMMSolver(skylark::base::context_t& context,
     this->loss = const_cast<lossfunction *> (loss);
     this->regularizer = const_cast<regularization *> (regularizer);
     this->lambda = lambda;
-    int blksize = int(ceil(double(NumFeatures) / NumFeaturePartitions));
     skylark::base::leaped_halton_sequence_t<double>
         qmcseq(kernel.qrft_sequence_dim()); // TODO size
+    int cstart = 0, nf = NumFeatures, np = NumFeaturePartitions;
     for(int i = 0; i < NumFeaturePartitions; i++) {
-        starts[i] = i * blksize;
-        finishes[i] = std::min((i + 1) * blksize, NumFeatures) - 1;
-        int sj = finishes[i] - starts[i] + 1;
+        int sj = int(floor(double(nf) / np));
+        starts[i] = cstart;
+        finishes[i] = cstart + sj - 1;
+        cstart += sj;
+        nf -= sj;
+        np--;
+
         featureMaps[i] =
             kernel.template create_qrft< T, LocalMatrixType,
               skylark::base::leaped_halton_sequence_t>(sj, qmcseq,
@@ -268,325 +280,341 @@ BlockADMMSolver<T>::~BlockADMMSolver() {
 }
 
 
+namespace internal {
+
+template<typename T>
+void GetSlice(El::Matrix<T> &X, El::Matrix<T> &Z,
+    El::Int i, El::Int j, El::Int height, El::Int width) {
+
+    El::View(Z, X, i, j, height, width);
+}
+
+template<typename T>
+void GetSlice(skylark::base::sparse_matrix_t<T> &X, El::Matrix<T> &Z,
+    El::Int i, El::Int j, El::Int height, El::Int width) {
+
+    skylark::base::DenseSubmatrixCopy(X, Z, i, j, height, width);
+}
+
+}
+
 template <class T>
-skylark::ml::model_t* BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y, T& Xv, LocalMatrixType& Yv,
-    const boost::mpi::communicator& comm) {
+skylark::ml::model_t* BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y,
+    T& Xv, LocalMatrixType& Yv,
+    bool regression, const boost::mpi::communicator& comm) {
 
-       int rank = comm.rank();
-       int size = comm.size();
+    int rank = comm.rank();
+    int size = comm.size();
 
-       int P = size;
+    int P = size;
 
-       int ni = skylark::base::Width(X);
-       int d = skylark::base::Height(X);
-       int targets = GetNumTargets(comm, Y);
+    int ni = skylark::base::Width(X);
+    int d = skylark::base::Height(X);
+    int targets = regression ? 1 : GetNumTargets(comm, Y);
 
-       skylark::ml::model_t* model =
-           new skylark::ml::model_t(featureMaps,
-               ScaleFeatureMaps, NumFeatures, targets);
+    skylark::ml::model_t* model =
+        new skylark::ml::model_t(featureMaps,
+            ScaleFeatureMaps, NumFeatures, targets, regression);
 
-       El::Matrix<double> Wbar;
-       El::View(Wbar, model->get_coef());
+    El::Matrix<double> Wbar;
+    El::View(Wbar, model->get_coef());
 
 
-       int k = Wbar.Width();
+    int k = Wbar.Width();
 
-       // number of classes, targets - to generalize
+    // number of classes, targets - to generalize
+    int D = NumFeatures;
 
-       int D = NumFeatures;
+    // exception: check if D = Wbar.Height();
 
-       // exception: check if D = Wbar.Height();
+    LocalMatrixType O(k, ni); //uses default Grid
+    El::Zero(O);
 
-       LocalMatrixType O(k, ni); //uses default Grid
-       El::Zero(O);
+    LocalMatrixType Obar(k, ni); //uses default Grid
+    El::Zero(Obar);
 
-       LocalMatrixType Obar(k, ni); //uses default Grid
-       El::Zero(Obar);
+    LocalMatrixType nu(k, ni); //uses default Grid
+    El::Zero(nu);
 
-       LocalMatrixType nu(k, ni); //uses default Grid
-       El::Zero(nu);
+    LocalMatrixType W, mu, Wi, mu_ij, ZtObar_ij;
 
-       LocalMatrixType W, mu, Wi, mu_ij, ZtObar_ij;
+    if(rank==0) {
+        El::Zeros(W,  D, k);
+        El::Zeros(mu, D, k);
+    }
+    El::Zeros(Wi, D, k);
+    El::Zeros(mu_ij, D, k);
+    El::Zeros(ZtObar_ij, D, k);
 
-       if(rank==0) {
-           El::Zeros(W,  D, k);
-           El::Zeros(mu, D, k);
-       }
-       El::Zeros(Wi, D, k);
-       El::Zeros(mu_ij, D, k);
-       El::Zeros(ZtObar_ij, D, k);
+    int iter = 0;
 
-       int iter = 0;
+    double localloss = loss->evaluate(O, Y);
+    double totalloss, accuracy, obj;
 
-       // int ni = O.LocalWidth();
+    int Dk = D*k;
+    int nik  = ni*k;
+    int start, finish, sj;
 
-       //El::Matrix<double> x = X.Matrix();
-       //El::Matrix<double> y = Y.Matrix();
+    boost::mpi::timer timer;
 
+    LocalMatrixType sum_o, del_o, wbar_output;
+    El::Zeros(del_o, k, ni);
+    LocalMatrixType Yp(Yv.Height(), k);
+    LocalMatrixType Yp_labels(Yv.Height(), 1);
 
-       double localloss = loss->evaluate(O, Y);
-       double totalloss, accuracy, obj;
+    if (CacheTransforms)
+        InitializeTransformCache(ni);
 
-       int Dk = D*k;
-       int nik  = ni*k;
-       int start, finish, sj;
+    SKYLARK_TIMER_INITIALIZE(ITERATIONS_PROFILE);
+    SKYLARK_TIMER_INITIALIZE(COMMUNICATION_PROFILE);
+    SKYLARK_TIMER_INITIALIZE(TRANSFORM_PROFILE);
+    SKYLARK_TIMER_INITIALIZE(ZTRANSFORM_PROFILE);
+    SKYLARK_TIMER_INITIALIZE(ZMULT_PROFILE);
+    SKYLARK_TIMER_INITIALIZE(PROXLOSS_PROFILE);
+    SKYLARK_TIMER_INITIALIZE(BARRIER_PROFILE);
+    SKYLARK_TIMER_INITIALIZE(PREDICTION_PROFILE);
 
-       boost::mpi::timer timer;
+    while(iter<MAXITER) {
 
-       LocalMatrixType sum_o, del_o, wbar_output;
-       El::Zeros(del_o, k, ni);
-       LocalMatrixType Yp(Yv.Height(), k);
-       LocalMatrixType Yp_labels(Yv.Height(), 1);
+        SKYLARK_TIMER_RESTART(ITERATIONS_PROFILE);
 
-       /*LocalMatrixType wbar_tmp;
-       //if (NumThreads > 1)
+        iter++;
 
-       El::Zeros(wbar_tmp, k, ni);*/
+        SKYLARK_TIMER_RESTART(COMMUNICATION_PROFILE);
+        broadcast(comm, Wbar.Buffer(), Dk, 0);
 
-       if (CacheTransforms)
-                   InitializeTransformCache(ni);
+        SKYLARK_TIMER_ACCUMULATE(COMMUNICATION_PROFILE)
 
-       SKYLARK_TIMER_INITIALIZE(ITERATIONS_PROFILE);
-       SKYLARK_TIMER_INITIALIZE(COMMUNICATION_PROFILE);
-       SKYLARK_TIMER_INITIALIZE(TRANSFORM_PROFILE);
-       SKYLARK_TIMER_INITIALIZE(ZTRANSFORM_PROFILE);
-       SKYLARK_TIMER_INITIALIZE(ZMULT_PROFILE);
-       SKYLARK_TIMER_INITIALIZE(PROXLOSS_PROFILE);
-       SKYLARK_TIMER_INITIALIZE(BARRIER_PROFILE);
-       SKYLARK_TIMER_INITIALIZE(PREDICTION_PROFILE);
+            // mu_ij = mu_ij - Wbar
+            El::Axpy(-1.0, Wbar, mu_ij);
 
-       while(iter<MAXITER) {
+        // Obar = Obar - nu
+        El::Axpy(-1.0, nu, Obar);
 
-           SKYLARK_TIMER_RESTART(ITERATIONS_PROFILE);
+        SKYLARK_TIMER_RESTART(PROXLOSS_PROFILE);
+        loss->proxoperator(Obar, 1.0/RHO, Y, O);
+        SKYLARK_TIMER_ACCUMULATE(PROXLOSS_PROFILE);
 
-           iter++;
+        if(rank==0) {
+            regularizer->proxoperator(Wbar, lambda/RHO, mu, W);
+        }
 
-           SKYLARK_TIMER_RESTART(COMMUNICATION_PROFILE);
-           broadcast(comm, Wbar.Buffer(), Dk, 0);
-
-           SKYLARK_TIMER_ACCUMULATE(COMMUNICATION_PROFILE)
-
-           // mu_ij = mu_ij - Wbar
-           El::Axpy(-1.0, Wbar, mu_ij);
-
-           // Obar = Obar - nu
-           El::Axpy(-1.0, nu, Obar);
-
-           SKYLARK_TIMER_RESTART(PROXLOSS_PROFILE);
-           loss->proxoperator(Obar, 1.0/RHO, Y, O);
-           SKYLARK_TIMER_ACCUMULATE(PROXLOSS_PROFILE);
-
-           if(rank==0) {
-               regularizer->proxoperator(Wbar, lambda/RHO, mu, W);
-           }
-
-           El::Zeros(sum_o, k, ni);
-           El::Zeros(wbar_output, k, ni);
-
-           int j;
-           const feature_transform_t* featureMap;
-
-           SKYLARK_TIMER_RESTART(TRANSFORM_PROFILE);
-
-   #       ifdef SKYLARK_HAVE_OPENMP
-   #       pragma omp parallel for if(NumThreads > 1) private(j, start, finish, sj, featureMap) num_threads(NumThreads)
-   #       endif
-           for(j = 0; j < NumFeaturePartitions; j++) {
-               start = starts[j];
-               finish = finishes[j];
-               sj = finish - start  + 1;
-
-               El::Matrix<double> z(sj, ni);
-
-               if (CacheTransforms && (iter > 1))
-               {
-                    El::View(z,  *TransformCache[j], 0, 0, sj, ni);
-               }
-               else {
-                   if (featureMaps.size() > 0) {
-                       featureMap = featureMaps[j];
-
-                       SKYLARK_TIMER_RESTART(ZTRANSFORM_PROFILE);
-                       featureMap->apply(X, z, skylark::sketch::columnwise_tag());
-                       SKYLARK_TIMER_ACCUMULATE(ZTRANSFORM_PROFILE)
-
-                       if (ScaleFeatureMaps)
-                           El::Scale(sqrt(double(sj) / d), z);
-                       } else {
-                          // for linear case just use Z = X no slicing business.
-                          // skylark::base::ColumnView<double>(z, x, );
-                          // ;// VIEWS on SPARSE MATRICES: El::View(z, x, start, 0, sj, ni);
-                       }
-               }
-
-               El::Matrix<double> tmp(sj, k);
-               El::Matrix<double> rhs(sj, k);
-               El::Matrix<double> o(k, ni);
-
-               if(iter==1) {
-
-                   El::Matrix<double> Ones;
-                   El::Ones(Ones, sj, 1);
-                   El::Gemm(El::NORMAL, El::TRANSPOSE, 1.0, z, z, 0.0, *Cache[j]);
-                   El::UpdateDiagonal(*Cache[j], 1.0, Ones);
-                   El::Inverse(*Cache[j]);
-
-                   if (CacheTransforms)
-                       *TransformCache[j] = z;
-               }
-
-               El::View(tmp, Wbar, start, 0, sj, k); //tmp = Wbar[J,:]
-
-               LocalMatrixType wbar_tmp;
-               El::Zeros(wbar_tmp, k, ni);
-
-               if (NumThreads > 1) {
-                   El::Gemm(El::TRANSPOSE, El::NORMAL, 1.0, tmp, z, 0.0, wbar_tmp);
-
-   #               ifdef SKYLARK_HAVE_OPENMP
-   #               pragma omp critical
-   #               endif
-                   El::Axpy(1.0, wbar_tmp, wbar_output);
-               } else
-                   El::Gemm(El::TRANSPOSE, El::NORMAL, 1.0, tmp, z, 1.0, wbar_output);
-
-               rhs = tmp; //rhs = Wbar[J,:]
-               El::View(tmp, mu_ij, start, 0, sj, k); //tmp = mu_ij[J,:]
-               El::Axpy(-1.0, tmp, rhs); // rhs = rhs - mu_ij[J,:] = Wbar[J,:] - mu_ij[J,:]
-               El::View(tmp, ZtObar_ij, start, 0, sj, k);
-               El::Axpy(+1.0, tmp, rhs); // rhs = rhs + ZtObar_ij[J,:]
-
-               SKYLARK_TIMER_RESTART(ZMULT_PROFILE);
-               El::Matrix<double> dsum = del_o;
-               El::Axpy(NumFeaturePartitions + 1.0, nu, dsum);
-               El::Gemm(El::NORMAL, El::TRANSPOSE, 1.0/(NumFeaturePartitions + 1.0), z, dsum, 1.0, rhs); // rhs = rhs + z'*(1/(n+1) * del_o + nu)
-               SKYLARK_TIMER_ACCUMULATE(ZMULT_PROFILE);
-
-               El::View(tmp, Wi, start, 0, sj, k);
-               El::Gemm(El::NORMAL, El::NORMAL, 1.0, *Cache[j], rhs, 0.0, tmp); // ]tmp = Wi[J,:] = Cache[j]*rhs
-
-               SKYLARK_TIMER_RESTART(ZMULT_PROFILE);
-               El::Gemm(El::TRANSPOSE, El::NORMAL, 1.0, tmp, z, 0.0, o); // o = (z*tmp)' = (z*Wi[J,:])'
-               SKYLARK_TIMER_ACCUMULATE(ZMULT_PROFILE);
-
-               // mu_ij[JJ,:] = mu_ij[JJ,:] + Wi[JJ,:];
-               El::View(tmp, mu_ij, start, 0, sj, k); //tmp = mu_ij[J,:]
-               El::View(rhs, Wi, start, 0, sj, k);
-               El::Axpy(+1.0, rhs, tmp);
-
-               //ZtObar_ij[JJ,:] = numpy.dot(Z.T, o);
-               El::View(tmp, ZtObar_ij, start, 0, sj, k);
-               El::Gemm(El::NORMAL, El::TRANSPOSE, 1.0, z, o, 0.0, tmp);
-
-               //  sum_o += o
-               if (NumThreads > 1) {
-   #               ifdef SKYLARK_HAVE_OPENMP
-   #               pragma omp critical
-   #               endif
-                   El::Axpy(1.0, o, sum_o);
-               } else
-                   El::Axpy(1.0, o, sum_o);
-
-               z.Empty();
-           }
-
-           SKYLARK_TIMER_ACCUMULATE(TRANSFORM_PROFILE);
-
-           localloss = 0.0 ;
-           //  El::Zeros(o, ni, k);
-           El::Matrix<double> o(k, ni);
-           El::Zero(o);
-           El::Scale(-1.0, sum_o);
-           El::Axpy(+1.0, O, sum_o); // sum_o = O.Matrix - sum_o
-           del_o = sum_o;
-
-           SKYLARK_TIMER_RESTART(PREDICTION_PROFILE);
-           if (skylark::base::Width(Xv) > 0) {
-               El::Zero(Yp);
-               El::Zero(Yp_labels);
-               model->predict(Xv, Yp_labels, Yp, NumThreads);
-
-               El::Int correct = skylark::ml::classification_accuracy(Yv, Yp);
-               El::Int totalcorrect, total;
-               boost::mpi::reduce(comm, correct, totalcorrect,
-                   std::plus<El::Int>(), 0);
-               boost::mpi::reduce(comm, Yv.Height(), total,
-                   std::plus<El::Int>(), 0);
-
-               if(comm.rank() == 0)
-                   accuracy =  totalcorrect * 100.0 / total;
-           }
-           SKYLARK_TIMER_ACCUMULATE(PREDICTION_PROFILE);
-
-           localloss += loss->evaluate(wbar_output, Y);
-
-           SKYLARK_TIMER_RESTART(COMMUNICATION_PROFILE);
-           reduce(comm, localloss, totalloss, std::plus<double>(), 0);
-           SKYLARK_TIMER_ACCUMULATE(COMMUNICATION_PROFILE);
-
-           if(rank == 0) {
-               obj = totalloss + lambda*regularizer->evaluate(Wbar);
-               if (skylark::base::Width(Xv) <=0) {
-                   std::cout << "iteration " << iter
-                             << " objective " << obj
-                             << " time " << timer.elapsed()
-                             << " seconds" << std::endl;
-               }
-               else {
-                   std::cout << "iteration " << iter
-                             << " objective " << obj
-                             << " accuracy " << accuracy
-                             << " time " << timer.elapsed()
-                             << " seconds" << std::endl;
-               }
-           }
-
-           El::Copy(O, Obar);
-           El::Scale(1.0/(NumFeaturePartitions+1.0), sum_o);
-           El::Axpy(-1.0, sum_o, Obar);
-
-           El::Axpy(+1.0, O, nu);
-           El::Axpy(-1.0, Obar, nu);
-
-
-
-           //Wbar = comm.reduce(Wi)
-           SKYLARK_TIMER_RESTART(COMMUNICATION_PROFILE);
-           boost::mpi::reduce (comm,
-                                   Wi.LockedBuffer(),
-                                   Wi.MemorySize(),
-                                   Wbar.Buffer(),
-                                   std::plus<double>(),
-                                   0);
-           SKYLARK_TIMER_ACCUMULATE(COMMUNICATION_PROFILE);
-
-           if(rank==0) {
-               //Wbar = (Wisum + W)/(P+1)
-               El::Axpy(1.0, W, Wbar);
-               El::Scale(1.0/(P+1), Wbar);
-
-               // mu = mu + W - Wbar;
-               El::Axpy(+1.0, W, mu);
-               El::Axpy(-1.0, Wbar, mu);
-           }
-
-           SKYLARK_TIMER_RESTART(BARRIER_PROFILE);
-           comm.barrier();
-           SKYLARK_TIMER_ACCUMULATE(BARRIER_PROFILE);
-
-           SKYLARK_TIMER_ACCUMULATE(ITERATIONS_PROFILE);
-       }
-
-       SKYLARK_TIMER_PRINT(ITERATIONS_PROFILE, comm);
-       SKYLARK_TIMER_PRINT(COMMUNICATION_PROFILE, comm);
-       SKYLARK_TIMER_PRINT(TRANSFORM_PROFILE, comm);
-       SKYLARK_TIMER_PRINT(ZTRANSFORM_PROFILE, comm);
-       SKYLARK_TIMER_PRINT(ZMULT_PROFILE, comm);
-       SKYLARK_TIMER_PRINT(PROXLOSS_PROFILE, comm);
-       SKYLARK_TIMER_PRINT(BARRIER_PROFILE, comm);
-       SKYLARK_TIMER_PRINT(PREDICTION_PROFILE, comm);
-
-       return model;
+        El::Zeros(sum_o, k, ni);
+        El::Zeros(wbar_output, k, ni);
+
+        int j;
+        const feature_transform_t* featureMap;
+
+        SKYLARK_TIMER_RESTART(TRANSFORM_PROFILE);
+
+#       ifdef SKYLARK_HAVE_OPENMP
+#       pragma omp parallel for if(NumThreads > 1) private(j, start, finish, sj, featureMap) num_threads(NumThreads)
+#       endif
+        for(j = 0; j < NumFeaturePartitions; j++) {
+            start = starts[j];
+            finish = finishes[j];
+            sj = finish - start  + 1;
+
+            El::Matrix<double> Z;
+
+            // Get the Z matrix
+            if (CacheTransforms && (iter > 1))
+                El::View(Z, *TransformCache[j], 0, 0, sj, ni);
+            else {
+                if (featureMaps.size() > 0) {
+                    featureMap = featureMaps[j];
+
+                    SKYLARK_TIMER_RESTART(ZTRANSFORM_PROFILE);
+                    Z.Resize(sj, ni); // TODO do we need this?
+                    featureMap->apply(X, Z, skylark::sketch::columnwise_tag());
+                    SKYLARK_TIMER_ACCUMULATE(ZTRANSFORM_PROFILE);
+
+                    if (ScaleFeatureMaps)
+                        El::Scale(sqrt(double(sj) / d), Z);
+                } else
+                    internal::GetSlice(X, Z, start, 0, sj, ni);
+            }
+
+            El::Matrix<double> tmp(sj, k);
+            El::Matrix<double> rhs(sj, k);
+            El::Matrix<double> o(k, ni);
+
+            if(iter==1) {
+
+                El::Matrix<double> Ones;
+                El::Ones(Ones, sj, 1);
+                El::Gemm(El::NORMAL, El::TRANSPOSE, 1.0, Z, Z, 0.0, *Cache[j]);
+                El::UpdateDiagonal(*Cache[j], 1.0, Ones);
+                El::Inverse(*Cache[j]);
+
+                if (CacheTransforms)
+                    *TransformCache[j] = Z;
+            }
+
+            El::View(tmp, Wbar, start, 0, sj, k); //tmp = Wbar[J,:]
+
+            LocalMatrixType wbar_tmp;
+            El::Zeros(wbar_tmp, k, ni);
+
+            if (NumThreads > 1) {
+                El::Gemm(El::TRANSPOSE, El::NORMAL, 1.0, tmp, Z, 0.0, wbar_tmp);
+
+#               ifdef SKYLARK_HAVE_OPENMP
+#               pragma omp critical
+#               endif
+                El::Axpy(1.0, wbar_tmp, wbar_output);
+            } else
+                El::Gemm(El::TRANSPOSE, El::NORMAL, 1.0, tmp, Z, 1.0, wbar_output);
+
+            rhs = tmp; //rhs = Wbar[J,:]
+            El::View(tmp, mu_ij, start, 0, sj, k); //tmp = mu_ij[J,:]
+            El::Axpy(-1.0, tmp, rhs); // rhs = rhs - mu_ij[J,:] = Wbar[J,:] - mu_ij[J,:]
+            El::View(tmp, ZtObar_ij, start, 0, sj, k);
+            El::Axpy(+1.0, tmp, rhs); // rhs = rhs + ZtObar_ij[J,:]
+
+            SKYLARK_TIMER_RESTART(ZMULT_PROFILE);
+            El::Matrix<double> dsum = del_o;
+            El::Axpy(NumFeaturePartitions + 1.0, nu, dsum);
+            El::Gemm(El::NORMAL, El::TRANSPOSE, 
+                1.0/(NumFeaturePartitions + 1.0), Z, dsum, 1.0, rhs); // rhs = rhs + z'*(1/(n+1) * del_o + nu)
+            SKYLARK_TIMER_ACCUMULATE(ZMULT_PROFILE);
+
+            El::View(tmp, Wi, start, 0, sj, k);
+            El::Gemm(El::NORMAL, El::NORMAL, 1.0, *Cache[j], rhs, 0.0, tmp); // ]tmp = Wi[J,:] = Cache[j]*rhs
+
+            SKYLARK_TIMER_RESTART(ZMULT_PROFILE);
+            El::Gemm(El::TRANSPOSE, El::NORMAL, 1.0, tmp, Z, 0.0, o); // o = (z*tmp)' = (z*Wi[J,:])'
+            SKYLARK_TIMER_ACCUMULATE(ZMULT_PROFILE);
+
+            // mu_ij[JJ,:] = mu_ij[JJ,:] + Wi[JJ,:];
+            El::View(tmp, mu_ij, start, 0, sj, k); //tmp = mu_ij[J,:]
+            El::View(rhs, Wi, start, 0, sj, k);
+            El::Axpy(+1.0, rhs, tmp);
+
+            //ZtObar_ij[JJ,:] = numpy.dot(Z.T, o);
+            El::View(tmp, ZtObar_ij, start, 0, sj, k);
+            El::Gemm(El::NORMAL, El::TRANSPOSE, 1.0, Z, o, 0.0, tmp);
+
+            //  sum_o += o
+            if (NumThreads > 1) {
+#               ifdef SKYLARK_HAVE_OPENMP
+#               pragma omp critical
+#               endif
+                El::Axpy(1.0, o, sum_o);
+            } else
+                El::Axpy(1.0, o, sum_o);
+
+            Z.Empty(); // TODO do we need this?
+        }
+
+        SKYLARK_TIMER_ACCUMULATE(TRANSFORM_PROFILE);
+
+        localloss = 0.0 ;
+        //  El::Zeros(o, ni, k);
+        El::Matrix<double> o(k, ni);
+        El::Zero(o);
+        El::Scale(-1.0, sum_o);
+        El::Axpy(+1.0, O, sum_o); // sum_o = O.Matrix - sum_o
+        del_o = sum_o;
+
+        SKYLARK_TIMER_RESTART(PREDICTION_PROFILE);
+        if (skylark::base::Width(Xv) > 0) {
+            El::Zero(Yp);
+            El::Zero(Yp_labels);
+            model->predict(Xv, Yp_labels, Yp, NumThreads);
+
+            if (regression) {
+                El::Axpy(-1.0, Yv, Yp);
+                double localerr = std::pow(El::Nrm2(Yp), 2);
+                double localnrm = std::pow(El::Nrm2(Yv), 2);
+                double err, nrm;
+                boost::mpi::reduce(comm, localerr, err,
+                    std::plus<double>(), 0);
+                boost::mpi::reduce(comm, localnrm, nrm,
+                    std::plus<double>(), 0);
+
+                if (comm.rank() == 0)
+                    accuracy = std::sqrt(err / nrm);
+            } else {
+                El::Int correct = skylark::ml::classification_accuracy(Yv, Yp);
+                El::Int totalcorrect, total;
+                boost::mpi::reduce(comm, correct, totalcorrect,
+                    std::plus<El::Int>(), 0);
+                boost::mpi::reduce(comm, Yv.Height(), total,
+                    std::plus<El::Int>(), 0);
+
+                if(comm.rank() == 0)
+                    accuracy =  totalcorrect * 100.0 / total;
+            }
+        }
+        SKYLARK_TIMER_ACCUMULATE(PREDICTION_PROFILE);
+
+        localloss += loss->evaluate(wbar_output, Y);
+
+        SKYLARK_TIMER_RESTART(COMMUNICATION_PROFILE);
+        reduce(comm, localloss, totalloss, std::plus<double>(), 0);
+        SKYLARK_TIMER_ACCUMULATE(COMMUNICATION_PROFILE);
+
+        if(rank == 0) {
+            obj = totalloss + lambda*regularizer->evaluate(Wbar);
+            if (skylark::base::Width(Xv) <=0) {
+                std::cout << "iteration " << iter
+                          << " objective " << obj
+                          << " time " << timer.elapsed()
+                          << " seconds" << std::endl;
+            }
+            else {
+                std::cout << "iteration " << iter
+                          << " objective " << obj
+                          << " accuracy " << accuracy
+                          << " time " << timer.elapsed()
+                          << " seconds" << std::endl;
+            }
+        }
+
+        El::Copy(O, Obar);
+        El::Scale(1.0/(NumFeaturePartitions+1.0), sum_o);
+        El::Axpy(-1.0, sum_o, Obar);
+
+        El::Axpy(+1.0, O, nu);
+        El::Axpy(-1.0, Obar, nu);
+
+        SKYLARK_TIMER_RESTART(COMMUNICATION_PROFILE);
+        boost::mpi::reduce (comm,
+            Wi.LockedBuffer(),
+            Wi.MemorySize(),
+            Wbar.Buffer(),
+            std::plus<double>(),
+            0);
+        SKYLARK_TIMER_ACCUMULATE(COMMUNICATION_PROFILE);
+
+        if(rank==0) {
+            //Wbar = (Wisum + W)/(P+1)
+            El::Axpy(1.0, W, Wbar);
+            El::Scale(1.0/(P+1), Wbar);
+
+            // mu = mu + W - Wbar;
+            El::Axpy(+1.0, W, mu);
+            El::Axpy(-1.0, Wbar, mu);
+        }
+
+        SKYLARK_TIMER_RESTART(BARRIER_PROFILE);
+        comm.barrier();
+        SKYLARK_TIMER_ACCUMULATE(BARRIER_PROFILE);
+
+        SKYLARK_TIMER_ACCUMULATE(ITERATIONS_PROFILE);
+    }
+
+    SKYLARK_TIMER_PRINT(ITERATIONS_PROFILE, comm);
+    SKYLARK_TIMER_PRINT(COMMUNICATION_PROFILE, comm);
+    SKYLARK_TIMER_PRINT(TRANSFORM_PROFILE, comm);
+    SKYLARK_TIMER_PRINT(ZTRANSFORM_PROFILE, comm);
+    SKYLARK_TIMER_PRINT(ZMULT_PROFILE, comm);
+    SKYLARK_TIMER_PRINT(PROXLOSS_PROFILE, comm);
+    SKYLARK_TIMER_PRINT(BARRIER_PROFILE, comm);
+    SKYLARK_TIMER_PRINT(PREDICTION_PROFILE, comm);
+
+    return model;
 }
 
 

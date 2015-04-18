@@ -356,6 +356,8 @@ int main(int argc, char** argv) {
         return -1;
     }
 
+    SKYLARK_BEGIN_TRY()
+
     if (doall) {
         if (numeric)
             execute_all<int>();
@@ -368,6 +370,8 @@ int main(int argc, char** argv) {
         else
             execute<std::string>();
     }
+
+    SKYLARK_END_TRY() SKYLARK_CATCH_AND_PRINT()
 
     return 0;
 }

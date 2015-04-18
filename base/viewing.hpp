@@ -5,13 +5,14 @@ namespace skylark { namespace base {
 
 template<typename T>
 inline void ColumnView(El::Matrix<T>& A, El::Matrix<T>& B,
-    int j, int width) {
+    El::Int j, El::Int width) {
     El::View(A, B, 0, j, B.Height(), width);
 }
 
 template<typename T>
 inline
-const El::Matrix<T> ColumnView(const El::Matrix<T>& B, int j, int width) {
+const El::Matrix<T> ColumnView(const El::Matrix<T>& B, 
+    El::Int j, El::Int width) {
     El::Matrix<T> A;
     El::LockedView(A, B, 0, j, B.Height(), width);
     return A;
@@ -20,7 +21,7 @@ const El::Matrix<T> ColumnView(const El::Matrix<T>& B, int j, int width) {
 template<typename T, El::Distribution U, El::Distribution V>
 inline
 const El::DistMatrix<T,U,V> ColumnView(const El::DistMatrix<T,U,V>& B,
-    int j, int width) {
+    El::Int j, El::Int width) {
     El::DistMatrix<T,U,V> A;
     El::LockedView(A, B, 0, j, B.Height(), width);
     return A;
@@ -28,13 +29,13 @@ const El::DistMatrix<T,U,V> ColumnView(const El::DistMatrix<T,U,V>& B,
 
 template<typename T>
 inline void RowView(El::Matrix<T>& A, El::Matrix<T>& B,
-    int i, int height) {
+    El::Int i, El::Int height) {
     El::View(A, B, i, 0, height, B.Width());
 }
 
 template<typename T>
 inline
-const El::Matrix<T> RowView(const El::Matrix<T>& B, int i, int height) {
+const El::Matrix<T> RowView(const El::Matrix<T>& B, El::Int i, El::Int height) {
     El::Matrix<T> A;
     El::LockedView(A, B, i, 0, height, B.Width());
     return A;
@@ -42,7 +43,8 @@ const El::Matrix<T> RowView(const El::Matrix<T>& B, int i, int height) {
 
 template<typename T>
 inline
-void ColumnView(sparse_matrix_t<T>& A, sparse_matrix_t<T>& B, int j, int width) {
+void ColumnView(sparse_matrix_t<T>& A, sparse_matrix_t<T>& B,
+    El::Int j, El::Int width) {
     const int *bindptr = B.indptr();
     const int *bindices = B.indices();
     T *bvalues = B.values();
@@ -60,7 +62,8 @@ void ColumnView(sparse_matrix_t<T>& A, sparse_matrix_t<T>& B, int j, int width) 
 
 template<typename T>
 inline
-sparse_matrix_t<T> ColumnView(const sparse_matrix_t<T>& B, int j, int width) {
+sparse_matrix_t<T> ColumnView(const sparse_matrix_t<T>& B,
+    El::Int j, El::Int width) {
     sparse_matrix_t<T> A;
     ColumnView(A, const_cast<sparse_matrix_t<T>&>(B), j, width);
     return A;

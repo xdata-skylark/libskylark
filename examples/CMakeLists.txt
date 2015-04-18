@@ -6,7 +6,7 @@ target_link_libraries(hp_dense
   ${Metis_LIBRARY}
   ${SKYLARK_LIBS}
   ${Boost_LIBRARIES})
-install_targets(/bin/examples hp_dense)
+install_targets(/bin/skylark_examples hp_dense)
 
 add_executable(elemental elemental.cpp)
 target_link_libraries(elemental
@@ -16,7 +16,7 @@ target_link_libraries(elemental
   ${Metis_LIBRARY}
   ${SKYLARK_LIBS}
   ${Boost_LIBRARIES})
-install_targets(/bin/examples elemental)
+install_targets(/bin/skylark_examples elemental)
 
 add_executable(regression regression.cpp)
 target_link_libraries(regression
@@ -26,7 +26,7 @@ target_link_libraries(regression
   ${Metis_LIBRARY}
   ${SKYLARK_LIBS}
   ${Boost_LIBRARIES})
-install_targets(/bin/examples regression)
+install_targets(/bin/skylark_examples regression)
 
 add_executable(least_squares least_squares)
 target_link_libraries(least_squares
@@ -36,7 +36,7 @@ target_link_libraries(least_squares
   ${Metis_LIBRARY}
   ${SKYLARK_LIBS}
   ${Boost_LIBRARIES})
-install_targets(/bin/examples least_squares)
+install_targets(/bin/skylark_examples least_squares)
 
 add_executable(kernel_regression kernel_regression.cpp)
 target_link_libraries(kernel_regression
@@ -46,40 +46,8 @@ target_link_libraries(kernel_regression
   ${Metis_LIBRARY}
   ${SKYLARK_LIBS}
   ${Boost_LIBRARIES})
-install_targets(/bin/examples kernel_regression)
 
-add_executable(random_features random_features.cpp)
-target_link_libraries(random_features
-  ${Elemental_LIBRARY}
-  ${OPTIONAL_LIBS}
-  ${Pmrrr_LIBRARY}
-  ${Metis_LIBRARY}
-  ${SKYLARK_LIBS}
-  ${Boost_LIBRARIES})
-install_targets(/bin/examples random_features)
-
-add_executable(community community)
-target_link_libraries(community
-  ${Elemental_LIBRARY}
-  ${OPTIONAL_LIBS}
-  ${Pmrrr_LIBRARY}
-  ${Metis_LIBRARY}
-  ${SKYLARK_LIBS}
-  ${Boost_LIBRARIES}
-  ${HDF5_LIBRARIES}
-  ${ZLIB_LIBRARIES})
-install_targets(/bin/examples community)
-
-add_executable(svd svd.cpp)
-target_link_libraries(svd
-  ${Elemental_LIBRARY}
-  ${OPTIONAL_LIBS}
-  ${Pmrrr_LIBRARY}
-  ${Metis_LIBRARY}
-  ${SKYLARK_LIBS}
-  ${Boost_LIBRARIES})
-install_targets(/bin/examples svd)
-
+install_targets(/bin/skylark_examples kernel_regression)
 
 if (SKYLARK_HAVE_HDF5)
   add_executable(condest condest.cpp)
@@ -92,7 +60,7 @@ if (SKYLARK_HAVE_HDF5)
     ${Boost_LIBRARIES}
     ${HDF5_LIBRARIES}
     ${ZLIB_LIBRARIES})
-  install_targets(/bin/examples condest)
+  install_targets(/bin/skylark_examples condest)
 endif (SKYLARK_HAVE_HDF5)
 
 if (SKYLARK_HAVE_OPENMP AND SKYLARK_HAVE_HDF5)
@@ -106,5 +74,5 @@ if (SKYLARK_HAVE_OPENMP AND SKYLARK_HAVE_HDF5)
     ${Boost_LIBRARIES}
     ${HDF5_LIBRARIES}
     ${ZLIB_LIBRARIES})
-  install_targets(/bin/examples asynch)
+  install_targets(/bin/skylark_examples asynch)
 endif (SKYLARK_HAVE_OPENMP AND SKYLARK_HAVE_HDF5)

@@ -31,6 +31,8 @@ int main(int argc, char* argv[]) {
     bool sparse = (options.fileformat == LIBSVM_SPARSE)
         || (options.fileformat == HDF5_SPARSE);
 
+    SKYLARK_BEGIN_TRY()
+
     if (!options.trainfile.empty()) {
         // Training
         if (comm.rank() == 0) {
@@ -56,7 +58,8 @@ int main(int argc, char* argv[]) {
             std::cout << options.print();
         }
 
-        El::Matrix<double> DecisionValues, Y;
+        El::Matrix<double> Y;
+        El::DistMatrix<double, El::VC, El::STAR> DecisionValues;
         El::DistMatrix<El::Int, El::VC, El::STAR> PredictedLabels;
         El::Int n;
         skylark::ml::model_t model(options.modelfile);
@@ -68,8 +71,9 @@ int main(int argc, char* argv[]) {
 
             boost::mpi::reduce(comm, Y.Height(), n, std::plus<El::Int>(), 0);
             PredictedLabels.Resize(n, 1);
+            DecisionValues.Resize(n, model.get_output_size());
 
-            model.predict(X, PredictedLabels.Matrix(), DecisionValues,
+            model.predict(X, PredictedLabels.Matrix(), DecisionValues.Matrix(),
                 options.numthreads);
         } else {
             El::Matrix<double> X;
@@ -78,24 +82,48 @@ int main(int argc, char* argv[]) {
 
             boost::mpi::reduce(comm, Y.Height(), n, std::plus<El::Int>(), 0);
             PredictedLabels.Resize(n, 1);
+            DecisionValues.Resize(n, model.get_output_size());
 
-            model.predict(X, PredictedLabels.Matrix(), DecisionValues, 
+            model.predict(X, PredictedLabels.Matrix(), DecisionValues.Matrix(),
                 options.numthreads);
         }
 
-        El::Int correct = skylark::ml::classification_accuracy(Y, 
-            DecisionValues);
         double accuracy = 0.0;
-        El::Int totalcorrect, total;
-        boost::mpi::reduce(comm, correct, totalcorrect, std::plus<El::Int>(), 0);
+        if (model.is_regression()) {
 
-        if(comm.rank() == 0) {
-            double accuracy =  totalcorrect*100.0/n;
-            std::cout << "Test Accuracy = " <<  accuracy << " %" << std::endl;
+            // TODO can be done better if Y and VC,STAR as well...
+            El::Matrix<double> Ye = DecisionValues.Matrix();
+            El::Axpy(-1.0, Y, Ye);
+            double localerr = std::pow(El::Nrm2(Ye), 2);
+            double localnrm = std::pow(El::Nrm2(Y), 2);
+            double err, nrm;
+            boost::mpi::reduce(comm, localerr, err,
+                std::plus<double>(), 0);
+            boost::mpi::reduce(comm, localnrm, nrm,
+                std::plus<double>(), 0);
+
+            if (comm.rank() == 0)
+                    accuracy = std::sqrt(err / nrm);
+
+            if (!options.outputfile.empty())
+                El::Write(DecisionValues, options.outputfile, El::ASCII);
+
+        } else {
+            El::Int correct = skylark::ml::classification_accuracy(Y,
+                DecisionValues.Matrix());
+            El::Int totalcorrect, total;
+            boost::mpi::reduce(comm, correct, totalcorrect,
+                std::plus<El::Int>(), 0);
+
+            if (comm.rank() == 0)
+                accuracy =  totalcorrect*100.0/n;
+
+            if (!options.outputfile.empty())
+                El::Write(PredictedLabels, options.outputfile, El::ASCII);
         }
 
-        if (!options.outputfile.empty())
-            El::Write(PredictedLabels, options.outputfile, El::ASCII);
+        if(comm.rank() == 0)
+            std::cout << "Test Accuracy = " <<  accuracy << " %" << std::endl;
 
         // TODO list?
         // fix logistic case
@@ -126,11 +154,18 @@ int main(int argc, char* argv[]) {
 
             model.predict(X, PredictedLabel, DecisionValues,
                 options.numthreads);
-            std::cout << PredictedLabel.Get(0, 0) << std::endl;
+
+            std::cout <<
+                (model.is_regression() ?
+                    DecisionValues.Get(0,0) : PredictedLabel.Get(0, 0))
+                      << std::endl;
         }
     }
 
     comm.barrier();
+
+    SKYLARK_END_TRY() SKYLARK_CATCH_AND_PRINT()
+
     El::Finalize();
 
     return 0;

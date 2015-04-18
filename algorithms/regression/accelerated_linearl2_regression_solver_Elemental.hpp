@@ -331,9 +331,9 @@ public:
         double condest = 0;
         int attempts = 0;
         do {
-            sketch::RFUT_t<El::DistMatrix<ValueType, El::STAR, El::VR>,
-                           sketch::fft_futs<double>::DCT_t,
-                           utility::rademacher_distribution_t<value_type> >
+            sketch::RFUT_t<El::DistMatrix<value_type, El::STAR, El::VR>,
+                           typename sketch::fft_futs<value_type>::DCT_t,
+                           utility::rademacher_distribution_t<double> >
                 F(_m, context);
             F.apply(Ar, Ar, sketch::columnwise_tag());
 

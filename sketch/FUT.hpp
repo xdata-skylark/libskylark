@@ -5,7 +5,7 @@
 #error "Include top-level sketch.hpp instead of including individuals headers"
 #endif
 
-#if SKYLARK_HAVE_FFTW
+#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_FFTWF
 
 #include <fftw3.h>
 
@@ -74,9 +74,10 @@ private:
                             skylark::sketch::columnwise_tag) const {
         ValueType* AA = A.Buffer();
         int j;
-#ifdef SKYLARK_HAVE_OPENMP
-#pragma omp parallel for private(j)
-#endif
+
+#       ifdef SKYLARK_HAVE_OPENMP
+#       pragma omp parallel for private(j)
+#       endif
         for (j = 0; j < A.Width(); j++)
             ExecuteFun(_plan_inverse, AA + j * A.LDim(), AA + j * A.LDim());
     }
@@ -129,6 +130,8 @@ struct fft_futs {
 
 };
 
+#if SKYLARK_HAVE_FFTW
+
 template<>
 struct fft_futs<double> {
     typedef fftw_r2r_fut_t <
@@ -139,6 +142,38 @@ struct fft_futs<double> {
             double, fftw_plan, fftw_r2r_kind, FFTW_DHT, FFTW_DHT,
             fftw_plan_r2r_1d, fftw_execute_r2r, fftw_destroy_plan, 1 > DHT_t;
 };
+
+#else
+
+template<>
+struct fft_futs<double> {
+
+  struct empty_t {
+
+    empty_t(int N) { 
+      SKYLARK_THROW_EXCEPTION (
+	base::sketch_exception()
+              << base::error_msg(
+                 "Double precision fftw has not been compiled."));
+    }
+
+    template <typename Dimension>
+    void apply(El::Matrix<double>& A, Dimension dimension) const { }
+
+    template <typename Dimension>
+    void apply_inverse(El::Matrix<double>& A, Dimension dimension) const { }
+
+    double scale() const { return 0.0; }
+
+  };
+
+  typedef empty_t DCT_t;
+  typedef empty_t DHT_t;
+};
+
+#endif
+
+#if SKYLARK_HAVE_FFTWF
 
 template<>
 struct fft_futs<float> {
@@ -151,6 +186,36 @@ struct fft_futs<float> {
             fftwf_plan_r2r_1d, fftwf_execute_r2r, fftwf_destroy_plan, 1 > DHT_t;
 };
 
+#else
+
+template<>
+struct fft_futs<float> {
+
+  struct empty_t {
+
+    empty_t(int N) { 
+
+      SKYLARK_THROW_EXCEPTION (
+	base::sketch_exception()
+              << base::error_msg(
+                 "Single precision fftw has not been compiled."));
+    }
+
+    template <typename Dimension>
+    void apply(El::Matrix<float>& A, Dimension dimension) const { }
+
+    template <typename Dimension>
+    void apply_inverse(El::Matrix<float>& A, Dimension dimension) const { }
+
+    double scale() const { return 0.0; }
+
+  };
+
+  typedef empty_t DCT_t;
+  typedef empty_t DHT_t;
+};
+
+#endif
 
 } } /** namespace skylark::sketch */
 

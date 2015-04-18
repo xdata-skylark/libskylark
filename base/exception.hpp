@@ -29,6 +29,7 @@ const char* skylark_strerror(int error_code) {
 
 /// macro defining the beginning of a try block
 #define SKYLARK_BEGIN_TRY() try {
+
 /// macro defining the end of a try block
 #define SKYLARK_END_TRY()   }
 
@@ -47,8 +48,13 @@ const char* skylark_strerror(int error_code) {
         std::cerr << *trace << std::endl; \
     }
 
+// catch and print message
+#define SKYLARK_CATCH_AND_PRINT() \
+    catch (const skylark::base::skylark_exception& ex) { \
+       SKYLARK_PRINT_EXCEPTION_DETAILS(ex);                 \
+    }\
+
 /// catch a Skylark exceptions and returns an error code
-//XXX: only get top-most exception?
 #define SKYLARK_CATCH_AND_RETURN_ERROR_CODE() \
     catch (const skylark::base::skylark_exception& ex) { \
         if (int const *c = \
@@ -56,8 +62,6 @@ const char* skylark_strerror(int error_code) {
             return *c; \
         } \
     }
-
-
 
 namespace skylark {
 namespace base {

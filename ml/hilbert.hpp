@@ -229,10 +229,11 @@ void LargeScaleKernelLearning(const boost::mpi::communicator& comm,
 
 
     int dimensions = skylark::base::Height(X);
-    int targets = GetNumTargets<LabelType>(comm, Y);
+    int targets = options.regression ? 1 : GetNumTargets<LabelType>(comm, Y);
     bool shift = false;
 
-    if ((options.lossfunction == LOGISTIC) && (targets == 1)) {
+    if (!options.regression && options.lossfunction == LOGISTIC
+        && targets == 1) {
         ShiftForLogistic(Y);
         targets = 2;
         shift = true;
@@ -254,7 +255,7 @@ void LargeScaleKernelLearning(const boost::mpi::communicator& comm,
     }
 
     skylark::ml::model_t* model =
-        Solver->train(X, Y, Xv, Yv, comm);
+        Solver->train(X, Y, Xv, Yv, options.regression, comm);
 
     // TODO should be done "outside"
     if (comm.rank() == 0)

@@ -81,12 +81,14 @@ struct inplace_mat_precond_t : public inplace_precond_t<XType> {
 
     void apply(XType& X) const {
         XType Xin(X);
-        base::Gemm(El::NORMAL, El::NORMAL, 1.0, N, Xin, X);
+        typedef typename utility::typer_t<XType>::value_type value_type;
+        base::Gemm(El::NORMAL, El::NORMAL, value_type(1.0), N, Xin, X);
     }
 
     void apply_adjoint(XType& X) const {
         XType Xin(X);
-        base::Gemm(El::ADJOINT, El::NORMAL, 1.0, N, Xin, X);
+        typedef typename utility::typer_t<XType>::value_type value_type;
+        base::Gemm(El::ADJOINT, El::NORMAL, value_type(1.0), N, Xin, X);
     }
 };
 
@@ -103,11 +105,13 @@ struct inplace_tri_inverse_precond_t : public inplace_precond_t<XType> {
     bool is_id() const { return false; }
 
     void apply(XType& X) const {
-        base::Trsm(El::LEFT, UL, El::NORMAL, D, 1.0, R, X);
+        typedef typename utility::typer_t<XType>::value_type value_type;
+        base::Trsm(El::LEFT, UL, El::NORMAL, D, value_type(1.0), R, X);
     }
 
     void apply_adjoint(XType& X) const {
-        base::Trsm(El::LEFT, UL, El::ADJOINT, D, 1.0, R, X);
+        typedef typename utility::typer_t<XType>::value_type value_type;
+        base::Trsm(El::LEFT, UL, El::ADJOINT, D, value_type(1.0), R, X);
     }
 };
 

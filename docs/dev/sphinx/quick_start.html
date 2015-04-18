@@ -1128,7 +1128,11 @@ mpiexec -np <span class="m">4</span> python <span class="nv">$SKYLARK_SRC_DIR</s
 165
 166
 167
-168</pre></div></td><td class="code"><div class="highlight"><pre><span class="cp">#include &lt;iostream&gt;</span>
+168
+169
+170
+171
+172</pre></div></td><td class="code"><div class="highlight"><pre><span class="cp">#include &lt;iostream&gt;</span>
 <span class="cp">#include &lt;boost/program_options.hpp&gt;</span>
 
 <span class="cp">#include &lt;El.hpp&gt;</span>
@@ -1276,6 +1280,8 @@ mpiexec -np <span class="m">4</span> python <span class="nv">$SKYLARK_SRC_DIR</s
     <span class="n">params</span><span class="p">.</span><span class="n">oversampling_ratio</span> <span class="o">=</span> <span class="n">oversampling_ratio</span><span class="p">;</span>
     <span class="n">params</span><span class="p">.</span><span class="n">oversampling_additive</span> <span class="o">=</span> <span class="n">oversampling_additive</span><span class="p">;</span>
 
+    <span class="n">SKYLARK_BEGIN_TRY</span><span class="p">()</span>
+
     <span class="k">if</span> <span class="p">(</span><span class="n">use_single</span><span class="p">)</span> <span class="p">{</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">as_sparse</span><span class="p">)</span>
             <span class="n">execute</span><span class="o">&lt;</span><span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="kt">sparse_matrix_t</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">,</span>
@@ -1292,6 +1298,8 @@ mpiexec -np <span class="m">4</span> python <span class="nv">$SKYLARK_SRC_DIR</s
             <span class="n">execute</span><span class="o">&lt;</span><span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">,</span>
                     <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
     <span class="p">}</span>
+
+    <span class="n">SKYLARK_END_TRY</span><span class="p">()</span> <span class="n">SKYLARK_CATCH_AND_PRINT</span><span class="p">()</span>
 
     <span class="n">El</span><span class="o">::</span><span class="n">Finalize</span><span class="p">();</span>
     <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>

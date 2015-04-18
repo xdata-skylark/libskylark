@@ -129,6 +129,139 @@ The vagrant box can be stopped by issuing ``vagrant halt``.
     GUI) and start with a fresh Vagrant build.
 
 
+Command-line Usage
+==================
+
+While libSkylark is designed to be a library, it also provides access to many
+of its feature using standalone applications. For all applications, running with 
+the --help options reveals the command-line options.
+
+.. _svd_app:
+
+Approximate Singular Value Decomposition
+----------------------------------------
+
+Building libSkylark creates an executable called ``skylark_svd`` in 
+``$SKYLARK_INSTALL_DIR/bin``. This executable can be used in standalone mode as follows.
+
+1. Download USPS digit recognition dataset (in various supported formats).
+
+.. code-block:: sh
+
+        wget http://vikas.sindhwani.org/data.tar.gz
+        tar -xvzf data.tar.gz
+
+2. Compute an approximate SVD with 10 leading singular vectors.
+
+.. code-block:: sh
+
+         skylark_svd -k 10 --prefix usps usps.train
+
+The files usps.U.txt, usps.S.txt and usps.V.txt contain the approximate SVD that 
+was computed.
+
+
+Linear Least-Squares
+--------------------
+
+Building libSkylark creates an executable called ``skylark_linear`` in 
+``$SKYLARK_INSTALL_DIR/bin``. This executable can be used in standalone mode to 
+approximately solve linear least squares problems. Here is an example command-line:
+
+.. code-block:: sh
+
+         skylark_linear cpu cpu.sol
+
+The file cpu.sol contains the computed approximate solution.
+
+.. note::
+
+   Currently, only overdetermined least squares of dense matrices is supported.
+   No regularization options are available. This will be relaxed in the future.
+
+.. _ml_example:
+
+Learning Non-Linear Models
+--------------------------
+
+In :file:`${SKYLARK_SRC_DIR}/ml/skylark_ml.cpp`, an ADMM-based solver is
+setup to train and predict with a randomized kernel based model for
+nonlinear classification and regression problems.
+
+Building libSkylark creates an executable called ``skylark_ml`` in
+``$SKYLARK_INSTALL_DIR/bin``. This executable can be used in standalone mode as follows.
+
+1. Download USPS digit recognition dataset (in various supported formats).
+
+.. code-block:: sh
+
+        wget http://vikas.sindhwani.org/data.tar.gz
+        tar -xvzf data.tar.gz
+
+The supported fileformats are described in :ref:`ml_io`.
+
+2. Train an SVM with Randomized Gaussian Kernel
+
+.. code-block:: sh
+
+        mpiexec -np 4 skylark_ml -g 10 -k 1 -l 2 -i 20 --trainfile data/usps.train --valfile data/usps.test --modelfile model
+
+3. Test accuracy of the generated model and generate predictions
+
+.. code-block:: sh
+
+        mpiexec -np 4 skylark_ml --outputfile output --testfile data/usps.test --modelfile model
+
+An output file named output.txt with the predicted labels is created.
+
+4. In the above, the entire test data is loaded to memory and the result is computed. This is the fast, but it is limited to cases where the test data is fixed. skylark_ml also supports an interactive (streaming) mode in which the software prompts for data line by line from stdin and outputs in prediction after each line is received. The mode is invoked by not passing either training data or testing data. An example for using this mode is the following:
+
+.. code-block:: sh
+
+         cut -d ' ' -f 1 --complement data/usps.test | skylark_ml --modelfile model
+
+.. note::
+
+	Interactive mode is much slower, since there is significant overhead that is repeated for each new line of data. In the future, batching will be supported, to avoid some of this overhead. 
+
+5. It is also possible to load the model in Python and do predictions. Here is an example:
+
+.. code-block:: python
+
+         import skylark.io, skylark.ml.modeling
+         model = skylark.ml.modeling.LinearizedKernelModel('model')
+         testfile = skylark.io.libsvm('data/usps.test')
+         Xt, Yt = testfile.read(model.get_input_dimension())
+         Yp = model.predict(Xt)
+
+Community Detection Using Seed Node
+-----------------------------------
+
+Building libSkylark creates an executable called ``skylark_community`` in 
+``$SKYLARK_INSTALL_DIR/bin``. This executable can be used in standalone mode as follows.
+(Note that an interactive mode is also present.)
+
+1. Prepare the input. Basically, the graph is described in a text file, with each 
+row an edge. Each row has two strings that identify the node. The identifier can be
+arbitrary (does not have to be numeric). For example:
+
+.. code-block:: sh
+
+         cat > two_triangles
+         A1 A2
+         A2 A3
+         A1 A3
+         B1 B2
+         B2 B3
+         B1 B3
+         A1 B1
+
+2. Detect the community with A1 as the seed:
+
+.. code-block:: sh
+        
+         skylark_community --graphfile two_triangles --seed A1
+
 .. _cluster-label:
 
 Cluster of vagrant-controlled VMs
@@ -211,8 +344,8 @@ It will take a while to compile and install everything specified in the
 
 .. _examples-label:
 
-Examples
-=========
+Examples of Library Usage
+=========================
 
 Here, we provide a flavor of the library and its usage. We assume that
 the reader is familiar with sketching and its applications in randomized
@@ -221,8 +354,8 @@ reader to subsequent sections which provide the necessary background and
 references.
 
 When libSkylark is built, executables instantiating these examples can be found
-under ``$SKYLARK_INSTALL_DIR/bin/examples`` and
-``$SKYLARK_INSTALL_DIR/bin/ml``.
+under ``$SKYLARK_INSTALL_DIR/bin/skylark_examples`` and
+``$SKYLARK_INSTALL_DIR/bin``.
 
 Sketching
 ----------
@@ -276,66 +409,12 @@ For an example of `sketch-and-solve` regression in Python, run:
 SVD
 ----
 
-In :file:`${SKYLARK_SRC_DIR}/examples/svd.cpp` an example is provided that illustrates randomized singular value decompositions.
+In :file:`${SKYLARK_SRC_DIR}/nla/skylark_svd.cpp` an example is provided that illustrates randomized singular value decompositions.
 
-.. literalinclude:: ../../examples/svd.cpp
+.. literalinclude:: ../../nla/skylark_svd.cpp
     :language: cpp
     :emphasize-lines: 40
     :linenos:
 
-.. _ml_example:
 
-ML
----
-
-In :file:`${SKYLARK_SRC_DIR}/ml/skylark_ml.cpp`, an ADMM-based solver is
-setup to train and predict with a randomized kernel based model for
-nonlinear classification and regression problems.
-
-Building libSkylark creates an executable called ``skylark_ml`` in
-``$SKYLARK_INSTALL_DIR/bin/ml`` under the libSkylark installation folder.
-This executable can be used in standalone mode as follows.
-
-1. Download USPS digit recognition dataset (in various supported formats).
-
-.. code-block:: sh
-
-        wget http://vikas.sindhwani.org/data.tar.gz
-        tar -xvzf data.tar.gz
-
-The supported fileformats are described in :ref:`ml_io`.
-
-2. Train an SVM with Randomized Gaussian Kernel
-
-.. code-block:: sh
-
-        mpiexec -np 4 ./skylark_ml -g 10 -k 1 -l 2 -i 20 --trainfile data/usps.train --valfile data/usps.test --modelfile model
-
-3. Test accuracy of the generated model and generate predictions
-
-.. code-block:: sh
-
-        mpiexec -np 4 ./skylark_ml --outputfile output --testfile data/usps.test --modelfile model
-
-An output file named output.txt with the predicted labels is created.
-
-4. In the above, the entire test data is loaded to memory and the result is computed. This is the fast, but it is limited to cases where the test data is fixed. skylark_ml also supports an interactive (streaming) mode in which the software prompts for data line by line from stdin and outputs in prediction after each line is received. The mode is invoked by not passing either training data or testing data. An example for using this mode is the following:
-
-.. code-block:: sh
-
-         cut -d ' ' -f 1 --complement data/usps.test | ./skylark_ml --modelfile model
-
-.. note::
-
-	Interactive mode is much slower, since there is significant overhead that is repeated for each new line of data. In the future, batching will be supported, to avoid some of this overhead. 
-
-5. It is also possible to load the model in Python and do predictions. Here is an example:
-
-.. code-block:: python
-
-         import skylark.io, skylark.ml.modeling
-         model = skylark.ml.modeling.LinearizedKernelModel('model')
-         testfile = skylark.io.libsvm('data/usps.test')
-         Xt, Yt = testfile.read(model.get_input_dimension())
-         Yp = model.predict(Xt)
 

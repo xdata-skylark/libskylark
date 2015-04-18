@@ -107,7 +107,7 @@ pointing to the libSkylark source and install directory:</p>
 works and some trouble shooting.
 Additionally we provide instruction on how to install on a cluster
 (see <a class="reference internal" href="#cluster-label"><em>Cluster of vagrant-controlled VMs</em></a>) and running on AWS (see <a class="reference internal" href="#aws-label"><em>Running Vagrant on AWS</em></a>).</p>
-<p>Finally, some examples are provided in the <a class="reference internal" href="#examples-label"><em>Examples</em></a> section.</p>
+<p>Finally, some examples are provided in the <a class="reference internal" href="#examples-label"><em>Examples of Library Usage</em></a> section.</p>
 <div class="section" id="vagrant-label">
 <span id="id1"></span><h2>Vagrant<a class="headerlink" href="#vagrant-label" title="Permalink to this headline">¶</a></h2>
 <p>Under <code class="docutils literal"><span class="pre">vagrant/precise64</span></code> we provide an easy way to materialize an
@@ -164,6 +164,121 @@ the configured <span class="o">(</span><span class="s2">&quot;config.vm.boot_tim
 <p class="last">In case Vagrant crashes in the bootstrap phase, the safest thing is to
 delete the virtual machine (halt than delete the machine in the VirtualBox
 GUI) and start with a fresh Vagrant build.</p>
+</div>
+</div>
+<div class="section" id="command-line-usage">
+<h2>Command-line Usage<a class="headerlink" href="#command-line-usage" title="Permalink to this headline">¶</a></h2>
+<p>While libSkylark is designed to be a library, it also provides access to many
+of its feature using standalone applications. For all applications, running with
+the &#8211;help options reveals the command-line options.</p>
+<div class="section" id="approximate-singular-value-decomposition">
+<span id="svd-app"></span><h3>Approximate Singular Value Decomposition<a class="headerlink" href="#approximate-singular-value-decomposition" title="Permalink to this headline">¶</a></h3>
+<p>Building libSkylark creates an executable called <code class="docutils literal"><span class="pre">skylark_svd</span></code> in
+<code class="docutils literal"><span class="pre">$SKYLARK_INSTALL_DIR/bin</span></code>. This executable can be used in standalone mode as follows.</p>
+<ol class="arabic simple">
+<li>Download USPS digit recognition dataset (in various supported formats).</li>
+</ol>
+<div class="highlight-sh"><div class="highlight"><pre>wget http://vikas.sindhwani.org/data.tar.gz
+tar -xvzf data.tar.gz
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li>Compute an approximate SVD with 10 leading singular vectors.</li>
+</ol>
+<div class="highlight-sh"><div class="highlight"><pre>skylark_svd -k <span class="m">10</span> --prefix usps usps.train
+</pre></div>
+</div>
+<p>The files usps.U.txt, usps.S.txt and usps.V.txt contain the approximate SVD that
+was computed.</p>
+</div>
+<div class="section" id="linear-least-squares">
+<h3>Linear Least-Squares<a class="headerlink" href="#linear-least-squares" title="Permalink to this headline">¶</a></h3>
+<p>Building libSkylark creates an executable called <code class="docutils literal"><span class="pre">skylark_linear</span></code> in
+<code class="docutils literal"><span class="pre">$SKYLARK_INSTALL_DIR/bin</span></code>. This executable can be used in standalone mode to
+approximately solve linear least squares problems. Here is an example command-line:</p>
+<div class="highlight-sh"><div class="highlight"><pre>skylark_linear cpu cpu.sol
+</pre></div>
+</div>
+<p>The file cpu.sol contains the computed approximate solution.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Currently, only overdetermined least squares of dense matrices is supported.
+No regularization options are available. This will be relaxed in the future.</p>
+</div>
+</div>
+<div class="section" id="learning-non-linear-models">
+<span id="ml-example"></span><h3>Learning Non-Linear Models<a class="headerlink" href="#learning-non-linear-models" title="Permalink to this headline">¶</a></h3>
+<p>In <code class="file docutils literal"><span class="pre">$</span><em><span class="pre">SKYLARK_SRC_DIR</span></em><span class="pre">/ml/skylark_ml.cpp</span></code>, an ADMM-based solver is
+setup to train and predict with a randomized kernel based model for
+nonlinear classification and regression problems.</p>
+<p>Building libSkylark creates an executable called <code class="docutils literal"><span class="pre">skylark_ml</span></code> in
+<code class="docutils literal"><span class="pre">$SKYLARK_INSTALL_DIR/bin</span></code>. This executable can be used in standalone mode as follows.</p>
+<ol class="arabic simple">
+<li>Download USPS digit recognition dataset (in various supported formats).</li>
+</ol>
+<div class="highlight-sh"><div class="highlight"><pre>wget http://vikas.sindhwani.org/data.tar.gz
+tar -xvzf data.tar.gz
+</pre></div>
+</div>
+<p>The supported fileformats are described in <a class="reference internal" href="ml.html#ml-io"><em>Input Data Format</em></a>.</p>
+<ol class="arabic simple" start="2">
+<li>Train an SVM with Randomized Gaussian Kernel</li>
+</ol>
+<div class="highlight-sh"><div class="highlight"><pre>mpiexec -np <span class="m">4</span> skylark_ml -g <span class="m">10</span> -k <span class="m">1</span> -l <span class="m">2</span> -i <span class="m">20</span> --trainfile data/usps.train --valfile data/usps.test --modelfile model
+</pre></div>
+</div>
+<ol class="arabic simple" start="3">
+<li>Test accuracy of the generated model and generate predictions</li>
+</ol>
+<div class="highlight-sh"><div class="highlight"><pre>mpiexec -np <span class="m">4</span> skylark_ml --outputfile output --testfile data/usps.test --modelfile model
+</pre></div>
+</div>
+<p>An output file named output.txt with the predicted labels is created.</p>
+<ol class="arabic simple" start="4">
+<li>In the above, the entire test data is loaded to memory and the result is computed. This is the fast, but it is limited to cases where the test data is fixed. skylark_ml also supports an interactive (streaming) mode in which the software prompts for data line by line from stdin and outputs in prediction after each line is received. The mode is invoked by not passing either training data or testing data. An example for using this mode is the following:</li>
+</ol>
+<div class="highlight-sh"><div class="highlight"><pre>cut -d <span class="s1">&#39; &#39;</span> -f <span class="m">1</span> --complement data/usps.test <span class="p">|</span> skylark_ml --modelfile model
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Interactive mode is much slower, since there is significant overhead that is repeated for each new line of data. In the future, batching will be supported, to avoid some of this overhead.</p>
+</div>
+<ol class="arabic simple" start="5">
+<li>It is also possible to load the model in Python and do predictions. Here is an example:</li>
+</ol>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">skylark.io</span><span class="o">,</span> <span class="nn">skylark.ml.modeling</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">skylark</span><span class="o">.</span><span class="n">ml</span><span class="o">.</span><span class="n">modeling</span><span class="o">.</span><span class="n">LinearizedKernelModel</span><span class="p">(</span><span class="s">&#39;model&#39;</span><span class="p">)</span>
+<span class="n">testfile</span> <span class="o">=</span> <span class="n">skylark</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">libsvm</span><span class="p">(</span><span class="s">&#39;data/usps.test&#39;</span><span class="p">)</span>
+<span class="n">Xt</span><span class="p">,</span> <span class="n">Yt</span> <span class="o">=</span> <span class="n">testfile</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">get_input_dimension</span><span class="p">())</span>
+<span class="n">Yp</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">Xt</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="community-detection-using-seed-node">
+<h3>Community Detection Using Seed Node<a class="headerlink" href="#community-detection-using-seed-node" title="Permalink to this headline">¶</a></h3>
+<p>Building libSkylark creates an executable called <code class="docutils literal"><span class="pre">skylark_community</span></code> in
+<code class="docutils literal"><span class="pre">$SKYLARK_INSTALL_DIR/bin</span></code>. This executable can be used in standalone mode as follows.
+(Note that an interactive mode is also present.)</p>
+<p>1. Prepare the input. Basically, the graph is described in a text file, with each
+row an edge. Each row has two strings that identify the node. The identifier can be
+arbitrary (does not have to be numeric). For example:</p>
+<div class="highlight-sh"><div class="highlight"><pre>cat &gt; two_triangles
+A1 A2
+A2 A3
+A1 A3
+B1 B2
+B2 B3
+B1 B3
+A1 B1
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li>Detect the community with A1 as the seed:</li>
+</ol>
+<div class="highlight-sh"><div class="highlight"><pre>skylark_community --graphfile two_triangles --seed A1
+</pre></div>
+</div>
 </div>
 </div>
 <div class="section" id="cluster-of-vagrant-controlled-vms">
@@ -244,16 +359,16 @@ end
 <p>It will take a while to compile and install everything specified in the
 <code class="docutils literal"><span class="pre">bootstrap.sh</span></code> script.</p>
 </div>
-<div class="section" id="examples">
-<span id="examples-label"></span><h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="examples-of-library-usage">
+<span id="examples-label"></span><h2>Examples of Library Usage<a class="headerlink" href="#examples-of-library-usage" title="Permalink to this headline">¶</a></h2>
 <p>Here, we provide a flavor of the library and its usage. We assume that
 the reader is familiar with sketching and its applications in randomized
 Numerical Linear algebra and Machine Learning. If not, we refer the
 reader to subsequent sections which provide the necessary background and
 references.</p>
 <p>When libSkylark is built, executables instantiating these examples can be found
-under <code class="docutils literal"><span class="pre">$SKYLARK_INSTALL_DIR/bin/examples</span></code> and
-<code class="docutils literal"><span class="pre">$SKYLARK_INSTALL_DIR/bin/ml</span></code>.</p>
+under <code class="docutils literal"><span class="pre">$SKYLARK_INSTALL_DIR/bin/skylark_examples</span></code> and
+<code class="docutils literal"><span class="pre">$SKYLARK_INSTALL_DIR/bin</span></code>.</p>
 <div class="section" id="sketching">
 <h3>Sketching<a class="headerlink" href="#sketching" title="Permalink to this headline">¶</a></h3>
 <p>In <code class="file docutils literal"><span class="pre">$</span><em><span class="pre">SKYLARK_SRC_DIR</span></em><span class="pre">/examples/elemental.cpp</span></code> an example is provided that illustrates
@@ -845,7 +960,7 @@ mpiexec -np <span class="m">4</span> python <span class="nv">$SKYLARK_SRC_DIR</s
 </div>
 <div class="section" id="svd">
 <h3>SVD<a class="headerlink" href="#svd" title="Permalink to this headline">¶</a></h3>
-<p>In <code class="file docutils literal"><span class="pre">$</span><em><span class="pre">SKYLARK_SRC_DIR</span></em><span class="pre">/examples/svd.cpp</span></code> an example is provided that illustrates randomized singular value decompositions.</p>
+<p>In <code class="file docutils literal"><span class="pre">$</span><em><span class="pre">SKYLARK_SRC_DIR</span></em><span class="pre">/nla/skylark_svd.cpp</span></code> an example is provided that illustrates randomized singular value decompositions.</p>
 <div class="highlight-cpp"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>  1
   2
   3
@@ -986,7 +1101,34 @@ mpiexec -np <span class="m">4</span> python <span class="nv">$SKYLARK_SRC_DIR</s
 138
 139
 140
-141</pre></div></td><td class="code"><div class="highlight"><pre><span class="cp">#include &lt;iostream&gt;</span>
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168</pre></div></td><td class="code"><div class="highlight"><pre><span class="cp">#include &lt;iostream&gt;</span>
 <span class="cp">#include &lt;boost/program_options.hpp&gt;</span>
 
 <span class="cp">#include &lt;El.hpp&gt;</span>
@@ -999,9 +1141,9 @@ mpiexec -np <span class="m">4</span> python <span class="nv">$SKYLARK_SRC_DIR</s
 <span class="k">namespace</span> <span class="n">bpo</span> <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">program_options</span><span class="p">;</span>
 
 <span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">InputType</span><span class="p">,</span> <span class="k">typename</span> <span class="n">FactorType</span><span class="o">&gt;</span>
-<span class="kt">void</span> <span class="n">execute</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">fname</span><span class="p">,</span> <span class="kt">int</span> <span class="n">k</span><span class="p">,</span>
+<span class="kt">void</span> <span class="n">execute</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">fname</span><span class="p">,</span> <span class="kt">int</span> <span class="n">k</span><span class="p">,</span>
     <span class="k">const</span> <span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="kt">approximate_svd_params_t</span> <span class="o">&amp;</span><span class="n">params</span><span class="p">,</span>
-    <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">prefix</span><span class="p">,</span>
+    <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">prefix</span><span class="p">,</span>
     <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="kt">context_t</span> <span class="o">&amp;</span><span class="n">context</span><span class="p">)</span> <span class="p">{</span>
 
     <span class="n">boost</span><span class="o">::</span><span class="n">mpi</span><span class="o">::</span><span class="n">communicator</span> <span class="n">world</span><span class="p">;</span>
@@ -1026,16 +1168,32 @@ mpiexec -np <span class="m">4</span> python <span class="nv">$SKYLARK_SRC_DIR</s
                   <span class="o">&lt;&lt;</span> <span class="s">&quot; sec</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">;</span>
 
 <span class="hll">    <span class="cm">/* Compute approximate SVD */</span>
-</span>    <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Computing approximate SVD...&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span>    <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Computing approximate SVD...&quot;</span><span class="p">;</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="p">.</span><span class="n">flush</span><span class="p">();</span>
+        <span class="n">timer</span><span class="p">.</span><span class="n">restart</span><span class="p">();</span>
+    <span class="p">}</span>
+
     <span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="n">ApproximateSVD</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">U</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">params</span><span class="p">);</span>
+
     <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
         <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span><span class="s">&quot;Took &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">boost</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;%.2e&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">timer</span><span class="p">.</span><span class="n">elapsed</span><span class="p">()</span>
                   <span class="o">&lt;&lt;</span> <span class="s">&quot; sec</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">;</span>
 
     <span class="cm">/* Write results */</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Writing results...&quot;</span><span class="p">;</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="p">.</span><span class="n">flush</span><span class="p">();</span>
+        <span class="n">timer</span><span class="p">.</span><span class="n">restart</span><span class="p">();</span>
+    <span class="p">}</span>
+
     <span class="n">El</span><span class="o">::</span><span class="n">Write</span><span class="p">(</span><span class="n">U</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s">&quot;.U&quot;</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">ASCII</span><span class="p">);</span>
     <span class="n">El</span><span class="o">::</span><span class="n">Write</span><span class="p">(</span><span class="n">S</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s">&quot;.S&quot;</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">ASCII</span><span class="p">);</span>
     <span class="n">El</span><span class="o">::</span><span class="n">Write</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s">&quot;.V&quot;</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">ASCII</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span><span class="s">&quot;took &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">boost</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;%.2e&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">timer</span><span class="p">.</span><span class="n">elapsed</span><span class="p">()</span>
+                  <span class="o">&lt;&lt;</span> <span class="s">&quot; sec</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">;</span>
 <span class="p">}</span>
 
 <span class="kt">int</span> <span class="n">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">*</span> <span class="n">argv</span><span class="p">[])</span> <span class="p">{</span>
@@ -1044,7 +1202,7 @@ mpiexec -np <span class="m">4</span> python <span class="nv">$SKYLARK_SRC_DIR</s
 
     <span class="kt">int</span> <span class="n">seed</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">powerits</span><span class="p">;</span>
     <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">fname</span><span class="p">,</span> <span class="n">prefix</span><span class="p">;</span>
-    <span class="kt">bool</span> <span class="n">as_sparse</span><span class="p">,</span> <span class="n">skipqr</span><span class="p">;</span>
+    <span class="kt">bool</span> <span class="n">as_sparse</span><span class="p">,</span> <span class="n">skipqr</span><span class="p">,</span> <span class="n">use_single</span><span class="p">;</span>
     <span class="kt">int</span> <span class="n">oversampling_ratio</span><span class="p">,</span> <span class="n">oversampling_additive</span><span class="p">;</span>
 
     <span class="c1">// Parse options</span>
@@ -1063,20 +1221,16 @@ mpiexec -np <span class="m">4</span> python <span class="nv">$SKYLARK_SRC_DIR</s
         <span class="p">(</span><span class="s">&quot;powerits,i&quot;</span><span class="p">,</span>
             <span class="n">bpo</span><span class="o">::</span><span class="n">value</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">powerits</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">default_value</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>
             <span class="s">&quot;Number of power iterations. OPTIONAL.&quot;</span><span class="p">)</span>
-        <span class="p">(</span><span class="s">&quot;skipqr&quot;</span><span class="p">,</span>
-            <span class="n">bpo</span><span class="o">::</span><span class="n">bool_switch</span><span class="p">(</span><span class="o">&amp;</span><span class="n">skipqr</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">default_value</span><span class="p">(</span><span class="nb">false</span><span class="p">),</span>
-            <span class="s">&quot;Whether to skip QR in each iteration. Higher than 1 power&quot;</span>
-            <span class="s">&quot; iterations is not recommended. OPTIONAL.&quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="s">&quot;skipqr&quot;</span><span class="p">,</span> <span class="s">&quot;Whether to skip QR in each iteration. Higher than one power&quot;</span>
+            <span class="s">&quot; iterations is not recommended in this mode.&quot;</span><span class="p">)</span>
         <span class="p">(</span><span class="s">&quot;ratio,r&quot;</span><span class="p">,</span>
             <span class="n">bpo</span><span class="o">::</span><span class="n">value</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">oversampling_ratio</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">default_value</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>
             <span class="s">&quot;Ratio of oversampling of rank. OPTIONAL.&quot;</span><span class="p">)</span>
         <span class="p">(</span><span class="s">&quot;additive,a&quot;</span><span class="p">,</span>
             <span class="n">bpo</span><span class="o">::</span><span class="n">value</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">oversampling_additive</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">default_value</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
             <span class="s">&quot;Additive factor for oversampling of rank. OPTIONAL.&quot;</span><span class="p">)</span>
-        <span class="p">(</span><span class="s">&quot;sparse&quot;</span><span class="p">,</span>
-            <span class="n">bpo</span><span class="o">::</span><span class="n">bool_switch</span><span class="p">(</span><span class="o">&amp;</span><span class="n">as_sparse</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">default_value</span><span class="p">(</span><span class="nb">false</span><span class="p">),</span>
-            <span class="s">&quot;Whether to load matrix as a sparse one&quot;</span>
-            <span class="s">&quot; (currently, no distributed support). OPTIONAL.&quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="s">&quot;sparse&quot;</span><span class="p">,</span> <span class="s">&quot;Whether to load the matrix as a sparse one.&quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="s">&quot;single&quot;</span><span class="p">,</span> <span class="s">&quot;Whether to use single precision instead of double.&quot;</span><span class="p">)</span>
         <span class="p">(</span><span class="s">&quot;prefix&quot;</span><span class="p">,</span>
             <span class="n">bpo</span><span class="o">::</span><span class="n">value</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">prefix</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">default_value</span><span class="p">(</span><span class="s">&quot;out&quot;</span><span class="p">),</span>
             <span class="s">&quot;Prefix for output files (prefix.U.txt, prefix.S.txt&quot;</span>
@@ -1103,6 +1257,11 @@ mpiexec -np <span class="m">4</span> python <span class="nv">$SKYLARK_SRC_DIR</s
         <span class="p">}</span>
 
         <span class="n">bpo</span><span class="o">::</span><span class="n">notify</span><span class="p">(</span><span class="n">vm</span><span class="p">);</span>
+
+        <span class="n">as_sparse</span> <span class="o">=</span> <span class="n">vm</span><span class="p">.</span><span class="n">count</span><span class="p">(</span><span class="s">&quot;sparse&quot;</span><span class="p">);</span>
+        <span class="n">skipqr</span> <span class="o">=</span> <span class="n">vm</span><span class="p">.</span><span class="n">count</span><span class="p">(</span><span class="s">&quot;skipqr&quot;</span><span class="p">);</span>
+        <span class="n">use_single</span> <span class="o">=</span> <span class="n">vm</span><span class="p">.</span><span class="n">count</span><span class="p">(</span><span class="s">&quot;single&quot;</span><span class="p">);</span>
+
     <span class="p">}</span> <span class="k">catch</span><span class="p">(</span><span class="n">bpo</span><span class="o">::</span><span class="n">error</span><span class="o">&amp;</span> <span class="n">e</span><span class="p">)</span> <span class="p">{</span>
         <span class="n">std</span><span class="o">::</span><span class="n">cerr</span> <span class="o">&lt;&lt;</span> <span class="n">e</span><span class="p">.</span><span class="n">what</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
         <span class="n">std</span><span class="o">::</span><span class="n">cerr</span> <span class="o">&lt;&lt;</span> <span class="n">desc</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
@@ -1117,68 +1276,28 @@ mpiexec -np <span class="m">4</span> python <span class="nv">$SKYLARK_SRC_DIR</s
     <span class="n">params</span><span class="p">.</span><span class="n">oversampling_ratio</span> <span class="o">=</span> <span class="n">oversampling_ratio</span><span class="p">;</span>
     <span class="n">params</span><span class="p">.</span><span class="n">oversampling_additive</span> <span class="o">=</span> <span class="n">oversampling_additive</span><span class="p">;</span>
 
-    <span class="k">if</span> <span class="p">(</span><span class="n">as_sparse</span><span class="p">)</span>
-        <span class="n">execute</span><span class="o">&lt;</span><span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="kt">sparse_matrix_t</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">,</span>
-                <span class="n">El</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
-    <span class="k">else</span>
-        <span class="n">execute</span><span class="o">&lt;</span><span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">,</span>
-                <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">use_single</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">as_sparse</span><span class="p">)</span>
+            <span class="n">execute</span><span class="o">&lt;</span><span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="kt">sparse_matrix_t</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">,</span>
+                    <span class="n">El</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+        <span class="k">else</span>
+            <span class="n">execute</span><span class="o">&lt;</span><span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">,</span>
+                    <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">as_sparse</span><span class="p">)</span>
+            <span class="n">execute</span><span class="o">&lt;</span><span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="kt">sparse_matrix_t</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">,</span>
+                    <span class="n">El</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+        <span class="k">else</span>
+            <span class="n">execute</span><span class="o">&lt;</span><span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">,</span>
+                    <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+    <span class="p">}</span>
 
     <span class="n">El</span><span class="o">::</span><span class="n">Finalize</span><span class="p">();</span>
     <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
 <span class="p">}</span>
 </pre></div>
 </td></tr></table></div>
-</div>
-<div class="section" id="ml">
-<span id="ml-example"></span><h3>ML<a class="headerlink" href="#ml" title="Permalink to this headline">¶</a></h3>
-<p>In <code class="file docutils literal"><span class="pre">$</span><em><span class="pre">SKYLARK_SRC_DIR</span></em><span class="pre">/ml/skylark_ml.cpp</span></code>, an ADMM-based solver is
-setup to train and predict with a randomized kernel based model for
-nonlinear classification and regression problems.</p>
-<p>Building libSkylark creates an executable called <code class="docutils literal"><span class="pre">skylark_ml</span></code> in
-<code class="docutils literal"><span class="pre">$SKYLARK_INSTALL_DIR/bin/ml</span></code> under the libSkylark installation folder.
-This executable can be used in standalone mode as follows.</p>
-<ol class="arabic simple">
-<li>Download USPS digit recognition dataset (in various supported formats).</li>
-</ol>
-<div class="highlight-sh"><div class="highlight"><pre>wget http://vikas.sindhwani.org/data.tar.gz
-tar -xvzf data.tar.gz
-</pre></div>
-</div>
-<p>The supported fileformats are described in <a class="reference internal" href="ml.html#ml-io"><em>Input Data Format</em></a>.</p>
-<ol class="arabic simple" start="2">
-<li>Train an SVM with Randomized Gaussian Kernel</li>
-</ol>
-<div class="highlight-sh"><div class="highlight"><pre>mpiexec -np <span class="m">4</span> ./skylark_ml -g <span class="m">10</span> -k <span class="m">1</span> -l <span class="m">2</span> -i <span class="m">20</span> --trainfile data/usps.train --valfile data/usps.test --modelfile model
-</pre></div>
-</div>
-<ol class="arabic simple" start="3">
-<li>Test accuracy of the generated model and generate predictions</li>
-</ol>
-<div class="highlight-sh"><div class="highlight"><pre>mpiexec -np <span class="m">4</span> ./skylark_ml --outputfile output --testfile data/usps.test --modelfile model
-</pre></div>
-</div>
-<p>An output file named output.txt with the predicted labels is created.</p>
-<ol class="arabic simple" start="4">
-<li>In the above, the entire test data is loaded to memory and the result is computed. This is the fast, but it is limited to cases where the test data is fixed. skylark_ml also supports an interactive (streaming) mode in which the software prompts for data line by line from stdin and outputs in prediction after each line is received. The mode is invoked by not passing either training data or testing data. An example for using this mode is the following:</li>
-</ol>
-<div class="highlight-sh"><div class="highlight"><pre>cut -d <span class="s1">&#39; &#39;</span> -f <span class="m">1</span> --complement data/usps.test <span class="p">|</span> ./skylark_ml --modelfile model
-</pre></div>
-</div>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">Interactive mode is much slower, since there is significant overhead that is repeated for each new line of data. In the future, batching will be supported, to avoid some of this overhead.</p>
-</div>
-<ol class="arabic simple" start="5">
-<li>It is also possible to load the model in Python and do predictions. Here is an example:</li>
-</ol>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">skylark.io</span><span class="o">,</span> <span class="nn">skylark.ml.modeling</span>
-<span class="n">model</span> <span class="o">=</span> <span class="n">skylark</span><span class="o">.</span><span class="n">ml</span><span class="o">.</span><span class="n">modeling</span><span class="o">.</span><span class="n">LinearizedKernelModel</span><span class="p">(</span><span class="s">&#39;model&#39;</span><span class="p">)</span>
-<span class="n">testfile</span> <span class="o">=</span> <span class="n">skylark</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">libsvm</span><span class="p">(</span><span class="s">&#39;data/usps.test&#39;</span><span class="p">)</span>
-<span class="n">Xt</span><span class="p">,</span> <span class="n">Yt</span> <span class="o">=</span> <span class="n">testfile</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">get_input_dimension</span><span class="p">())</span>
-<span class="n">Yp</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">Xt</span><span class="p">)</span>
-</pre></div>
-</div>
 </div>
 </div>
 </div>

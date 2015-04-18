@@ -278,14 +278,24 @@ protected:
 
         value_type *dtmp = new value_type[S];
         std::complex<value_type> *ctmp = new std::complex<value_type>[S];
+
+#       ifdef SKYLARK_HAVE_OPENMP
+#       pragma omp critical
+#       endif
+        {
+
         _fftw_fplan = internal::fftw<value_type>::fplanfun(S, dtmp,
             reinterpret_cast<_fftw_complex_t*>(ctmp),
             FFTW_UNALIGNED | FFTW_ESTIMATE);
         _fftw_bplan = internal::fftw<value_type>::bplanfun(S,
             reinterpret_cast<_fftw_complex_t*>(ctmp), dtmp,
             FFTW_UNALIGNED | FFTW_ESTIMATE);
+
+        }
+
         delete[] dtmp;
         delete[] ctmp;
+
     }
 };
 
@@ -449,12 +459,21 @@ protected:
 
         value_type *dtmp = new value_type[S];
         std::complex<value_type> *ctmp = new std::complex<value_type>[S];
+
+#       ifdef SKYLARK_HAVE_OPENMP
+#       pragma omp critical
+#       endif
+        {
+
         _fftw_fplan = internal::fftw<value_type>::fplanfun(S, dtmp,
             reinterpret_cast<_fftw_complex_t*>(ctmp),
             FFTW_UNALIGNED | FFTW_ESTIMATE);
         _fftw_bplan = internal::fftw<value_type>::bplanfun(S,
             reinterpret_cast<_fftw_complex_t*>(ctmp), dtmp,
             FFTW_UNALIGNED | FFTW_ESTIMATE);
+
+        }
+
         delete[] dtmp;
         delete[] ctmp;
     }

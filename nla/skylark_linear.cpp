@@ -156,10 +156,7 @@ int main(int argc, char* argv[]) {
                     El::DistMatrix<double> >(fname, outfile, high,  context);
     }
 
-    SKYLARK_END_TRY()
-      catch (const skylark::base::skylark_exception& ex) {
-	SKYLARK_PRINT_EXCEPTION_DETAILS(ex);
-      }
+    SKYLARK_END_TRY() SKYLARK_CATCH_AND_PRINT()
 
     El::Finalize();
     return 0;

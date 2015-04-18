@@ -146,6 +146,8 @@ int main(int argc, char* argv[]) {
     params.oversampling_ratio = oversampling_ratio;
     params.oversampling_additive = oversampling_additive;
 
+    SKYLARK_BEGIN_TRY()
+
     if (use_single) {
         if (as_sparse)
             execute<skylark::base::sparse_matrix_t<float>,
@@ -162,6 +164,8 @@ int main(int argc, char* argv[]) {
             execute<El::DistMatrix<double>,
                     El::DistMatrix<double> >(fname, k, params, prefix, context);
     }
+
+    SKYLARK_END_TRY() SKYLARK_CATCH_AND_PRINT()
 
     El::Finalize();
     return 0;

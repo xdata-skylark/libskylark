@@ -31,6 +31,8 @@ int main(int argc, char* argv[]) {
     bool sparse = (options.fileformat == LIBSVM_SPARSE)
         || (options.fileformat == HDF5_SPARSE);
 
+    SKYLARK_BEGIN_TRY()
+
     if (!options.trainfile.empty()) {
         // Training
         if (comm.rank() == 0) {
@@ -161,6 +163,9 @@ int main(int argc, char* argv[]) {
     }
 
     comm.barrier();
+
+    SKYLARK_END_TRY() SKYLARK_CATCH_AND_PRINT()
+
     El::Finalize();
 
     return 0;

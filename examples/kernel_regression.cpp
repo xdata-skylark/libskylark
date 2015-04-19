@@ -5,6 +5,8 @@
 #include <boost/format.hpp>
 #include <skylark.hpp>
 
+namespace skylark { namespace ml {
+
 template<typename MatrixType>
 class feature_map_precond_t :
     public skylark::algorithms::outplace_precond_t<MatrixType, MatrixType> {
@@ -30,8 +32,12 @@ public:
         delete S;
 
         El::Identity(C, s, s);
-        El::Herk(El::LOWER, El::NORMAL, 1.0/_lambda, U, 1.0, C);
-        El::HermitianInverse(El::LOWER, C);
+
+        //El::Herk(El::LOWER, El::NORMAL, 1.0/_lambda, U, 1.0, C);
+        //El::SymmetricInverse(El::LOWER, C);
+
+        El::Gemm(El::NORMAL, El::ADJOINT, 1.0/_lambda, U, U, 1.0, C);
+        El::Inverse(C);
     }
 
     virtual void apply(const matrix_type& B, matrix_type& X) const {
@@ -53,6 +59,74 @@ private:
     El::Int _s;
     matrix_type U, C;
 };
+
+template<typename T, typename KernelType>
+void FasterKernelRidge(base::direction_t direction, const KernelType &k, 
+    const El::DistMatrix<T> &X, const El::DistMatrix<T> &Y, T lambda, 
+    El::DistMatrix<T> &A, El::Int s, base::context_t &context) {
+
+    // TODO: Temporary!
+    boost::mpi::communicator world;
+    int rank = world.rank();
+
+    boost::mpi::timer timer;
+
+    // Compute kernel matrix
+    if (rank == 0) {
+        std::cout << "\tComputing kernel matrix... ";
+        std::cout.flush();
+        timer.restart();
+    }
+
+    El::DistMatrix<double> K;
+    SymmetricGram(El::LOWER, direction, k, X, K);
+
+    // Add regularizer
+    El::DistMatrix<double> D;
+    El::Ones(D, X.Width(), 1);
+    El::UpdateDiagonal(K, lambda, D);
+
+    if (rank == 0)
+        std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
+                  << " sec\n";
+
+    if (rank == 0) {
+        std::cout << "\tCreating precoditioner... ";
+        std::cout.flush();
+        timer.restart();
+    }
+
+    feature_map_precond_t<El::DistMatrix<double> > P(k, lambda, X, s, context);
+
+    if (rank == 0)
+        std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
+                  << " sec\n";
+
+    if (rank == 0) {
+        std::cout << "\tSolving linear equation... ";
+        std::cout.flush();
+        timer.restart();
+    }
+
+
+    // Solve
+    algorithms::krylov_iter_params_t cg_params;
+    cg_params.iter_lim = 1000;
+    cg_params.res_print = 10;
+    cg_params.log_level = 2;
+    cg_params.am_i_printing = rank == 0;
+    cg_params.tolerance = 1e-3;
+
+    El::Zeros(A, X.Width(), Y.Width());
+    algorithms::CG(El::LOWER, K, Y, A, cg_params, P);
+
+    if (rank == 0)
+        std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
+                  << " sec\n";
+
+}
+
+} } // namespace skylark::ml
 
 #ifndef SKYLARK_AVOID_BOOST_PO
 
@@ -205,65 +279,35 @@ int main(int argc, char* argv[]) {
         std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
                   << " sec\n";
 
-    // Compute kernel matrix
-    if (rank == 0) {
-        std::cout << "Computing kernel matrix... ";
-        std::cout.flush();
-        timer.restart();
-    }
-
-    skylark::ml::gaussian_t k(X.Height(), sigma);
-    El::DistMatrix<double> K;
-    skylark::ml::SymmetricGram(El::LOWER, skylark::base::COLUMNS,
-        k, X, K);
-
-    // Add regularizer
-    El::DistMatrix<double> D;
-    El::Ones(D, X.Width(), 1);
-    El::UpdateDiagonal(K, lambda, D);
-
-    if (rank == 0)
-        std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
-                  << " sec\n";
-
-    if (rank == 0) {
-        std::cout << "Creating precoditioner... ";
-        std::cout.flush();
-        timer.restart();
-    }
-
-    feature_map_precond_t<El::DistMatrix<double> > P(k, lambda, X, s, context);
-
-    if (rank == 0)
-        std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
-                  << " sec\n";
-
-    if (rank == 0) {
-        std::cout << "Solving... ";
-        std::cout.flush();
-        timer.restart();
-    }
-
     // Form right hand side
+    if (rank == 0) {
+        std::cout << "Dummy coding... ";
+        std::cout.flush();
+        timer.restart();
+    }
+
     El::DistMatrix<double> Y;
     std::unordered_map<El::Int, El::Int> coding;
     std::vector<El::Int> rcoding;
     skylark::ml::DummyCoding(El::NORMAL, Y, L, coding, rcoding);
 
-    // Solve
-    skylark::algorithms::krylov_iter_params_t cg_params;
-    cg_params.iter_lim = 1000;
-    cg_params.res_print = 10;
-    cg_params.log_level = 2;
-    cg_params.am_i_printing = rank == 0;
-    cg_params.tolerance = 1e-3;
-
-    El::DistMatrix<double> A;
-    El::Zeros(A, X.Width(), Y.Width());
-    skylark::algorithms::CG(El::LOWER, K, Y, A, cg_params, P);
-
     if (rank == 0)
         std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
+                  << " sec\n";
+
+    // Form right hand side
+    if (rank == 0) {
+        std::cout << "Solving... " << std::endl;
+        timer.restart();
+    }
+
+    El::DistMatrix<double> A;
+    skylark::ml::gaussian_t k(X.Height(), sigma);
+    skylark::ml::FasterKernelRidge(skylark::base::COLUMNS, k, X, Y, 
+        lambda, A, s, context);
+
+    if (rank == 0)
+        std::cout <<"Solve took " << boost::format("%.2e") % timer.elapsed()
                   << " sec\n";
 
     El::Write(A, "A.dat", El::ASCII);

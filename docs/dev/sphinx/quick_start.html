@@ -185,7 +185,7 @@ tar -xvzf data.tar.gz
 <ol class="arabic simple" start="2">
 <li>Compute an approximate SVD with 10 leading singular vectors.</li>
 </ol>
-<div class="highlight-sh"><div class="highlight"><pre>skylark_svd -k <span class="m">10</span> --prefix usps usps.train
+<div class="highlight-sh"><div class="highlight"><pre>skylark_svd -k <span class="m">10</span> --prefix usps data/usps.train
 </pre></div>
 </div>
 <p>The files usps.U.txt, usps.S.txt and usps.V.txt contain the approximate SVD that
@@ -224,7 +224,7 @@ tar -xvzf data.tar.gz
 <ol class="arabic simple" start="2">
 <li>Train an SVM with Randomized Gaussian Kernel</li>
 </ol>
-<div class="highlight-sh"><div class="highlight"><pre>mpiexec -np <span class="m">4</span> skylark_ml -g <span class="m">10</span> -k <span class="m">1</span> -l <span class="m">2</span> -i <span class="m">20</span> --trainfile data/usps.train --valfile data/usps.test --modelfile model
+<div class="highlight-sh"><div class="highlight"><pre>mpiexec -np <span class="m">4</span> skylark_ml -g <span class="m">10</span> -k <span class="m">1</span> -l <span class="m">2</span> -i <span class="m">30</span> -f <span class="m">1000</span> --trainfile data/usps.train --valfile data/usps.test --modelfile model
 </pre></div>
 </div>
 <ol class="arabic simple" start="3">

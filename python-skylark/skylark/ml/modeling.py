@@ -23,8 +23,8 @@ class LinearizedKernelModel:
             num_maps = int(data['feature_mapping']['number_maps'])
             self._maps = \
                 [skylark.sketch.deserialize_sketch(data['feature_mapping']['maps'][str(i)]) for i in range(num_maps)]
-            self._scale_maps = bool(data['feature_mapping']['scale_maps'])
-            self._regression = bool(data['regression'])
+            self._scale_maps = data['feature_mapping']['scale_maps'] == 'true'
+            self._regression = data['regression'] == 'true'
 
     def get_input_dimension(self):
         return self._d

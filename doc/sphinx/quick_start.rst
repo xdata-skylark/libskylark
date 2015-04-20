@@ -155,7 +155,7 @@ Building libSkylark creates an executable called ``skylark_svd`` in
 
 .. code-block:: sh
 
-         skylark_svd -k 10 --prefix usps usps.train
+         skylark_svd -k 10 --prefix usps data/usps.train
 
 The files usps.U.txt, usps.S.txt and usps.V.txt contain the approximate SVD that 
 was computed.
@@ -204,7 +204,7 @@ The supported fileformats are described in :ref:`ml_io`.
 
 .. code-block:: sh
 
-        mpiexec -np 4 skylark_ml -g 10 -k 1 -l 2 -i 20 --trainfile data/usps.train --valfile data/usps.test --modelfile model
+        mpiexec -np 4 skylark_ml -g 10 -k 1 -l 2 -i 30 -f 1000 --trainfile data/usps.train --valfile data/usps.test --modelfile model
 
 3. Test accuracy of the generated model and generate predictions
 

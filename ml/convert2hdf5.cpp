@@ -1,17 +1,10 @@
-/*
- * convert2hdf5.cpp
- *
- *  Created on: Feb 13, 2014
- *      Author: vikas
- */
-
-
 #include <string>
-#include <skylark.hpp>
 #include <boost/mpi.hpp>
 #include <cstdlib>
+
+#define SKYLARK_NO_ANY
+#include <skylark.hpp>
 #include "io.hpp"
-#include "../base/context.hpp"
 
 
 

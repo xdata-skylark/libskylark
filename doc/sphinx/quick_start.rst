@@ -254,6 +254,16 @@ arbitrary (does not have to be numeric). For example:
         
          skylark_community --graphfile data/two_triangles --seed A1
 
+3. The community detection algorithm is local, so it operates only on a few nodes.
+So, for large graphs the majority of the time for detecting a single community will
+be spent on just loading the file. To detect multiple communities with the graph
+already loaded in memory, an interactive quiet mode is provided. Here is an 
+example:
+
+.. code-block:: sh
+
+         cat data/seeds | skylark_community --graphfile data/two_triangles -i -q
+
 .. _cluster-label:
 
 Cluster of vagrant-controlled VMs

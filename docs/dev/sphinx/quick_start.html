@@ -171,20 +171,17 @@ GUI) and start with a fresh Vagrant build.</p>
 <p>While libSkylark is designed to be a library, it also provides access to many
 of its feature using standalone applications. For all applications, running with
 the &#8211;help options reveals the command-line options.</p>
-<div class="section" id="approximate-singular-value-decomposition">
-<span id="svd-app"></span><h3>Approximate Singular Value Decomposition<a class="headerlink" href="#approximate-singular-value-decomposition" title="Permalink to this headline">¶</a></h3>
-<p>Building libSkylark creates an executable called <code class="docutils literal"><span class="pre">skylark_svd</span></code> in
-<code class="docutils literal"><span class="pre">$SKYLARK_INSTALL_DIR/bin</span></code>. This executable can be used in standalone mode as follows.</p>
-<ol class="arabic simple">
-<li>Download USPS digit recognition dataset (in various supported formats).</li>
-</ol>
+<p>The following example sessions assume the following commands have been performed
+in advance (it downloads and extracts some demo data):</p>
 <div class="highlight-sh"><div class="highlight"><pre>wget http://vikas.sindhwani.org/data.tar.gz
 tar -xvzf data.tar.gz
 </pre></div>
 </div>
-<ol class="arabic simple" start="2">
-<li>Compute an approximate SVD with 10 leading singular vectors.</li>
-</ol>
+<div class="section" id="approximate-singular-value-decomposition">
+<span id="svd-app"></span><h3>Approximate Singular Value Decomposition<a class="headerlink" href="#approximate-singular-value-decomposition" title="Permalink to this headline">¶</a></h3>
+<p>Building libSkylark creates an executable called <code class="docutils literal"><span class="pre">skylark_svd</span></code> in
+<code class="docutils literal"><span class="pre">$SKYLARK_INSTALL_DIR/bin</span></code>. This executable can be used in standalone mode
+to compute an approximate SVD with 10 leading singular vectors as follows:</p>
 <div class="highlight-sh"><div class="highlight"><pre>skylark_svd -k <span class="m">10</span> --prefix usps data/usps.train
 </pre></div>
 </div>
@@ -196,10 +193,10 @@ was computed.</p>
 <p>Building libSkylark creates an executable called <code class="docutils literal"><span class="pre">skylark_linear</span></code> in
 <code class="docutils literal"><span class="pre">$SKYLARK_INSTALL_DIR/bin</span></code>. This executable can be used in standalone mode to
 approximately solve linear least squares problems. Here is an example command-line:</p>
-<div class="highlight-sh"><div class="highlight"><pre>skylark_linear cpu cpu.sol
+<div class="highlight-sh"><div class="highlight"><pre>skylark_linear data/cpu.train cpu.sol
 </pre></div>
 </div>
-<p>The file cpu.sol contains the computed approximate solution.</p>
+<p>The file cpu.sol.txt contains the computed approximate solution.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">Currently, only overdetermined least squares of dense matrices is supported.
@@ -214,27 +211,19 @@ nonlinear classification and regression problems.</p>
 <p>Building libSkylark creates an executable called <code class="docutils literal"><span class="pre">skylark_ml</span></code> in
 <code class="docutils literal"><span class="pre">$SKYLARK_INSTALL_DIR/bin</span></code>. This executable can be used in standalone mode as follows.</p>
 <ol class="arabic simple">
-<li>Download USPS digit recognition dataset (in various supported formats).</li>
-</ol>
-<div class="highlight-sh"><div class="highlight"><pre>wget http://vikas.sindhwani.org/data.tar.gz
-tar -xvzf data.tar.gz
-</pre></div>
-</div>
-<p>The supported fileformats are described in <a class="reference internal" href="ml.html#ml-io"><em>Input Data Format</em></a>.</p>
-<ol class="arabic simple" start="2">
 <li>Train an SVM with Randomized Gaussian Kernel</li>
 </ol>
 <div class="highlight-sh"><div class="highlight"><pre>mpiexec -np <span class="m">4</span> skylark_ml -g <span class="m">10</span> -k <span class="m">1</span> -l <span class="m">2</span> -i <span class="m">30</span> -f <span class="m">1000</span> --trainfile data/usps.train --valfile data/usps.test --modelfile model
 </pre></div>
 </div>
-<ol class="arabic simple" start="3">
+<ol class="arabic simple" start="2">
 <li>Test accuracy of the generated model and generate predictions</li>
 </ol>
 <div class="highlight-sh"><div class="highlight"><pre>mpiexec -np <span class="m">4</span> skylark_ml --outputfile output --testfile data/usps.test --modelfile model
 </pre></div>
 </div>
 <p>An output file named output.txt with the predicted labels is created.</p>
-<ol class="arabic simple" start="4">
+<ol class="arabic simple" start="3">
 <li>In the above, the entire test data is loaded to memory and the result is computed. This is the fast, but it is limited to cases where the test data is fixed. skylark_ml also supports an interactive (streaming) mode in which the software prompts for data line by line from stdin and outputs in prediction after each line is received. The mode is invoked by not passing either training data or testing data. An example for using this mode is the following:</li>
 </ol>
 <div class="highlight-sh"><div class="highlight"><pre>cut -d <span class="s1">&#39; &#39;</span> -f <span class="m">1</span> --complement data/usps.test <span class="p">|</span> skylark_ml --modelfile model
@@ -263,7 +252,7 @@ tar -xvzf data.tar.gz
 <p>1. Prepare the input. Basically, the graph is described in a text file, with each
 row an edge. Each row has two strings that identify the node. The identifier can be
 arbitrary (does not have to be numeric). For example:</p>
-<div class="highlight-sh"><div class="highlight"><pre>cat &gt; two_triangles
+<div class="highlight-sh"><div class="highlight"><pre>cat data/two_triangles
 A1 A2
 A2 A3
 A1 A3
@@ -276,7 +265,7 @@ A1 B1
 <ol class="arabic simple" start="2">
 <li>Detect the community with A1 as the seed:</li>
 </ol>
-<div class="highlight-sh"><div class="highlight"><pre>skylark_community --graphfile two_triangles --seed A1
+<div class="highlight-sh"><div class="highlight"><pre>skylark_community --graphfile data/two_triangles --seed A1
 </pre></div>
 </div>
 </div>

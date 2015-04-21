@@ -12,12 +12,16 @@
 
 #include "../utility/timer.hpp"
 
-typedef El::Matrix<double> LocalMatrixType;
+//typedef El::Matrix<double> LocalMatrixType;
 
 template <class T>
 struct BlockADMMSolver
 {
-    typedef skylark::sketch::sketch_transform_t<T, LocalMatrixType>
+
+    typedef El::Matrix<double> feature_matrix_t;
+    typedef El::Matrix<double> target_matrix_t;
+
+    typedef skylark::sketch::sketch_transform_t<T, feature_matrix_t>
     feature_transform_t;
     typedef std::vector<const feature_transform_t *> feature_transform_array_t;
 
@@ -70,7 +74,7 @@ struct BlockADMMSolver
     void InitializeTransformCache(int n);
 
     skylark::ml::model_t* train(T& X,
-        LocalMatrixType& Y, T& Xv, LocalMatrixType& Yv,
+        target_matrix_t& Y, T& Xv, target_matrix_t& Yv,
         bool regression, const boost::mpi::communicator& comm);
 
     int get_numfeatures() {return NumFeatures;}
@@ -79,7 +83,7 @@ struct BlockADMMSolver
 
 private:
 
-    typedef El::Matrix<double> local_t;
+    typedef El::Matrix<double> local_matrix_t;
 
     feature_transform_array_t featureMaps;
     int NumFeatures;
@@ -89,8 +93,8 @@ private:
     std::vector<int> starts, finishes;
     bool ScaleFeatureMaps;
     bool OwnFeatureMaps;
-    LocalMatrixType **Cache;
-    LocalMatrixType **TransformCache;
+    local_matrix_t **Cache;
+    local_matrix_t **TransformCache;
     int NumThreads;
 
     double lambda;
@@ -103,23 +107,23 @@ private:
 
 template <class T>
 void BlockADMMSolver<T>::InitializeFactorizationCache() {
-    Cache = new LocalMatrixType* [NumFeaturePartitions];
+    Cache = new local_matrix_t*[NumFeaturePartitions];
     for(int j=0; j<NumFeaturePartitions; j++) {
         int start = starts[j];
         int finish = finishes[j];
         int sj = finish - start  + 1;
-        Cache[j]  = new El::Matrix<double>(sj, sj);
+        Cache[j]  = new local_matrix_t(sj, sj);
     }
 }
 
 template <class T>
 void BlockADMMSolver<T>::InitializeTransformCache(int n) {
-    TransformCache = new LocalMatrixType* [NumFeaturePartitions];
+    TransformCache = new local_matrix_t*[NumFeaturePartitions];
     for(int j=0; j<NumFeaturePartitions; j++) {
         int start = starts[j];
         int finish = finishes[j];
         int sj = finish - start  + 1;
-        TransformCache[j]  = new El::Matrix<double>(sj, n);
+        TransformCache[j]  = new local_matrix_t(sj, n);
     }
 }
 
@@ -185,7 +189,7 @@ BlockADMMSolver<T>::BlockADMMSolver(skylark::base::context_t& context,
         np--;
 
         featureMaps[i] =
-            kernel.template create_rft< T, LocalMatrixType >(sj, tag, context);
+            kernel.template create_rft< T, local_matrix_t >(sj, tag, context);
     }
     this->ScaleFeatureMaps = true;
     OwnFeatureMaps = true;
@@ -224,7 +228,7 @@ BlockADMMSolver<T>::BlockADMMSolver(skylark::base::context_t& context,
         np--;
 
         featureMaps[i] =
-            kernel.template create_qrft< T, LocalMatrixType,
+            kernel.template create_qrft< T, local_matrix_t,
               skylark::base::leaped_halton_sequence_t>(sj, qmcseq,
                   starts[i], context);
     }
@@ -292,8 +296,8 @@ void GetSlice(skylark::base::sparse_matrix_t<T> &X, El::Matrix<T> &Z,
 }
 
 template <class T>
-skylark::ml::model_t* BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y,
-    T& Xv, LocalMatrixType& Yv,
+skylark::ml::model_t* BlockADMMSolver<T>::train(T& X, target_matrix_t& Y,
+    T& Xv, target_matrix_t& Yv,
     bool regression, const boost::mpi::communicator& comm) {
 
     int rank = comm.rank();
@@ -309,7 +313,7 @@ skylark::ml::model_t* BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y,
         new skylark::ml::model_t(featureMaps,
             ScaleFeatureMaps, NumFeatures, targets, regression);
 
-    El::Matrix<double> Wbar;
+    local_matrix_t Wbar;
     El::View(Wbar, model->get_coef());
 
 
@@ -320,16 +324,16 @@ skylark::ml::model_t* BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y,
 
     // exception: check if D = Wbar.Height();
 
-    LocalMatrixType O(k, ni); //uses default Grid
+    local_matrix_t O(k, ni);
     El::Zero(O);
 
-    LocalMatrixType Obar(k, ni); //uses default Grid
+    local_matrix_t Obar(k, ni);
     El::Zero(Obar);
 
-    LocalMatrixType nu(k, ni); //uses default Grid
+    local_matrix_t nu(k, ni);
     El::Zero(nu);
 
-    LocalMatrixType W, mu, Wi, mu_ij, ZtObar_ij;
+    local_matrix_t W, mu, Wi, mu_ij, ZtObar_ij;
 
     if(rank==0) {
         El::Zeros(W,  D, k);
@@ -350,10 +354,10 @@ skylark::ml::model_t* BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y,
 
     boost::mpi::timer timer;
 
-    LocalMatrixType sum_o, del_o, wbar_output;
+    local_matrix_t sum_o, del_o, wbar_output;
     El::Zeros(del_o, k, ni);
-    LocalMatrixType Yp(Yv.Height(), k);
-    LocalMatrixType Yp_labels(Yv.Height(), 1);
+    local_matrix_t Yp(Yv.Height(), k);
+    local_matrix_t Yp_labels(Yv.Height(), 1);
 
     if (CacheTransforms)
         InitializeTransformCache(ni);
@@ -408,7 +412,7 @@ skylark::ml::model_t* BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y,
             finish = finishes[j];
             sj = finish - start  + 1;
 
-            El::Matrix<double> Z;
+            local_matrix_t Z;
 
             // Get the Z matrix
             if (CacheTransforms && (iter > 1))
@@ -428,13 +432,13 @@ skylark::ml::model_t* BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y,
                     internal::GetSlice(X, Z, start, 0, sj, ni);
             }
 
-            El::Matrix<double> tmp(sj, k);
-            El::Matrix<double> rhs(sj, k);
-            El::Matrix<double> o(k, ni);
+            local_matrix_t tmp(sj, k);
+            local_matrix_t rhs(sj, k);
+            local_matrix_t o(k, ni);
 
             if(iter==1) {
 
-                El::Matrix<double> Ones;
+                local_matrix_t Ones;
                 El::Ones(Ones, sj, 1);
                 El::Gemm(El::NORMAL, El::TRANSPOSE, 1.0, Z, Z, 0.0, *Cache[j]);
                 El::UpdateDiagonal(*Cache[j], 1.0, Ones);
@@ -446,7 +450,7 @@ skylark::ml::model_t* BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y,
 
             El::View(tmp, Wbar, start, 0, sj, k); //tmp = Wbar[J,:]
 
-            LocalMatrixType wbar_tmp;
+            local_matrix_t wbar_tmp;
             El::Zeros(wbar_tmp, k, ni);
 
             if (NumThreads > 1) {
@@ -466,7 +470,7 @@ skylark::ml::model_t* BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y,
             El::Axpy(+1.0, tmp, rhs); // rhs = rhs + ZtObar_ij[J,:]
 
             SKYLARK_TIMER_RESTART(ZMULT_PROFILE);
-            El::Matrix<double> dsum = del_o;
+            local_matrix_t dsum = del_o;
             El::Axpy(NumFeaturePartitions + 1.0, nu, dsum);
             El::Gemm(El::NORMAL, El::TRANSPOSE, 
                 1.0/(NumFeaturePartitions + 1.0), Z, dsum, 1.0, rhs); // rhs = rhs + z'*(1/(n+1) * del_o + nu)
@@ -504,7 +508,7 @@ skylark::ml::model_t* BlockADMMSolver<T>::train(T& X, LocalMatrixType& Y,
 
         localloss = 0.0 ;
         //  El::Zeros(o, ni, k);
-        El::Matrix<double> o(k, ni);
+        local_matrix_t o(k, ni);
         El::Zero(o);
         El::Scale(-1.0, sum_o);
         El::Axpy(+1.0, O, sum_o); // sum_o = O.Matrix - sum_o

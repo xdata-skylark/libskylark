@@ -12,14 +12,16 @@
 
 #include "../utility/timer.hpp"
 
-template <class T>
-struct BlockADMMSolver
-{
+template <class InputType>
+struct BlockADMMSolver {
 
-    typedef El::Matrix<double> feature_matrix_t;
-    typedef El::Matrix<double> target_matrix_t;
+    typedef typename skylark::utility::typer_t<InputType>::value_type value_type;
 
-    typedef skylark::sketch::sketch_transform_t<T, feature_matrix_t>
+    typedef InputType data_matrix_t;
+    typedef El::Matrix<value_type> feature_matrix_t;
+    typedef El::Matrix<value_type> target_matrix_t;
+
+    typedef skylark::sketch::sketch_transform_t<data_matrix_t, feature_matrix_t>
     feature_transform_t;
     typedef std::vector<const feature_transform_t *> feature_transform_array_t;
 
@@ -33,7 +35,7 @@ struct BlockADMMSolver
 
     // Easy interface, aka kernel based.
     template<typename Kernel, typename MapTypeTag>
-    BlockADMMSolver<T>(skylark::base::context_t& context,
+    BlockADMMSolver<InputType>(skylark::base::context_t& context,
         const lossfunction* loss,
         const regularization* regularizer,
         double lambda, // regularization parameter
@@ -44,7 +46,7 @@ struct BlockADMMSolver
 
     // Easy interface, aka kernel based, with quasi-random features.
     template<typename Kernel>
-    BlockADMMSolver<T>(skylark::base::context_t& context,
+    BlockADMMSolver<InputType>(skylark::base::context_t& context,
         const lossfunction* loss,
         const regularization* regularizer,
         double lambda, // regularization parameter
@@ -54,7 +56,7 @@ struct BlockADMMSolver
         int NumFeaturePartitions);
 
     // Guru interface.
-    BlockADMMSolver<T>(const lossfunction* loss,
+    BlockADMMSolver<InputType>(const lossfunction* loss,
         const regularization* regularizer,
         const feature_transform_array_t& featureMaps,
         double lambda, // regularization parameter
@@ -71,8 +73,8 @@ struct BlockADMMSolver
     void InitializeFactorizationCache();
     void InitializeTransformCache(int n);
 
-    skylark::ml::model_t* train(T& X,
-        target_matrix_t& Y, T& Xv, target_matrix_t& Yv,
+    skylark::ml::model_t* train(data_matrix_t& X,
+        target_matrix_t& Y, data_matrix_t& Xv, target_matrix_t& Yv,
         bool regression, const boost::mpi::communicator& comm);
 
     int get_numfeatures() {return NumFeatures;}
@@ -81,7 +83,7 @@ struct BlockADMMSolver
 
 private:
 
-    typedef El::Matrix<double> local_matrix_t;
+    typedef El::Matrix<value_type> local_matrix_t;
 
     feature_transform_array_t featureMaps;
     int NumFeatures;
@@ -103,8 +105,8 @@ private:
     bool CacheTransforms;
 };
 
-template <class T>
-void BlockADMMSolver<T>::InitializeFactorizationCache() {
+template <class InputType>
+void BlockADMMSolver<InputType>::InitializeFactorizationCache() {
     Cache = new local_matrix_t*[NumFeaturePartitions];
     for(int j=0; j<NumFeaturePartitions; j++) {
         int start = starts[j];
@@ -114,8 +116,8 @@ void BlockADMMSolver<T>::InitializeFactorizationCache() {
     }
 }
 
-template <class T>
-void BlockADMMSolver<T>::InitializeTransformCache(int n) {
+template <class InputType>
+void BlockADMMSolver<InputType>::InitializeTransformCache(int n) {
     TransformCache = new local_matrix_t*[NumFeaturePartitions];
     for(int j=0; j<NumFeaturePartitions; j++) {
         int start = starts[j];
@@ -127,8 +129,8 @@ void BlockADMMSolver<T>::InitializeTransformCache(int n) {
 
 
 // No feature transforms (aka just linear regression).
-template <class T>
-BlockADMMSolver<T>::BlockADMMSolver(
+template <class InputType>
+BlockADMMSolver<InputType>::BlockADMMSolver(
         const lossfunction* loss,
         const regularization* regularizer,
         double lambda, // regularization parameter
@@ -159,9 +161,9 @@ BlockADMMSolver<T>::BlockADMMSolver(
 }
 
 // Easy interface, aka kernel based.
-template<class T>
+template<class InputType>
 template<typename Kernel, typename MapTypeTag>
-BlockADMMSolver<T>::BlockADMMSolver(skylark::base::context_t& context,
+BlockADMMSolver<InputType>::BlockADMMSolver(skylark::base::context_t& context,
     const lossfunction* loss,
     const regularization* regularizer,
     double lambda, // regularization parameter
@@ -187,7 +189,7 @@ BlockADMMSolver<T>::BlockADMMSolver(skylark::base::context_t& context,
         np--;
 
         featureMaps[i] =
-            kernel.template create_rft< T, local_matrix_t >(sj, tag, context);
+            kernel.template create_rft<data_matrix_t, local_matrix_t>(sj, tag, context);
     }
     this->ScaleFeatureMaps = true;
     OwnFeatureMaps = true;
@@ -196,9 +198,9 @@ BlockADMMSolver<T>::BlockADMMSolver(skylark::base::context_t& context,
 }
 
 // Easy interface, aka kernel based, with quasi-random features.
-template<class T>
+template<class InputType>
 template<typename Kernel>
-BlockADMMSolver<T>::BlockADMMSolver(skylark::base::context_t& context,
+BlockADMMSolver<InputType>::BlockADMMSolver(skylark::base::context_t& context,
     const lossfunction* loss,
     const regularization* regularizer,
     double lambda, // regularization parameter
@@ -214,7 +216,7 @@ BlockADMMSolver<T>::BlockADMMSolver(skylark::base::context_t& context,
     this->loss = const_cast<lossfunction *> (loss);
     this->regularizer = const_cast<regularization *> (regularizer);
     this->lambda = lambda;
-    skylark::base::leaped_halton_sequence_t<double>
+    skylark::base::leaped_halton_sequence_t<value_type>
         qmcseq(kernel.qrft_sequence_dim()); // TODO size
     int cstart = 0, nf = NumFeatures, np = NumFeaturePartitions;
     for(int i = 0; i < NumFeaturePartitions; i++) {
@@ -226,7 +228,7 @@ BlockADMMSolver<T>::BlockADMMSolver(skylark::base::context_t& context,
         np--;
 
         featureMaps[i] =
-            kernel.template create_qrft< T, local_matrix_t,
+            kernel.template create_qrft< data_matrix_t, local_matrix_t,
               skylark::base::leaped_halton_sequence_t>(sj, qmcseq,
                   starts[i], context);
     }
@@ -237,8 +239,8 @@ BlockADMMSolver<T>::BlockADMMSolver(skylark::base::context_t& context,
 }
 
 // Guru interface
-template <class T>
-BlockADMMSolver<T>::BlockADMMSolver(const lossfunction* loss,
+template <class InputType>
+BlockADMMSolver<InputType>::BlockADMMSolver(const lossfunction* loss,
     const regularization* regularizer,
     const feature_transform_array_t &featureMaps,
     double lambda,
@@ -264,8 +266,8 @@ BlockADMMSolver<T>::BlockADMMSolver(const lossfunction* loss,
     CacheTransforms = false;
 }
 
-template <class T>
-BlockADMMSolver<T>::~BlockADMMSolver() {
+template <class InputType>
+BlockADMMSolver<InputType>::~BlockADMMSolver() {
     for(int i=0; i  < NumFeaturePartitions; i++) {
         delete Cache[i];
         if (OwnFeatureMaps)
@@ -293,9 +295,9 @@ void GetSlice(skylark::base::sparse_matrix_t<T> &X, El::Matrix<T> &Z,
 
 }
 
-template <class T>
-skylark::ml::model_t* BlockADMMSolver<T>::train(T& X, target_matrix_t& Y,
-    T& Xv, target_matrix_t& Yv,
+template <class InputType>
+skylark::ml::model_t* BlockADMMSolver<InputType>::train(data_matrix_t& X, target_matrix_t& Y,
+    data_matrix_t& Xv, target_matrix_t& Yv,
     bool regression, const boost::mpi::communicator& comm) {
 
     int rank = comm.rank();
@@ -343,8 +345,8 @@ skylark::ml::model_t* BlockADMMSolver<T>::train(T& X, target_matrix_t& Y,
 
     int iter = 0;
 
-    double localloss = loss->evaluate(O, Y);
-    double totalloss, accuracy, obj;
+    value_type localloss = loss->evaluate(O, Y);
+    value_type totalloss, accuracy, obj;
 
     int Dk = D*k;
     int nik  = ni*k;
@@ -520,13 +522,13 @@ skylark::ml::model_t* BlockADMMSolver<T>::train(T& X, target_matrix_t& Y,
 
             if (regression) {
                 El::Axpy(-1.0, Yv, Yp);
-                double localerr = std::pow(El::Nrm2(Yp), 2);
-                double localnrm = std::pow(El::Nrm2(Yv), 2);
-                double err, nrm;
+                value_type localerr = std::pow(El::Nrm2(Yp), 2);
+                value_type localnrm = std::pow(El::Nrm2(Yv), 2);
+                value_type err, nrm;
                 boost::mpi::reduce(comm, localerr, err,
-                    std::plus<double>(), 0);
+                    std::plus<value_type>(), 0);
                 boost::mpi::reduce(comm, localnrm, nrm,
-                    std::plus<double>(), 0);
+                    std::plus<value_type>(), 0);
 
                 if (comm.rank() == 0)
                     accuracy = std::sqrt(err / nrm);
@@ -547,7 +549,7 @@ skylark::ml::model_t* BlockADMMSolver<T>::train(T& X, target_matrix_t& Y,
         localloss += loss->evaluate(wbar_output, Y);
 
         SKYLARK_TIMER_RESTART(COMMUNICATION_PROFILE);
-        reduce(comm, localloss, totalloss, std::plus<double>(), 0);
+        reduce(comm, localloss, totalloss, std::plus<value_type>(), 0);
         SKYLARK_TIMER_ACCUMULATE(COMMUNICATION_PROFILE);
 
         if(rank == 0) {
@@ -579,7 +581,7 @@ skylark::ml::model_t* BlockADMMSolver<T>::train(T& X, target_matrix_t& Y,
             Wi.LockedBuffer(),
             Wi.MemorySize(),
             Wbar.Buffer(),
-            std::plus<double>(),
+            std::plus<value_type>(),
             0);
         SKYLARK_TIMER_ACCUMULATE(COMMUNICATION_PROFILE);
 

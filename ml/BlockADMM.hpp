@@ -12,8 +12,6 @@
 
 #include "../utility/timer.hpp"
 
-//typedef El::Matrix<double> LocalMatrixType;
-
 template <class T>
 struct BlockADMMSolver
 {

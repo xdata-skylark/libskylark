@@ -219,7 +219,7 @@ BlockADMMSolver<InputType>* GetSolver(skylark::base::context_t& context,
 }
 
 
-void ShiftForLogistic(LocalMatrixType& Y) {
+void ShiftForLogistic(El::Matrix<double>& Y) {
     double y;
     for(int i=0;i<Y.Height(); i++) {
         y = Y.Get(i, 0);

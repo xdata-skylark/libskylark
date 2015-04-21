@@ -12,20 +12,11 @@
 
 #include "../utility/timer.hpp"
 
-// Columns are examples, rows are features
-typedef El::DistMatrix<double, El::STAR, El::VC> DistInputMatrixType;
-
-// Rows are examples, columns are target values
-typedef El::DistMatrix<double, El::VC, El::STAR> DistTargetMatrixType;
-
 typedef El::Matrix<double> LocalMatrixType;
-typedef skylark::base::sparse_matrix_t<double> sparse_matrix_t;
 
 template <class T>
-class BlockADMMSolver
+struct BlockADMMSolver
 {
-public:
-
     typedef skylark::sketch::sketch_transform_t<T, LocalMatrixType>
     feature_transform_t;
     typedef std::vector<const feature_transform_t *> feature_transform_array_t;
@@ -87,6 +78,8 @@ public:
     feature_transform_array_t& get_feature_maps() {return featureMaps;}
 
 private:
+
+    typedef El::Matrix<double> local_t;
 
     feature_transform_array_t featureMaps;
     int NumFeatures;

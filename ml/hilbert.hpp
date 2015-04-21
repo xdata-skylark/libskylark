@@ -52,13 +52,25 @@ BlockADMMSolver<InputType>* GetSolver(skylark::base::context_t& context,
     int features = 0;
     switch(options.kernel) {
     case LINEAR:
-        features = dimensions;
-        Solver =
-            new BlockADMMSolver<InputType>(loss,
-                regularizer,
-                options.lambda,
-                dimensions,
-                options.numfeaturepartitions);
+        features =
+            (options.randomfeatures == 0 ? dimensions : options.randomfeatures);
+        if (options.randomfeatures == 0)
+            Solver =
+                new BlockADMMSolver<InputType>(loss,
+                    regularizer,
+                    options.lambda,
+                    dimensions,
+                    options.numfeaturepartitions);
+        else
+            Solver =
+                new BlockADMMSolver<InputType>(context,
+                    loss,
+                    regularizer,
+                    options.lambda,
+                    features,
+                    skylark::ml::kernels::linear_t(dimensions),
+                    skylark::ml::sparse_feature_transform_tag(),
+                    options.numfeaturepartitions);
         break;
 
     case GAUSSIAN:

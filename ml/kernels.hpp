@@ -6,6 +6,43 @@
 
 namespace skylark { namespace ml { namespace kernels {
 
+struct linear_t {
+
+    linear_t(int N) : _N(N) {
+
+    }
+
+    template<typename IT, typename OT>
+    sketch::sketch_transform_t<IT, OT> *create_rft(int S,
+        regular_feature_transform_tag, base::context_t& context) const {
+        return
+            new sketch::JLT_t<IT, OT>(_N, S, context);
+    }
+
+    template<typename IT, typename OT>
+    sketch::sketch_transform_t<IT, OT> *create_rft(int S,
+        fast_feature_transform_tag, base::context_t& context) const {
+        return
+            new sketch::FJLT_t<IT, OT>(_N, S, context);
+    }
+
+    template<typename IT, typename OT>
+    sketch::sketch_transform_t<IT, OT> *create_rft(int S,
+        sparse_feature_transform_tag, base::context_t& context) const {
+        return
+            new sketch::CWT_t<IT, OT>(_N, S, context);
+    }
+
+
+    int get_dim() const {
+        return _N;
+    }
+
+private:
+
+    int _N;
+};
+
 struct gaussian_t {
 
     gaussian_t(int N, double sigma) : _N(N), _sigma(sigma) {

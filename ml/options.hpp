@@ -20,7 +20,6 @@ namespace po = boost::program_options;
 #define DEFAULT_TOL 0.001
 #define DEFAULT_MAXITER 20
 #define DEFAULT_SEED 12345
-#define DEFAULT_RF 100
 #define DEFAULT_KERNEL 0
 #define DEFAULT_FILEFORMAT 0
 
@@ -145,7 +144,7 @@ struct hilbert_options_t {
                 po::value<int>(&seed)->default_value(DEFAULT_SEED),
                 "Seed for Random Number Generator")
             ("randomfeatures,f",
-                po::value<int>(&randomfeatures)->default_value(DEFAULT_RF),
+                po::value<int>(&randomfeatures)->default_value(0),
                 "Number of Random Features (default: 100)")
             ("numfeaturepartitions,n",
                 po::value<int>(&numfeaturepartitions)->
@@ -234,7 +233,7 @@ struct hilbert_options_t {
         tolerance = DEFAULT_TOL;
         rho = DEFAULT_RHO;
         seed = DEFAULT_SEED;
-        randomfeatures = DEFAULT_RF;
+        randomfeatures = 0;
         numfeaturepartitions = DEFAULT_FEATURE_PARTITIONS;
         numthreads = DEFAULT_THREADS;
         usefast = false;
@@ -322,7 +321,7 @@ struct hilbert_options_t {
     std::string print () const {
         std::stringstream optionstring;
 
-        optionstring << "# Generated using libSkylark/hilbert ";
+        optionstring << "# Generated using skylark_ml";
         optionstring << "using the following command-line: " << std::endl;
         optionstring << "#\t" << str << std::endl;
         optionstring << "#" << std::endl;

@@ -10,6 +10,10 @@ dpkg-reconfigure locales
 
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib
 
+export SKYLARK_SRC_DIR=/home/vagrant/libskylark
+export SKYLARK_BUILD_DIR=/home/vagrant/build
+export SKYLARK_INSTALL_DIR=/home/vagrant/install
+
 # populate .bashrc
 echo "export SKYLARK_SRC_DIR=/home/vagrant/libskylark" >> ./.bashrc
 echo "export SKYLARK_BUILD_DIR=/home/vagrant/build" >> ./.bashrc
@@ -17,7 +21,7 @@ echo "export SKYLARK_INSTALL_DIR=/home/vagrant/install" >> ./.bashrc
 echo "export PYTHON_SITE_PACKAGES=${SKYLARK_INSTALL_DIR}" >> ./.bashrc
 echo "export PYTHONPATH=${SKYLARK_INSTALL_DIR}/lib/python2.7/site-packages:${PYTHONPATH}" >> ./.bashrc
 echo "export LD_LIBRARY_PATH=${SKYLARK_INSTALL_DIR}/lib:/usr/local/lib:/usr/lib/x86_64-linux-gnu/:${LD_LIBRARY_PATH}" >> ./.bashrc
-echo "export PATH=${SKYLARK_INSTALL_DIR}/bin:${PATH}"
+echo "export PATH=${SKYLARK_INSTALL_DIR}/bin:${PATH}" >> ./.bashrc
 #echo "export FFTW_ROOT=/usr/lib/x86_64-linux-gnu/" >> ./.bashrc
 
 chown -R vagrant /home/vagrant/.bashrc

@@ -11,14 +11,21 @@ dpkg-reconfigure locales
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib
 
 # populate .bashrc
-echo "export SKYLARK_SRC_DIR=/home/vagrant/libskylark" > ./.bashrc
+echo "export SKYLARK_SRC_DIR=/home/vagrant/libskylark" >> ./.bashrc
 echo "export SKYLARK_BUILD_DIR=/home/vagrant/build" >> ./.bashrc
 echo "export SKYLARK_INSTALL_DIR=/home/vagrant/install" >> ./.bashrc
 echo "export PYTHON_SITE_PACKAGES=${SKYLARK_INSTALL_DIR}" >> ./.bashrc
 echo "export PYTHONPATH=${SKYLARK_INSTALL_DIR}/lib/python2.7/site-packages:${PYTHONPATH}" >> ./.bashrc
 echo "export LD_LIBRARY_PATH=${SKYLARK_INSTALL_DIR}/lib:/usr/local/lib:/usr/lib/x86_64-linux-gnu/:${LD_LIBRARY_PATH}" >> ./.bashrc
+echo "export PATH=${SKYLARK_INSTALL_DIR}/bin:${PATH}"
 #echo "export FFTW_ROOT=/usr/lib/x86_64-linux-gnu/" >> ./.bashrc
+
 chown -R vagrant /home/vagrant/.bashrc
+
+# populate .emacs with skylark coding style, in case user wants to use emacs
+echo "(load-file \"/home/vagrant/libskylark/doc/script/emacsrc\")"  >> .emacs
+
+chown -R vagrant /home/vagrant/.emacs
 
 # make sure the package information is up-to-date
 apt-get update
@@ -238,6 +245,7 @@ fi
 mkdir -p ${SKYLARK_BUILD_DIR}
 mkdir -p ${SKYLARK_INSTALL_DIR}
 cd ${SKYLARK_BUILD_DIR}
+export BLAS_LIBRARIES="-L/usr/lib -lopenblas -lm"
 rm CMakeCache.txt
 CC=mpicc CXX=mpicxx cmake -DCMAKE_INSTALL_PREFIX=${SKYLARK_INSTALL_DIR} \
                           -DUSE_COMBBLAS=ON ${SKYLARK_SRC_DIR}

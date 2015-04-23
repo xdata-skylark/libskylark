@@ -99,7 +99,7 @@ simple_unweighted_graph_t<VertexType>::simple_unweighted_graph_t(const std::stri
 }
 
 double gamma_, alpha, epsilon;
-bool recursive, interactive, quiet;
+bool recursive, interactive, quiet, printcond;
 std::string graphfile, indexfile;
 std::vector<std::string> seedss;
 
@@ -210,7 +210,9 @@ void execute() {
             std::cout <<"Analysis complete! Took "
                       << boost::format("%.2e") % timer.elapsed() << " sec\n";
             std::cout << "Cluster found:" << std::endl;
-        }
+        } else
+            if (printcond)
+                std::cout << cond << " ";
         for (auto it = cluster.begin(); it != cluster.end(); it++)
             if (use_index)
                 std::cout << id_to_name_map[*it] << std::endl;
@@ -326,9 +328,9 @@ int main(int argc, char** argv) {
             bpo::value<std::vector<std::string> >(&seedss),
             "Seed node. Use multiple times for multiple seeds. REQUIRED. ")
         ("recursive,r",
-            bpo::value<bool>(&recursive)->default_value(true),
-            "Whether to try to recursively improve clusters "
+             "Whether to try to recursively improve clusters "
             "(use cluster found as a seed)" )
+        ("cond,c", "In quiet mode: prefix community with conductance")
         ("gamma",
             bpo::value<double>(&gamma_)->default_value(5.0),
             "Time to derive the diffusion. As gamma->inf we get closer to ppr.")
@@ -352,7 +354,9 @@ int main(int argc, char** argv) {
         }
 
         interactive = vm.count("interactive");
+        recursive = vm.count("recursive");
         quiet = vm.count("quiet");
+        printcond = vm.count("cond");
         numeric = vm.count("numeric");
         doall = vm.count("all");
 

@@ -59,6 +59,17 @@ Additionally we provide instruction on how to install on a cluster
 
 Finally, some examples are provided in the :ref:`examples-label` section.
 
+.. note::
+
+    You might get a warning concerning AVX instructions when running the
+    examples
+
+        `OpenBLAS : Your OS does not support AVX instructions. OpenBLAS is using Nehalem kernels as a fallback, which may give poorer performance.`
+
+    because some VM providers do not support AVX instructions yet (e.g. see:
+    `https://www.virtualbox.org/ticket/11347`).
+
+
 
 .. _vagrant-label:
 

@@ -168,7 +168,7 @@ if [ ! -d "Elemental-0.86-rc1" ]; then
     git clone https://github.com/poulson/metis.git external/metis
     mkdir build
     cd build
-    cmake -DEL_USE_64BIT_INTS=ON -DCMAKE_BUILD_TYPE=HybridRelease -DMATH_LIBS="-L/usr/lib -llapack -lopenblas -lm" ../
+    cmake -DEL_USE_64BIT_INTS=ON -DCMAKE_BUILD_TYPE=PureRelease -DMATH_LIBS="-L/usr/lib -llapack -lopenblas -lm" ../
     make -j $NPROC
     make install
 fi

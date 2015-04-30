@@ -1183,7 +1183,8 @@ Make sure you have a compiled libz around then run:
 libSkylark
 ----------
 
-Finally we can turn to building libSkylark. First change the CMake file:
+Finally we can turn to building libSkylark. First change the CMake file by
+applying the following patch:
 
 .. code-block:: diff
 
@@ -1213,15 +1214,18 @@ Finally we can turn to building libSkylark. First change the CMake file:
     set (CMAKE_CXX_COMPILER ${MPI_COMPILER})
 
 
-and compile:
+Make sure that the following environment variables (adapt if necessary) are
+exported
 
 .. code-block:: sh
 
-    rm CMakeCache.txt
-    rm -rf CMakeFiles
+    # LAPACK library
+    export LAPACK_LIB=$HOME/local/lib/liblapack.a
 
+    # root installation dir of CLANG compiler
     export CLANG_ROOT=$HOME/bgclang/
 
+    # dependencies
     export FFTW_ROOT=$HOME/local/fftw-3.3.3/
     export HDF5_ROOT=$HOME/local
     export ELEMENTAL_ROOT=$HOME/local
@@ -1229,7 +1233,14 @@ and compile:
     export RANDOM123_ROOT=$HOME/local/Random123-1.08
     export BOOST_ROOT=$HOME/local/boost_1_53_0
 
-    cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/BGQ-clang-essl.cmake \
+and compile with:
+
+.. code-block:: sh
+
+    rm CMakeCache.txt
+    rm -rf CMakeFiles
+
+    cmake -DCMAKE_TOOLCHAIN_FILE=../CMake/toolchains/BGQ-clang-essl.cmake \
           -DUSE_FFTW=ON -DUSE_COMBBLAS=ON -DBUILD_PYTHON=OFF -DUSE_HYBRID=ON \
           ../
 
@@ -1237,24 +1248,6 @@ and compile:
           error this hints that you most likely are missing the gcc 4.7.2 toolchain
           (libc++). The missing files and instructions to patch the wrapper
           scripts are provided on the ANL trac page (see top).*
-
-
-In order to be abl to compile skylark_ml apply the following patch:
-
-.. code-block:: diff
-
-    diff --git a/CMakeLists.txt b/CMakeLists.txt
-    index ef18fa7..b170cde 100644
-    --- a/CMakeLists.txt
-    +++ b/CMakeLists.txt
-    @@ -5,6 +5,8 @@ set (CMAKE_DISABLE_IN_SOURCE_BUILD ON)
-
-    project (SKYLARK)
-
-    +ADD_DEFINITIONS(-DSKYLARK_AVOID_BOOST_PO)
-    +
-    set (SKYLARK_VERSION_MAJOR 0)
-    set (SKYLARK_VERSION_MINOR 1)
 
 
 For compiling the Async you need the following patch (the OpenMP statement

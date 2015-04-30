@@ -1154,7 +1154,8 @@ make install
 </div>
 <div class="section" id="libskylark">
 <h3>libSkylark<a class="headerlink" href="#libskylark" title="Permalink to this headline">¶</a></h3>
-<p>Finally we can turn to building libSkylark. First change the CMake file:</p>
+<p>Finally we can turn to building libSkylark. First change the CMake file by
+applying the following patch:</p>
 <div class="highlight-diff"><div class="highlight"><pre><span class="gh">diff --git a/CMakeLists.txt b/CMakeLists.txt</span>
 <span class="gh">index ef18fa7..825dbaa 100644</span>
 <span class="gd">--- a/CMakeLists.txt</span>
@@ -1181,20 +1182,28 @@ make install
 set (CMAKE_CXX_COMPILER ${MPI_COMPILER})
 </pre></div>
 </div>
-<p>and compile:</p>
-<div class="highlight-sh"><div class="highlight"><pre>rm CMakeCache.txt
-rm -rf CMakeFiles
+<p>Make sure that the following environment variables (adapt if necessary) are
+exported</p>
+<div class="highlight-sh"><div class="highlight"><pre><span class="c"># LAPACK library</span>
+<span class="nb">export </span><span class="nv">LAPACK_LIB</span><span class="o">=</span><span class="nv">$HOME</span>/local/lib/liblapack.a
 
+<span class="c"># root installation dir of CLANG compiler</span>
 <span class="nb">export </span><span class="nv">CLANG_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/bgclang/
 
+<span class="c"># dependencies</span>
 <span class="nb">export </span><span class="nv">FFTW_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/local/fftw-3.3.3/
 <span class="nb">export </span><span class="nv">HDF5_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/local
 <span class="nb">export </span><span class="nv">ELEMENTAL_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/local
 <span class="nb">export </span><span class="nv">COMBBLAS_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/src/CombBLAS
 <span class="nb">export </span><span class="nv">RANDOM123_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/local/Random123-1.08
 <span class="nb">export </span><span class="nv">BOOST_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/local/boost_1_53_0
+</pre></div>
+</div>
+<p>and compile with:</p>
+<div class="highlight-sh"><div class="highlight"><pre>rm CMakeCache.txt
+rm -rf CMakeFiles
 
-cmake -DCMAKE_TOOLCHAIN_FILE<span class="o">=</span>../cmake/toolchains/BGQ-clang-essl.cmake <span class="se">\</span>
+cmake -DCMAKE_TOOLCHAIN_FILE<span class="o">=</span>../CMake/toolchains/BGQ-clang-essl.cmake <span class="se">\</span>
       -DUSE_FFTW<span class="o">=</span>ON -DUSE_COMBBLAS<span class="o">=</span>ON -DBUILD_PYTHON<span class="o">=</span>OFF -DUSE_HYBRID<span class="o">=</span>ON <span class="se">\</span>
       ../
 </pre></div>
@@ -1205,21 +1214,6 @@ cmake -DCMAKE_TOOLCHAIN_FILE<span class="o">=</span>../cmake/toolchains/BGQ-clan
 error this hints that you most likely are missing the gcc 4.7.2 toolchain
 (libc++). The missing files and instructions to patch the wrapper
 scripts are provided on the ANL trac page (see top).*</p>
-</div>
-<p>In order to be abl to compile skylark_ml apply the following patch:</p>
-<div class="highlight-diff"><div class="highlight"><pre><span class="gh">diff --git a/CMakeLists.txt b/CMakeLists.txt</span>
-<span class="gh">index ef18fa7..b170cde 100644</span>
-<span class="gd">--- a/CMakeLists.txt</span>
-<span class="gi">+++ b/CMakeLists.txt</span>
-<span class="gu">@@ -5,6 +5,8 @@ set (CMAKE_DISABLE_IN_SOURCE_BUILD ON)</span>
-
-project (SKYLARK)
-
-<span class="gi">+ADD_DEFINITIONS(-DSKYLARK_AVOID_BOOST_PO)</span>
-<span class="gi">+</span>
-set (SKYLARK_VERSION_MAJOR 0)
-set (SKYLARK_VERSION_MINOR 1)
-</pre></div>
 </div>
 <p>For compiling the Async you need the following patch (the OpenMP statement
 seems to crash the clang):</p>

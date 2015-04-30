@@ -101,6 +101,11 @@ If you want to customize the installed libSkylark follow the instructions
 (see :ref:`build-libskylark-label`) for building and installing
 libSkylark.
 
+.. note::
+
+    To customize the amount of memory (4096) and CPU (75%) cap that will be
+    used for the VM, check the Vagrant file.
+
 The vagrant box can be stopped by issuing ``vagrant halt``.
 
 

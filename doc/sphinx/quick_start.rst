@@ -441,6 +441,12 @@ When libSkylark is built, executables instantiating these examples can be found
 under ``$SKYLARK_INSTALL_DIR/bin/skylark_examples`` and
 ``$SKYLARK_INSTALL_DIR/bin``.
 
+In addition Vagrant provisions a
+`IPyhton notebook <http://ipython.org/notebook.html>` server with access to the
+libSkylark Python bindings. To play with libSkylark just open your browser and
+direct it to `localhost:6868`.
+
+
 Sketching
 ----------
 

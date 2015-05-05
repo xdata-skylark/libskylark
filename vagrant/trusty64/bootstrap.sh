@@ -22,6 +22,7 @@ echo "export PYTHON_SITE_PACKAGES=${SKYLARK_INSTALL_DIR}" >> ./.bashrc
 echo "export PYTHONPATH=${SKYLARK_INSTALL_DIR}/lib/python2.7/site-packages:${PYTHONPATH}" >> ./.bashrc
 echo "export LD_LIBRARY_PATH=${SKYLARK_INSTALL_DIR}/lib:/usr/local/lib:/usr/lib/x86_64-linux-gnu/:${LD_LIBRARY_PATH}" >> ./.bashrc
 echo "export PATH=${SKYLARK_INSTALL_DIR}/bin:${PATH}" >> ./.bashrc
+echo "export LD_PRELOAD=/usr/lib/libmpi.so" >> ./.bashrc
 #echo "export FFTW_ROOT=/usr/lib/x86_64-linux-gnu/" >> ./.bashrc
 
 chown -R vagrant /home/vagrant/.bashrc
@@ -276,7 +277,7 @@ cd /home/vagrant
 dtach -n /tmp/ipython_notebook -Ez ipython notebook --profile=nbserver
 
 #FIXME: dir to /home/vagrant, run as vagrant user?
-echo "dtach -n /tmp/ipython_notebook -Ez ipython notebook --profile=nbserver" > /etc/rc.local
+echo "LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH LD_PRELOAD=/usr/lib/libmpi.so dtach -n /tmp/ipython_notebook -Ez ipython notebook --profile=nbserver" > /etc/rc.local
 echo "exit 0" >> /etc/rc.local
 
 echo "Started IPython notebook. Point your browser to http://127.0.0.1:6868"

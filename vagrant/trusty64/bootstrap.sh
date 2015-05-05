@@ -258,6 +258,7 @@ make install
 make doc
 
 # Finalize
+mkdir /home/vagrant/notebooks
 chown -R vagrant /home/vagrant
 
 echo "Finished libSkylark Vagrant build.."
@@ -266,9 +267,10 @@ apt-get install dtach
 ipython profile create nbserver
 
 echo "c = get_config()" > $HOME/.ipython/profile_nbserver/ipython_notebook_config.py
-echo "c.IPKernelApp.pylab = 'inline'  # if you want plotting support always" >> $HOME/.ipython/profile_nbserver/ipython_notebook_config.py
+echo "c.IPKernelApp.pylab = 'inline'" >> $HOME/.ipython/profile_nbserver/ipython_notebook_config.py
 echo "c.NotebookApp.ip = '*'" >> $HOME/.ipython/profile_nbserver/ipython_notebook_config.py
 echo "c.NotebookApp.open_browser = False" >> $HOME/.ipython/profile_nbserver/ipython_notebook_config.py
+echo "c.NotebookManager.notebook_dir = u'/home/vagrant/notebooks'" >> $HOME/.ipython/profile_nbserver/ipython_notebook_config.py
 
 cd /home/vagrant
 dtach -n /tmp/ipython_notebook -Ez ipython notebook --profile=nbserver

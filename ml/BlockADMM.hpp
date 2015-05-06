@@ -27,7 +27,7 @@ struct BlockADMMSolver {
 
 
     // No feature transdeforms (aka just linear regression).
-    BlockADMMSolver(const loss_t* loss,
+    BlockADMMSolver(const skylark::algorithms::loss_t* loss,
         const regularization* regularizer,
         double lambda, // regularization parameter
         int NumFeatures,
@@ -36,7 +36,7 @@ struct BlockADMMSolver {
     // Easy interface, aka kernel based.
     template<typename Kernel, typename MapTypeTag>
     BlockADMMSolver<InputType>(skylark::base::context_t& context,
-        const loss_t* loss,
+        const skylark::algorithms::loss_t* loss,
         const regularization* regularizer,
         double lambda, // regularization parameter
         int NumFeatures,
@@ -47,7 +47,7 @@ struct BlockADMMSolver {
     // Easy interface, aka kernel based, with quasi-random features.
     template<typename Kernel>
     BlockADMMSolver<InputType>(skylark::base::context_t& context,
-        const loss_t* loss,
+        const skylark::algorithms::loss_t* loss,
         const regularization* regularizer,
         double lambda, // regularization parameter
         int NumFeatures,
@@ -56,7 +56,7 @@ struct BlockADMMSolver {
         int NumFeaturePartitions);
 
     // Guru interface.
-    BlockADMMSolver<InputType>(const loss_t* loss,
+    BlockADMMSolver<InputType>(const skylark::algorithms::loss_t* loss,
         const regularization* regularizer,
         const feature_transform_array_t& featureMaps,
         double lambda, // regularization parameter
@@ -88,7 +88,7 @@ private:
     feature_transform_array_t featureMaps;
     int NumFeatures;
     int NumFeaturePartitions;
-    const loss_t* loss;
+    const skylark::algorithms::loss_t* loss;
     regularization* regularizer;
     std::vector<int> starts, finishes;
     bool ScaleFeatureMaps;
@@ -131,7 +131,7 @@ void BlockADMMSolver<InputType>::InitializeTransformCache(int n) {
 // No feature transforms (aka just linear regression).
 template <class InputType>
 BlockADMMSolver<InputType>::BlockADMMSolver(
-        const loss_t* loss,
+        const skylark::algorithms::loss_t* loss,
         const regularization* regularizer,
         double lambda, // regularization parameter
         int NumFeatures,
@@ -162,7 +162,7 @@ BlockADMMSolver<InputType>::BlockADMMSolver(
 template<class InputType>
 template<typename Kernel, typename MapTypeTag>
 BlockADMMSolver<InputType>::BlockADMMSolver(skylark::base::context_t& context,
-    const loss_t* loss,
+    const skylark::algorithms::loss_t* loss,
     const regularization* regularizer,
     double lambda, // regularization parameter
     int NumFeatures,
@@ -171,10 +171,10 @@ BlockADMMSolver<InputType>::BlockADMMSolver(skylark::base::context_t& context,
     int NumFeaturePartitions) :
     featureMaps(NumFeaturePartitions),
     NumFeatures(NumFeatures), NumFeaturePartitions(NumFeaturePartitions),
+    loss(loss),
     starts(NumFeaturePartitions), finishes(NumFeaturePartitions),
-    NumThreads(1), RHO(1.0), MAXITER(1000), TOL(0.1) {
+    NumThreads(1), lambda(lambda), RHO(1.0), MAXITER(1000), TOL(0.1) {
 
-    this->loss = const_cast<loss_t *> (loss);
     this->regularizer = const_cast<regularization *> (regularizer);
     this->lambda = lambda;
     int cstart = 0, nf = NumFeatures, np = NumFeaturePartitions;
@@ -199,7 +199,7 @@ BlockADMMSolver<InputType>::BlockADMMSolver(skylark::base::context_t& context,
 template<class InputType>
 template<typename Kernel>
 BlockADMMSolver<InputType>::BlockADMMSolver(skylark::base::context_t& context,
-    const loss_t* loss,
+    const skylark::algorithms::loss_t* loss,
     const regularization* regularizer,
     double lambda, // regularization parameter
     int NumFeatures,
@@ -237,7 +237,8 @@ BlockADMMSolver<InputType>::BlockADMMSolver(skylark::base::context_t& context,
 
 // Guru interface
 template <class InputType>
-BlockADMMSolver<InputType>::BlockADMMSolver(const loss_t* loss,
+BlockADMMSolver<InputType>::BlockADMMSolver(
+    const skylark::algorithms::loss_t* loss,
     const regularization* regularizer,
     const feature_transform_array_t &featureMaps,
     double lambda,

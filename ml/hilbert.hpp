@@ -8,27 +8,23 @@
 #include "BlockADMM.hpp"
 #include "options.hpp"
 
-#include "../base/context.hpp"
-#include "model.hpp"
-
-
 template <class InputType>
 BlockADMMSolver<InputType>* GetSolver(skylark::base::context_t& context,
     const hilbert_options_t& options, int dimensions) {
 
-    loss_t *loss = NULL;
+    skylark::algorithms::loss_t *loss = NULL;
     switch(options.lossfunction) {
     case SQUARED:
-        loss = new squared_loss_t();
+        loss = new skylark::algorithms::squared_loss_t();
         break;
     case HINGE:
-        loss = new hinge_loss_t();
+        loss = new skylark::algorithms::hinge_loss_t();
         break;
     case LOGISTIC:
-        loss = new logistic_loss_t();
+        loss = new skylark::algorithms::logistic_loss_t();
         break;
     case LAD:
-        loss = new lad_loss_t();
+        loss = new skylark::algorithms::lad_loss_t();
         break;
     default:
         // TODO

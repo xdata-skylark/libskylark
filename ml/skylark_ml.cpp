@@ -5,13 +5,12 @@
 #include <sstream>
 #include <cstdlib>
 #include <string>
-#include <boost/mpi.hpp>
 #include <boost/program_options.hpp>
-#include <boost/any.hpp>
-#include "kernels.hpp"
 #include "hilbert.hpp"
+
+#if SKYLARK_HAVE_OPENMP
 #include <omp.h>
-#include "../base/context.hpp"
+#endif 
 
 int main(int argc, char* argv[]) {
 

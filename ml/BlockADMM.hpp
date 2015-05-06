@@ -88,7 +88,7 @@ private:
     feature_transform_array_t featureMaps;
     int NumFeatures;
     int NumFeaturePartitions;
-    loss_t* loss;
+    const loss_t* loss;
     regularization* regularizer;
     std::vector<int> starts, finishes;
     bool ScaleFeatureMaps;
@@ -137,14 +137,12 @@ BlockADMMSolver<InputType>::BlockADMMSolver(
         int NumFeatures,
         int NumFeaturePartitions) :
         NumFeatures(NumFeatures),
-            NumFeaturePartitions(NumFeaturePartitions),
-            starts(NumFeaturePartitions), finishes(NumFeaturePartitions),
-            NumThreads(1), RHO(1.0), MAXITER(1000), TOL(0.1) {
+        NumFeaturePartitions(NumFeaturePartitions),
+        loss(loss),
+        starts(NumFeaturePartitions), finishes(NumFeaturePartitions),
+        NumThreads(1), lambda(lambda), RHO(1.0), MAXITER(1000), TOL(0.1) {
 
-    this->loss = const_cast<loss_t *> (loss);
     this->regularizer = const_cast<regularization *> (regularizer);
-    this->lambda = lambda;
-    this->NumFeaturePartitions = NumFeaturePartitions;
     int cstart = 0, nf = NumFeatures, np = NumFeaturePartitions;
     for(int i = 0; i < NumFeaturePartitions; i++) {
         int sj = int(floor(double(nf) / np));
@@ -210,12 +208,11 @@ BlockADMMSolver<InputType>::BlockADMMSolver(skylark::base::context_t& context,
     int NumFeaturePartitions) :
     featureMaps(NumFeaturePartitions),
     NumFeatures(NumFeatures), NumFeaturePartitions(NumFeaturePartitions),
+    loss(loss),
     starts(NumFeaturePartitions), finishes(NumFeaturePartitions),
-    NumThreads(1), RHO(1.0), MAXITER(1000), TOL(0.1) {
+    NumThreads(1), lambda(lambda), RHO(1.0), MAXITER(1000), TOL(0.1) {
 
-    this->loss = const_cast<loss_t *> (loss);
     this->regularizer = const_cast<regularization *> (regularizer);
-    this->lambda = lambda;
     skylark::base::leaped_halton_sequence_t<value_type>
         qmcseq(kernel.qrft_sequence_dim()); // TODO size
     int cstart = 0, nf = NumFeatures, np = NumFeaturePartitions;
@@ -247,12 +244,11 @@ BlockADMMSolver<InputType>::BlockADMMSolver(const loss_t* loss,
     bool ScaleFeatureMaps) :
     featureMaps(featureMaps),
     NumFeaturePartitions(featureMaps.size()),
+    loss(loss),
     starts(NumFeaturePartitions), finishes(NumFeaturePartitions),
-    NumThreads(1), RHO(1.0), MAXITER(1000), TOL(0.1)  {
+    NumThreads(1), lambda(lambda), RHO(1.0), MAXITER(1000), TOL(0.1)  {
 
-    this->loss = const_cast<loss_t *> (loss);
     this->regularizer = const_cast<regularization *> (regularizer);
-    this->lambda = lambda;
     NumFeaturePartitions = featureMaps.size();
     NumFeatures = 0;
     for(int i = 0; i < NumFeaturePartitions; i++) {

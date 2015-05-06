@@ -1,512 +1,458 @@
-/*
- * FunctionProx.hpp
- *
- *  Created on: Jan 12, 2014
- *      Author: vikas
- */
-
 #ifndef FUNCTIONPROX_HPP_
 #define FUNCTIONPROX_HPP_
 
 #include <El.hpp>
-#include "options.hpp"
-#include <cstdlib>
-#include <cmath>
 
 #ifdef SKYLARK_HAVE_OPENMP
 #include <omp.h>
 #endif
 
-// Simple abstract class to represent a function and its prox operator
-// these are defined for local matrices.
-typedef El::Matrix<double> LocalDenseMatrixType;
-typedef El::Matrix<double>  LocalTargetMatrixType;
+struct loss_t {
 
-// abstract class for representing loss functions and their prox operators
-class lossfunction
-{
-public:
-	virtual double evaluate(LocalDenseMatrixType& O, LocalTargetMatrixType& T) = 0 ;
-	virtual void proxoperator(LocalDenseMatrixType& X, double lambda, LocalTargetMatrixType& T, LocalDenseMatrixType& Y) = 0 ;
+    virtual
+    double evaluate(El::Matrix<double>& O, El::Matrix<double>& T) const = 0;
 
-	virtual ~lossfunction(void){}
+    virtual void proxoperator(El::Matrix<double>& X, double lambda,
+        El::Matrix<double>& T, El::Matrix<double>& Y) const = 0 ;
+
+    virtual ~loss_t() {
+
+    }
+};
+
+/**
+ * Square loss: 0.5*||O - T||^2_{fro}
+ */
+struct squared_loss_t : public loss_t {
+
+    virtual double evaluate(El::Matrix<double>& O, El::Matrix<double>& T) const {
+        double loss = 0.0;
+        int k = O.Height();
+        int n = O.Width();
+
+        // TODO: check for size compatability
+
+        double* Obuf = O.Buffer();
+        double* Tbuf = T.Buffer();
+
+        if (k == 1) {
+#           ifdef SKYLARK_HAVE_OPENMP
+#           pragma omp parallel for reduction(+:loss)
+#           endif
+            for(int i = 0; i < n; i++) {
+                double x = Obuf[i] - Tbuf[i];
+                loss += x*x;
+            }
+        } else {
+            // k > 1: treat it as classification for now...
+#           ifdef SKYLARK_HAVE_OPENMP
+#           pragma omp parallel for reduction(+:loss)
+#           endif
+            for(int i = 0; i < n; i++) {
+                int label = (int) Tbuf[i];
+                for(int j = 0;j < k; j++) {
+                    double x = O.Get(j,i) - (j == label ? 1.0 : -1.0);
+                    loss += x*x;
+                }
+            }
+        }
+
+        return 0.5*loss;
+    }
+
+    virtual void proxoperator(El::Matrix<double>& X, double lambda,
+        El::Matrix<double>& T, El::Matrix<double>& Y) const {
+
+        int k = X.Height();
+        int n = X.Width();
+
+        // TODO: check for size compatability
+
+        double* Xbuf = X.Buffer();
+        double* Tbuf = T.Buffer();
+
+        double* Ybuf = Y.Buffer();
+        double ilambda = 1.0 / (1.0 + lambda);
+
+        if (k==1) {
+#           ifdef SKYLARK_HAVE_OPENMP
+#           pragma omp parallel for
+#           endif
+            for(int i = 0; i < n; i++)
+                Ybuf[i] = ilambda * (Xbuf[i] + lambda * Tbuf[i]);
+        } else {
+            // k > 1: treat it as classification for now...
+#           ifdef SKYLARK_HAVE_OPENMP
+#           pragma omp parallel for
+#           endif
+            for(int i = 0; i < n; i++) {
+                int label = (int) Tbuf[i];
+                for(int j = 0; j < k; j++)
+                    Y.Set(j, i,
+                        ilambda*(X.Get(j,i) + lambda*(j==label ? 1.0:-1.0)));
+            }
+        }
+    }
+};
+
+/**
+ * Least absolute deviations loss: ||O - T||_1
+ */
+struct lad_loss_t : public loss_t {
+
+    virtual double evaluate(El::Matrix<double>& O, El::Matrix<double>& T) const {
+        double loss = 0.0;
+        int k = O.Height();
+        int n = O.Width();
+
+        // TODO check for size compatability
+
+        double* Obuf = O.Buffer();
+        double* Tbuf = T.Buffer();
+
+        if (k==1) {
+
+#           ifdef SKYLARK_HAVE_OPENMP
+#           pragma omp parallel for reduction(+:loss)
+#           endif
+            for(int i = 0; i < n; i++) {
+                double x = Obuf[i] - Tbuf[i];
+                loss += std::abs(x);
+            }
+
+        } else {
+            // k > 1: treat it as classification for now...
+#           ifdef SKYLARK_HAVE_OPENMP
+#           pragma omp parallel for reduction(+:loss)
+#           endif
+            for(int i = 0; i < n; i++) {
+                int label = (int) Tbuf[i];
+                for(int j = 0; j < k; j++) {
+                    double x = O.Get(j,i) - (j==label ? 1.0:-1.0);
+                    loss += std::abs(x);
+                }
+            }
+        }
+        return loss;
+    }
+
+    virtual void proxoperator(El::Matrix<double>& X, double lambda,
+        El::Matrix<double>& T, El::Matrix<double>& Y) const {
+
+        int k = X.Height();
+        int n = X.Width();
+
+        // TODO: check for size compatability
+
+        double* Xbuf = X.Buffer();
+        double* Tbuf = T.Buffer();
+
+        double* Ybuf = Y.Buffer();
+        double ilambda = 1.0/(1.0 + lambda);
+
+
+        if (k==1) {
+
+#           ifdef SKYLARK_HAVE_OPENMP
+#           pragma omp parallel for
+#           endif
+            for(int i=0; i<n; i++) {
+                Ybuf[i] = Tbuf[i];
+                if (Xbuf[i] > (Tbuf[i] + lambda))
+                    Ybuf[i] = Xbuf[i] - lambda;
+                if (Xbuf[i] < (Tbuf[i] - lambda))
+                    Ybuf[i] = Xbuf[i] + lambda;
+            }
+
+        } else {
+
+#           ifdef SKYLARK_HAVE_OPENMP
+#           pragma omp parallel for
+#           endif
+            for(int i = 0; i < n; i++) {
+                int label = (int) Tbuf[i];
+                for(int j = 0; j < k; j++) {
+                    double t = (j==label ? 1.0:-1.0);
+                    double x = X.Get(j,i);
+                    Y.Set(j, i, t);
+                    if (x > t + lambda)
+                        Y.Set(j, i,  x - lambda);
+                    if (x < t - lambda)
+                        Y.Set(j, i,  x + lambda);
+                }
+            }
+
+        }
+    }
+};
+
+/**
+ * Hinge-loss: sum(max(1 - t * o, 0))
+ */
+struct hinge_loss_t : public loss_t {
+
+    virtual double evaluate(El::Matrix<double>& O, El::Matrix<double>& T) const {
+
+        int k = O.Height();
+        int n = O.Width();
+        int kn = O.Height()*O.Width();
+
+        // TODO: check for size compatability
+
+        double* Obuf = O.Buffer();
+        double* Tbuf = T.Buffer();
+        double obj = 0.0;
+
+        if (k==1) {
+
+#           ifdef SKYLARK_HAVE_OPENMP
+#           pragma omp parallel for reduction(+:obj)
+#           endif
+            for(int i = 0; i < n; i++) {
+                double yx = Obuf[i]*Tbuf[i];
+                if(yx<1.0)
+                    obj += (1.0 - yx);
+            }
+
+        } else {
+
+#           ifdef SKYLARK_HAVE_OPENMP
+#           pragma omp parallel for reduction(+:obj)
+#           endif
+            for(int i = 0; i < n; i++) {
+                int label = (int) Tbuf[i];
+                for(int j = 0; j < k; j++) {
+                    double yx = O.Get(j,i) * (j==label ? 1.0 : -1.0);
+                    if(yx<1.0)
+                        obj += (1.0 - yx);
+                }
+            }
+
+        }
+
+        return obj;
+    }
+
+    virtual void proxoperator(El::Matrix<double>& X, double lambda,
+        El::Matrix<double>& T, El::Matrix<double>& Y) const {
+
+        double* Tbuf = T.Buffer();
+        double* Xbuf = X.Buffer();
+        double* Ybuf = Y.Buffer();
+
+        int k = X.Height();
+        int n = X.Width();
+
+        if (k==1) { // We assume cy has +1 or -1 entries for n=1 outputs
+
+#           ifdef SKYLARK_HAVE_OPENMP
+#           pragma omp parallel for
+#           endif
+            for(int i = 0; i < n; i++) {
+                double yv = Tbuf[i] * Xbuf[i];
+                if (yv > 1.0)
+                    Ybuf[i] = Xbuf[i];
+                else {
+                    if(yv < (1.0-lambda))
+                        Ybuf[i] = Xbuf[i] + lambda * Tbuf[i];
+                    else
+                        Ybuf[i] = Tbuf[i];
+
+                }
+            }
+
+        } else {
+
+#           ifdef SKYLARK_HAVE_OPENMP
+#           pragma omp parallel for
+#           endif
+            for(int i = 0; i < n; i++) {
+                int label = (int) Tbuf[i];
+                for(int j = 0; j < k; j++) {
+                    double yv = X.Get(j,i);
+                    double yy = +1.0;
+                    if(!(j==label)) {
+                        yv = -yv;
+                        yy = -1.0;
+                    }
+                    if (yv > 1.0)
+                        Y.Set(j,i,  X.Get(j,i));
+                    else {
+                        if(yv<1.0-lambda)
+                            Y.Set(j,i, X.Get(j,i) + lambda*yy);
+                        else
+                            Y.Set(j,i, yy);
+                    }
+                }
+            }
+
+        }
+    }
+};
+
+struct logistic_loss_t : public loss_t {
+
+    virtual double evaluate(El::Matrix<double>& O, El::Matrix<double>& T) const {
+
+        double loss = 0.0;
+        int m = O.Width();
+        int n = O.Height();
+
+#       ifdef SKYLARK_HAVE_OPENMP
+#       pragma omp parallel for reduction(+:loss)
+#       endif
+        for(int i = 0; i < m; i++) {
+            int t = (int) T.Get(i, 0);
+            loss += -O.Get(t, i) + logsumexp(O.Buffer(0, i), n);
+        }
+
+        return loss;
+
+    }
+
+    virtual void proxoperator(El::Matrix<double>& X, double lambda, 
+        El::Matrix<double>& T, El::Matrix<double>& Y) const {
+
+        int m = X.Width();
+        int n = X.Height();
+
+#       ifdef SKYLARK_HAVE_OPENMP
+#       pragma omp parallel for
+#       endif
+        for(int i=0;i<m;i++) {
+            int t = (int) T.Get(i, 0);
+            logexp(t, X.Buffer(0, i), n, 1.0/lambda, Y.Buffer(0, i));
+        }
+    }
 
 private:
-	std::string type;
+
+    // TODO might be useful to make this an independent function
+    static double logsumexp(double* x, int n) {
+        double max = x[0];
+        double f = 0.0;
+        for(int i=0;i<n;i++)
+            max = std::max(max, x[i]);
+
+        for(int i = 0; i < n; i++)
+            f += std::exp(x[i] - max);
+
+        return max + log(f);
+    }
+
+    // Solution to - log exp(x(i))/sum(exp(x(j))) + lambda/2 ||x - v||_2^2 
+    static int logexp(int index, double* v, int n, double lambda, double* x) {
+        const int MAXITER = 100;
+        const double epsilon = 1e-4;
+
+        double alpha = 0.1;
+        double beta = 0.5;
+        double t, p, decrement;
+        double *u = (double *) malloc(n*sizeof(double));
+        double *z = (double *) malloc(n*sizeof(double));
+        double *grad = (double *) malloc(n*sizeof(double));
+        double newobj=0.0, obj=0.0;
+        obj = objective(index, x, v, n, lambda);
+
+        for(int iter = 0; iter < MAXITER; iter++) {
+            double logsum = logsumexp(x,n);
+            double pu = 0.0;
+            double pptil = 0.0;
+            for(int i = 0; i < n; i++) {
+                p = exp(x[i] - logsum);
+                grad[i] = p + lambda * (x[i] - v[i]);
+                if (i == index)
+                    grad[i] += -1.0;
+                u[i] = grad[i]/(p+lambda);
+                pu += p*u[i];
+                z[i] = p/(p+lambda);
+                pptil += z[i]*p;
+            }
+
+            pptil = 1 - pptil;
+            double decrement = 0.0;
+            for(int i=0; i < n;i++) {
+                u[i] -= (pu/pptil)*z[i];
+                decrement += grad[i]*u[i];
+            }
+            if (decrement < 2*epsilon) {
+                free(u);
+                free(z);
+                free(grad);
+                return 0;
+            }
+            t = 1.0;
+            while(1) {
+                for(int i = 0; i < n; i++)
+                    z[i] = x[i] - t*u[i];
+                newobj = objective(index, z, v, n, lambda);
+                if (newobj <= obj + alpha*t*decrement)
+                    break;
+                t = beta*t;
+            }
+            for(int i = 0; i < n; i++)
+                x[i] = z[i];
+            obj = newobj;
+        }
+
+        free(u);
+        free(z);
+        free(grad);
+        return 1;
+    }
+
+    static double normsquare(double* x, double* y, int n) {
+        double nrm = 0.0;
+        for(int i = 0; i < n; i++)
+            nrm += pow(x[i] - y[i], 2);
+        return nrm;
+    }
+
+
+    static double objective(int index, double* x, 
+        double* v, int n, double lambda) {
+
+        double nrmsqr = normsquare(x,v,n);
+        double obj = -x[index] + logsumexp(x, n) + 0.5*lambda*nrmsqr;
+        return obj;
+    }
+
 };
+
+
 
 // abstract class for representing regularizers and their prox operators
 class regularization
 {
 public:
-	virtual double evaluate(LocalDenseMatrixType& W) = 0 ;
-	virtual void proxoperator(LocalDenseMatrixType& W, double lambda, LocalDenseMatrixType& mu, LocalDenseMatrixType& P) = 0 ;
+	virtual double evaluate(El::Matrix<double>& W) = 0 ;
+	virtual void proxoperator(El::Matrix<double>& W, double lambda, El::Matrix<double>& mu, El::Matrix<double>& P) = 0 ;
 
 	virtual ~regularization(void){}
-};
-
-// Class to represent 0.5*||O - T||^2_{fro}
-class squaredloss : public lossfunction {
-public:
-	virtual double evaluate(LocalDenseMatrixType& O, LocalTargetMatrixType& T);
-	virtual void proxoperator(LocalDenseMatrixType& X, double lambda, LocalTargetMatrixType& T, LocalDenseMatrixType& Y);
-};
-
-// Class to represent Least Absolute Deviations ||O - T||_1
-class ladloss : public lossfunction {
-public:
-	virtual double evaluate(LocalDenseMatrixType& O, LocalTargetMatrixType& T);
-	virtual void proxoperator(LocalDenseMatrixType& X, double lambda, LocalTargetMatrixType& T, LocalDenseMatrixType& Y);
-};
-
-// Class to represent hinge loss sum(max(1-t*o,0))
-class hingeloss : public lossfunction {
-public:
-	virtual double evaluate(LocalDenseMatrixType& O, LocalTargetMatrixType& T);
-	virtual void proxoperator(LocalDenseMatrixType& X, double lambda, LocalTargetMatrixType& T, LocalDenseMatrixType& Y);
-};
-
-class logisticloss : public lossfunction {
-public:
-    logisticloss() : epsilon(1e-4) {}
-    virtual double evaluate(LocalDenseMatrixType& O, LocalTargetMatrixType& T);
-    virtual void proxoperator(LocalDenseMatrixType& X, double lambda, LocalTargetMatrixType& T, LocalDenseMatrixType& Y);
-private:
-    double logsumexp(double* x, int n);
-    double normsquare(double* x, double* y, int n);
-    double objective(int index, double* x, double* v, int n, double lambda);
-    int logexp(int index, double* v, int n, double lambda, double* x, int MAXITER, double epsilon, int DISPLAY);
-
-    static const int MAXITER = 100;
-    static const int DISPLAY = 0;
-
-    const double epsilon;
 };
 
 
 class l2: public regularization {
 public:
-	virtual double evaluate(LocalDenseMatrixType& W);
-	virtual void proxoperator(LocalDenseMatrixType& W, double lambda, LocalDenseMatrixType& mu, LocalDenseMatrixType& P);
+	virtual double evaluate(El::Matrix<double>& W);
+	virtual void proxoperator(El::Matrix<double>& W, double lambda, El::Matrix<double>& mu, El::Matrix<double>& P);
 };
 
 class l1: public regularization {
 public:
-	virtual double evaluate(LocalDenseMatrixType& W);
-	virtual void proxoperator(LocalDenseMatrixType& W, double lambda, LocalDenseMatrixType& mu, LocalDenseMatrixType& P);
+	virtual double evaluate(El::Matrix<double>& W);
+	virtual void proxoperator(El::Matrix<double>& W, double lambda, El::Matrix<double>& mu, El::Matrix<double>& P);
 	double soft_threshold(double x, double lambda);
 };
 
-double ladloss::evaluate(LocalDenseMatrixType& O, LocalTargetMatrixType& T) {
-		double loss = 0.0;
-		int k = O.Height();
-		int n = O.Width();
 
-		// check for size compatability
-
-		double* Obuf = O.Buffer();
-		double*  Tbuf = T.Buffer();
-		double x;
-		int i, j, label;
-
-		if (k==1) {
-#ifdef SKYLARK_HAVE_OPENMP
-			#pragma omp parallel for reduction(+:loss) private(i, x)
-#endif
-			for(i=0; i<n; i++) {
-				x = Obuf[i] - Tbuf[i];
-				loss += std::abs(x);
-			}
-		}
-
-		if (k>1) {
-#ifdef SKYLARK_HAVE_OPENMP
-			#pragma omp parallel for reduction(+:loss) private(i,j, x, label)
-#endif
-			for(i=0; i<n; i++) {
-				label = (int) Tbuf[i];
-                                for(j=0;j<k;j++) {
-                                     x = O.Get(j,i) - (j==label ? 1.0:-1.0);
-                        	     loss += std::abs(x);
-	                       	}
-			}
-		}
-
-		return loss;
-	}
-
-	//solution to Y = prox[X] = argmin_Y 0.5*||X-Y||^2_{fro} + lambda ||Y-T||_1
-void ladloss::proxoperator(LocalDenseMatrixType& X, double lambda, LocalTargetMatrixType& T, LocalDenseMatrixType& Y) {
-		int k = X.Height();
-		int n = X.Width();
-
-				// check for size compatability
-
-		double* Xbuf = X.Buffer();
-		double* Tbuf = T.Buffer();
-
-		double* Ybuf = Y.Buffer();
-		double ilambda = 1.0/(1.0 + lambda);
-
-		int label, i, j;
-		double t, x;
-
-		if (k==1) {
-#ifdef SKYLARK_HAVE_OPENMP
-            #pragma omp parallel for private(i)
-#endif
-			for(int i=0; i<n; i++) {
-				Ybuf[i] = Tbuf[i];
-				if (Xbuf[i] > (Tbuf[i]+lambda))
-					Ybuf[i] = Xbuf[i] - lambda;
-				if (Xbuf[i] < (Tbuf[i] - lambda))
-					Ybuf[i] = Xbuf[i] + lambda;
-			}
-		}
-
-		if(k>1) {
-#ifdef SKYLARK_HAVE_OPENMP
-            #pragma omp parallel for private(i,j, label, t, x)
-#endif
-			for(int i=0; i<n; i++) {
-				label = (int) Tbuf[i];
-                                for(j=0;j<k;j++) {
-                                	 t = (j==label ? 1.0:-1.0);
-                                	 x = X.Get(j,i);
-                                     Y.Set(j, i,  t);
-                                     if (x > t + lambda)
-                                    	 Y.Set(j, i,  x - lambda);
-                                     if (x < t - lambda)
-                                    	 Y.Set(j, i,  x + lambda);
-				}
-			}
-		}
-	}
-
-
-
-double squaredloss::evaluate(LocalDenseMatrixType& O, LocalTargetMatrixType& T) {
-		double loss = 0.0;
-		int k = O.Height();
-		int n = O.Width();
-
-		// check for size compatability
-
-		double* Obuf = O.Buffer();
-		double*  Tbuf = T.Buffer();
-		double x;
-		int i, j, label;
-
-		if (k==1) {
-#ifdef SKYLARK_HAVE_OPENMP
-			#pragma omp parallel for reduction(+:loss) private(i, x)
-#endif
-			for(i=0; i<n; i++) {
-				x = Obuf[i] - Tbuf[i];
-				loss += x*x;
-			}
-		}
-
-		if (k>1) {
-#ifdef SKYLARK_HAVE_OPENMP
-			#pragma omp parallel for reduction(+:loss) private(i,j, x, label)
-#endif
-			for(i=0; i<n; i++) {
-				label = (int) Tbuf[i];
-                                for(j=0;j<k;j++) {
-                                     x = O.Get(j,i) - (j==label ? 1.0:-1.0);
-                        	     loss += x*x;
-	                       	}
-			}
-		}
-
-		return 0.5*loss;
-	}
-
-	//solution to Y = prox[X] = argmin_Y 0.5*||X-Y||^2_{fro} + lambda 0.5 ||Y-T||^2_{fro}
-void squaredloss::proxoperator(LocalDenseMatrixType& X, double lambda, LocalTargetMatrixType& T, LocalDenseMatrixType& Y) {
-		int k = X.Height();
-		int n = X.Width();
-
-				// check for size compatability
-
-		double* Xbuf = X.Buffer();
-		double* Tbuf = T.Buffer();
-
-		double* Ybuf = Y.Buffer();
-		double ilambda = 1.0/(1.0 + lambda);
-
-		int label, i, j;
-
-		if (k==1) {
-#ifdef SKYLARK_HAVE_OPENMP
-            #pragma omp parallel for private(i)
-#endif
-			for(int i=0; i<n; i++)
-				Ybuf[i] = ilambda*(Xbuf[i] + lambda*Tbuf[i]);
-		}
-
-		if(k>1) {
-#ifdef SKYLARK_HAVE_OPENMP
-            #pragma omp parallel for private(i,j, label)
-#endif
-			for(int i=0; i<n; i++) {
-				label = (int) Tbuf[i];
-                                for(j=0;j<k;j++) {
-                                     Y.Set(j, i,  ilambda*(X.Get(j,i) + lambda*(j==label ? 1.0:-1.0)));
-				}
-			}
-		}
-	}
-
-
-
-double hingeloss::evaluate(LocalDenseMatrixType& O, LocalTargetMatrixType& T) {
-		double loss = 0.0;
-		int k = O.Height();
-		int n = O.Width();
-		int kn = O.Height()*O.Width();
-		int label, i, j;
-		// check for size compatability
-
-		double* Obuf = O.Buffer();
-		double* Tbuf = T.Buffer();
-		double obj = 0.0;
-		double yx;
-
-		int noutputs = O.Height();
-
-		if(noutputs==1) {
-#ifdef SKYLARK_HAVE_OPENMP
-               #pragma omp parallel for reduction(+:obj) private(i, yx)
-#endif
-		       for(i=0;i<n;i++) {
-		                        yx = Obuf[i]*Tbuf[i];
-		                        if(yx<1.0)
-		                                obj += (1.0 - yx);
-		                }
-
-		        }
-
-
-		if(noutputs>1) {
-#ifdef SKYLARK_HAVE_OPENMP
-               #pragma omp parallel for reduction(+:obj) private(i, j, label, yx)
-#endif
-		       for(i=0;i<n;i++) {
-		                label = (int) Tbuf[i];
-		                for(j=0;j<k;j++) {
-		                     yx = O.Get(j,i)* (j==label ? 1.0:-1.0);
-		                     if(yx<1.0)
-		                         obj += (1.0 - yx);
-		                }
-		       }
-
-		}
-		return obj;
-	}
-
-	//solution to Y = prox[X] = argmin_Y 0.5*||X-Y||^2_{fro} + lambda 0.5 ||Y-T||^2_{fro}
-void hingeloss::proxoperator(LocalDenseMatrixType& X, double lambda, LocalTargetMatrixType& T, LocalDenseMatrixType& Y) {
-
-	int i, j;
-	double* Tbuf = T.Buffer();
-	double* Xbuf = X.Buffer();
-	double* Ybuf = Y.Buffer();
-	int k = X.Height();
-	int m = X.Width();
-    double yv, yy;
-    int label;
-
-    int noutputs = k;
-
-	if(noutputs==1) { // We assume cy has +1 or -1 entries for n=1 outputs
-#ifdef SKYLARK_HAVE_OPENMP
-                        #pragma omp parallel for private(i,yv)
-#endif
-		                for(i=0;i<m;i++) {
-		                        yv = Tbuf[i]*Xbuf[i];
-
-		                        if (yv > 1.0) {
-		                                Ybuf[i] = Xbuf[i];
-		                        }
-		                        else {
-		                                if(yv < (1.0-lambda)) {
-		                                        Ybuf[i] = Xbuf[i] + lambda*Tbuf[i];
-		                                }
-		                                else {
-		                                        Ybuf[i] = Tbuf[i];
-		                                }
-		                        }
-		                }
-		        }
-
-	if (noutputs>1) {
-#ifdef SKYLARK_HAVE_OPENMP
-                        #pragma omp parallel for private(i,j,yv, yy, label)
-#endif
-		                for(i=0;i<m;i++) {
-		                        label = (int) Tbuf[i];
-		                        for(j=0;j<k;j++) {
-		                                yv = X.Get(j,i);
-		                                yy = +1.0;
-		                                if(!(j==label)) {
-		                                        yv = -yv;
-		                                        yy = -1.0;
-		                                }
-		                                if (yv>1.0)
-		                                                                Y.Set(j,i,  X.Get(j,i));
-		                                                        else {
-		                                                                if(yv<1.0-lambda)
-		                                                                        Y.Set(j,i, X.Get(j,i) + lambda*yy);
-		                                                                else
-		                                                                        Y.Set(j,i, yy);
-		                                                        }
-		                        }
-		                }
-		        }
-
-
-	}
-
-
-double logisticloss::evaluate(LocalDenseMatrixType& O, LocalTargetMatrixType& T) {
-        double obj = 0.0;
-        int m = O.Width();
-        int n = O.Height();
-        double t;
-        int i;
-        //double start = omp_get_wtime( );
-
-#ifdef SKYLARK_HAVE_OPENMP
-        #pragma omp parallel for reduction(+:obj) private(i,t)
-#endif
-        for(int i=0;i<m;i++) {
-        	t = (int) T.Get(i, 0);
-            obj += -O.Get(t, i) + logsumexp(O.Buffer(0, i), n);
-        }
-
-        //double end = omp_get_wtime( );
-
-        // std::cout << end - start <<  " secs " << std::endl;
-
-        return obj;
-}
-
-
-void logisticloss::proxoperator(LocalDenseMatrixType& X, double lambda, LocalTargetMatrixType& T, LocalDenseMatrixType& Y) {
-    int m = X.Width();
-    int n = X.Height();
-    int i;
-
-#ifdef SKYLARK_HAVE_OPENMP
-    #pragma omp parallel for private(i)
-#endif
-    for(int i=0;i<m;i++) {
-                logexp((int) T.Get(i, 0), X.Buffer(0, i), n, 1.0/lambda, Y.Buffer(0, i), MAXITER, epsilon, DISPLAY);
-    }
-
-}
-
-double logisticloss::logsumexp(double* x, int n) {
-        int i;
-        double max=x[0];
-        double f = 0.0;
-        for(i=0;i<n;i++) {
-                if (x[i]>max) {
-                        max = x[i];
-                }
-        }
-        for(i=0;i<n;i++)
-                f +=  exp(x[i] - max);
-        f = max + log(f);
-
-        return f;
-}
-
-double logisticloss::objective(int index, double* x, double* v, int n, double lambda) {
-        double nrmsqr = normsquare(x,v,n);
-        double obj = -x[index] + logsumexp(x, n) + 0.5*lambda*nrmsqr;
-        return obj;
-        }
-
-double logisticloss::normsquare(double* x, double* y, int n){
-        double nrm = 0.0;
-        int i;
-        for(i=0;i<n;i++)
-                nrm+= pow(x[i] - y[i], 2);
-        return nrm;
-}
-
-int logisticloss::logexp(int index, double* v, int n, double lambda, double* x, int MAXITER, double epsilon, int DISPLAY) {
-    /* solution to - log exp(x(i))/sum(exp(x(j))) + lambda/2 ||x - v||_2^2 */
-    /* n is length of v and x */
-    /* writes over x */
-    double alpha = 0.1;
-    double beta = 0.5;
-    int iter, i;
-    double t, logsum, p, pu, pptil, decrement;
-    double *u = (double *) malloc(n*sizeof(double));
-    double *z = (double *) malloc(n*sizeof(double));
-    double *grad = (double *) malloc(n*sizeof(double));
-    double newobj=0.0, obj=0.0;
-    obj = objective(index, x, v, n, lambda);
-
-    for(iter=0;iter<MAXITER;iter++) {
-        logsum = logsumexp(x,n);
-        if(DISPLAY)
-            printf("iter=%d, obj=%f\n", iter, obj);
-        pu = 0.0;
-        pptil = 0.0;
-        for(i=0;i<n;i++) {
-            p = exp(x[i] - logsum);
-            grad[i] = p + lambda*(x[i] - v[i]);
-            if(i==index)
-                grad[i] += -1.0;
-            u[i] = grad[i]/(p+lambda);
-            pu += p*u[i];
-            z[i] = p/(p+lambda);
-            pptil += z[i]*p;
-        }
-        pptil = 1 - pptil;
-        decrement = 0.0;
-        for(i=0;i<n;i++) {
-            u[i] -= (pu/pptil)*z[i];
-            decrement += grad[i]*u[i];
-        }
-        if (decrement < 2*epsilon) {
-        	// std::cout << "decrement =  " << decrement << std::endl;
-            free(u);
-            free(z);
-            free(grad);
-            return 0;
-        }
-        t = 1.0;
-        while(1) {
-            for(i=0;i<n;i++)
-                z[i] = x[i] - t*u[i];
-            newobj = objective(index, z, v, n, lambda);
-            if (newobj <= obj + alpha*t*decrement)
-                break;
-            t = beta*t;
-        }
-        for(i=0;i<n;i++)
-            x[i] = z[i];
-            obj = newobj;
-    }
-    free(u);
-    free(z);
-    free(grad);
-    return 1;
-}
-
-double l2::evaluate(LocalDenseMatrixType& W) {
+double l2::evaluate(El::Matrix<double>& W) {
 		double norm = El::Norm(W);
 		return 0.5*norm*norm;
 	}
 
 
-void l2::proxoperator(LocalDenseMatrixType& W, double lambda, LocalDenseMatrixType& mu, LocalDenseMatrixType& P) {
+void l2::proxoperator(El::Matrix<double>& W, double lambda, El::Matrix<double>& mu, El::Matrix<double>& P) {
 		double *Wbuf = W.Buffer();
 		double *mubuf = mu.Buffer();
 		double *Pbuf = P.Buffer();
@@ -517,7 +463,7 @@ void l2::proxoperator(LocalDenseMatrixType& W, double lambda, LocalDenseMatrixTy
 			Pbuf[i] = (Wbuf[i] - mubuf[i])*ilambda;
 	}
 
-double l1::evaluate(LocalDenseMatrixType& W) {
+double l1::evaluate(El::Matrix<double>& W) {
     double norm = El::EntrywiseNorm(W, 1);
     return norm;
 }
@@ -533,7 +479,7 @@ double l1::soft_threshold(double x, double lambda) {
 	return v;
 }
 
-void l1::proxoperator(LocalDenseMatrixType& W, double lambda, LocalDenseMatrixType& mu, LocalDenseMatrixType& P) {
+void l1::proxoperator(El::Matrix<double>& W, double lambda, El::Matrix<double>& mu, El::Matrix<double>& P) {
 		double *Wbuf = W.Buffer();
 		double *mubuf = mu.Buffer();
 		double *Pbuf = P.Buffer();

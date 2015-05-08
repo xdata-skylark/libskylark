@@ -12,19 +12,21 @@ template <class InputType>
 BlockADMMSolver<InputType>* GetSolver(skylark::base::context_t& context,
     const hilbert_options_t& options, int dimensions) {
 
-    skylark::algorithms::loss_t *loss = NULL;
+    typedef typename BlockADMMSolver<InputType>::value_type value_type;
+
+    skylark::algorithms::loss_t<value_type> *loss = NULL;
     switch(options.lossfunction) {
     case SQUARED:
-        loss = new skylark::algorithms::squared_loss_t();
+        loss = new skylark::algorithms::squared_loss_t<value_type>();
         break;
     case HINGE:
-        loss = new skylark::algorithms::hinge_loss_t();
+        loss = new skylark::algorithms::hinge_loss_t<value_type>();
         break;
     case LOGISTIC:
-        loss = new skylark::algorithms::logistic_loss_t();
+        loss = new skylark::algorithms::logistic_loss_t<value_type>();
         break;
     case LAD:
-        loss = new skylark::algorithms::lad_loss_t();
+        loss = new skylark::algorithms::lad_loss_t<value_type>();
         break;
     default:
         // TODO

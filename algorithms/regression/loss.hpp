@@ -3,13 +3,16 @@
 
 namespace skylark { namespace algorithms {
 
+template<typename ValueType>
 struct loss_t {
 
-    virtual
-    double evaluate(El::Matrix<double>& O, El::Matrix<double>& T) const = 0;
+    typedef ValueType value_type;
 
-    virtual void proxoperator(El::Matrix<double>& X, double lambda,
-        El::Matrix<double>& T, El::Matrix<double>& Y) const = 0 ;
+    virtual
+    double evaluate(El::Matrix<ValueType>& O, El::Matrix<ValueType>& T) const = 0;
+
+    virtual void proxoperator(El::Matrix<ValueType>& X, double lambda,
+        El::Matrix<ValueType>& T, El::Matrix<ValueType>& Y) const = 0 ;
 
     virtual ~loss_t() {
 
@@ -19,24 +22,28 @@ struct loss_t {
 /**
  * Square loss: 0.5*||O - T||^2_{fro}
  */
-struct squared_loss_t : public loss_t {
+template<typename ValueType>
+struct squared_loss_t : public loss_t<ValueType> {
 
-    virtual double evaluate(El::Matrix<double>& O, El::Matrix<double>& T) const {
+    typedef ValueType value_type;
+
+    virtual
+    double evaluate(El::Matrix<ValueType>& O, El::Matrix<ValueType>& T) const {
         double loss = 0.0;
         int k = O.Height();
         int n = O.Width();
 
         // TODO: check for size compatability
 
-        double* Obuf = O.Buffer();
-        double* Tbuf = T.Buffer();
+        ValueType* Obuf = O.Buffer();
+        ValueType* Tbuf = T.Buffer();
 
         if (k == 1) {
 #           ifdef SKYLARK_HAVE_OPENMP
 #           pragma omp parallel for reduction(+:loss)
 #           endif
             for(int i = 0; i < n; i++) {
-                double x = Obuf[i] - Tbuf[i];
+                ValueType x = Obuf[i] - Tbuf[i];
                 loss += x*x;
             }
         } else {
@@ -47,7 +54,7 @@ struct squared_loss_t : public loss_t {
             for(int i = 0; i < n; i++) {
                 int label = (int) Tbuf[i];
                 for(int j = 0;j < k; j++) {
-                    double x = O.Get(j,i) - (j == label ? 1.0 : -1.0);
+                    ValueType x = O.Get(j,i) - (j == label ? 1.0 : -1.0);
                     loss += x*x;
                 }
             }
@@ -56,18 +63,18 @@ struct squared_loss_t : public loss_t {
         return 0.5*loss;
     }
 
-    virtual void proxoperator(El::Matrix<double>& X, double lambda,
-        El::Matrix<double>& T, El::Matrix<double>& Y) const {
+    virtual void proxoperator(El::Matrix<ValueType>& X, double lambda,
+        El::Matrix<ValueType>& T, El::Matrix<ValueType>& Y) const {
 
         int k = X.Height();
         int n = X.Width();
 
         // TODO: check for size compatability
 
-        double* Xbuf = X.Buffer();
-        double* Tbuf = T.Buffer();
+        ValueType* Xbuf = X.Buffer();
+        ValueType* Tbuf = T.Buffer();
 
-        double* Ybuf = Y.Buffer();
+        ValueType* Ybuf = Y.Buffer();
         double ilambda = 1.0 / (1.0 + lambda);
 
         if (k==1) {
@@ -94,17 +101,20 @@ struct squared_loss_t : public loss_t {
 /**
  * Least absolute deviations loss: ||O - T||_1
  */
-struct lad_loss_t : public loss_t {
+template<typename ValueType>
+struct lad_loss_t : public loss_t<ValueType> {
 
-    virtual double evaluate(El::Matrix<double>& O, El::Matrix<double>& T) const {
+    typedef ValueType value_type;
+
+    virtual double evaluate(El::Matrix<ValueType>& O, El::Matrix<ValueType>& T) const {
         double loss = 0.0;
         int k = O.Height();
         int n = O.Width();
 
         // TODO check for size compatability
 
-        double* Obuf = O.Buffer();
-        double* Tbuf = T.Buffer();
+        ValueType* Obuf = O.Buffer();
+        ValueType* Tbuf = T.Buffer();
 
         if (k==1) {
 
@@ -112,7 +122,7 @@ struct lad_loss_t : public loss_t {
 #           pragma omp parallel for reduction(+:loss)
 #           endif
             for(int i = 0; i < n; i++) {
-                double x = Obuf[i] - Tbuf[i];
+                ValueType x = Obuf[i] - Tbuf[i];
                 loss += std::abs(x);
             }
 
@@ -124,7 +134,7 @@ struct lad_loss_t : public loss_t {
             for(int i = 0; i < n; i++) {
                 int label = (int) Tbuf[i];
                 for(int j = 0; j < k; j++) {
-                    double x = O.Get(j,i) - (j==label ? 1.0:-1.0);
+                    ValueType x = O.Get(j,i) - (j==label ? 1.0:-1.0);
                     loss += std::abs(x);
                 }
             }
@@ -132,18 +142,18 @@ struct lad_loss_t : public loss_t {
         return loss;
     }
 
-    virtual void proxoperator(El::Matrix<double>& X, double lambda,
-        El::Matrix<double>& T, El::Matrix<double>& Y) const {
+    virtual void proxoperator(El::Matrix<ValueType>& X, double lambda,
+        El::Matrix<ValueType>& T, El::Matrix<ValueType>& Y) const {
 
         int k = X.Height();
         int n = X.Width();
 
         // TODO: check for size compatability
 
-        double* Xbuf = X.Buffer();
-        double* Tbuf = T.Buffer();
+        ValueType* Xbuf = X.Buffer();
+        ValueType* Tbuf = T.Buffer();
 
-        double* Ybuf = Y.Buffer();
+        ValueType* Ybuf = Y.Buffer();
         double ilambda = 1.0/(1.0 + lambda);
 
 
@@ -168,8 +178,8 @@ struct lad_loss_t : public loss_t {
             for(int i = 0; i < n; i++) {
                 int label = (int) Tbuf[i];
                 for(int j = 0; j < k; j++) {
-                    double t = (j==label ? 1.0:-1.0);
-                    double x = X.Get(j,i);
+                    ValueType t = (j==label ? 1.0:-1.0);
+                    ValueType x = X.Get(j,i);
                     Y.Set(j, i, t);
                     if (x > t + lambda)
                         Y.Set(j, i,  x - lambda);
@@ -185,9 +195,13 @@ struct lad_loss_t : public loss_t {
 /**
  * Hinge-loss: sum(max(1 - t * o, 0))
  */
-struct hinge_loss_t : public loss_t {
+template<typename ValueType>
+struct hinge_loss_t : public loss_t<ValueType> {
 
-    virtual double evaluate(El::Matrix<double>& O, El::Matrix<double>& T) const {
+    typedef ValueType value_type;
+
+    virtual
+    double evaluate(El::Matrix<ValueType>& O, El::Matrix<ValueType>& T) const {
 
         int k = O.Height();
         int n = O.Width();
@@ -195,8 +209,8 @@ struct hinge_loss_t : public loss_t {
 
         // TODO: check for size compatability
 
-        double* Obuf = O.Buffer();
-        double* Tbuf = T.Buffer();
+        ValueType* Obuf = O.Buffer();
+        ValueType* Tbuf = T.Buffer();
         double obj = 0.0;
 
         if (k==1) {
@@ -205,7 +219,7 @@ struct hinge_loss_t : public loss_t {
 #           pragma omp parallel for reduction(+:obj)
 #           endif
             for(int i = 0; i < n; i++) {
-                double yx = Obuf[i]*Tbuf[i];
+                ValueType yx = Obuf[i]*Tbuf[i];
                 if(yx<1.0)
                     obj += (1.0 - yx);
             }
@@ -218,7 +232,7 @@ struct hinge_loss_t : public loss_t {
             for(int i = 0; i < n; i++) {
                 int label = (int) Tbuf[i];
                 for(int j = 0; j < k; j++) {
-                    double yx = O.Get(j,i) * (j==label ? 1.0 : -1.0);
+                    ValueType yx = O.Get(j,i) * (j==label ? 1.0 : -1.0);
                     if(yx<1.0)
                         obj += (1.0 - yx);
                 }
@@ -229,12 +243,12 @@ struct hinge_loss_t : public loss_t {
         return obj;
     }
 
-    virtual void proxoperator(El::Matrix<double>& X, double lambda,
-        El::Matrix<double>& T, El::Matrix<double>& Y) const {
+    virtual void proxoperator(El::Matrix<ValueType>& X, double lambda,
+        El::Matrix<ValueType>& T, El::Matrix<ValueType>& Y) const {
 
-        double* Tbuf = T.Buffer();
-        double* Xbuf = X.Buffer();
-        double* Ybuf = Y.Buffer();
+        ValueType* Tbuf = T.Buffer();
+        ValueType* Xbuf = X.Buffer();
+        ValueType* Ybuf = Y.Buffer();
 
         int k = X.Height();
         int n = X.Width();
@@ -245,7 +259,7 @@ struct hinge_loss_t : public loss_t {
 #           pragma omp parallel for
 #           endif
             for(int i = 0; i < n; i++) {
-                double yv = Tbuf[i] * Xbuf[i];
+                ValueType yv = Tbuf[i] * Xbuf[i];
                 if (yv > 1.0)
                     Ybuf[i] = Xbuf[i];
                 else {
@@ -265,8 +279,8 @@ struct hinge_loss_t : public loss_t {
             for(int i = 0; i < n; i++) {
                 int label = (int) Tbuf[i];
                 for(int j = 0; j < k; j++) {
-                    double yv = X.Get(j,i);
-                    double yy = +1.0;
+                    ValueType yv = X.Get(j,i);
+                    ValueType yy = +1.0;
                     if(!(j==label)) {
                         yv = -yv;
                         yy = -1.0;
@@ -286,9 +300,13 @@ struct hinge_loss_t : public loss_t {
     }
 };
 
-struct logistic_loss_t : public loss_t {
+template<typename ValueType>
+struct logistic_loss_t : public loss_t<ValueType> {
 
-    virtual double evaluate(El::Matrix<double>& O, El::Matrix<double>& T) const {
+    typedef ValueType value_type;
+
+    virtual
+    double evaluate(El::Matrix<ValueType>& O, El::Matrix<ValueType>& T) const {
 
         double loss = 0.0;
         int m = O.Width();
@@ -306,8 +324,8 @@ struct logistic_loss_t : public loss_t {
 
     }
 
-    virtual void proxoperator(El::Matrix<double>& X, double lambda, 
-        El::Matrix<double>& T, El::Matrix<double>& Y) const {
+    virtual void proxoperator(El::Matrix<ValueType>& X, double lambda, 
+        El::Matrix<ValueType>& T, El::Matrix<ValueType>& Y) const {
 
         int m = X.Width();
         int n = X.Height();
@@ -324,9 +342,9 @@ struct logistic_loss_t : public loss_t {
 private:
 
     // TODO might be useful to make this an independent function
-    static double logsumexp(double* x, int n) {
-        double max = x[0];
-        double f = 0.0;
+    static double logsumexp(ValueType* x, int n) {
+        ValueType max = x[0];
+        ValueType f = 0.0;
         for(int i=0;i<n;i++)
             max = std::max(max, x[i]);
 
@@ -337,23 +355,24 @@ private:
     }
 
     // Solution to - log exp(x(i))/sum(exp(x(j))) + lambda/2 ||x - v||_2^2 
-    static int logexp(int index, double* v, int n, double lambda, double* x) {
+    static
+    int logexp(int index, ValueType* v, int n, double lambda, ValueType* x) {
         const int MAXITER = 100;
-        const double epsilon = 1e-4;
+        const ValueType epsilon = 1e-4;
 
-        double alpha = 0.1;
-        double beta = 0.5;
-        double t, p, decrement;
-        double *u = (double *) malloc(n*sizeof(double));
-        double *z = (double *) malloc(n*sizeof(double));
-        double *grad = (double *) malloc(n*sizeof(double));
-        double newobj=0.0, obj=0.0;
+        ValueType alpha = 0.1;
+        ValueType beta = 0.5;
+        ValueType l,t, p, decrement;
+        ValueType *u = (double *) malloc(n*sizeof(double));
+        ValueType *z = (double *) malloc(n*sizeof(double));
+        ValueType *grad = (double *) malloc(n*sizeof(double));
+        ValueType newobj=0.0, obj=0.0;
         obj = objective(index, x, v, n, lambda);
 
         for(int iter = 0; iter < MAXITER; iter++) {
-            double logsum = logsumexp(x,n);
-            double pu = 0.0;
-            double pptil = 0.0;
+            ValueType logsum = logsumexp(x,n);
+            ValueType pu = 0.0;
+            ValueType pptil = 0.0;
             for(int i = 0; i < n; i++) {
                 p = exp(x[i] - logsum);
                 grad[i] = p + lambda * (x[i] - v[i]);
@@ -366,7 +385,7 @@ private:
             }
 
             pptil = 1 - pptil;
-            double decrement = 0.0;
+            ValueType decrement = 0.0;
             for(int i=0; i < n;i++) {
                 u[i] -= (pu/pptil)*z[i];
                 decrement += grad[i]*u[i];
@@ -397,19 +416,19 @@ private:
         return 1;
     }
 
-    static double normsquare(double* x, double* y, int n) {
-        double nrm = 0.0;
+    static ValueType normsquare(double* x, double* y, int n) {
+        ValueType nrm = 0.0;
         for(int i = 0; i < n; i++)
             nrm += pow(x[i] - y[i], 2);
         return nrm;
     }
 
 
-    static double objective(int index, double* x, 
-        double* v, int n, double lambda) {
+    static ValueType objective(int index, double* x, 
+        ValueType* v, int n, double lambda) {
 
-        double nrmsqr = normsquare(x,v,n);
-        double obj = -x[index] + logsumexp(x, n) + 0.5*lambda*nrmsqr;
+        ValueType nrmsqr = normsquare(x,v,n);
+        ValueType obj = -x[index] + logsumexp(x, n) + 0.5*lambda*nrmsqr;
         return obj;
     }
 

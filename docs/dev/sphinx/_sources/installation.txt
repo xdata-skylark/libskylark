@@ -1237,6 +1237,7 @@ and compile with:
 
 .. code-block:: sh
 
+    mkdir build; cd build
     rm CMakeCache.txt
     rm -rf CMakeFiles
 
@@ -1247,11 +1248,11 @@ and compile with:
 .. note:: If you get a ``undefined reference to vtable for std::nested_exception``
           error this hints that you most likely are missing the gcc 4.7.2 toolchain
           (libc++). The missing files and instructions to patch the wrapper
-          scripts are provided on the ANL trac page (see top).*
+          scripts are provided on the ANL trac page (see top).
 
 
-For compiling the Async you need the following patch (the OpenMP statement
-seems to crash the clang):
+For compiling the ``async`` example driver you need the following patch (the
+OpenMP statement seems to crash the CLANG compiler):
 
 .. code-block:: diff
 

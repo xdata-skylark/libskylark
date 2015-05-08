@@ -55,6 +55,9 @@ struct hilbert_options_t {
     /** Whether to use regression or classification */
     bool regression;
 
+
+    bool decisionvals;
+
     /** Solver type options */
     LossType lossfunction;
     RegularizerType regularizer;
@@ -164,6 +167,9 @@ struct hilbert_options_t {
             ("cachetransforms",
                 "Cache feature expanded data "
                 "(faster, but more memory demanding).")
+            ("decisionvals",
+                "In predict mode, for classification, output the "
+                "decision values instead of class.")
             ("fileformat",
                 po::value<int>(&fileformat)->default_value(DEFAULT_FILEFORMAT),
                 "Fileformat (default: 0 (libsvm->dense), 1 (libsvm->sparse), 2 (hdf5->dense), 3 (hdf5->sparse)")
@@ -210,6 +216,7 @@ struct hilbert_options_t {
             regression = vm.count("regression");
             usefast = vm.count("usefast");
             cachetransforms = vm.count("cachetransforms");
+            decisionvals = vm.count("decisionvals");
         }
         catch(po::error& e) {
             std::cerr << e.what() << std::endl;
@@ -286,6 +293,10 @@ struct hilbert_options_t {
             }
             if (flag == "--cachetransforms") {
                 cachetransforms = true;
+                i--;
+            }
+            if (flag == "--decisionvals") {
+                decisionvals = true;
                 i--;
             }
             if (flag == "--useqausi" || flag == "-q")

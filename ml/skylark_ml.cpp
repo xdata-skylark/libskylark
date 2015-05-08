@@ -118,8 +118,12 @@ int main(int argc, char* argv[]) {
             if (comm.rank() == 0)
                 accuracy =  totalcorrect*100.0/n;
 
-            if (!options.outputfile.empty())
-                El::Write(PredictedLabels, options.outputfile, El::ASCII);
+            if (!options.outputfile.empty()) {
+                if (options.decisionvals)
+                    El::Write(DecisionValues, options.outputfile, El::ASCII);
+                else
+                    El::Write(PredictedLabels, options.outputfile, El::ASCII);
+            }
         }
 
         if(comm.rank() == 0)

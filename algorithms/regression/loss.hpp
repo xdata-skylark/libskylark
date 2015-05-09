@@ -8,11 +8,11 @@ struct loss_t {
 
     typedef ValueType value_type;
 
-    virtual
-    double evaluate(El::Matrix<ValueType>& O, El::Matrix<ValueType>& T) const = 0;
+    virtual double evaluate(const El::Matrix<ValueType>& O,
+        const El::Matrix<ValueType>& T) const = 0;
 
-    virtual void proxoperator(El::Matrix<ValueType>& X, double lambda,
-        El::Matrix<ValueType>& T, El::Matrix<ValueType>& Y) const = 0 ;
+    virtual void proxoperator(const El::Matrix<ValueType>& X, double lambda,
+        const El::Matrix<ValueType>& T, El::Matrix<ValueType>& Y) const = 0 ;
 
     virtual ~loss_t() {
 
@@ -28,15 +28,17 @@ struct squared_loss_t : public loss_t<ValueType> {
     typedef ValueType value_type;
 
     virtual
-    double evaluate(El::Matrix<ValueType>& O, El::Matrix<ValueType>& T) const {
+    double evaluate(const El::Matrix<ValueType>& O, 
+        const  El::Matrix<ValueType>& T) const {
+
         double loss = 0.0;
         int k = O.Height();
         int n = O.Width();
 
         // TODO: check for size compatability
 
-        ValueType* Obuf = O.Buffer();
-        ValueType* Tbuf = T.Buffer();
+        const ValueType* Obuf = O.LockedBuffer();
+        const ValueType* Tbuf = T.LockedBuffer();
 
         if (k == 1) {
 #           ifdef SKYLARK_HAVE_OPENMP
@@ -63,16 +65,16 @@ struct squared_loss_t : public loss_t<ValueType> {
         return 0.5*loss;
     }
 
-    virtual void proxoperator(El::Matrix<ValueType>& X, double lambda,
-        El::Matrix<ValueType>& T, El::Matrix<ValueType>& Y) const {
+    virtual void proxoperator(const El::Matrix<ValueType>& X, double lambda,
+        const El::Matrix<ValueType>& T, El::Matrix<ValueType>& Y) const {
 
         int k = X.Height();
         int n = X.Width();
 
         // TODO: check for size compatability
 
-        ValueType* Xbuf = X.Buffer();
-        ValueType* Tbuf = T.Buffer();
+        const ValueType* Xbuf = X.LockedBuffer();
+        const ValueType* Tbuf = T.LockedBuffer();
 
         ValueType* Ybuf = Y.Buffer();
         double ilambda = 1.0 / (1.0 + lambda);
@@ -106,15 +108,17 @@ struct lad_loss_t : public loss_t<ValueType> {
 
     typedef ValueType value_type;
 
-    virtual double evaluate(El::Matrix<ValueType>& O, El::Matrix<ValueType>& T) const {
+    virtual double evaluate(const El::Matrix<ValueType>& O, 
+        const El::Matrix<ValueType>& T) const {
+
         double loss = 0.0;
         int k = O.Height();
         int n = O.Width();
 
         // TODO check for size compatability
 
-        ValueType* Obuf = O.Buffer();
-        ValueType* Tbuf = T.Buffer();
+        const ValueType* Obuf = O.LockedBuffer();
+        const ValueType* Tbuf = T.LockedBuffer();
 
         if (k==1) {
 
@@ -142,16 +146,16 @@ struct lad_loss_t : public loss_t<ValueType> {
         return loss;
     }
 
-    virtual void proxoperator(El::Matrix<ValueType>& X, double lambda,
-        El::Matrix<ValueType>& T, El::Matrix<ValueType>& Y) const {
+    virtual void proxoperator(const El::Matrix<ValueType>& X, double lambda,
+        const El::Matrix<ValueType>& T, El::Matrix<ValueType>& Y) const {
 
         int k = X.Height();
         int n = X.Width();
 
         // TODO: check for size compatability
 
-        ValueType* Xbuf = X.Buffer();
-        ValueType* Tbuf = T.Buffer();
+        const ValueType* Xbuf = X.LockedBuffer();
+        const ValueType* Tbuf = T.LockedBuffer();
 
         ValueType* Ybuf = Y.Buffer();
         double ilambda = 1.0/(1.0 + lambda);
@@ -200,8 +204,8 @@ struct hinge_loss_t : public loss_t<ValueType> {
 
     typedef ValueType value_type;
 
-    virtual
-    double evaluate(El::Matrix<ValueType>& O, El::Matrix<ValueType>& T) const {
+    virtual double evaluate(const El::Matrix<ValueType>& O,
+        const El::Matrix<ValueType>& T) const {
 
         int k = O.Height();
         int n = O.Width();
@@ -209,8 +213,8 @@ struct hinge_loss_t : public loss_t<ValueType> {
 
         // TODO: check for size compatability
 
-        ValueType* Obuf = O.Buffer();
-        ValueType* Tbuf = T.Buffer();
+        const ValueType* Obuf = O.LockedBuffer();
+        const ValueType* Tbuf = T.LockedBuffer();
         double obj = 0.0;
 
         if (k==1) {
@@ -243,11 +247,12 @@ struct hinge_loss_t : public loss_t<ValueType> {
         return obj;
     }
 
-    virtual void proxoperator(El::Matrix<ValueType>& X, double lambda,
-        El::Matrix<ValueType>& T, El::Matrix<ValueType>& Y) const {
+    virtual void proxoperator(const El::Matrix<ValueType>& X, double lambda,
+        const El::Matrix<ValueType>& T, El::Matrix<ValueType>& Y) const {
 
-        ValueType* Tbuf = T.Buffer();
-        ValueType* Xbuf = X.Buffer();
+        const ValueType* Tbuf = T.LockedBuffer();
+        const ValueType* Xbuf = X.LockedBuffer();
+
         ValueType* Ybuf = Y.Buffer();
 
         int k = X.Height();
@@ -305,8 +310,8 @@ struct logistic_loss_t : public loss_t<ValueType> {
 
     typedef ValueType value_type;
 
-    virtual
-    double evaluate(El::Matrix<ValueType>& O, El::Matrix<ValueType>& T) const {
+    virtual double evaluate(const El::Matrix<ValueType>& O,
+        const El::Matrix<ValueType>& T) const {
 
         double loss = 0.0;
         int m = O.Width();
@@ -317,15 +322,15 @@ struct logistic_loss_t : public loss_t<ValueType> {
 #       endif
         for(int i = 0; i < m; i++) {
             int t = (int) T.Get(i, 0);
-            loss += -O.Get(t, i) + logsumexp(O.Buffer(0, i), n);
+            loss += -O.Get(t, i) + logsumexp(O.LockedBuffer(0, i), n);
         }
 
         return loss;
 
     }
 
-    virtual void proxoperator(El::Matrix<ValueType>& X, double lambda, 
-        El::Matrix<ValueType>& T, El::Matrix<ValueType>& Y) const {
+    virtual void proxoperator(const El::Matrix<ValueType>& X, double lambda,
+        const El::Matrix<ValueType>& T, El::Matrix<ValueType>& Y) const {
 
         int m = X.Width();
         int n = X.Height();
@@ -335,14 +340,14 @@ struct logistic_loss_t : public loss_t<ValueType> {
 #       endif
         for(int i=0;i<m;i++) {
             int t = (int) T.Get(i, 0);
-            logexp(t, X.Buffer(0, i), n, 1.0/lambda, Y.Buffer(0, i));
+            logexp(t, X.LockedBuffer(0, i), n, 1.0/lambda, Y.Buffer(0, i));
         }
     }
 
 private:
 
     // TODO might be useful to make this an independent function
-    static double logsumexp(ValueType* x, int n) {
+    static double logsumexp(const ValueType* x, int n) {
         ValueType max = x[0];
         ValueType f = 0.0;
         for(int i=0;i<n;i++)
@@ -356,7 +361,9 @@ private:
 
     // Solution to - log exp(x(i))/sum(exp(x(j))) + lambda/2 ||x - v||_2^2 
     static
-    int logexp(int index, ValueType* v, int n, double lambda, ValueType* x) {
+    int logexp(int index, const ValueType* v, int n, double lambda, 
+        ValueType* x) {
+
         const int MAXITER = 100;
         const ValueType epsilon = 1e-4;
 
@@ -416,7 +423,7 @@ private:
         return 1;
     }
 
-    static ValueType normsquare(double* x, double* y, int n) {
+    static ValueType normsquare(const double* x, const double* y, int n) {
         ValueType nrm = 0.0;
         for(int i = 0; i < n; i++)
             nrm += pow(x[i] - y[i], 2);
@@ -424,8 +431,8 @@ private:
     }
 
 
-    static ValueType objective(int index, double* x, 
-        ValueType* v, int n, double lambda) {
+    static ValueType objective(int index, const double* x, 
+        const ValueType* v, int n, double lambda) {
 
         ValueType nrmsqr = normsquare(x,v,n);
         ValueType obj = -x[index] + logsumexp(x, n) + 0.5*lambda*nrmsqr;
@@ -434,6 +441,6 @@ private:
 
 };
 
-} } // namespace skylark::algorithsm
+} } // namespace skylark::algorithms
 
 #endif // SKYLARK_LOSS_HPP

@@ -28,7 +28,7 @@ struct BlockADMMSolver {
 
     // No feature transdeforms (aka just linear regression).
     BlockADMMSolver(const skylark::algorithms::loss_t<value_type>* loss,
-        const regularization* regularizer,
+        const skylark::algorithms::regularizer_t<value_type>* regularizer,
         double lambda, // regularization parameter
         int NumFeatures,
         int NumFeaturePartitions = 1);
@@ -37,7 +37,7 @@ struct BlockADMMSolver {
     template<typename Kernel, typename MapTypeTag>
     BlockADMMSolver<InputType>(skylark::base::context_t& context,
         const skylark::algorithms::loss_t<value_type>* loss,
-        const regularization* regularizer,
+        const skylark::algorithms::regularizer_t<value_type>* regularizer,
         double lambda, // regularization parameter
         int NumFeatures,
         Kernel kernel,
@@ -48,7 +48,7 @@ struct BlockADMMSolver {
     template<typename Kernel>
     BlockADMMSolver<InputType>(skylark::base::context_t& context,
         const skylark::algorithms::loss_t<value_type>* loss,
-        const regularization* regularizer,
+        const skylark::algorithms::regularizer_t<value_type>* regularizer,
         double lambda, // regularization parameter
         int NumFeatures,
         Kernel kernel,
@@ -57,7 +57,7 @@ struct BlockADMMSolver {
 
     // Guru interface.
     BlockADMMSolver<InputType>(const skylark::algorithms::loss_t<value_type>* loss,
-        const regularization* regularizer,
+        const skylark::algorithms::regularizer_t<value_type>* regularizer,
         const feature_transform_array_t& featureMaps,
         double lambda, // regularization parameter
         bool ScaleFeatureMaps = true);
@@ -89,7 +89,7 @@ private:
     int NumFeatures;
     int NumFeaturePartitions;
     const skylark::algorithms::loss_t<value_type>* loss;
-    regularization* regularizer;
+    const skylark::algorithms::regularizer_t<value_type>* regularizer;
     std::vector<int> starts, finishes;
     bool ScaleFeatureMaps;
     bool OwnFeatureMaps;
@@ -132,17 +132,16 @@ void BlockADMMSolver<InputType>::InitializeTransformCache(int n) {
 template <class InputType>
 BlockADMMSolver<InputType>::BlockADMMSolver(
         const skylark::algorithms::loss_t<value_type>* loss,
-        const regularization* regularizer,
+        const skylark::algorithms::regularizer_t<value_type>* regularizer,
         double lambda, // regularization parameter
         int NumFeatures,
         int NumFeaturePartitions) :
         NumFeatures(NumFeatures),
         NumFeaturePartitions(NumFeaturePartitions),
-        loss(loss),
+        loss(loss), regularizer(regularizer),
         starts(NumFeaturePartitions), finishes(NumFeaturePartitions),
         NumThreads(1), lambda(lambda), RHO(1.0), MAXITER(1000), TOL(0.1) {
 
-    this->regularizer = const_cast<regularization *> (regularizer);
     int cstart = 0, nf = NumFeatures, np = NumFeaturePartitions;
     for(int i = 0; i < NumFeaturePartitions; i++) {
         int sj = int(floor(double(nf) / np));
@@ -163,7 +162,7 @@ template<class InputType>
 template<typename Kernel, typename MapTypeTag>
 BlockADMMSolver<InputType>::BlockADMMSolver(skylark::base::context_t& context,
     const skylark::algorithms::loss_t<value_type>* loss,
-    const regularization* regularizer,
+    const skylark::algorithms::regularizer_t<value_type>* regularizer,
     double lambda, // regularization parameter
     int NumFeatures,
     Kernel kernel,
@@ -171,12 +170,10 @@ BlockADMMSolver<InputType>::BlockADMMSolver(skylark::base::context_t& context,
     int NumFeaturePartitions) :
     featureMaps(NumFeaturePartitions),
     NumFeatures(NumFeatures), NumFeaturePartitions(NumFeaturePartitions),
-    loss(loss),
+    loss(loss), regularizer(regularizer),
     starts(NumFeaturePartitions), finishes(NumFeaturePartitions),
     NumThreads(1), lambda(lambda), RHO(1.0), MAXITER(1000), TOL(0.1) {
 
-    this->regularizer = const_cast<regularization *> (regularizer);
-    this->lambda = lambda;
     int cstart = 0, nf = NumFeatures, np = NumFeaturePartitions;
     for(int i = 0; i < NumFeaturePartitions; i++) {
         int sj = int(floor(double(nf) / np));
@@ -200,7 +197,7 @@ template<class InputType>
 template<typename Kernel>
 BlockADMMSolver<InputType>::BlockADMMSolver(skylark::base::context_t& context,
     const skylark::algorithms::loss_t<value_type>* loss,
-    const regularization* regularizer,
+    const skylark::algorithms::regularizer_t<value_type>* regularizer,
     double lambda, // regularization parameter
     int NumFeatures,
     Kernel kernel,
@@ -208,11 +205,10 @@ BlockADMMSolver<InputType>::BlockADMMSolver(skylark::base::context_t& context,
     int NumFeaturePartitions) :
     featureMaps(NumFeaturePartitions),
     NumFeatures(NumFeatures), NumFeaturePartitions(NumFeaturePartitions),
-    loss(loss),
+    loss(loss), regularizer(regularizer),
     starts(NumFeaturePartitions), finishes(NumFeaturePartitions),
     NumThreads(1), lambda(lambda), RHO(1.0), MAXITER(1000), TOL(0.1) {
 
-    this->regularizer = const_cast<regularization *> (regularizer);
     skylark::base::leaped_halton_sequence_t<value_type>
         qmcseq(kernel.qrft_sequence_dim()); // TODO size
     int cstart = 0, nf = NumFeatures, np = NumFeaturePartitions;
@@ -239,17 +235,16 @@ BlockADMMSolver<InputType>::BlockADMMSolver(skylark::base::context_t& context,
 template <class InputType>
 BlockADMMSolver<InputType>::BlockADMMSolver(
     const skylark::algorithms::loss_t<value_type>* loss,
-    const regularization* regularizer,
+    const skylark::algorithms::regularizer_t<value_type>* regularizer,
     const feature_transform_array_t &featureMaps,
     double lambda,
     bool ScaleFeatureMaps) :
     featureMaps(featureMaps),
     NumFeaturePartitions(featureMaps.size()),
-    loss(loss),
+    loss(loss), regularizer(regularizer),
     starts(NumFeaturePartitions), finishes(NumFeaturePartitions),
     NumThreads(1), lambda(lambda), RHO(1.0), MAXITER(1000), TOL(0.1)  {
 
-    this->regularizer = const_cast<regularization *> (regularizer);
     NumFeaturePartitions = featureMaps.size();
     NumFeatures = 0;
     for(int i = 0; i < NumFeaturePartitions; i++) {

@@ -2,6 +2,7 @@
 #define SKYLARK_REGRESSION_HPP
 
 #include "loss.hpp"
+#include "regularizers.hpp"
 #include "regression_problem.hpp"
 #include "regression_solver.hpp"
 #include "sketched_regression_solver.hpp"

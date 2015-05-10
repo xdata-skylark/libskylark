@@ -1,7 +1,6 @@
 #ifndef SKYLARK_HILBERT_HPP
 #define SKYLARK_HILBERT_HPP
 
-#include "FunctionProx.hpp"
 #include "utils.hpp"
 #include "model.hpp"
 #include "io.hpp"
@@ -33,13 +32,13 @@ BlockADMMSolver<InputType>* GetSolver(skylark::base::context_t& context,
         break;
     }
 
-    regularization *regularizer = NULL;
+    skylark::algorithms::regularizer_t<value_type> *regularizer = NULL;
     switch(options.regularizer) {
     case L2:
-        regularizer = new l2();
+        regularizer = new skylark::algorithms::l2_regularizer_t<value_type>();
         break;
     case L1:
-    	regularizer = new l1();
+    	regularizer = new skylark::algorithms::l1_regularizer_t<value_type>();
     	break;
     default:
         // TODO

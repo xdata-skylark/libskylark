@@ -19,6 +19,22 @@ struct regularizer_t
 };
 
 template<typename ValueType>
+struct empty_regularizer_t : public regularizer_t<ValueType> {
+
+    virtual double evaluate(const El::Matrix<ValueType>& W) const {
+
+        return 0.0;
+    }
+
+    virtual void proxoperator(const El::Matrix<ValueType>& W, double lambda,
+        const El::Matrix<ValueType>& mu, El::Matrix<ValueType>& P) const {
+
+        El::Copy(W, P);
+        El::Axpy(-1.0, mu, P);
+    }
+};
+
+template<typename ValueType>
 struct l2_regularizer_t : public regularizer_t<ValueType> {
 
     virtual double evaluate(const El::Matrix<ValueType>& W) const {

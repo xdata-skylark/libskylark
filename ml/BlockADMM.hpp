@@ -545,7 +545,8 @@ skylark::ml::model_t* BlockADMMSolver<InputType>::train(data_matrix_t& X, target
         SKYLARK_TIMER_ACCUMULATE(COMMUNICATION_PROFILE);
 
         if(rank == 0) {
-            obj = totalloss + lambda*regularizer->evaluate(Wbar);
+            obj = totalloss + lambda * regularizer->evaluate(Wbar);
+
             if (skylark::base::Width(Xv) <=0) {
                 std::cout << "iteration " << iter
                           << " objective " << obj

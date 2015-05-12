@@ -5,13 +5,12 @@
 #include <sstream>
 #include <cstdlib>
 #include <string>
-#include <boost/mpi.hpp>
 #include <boost/program_options.hpp>
-#include <boost/any.hpp>
-#include "kernels.hpp"
 #include "hilbert.hpp"
+
+#if SKYLARK_HAVE_OPENMP
 #include <omp.h>
-#include "../base/context.hpp"
+#endif 
 
 int main(int argc, char* argv[]) {
 
@@ -118,8 +117,12 @@ int main(int argc, char* argv[]) {
             if (comm.rank() == 0)
                 accuracy =  totalcorrect*100.0/n;
 
-            if (!options.outputfile.empty())
-                El::Write(PredictedLabels, options.outputfile, El::ASCII);
+            if (!options.outputfile.empty()) {
+                if (options.decisionvals)
+                    El::Write(DecisionValues, options.outputfile, El::ASCII);
+                else
+                    El::Write(PredictedLabels, options.outputfile, El::ASCII);
+            }
         }
 
         if(comm.rank() == 0)

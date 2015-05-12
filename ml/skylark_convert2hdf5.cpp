@@ -1,17 +1,10 @@
-/*
- * convert2hdf5.cpp
- *
- *  Created on: Feb 13, 2014
- *      Author: vikas
- */
-
-
 #include <string>
-#include <skylark.hpp>
 #include <boost/mpi.hpp>
 #include <cstdlib>
+
+#define SKYLARK_NO_ANY
+#include <skylark.hpp>
 #include "io.hpp"
-#include "../base/context.hpp"
 
 
 
@@ -43,13 +36,13 @@ int main (int argc, char** argv) {
         std::cout << "input: " << inputfile << " hdf5file:" << hdf5file << " mode:" <<  mode << " min_d:" << min_d << std::endl;
 
     if (mode==0) { // dense
-    	LocalMatrixType X;
-    	LocalMatrixType Y;
+        El::Matrix<double> X;
+        El::Matrix<double> Y;
     	read_libsvm(comm, inputfile, X, Y, min_d);
         write_hdf5(comm, hdf5file, X,Y);
     } else {
-    	sparse_matrix_t X;
-    	LocalMatrixType Y;
+        skylark::base::sparse_matrix_t<double> X;
+        El::Matrix<double> Y;
     	read_libsvm(comm, inputfile, X, Y, min_d);
     	if(rank==0)
     		write_hdf5(hdf5file, X,Y);

@@ -20,7 +20,6 @@ namespace po = boost::program_options;
 #define DEFAULT_TOL 0.001
 #define DEFAULT_MAXITER 20
 #define DEFAULT_SEED 12345
-#define DEFAULT_RF 100
 #define DEFAULT_KERNEL 0
 #define DEFAULT_FILEFORMAT 0
 
@@ -30,11 +29,11 @@ std::string Losses[] = {"Squared Loss",
                         "Hinge Loss (SVMs)",
                         "Logistic Loss"};
 
-enum RegularizerType {L2 = 0 , L1 = 1};
-std::string Regularizers[] = {"L2", "L1"};
+enum RegularizerType {NOREG = 0, L2 = 1 , L1 = 2};
+std::string Regularizers[] = {"No Regularizer", "L2", "L1"};
 
-enum ProblemType {REGRESSION = 0, CLASSIFICATION = 1};
-std::string Problems[] = {"Regression", "Classification"};
+//enum ProblemType {REGRESSION = 0, CLASSIFICATION = 1};
+//std::string Problems[] = {"Regression", "Classification"};
 
 enum SequenceType { MONTECARLO = 0, LEAPED_HALTON = 1};
 std::string Sequences[] = {"Monte Carlo", "Leaped Halton"};
@@ -55,6 +54,9 @@ struct hilbert_options_t {
 
     /** Whether to use regression or classification */
     bool regression;
+
+
+    bool decisionvals;
 
     /** Solver type options */
     LossType lossfunction;
@@ -117,7 +119,7 @@ struct hilbert_options_t {
                 po::value<int>((int*) &lossfunction)->default_value(SQUARED),
                 "Loss function (0:SQUARED, 1:LAD, 2:HINGE, 3:LOGISTIC)")
             ("regularizer,r",
-                po::value<int>((int*) &regularizer)->default_value(L2),
+                po::value<int>((int*) &regularizer)->default_value(NOREG),
                 "Regularizer (0:L2, 1:L1)")
             ("kernel,k",
                 po::value<int>((int*) &kernel)->default_value(LINEAR),
@@ -145,7 +147,7 @@ struct hilbert_options_t {
                 po::value<int>(&seed)->default_value(DEFAULT_SEED),
                 "Seed for Random Number Generator")
             ("randomfeatures,f",
-                po::value<int>(&randomfeatures)->default_value(DEFAULT_RF),
+                po::value<int>(&randomfeatures)->default_value(0),
                 "Number of Random Features (default: 100)")
             ("numfeaturepartitions,n",
                 po::value<int>(&numfeaturepartitions)->
@@ -165,6 +167,9 @@ struct hilbert_options_t {
             ("cachetransforms",
                 "Cache feature expanded data "
                 "(faster, but more memory demanding).")
+            ("decisionvals",
+                "In predict mode, for classification, output the "
+                "decision values instead of class.")
             ("fileformat",
                 po::value<int>(&fileformat)->default_value(DEFAULT_FILEFORMAT),
                 "Fileformat (default: 0 (libsvm->dense), 1 (libsvm->sparse), 2 (hdf5->dense), 3 (hdf5->sparse)")
@@ -211,6 +216,7 @@ struct hilbert_options_t {
             regression = vm.count("regression");
             usefast = vm.count("usefast");
             cachetransforms = vm.count("cachetransforms");
+            decisionvals = vm.count("decisionvals");
         }
         catch(po::error& e) {
             std::cerr << e.what() << std::endl;
@@ -234,7 +240,7 @@ struct hilbert_options_t {
         tolerance = DEFAULT_TOL;
         rho = DEFAULT_RHO;
         seed = DEFAULT_SEED;
-        randomfeatures = DEFAULT_RF;
+        randomfeatures = 0;
         numfeaturepartitions = DEFAULT_FEATURE_PARTITIONS;
         numthreads = DEFAULT_THREADS;
         usefast = false;
@@ -289,6 +295,10 @@ struct hilbert_options_t {
                 cachetransforms = true;
                 i--;
             }
+            if (flag == "--decisionvals") {
+                decisionvals = true;
+                i--;
+            }
             if (flag == "--useqausi" || flag == "-q")
                 seqtype =
                     static_cast<SequenceType>(boost::lexical_cast<int>(value));
@@ -322,7 +332,7 @@ struct hilbert_options_t {
     std::string print () const {
         std::stringstream optionstring;
 
-        optionstring << "# Generated using libSkylark/hilbert ";
+        optionstring << "# Generated using skylark_ml";
         optionstring << "using the following command-line: " << std::endl;
         optionstring << "#\t" << str << std::endl;
         optionstring << "#" << std::endl;

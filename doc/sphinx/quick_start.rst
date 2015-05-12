@@ -136,26 +136,27 @@ While libSkylark is designed to be a library, it also provides access to many
 of its feature using standalone applications. For all applications, running with 
 the --help options reveals the command-line options.
 
-.. _svd_app:
-
-Approximate Singular Value Decomposition
-----------------------------------------
-
-Building libSkylark creates an executable called ``skylark_svd`` in 
-``$SKYLARK_INSTALL_DIR/bin``. This executable can be used in standalone mode as follows.
-
-1. Download USPS digit recognition dataset (in various supported formats).
+The following example sessions assume the following commands have been performed 
+in advance (it downloads and extracts some demo data):
 
 .. code-block:: sh
 
         wget http://vikas.sindhwani.org/data.tar.gz
         tar -xvzf data.tar.gz
 
-2. Compute an approximate SVD with 10 leading singular vectors.
+
+.. _svd_app:
+
+Approximate Singular Value Decomposition
+----------------------------------------
+
+Building libSkylark creates an executable called ``skylark_svd`` in 
+``$SKYLARK_INSTALL_DIR/bin``. This executable can be used in standalone mode 
+to compute an approximate SVD with 10 leading singular vectors as follows:
 
 .. code-block:: sh
 
-         skylark_svd -k 10 --prefix usps usps.train
+         skylark_svd -k 10 --prefix usps data/usps.train
 
 The files usps.U.txt, usps.S.txt and usps.V.txt contain the approximate SVD that 
 was computed.
@@ -170,9 +171,9 @@ approximately solve linear least squares problems. Here is an example command-li
 
 .. code-block:: sh
 
-         skylark_linear cpu cpu.sol
+         skylark_linear data/cpu.train cpu.sol
 
-The file cpu.sol contains the computed approximate solution.
+The file cpu.sol.txt contains the computed approximate solution.
 
 .. note::
 
@@ -191,22 +192,13 @@ nonlinear classification and regression problems.
 Building libSkylark creates an executable called ``skylark_ml`` in
 ``$SKYLARK_INSTALL_DIR/bin``. This executable can be used in standalone mode as follows.
 
-1. Download USPS digit recognition dataset (in various supported formats).
+1. Train an SVM with Randomized Gaussian Kernel
 
 .. code-block:: sh
 
-        wget http://vikas.sindhwani.org/data.tar.gz
-        tar -xvzf data.tar.gz
+        mpiexec -np 4 skylark_ml -g 10 -k 1 -l 2 -i 30 -f 1000 --trainfile data/usps.train --valfile data/usps.test --modelfile model
 
-The supported fileformats are described in :ref:`ml_io`.
-
-2. Train an SVM with Randomized Gaussian Kernel
-
-.. code-block:: sh
-
-        mpiexec -np 4 skylark_ml -g 10 -k 1 -l 2 -i 20 --trainfile data/usps.train --valfile data/usps.test --modelfile model
-
-3. Test accuracy of the generated model and generate predictions
+2. Test accuracy of the generated model and generate predictions
 
 .. code-block:: sh
 
@@ -214,7 +206,7 @@ The supported fileformats are described in :ref:`ml_io`.
 
 An output file named output.txt with the predicted labels is created.
 
-4. In the above, the entire test data is loaded to memory and the result is computed. This is the fast, but it is limited to cases where the test data is fixed. skylark_ml also supports an interactive (streaming) mode in which the software prompts for data line by line from stdin and outputs in prediction after each line is received. The mode is invoked by not passing either training data or testing data. An example for using this mode is the following:
+3. In the above, the entire test data is loaded to memory and the result is computed. This is the fast, but it is limited to cases where the test data is fixed. skylark_ml also supports an interactive (streaming) mode in which the software prompts for data line by line from stdin and outputs in prediction after each line is received. The mode is invoked by not passing either training data or testing data. An example for using this mode is the following:
 
 .. code-block:: sh
 
@@ -247,7 +239,7 @@ arbitrary (does not have to be numeric). For example:
 
 .. code-block:: sh
 
-         cat > two_triangles
+         cat data/two_triangles
          A1 A2
          A2 A3
          A1 A3
@@ -260,7 +252,17 @@ arbitrary (does not have to be numeric). For example:
 
 .. code-block:: sh
         
-         skylark_community --graphfile two_triangles --seed A1
+         skylark_community --graphfile data/two_triangles --seed A1
+
+3. The community detection algorithm is local, so it operates only on a few nodes.
+So, for large graphs the majority of the time for detecting a single community will
+be spent on just loading the file. To detect multiple communities with the graph
+already loaded in memory, an interactive quiet mode is provided. Here is an 
+example:
+
+.. code-block:: sh
+
+         cat data/seeds | skylark_community --graphfile data/two_triangles -i -q
 
 .. _cluster-label:
 

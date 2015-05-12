@@ -1,64 +1,76 @@
 #ifndef SKYLARK_HILBERT_HPP
 #define SKYLARK_HILBERT_HPP
 
-#include "FunctionProx.hpp"
 #include "utils.hpp"
 #include "model.hpp"
 #include "io.hpp"
 #include "BlockADMM.hpp"
 #include "options.hpp"
 
-#include "../base/context.hpp"
-#include "model.hpp"
-
-
 template <class InputType>
 BlockADMMSolver<InputType>* GetSolver(skylark::base::context_t& context,
     const hilbert_options_t& options, int dimensions) {
 
-    lossfunction *loss = NULL;
+    typedef typename BlockADMMSolver<InputType>::value_type value_type;
+
+    skylark::algorithms::loss_t<value_type> *loss = NULL;
     switch(options.lossfunction) {
     case SQUARED:
-        loss = new squaredloss();
+        loss = new skylark::algorithms::squared_loss_t<value_type>();
         break;
     case HINGE:
-        loss = new hingeloss();
+        loss = new skylark::algorithms::hinge_loss_t<value_type>();
         break;
     case LOGISTIC:
-        loss = new logisticloss();
+        loss = new skylark::algorithms::logistic_loss_t<value_type>();
         break;
     case LAD:
-        loss = new ladloss();
+        loss = new skylark::algorithms::lad_loss_t<value_type>();
         break;
     default:
         // TODO
         break;
     }
 
-    regularization *regularizer = NULL;
-    switch(options.regularizer) {
-    case L2:
-        regularizer = new l2();
-        break;
-    case L1:
-    	regularizer = new l1();
-    	break;
-    default:
-        // TODO
-        break;
-    }
+    skylark::algorithms::regularizer_t<value_type> *regularizer = NULL;
+    if (options.lambda == 0 || options.regularizer == NOREG)
+        regularizer = new skylark::algorithms::empty_regularizer_t<value_type>();
+    else
+        switch(options.regularizer) {
+        case L2:
+            regularizer = new skylark::algorithms::l2_regularizer_t<value_type>();
+            break;
+        case L1:
+            regularizer = new skylark::algorithms::l1_regularizer_t<value_type>();
+            break;
+        default:
+            // TODO
+            break;
+        }
 
     BlockADMMSolver<InputType> *Solver = NULL;
     int features = 0;
     switch(options.kernel) {
     case LINEAR:
-        features = dimensions;
-        Solver =
-            new BlockADMMSolver<InputType>(loss,
-                regularizer,
-                options.lambda,
-                dimensions,
-                options.numfeaturepartitions);
+        features =
+            (options.randomfeatures == 0 ? dimensions : options.randomfeatures);
+        if (options.randomfeatures == 0)
+            Solver =
+                new BlockADMMSolver<InputType>(loss,
+                    regularizer,
+                    options.lambda,
+                    dimensions,
+                    options.numfeaturepartitions);
+        else
+            Solver =
+                new BlockADMMSolver<InputType>(context,
+                    loss,
+                    regularizer,
+                    options.lambda,
+                    features,
+                    skylark::ml::kernels::linear_t(dimensions),
+                    skylark::ml::sparse_feature_transform_tag(),
+                    options.numfeaturepartitions);
         break;
 
     case GAUSSIAN:
@@ -207,7 +219,7 @@ BlockADMMSolver<InputType>* GetSolver(skylark::base::context_t& context,
 }
 
 
-void ShiftForLogistic(LocalMatrixType& Y) {
+void ShiftForLogistic(El::Matrix<double>& Y) {
     double y;
     for(int i=0;i<Y.Height(); i++) {
         y = Y.Get(i, 0);

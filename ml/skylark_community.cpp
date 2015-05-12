@@ -27,7 +27,7 @@ struct simple_unweighted_graph_t {
                                         std::vector<vertex_type> >::const_iterator
     vertex_iterator_type;
 
-    simple_unweighted_graph_t(const std::string &gf);
+    simple_unweighted_graph_t(const std::string &gf, bool quiet);
 
     size_t num_vertices() const { return _nodemap.size(); }
     size_t num_edges() const { return _num_edges; }
@@ -58,7 +58,7 @@ private:
 };
 
 template<typename VertexType>
-simple_unweighted_graph_t<VertexType>::simple_unweighted_graph_t(const std::string &gf) {
+simple_unweighted_graph_t<VertexType>::simple_unweighted_graph_t(const std::string &gf, bool quiet) {
 
     std::ifstream in(gf);
     std::string line, token;
@@ -93,12 +93,13 @@ simple_unweighted_graph_t<VertexType>::simple_unweighted_graph_t(const std::stri
         _nodemap[v].push_back(u);
     }
 
-    std::cout << "Finished reading... ";
+    if (!quiet)
+        std::cout << "Finished reading... ";
     in.close();
 }
 
 double gamma_, alpha, epsilon;
-bool recursive, interactive;
+bool recursive, interactive, quiet, printcond;
 std::string graphfile, indexfile;
 std::vector<std::string> seedss;
 
@@ -110,18 +111,24 @@ void execute() {
     boost::mpi::timer timer;
     std::unordered_set<vertex_type> seeds;
 
-    std::cout << "Reading the adjacency matrix... " << std::endl;
-    std::cout.flush();
+    if (!quiet) {
+        std::cout << "Reading the adjacency matrix... " << std::endl;
+        std::cout.flush();
+    }
     timer.restart();
-    simple_unweighted_graph_t<vertex_type> G(graphfile);
-    std::cout <<"took " << boost::format("%.2e") % timer.elapsed() << " sec\n";
+    simple_unweighted_graph_t<vertex_type> G(graphfile, quiet);
+    if (!quiet)
+        std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
+                  << " sec\n";
 
     bool use_index = !indexfile.empty();
     std::unordered_map<vertex_type, std::string> id_to_name_map;
     std::unordered_map<std::string, vertex_type> name_to_id_map;
     if (use_index) {
-        std::cout << "Reading index files... ";
-        std::cout.flush();
+        if (!quiet) {
+            std::cout << "Reading index files... ";
+            std::cout.flush();
+        }
         timer.restart();
 
         std::ifstream in(indexfile);
@@ -147,12 +154,15 @@ void execute() {
 
         in.close();
 
-        std::cout <<"took " << boost::format("%.2e") % timer.elapsed() << " sec\n";
+        if (!quiet)
+            std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
+                      << " sec\n";
     }
 
     do {
         if (interactive) {
-            std::cout << "Please input seeds: ";
+            if (!quiet)
+                std::cout << "Please input seeds: ";
             std::string line;
             std::getline(std::cin, line);
             if (line.empty())
@@ -196,9 +206,13 @@ void execute() {
         std::unordered_set<vertex_type> cluster;
         double cond = skyml::FindLocalCluster(G, seeds, cluster,
             alpha, gamma_, epsilon, 4, recursive);
-        std::cout <<"Analysis complete! Took "
-                  << boost::format("%.2e") % timer.elapsed() << " sec\n";
-        std::cout << "Cluster found:" << std::endl;
+        if (!quiet) {
+            std::cout <<"Analysis complete! Took "
+                      << boost::format("%.2e") % timer.elapsed() << " sec\n";
+            std::cout << "Cluster found:" << std::endl;
+        } else
+            if (printcond)
+                std::cout << cond << " ";
         for (auto it = cluster.begin(); it != cluster.end(); it++)
             if (use_index)
                 std::cout << id_to_name_map[*it] << std::endl;
@@ -206,7 +220,8 @@ void execute() {
                 std::cout << *it << " ";
         if (!use_index)
             std::cout << std::endl;
-        std::cout << "Conductivity = " << cond << std::endl;
+        if (!quiet)
+            std::cout << "Conductivity = " << cond << std::endl;
     } while (interactive);
 }
 
@@ -217,18 +232,24 @@ void execute_all() {
     boost::mpi::timer timer;
     std::unordered_set<vertex_type> seeds;
 
-    std::cout << "Reading the adjacency matrix... " << std::endl;
-    std::cout.flush();
+    if (!quiet) {
+        std::cout << "Reading the adjacency matrix... " << std::endl;
+        std::cout.flush();
+    }
     timer.restart();
-    simple_unweighted_graph_t<vertex_type> G(graphfile);
-    std::cout <<"took " << boost::format("%.2e") % timer.elapsed() << " sec\n";
+    simple_unweighted_graph_t<vertex_type> G(graphfile, quiet);
+    if (!quiet)
+        std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
+                  << " sec\n";
 
     bool use_index = !indexfile.empty();
     std::unordered_map<vertex_type, std::string> id_to_name_map;
     std::unordered_map<std::string, vertex_type> name_to_id_map;
     if (use_index) {
-        std::cout << "Reading index files... ";
-        std::cout.flush();
+        if (!quiet) {
+            std::cout << "Reading index files... ";
+            std::cout.flush();
+        }
         timer.restart();
 
         std::ifstream in(indexfile);
@@ -254,7 +275,9 @@ void execute_all() {
 
         in.close();
 
-        std::cout <<"took " << boost::format("%.2e") % timer.elapsed() << " sec\n";
+        if (!quiet)
+        std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
+                  << " sec\n";
     }
 
     for(auto it = G.vertex_begin(); it != G.vertex_end(); it++) {
@@ -265,10 +288,11 @@ void execute_all() {
         double cond = skyml::FindLocalCluster(G, seeds, cluster,
             alpha, gamma_, epsilon, 4, recursive);
 
-        std::cout << "Seed: " << seed
-                  << " Size: " << cluster.size()
-                  << " Cond: " << boost::format("%.3f") % cond 
-                  << " Community: ";
+        if (!quiet)
+            std::cout << "Seed: " << seed
+                      << " Size: " << cluster.size()
+                      << " Cond: " << boost::format("%.3f") % cond
+                      << " Community: ";
         for (auto it1 = cluster.begin(); it1 != cluster.end(); it1++)
             if (use_index)
                 std::cout << id_to_name_map[*it1] << std::endl;
@@ -298,14 +322,15 @@ int main(int argc, char** argv) {
             bpo::value<std::string>(&indexfile)->default_value(""),
             "Index files mapping node-ids to strings. OPTIONAL.")
         ("interactive,i", "Whether to run in interactive mode.")
+        ("quiet,q", "Whether to run quietly in interactive mode.")
         ("all,a", "Do all vertexs as seed.")
         ("seed,s",
             bpo::value<std::vector<std::string> >(&seedss),
             "Seed node. Use multiple times for multiple seeds. REQUIRED. ")
         ("recursive,r",
-            bpo::value<bool>(&recursive)->default_value(true),
-            "Whether to try to recursively improve clusters "
+             "Whether to try to recursively improve clusters "
             "(use cluster found as a seed)" )
+        ("cond,c", "In quiet mode: prefix community with conductance")
         ("gamma",
             bpo::value<double>(&gamma_)->default_value(5.0),
             "Time to derive the diffusion. As gamma->inf we get closer to ppr.")
@@ -329,6 +354,9 @@ int main(int argc, char** argv) {
         }
 
         interactive = vm.count("interactive");
+        recursive = vm.count("recursive");
+        quiet = vm.count("quiet");
+        printcond = vm.count("cond");
         numeric = vm.count("numeric");
         doall = vm.count("all");
 

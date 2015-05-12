@@ -27,3 +27,18 @@ target_link_libraries(skylark_community
 install_targets(/bin skylark_community)
 
 
+if (SKYLARK_HAVE_HDF5)
+add_executable(skylark_convert2hdf5 skylark_convert2hdf5.cpp)
+
+target_link_libraries(skylark_convert2hdf5
+  ${SKYLARK_LIBS}
+  ${Elemental_LIBRARY}
+  ${Pmrrr_LIBRARY}
+  ${Metis_LIBRARY}
+  ${OPTIONAL_LIBS}
+  ${SKYLARK_LIBS}
+  ${Boost_LIBRARIES}
+  ${HDF5_LIBRARIES}
+  ${ZLIB_LIBRARIES})
+endif (SKYLARK_HAVE_HDF5)
+

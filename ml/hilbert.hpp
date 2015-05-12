@@ -33,17 +33,20 @@ BlockADMMSolver<InputType>* GetSolver(skylark::base::context_t& context,
     }
 
     skylark::algorithms::regularizer_t<value_type> *regularizer = NULL;
-    switch(options.regularizer) {
-    case L2:
-        regularizer = new skylark::algorithms::l2_regularizer_t<value_type>();
-        break;
-    case L1:
-    	regularizer = new skylark::algorithms::l1_regularizer_t<value_type>();
-    	break;
-    default:
-        // TODO
-        break;
-    }
+    if (options.lambda == 0 || options.regularizer == NOREG)
+        regularizer = new skylark::algorithms::empty_regularizer_t<value_type>();
+    else
+        switch(options.regularizer) {
+        case L2:
+            regularizer = new skylark::algorithms::l2_regularizer_t<value_type>();
+            break;
+        case L1:
+            regularizer = new skylark::algorithms::l1_regularizer_t<value_type>();
+            break;
+        default:
+            // TODO
+            break;
+        }
 
     BlockADMMSolver<InputType> *Solver = NULL;
     int features = 0;

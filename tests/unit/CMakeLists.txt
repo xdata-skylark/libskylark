@@ -71,7 +71,7 @@ target_link_libraries( local_sparse_apply
   ${SKYLARK_LIBS}
   ${Elemental_LIBRARY}
   ${Pmrrr_LIBRARY}
-  ${Metis_LIBRARY}	
+  ${Metis_LIBRARY}
   ${OPTIONAL_LIBS}
   ${DEP_LIBRARIES}
   ${Boost_LIBRARIES} )
@@ -82,19 +82,18 @@ target_link_libraries(svd_elemental_test
   ${SKYLARK_LIBS}
   ${Elemental_LIBRARY}
   ${Pmrrr_LIBRARY}
-  ${Metis_LIBRARY}	
+  ${Metis_LIBRARY}
   ${Boost_LIBRARIES})
 add_test( svd_elemental_test svd_elemental_test )
 
 
 find_package(PythonInterp REQUIRED)
-message (STATUS "Using Python interpreter to run tests: {PYTHON_EXECUTABLE}")
 #FIXME: Because of mpi4py/kdt MPI initialization issue we cannot run the test
 #       in hybrid mode when we need to call MPI.Init_thread().
 if(!USE_HYBRID)
   add_test(NAME ${NAME}
     COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/io_test.py ${CMAKE_SOURCE_DIR}
-    )
+  )
 endif(!USE_HYBRID)
 
 # run all python tests

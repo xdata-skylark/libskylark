@@ -26,6 +26,8 @@ target_link_libraries(skylark_community
   ${ZLIB_LIBRARIES})
 install_targets(/bin skylark_community)
 
+
+if (SKYLARK_HAVE_HDF5)
 add_executable(skylark_convert2hdf5 skylark_convert2hdf5.cpp)
 
 target_link_libraries(skylark_convert2hdf5
@@ -38,5 +40,5 @@ target_link_libraries(skylark_convert2hdf5
   ${Boost_LIBRARIES}
   ${HDF5_LIBRARIES}
   ${ZLIB_LIBRARIES})
-
+endif (SKYLARK_HAVE_HDF5)
 

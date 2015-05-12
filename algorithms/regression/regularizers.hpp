@@ -52,6 +52,9 @@ struct l2_regularizer_t : public regularizer_t<ValueType> {
         El::Int mn = W.Height() * W.Width();
         double ilambda = 1.0/(1.0 + lambda);
 
+#       ifdef SKYLARK_HAVE_OPENMP
+#       pragma omp parallel for
+#       endif
         for(El::Int i=0; i < mn; i++)
             Pbuf[i] = (Wbuf[i] - mubuf[i]) * ilambda;
     }
@@ -74,6 +77,9 @@ struct l1_regularizer_t : public regularizer_t<ValueType> {
         ValueType *Pbuf = P.Buffer();
         El::Int mn = W.Height() * W.Width();
 
+#       ifdef SKYLARK_HAVE_OPENMP
+#       pragma omp parallel for
+#       endif
         for(El::Int i = 0; i < mn; i++)
             Pbuf[i] = soft_threshold(Wbuf[i] - mubuf[i], lambda);
 

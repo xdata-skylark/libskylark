@@ -29,11 +29,11 @@ std::string Losses[] = {"Squared Loss",
                         "Hinge Loss (SVMs)",
                         "Logistic Loss"};
 
-enum RegularizerType {L2 = 0 , L1 = 1};
-std::string Regularizers[] = {"L2", "L1"};
+enum RegularizerType {NOREG = 0, L2 = 1 , L1 = 2};
+std::string Regularizers[] = {"No Regularizer", "L2", "L1"};
 
-enum ProblemType {REGRESSION = 0, CLASSIFICATION = 1};
-std::string Problems[] = {"Regression", "Classification"};
+//enum ProblemType {REGRESSION = 0, CLASSIFICATION = 1};
+//std::string Problems[] = {"Regression", "Classification"};
 
 enum SequenceType { MONTECARLO = 0, LEAPED_HALTON = 1};
 std::string Sequences[] = {"Monte Carlo", "Leaped Halton"};
@@ -119,7 +119,7 @@ struct hilbert_options_t {
                 po::value<int>((int*) &lossfunction)->default_value(SQUARED),
                 "Loss function (0:SQUARED, 1:LAD, 2:HINGE, 3:LOGISTIC)")
             ("regularizer,r",
-                po::value<int>((int*) &regularizer)->default_value(L2),
+                po::value<int>((int*) &regularizer)->default_value(NOREG),
                 "Regularizer (0:L2, 1:L1)")
             ("kernel,k",
                 po::value<int>((int*) &kernel)->default_value(LINEAR),

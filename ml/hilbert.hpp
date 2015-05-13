@@ -68,7 +68,7 @@ BlockADMMSolver<InputType>* GetSolver(skylark::base::context_t& context,
                     regularizer,
                     options.lambda,
                     features,
-                    skylark::ml::kernels::linear_t(dimensions),
+                    skylark::ml::linear_t(dimensions),
                     skylark::ml::sparse_feature_transform_tag(),
                     options.numfeaturepartitions);
         break;

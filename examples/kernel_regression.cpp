@@ -5,138 +5,18 @@
 #include <boost/format.hpp>
 #include <skylark.hpp>
 
-namespace skylark { namespace ml {
-
-template<typename MatrixType>
-class feature_map_precond_t :
-    public skylark::algorithms::outplace_precond_t<MatrixType, MatrixType> {
-
-public:
-
-    typedef MatrixType matrix_type;
-
-    virtual bool is_id() const { return false; }
-
-    template<typename KernelType, typename InputType>
-    feature_map_precond_t(const KernelType &k, double lambda,
-        const InputType &X, El::Int s, skylark::base::context_t &context) {
-        _lambda = lambda;
-        _s = s;
-
-        U.Resize(s, X.Width());
-        skylark::sketch::sketch_transform_t<InputType, matrix_type> *S =
-            k.template create_rft<InputType, matrix_type>(s,
-                skylark::ml::regular_feature_transform_tag(),
-                context);
-        S->apply(X, U, skylark::sketch::columnwise_tag());
-        delete S;
-
-        El::Identity(C, s, s);
-
-        //El::Herk(El::LOWER, El::NORMAL, 1.0/_lambda, U, 1.0, C);
-        //El::SymmetricInverse(El::LOWER, C);
-
-        El::Gemm(El::NORMAL, El::ADJOINT, 1.0/_lambda, U, U, 1.0, C);
-        El::Inverse(C);
-    }
-
-    virtual void apply(const matrix_type& B, matrix_type& X) const {
-        matrix_type UB(_s, B.Width()), CUB(_s, B.Width());
-        El::Gemm(El::NORMAL, El::NORMAL, 1.0, U, B, 0.0, UB);
-        El::Hemm(El::LEFT, El::LOWER, 1.0, C, UB, 0.0, CUB);
-
-        X = B;
-        El::Gemm(El::ADJOINT, El::NORMAL, -1.0 / (_lambda * _lambda), U, CUB,
-            1.0/_lambda, X);
-    }
-
-    virtual void apply_adjoint(const matrix_type& B, matrix_type& X) const {
-        apply(B, X);
-    }
-
-private:
-    double _lambda;
-    El::Int _s;
-    matrix_type U, C;
-};
-
-template<typename T, typename KernelType>
-void FasterKernelRidge(base::direction_t direction, const KernelType &k, 
-    const El::DistMatrix<T> &X, const El::DistMatrix<T> &Y, T lambda, 
-    El::DistMatrix<T> &A, El::Int s, base::context_t &context) {
-
-    // TODO: Temporary!
-    boost::mpi::communicator world;
-    int rank = world.rank();
-
-    boost::mpi::timer timer;
-
-    // Compute kernel matrix
-    if (rank == 0) {
-        std::cout << "\tComputing kernel matrix... ";
-        std::cout.flush();
-        timer.restart();
-    }
-
-    El::DistMatrix<double> K;
-    SymmetricGram(El::LOWER, direction, k, X, K);
-
-    // Add regularizer
-    El::DistMatrix<double> D;
-    El::Ones(D, X.Width(), 1);
-    El::UpdateDiagonal(K, lambda, D);
-
-    if (rank == 0)
-        std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
-                  << " sec\n";
-
-    if (rank == 0) {
-        std::cout << "\tCreating precoditioner... ";
-        std::cout.flush();
-        timer.restart();
-    }
-
-    feature_map_precond_t<El::DistMatrix<double> > P(k, lambda, X, s, context);
-
-    if (rank == 0)
-        std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
-                  << " sec\n";
-
-    if (rank == 0) {
-        std::cout << "\tSolving linear equation... ";
-        std::cout.flush();
-        timer.restart();
-    }
-
-
-    // Solve
-    algorithms::krylov_iter_params_t cg_params;
-    cg_params.iter_lim = 1000;
-    cg_params.res_print = 10;
-    cg_params.log_level = 2;
-    cg_params.am_i_printing = rank == 0;
-    cg_params.tolerance = 1e-3;
-
-    El::Zeros(A, X.Width(), Y.Width());
-    algorithms::CG(El::LOWER, K, Y, A, cg_params, P);
-
-    if (rank == 0)
-        std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
-                  << " sec\n";
-
-}
-
-} } // namespace skylark::ml
+// Algorithms constants
+#define CLASSIC_KRR   0
+#define FASTER_KRR    1
 
 #ifndef SKYLARK_AVOID_BOOST_PO
 
 #include <boost/program_options.hpp>
 namespace bpo = boost::program_options;
 
-int parse_program_options(int argc, char* argv[], 
+int parse_program_options(int argc, char* argv[], int &algorithm,
     int &seed, int &s, std::string &fname, std::string &testname,
     double &sigma, double &lambda) {
-
 
     bpo::options_description desc("Options");
     desc.add_options()
@@ -147,6 +27,9 @@ int parse_program_options(int argc, char* argv[],
         ("testfile",
             bpo::value<std::string>(&testname)->default_value(""),
             "Test data (libsvm format).")
+        ("algorithm,a",
+             bpo::value<int>(&algorithm)->default_value(FASTER_KRR),
+            "Algorithm to use (0: Classic, 1: Faster (Precond).")
         ("seed,s",
             bpo::value<int>(&seed)->default_value(38734),
             "Seed for random number generation. OPTIONAL.")
@@ -154,7 +37,7 @@ int parse_program_options(int argc, char* argv[],
             bpo::value<double>(&sigma),
             "Kernel bandwidth.")
         ("lambda,l",
-            bpo::value<double>(&lambda),
+            bpo::value<double>(&lambda)->default_value(0.01),
             "Lambda regularization parameter.")
         ("numfeatures,f",
             bpo::value<int>(&s),
@@ -195,7 +78,7 @@ int parse_program_options(int argc, char* argv[],
 
 #else
 
-int parse_program_options(int argc, char* argv[], 
+int parse_program_options(int argc, char* argv[],
     int &seed, int &s, std::string &fname, std::string &testname,
     double &sigma, double &lambda) {
 
@@ -210,7 +93,7 @@ int parse_program_options(int argc, char* argv[],
         std::string value = i + 1 < argc ? argv[i+1] : "";
 
         if (flag == "--seed" || flag == "-s")
-                seed = boost::lexical_cast<int>(value);
+            seed = boost::lexical_cast<int>(value);
 
         if (flag == "--lambda" || flag == "-l")
             lambda = boost::lexical_cast<double>(value);
@@ -223,6 +106,7 @@ int parse_program_options(int argc, char* argv[],
 
         if (flag == "--trainfile")
             fname = value;
+
         if (flag == "--testfile")
             testname = value;
 
@@ -247,12 +131,13 @@ int main(int argc, char* argv[]) {
 
     El::Initialize(argc, argv);
 
-    int seed, s;
+    int seed, algorithm, s;
     std::string fname, testname;
     double sigma, lambda;
 
-    int flag = parse_program_options(argc, argv, seed, s,
+    int flag = parse_program_options(argc, argv, algorithm, seed, s,
         fname, testname, sigma, lambda);
+
     if (flag != 1000)
         return flag;
 
@@ -286,6 +171,7 @@ int main(int argc, char* argv[]) {
         timer.restart();
     }
 
+    // Form right hand side
     El::DistMatrix<double> Y;
     std::unordered_map<El::Int, El::Int> coding;
     std::vector<El::Int> rcoding;
@@ -295,7 +181,7 @@ int main(int argc, char* argv[]) {
         std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
                   << " sec\n";
 
-    // Form right hand side
+    // Solve
     if (rank == 0) {
         std::cout << "Solving... " << std::endl;
         timer.restart();
@@ -303,8 +189,21 @@ int main(int argc, char* argv[]) {
 
     El::DistMatrix<double> A;
     skylark::ml::gaussian_t k(X.Height(), sigma);
-    skylark::ml::FasterKernelRidge(skylark::base::COLUMNS, k, X, Y, 
-        lambda, A, s, context);
+
+    switch(algorithm) {
+    case CLASSIC_KRR:
+        skylark::ml::KernelRidge(skylark::base::COLUMNS, k, X, Y, lambda, A);
+        break;
+
+    case FASTER_KRR:
+        skylark::ml::FasterKernelRidge(skylark::base::COLUMNS, k, X, Y,
+            lambda, A, s, context);
+        break;
+
+    default:
+        std::cout << "Invalid algorithm value specified." << std::endl;
+        return -1;
+    }
 
     if (rank == 0)
         std::cout <<"Solve took " << boost::format("%.2e") % timer.elapsed()

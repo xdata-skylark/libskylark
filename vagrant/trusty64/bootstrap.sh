@@ -258,11 +258,20 @@ make -j $NPROC
 make install
 make doc
 
-# Finalize
+echo "Finished libSkylark Vagrant build.."
+
+# Prepare notebook directory
 mkdir /home/vagrant/notebooks
+mkdir /home/vagrant/notebooks/data
+cd mkdir /home/vagrant/notebooks/data
+wget http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/multiclass/usps.bz2
+bzip2 -d usps.bz2
+cp ${SKYLARK_SRC_DIR}/python-skylark/skylark/notebooks/* /home/vagrant/notebooks/
+
+# Finalize
+cd $HOME
 chown -R vagrant /home/vagrant
 
-echo "Finished libSkylark Vagrant build.."
 
 apt-get install dtach
 ipython profile create nbserver

@@ -78,13 +78,14 @@ int parse_program_options(int argc, char* argv[], int &algorithm,
 
 #else
 
-int parse_program_options(int argc, char* argv[],
+int parse_program_options(int argc, char* argv[], int algorithm,
     int &seed, int &s, std::string &fname, std::string &testname,
     double &sigma, double &lambda) {
 
     seed = 38734;
     sigma = 10.0;
     lambda = 0.01;
+    algorithm = 1;
     s = 2000;
 
     int poscount = 0;
@@ -100,6 +101,9 @@ int parse_program_options(int argc, char* argv[],
 
         if (flag == "--sigma" || flag == "-x")
             sigma = boost::lexical_cast<double>(value);
+
+        if (flag == "--algorithm" || flag == "-a")
+            algorithm = boost::lexical_cast<int>(value);
 
         if (flag == "--nunmfeatures" || flag == "-f")
             s = boost::lexical_cast<int>(value);

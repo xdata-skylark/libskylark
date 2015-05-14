@@ -252,7 +252,7 @@ int main(int argc, char* argv[]) {
     // Test
     if (!testname.empty()) {
         if (rank == 0) {
-            std::cout << "Prediciting... ";
+            std::cout << "Predicting... ";
             std::cout.flush();
             timer.restart();
         }

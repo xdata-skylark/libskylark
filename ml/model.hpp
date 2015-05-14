@@ -278,24 +278,19 @@ struct kernel_model_t {
 
     kernel_model_t(gaussian_t &k,
         base::direction_t direction, El::DistMatrix<compute_type> &X,
-        const std::string &dataloc, El::Int output_size) :
+        const std::string &dataloc, const El::DistMatrix<compute_type> &A) :
         _X(X), _direction(direction),
-        _A(direction == base::ROWS ? X.Height() : X.Width(), output_size), 
-        _dataloc(dataloc), _k(k),
-        _input_size(k.get_dim()), _output_size(output_size){
+        _A(std::move(A)), _dataloc(dataloc), _k(k),
+        _input_size(k.get_dim()), _output_size(A.Width()){
 
     }
 
-    void predict(base::direction_t direction_XT,
-        const El::DistMatrix<compute_type> &XT, El::DistMatrix<out_type> &YP) {
+    void predict(base::direction_t direction_XT, 
+        const El::DistMatrix<compute_type> &XT, El::DistMatrix<out_type> &YP) const {
 
         El::DistMatrix<double> KT;
         Gram(_direction, direction_XT, _k, _X, XT, KT);
         El::Gemm(El::ADJOINT, El::NORMAL, 1.0, _A, KT, YP);
-    }
-
-    El::DistMatrix<compute_type> &get_A() {
-        return _A;
     }
 
     boost::property_tree::ptree to_ptree() const {
@@ -329,7 +324,7 @@ struct kernel_model_t {
 private:
     const El::DistMatrix<compute_type> &_X;
     const base::direction_t _direction;
-    El::DistMatrix<compute_type> _A;
+    const El::DistMatrix<compute_type> &_A;
     const std::string _dataloc;
     const gaussian_t _k;
     const El::Int _input_size, _output_size;

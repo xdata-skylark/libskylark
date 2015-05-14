@@ -208,9 +208,7 @@ int main(int argc, char* argv[]) {
 
 
     skylark::ml::gaussian_t k(X.Height(), sigma);
-    skylark::ml::kernel_model_t<double> model(k, skylark::base::COLUMNS, X,
-        fname, Y.Width());
-    El::DistMatrix<double> &A = model.get_A();
+    El::DistMatrix<double> A;
 
     switch(algorithm) {
     case CLASSIC_KRR:
@@ -226,6 +224,9 @@ int main(int argc, char* argv[]) {
         std::cout << "Invalid algorithm value specified." << std::endl;
         return -1;
     }
+
+    skylark::ml::kernel_model_t<double> model(k,
+        skylark::base::COLUMNS, X, fname, A);
 
     if (rank == 0)
         std::cout <<"Solve took " << boost::format("%.2e") % timer.elapsed()

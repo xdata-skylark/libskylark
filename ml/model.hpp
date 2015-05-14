@@ -270,6 +270,71 @@ private:
     std::vector<int> _starts, _finishes;
 };
 
+template<typename OutType, typename ComputeType = OutType>
+struct kernel_model_t {
+    // TODO: so far assume only Gaussian kernel.
+    typedef ComputeType compute_type;
+    typedef OutType out_type;
+
+    kernel_model_t(gaussian_t &k,
+        base::direction_t direction, El::DistMatrix<compute_type> &X,
+        const std::string &dataloc, El::Int output_size) :
+        _X(X), _direction(direction),
+        _A(direction == base::ROWS ? X.Height() : X.Width(), output_size), 
+        _dataloc(dataloc), _k(k),
+        _input_size(k.get_dim()), _output_size(output_size){
+
+    }
+
+    void predict(base::direction_t direction_XT,
+        const El::DistMatrix<compute_type> &XT, El::DistMatrix<out_type> &YP) {
+
+        El::DistMatrix<double> KT;
+        Gram(_direction, direction_XT, _k, _X, XT, KT);
+        El::Gemm(El::ADJOINT, El::NORMAL, 1.0, _A, KT, YP);
+    }
+
+    El::DistMatrix<compute_type> &get_A() {
+        return _A;
+    }
+
+    boost::property_tree::ptree to_ptree() const {
+        boost::property_tree::ptree pt;
+
+        pt.put("skylark_object_type", "model:kernel");
+        pt.put("skylark_version", VERSION);
+
+        pt.put("data_location", _dataloc);
+        pt.put("num_outputs", _output_size);
+        pt.put("input_size", _input_size);
+        pt.put("regression", true);
+
+        pt.add_child("kernel", _k.to_ptree());
+
+        std::stringstream sA;
+        El::Print(_A, "", sA);
+        pt.put("alpha", sA.str());
+
+        return pt;
+    }
+
+    void save(const std::string& fname, const std::string& header) const {
+        boost::property_tree::ptree pt = to_ptree();
+        std::ofstream of(fname);
+        of << header;
+        boost::property_tree::write_json(of, pt);
+        of.close();
+    }
+
+private:
+    const El::DistMatrix<compute_type> &_X;
+    const base::direction_t _direction;
+    El::DistMatrix<compute_type> _A;
+    const std::string _dataloc;
+    const gaussian_t _k;
+    const El::Int _input_size, _output_size;
+};
+
 } }
 
 

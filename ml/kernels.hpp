@@ -12,6 +12,17 @@ struct linear_t {
 
     }
 
+    boost::property_tree::ptree to_ptree() const {
+        boost::property_tree::ptree pt;
+        pt.put("skylark_object_type", "kernel");
+        pt.put("skylark_version", VERSION);
+
+        pt.put("kernel_type", "linear");
+        pt.put("N", _N);
+
+        return pt;
+    }
+
     template<typename IT, typename OT>
     sketch::sketch_transform_t<IT, OT> *create_rft(int S,
         regular_feature_transform_tag, base::context_t& context) const {
@@ -47,6 +58,18 @@ struct gaussian_t {
 
     gaussian_t(El::Int N, double sigma) : _N(N), _sigma(sigma) {
 
+    }
+
+    boost::property_tree::ptree to_ptree() const {
+        boost::property_tree::ptree pt;
+        pt.put("skylark_object_type", "kernel");
+        pt.put("skylark_version", VERSION);
+
+        pt.put("kernel_type", "gaussian");
+        pt.put("sigma", _sigma);
+        pt.put("N", _N);
+
+        return pt;
     }
 
     template<typename IT, typename OT>

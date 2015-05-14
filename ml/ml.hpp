@@ -5,6 +5,7 @@
 #include "graph/graph.hpp"
 #include "kernels.hpp"
 #include "krr.hpp"
+#include "model.hpp"
 
 // TODO add includes to hilbert
 

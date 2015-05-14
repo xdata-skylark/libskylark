@@ -3,6 +3,8 @@
 #include <El.hpp>
 #include <boost/mpi.hpp>
 #include <boost/format.hpp>
+
+#define SKYLARK_NO_ANY
 #include <skylark.hpp>
 
 // Algorithms constants
@@ -16,7 +18,7 @@ namespace bpo = boost::program_options;
 
 int parse_program_options(int argc, char* argv[], int &algorithm,
     int &seed, int &s, std::string &fname, std::string &testname,
-    double &sigma, double &lambda) {
+    std::string &modelname, double &sigma, double &lambda) {
 
     bpo::options_description desc("Options");
     desc.add_options()
@@ -27,6 +29,9 @@ int parse_program_options(int argc, char* argv[], int &algorithm,
         ("testfile",
             bpo::value<std::string>(&testname)->default_value(""),
             "Test data (libsvm format).")
+        ("model",
+            bpo::value<std::string>(&modelname)->default_value("model.dat"),
+            "Name of model file.")
         ("algorithm,a",
              bpo::value<int>(&algorithm)->default_value(FASTER_KRR),
             "Algorithm to use (0: Classic, 1: Faster (Precond).")
@@ -78,9 +83,9 @@ int parse_program_options(int argc, char* argv[], int &algorithm,
 
 #else
 
-int parse_program_options(int argc, char* argv[], int algorithm,
+int parse_program_options(int argc, char* argv[], int &algorithm,
     int &seed, int &s, std::string &fname, std::string &testname,
-    double &sigma, double &lambda) {
+    std::string &modename, double &sigma, double &lambda) {
 
     seed = 38734;
     sigma = 10.0;
@@ -111,6 +116,9 @@ int parse_program_options(int argc, char* argv[], int algorithm,
         if (flag == "--trainfile")
             fname = value;
 
+        if (flag == "--model")
+            modelname = value;
+
         if (flag == "--testfile")
             testname = value;
 
@@ -133,14 +141,21 @@ int parse_program_options(int argc, char* argv[], int algorithm,
 
 int main(int argc, char* argv[]) {
 
+    std::string cmdline;
+    for(int i = 0; i < argc; i++) {
+        cmdline.append(argv[i]);
+        if (i < argc - 1)
+            cmdline.append(" ");
+    }
+
     El::Initialize(argc, argv);
 
     int seed, algorithm, s;
-    std::string fname, testname;
+    std::string fname, testname, modelname;
     double sigma, lambda;
 
     int flag = parse_program_options(argc, argv, algorithm, seed, s,
-        fname, testname, sigma, lambda);
+        fname, testname, modelname, sigma, lambda);
 
     if (flag != 1000)
         return flag;
@@ -191,8 +206,11 @@ int main(int argc, char* argv[]) {
         timer.restart();
     }
 
-    El::DistMatrix<double> A;
+
     skylark::ml::gaussian_t k(X.Height(), sigma);
+    skylark::ml::kernel_model_t<double> model(k, skylark::base::COLUMNS, X,
+        fname, Y.Width());
+    El::DistMatrix<double> &A = model.get_A();
 
     switch(algorithm) {
     case CLASSIC_KRR:
@@ -213,7 +231,23 @@ int main(int argc, char* argv[]) {
         std::cout <<"Solve took " << boost::format("%.2e") % timer.elapsed()
                   << " sec\n";
 
-    El::Write(A, "A.dat", El::ASCII);
+    // Save model
+    if (rank == 0) {
+        std::cout << "Saving model... ";
+        std::cout.flush();
+        timer.restart();
+    }
+
+    std::stringstream header;
+    header << "# Generated using kernel_regression";
+    header << "using the following command-line: " << std::endl;
+    header << "#\t" << cmdline << std::endl;
+
+    model.save(modelname, header.str());
+
+    if (rank == 0)
+        std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
+                  << " sec\n";
 
     // Test
     if (!testname.empty()) {
@@ -228,12 +262,8 @@ int main(int argc, char* argv[]) {
         skylark::utility::io::ReadLIBSVM(testname, XT, LT,
             skylark::base::COLUMNS, X.Height());
 
-        El::DistMatrix<double> KT;
-        skylark::ml::Gram(skylark::base::COLUMNS, skylark::base::COLUMNS,
-            k, X, XT, KT);
-
-        El::DistMatrix<double> YP(Y.Width(), XT.Width());
-        El::Gemm(El::ADJOINT, El::NORMAL, 1.0, A, KT, YP);
+        El::DistMatrix<double> YP;
+        model.predict(skylark::base::COLUMNS, XT, YP);
 
         El::DistMatrix<El::Int> LP;
         skylark::ml::DummyDecode(El::ADJOINT, YP, LP, rcoding);

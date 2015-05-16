@@ -85,7 +85,7 @@ int parse_program_options(int argc, char* argv[], int &algorithm,
 
 int parse_program_options(int argc, char* argv[], int &algorithm,
     int &seed, int &s, std::string &fname, std::string &testname,
-    std::string &modename, double &sigma, double &lambda) {
+    std::string &modelname, double &sigma, double &lambda) {
 
     seed = 38734;
     sigma = 10.0;

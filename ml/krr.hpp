@@ -21,11 +21,11 @@ void KernelRidge(base::direction_t direction, const KernelType &k,
         timer.restart();
     }
 
-    El::DistMatrix<double> K;
+    El::DistMatrix<T> K;
     SymmetricGram(El::LOWER, direction, k, X, K);
 
     // Add regularizer
-    El::DistMatrix<double> D;
+    El::DistMatrix<T> D;
     El::Ones(D, X.Width(), 1);
     El::UpdateDiagonal(K, lambda, D);
 
@@ -56,11 +56,12 @@ class feature_map_precond_t :
 public:
 
     typedef MatrixType matrix_type;
+    typedef typename utility::typer_t<matrix_type>::value_type value_type;
 
     virtual bool is_id() const { return false; }
 
     template<typename KernelType, typename InputType>
-    feature_map_precond_t(const KernelType &k, double lambda,
+    feature_map_precond_t(const KernelType &k, value_type lambda,
         const InputType &X, El::Int s, base::context_t &context) {
         _lambda = lambda;
         _s = s;
@@ -75,7 +76,8 @@ public:
 
         El::Identity(C, s, s);
 
-        El::Herk(El::LOWER, El::NORMAL, 1.0/_lambda, U, 1.0, C);
+        El::Herk(El::LOWER, El::NORMAL, value_type(1.0)/_lambda, U,
+            value_type(1.0), C);
         El::SymmetricInverse(El::LOWER, C);
 
         //El::Gemm(El::NORMAL, El::ADJOINT, 1.0/_lambda, U, U, 1.0, C);
@@ -84,12 +86,13 @@ public:
 
     virtual void apply(const matrix_type& B, matrix_type& X) const {
         matrix_type UB(_s, B.Width()), CUB(_s, B.Width());
-        El::Gemm(El::NORMAL, El::NORMAL, 1.0, U, B, 0.0, UB);
-        El::Hemm(El::LEFT, El::LOWER, 1.0, C, UB, 0.0, CUB);
+        El::Gemm(El::NORMAL, El::NORMAL, value_type(1.0), U, B, UB);
+        El::Hemm(El::LEFT, El::LOWER, value_type(1.0), C, UB,
+            value_type(0.0), CUB);
 
         X = B;
-        El::Gemm(El::ADJOINT, El::NORMAL, -1.0 / (_lambda * _lambda), U, CUB,
-            1.0/_lambda, X);
+        El::Gemm(El::ADJOINT, El::NORMAL, value_type(-1.0) / (_lambda * _lambda), 
+            U, CUB, value_type(1.0)/_lambda, X);
     }
 
     virtual void apply_adjoint(const matrix_type& B, matrix_type& X) const {
@@ -97,7 +100,7 @@ public:
     }
 
 private:
-    double _lambda;
+    value_type _lambda;
     El::Int _s;
     matrix_type U, C;
 };
@@ -120,11 +123,11 @@ void FasterKernelRidge(base::direction_t direction, const KernelType &k,
         timer.restart();
     }
 
-    El::DistMatrix<double> K;
+    El::DistMatrix<T> K;
     SymmetricGram(El::LOWER, direction, k, X, K);
 
     // Add regularizer
-    El::DistMatrix<double> D;
+    El::DistMatrix<T> D;
     El::Ones(D, X.Width(), 1);
     El::UpdateDiagonal(K, lambda, D);
 
@@ -138,7 +141,7 @@ void FasterKernelRidge(base::direction_t direction, const KernelType &k,
         timer.restart();
     }
 
-    feature_map_precond_t<El::DistMatrix<double> > P(k, lambda, X, s, context);
+    feature_map_precond_t<El::DistMatrix<T> > P(k, lambda, X, s, context);
 
     if (rank == 0)
         std::cout <<"took " << boost::format("%.2e") % timer.elapsed()

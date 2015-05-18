@@ -197,12 +197,12 @@ int execute(skylark::base::context_t &context) {
 
     switch(algorithm) {
     case CLASSIC_KRR:
-        skylark::ml::KernelRidge(skylark::base::COLUMNS, k, X, Y, lambda, A);
+        skylark::ml::KernelRidge(skylark::base::COLUMNS, k, X, Y, T(lambda), A);
         break;
 
     case FASTER_KRR:
         skylark::ml::FasterKernelRidge(skylark::base::COLUMNS, k, X, Y,
-            lambda, A, s, context);
+            T(lambda), A, s, context);
         break;
 
     default:

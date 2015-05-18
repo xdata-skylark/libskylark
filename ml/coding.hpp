@@ -100,7 +100,7 @@ void DummyDecode(El::Orientation orientation,
     if (orientation == El::ADJOINT) {
         L.Resize(1, Y.Width());
         LabelType *l = L.Buffer();
-        const double *y = Y.LockedBuffer();
+        const T *y = Y.LockedBuffer();
         El::Int ld = Y.LDim();
         for(El::Int j = 0; j < Y.Width(); j++) {
             El::Int idx = 0;

@@ -288,9 +288,9 @@ struct kernel_model_t {
     void predict(base::direction_t direction_XT, 
         const El::DistMatrix<compute_type> &XT, El::DistMatrix<out_type> &YP) const {
 
-        El::DistMatrix<double> KT;
+        El::DistMatrix<compute_type> KT;
         Gram(_direction, direction_XT, _k, _X, XT, KT);
-        El::Gemm(El::ADJOINT, El::NORMAL, 1.0, _A, KT, YP);
+        El::Gemm(El::ADJOINT, El::NORMAL, out_type(1.0), _A, KT, YP);
     }
 
     boost::property_tree::ptree to_ptree() const {

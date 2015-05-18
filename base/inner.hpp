@@ -41,11 +41,11 @@ inline void ColumnNrm2(const El::Matrix<T>& A,
     El::Matrix<El::Base<T> >& N) {
 
     N.Resize(A.Width(), 1);
-    double *n = N.Buffer();
-    const double *a = A.LockedBuffer();
-    for(int j = 0; j < A.Width(); j++) {
+    T *n = N.Buffer();
+    const T *a = A.LockedBuffer();
+    for(El::Int j = 0; j < A.Width(); j++) {
         n[j] = 0.0;
-        for(int i = 0; i < A.Height(); i++)
+        for(El::Int i = 0; i < A.Height(); i++)
             n[j] += a[j * A.LDim() + i] * El::Conj(a[j * A.LDim() + i]);
         n[j] = sqrt(n[j]);
     }
@@ -55,11 +55,11 @@ template<typename T>
 inline void ColumnNrm2(const El::DistMatrix<T, El::STAR, El::STAR>& A,
     El::DistMatrix<El::Base<T>, El::STAR, El::STAR>& N) {
     N.Resize(A.Width(), 1);
-    double *n = N.Buffer();
-    const double *a = A.LockedBuffer();
-    for(int j = 0; j < A.Width(); j++) {
+    T *n = N.Buffer();
+    const T *a = A.LockedBuffer();
+    for(El::Int j = 0; j < A.Width(); j++) {
         n[j] = 0.0;
-        for(int i = 0; i < A.LocalHeight(); i++)
+        for(El::Int i = 0; i < A.LocalHeight(); i++)
             n[j] += a[j * A.LDim() + i] * El::Conj(a[j * A.LDim() + i]);
         n[j] = sqrt(n[j]);
     }
@@ -96,9 +96,9 @@ inline void ColumnNrm2(const El::AbstractDistMatrix<T>& A,
         std::vector<T> n(A.Width(), 1);
         std::fill(n.begin(), n.end(), 0.0);
         const El::Matrix<T> &Al = A.LockedMatrix();
-        const double *a = Al.LockedBuffer();
-        for(int j = 0; j < Al.Width(); j++)
-            for(int i = 0; i < Al.Height(); i++)
+        const T *a = Al.LockedBuffer();
+        for(El::Int j = 0; j < Al.Width(); j++)
+            for(El::Int i = 0; i < Al.Height(); i++)
                 n[A.GlobalCol(j)] +=
                     a[j * Al.LDim() + i] * El::Conj(a[j * Al.LDim() + i]);
 
@@ -106,7 +106,7 @@ inline void ColumnNrm2(const El::AbstractDistMatrix<T>& A,
         El::Zero(N);
         El::mpi::AllReduce(n.data(), N.Buffer(), A.Width(), MPI_SUM,
             A.DistComm());
-        for(int j = 0; j < A.Width(); j++)
+        for(El::Int j = 0; j < A.Width(); j++)
             N.Set(j, 0, sqrt(N.Get(j, 0)));
     }
 
@@ -123,9 +123,9 @@ inline void ColumnDot(const El::Matrix<T>& A, const El::Matrix<T>& B,
     T *n = N.Buffer();
     const T *a = A.LockedBuffer();
     const T *b = B.LockedBuffer();
-    for(int j = 0; j < A.Width(); j++) {
+    for(El::Int j = 0; j < A.Width(); j++) {
         n[j] = 0.0;
-        for(int i = 0; i < A.Height(); i++)
+        for(El::Int i = 0; i < A.Height(); i++)
             n[j] += a[j * A.LDim() + i] * El::Conj(b[j * B.LDim() + i]);
     }
 }
@@ -137,12 +137,12 @@ inline void ColumnDot(const El::DistMatrix<T, El::STAR, El::STAR>& A,
 
     // TODO just assuming sizes are OK for now.
 
-    double *n = N.Buffer();
-    const double *a = A.LockedBuffer();
-    const double *b = B.LockedBuffer();
-    for(int j = 0; j < A.Width(); j++) {
+    T *n = N.Buffer();
+    const T *a = A.LockedBuffer();
+    const T *b = B.LockedBuffer();
+    for(El::Int j = 0; j < A.Width(); j++) {
         n[j] = 0.0;
-        for(int i = 0; i < A.LocalHeight(); i++)
+        for(El::Int i = 0; i < A.LocalHeight(); i++)
             n[j] += a[j * A.LDim() + i] * El::Conj(b[j * B.LDim() + i]);
     }
 }
@@ -156,11 +156,11 @@ inline void ColumnDot(const El::DistMatrix<T, U, V>& A,
     std::vector<T> n(A.Width(), 1);
     std::fill(n.begin(), n.end(), 0);
     const El::Matrix<T> &Al = A.LockedMatrix();
-    const double *a = Al.LockedBuffer();
+    const T *a = Al.LockedBuffer();
     const El::Matrix<T> &Bl = B.LockedMatrix();
-    const double *b = Bl.LockedBuffer();
-    for(int j = 0; j < Al.Width(); j++)
-        for(int i = 0; i < Al.Height(); i++)
+    const T *b = Bl.LockedBuffer();
+    for(El::Int j = 0; j < Al.Width(); j++)
+        for(El::Int i = 0; i < Al.Height(); i++)
             n[A.GlobalCol(j)] +=
                 a[j * Al.LDim() + i] * El::Conj(b[j * Bl.LDim() + i]);
 
@@ -176,14 +176,14 @@ inline void RowDot(const El::Matrix<T>& A, const El::Matrix<T>& B,
 
     // TODO just assuming sizes are OK for now.
 
-    double *n = N.Buffer();
-    const double *a = A.LockedBuffer();
-    const double *b = B.LockedBuffer();
-    for(int i = 0; i < A.Height(); i++)
+    T *n = N.Buffer();
+    const T *a = A.LockedBuffer();
+    const T *b = B.LockedBuffer();
+    for(El::Int i = 0; i < A.Height(); i++)
         n[i] = 0.0;
 
-    for(int j = 0; j < A.Width(); j++) {
-        for(int i = 0; i < A.Height(); i++)
+    for(El::Int j = 0; j < A.Width(); j++) {
+        for(El::Int i = 0; i < A.Height(); i++)
             n[i] += a[j * A.LDim() + i] * El::Conj(b[j * B.LDim() + i]);
     }
 }
@@ -228,7 +228,7 @@ void Euclidean(direction_t dirA, direction_t dirB, T alpha,
     El::Int ldC = C.LDim();
 
     if (dirA == base::COLUMNS && dirB == base::COLUMNS) {
-        El::Gemm(El::ADJOINT, El::NORMAL, -2.0 * alpha, A, B, beta, C);
+        El::Gemm(El::ADJOINT, El::NORMAL, T(-2.0) * alpha, A, B, T(beta), C);
 
         El::DistMatrix<T, El::STAR, El::STAR> NA, NB;
         ColumnNrm2(A, NA);

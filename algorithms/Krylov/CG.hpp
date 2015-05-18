@@ -27,8 +27,8 @@ int CG(El::UpperOrLower uplo, const MatrixType& A, const RhsType& B, SolType& X,
 
     int ret;
 
-    typedef typename utility::typer_t<MatrixType>::value_type value_t;
-    typedef typename utility::typer_t<MatrixType>::index_type index_t;
+    typedef typename utility::typer_t<MatrixType>::value_type value_type;
+    typedef typename utility::typer_t<MatrixType>::index_type index_type;
 
     typedef MatrixType matrix_type;
     typedef RhsType rhs_type;
@@ -45,11 +45,11 @@ int CG(El::UpperOrLower uplo, const MatrixType& A, const RhsType& B, SolType& X,
     bool log_lev2 = params.am_i_printing && params.log_level >= 2;
 
     /** Throughout, we will use n, k to denote the problem dimensions */
-    index_t n = base::Height(A);
-    index_t k = base::Width(B);
+    index_type n = base::Height(A);
+    index_type k = base::Width(B);
 
     /** Set the parameter values accordingly */
-    const value_t eps = 32*std::numeric_limits<value_t>::epsilon();
+    const value_type eps = 32*std::numeric_limits<value_type>::epsilon();
     if (params.tolerance<eps) params.tolerance=eps;
     else if (params.tolerance>=1.0) params.tolerance=(1-eps);
     else {} /* nothing */
@@ -59,20 +59,20 @@ int CG(El::UpperOrLower uplo, const MatrixType& A, const RhsType& B, SolType& X,
     bool isprecond = !(M.is_id() && std::is_same<sol_type, rhs_type>::value);
     sol_type &Z =  !isprecond ? R : *(new sol_type(X));
 
-    El::Hemm(El::LEFT, uplo, -1.0, A, X, 1.0, R);
+    El::Hemm(El::LEFT, uplo, value_type(-1.0), A, X, value_type(1.0), R);
 
     scalar_cont_type
         nrmb(internal::scalar_cont_typer_t<rhs_type>::build_compatible(k, 1, B));
     base::ColumnNrm2(B, nrmb);
     double total_nrmb = 0.0;
-    for(index_t i = 0; i < k; i++)
+    for(index_type i = 0; i < k; i++)
         total_nrmb += nrmb[i] * nrmb[i];
     total_nrmb = sqrt(total_nrmb);
     scalar_cont_type ressqr(nrmb), rho(nrmb), rho0(nrmb), rhotmp(nrmb),
         alpha(nrmb), malpha(nrmb), beta(nrmb);
     base::ColumnDot(R, R, ressqr);
 
-    for (index_t itn=0; itn<params.iter_lim; ++itn) {
+    for (index_type itn=0; itn<params.iter_lim; ++itn) {
         if (isprecond) {
             M.apply(R, Z);
             base::ColumnDot(R, Z, rho);
@@ -82,16 +82,16 @@ int CG(El::UpperOrLower uplo, const MatrixType& A, const RhsType& B, SolType& X,
         if (itn == 0)
             El::Zero(beta);
         else
-            for(index_t i = 0; i < k; i++)
+            for(index_type i = 0; i < k; i++)
                 beta[i] = rho[i] / rho0[i];
 
         El::DiagonalScale(El::RIGHT, El::NORMAL, beta, P);
-        base::Axpy(1.0, Z, P);
+        base::Axpy(value_type(1.0), Z, P);
 
-        El::Hemm(El::LEFT, uplo, 1.0, A, P, 0.0, Q);
+        El::Hemm(El::LEFT, uplo, value_type(1.0), A, P, value_type(0.0), Q);
 
         base::ColumnDot(P, Q, rhotmp);
-        for(index_t i = 0; i < k; i++) {
+        for(index_type i = 0; i < k; i++) {
             alpha[i] = rho[i] / rhotmp[i];
             malpha[i] = -alpha[i];
         }
@@ -104,14 +104,14 @@ int CG(El::UpperOrLower uplo, const MatrixType& A, const RhsType& B, SolType& X,
         base::ColumnDot(R, R, ressqr);
 
         int convg = 0;
-        for(index_t i = 0; i < k; i++) {
+        for(index_type i = 0; i < k; i++) {
             if (sqrt(ressqr[i]) < (params.tolerance*nrmb[i]))
                 convg++;
         }
 
         if (log_lev2 && (itn % params.res_print == 0 || convg == k)) {
             double total_ressqr = 0.0;
-            for(index_t i = 0; i < k; i++)
+            for(index_type i = 0; i < k; i++)
                 total_ressqr += ressqr[i];
             double relres = sqrt(total_ressqr) / total_nrmb;
             params.log_stream << "CG: Iteration " << itn

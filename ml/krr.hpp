@@ -78,17 +78,23 @@ public:
 
         El::Herk(El::LOWER, El::NORMAL, value_type(1.0)/_lambda, U,
             value_type(1.0), C);
-        El::SymmetricInverse(El::LOWER, C);
+        El::Cholesky(El::LOWER, C);
+
+        // El::SymmetricInverse(El::LOWER, C);
 
         //El::Gemm(El::NORMAL, El::ADJOINT, 1.0/_lambda, U, U, 1.0, C);
         //El::Inverse(C);
     }
 
     virtual void apply(const matrix_type& B, matrix_type& X) const {
-        matrix_type UB(_s, B.Width()), CUB(_s, B.Width());
-        El::Gemm(El::NORMAL, El::NORMAL, value_type(1.0), U, B, UB);
-        El::Hemm(El::LEFT, El::LOWER, value_type(1.0), C, UB,
-            value_type(0.0), CUB);
+        //matrix_type UB(_s, B.Width()), CUB(_s, B.Width());
+        //El::Gemm(El::NORMAL, El::NORMAL, value_type(1.0), U, B, UB);
+        //El::Hemm(El::LEFT, El::LOWER, value_type(1.0), C, UB,
+        //    value_type(0.0), CUB);
+
+        matrix_type CUB(_s, B.Width());
+        El::Gemm(El::NORMAL, El::NORMAL, value_type(1.0), U, B, CUB);
+        El::cholesky::SolveAfter(El::LOWER, El::NORMAL, C, CUB);
 
         X = B;
         El::Gemm(El::ADJOINT, El::NORMAL, value_type(-1.0) / (_lambda * _lambda), 

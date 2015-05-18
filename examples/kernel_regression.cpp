@@ -16,8 +16,8 @@
 #include <boost/program_options.hpp>
 namespace bpo = boost::program_options;
 
-int parse_program_options(int argc, char* argv[], int &algorithm,
-    int &seed, int &s, std::string &fname, std::string &testname,
+int parse_program_options(int argc, char* argv[], bool &use_single,
+    int &algorithm, int &seed, int &s, std::string &fname, std::string &testname,
     std::string &modelname, double &sigma, double &lambda) {
 
     bpo::options_description desc("Options");
@@ -44,6 +44,7 @@ int parse_program_options(int argc, char* argv[], int &algorithm,
         ("lambda,l",
             bpo::value<double>(&lambda)->default_value(0.01),
             "Lambda regularization parameter.")
+        ("single", "Whether to use single precision instead of double.")
         ("numfeatures,f",
             bpo::value<int>(&s),
             "Number of random features.");
@@ -71,6 +72,9 @@ int parse_program_options(int argc, char* argv[], int &algorithm,
         }
 
         bpo::notify(vm);
+
+        use_single = vm.count("single");
+
     } catch(bpo::error& e) {
         std::cerr << e.what() << std::endl;
         std::cerr << desc << std::endl;
@@ -83,8 +87,8 @@ int parse_program_options(int argc, char* argv[], int &algorithm,
 
 #else
 
-int parse_program_options(int argc, char* argv[], int &algorithm,
-    int &seed, int &s, std::string &fname, std::string &testname,
+int parse_program_options(int argc, char* argv[], bool &use_single,
+    int &algorithm, int &seed, int &s, std::string &fname, std::string &testname,
     std::string &modelname, double &sigma, double &lambda) {
 
     seed = 38734;
@@ -112,6 +116,11 @@ int parse_program_options(int argc, char* argv[], int &algorithm,
 
         if (flag == "--nunmfeatures" || flag == "-f")
             s = boost::lexical_cast<int>(value);
+
+        if (flag == "--single") {
+            use_single = true;
+            i--;
+        }
 
         if (flag == "--trainfile")
             fname = value;
@@ -285,7 +294,8 @@ int main(int argc, char* argv[]) {
 
     El::Initialize(argc, argv);
 
-    int flag = parse_program_options(argc, argv, algorithm, seed, s,
+    bool use_single;
+    int flag = parse_program_options(argc, argv, use_single, algorithm, seed, s,
         fname, testname, modelname, sigma, lambda);
 
     if (flag != 1000)
@@ -297,7 +307,10 @@ int main(int argc, char* argv[]) {
 
     SKYLARK_BEGIN_TRY()
 
-    ret = execute<double>(context);
+        if (use_single)
+            ret = execute<float>(context);
+        else
+            ret = execute<double>(context);
 
     SKYLARK_END_TRY() SKYLARK_CATCH_AND_PRINT()
 

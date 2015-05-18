@@ -139,33 +139,18 @@ int parse_program_options(int argc, char* argv[], int &algorithm,
 
 #endif
 
-int main(int argc, char* argv[]) {
+std::string cmdline;
+int seed, algorithm, s;
+std::string fname, testname, modelname;
+double sigma, lambda;
 
-    std::string cmdline;
-    for(int i = 0; i < argc; i++) {
-        cmdline.append(argv[i]);
-        if (i < argc - 1)
-            cmdline.append(" ");
-    }
-
-    El::Initialize(argc, argv);
-
-    int seed, algorithm, s;
-    std::string fname, testname, modelname;
-    double sigma, lambda;
-
-    int flag = parse_program_options(argc, argv, algorithm, seed, s,
-        fname, testname, modelname, sigma, lambda);
-
-    if (flag != 1000)
-        return flag;
-
-    skylark::base::context_t context(seed);
+template<typename T>
+int execute(skylark::base::context_t &context) {
 
     boost::mpi::communicator world;
     int rank = world.rank();
 
-    El::DistMatrix<double> X;
+    El::DistMatrix<T> X;
     El::DistMatrix<El::Int> L;
 
     boost::mpi::timer timer;
@@ -191,7 +176,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Form right hand side
-    El::DistMatrix<double> Y;
+    El::DistMatrix<T> Y;
     std::unordered_map<El::Int, El::Int> coding;
     std::vector<El::Int> rcoding;
     skylark::ml::DummyCoding(El::NORMAL, Y, L, coding, rcoding);
@@ -208,7 +193,7 @@ int main(int argc, char* argv[]) {
 
 
     skylark::ml::gaussian_t k(X.Height(), sigma);
-    El::DistMatrix<double> A;
+    El::DistMatrix<T> A;
 
     switch(algorithm) {
     case CLASSIC_KRR:
@@ -225,7 +210,7 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
-    skylark::ml::kernel_model_t<double> model(k,
+    skylark::ml::kernel_model_t<T> model(k,
         skylark::base::COLUMNS, X, fname, A);
 
     if (rank == 0)
@@ -258,12 +243,12 @@ int main(int argc, char* argv[]) {
             timer.restart();
         }
 
-        El::DistMatrix<double> XT;
+        El::DistMatrix<T> XT;
         El::DistMatrix<El::Int> LT;
         skylark::utility::io::ReadLIBSVM(testname, XT, LT,
             skylark::base::COLUMNS, X.Height());
 
-        El::DistMatrix<double> YP;
+        El::DistMatrix<T> YP;
         model.predict(skylark::base::COLUMNS, XT, YP);
 
         El::DistMatrix<El::Int> LP;
@@ -287,6 +272,36 @@ int main(int argc, char* argv[]) {
                       << "%" << std::endl;
     }
 
-    El::Finalize();
     return 0;
+}
+
+int main(int argc, char* argv[]) {
+
+    for(int i = 0; i < argc; i++) {
+        cmdline.append(argv[i]);
+        if (i < argc - 1)
+            cmdline.append(" ");
+    }
+
+    El::Initialize(argc, argv);
+
+    int flag = parse_program_options(argc, argv, algorithm, seed, s,
+        fname, testname, modelname, sigma, lambda);
+
+    if (flag != 1000)
+        return flag;
+
+    skylark::base::context_t context(seed);
+
+    int ret = -1;
+
+    SKYLARK_BEGIN_TRY()
+
+    ret = execute<double>(context);
+
+    SKYLARK_END_TRY() SKYLARK_CATCH_AND_PRINT()
+
+    El::Finalize();
+
+    return ret;
 }

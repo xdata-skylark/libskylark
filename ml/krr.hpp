@@ -51,7 +51,7 @@ void KernelRidge(base::direction_t direction, const KernelType &k,
 
 template<typename MatrixType>
 class feature_map_precond_t :
-    public skylark::algorithms::outplace_precond_t<MatrixType, MatrixType> {
+    public algorithms::outplace_precond_t<MatrixType, MatrixType> {
 
 public:
 
@@ -61,16 +61,16 @@ public:
 
     template<typename KernelType, typename InputType>
     feature_map_precond_t(const KernelType &k, double lambda,
-        const InputType &X, El::Int s, skylark::base::context_t &context) {
+        const InputType &X, El::Int s, base::context_t &context) {
         _lambda = lambda;
         _s = s;
 
         U.Resize(s, X.Width());
-        skylark::sketch::sketch_transform_t<InputType, matrix_type> *S =
+        sketch::sketch_transform_t<InputType, matrix_type> *S =
             k.template create_rft<InputType, matrix_type>(s,
-                skylark::ml::regular_feature_transform_tag(),
+                ml::regular_feature_transform_tag(),
                 context);
-        S->apply(X, U, skylark::sketch::columnwise_tag());
+        S->apply(X, U, sketch::columnwise_tag());
         delete S;
 
         El::Identity(C, s, s);

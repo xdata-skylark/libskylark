@@ -325,6 +325,10 @@ int main(int argc, char* argv[]) {
 
     SKYLARK_END_TRY() SKYLARK_CATCH_AND_PRINT((rank == 0))
 
+        catch (const boost::exception& ex) {
+            if (rank == 0) SKYLARK_PRINT_EXCEPTION_DETAILS(ex);
+        }
+
     El::Finalize();
 
     return ret;

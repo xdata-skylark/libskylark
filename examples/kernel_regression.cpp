@@ -325,7 +325,7 @@ int main(int argc, char* argv[]) {
 
     SKYLARK_END_TRY() SKYLARK_CATCH_AND_PRINT((rank == 0))
 
-        catch (const boost::exception& ex) {
+        catch (const std::exception& ex) {
             if (rank == 0) SKYLARK_PRINT_EXCEPTION_DETAILS(ex);
         }
 

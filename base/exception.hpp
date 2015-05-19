@@ -49,9 +49,9 @@ const char* skylark_strerror(int error_code) {
     }
 
 // catch and print message
-#define SKYLARK_CATCH_AND_PRINT() \
+#define SKYLARK_CATCH_AND_PRINT(p) \
     catch (const skylark::base::skylark_exception& ex) { \
-       SKYLARK_PRINT_EXCEPTION_DETAILS(ex);                 \
+        if (p == true) SKYLARK_PRINT_EXCEPTION_DETAILS(ex);      \
     }\
 
 /// catch a Skylark exceptions and returns an error code

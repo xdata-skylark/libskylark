@@ -164,6 +164,13 @@ int execute(skylark::base::context_t &context) {
 
     boost::mpi::timer timer;
 
+    if (rank == 0) {
+        std::cout << "# Generated using kernel_regression ";
+        std::cout << "using the following command-line: " << std::endl;
+        std::cout << "#\t" << cmdline << std::endl;
+        std::cout << "# Number of ranks is " << world.size() << std::endl;
+    }
+
     // Load A and Y
     if (rank == 0) {
         std::cout << "Reading the matrix... ";
@@ -234,9 +241,10 @@ int execute(skylark::base::context_t &context) {
     }
 
     std::stringstream header;
-    header << "# Generated using kernel_regression";
+    header << "# Generated using kernel_regression ";
     header << "using the following command-line: " << std::endl;
     header << "#\t" << cmdline << std::endl;
+    header << "# Number of ranks is " << world.size() << std::endl;
 
     model.save(modelname, header.str());
 
@@ -294,6 +302,9 @@ int main(int argc, char* argv[]) {
 
     El::Initialize(argc, argv);
 
+    boost::mpi::communicator world;
+    int rank = world.rank();
+
     bool use_single;
     int flag = parse_program_options(argc, argv, use_single, algorithm, seed, s,
         fname, testname, modelname, sigma, lambda);
@@ -312,7 +323,7 @@ int main(int argc, char* argv[]) {
         else
             ret = execute<double>(context);
 
-    SKYLARK_END_TRY() SKYLARK_CATCH_AND_PRINT()
+    SKYLARK_END_TRY() SKYLARK_CATCH_AND_PRINT((rank == 0))
 
     El::Finalize();
 

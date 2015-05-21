@@ -226,8 +226,8 @@ int execute(skylark::base::context_t &context) {
         return -1;
     }
 
-    skylark::ml::kernel_model_t<T> model(k,
-        skylark::base::COLUMNS, X, fname, A);
+    skylark::ml::kernel_model_t<El::Int, T> model(k,
+        skylark::base::COLUMNS, X, fname, A, rcoding);
 
     if (rank == 0)
         std::cout <<"Solve took " << boost::format("%.2e") % timer.elapsed()
@@ -265,11 +265,8 @@ int execute(skylark::base::context_t &context) {
         skylark::utility::io::ReadLIBSVM(testname, XT, LT,
             skylark::base::COLUMNS, X.Height());
 
-        El::DistMatrix<T> YP;
-        model.predict(skylark::base::COLUMNS, XT, YP);
-
         El::DistMatrix<El::Int> LP;
-        skylark::ml::DummyDecode(El::ADJOINT, YP, LP, rcoding);
+        model.predict(skylark::base::COLUMNS, XT, LP);
 
         if (rank == 0)
             std::cout << "took " << boost::format("%.2e") % timer.elapsed()

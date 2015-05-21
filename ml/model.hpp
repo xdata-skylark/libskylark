@@ -395,14 +395,6 @@ struct kernel_model_t<OutType, ComputeType,
         return pt;
     }
 
-    void save(const std::string& fname, const std::string& header) const {
-        boost::property_tree::ptree pt = to_ptree();
-        std::ofstream of(fname);
-        of << header;
-        boost::property_tree::write_json(of, pt);
-        of.close();
-    }
-
 private:
     const El::DistMatrix<compute_type> &_X;
     const base::direction_t _direction;

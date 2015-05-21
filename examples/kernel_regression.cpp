@@ -240,13 +240,17 @@ int execute(skylark::base::context_t &context) {
         timer.restart();
     }
 
-    std::stringstream header;
-    header << "# Generated using kernel_regression ";
-    header << "using the following command-line: " << std::endl;
-    header << "#\t" << cmdline << std::endl;
-    header << "# Number of ranks is " << world.size() << std::endl;
+    boost::property_tree::ptree pt = model.to_ptree();
 
-    model.save(modelname, header.str());
+    if (rank == 0) {
+        std::ofstream of(fname);
+        of << "# Generated using kernel_regression ";
+        of << "using the following command-line: " << std::endl;
+        of << "#\t" << cmdline << std::endl;
+        of << "# Number of ranks is " << world.size() << std::endl;
+        boost::property_tree::write_json(of, pt);
+        of.close();
+    }
 
     if (rank == 0)
         std::cout <<"took " << boost::format("%.2e") % timer.elapsed()

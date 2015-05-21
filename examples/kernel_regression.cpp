@@ -184,41 +184,19 @@ int execute(skylark::base::context_t &context) {
         std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
                   << " sec\n";
 
-    // Form right hand side
-    if (rank == 0) {
-        std::cout << "Dummy coding... ";
-        std::cout.flush();
-        timer.restart();
-    }
-
-    // Form right hand side
-    El::DistMatrix<T> Y;
-    std::unordered_map<El::Int, El::Int> coding;
-    std::vector<El::Int> rcoding;
-    skylark::ml::DummyCoding(El::NORMAL, Y, L, coding, rcoding);
-
-    if (rank == 0)
-        std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
-                  << " sec\n";
-
-    // Solve
-    if (rank == 0) {
-        std::cout << "Solving... " << std::endl;
-        timer.restart();
-    }
-
-
     skylark::ml::gaussian_t k(X.Height(), sigma);
     El::DistMatrix<T> A;
+    std::vector<El::Int> rcoding;
 
     switch(algorithm) {
     case CLASSIC_KRR:
-        skylark::ml::KernelRidge(skylark::base::COLUMNS, k, X, Y, T(lambda), A);
+        skylark::ml::KernelRLSC(skylark::base::COLUMNS, k, X, L,
+            T(lambda), A, rcoding);
         break;
 
     case FASTER_KRR:
-        skylark::ml::FasterKernelRidge(skylark::base::COLUMNS, k, X, Y,
-            T(lambda), A, s, context);
+        skylark::ml::FasterKernelRLSC(skylark::base::COLUMNS, k, X, L,
+            T(lambda), A, rcoding, s, context);
         break;
 
     default:
@@ -229,9 +207,6 @@ int execute(skylark::base::context_t &context) {
     skylark::ml::kernel_model_t<El::Int, T> model(k,
         skylark::base::COLUMNS, X, fname, A, rcoding);
 
-    if (rank == 0)
-        std::cout <<"Solve took " << boost::format("%.2e") % timer.elapsed()
-                  << " sec\n";
 
     // Save model
     if (rank == 0) {
@@ -243,7 +218,7 @@ int execute(skylark::base::context_t &context) {
     boost::property_tree::ptree pt = model.to_ptree();
 
     if (rank == 0) {
-        std::ofstream of(fname);
+        std::ofstream of(modelname);
         of << "# Generated using kernel_regression ";
         of << "using the following command-line: " << std::endl;
         of << "#\t" << cmdline << std::endl;

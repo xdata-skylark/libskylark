@@ -114,7 +114,7 @@ int CG(El::UpperOrLower uplo, const MatrixType& A, const RhsType& B, SolType& X,
             for(index_type i = 0; i < k; i++)
                 total_ressqr += ressqr[i];
             double relres = sqrt(total_ressqr) / total_nrmb;
-            params.log_stream << "CG: Iteration " << itn
+            params.log_stream << params.prefix << "CG: Iteration " << itn
                               << ", Relres = "
                               << boost::format("%.2e") % relres
                               << ", " << convg << " rhs converged" << std::endl;
@@ -122,7 +122,8 @@ int CG(El::UpperOrLower uplo, const MatrixType& A, const RhsType& B, SolType& X,
 
         if(convg == k) {
             if (log_lev1)
-                params.log_stream << "CG: Convergence!" << std::endl;
+                params.log_stream << params.prefix
+                                  << "CG: Convergence!" << std::endl;
             ret = -1;
             goto cleanup;
         }
@@ -130,7 +131,8 @@ int CG(El::UpperOrLower uplo, const MatrixType& A, const RhsType& B, SolType& X,
 
     ret = -6;
     if (log_lev1)
-        params.log_stream << "CG: No convergence within iteration limit."
+        params.log_stream << params.prefix
+                          << "CG: No convergence within iteration limit."
                           << std::endl;
 
  cleanup:

@@ -172,7 +172,8 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
             nrm_ar[i] = std::abs(phibar[i]*alpha[i]*cs[i]);
 
             if (log_lev2)
-                params.log_stream << "LSQR: Iteration " << i << "/" << itn
+                params.log_stream << params.prefix
+                                  << "LSQR: Iteration " << i << "/" << itn
                                   << ": " << nrm_ar[i]
                                   << std::endl;
 
@@ -186,13 +187,15 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
         /** 8. check convergence */
         if (cond_s1 == k) {
             if (log_lev1)
-                params.log_stream << "LSQR: Convergence (S1)!" << std::endl;
+                params.log_stream << params.prefix
+                                  << "LSQR: Convergence (S1)!" << std::endl;
             return -2;
         }
 
         if (cond_s2 == k) {
             if (log_lev1)
-                params.log_stream << "LSQR: Convergence (S2)!" << std::endl;
+                params.log_stream << params.prefix
+                                  << "LSQR: Convergence (S2)!" << std::endl;
             return -3;
         }
 
@@ -206,7 +209,8 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
             /** 10. check condition number */
             if (cnd_a[i]>(1.0/eps)) {
                 if (log_lev1)
-                    params.log_stream << "LSQR: Stopping (S3)!" << std::endl;
+                    params.log_stream << params.prefix
+                                      << "LSQR: Stopping (S3)!" << std::endl;
                 return -4;
             }
         }
@@ -220,7 +224,8 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
 
             if (stag[i] >= max_n_stag) {
                 if (log_lev1)
-                    params.log_stream << "LSQR: Stagnation." << std::endl;
+                    params.log_stream << params.prefix
+                                      << "LSQR: Stagnation." << std::endl;
                 return -5;
             }
         }
@@ -240,7 +245,8 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
         }
     }
     if (log_lev1)
-        params.log_stream << "LSQR: No convergence within iteration limit."
+        params.log_stream << params.prefix
+                          << "LSQR: No convergence within iteration limit."
                           << std::endl;
 
     return -6;

@@ -17,8 +17,9 @@ struct krylov_iter_params_t : public base::params_t {
         int log_level = 0,
         int res_print = 1,
         std::ostream &log_stream = std::cout,
+        std::string prefix = "",
         int debug_level = 0) :
-        base::params_t(am_i_printing, log_level, log_stream, debug_level),
+        base::params_t(am_i_printing, log_level, log_stream, prefix, debug_level),
         tolerance(tolerance),
         iter_lim(iter_lim),
         res_print(res_print) {

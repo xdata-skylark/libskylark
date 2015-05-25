@@ -184,19 +184,30 @@ int execute(skylark::base::context_t &context) {
         std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
                   << " sec\n";
 
+    // Load A and Y
+    if (rank == 0) {
+        std::cout << "Training... " << std::endl;
+        timer.restart();
+    }
+
     skylark::ml::gaussian_t k(X.Height(), sigma);
     El::DistMatrix<T> A;
     std::vector<El::Int> rcoding;
 
+    skylark::ml::rlsc_params_t rlsc_params;
+    rlsc_params.am_i_printing = rank == 0;
+    rlsc_params.log_level = 2;
+    rlsc_params.prefix = "\t";
+
     switch(algorithm) {
     case CLASSIC_KRR:
         skylark::ml::KernelRLSC(skylark::base::COLUMNS, k, X, L,
-            T(lambda), A, rcoding);
+            T(lambda), A, rcoding, rlsc_params);
         break;
 
     case FASTER_KRR:
         skylark::ml::FasterKernelRLSC(skylark::base::COLUMNS, k, X, L,
-            T(lambda), A, rcoding, s, context);
+            T(lambda), A, rcoding, s, context, rlsc_params);
         break;
 
     default:
@@ -207,6 +218,10 @@ int execute(skylark::base::context_t &context) {
     skylark::ml::kernel_model_t<El::Int, T> model(k,
         skylark::base::COLUMNS, X, fname, A, rcoding);
 
+
+    if (rank == 0)
+        std::cout << "Training took " << boost::format("%.2e") % timer.elapsed()
+                  << " sec\n";
 
     // Save model
     if (rank == 0) {

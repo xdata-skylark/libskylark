@@ -31,8 +31,9 @@ struct condest_params_t : public base::params_t {
         bool am_i_printing = 0,
         int log_level = 0,
         std::ostream &log_stream = std::cout,
+        std::string prefix = "", 
         int debug_level = 0) :
-        base::params_t(am_i_printing, log_level, log_stream, debug_level),
+        base::params_t(am_i_printing, log_level, log_stream, prefix, debug_level),
         iter_lim(iter_lim) {
 
         const double em = std::numeric_limits<double>::epsilon();
@@ -100,7 +101,8 @@ int CondEst(const MatrixType& A, double &cond,
     v_min = v_max;
 
     if (log_lev2)
-        params.log_stream << "CondEst: sigma_max = " << sigma_max
+        params.log_stream << params.prefix
+                          << "CondEst: sigma_max = " << sigma_max
                           << std::endl;
 
     /** Generate xhat, and figure out tau */
@@ -111,7 +113,8 @@ int CondEst(const MatrixType& A, double &cond,
     El::Scale(1.0 / nrm_xhat, xhat);
 
     if (log_lev2)
-        params.log_stream << "CondEst: tau = " << tau << std::endl;
+        params.log_stream << params.prefix 
+                          << "CondEst: tau = " << tau << std::endl;
 
     /** Generate b, and iteration x */
     left_type b(m, 1);
@@ -204,7 +207,8 @@ int CondEst(const MatrixType& A, double &cond,
             u_min = u_max;
             v_min = v_max;
             if (log_lev1)
-                params.log_stream << "CondEst: Detected condition number 1"
+                params.log_stream << params.prefix
+                                  << "CondEst: Detected condition number 1"
                                   << std::endl;
             return -1;
         }
@@ -223,6 +227,7 @@ int CondEst(const MatrixType& A, double &cond,
         if (c1 != c1t && sigma_min / sigma_max <= c4 ) {
             if (log_lev1)
                 params.log_stream
+                    << params.prefix
                     << "CondEst: Highly ill-conditioned, C1 adjusted (C4)"
                     << std::endl;
             c1 = c1t;
@@ -233,7 +238,8 @@ int CondEst(const MatrixType& A, double &cond,
         if (T == params.iter_lim &&
             nrm_ad <= c1 * (sigma_max * nrm_x + nrm_b)) {
             if (log_lev1)
-                params.log_stream << "CondEst: Convergence detected (C1)"
+                params.log_stream << params.prefix
+                                  << "CondEst: Convergence detected (C1)"
                                   << std::endl;
             T = 1.25 * itn + 1;
             retval = -2;
@@ -241,7 +247,8 @@ int CondEst(const MatrixType& A, double &cond,
 
         if (T == params.iter_lim && nrm_d <= tau) {
             if (log_lev1)
-                params.log_stream << "CondEst: Convergence detected (C2)"
+                params.log_stream << params.prefix
+                                  << "CondEst: Convergence detected (C2)"
                                   << std::endl;
             T = 1.25 * itn + 1;
             retval = -3;
@@ -249,14 +256,16 @@ int CondEst(const MatrixType& A, double &cond,
 
         if (T == params.iter_lim && sigma_max / sigma_min >= c3) {
             if (log_lev1)
-                params.log_stream << "CondEst: Singular?, stopping (C3)"
+                params.log_stream << params.prefix
+                                  << "CondEst: Singular?, stopping (C3)"
                                   << std::endl;
             T = 1.25 * itn + 1;
             retval = -4;
         }
 
         if (log_lev2)
-            params.log_stream << "CondEst: Iteration " << itn
+            params.log_stream << params.prefix
+                              << "CondEst: Iteration " << itn
                               << " sigma_min = " << sigma_min
                               << " cond = " << sigma_max / sigma_min
                               << " nrm_d = " << nrm_d
@@ -266,7 +275,8 @@ int CondEst(const MatrixType& A, double &cond,
 
 
     if (log_lev1 && retval == -6)
-        params.log_stream << "CondEst: No convergence within iteration limit."
+        params.log_stream << params.prefix
+                          << "CondEst: No convergence within iteration limit."
                           << std::endl;
 
     /** Estimate condition number using R */
@@ -277,7 +287,8 @@ int CondEst(const MatrixType& A, double &cond,
     double sigma_min_R = Rdiag[Rdiag.size() - 1];
 
     if (log_lev2)
-        params.log_stream << "CondEst: R sigma_min = " << sigma_min_R
+        params.log_stream << params.prefix
+                          << "CondEst: R sigma_min = " << sigma_min_R
                           << std::endl;
 
     sigma_min_c = sigma_min;

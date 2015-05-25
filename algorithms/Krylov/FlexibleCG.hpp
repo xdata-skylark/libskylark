@@ -122,7 +122,8 @@ int FlexibleCG(const MatrixType& A, const RhsType& B, SolType& X,
             for(index_t i = 0; i < k; i++)
                 total_ressqr += ressqr[i];
             double relres = sqrt(total_ressqr) / total_nrmb;
-            params.log_stream << "FlexibleCG: Iteration " << itn
+            params.log_stream << params.prefix
+                              << "FlexibleCG: Iteration " << itn
                               << ", Relres = "
                               << boost::format("%.2e") % relres
                               << ", " << convg << " rhs converged" << std::endl;
@@ -130,7 +131,8 @@ int FlexibleCG(const MatrixType& A, const RhsType& B, SolType& X,
 
         if(convg == k) {
             if (log_lev1)
-                params.log_stream << "FlexibleCG: Convergence!" << std::endl;
+                params.log_stream << params.prefix
+                                  << "FlexibleCG: Convergence!" << std::endl;
             ret = -1;
             goto cleanup;
         }
@@ -138,7 +140,8 @@ int FlexibleCG(const MatrixType& A, const RhsType& B, SolType& X,
 
 
    if (log_lev1)
-        params.log_stream << "FelxibleCG: No convergence within iteration limit."
+        params.log_stream << params.prefix
+                          << "FlexibleCG: No convergence within iteration limit."
                           << std::endl;
    ret = -6;
 

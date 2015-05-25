@@ -129,8 +129,9 @@ struct approximate_svd_params_t : public base::params_t {
         bool am_i_printing = false,
         int log_level = 0,
         std::ostream &log_stream = std::cout,
+        std::string prefix = "",
         int debug_level = 0) :
-        base::params_t(am_i_printing, log_level, log_stream, debug_level),
+        base::params_t(am_i_printing, log_level, log_stream, prefix, debug_level),
         oversampling_ratio(oversampling_ratio),
         oversampling_additive(oversampling_additive),
         num_iterations(num_iterations), skip_qr(skip_qr) {};
@@ -178,7 +179,7 @@ void ApproximateSVD(InputType &A, UType &U, SType &S, VType &V, int rank,
     if (rank > std::min(m, n)) {
         std::string msg = "Incompatible matrix dimensions and target rank";
         if (log_lev1)
-            params.log_stream << msg << std::endl;
+            params.log_stream << params.prefix << msg << std::endl;
         SKYLARK_THROW_EXCEPTION(base::skylark_exception()
             << base::error_msg(msg));
     }

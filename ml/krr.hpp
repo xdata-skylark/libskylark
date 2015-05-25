@@ -83,9 +83,21 @@ public:
 
     template<typename KernelType, typename InputType>
     feature_map_precond_t(const KernelType &k, value_type lambda,
-        const InputType &X, El::Int s, base::context_t &context) {
+        const InputType &X, El::Int s, base::context_t &context,
+        const krr_params_t &params) {
         _lambda = lambda;
         _s = s;
+
+        bool log_lev2 = params.am_i_printing && params.log_level >= 2;
+
+        boost::mpi::timer timer;
+
+        if (log_lev2) {
+            params.log_stream << params.prefix << "\t"
+                              << "Applying random features transform... ";
+            params.log_stream.flush();
+            timer.restart();
+        }
 
         U.Resize(s, X.Width());
         sketch::sketch_transform_t<InputType, matrix_type> *S =
@@ -95,23 +107,41 @@ public:
         S->apply(X, U, sketch::columnwise_tag());
         delete S;
 
-        El::Identity(C, s, s);
+        if (log_lev2)
+            params.log_stream << "took " << boost::format("%.2e") % timer.elapsed()
+                              << " sec\n";
 
+        if (log_lev2) {
+            params.log_stream << params.prefix << "\t"
+                              << "Computing covariance matrix... ";
+            params.log_stream.flush();
+            timer.restart();
+        }
+
+        El::Identity(C, s, s);
         El::Herk(El::LOWER, El::NORMAL, value_type(1.0)/_lambda, U,
             value_type(1.0), C);
+
+        if (log_lev2)
+            params.log_stream << "took " << boost::format("%.2e") % timer.elapsed()
+                              << " sec\n";
+
+        if (log_lev2) {
+            params.log_stream << params.prefix << "\t"
+                              << "Factorizing... ";
+            params.log_stream.flush();
+            timer.restart();
+        }
+
+
         El::Cholesky(El::LOWER, C);
 
-        // El::SymmetricInverse(El::LOWER, C);
-
-        //El::Gemm(El::NORMAL, El::ADJOINT, 1.0/_lambda, U, U, 1.0, C);
-        //El::Inverse(C);
+        if (log_lev2)
+            params.log_stream << "took " << boost::format("%.2e") % timer.elapsed()
+                              << " sec\n";
     }
 
     virtual void apply(const matrix_type& B, matrix_type& X) const {
-        //matrix_type UB(_s, B.Width()), CUB(_s, B.Width());
-        //El::Gemm(El::NORMAL, El::NORMAL, value_type(1.0), U, B, UB);
-        //El::Hemm(El::LEFT, El::LOWER, value_type(1.0), C, UB,
-        //    value_type(0.0), CUB);
 
         matrix_type CUB(_s, B.Width());
         El::Gemm(El::NORMAL, El::NORMAL, value_type(1.0), U, B, CUB);
@@ -166,14 +196,21 @@ void FasterKernelRidge(base::direction_t direction, const KernelType &k,
     if (log_lev1) {
         params.log_stream << params.prefix
                           << "Creating precoditioner... ";
+        if (log_lev2)
+            params.log_stream << std::endl;
         params.log_stream.flush();
         timer.restart();
     }
 
-    feature_map_precond_t<El::DistMatrix<T> > P(k, lambda, X, s, context);
+    feature_map_precond_t<El::DistMatrix<T> > P(k, lambda, X, s, context, params);
 
-    if (log_lev1)
+    if (log_lev1 && !log_lev2)
         params.log_stream << "took " << boost::format("%.2e") % timer.elapsed()
+                          << " sec\n";
+
+    if (log_lev2)
+        params.log_stream << params.prefix
+                          << "Took " << boost::format("%.2e") % timer.elapsed()
                           << " sec\n";
 
     if (log_lev1) {
@@ -189,7 +226,7 @@ void FasterKernelRidge(base::direction_t direction, const KernelType &k,
     algorithms::krylov_iter_params_t cg_params;
     cg_params.iter_lim = params.iter_lim;
     cg_params.res_print = params.res_print;
-    cg_params.log_level = params.log_level;
+    cg_params.log_level = params.log_level - 1;
     cg_params.am_i_printing = params.am_i_printing;
     cg_params.prefix = params.prefix + "\t";
     cg_params.tolerance = params.tolerance;

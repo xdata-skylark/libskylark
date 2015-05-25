@@ -196,7 +196,7 @@ int execute(skylark::base::context_t &context) {
 
     skylark::ml::rlsc_params_t rlsc_params;
     rlsc_params.am_i_printing = rank == 0;
-    rlsc_params.log_level = 2;
+    rlsc_params.log_level = 4;
     rlsc_params.prefix = "\t";
 
     switch(algorithm) {

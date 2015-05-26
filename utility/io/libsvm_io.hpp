@@ -100,6 +100,7 @@ void ReadLIBSVM(const std::string& fname,
  * @param X output X
  * @param Y output Y
  * @param direction whether the examples are to be put in rows or columns
+ * @param max_n stop reading after n rows. If -1 then will read all rows.
  * @param min_d minimum number of rows in the matrix.
  * @param blocksize blocksize for blocking of read.
  */
@@ -107,8 +108,8 @@ template<typename T, El::Distribution UX, El::Distribution VX,
          typename R, El::Distribution UY, El::Distribution VY>
 void ReadLIBSVM(const std::string& fname,
     El::DistMatrix<T, UX, VX>& X, El::DistMatrix<R, UY, VY>& Y,
-    base::direction_t direction, int min_d = 0, int blocksize = 10000) {
-
+    base::direction_t direction, int min_d = 0, int max_n = -1,
+    int blocksize = 10000) {
 
     std::string line;
     std::string token, val, ind;
@@ -129,7 +130,7 @@ void ReadLIBSVM(const std::string& fname,
     // make one pass over the data to figure out dimensions - 
     // will pay in terms of preallocated storage.
     if (rank==0) {
-        while(!in.eof()) {
+        while(!in.eof() && n != max_n) {
             getline(in, line);
             if(line.length()==0)
                 break;

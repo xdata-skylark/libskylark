@@ -11,14 +11,19 @@
 #define CLASSIC_KRR   0
 #define FASTER_KRR    1
 
+
+std::string cmdline;
+int seed = 38734, algorithm = FASTER_KRR, s = 2000;
+std::string fname, testname, modelname = "model.dat", logfile = "";
+double sigma = 10.0, lambda = 0.01;
+bool use_single;
+
 #ifndef SKYLARK_AVOID_BOOST_PO
 
 #include <boost/program_options.hpp>
 namespace bpo = boost::program_options;
 
-int parse_program_options(int argc, char* argv[], bool &use_single,
-    int &algorithm, int &seed, int &s, std::string &fname, std::string &testname,
-    std::string &modelname, double &sigma, double &lambda) {
+int parse_program_options(int argc, char* argv[]) {
 
     bpo::options_description desc("Options");
     desc.add_options()
@@ -32,6 +37,9 @@ int parse_program_options(int argc, char* argv[], bool &use_single,
         ("model",
             bpo::value<std::string>(&modelname)->default_value("model.dat"),
             "Name of model file.")
+        ("logfile",
+            bpo::value<std::string>(&logfile)->default_value(""),
+            "File to write log (standard output if empty).")
         ("algorithm,a",
              bpo::value<int>(&algorithm)->default_value(FASTER_KRR),
             "Algorithm to use (0: Classic, 1: Faster (Precond).")
@@ -87,15 +95,7 @@ int parse_program_options(int argc, char* argv[], bool &use_single,
 
 #else
 
-int parse_program_options(int argc, char* argv[], bool &use_single,
-    int &algorithm, int &seed, int &s, std::string &fname, std::string &testname,
-    std::string &modelname, double &sigma, double &lambda) {
-
-    seed = 38734;
-    sigma = 10.0;
-    lambda = 0.01;
-    algorithm = 1;
-    s = 2000;
+int parse_program_options(int argc, char* argv[]) {
 
     int poscount = 0;
     for (int i = 1; i < argc; i += 2) {
@@ -125,6 +125,9 @@ int parse_program_options(int argc, char* argv[], bool &use_single,
         if (flag == "--trainfile")
             fname = value;
 
+        if (flag == "--logfile")
+            logfile = value;
+
         if (flag == "--model")
             modelname = value;
 
@@ -148,16 +151,17 @@ int parse_program_options(int argc, char* argv[], bool &use_single,
 
 #endif
 
-std::string cmdline;
-int seed, algorithm, s;
-std::string fname, testname, modelname;
-double sigma, lambda;
-
 template<typename T>
 int execute(skylark::base::context_t &context) {
 
     boost::mpi::communicator world;
     int rank = world.rank();
+
+    std::ostream *log_stream = &std::cout;
+    if (rank == 0 && logfile != "") {
+        log_stream = new std::ofstream();
+        ((std::ofstream *)log_stream)->open(logfile);
+    }
 
     El::DistMatrix<T> X;
     El::DistMatrix<El::Int> L;
@@ -165,28 +169,28 @@ int execute(skylark::base::context_t &context) {
     boost::mpi::timer timer;
 
     if (rank == 0) {
-        std::cout << "# Generated using kernel_regression ";
-        std::cout << "using the following command-line: " << std::endl;
-        std::cout << "#\t" << cmdline << std::endl;
-        std::cout << "# Number of ranks is " << world.size() << std::endl;
+        *log_stream << "# Generated using kernel_regression ";
+        *log_stream << "using the following command-line: " << std::endl;
+        *log_stream << "#\t" << cmdline << std::endl;
+        *log_stream << "# Number of ranks is " << world.size() << std::endl;
     }
 
     // Load A and Y
     if (rank == 0) {
-        std::cout << "Reading the matrix... ";
-        std::cout.flush();
+        *log_stream << "Reading the matrix... ";
+        log_stream->flush();
         timer.restart();
     }
 
     skylark::utility::io::ReadLIBSVM(fname, X, L, skylark::base::COLUMNS);
 
     if (rank == 0)
-        std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
+        *log_stream <<"took " << boost::format("%.2e") % timer.elapsed()
                   << " sec\n";
 
     // Load A and Y
     if (rank == 0) {
-        std::cout << "Training... " << std::endl;
+        *log_stream << "Training... " << std::endl;
         timer.restart();
     }
 
@@ -194,10 +198,7 @@ int execute(skylark::base::context_t &context) {
     El::DistMatrix<T> A;
     std::vector<El::Int> rcoding;
 
-    skylark::ml::rlsc_params_t rlsc_params;
-    rlsc_params.am_i_printing = rank == 0;
-    rlsc_params.log_level = 4;
-    rlsc_params.prefix = "\t";
+    skylark::ml::rlsc_params_t rlsc_params(rank == 0, 4, *log_stream, "\t");
 
     switch(algorithm) {
     case CLASSIC_KRR:
@@ -211,7 +212,7 @@ int execute(skylark::base::context_t &context) {
         break;
 
     default:
-        std::cout << "Invalid algorithm value specified." << std::endl;
+        *log_stream << "Invalid algorithm value specified." << std::endl;
         return -1;
     }
 
@@ -220,13 +221,13 @@ int execute(skylark::base::context_t &context) {
 
 
     if (rank == 0)
-        std::cout << "Training took " << boost::format("%.2e") % timer.elapsed()
+        *log_stream << "Training took " << boost::format("%.2e") % timer.elapsed()
                   << " sec\n";
 
     // Save model
     if (rank == 0) {
-        std::cout << "Saving model... ";
-        std::cout.flush();
+        *log_stream << "Saving model... ";
+        log_stream->flush();
         timer.restart();
     }
 
@@ -243,14 +244,14 @@ int execute(skylark::base::context_t &context) {
     }
 
     if (rank == 0)
-        std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
+        *log_stream <<"took " << boost::format("%.2e") % timer.elapsed()
                   << " sec\n";
 
     // Test
     if (!testname.empty()) {
         if (rank == 0) {
-            std::cout << "Predicting... ";
-            std::cout.flush();
+            *log_stream << "Predicting... ";
+            log_stream->flush();
             timer.restart();
         }
 
@@ -263,7 +264,7 @@ int execute(skylark::base::context_t &context) {
         model.predict(skylark::base::COLUMNS, XT, LP);
 
         if (rank == 0)
-            std::cout << "took " << boost::format("%.2e") % timer.elapsed()
+            *log_stream << "took " << boost::format("%.2e") % timer.elapsed()
                       << " sec\n";
 
         int errs = 0;
@@ -275,9 +276,14 @@ int execute(skylark::base::context_t &context) {
         errs = El::mpi::AllReduce(errs, MPI_SUM, LT.DistComm());
 
         if (rank == 0)
-            std::cout << "Error rate: "
+            *log_stream << "Error rate: "
                       << boost::format("%.2f") % ((errs * 100.0) / LT.Width())
                       << "%" << std::endl;
+    }
+
+    if (rank == 0 && logfile != "") {
+        ((std::ofstream *)log_stream)->close();
+        delete log_stream;
     }
 
     return 0;
@@ -296,9 +302,7 @@ int main(int argc, char* argv[]) {
     boost::mpi::communicator world;
     int rank = world.rank();
 
-    bool use_single;
-    int flag = parse_program_options(argc, argv, use_single, algorithm, seed, s,
-        fname, testname, modelname, sigma, lambda);
+    int flag = parse_program_options(argc, argv);
 
     if (flag != 1000)
         return flag;

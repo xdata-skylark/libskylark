@@ -223,13 +223,9 @@ void FasterKernelRidge(base::direction_t direction, const KernelType &k,
 
 
     // Solve
-    algorithms::krylov_iter_params_t cg_params;
-    cg_params.iter_lim = params.iter_lim;
-    cg_params.res_print = params.res_print;
-    cg_params.log_level = params.log_level - 1;
-    cg_params.am_i_printing = params.am_i_printing;
-    cg_params.prefix = params.prefix + "\t";
-    cg_params.tolerance = params.tolerance;
+    algorithms::krylov_iter_params_t cg_params(params.tolerance, params.iter_lim,
+        params.am_i_printing, params.log_level - 1, params.res_print, 
+        params.log_stream, params.prefix + "\t");
 
     El::Zeros(A, X.Width(), Y.Width());
     algorithms::CG(El::LOWER, K, Y, A, cg_params, P);

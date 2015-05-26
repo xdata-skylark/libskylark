@@ -58,13 +58,11 @@ void KernelRLSC(base::direction_t direction, const KernelType &k,
         timer.restart();
     }
 
-    krr_params_t krr_params;
-    krr_params.am_i_printing = params.am_i_printing;
-    krr_params.log_level = params.log_level - 1;
+    krr_params_t krr_params(params.am_i_printing, params.log_level - 1, 
+        params.log_stream, params.prefix + "\t");
     krr_params.iter_lim = params.iter_lim;
     krr_params.res_print = params.res_print;
     krr_params.tolerance = params.tolerance;
-    krr_params.prefix = params.prefix + "\t";
 
     KernelRidge(base::COLUMNS, k, X, Y, T(lambda), A, krr_params);
 
@@ -110,13 +108,11 @@ void FasterKernelRLSC(base::direction_t direction, const KernelType &k,
         timer.restart();
     }
 
-    krr_params_t krr_params;
-    krr_params.am_i_printing = params.am_i_printing;
-    krr_params.log_level = params.log_level - 1;
+    krr_params_t krr_params(params.am_i_printing, params.log_level - 1, 
+        params.log_stream, params.prefix + "\t");
     krr_params.iter_lim = params.iter_lim;
     krr_params.res_print = params.res_print;
     krr_params.tolerance = params.tolerance;
-    krr_params.prefix = params.prefix + "\t";
 
     FasterKernelRidge(direction, k, X, Y,
         T(lambda), A, s, context, krr_params);

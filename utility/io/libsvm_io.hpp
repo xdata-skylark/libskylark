@@ -116,10 +116,10 @@ void ReadLIBSVM(const std::string& fname,
 
     std::string line;
     std::string token, val, ind;
-    float label;
+    T label;
     unsigned int start = 0;
     unsigned int delim, t;
-    int n = 0;
+    int n = 0, nt = 0;
     int d = 0;
     int i, j, last;
     char c;
@@ -141,6 +141,18 @@ void ReadLIBSVM(const std::string& fname,
             if(delim > line.length())
                 continue;
             n++;
+
+            // Figure out number of targets
+            if (n == 1) {
+                std::string tstr;
+                std::istringstream tokenstream (line);
+                tokenstream >> tstr;
+                while (tstr.find(":") == std::string::npos) {
+                    nt++;
+                    tokenstream >> tstr;
+                }
+            }
+
             t = delim;
             while(line[t]!=' ') {
                 t--;
@@ -160,6 +172,7 @@ void ReadLIBSVM(const std::string& fname,
 
     boost::mpi::broadcast(comm, n, 0);
     boost::mpi::broadcast(comm, d, 0);
+    boost::mpi::broadcast(comm, nt, 0);
 
     int numblocks = ((int) n/ (int) blocksize); // of size blocksize
     int leftover = n % blocksize;
@@ -167,10 +180,10 @@ void ReadLIBSVM(const std::string& fname,
 
     if (direction == base::COLUMNS) {
         X.Resize(d, n);
-        Y.Resize(1, n);
+        Y.Resize(nt, n);
     } else {
         X.Resize(n, d);
-        Y.Resize(n, 1);
+        Y.Resize(n, nt);
     }
 
     El::DistMatrix<T, El::CIRC, El::CIRC> XB(X.Grid()), YB(Y.Grid());
@@ -184,16 +197,17 @@ void ReadLIBSVM(const std::string& fname,
 
         if (direction == base::COLUMNS) {
             El::Zeros(XB, d, block);
-            El::Zeros(YB, 1, block);
+            El::Zeros(YB, nt, block);
         } else {
             El::Zeros(XB, block, d);
-            El::Zeros(YB, block, 1);
+            El::Zeros(YB, block, nt);
         }
 
         if(rank==0) {
             T *Xdata = XB.Matrix().Buffer();
             T *Ydata = YB.Matrix().Buffer();
             int ldX = XB.Matrix().LDim();
+            int ldY = YB.Matrix().LDim();
 
             t = 0;
             while(!in.eof() && t<block) {
@@ -202,8 +216,13 @@ void ReadLIBSVM(const std::string& fname,
                     break;
 
                 std::istringstream tokenstream (line);
-                tokenstream >> label;
-                Ydata[t] = label;
+                for(int r = 0; r < nt; r++) {
+                    tokenstream >> label;
+                    if (direction == base::COLUMNS)
+                        Ydata[t * ldY + r] = label;
+                    else
+                        Ydata[r * ldY + t] = label;
+                }
 
                 while (tokenstream >> token) {
                     delim  = token.find(':');
@@ -222,11 +241,12 @@ void ReadLIBSVM(const std::string& fname,
 
         // The calls below should distribute the data to all the nodes.
         if (direction == base::COLUMNS) {
+            int ldX = XB.Matrix().LDim();
             El::View(Xv, X, 0, i*blocksize, d, block);
-            El::View(Yv, Y, 0, i*blocksize, 1, block);
+            El::View(Yv, Y, 0, i*blocksize, nt, block);
         } else {
             El::View(Xv, X, i*blocksize, 0, block, d);
-            El::View(Yv, Y, i*blocksize, 0, block, 1);
+            El::View(Yv, Y, i*blocksize, 0, block, nt);
         }
 
         Xv = XB;

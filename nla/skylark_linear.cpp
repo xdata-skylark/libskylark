@@ -12,7 +12,7 @@ namespace bpo = boost::program_options;
 
 template<typename InputType, typename RhsType, typename SolType>
 void execute(const std::string &fname, 
-    const std::string &outname, bool high,
+    const std::string &outname, bool high, bool directory,
     skylark::base::context_t &context) {
 
     boost::mpi::communicator world;
@@ -30,13 +30,16 @@ void execute(const std::string &fname,
         timer.restart();
     }
 
-    skylark::utility::io::ReadLIBSVM(fname, A, b, skylark::base::ROWS);
+    if (directory)
+        skylark::utility::io::ReadDirLIBSVM(fname, A, b, skylark::base::ROWS);
+    else
+        skylark::utility::io::ReadLIBSVM(fname, A, b, skylark::base::ROWS);
 
     if (rank == 0)
         std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
                   << " sec\n";
 
-    /* Compute approximate SVD */
+    /* Compute approximate least squares */
     if (rank == 0) {
         std::cout << "Solving the least squares...";
         std::cout.flush();
@@ -78,7 +81,7 @@ int main(int argc, char* argv[]) {
 
     int seed;
     std::string fname, outfile;
-    bool as_sparse, high, use_single;
+    bool as_sparse, high, use_single, directory;
 
     // Parse options
     bpo::options_description desc("Options");
@@ -86,7 +89,9 @@ int main(int argc, char* argv[]) {
         ("help,h", "produce a help message")
         ("inputfile",
             bpo::value<std::string>(&fname),
-            "Input file to run approximate SVD on (libsvm format).")
+            "Input file to run approximate linear regression on (libsvm format).")
+        ("directory,d", "Whether inputfile is a directory of files whose"
+            " concatination is the input.")
         ("seed,s",
             bpo::value<int>(&seed)->default_value(38734),
             "Seed for random number generation. OPTIONAL.")
@@ -123,6 +128,7 @@ int main(int argc, char* argv[]) {
 
         //as_sparse = vm.count("sparse");
         use_single = vm.count("single");
+        directory = vm.count("directory");
         high = vm.count("highprecision");
 
     } catch(bpo::error& e) {
@@ -139,11 +145,12 @@ int main(int argc, char* argv[]) {
         // if (as_sparse)
         //     execute<skylark::base::sparse_matrix_t<float>,
         //             El::Matrix<float>,
-        //             El::Matrix<float> >(fname, outfile, high, context);
+        //             El::Matrix<float> >(fname, outfile, high, directory, context);
         // else
             execute<El::DistMatrix<float>,
                     El::DistMatrix<float>,
-                    El::DistMatrix<float> >(fname, outfile, high, context);
+                    El::DistMatrix<float> >(fname, outfile, high,
+                        directory, context);
 
     } else {
         // if (as_sparse)
@@ -153,7 +160,8 @@ int main(int argc, char* argv[]) {
         // else
             execute<El::DistMatrix<double>,
                     El::DistMatrix<double>,
-                    El::DistMatrix<double> >(fname, outfile, high,  context);
+                    El::DistMatrix<double> >(fname, outfile, high, directory,
+                        context);
     }
 
     SKYLARK_END_TRY() SKYLARK_CATCH_AND_PRINT()

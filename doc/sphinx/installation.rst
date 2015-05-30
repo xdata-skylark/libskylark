@@ -265,7 +265,7 @@ and unit testing.
 	wget http://sourceforge.net/projects/boost/files/boost/1.53.0/boost_1_53_0.tar.gz
 	tar xvfz boost_1_53_0.tar.gz
 	cd boost_1_53_0
-	./bootstrap.sh --with-libraries=mpi,serialization,program_options
+	./bootstrap.sh --with-libraries=mpi,serialization,program_options,system,filesystem
 	echo "using mpi ;" >> project-config.jam
 	./b2 link=static,shared
 	sudo ./b2 install
@@ -277,7 +277,7 @@ we call bootstrap.
 
 ::
 
-	./bootstrap.sh --with-libraries=mpi,serialization,program_options
+	./bootstrap.sh --with-libraries=mpi,serialization,program_options,system,filesystem
 
 In a next step, download :download:`jam file <files/bgq.jam>` and
 copy the Boost jam file to ``tools/build/v2/tools/``.

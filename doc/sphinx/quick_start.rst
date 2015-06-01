@@ -283,7 +283,7 @@ for more information on `Networking in VirtualBox`.
 
 * During ``vagrant up`` choose the ethernet interface to use.
 
-* After ``vagrant ssh`` do ``ifconfig``, get the interface name - let's say
+* After ``vagrant ssh`` do ``ifconfig``, get the interface name - say
     ``eth1`` - and then for the VMs at nodes 1, 2,...  do:
 
 .. code-block:: sh
@@ -376,6 +376,8 @@ and copy MPI binaries to all nodes, i.e.
 
     scp /home/ubuntu/mpi/bin/bin/* root@hadoopX:/usr/local/bin
 
+Make sure that all the MPI executables are accessible on all the nodes.
+
 
 2. Building mpich2-yarn
 -----------------------
@@ -384,6 +386,7 @@ Finally we have all the dependencies ready and can continue to mpich2-yarn
 https://github.com/alibaba/mpich2-yarn:
 
 .. code-block:: sh
+
     cd ~/mpi
     git clone https://github.com/alibaba/mpich2-yarn
     cd mpich2-yarn
@@ -398,6 +401,7 @@ used to distribute MPI executables.
 Finally, an MPI job can be submitted, i.e. with
 
 .. code-block:: sh
+
     sudo -u yarn hadoop jar target/mpich2-yarn-1.0-SNAPSHOT.jar -a hellow -M 1024 -m 1024 -n 1
 
 where we chose to run as the yarn user (double check permission for any user

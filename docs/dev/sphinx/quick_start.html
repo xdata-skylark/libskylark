@@ -356,6 +356,43 @@ end
 <p>It will take a while to compile and install everything specified in the
 <code class="docutils literal"><span class="pre">bootstrap.sh</span></code> script.</p>
 </div>
+<div class="section" id="running-mpi-on-hadoop-yarn">
+<h2>Running MPI on Hadoop/Yarn<a class="headerlink" href="#running-mpi-on-hadoop-yarn" title="Permalink to this headline">¶</a></h2>
+<p>libSkylark can be run on on a Yarn scheduled cluster using the blueprint
+outlined below.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The installation requires admin privileges. Also make sure to satisfy the
+recommended dependencies.</p>
+</div>
+<div class="section" id="building-mpich2">
+<h3>1. Building MPICH2<a class="headerlink" href="#building-mpich2" title="Permalink to this headline">¶</a></h3>
+<p>Download the MPICH version specified in the dependencies (MPICH-3.1.2).</p>
+<div class="highlight-sh"><div class="highlight"><pre>sh autogen.sh
+./configure --prefix<span class="o">=</span><span class="nv">$HOME</span>/mpi/bin
+make
+make install
+sudo ln -s /home/ubuntu/mpi/bin/bin/* /usr/local/bin
+</pre></div>
+</div>
+<p>and copy MPI binaries to all nodes, i.e.</p>
+<div class="highlight-sh"><div class="highlight"><pre>scp /home/ubuntu/mpi/bin/bin/* root@hadoopX:/usr/local/bin
+</pre></div>
+</div>
+</div>
+<div class="section" id="building-mpich2-yarn">
+<h3>2. Building mpich2-yarn<a class="headerlink" href="#building-mpich2-yarn" title="Permalink to this headline">¶</a></h3>
+<p>Finally we have all the dependencies ready and can continue to mpich2-yarn
+<a class="reference external" href="https://github.com/alibaba/mpich2-yarn">https://github.com/alibaba/mpich2-yarn</a>:</p>
+<p>The configuration for Hadoop/Yarn can be found on on the Github project page.
+Note that the HDFS permission must be set correctly for the temporary folders
+used to distribute MPI executables.</p>
+<p>Finally, an MPI job can be submitted, i.e. with</p>
+<p>where we chose to run as the yarn user (double check permission for any user
+that runs <cite>mpich2-yarn</cite>).
+More examples can be found on the mpich2-yarn Github page.</p>
+</div>
+</div>
 <div class="section" id="examples-of-library-usage">
 <span id="examples-label"></span><h2>Examples of Library Usage<a class="headerlink" href="#examples-of-library-usage" title="Permalink to this headline">¶</a></h2>
 <p>Here, we provide a flavor of the library and its usage. We assume that

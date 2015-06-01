@@ -1009,6 +1009,9 @@ installation requires a `c++11` compiler. For this we are installing LLVM/Clang
 Argonne provides rpm packages for the BG/Q. Download and follow the
 instructions as stated on https://trac.alcf.anl.gov/projects/llvm-bgq.
 
+There is a fairly painless way to install nightly builds using these
+installation scripts https://github.com/sloede/install-bgq.
+
 After this step we assume you have installed LLVM/CLANG under `$HOME/bgclang/`.
 
 

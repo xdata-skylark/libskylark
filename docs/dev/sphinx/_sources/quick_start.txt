@@ -133,10 +133,10 @@ Command-line Usage
 ==================
 
 While libSkylark is designed to be a library, it also provides access to many
-of its feature using standalone applications. For all applications, running with 
+of its feature using standalone applications. For all applications, running with
 the --help options reveals the command-line options.
 
-The following example sessions assume the following commands have been performed 
+The following example sessions assume the following commands have been performed
 in advance (it downloads and extracts some demo data):
 
 .. code-block:: sh
@@ -150,23 +150,23 @@ in advance (it downloads and extracts some demo data):
 Approximate Singular Value Decomposition
 ----------------------------------------
 
-Building libSkylark creates an executable called ``skylark_svd`` in 
-``$SKYLARK_INSTALL_DIR/bin``. This executable can be used in standalone mode 
+Building libSkylark creates an executable called ``skylark_svd`` in
+``$SKYLARK_INSTALL_DIR/bin``. This executable can be used in standalone mode
 to compute an approximate SVD with 10 leading singular vectors as follows:
 
 .. code-block:: sh
 
          skylark_svd -k 10 --prefix usps data/usps.train
 
-The files usps.U.txt, usps.S.txt and usps.V.txt contain the approximate SVD that 
+The files usps.U.txt, usps.S.txt and usps.V.txt contain the approximate SVD that
 was computed.
 
 
 Linear Least-Squares
 --------------------
 
-Building libSkylark creates an executable called ``skylark_linear`` in 
-``$SKYLARK_INSTALL_DIR/bin``. This executable can be used in standalone mode to 
+Building libSkylark creates an executable called ``skylark_linear`` in
+``$SKYLARK_INSTALL_DIR/bin``. This executable can be used in standalone mode to
 approximately solve linear least squares problems. Here is an example command-line:
 
 .. code-block:: sh
@@ -214,7 +214,7 @@ An output file named output.txt with the predicted labels is created.
 
 .. note::
 
-	Interactive mode is much slower, since there is significant overhead that is repeated for each new line of data. In the future, batching will be supported, to avoid some of this overhead. 
+	Interactive mode is much slower, since there is significant overhead that is repeated for each new line of data. In the future, batching will be supported, to avoid some of this overhead.
 
 5. It is also possible to load the model in Python and do predictions. Here is an example:
 
@@ -229,11 +229,11 @@ An output file named output.txt with the predicted labels is created.
 Community Detection Using Seed Node
 -----------------------------------
 
-Building libSkylark creates an executable called ``skylark_community`` in 
+Building libSkylark creates an executable called ``skylark_community`` in
 ``$SKYLARK_INSTALL_DIR/bin``. This executable can be used in standalone mode as follows.
 (Note that an interactive mode is also present.)
 
-1. Prepare the input. Basically, the graph is described in a text file, with each 
+1. Prepare the input. Basically, the graph is described in a text file, with each
 row an edge. Each row has two strings that identify the node. The identifier can be
 arbitrary (does not have to be numeric). For example:
 
@@ -251,13 +251,13 @@ arbitrary (does not have to be numeric). For example:
 2. Detect the community with A1 as the seed:
 
 .. code-block:: sh
-        
+
          skylark_community --graphfile data/two_triangles --seed A1
 
 3. The community detection algorithm is local, so it operates only on a few nodes.
 So, for large graphs the majority of the time for detecting a single community will
 be spent on just loading the file. To detect multiple communities with the graph
-already loaded in memory, an interactive quiet mode is provided. Here is an 
+already loaded in memory, an interactive quiet mode is provided. Here is an
 example:
 
 .. code-block:: sh
@@ -344,6 +344,68 @@ It will take a while to compile and install everything specified in the
 ``bootstrap.sh`` script.
 
 
+Running MPI on Hadoop/Yarn
+==========================
+
+libSkylark can be run on on a Yarn scheduled cluster using the blueprint
+outlined below.
+
+.. note::
+
+    The installation requires admin privileges. Also make sure to satisfy the
+    recommended dependencies.
+
+
+1. Building MPICH2
+------------------
+
+Download the MPICH version specified in the dependencies (MPICH-3.1.2).
+
+.. code-block:: sh
+
+    sh autogen.sh
+    ./configure --prefix=$HOME/mpi/bin
+    make
+    make install
+    sudo ln -s /home/ubuntu/mpi/bin/bin/* /usr/local/bin
+
+
+and copy MPI binaries to all nodes, i.e.
+
+.. code-block:: sh
+
+    scp /home/ubuntu/mpi/bin/bin/* root@hadoopX:/usr/local/bin
+
+
+2. Building mpich2-yarn
+-----------------------
+
+Finally we have all the dependencies ready and can continue to mpich2-yarn
+https://github.com/alibaba/mpich2-yarn:
+
+.. code-block:: sh
+    cd ~/mpi
+    git clone https://github.com/alibaba/mpich2-yarn
+    cd mpich2-yarn
+    mvn clean package -Dmaven.test.skip=true
+
+
+The configuration for Hadoop/Yarn can be found on on the Github project page.
+Note that the HDFS permission must be set correctly for the temporary folders
+used to distribute MPI executables.
+
+
+Finally, an MPI job can be submitted, i.e. with
+
+.. code-block:: sh
+    sudo -u yarn hadoop jar target/mpich2-yarn-1.0-SNAPSHOT.jar -a hellow -M 1024 -m 1024 -n 1
+
+where we chose to run as the yarn user (double check permission for any user
+that runs `mpich2-yarn`).
+More examples can be found on the mpich2-yarn Github page.
+
+
+
 .. _examples-label:
 
 Examples of Library Usage
@@ -417,6 +479,3 @@ In :file:`${SKYLARK_SRC_DIR}/nla/skylark_svd.cpp` an example is provided that il
     :language: cpp
     :emphasize-lines: 40
     :linenos:
-
-
-

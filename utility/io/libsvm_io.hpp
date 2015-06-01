@@ -1,9 +1,11 @@
 #ifndef SKYLARK_LIBSVM_IO_HPP
 #define SKYLARK_LIBSVM_IO_HPP
 
+#if HAVE_BOOST_FILESYSTEM
 #include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"
 namespace boostfs = boost::filesystem;
+#endif
 
 #include <unordered_map>
 
@@ -38,7 +40,7 @@ void ReadLIBSVM(const std::string& fname,
 
     std::ifstream in(fname);
 
-    // make one pass over the data to figure out dimensions - 
+    // make one pass over the data to figure out dimensions -
     // will pay in terms of preallocated storage.
     while(!in.eof()) {
         getline(in, line);
@@ -134,7 +136,7 @@ void ReadLIBSVM(const std::string& fname,
     boost::mpi::communicator comm = skylark::utility::get_communicator(X);
     int rank = X.Grid().Rank();
 
-    // make one pass over the data to figure out dimensions - 
+    // make one pass over the data to figure out dimensions -
     // will pay in terms of preallocated storage.
     if (rank==0) {
         while(!in.eof()) {
@@ -272,7 +274,7 @@ void ReadLIBSVM(const std::string& fname,
  */
 template<typename T>
 void ReadLIBSVM(const std::string& fname,
-    base::sparse_matrix_t<T>& X, El::Matrix<T>& Y, 
+    base::sparse_matrix_t<T>& X, El::Matrix<T>& Y,
     base::direction_t direction, int min_d = 0) {
 
     std::string line;
@@ -291,7 +293,7 @@ void ReadLIBSVM(const std::string& fname,
 
     // make one pass over the data to figure out dimensions and nnz
     // will pay in terms of preallocated storage.
-    // Also find number of non-zeros per column. 
+    // Also find number of non-zeros per column.
     std::unordered_map<int, int> colsize;
 
     while(!in.eof()) {
@@ -388,6 +390,9 @@ void ReadLIBSVM(const std::string& fname,
     } else
         X.attach(col_ptr, rowind, values, nnz, n, d, true);
 }
+
+
+#if HAVE_BOOST_FILESYSTEM
 
 /**
  * Reads X and Y from a directory of files in libsvm format.
@@ -599,6 +604,18 @@ void ReadDirLIBSVM(const std::string& dname,
     if (rank == 0)
         in.close();
 }
+#else
+template<typename T, El::Distribution UX, El::Distribution VX,
+         El::Distribution UY, El::Distribution VY>
+void ReadDirLIBSVM(const std::string& dname,
+    El::DistMatrix<T, UX, VX>& X, El::DistMatrix<T, UY, VY>& Y,
+    base::direction_t direction, int min_d = 0, int blocksize = 10000) {
+
+    SKYLARK_THROW_EXCEPTION(base::io_exception() <<
+        base::error_msg("Install Boost Filesystem for ReadDir support!"));
+
+}
+#endif
 
 } } } // namespace skylark::utility::io
 #endif

@@ -171,7 +171,8 @@ if (BOOST_ROOT)
 endif (BOOST_ROOT)
 
 set(BOOST_MIN_VERSION 1.53.0)
-find_package (Boost REQUIRED mpi program_options serialization system filesystem)
+find_package (Boost COMPONENTS filesystem)
+find_package (Boost REQUIRED mpi program_options serialization system)
 if (Boost_FOUND)
   set (SKYLARK_HAVE_BOOST
        1
@@ -183,6 +184,16 @@ if (Boost_FOUND)
   link_directories (${Boost_LIBRARY_DIRS})
   message(STATUS "Found Boost: ${Boost_INCLUDE_DIRS}" )
 endif (Boost_FOUND)
+
+if (Boost_FILESYSTEM_FOUND)
+  set (SKYLARK_HAVE_BOOST_FILESYSTEM
+       1
+       CACHE
+       STRING
+       "Enables use of Boost Libraries"
+       FORCE)
+  message(STATUS "Found Boost Filesystem: ${Boost_INCLUDE_DIRS}" )
+endif (Boost_FILESYSTEM_FOUND)
 
 # 3. Find Elemental
 set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules")

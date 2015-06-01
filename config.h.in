@@ -28,6 +28,9 @@
 /* Do we have boost */
 #cmakedefine SKYLARK_HAVE_BOOST 1
 
+/* Do we have boost filesystem */
+#cmakedefine SKYLARK_HAVE_BOOST_FILESYSTEM 1
+
 /* Do we have hdf5 */
 #cmakedefine SKYLARK_HAVE_HDF5 1
 

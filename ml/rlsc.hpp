@@ -13,7 +13,7 @@ struct rlsc_params_t : public base::params_t {
     rlsc_params_t(bool am_i_printing = 0,
         int log_level = 0,
         std::ostream &log_stream = std::cout,
-        std::string prefix = "", 
+        std::string prefix = "",
         int debug_level = 0) :
         base::params_t(am_i_printing, log_level, log_stream, prefix, debug_level) {
 

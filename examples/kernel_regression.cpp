@@ -15,7 +15,7 @@
 std::string cmdline;
 int seed = 38734, algorithm = FASTER_KRR, s = 2000, partial = -1;
 std::string fname, testname, modelname = "model.dat", logfile = "";
-double sigma = 10.0, lambda = 0.01;
+double sigma = 10.0, lambda = 0.01, tolerance=1e-3;
 bool use_single;
 
 #ifndef SKYLARK_AVOID_BOOST_PO
@@ -52,9 +52,13 @@ int parse_program_options(int argc, char* argv[]) {
         ("lambda,l",
             bpo::value<double>(&lambda)->default_value(0.01),
             "Lambda regularization parameter.")
+        ("tolerance,t",
+            bpo::value<double>(&tolerance)->default_value(1e-3),
+            "Tolerance for the iterative method (when used).")
         ("partial,p",
             bpo::value<int>(&partial)->default_value(-1),
-            "Load only specified quantity examples from training. Will read all if -1.")
+            "Load only specified quantity examples from training. "
+            "Will read all if -1.")
         ("single", "Whether to use single precision instead of double.")
         ("numfeatures,f",
             bpo::value<int>(&s),
@@ -110,6 +114,9 @@ int parse_program_options(int argc, char* argv[]) {
 
         if (flag == "--lambda" || flag == "-l")
             lambda = boost::lexical_cast<double>(value);
+
+        if (flag == "--tolerance" || flag == "-t")
+            tolerance = boost::lexical_cast<double>(value);
 
         if (flag == "--partial" || flag == "-p")
             partial = boost::lexical_cast<int>(value);
@@ -206,6 +213,7 @@ int execute(skylark::base::context_t &context) {
     std::vector<El::Int> rcoding;
 
     skylark::ml::rlsc_params_t rlsc_params(rank == 0, 4, *log_stream, "\t");
+    rlsc_params.tolerance = tolerance;
 
     switch(algorithm) {
     case CLASSIC_KRR:

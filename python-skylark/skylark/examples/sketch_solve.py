@@ -67,7 +67,7 @@ k = int(El.Max(Y)[0] + 1)
 rY = El.DistMatrix(colDist = El.VC, rowDist = El.STAR)
 rY.Resize(Y.Height(), k)
 El.Fill(rY, -1.0);
-for i in range(rY.LocalHeight()): rY.SetLocal(i, int(Y.GetLocal(i, 0).value), 1.0)
+for i in range(rY.LocalHeight()): rY.SetLocal(i, int(Y.GetLocal(i, 0)), 1.0)
 
 # (in the last line we take advantage of the fact that 
 # the local matrices of X, Y and RY correspond to the same row.

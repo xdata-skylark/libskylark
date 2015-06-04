@@ -108,6 +108,15 @@ works and some trouble shooting.
 Additionally we provide instruction on how to install on a cluster
 (see <a class="reference internal" href="#cluster-label"><em>Cluster of vagrant-controlled VMs</em></a>) and running on AWS (see <a class="reference internal" href="#aws-label"><em>Running Vagrant on AWS</em></a>).</p>
 <p>Finally, some examples are provided in the <a class="reference internal" href="#examples-label"><em>Examples of Library Usage</em></a> section.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>You might get a warning concerning AVX instructions when running the
+examples</p>
+<blockquote>
+<div><cite>OpenBLAS : Your OS does not support AVX instructions. OpenBLAS is using Nehalem kernels as a fallback, which may give poorer performance.</cite></div></blockquote>
+<p class="last">because some VM providers do not support AVX instructions yet (e.g. see:
+<cite>https://www.virtualbox.org/ticket/11347</cite>).</p>
+</div>
 <div class="section" id="vagrant-label">
 <span id="id1"></span><h2>Vagrant<a class="headerlink" href="#vagrant-label" title="Permalink to this headline">¶</a></h2>
 <p>Under <code class="docutils literal"><span class="pre">vagrant/precise64</span></code> we provide an easy way to materialize an
@@ -130,6 +139,11 @@ vagrant ssh
 If you want to customize the installed libSkylark follow the instructions
 (see <a class="reference internal" href="installation.html#build-libskylark-label"><em>Building libSkylark</em></a>) for building and installing
 libSkylark.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">To customize the amount of memory (4096) and CPU (75%) cap that will be
+used for the VM, check the Vagrant file.</p>
+</div>
 <p>The vagrant box can be stopped by issuing <code class="docutils literal"><span class="pre">vagrant</span> <span class="pre">halt</span></code>.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -413,6 +427,10 @@ references.</p>
 <p>When libSkylark is built, executables instantiating these examples can be found
 under <code class="docutils literal"><span class="pre">$SKYLARK_INSTALL_DIR/bin/skylark_examples</span></code> and
 <code class="docutils literal"><span class="pre">$SKYLARK_INSTALL_DIR/bin</span></code>.</p>
+<p>In addition Vagrant provisions a
+<cite>IPyhton notebook &lt;http://ipython.org/notebook.html&gt;</cite> server with access to the
+libSkylark Python bindings. To play with libSkylark just open your browser and
+direct it to <cite>localhost:6868</cite>.</p>
 <div class="section" id="sketching">
 <h3>Sketching<a class="headerlink" href="#sketching" title="Permalink to this headline">¶</a></h3>
 <p>In <code class="file docutils literal"><span class="pre">$</span><em><span class="pre">SKYLARK_SRC_DIR</span></em><span class="pre">/examples/elemental.cpp</span></code> an example is provided that illustrates

@@ -59,6 +59,17 @@ Additionally we provide instruction on how to install on a cluster
 
 Finally, some examples are provided in the :ref:`examples-label` section.
 
+.. note::
+
+    You might get a warning concerning AVX instructions when running the
+    examples
+
+        `OpenBLAS : Your OS does not support AVX instructions. OpenBLAS is using Nehalem kernels as a fallback, which may give poorer performance.`
+
+    because some VM providers do not support AVX instructions yet (e.g. see:
+    `https://www.virtualbox.org/ticket/11347`).
+
+
 
 .. _vagrant-label:
 
@@ -89,6 +100,11 @@ to get a virtual machine (VM) with libSkylark and all its dependencies.
 If you want to customize the installed libSkylark follow the instructions
 (see :ref:`build-libskylark-label`) for building and installing
 libSkylark.
+
+.. note::
+
+    To customize the amount of memory (4096) and CPU (75%) cap that will be
+    used for the VM, check the Vagrant file.
 
 The vagrant box can be stopped by issuing ``vagrant halt``.
 
@@ -424,6 +440,12 @@ references.
 When libSkylark is built, executables instantiating these examples can be found
 under ``$SKYLARK_INSTALL_DIR/bin/skylark_examples`` and
 ``$SKYLARK_INSTALL_DIR/bin``.
+
+In addition Vagrant provisions a
+`IPyhton notebook <http://ipython.org/notebook.html>` server with access to the
+libSkylark Python bindings. To play with libSkylark just open your browser and
+direct it to `localhost:6868`.
+
 
 Sketching
 ----------

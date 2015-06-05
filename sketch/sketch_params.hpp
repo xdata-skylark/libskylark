@@ -4,27 +4,35 @@
 
 namespace skylark { namespace sketch {
 
-/** Should be changed by the user to a nonzero value to indicate
- *  the intention NOT to use maximum blocksize value.
-*/
-int blocksize = 0;
+/**
+ * Set value to 0 to force no-blocking in sketching.
+ * Better performance, but much more memory.
+ * Current value, will lower memory usage.
+ *
+ */
+
+namespace params {
+
+int blocksize = 1000;
 
 double factor = 20.;
 
+}
+
 void set_blocksize(int blocksize) {
-    skylark::sketch::blocksize = blocksize;
+    params::blocksize = blocksize;
 }
 
 int get_blocksize() {
-    return skylark::sketch::blocksize;
+    return params::blocksize;
 }
 
 void set_factor(double factor) {
-    skylark::sketch::factor = factor;
+    params::factor = factor;
 }
 
 double get_factor() {
-    return skylark::sketch::factor;
+    return params::factor;
 }
 
 } } /** namespace skylark::sketch */

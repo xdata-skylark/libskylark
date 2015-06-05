@@ -271,22 +271,22 @@ private:
 };
 
 
-template<typename OutType, typename ComputeType = OutType, 
+template<typename KernelType, typename OutType, typename ComputeType = OutType,
          typename dummy = OutType>
 struct kernel_model_t;
 
 /**
  * Kernel model for continious output - regression model
  */
-template<typename OutType, typename ComputeType>
-struct kernel_model_t<OutType, ComputeType,
+template<typename KernelType, typename OutType, typename ComputeType>
+struct kernel_model_t<KernelType, OutType, ComputeType,
  typename std::enable_if<std::is_floating_point<OutType>::value, OutType>::type >
 {
-    // TODO: so far assume only Gaussian kernel.
+    typedef KernelType kernel_type;
     typedef ComputeType compute_type;
     typedef OutType out_type;
 
-    kernel_model_t(gaussian_t &k,
+    kernel_model_t(const kernel_type &k,
         base::direction_t direction, El::DistMatrix<compute_type> &X,
         const std::string &dataloc, const El::DistMatrix<compute_type> &A) :
         _X(X), _direction(direction),
@@ -336,22 +336,22 @@ private:
     const base::direction_t _direction;
     const El::DistMatrix<compute_type> &_A;
     const std::string _dataloc;
-    const gaussian_t _k;
+    const kernel_type _k;
     const El::Int _input_size, _output_size;
 };
 
 /**
  * Kernel model for discrete (all other) outputs - classification
  */
-template<typename OutType, typename ComputeType>
-struct kernel_model_t<OutType, ComputeType,
+template<typename KernelType, typename OutType, typename ComputeType>
+struct kernel_model_t<KernelType, OutType, ComputeType,
  typename std::enable_if<!std::is_floating_point<OutType>::value, OutType>::type >
 {
-    // TODO: so far assume only Gaussian kernel.
+    typedef KernelType kernel_type;
     typedef ComputeType compute_type;
     typedef OutType out_type;
 
-    kernel_model_t(gaussian_t &k,
+    kernel_model_t(const kernel_type &k,
         base::direction_t direction, El::DistMatrix<compute_type> &X,
         const std::string &dataloc, const El::DistMatrix<compute_type> &A,
         const std::vector<OutType> &rcoding) :
@@ -401,7 +401,7 @@ private:
     const El::DistMatrix<compute_type> &_A;
     std::vector<OutType> _rcoding;
     const std::string _dataloc;
-    const gaussian_t _k;
+    const kernel_type _k;
     const El::Int _input_size, _output_size;
 };
 

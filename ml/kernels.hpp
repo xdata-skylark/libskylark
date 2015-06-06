@@ -174,6 +174,20 @@ struct polynomial_t {
 
     }
 
+    boost::property_tree::ptree to_ptree() const {
+        boost::property_tree::ptree pt;
+        pt.put("skylark_object_type", "kernel");
+        pt.put("skylark_version", VERSION);
+
+        pt.put("kernel_type", "polynomial");
+        pt.put("q", _q);
+        pt.put("c", _c);
+        pt.put("gamma", _gamma);
+        pt.put("N", _N);
+
+        return pt;
+    }
+
     template<typename IT, typename OT>
     sketch::sketch_transform_t<IT, OT> *create_rft(El::Int S,
         regular_feature_transform_tag, base::context_t& context) const {
@@ -199,6 +213,18 @@ struct laplacian_t {
 
     laplacian_t(El::Int N, double sigma) : _N(N), _sigma(sigma) {
 
+    }
+
+    boost::property_tree::ptree to_ptree() const {
+        boost::property_tree::ptree pt;
+        pt.put("skylark_object_type", "kernel");
+        pt.put("skylark_version", VERSION);
+
+        pt.put("kernel_type", "laplacian");
+        pt.put("sigma", _sigma);
+        pt.put("N", _N);
+
+        return pt;
     }
 
     template<typename IT, typename OT>
@@ -227,18 +253,86 @@ struct laplacian_t {
             qmc_sequence_dim(_N);
     }
 
-    // TODO method for gram matrix ?
+    template<typename XT, typename YT, typename KT>
+    friend void Gram(base::direction_t dirX, base::direction_t dirY,
+        const laplacian_t& k, const XT &X, const YT &Y, KT &K);
 
+    template<typename XT, typename KT>
+    friend void SymmetricGram(El::UpperOrLower uplo, base::direction_t dir,
+        const laplacian_t& k, const XT &X, KT &K);
+
+    template<typename XT, typename YT, typename KT>
+    void gram(base::direction_t dirX, base::direction_t dirY,
+        const XT &X, const YT &Y, KT &K) {
+
+        El::Int m = dirX == base::COLUMNS ? base::Width(X) : base::Height(X);
+        El::Int n = dirY == base::COLUMNS ? base::Width(Y) : base::Height(Y);
+
+        K.Resize(m, n);
+        base::L1DistanceMatrix(dirX, dirY, 1.0, X, Y, 0.0, K);
+        typedef typename utility::typer_t<KT>::value_type value_type;
+        El::EntrywiseMap(K, std::function<value_type(value_type)> (
+            [this] (value_type x) {
+                return std::exp(-x / _sigma);
+            }));
+    }
 
 private:
     const El::Int _N;
     const double _sigma;
 };
 
+template<typename XT, typename YT, typename KT>
+void Gram(base::direction_t dirX, base::direction_t dirY,
+    const laplacian_t& k, const XT &X, const YT &Y, KT &K) {
+
+    typedef typename utility::typer_t<KT>::value_type value_type;
+
+    El::Int m = dirX == base::COLUMNS ? base::Width(X) : base::Height(X);
+    El::Int n = dirY == base::COLUMNS ? base::Width(Y) : base::Height(Y);
+
+    K.Resize(m, n);
+    base::L1DistanceMatrix(dirX, dirY, value_type(1.0), X, Y,
+        value_type(0.0), K);
+    El::EntrywiseMap(K, std::function<value_type(value_type)> (
+          [k] (value_type x) {
+              return std::exp(-x / k._sigma);
+          }));
+}
+
+template<typename XT, typename KT>
+void SymmetricGram(El::UpperOrLower uplo, base::direction_t dir,
+    const laplacian_t& k, const XT &X, KT &K) {
+
+    typedef typename utility::typer_t<KT>::value_type value_type;
+
+    El::Int n = dir == base::COLUMNS ? base::Width(X) : base::Height(X);
+
+    K.Resize(n, n);
+    base::SymmetricL1DistanceMatrix(uplo, dir, value_type(1.0), X,
+        value_type(0.0), K);
+    base::SymmetricEntrywiseMap(uplo, K, std::function<value_type(value_type)> (
+          [k] (value_type x) {
+              return std::exp(-x / k._sigma);
+          }));
+}
+
 struct expsemigroup_t {
 
     expsemigroup_t(El::Int N, double beta) : _N(N), _beta(beta) {
 
+    }
+
+    boost::property_tree::ptree to_ptree() const {
+        boost::property_tree::ptree pt;
+        pt.put("skylark_object_type", "kernel");
+        pt.put("skylark_version", VERSION);
+
+        pt.put("kernel_type", "expsemigroup");
+        pt.put("beta", _beta);
+        pt.put("N", _N);
+
+        return pt;
     }
 
     template<typename IT, typename OT>
@@ -279,6 +373,19 @@ struct matern_t {
 
     matern_t(El::Int N, double nu, double l) : _N(N), _nu(nu), _l(l) {
 
+    }
+
+    boost::property_tree::ptree to_ptree() const {
+        boost::property_tree::ptree pt;
+        pt.put("skylark_object_type", "kernel");
+        pt.put("skylark_version", VERSION);
+
+        pt.put("kernel_type", "matern");
+        pt.put("nu", _nu);
+        pt.put("l", _l);
+        pt.put("N", _N);
+
+        return pt;
     }
 
     template<typename IT, typename OT>

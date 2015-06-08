@@ -34,6 +34,9 @@
 /* Do we have hdf5 */
 #cmakedefine SKYLARK_HAVE_HDF5 1
 
+/* Do we have libhdfs */
+#cmakedefine SKYLARK_HAVE_LIBHDFS 1
+
 /* Do we have profiler enabled */
 #cmakedefine SKYLARK_HAVE_PROFILER 1
 

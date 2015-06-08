@@ -279,6 +279,27 @@ else (HDF5_FOUND)
        FORCE)
 endif (HDF5_FOUND)
 
+# 6. LIBHDFS
+find_package(LIBHDFS)
+if (LIBHDFS_FOUND)
+  set (SKYLARK_HAVE_LIBHDFS
+       1
+       CACHE
+       STRING
+       "Enables use of LIBHDFS Libraries"
+       FORCE)
+  include_directories (${LIBHDFS_INCLUDE_DIR})
+else (LIBHDFS_FOUND)
+  set (SKYLARK_HAVE_LIBHDFS
+       0
+       CACHE
+       STRING
+       "Enables use of LIBHDFS Libraries"
+       FORCE)
+endif (LIBHDFS_FOUND)
+
+
+
 #-----------------------------------------------------------------------------
 # options
 
@@ -346,6 +367,10 @@ endif (SKYLARK_HAVE_FFTWF)
 if (SKYLARK_HAVE_COMBBLAS)
   set(OPTIONAL_LIBS "${CombBLAS_LIBRARIES};${OPTIONAL_LIBS}")
 endif (SKYLARK_HAVE_COMBBLAS)
+
+if (SKYLARK_HAVE_LIBHDFS)
+  set(OPTIONAL_LIBS "${LIBHDFS_LIBRARIES};${OPTIONAL_LIBS}")
+endif (SKYLARK_HAVE_LIBHDFS)
 
 option (USE_PROFILER "Use Skylark profiling tools" OFF)
 if (USE_PROFILER)

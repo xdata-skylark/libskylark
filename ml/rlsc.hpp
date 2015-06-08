@@ -48,8 +48,8 @@ void KernelRLSC(base::direction_t direction, const KernelType &k,
     DummyCoding(El::NORMAL, Y, L, coding, rcoding);
 
     if (log_lev1)
-        std::cout << "took " << boost::format("%.2e") % timer.elapsed()
-                  << " sec\n";
+        params.log_stream << "took " << boost::format("%.2e") % timer.elapsed()
+                          << " sec" << std::endl;
 
     // Solve
     if (log_lev1) {

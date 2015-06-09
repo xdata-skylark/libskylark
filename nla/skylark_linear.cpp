@@ -8,12 +8,14 @@
 #define SKYLARK_NO_ANY
 #include <skylark.hpp>
 
+int seed, port;
+std::string fname, outfile, hdfs;
+bool as_sparse, high, use_single, directory;
+
 namespace bpo = boost::program_options;
 
 template<typename InputType, typename RhsType, typename SolType>
-void execute(const std::string &fname, 
-    const std::string &outname, bool high, bool directory,
-    skylark::base::context_t &context) {
+void execute(skylark::base::context_t &context) {
 
     boost::mpi::communicator world;
     int rank = world.rank();
@@ -30,10 +32,28 @@ void execute(const std::string &fname,
         timer.restart();
     }
 
-    if (directory)
-        skylark::utility::io::ReadDirLIBSVM(fname, A, b, skylark::base::ROWS);
-    else
-        skylark::utility::io::ReadLIBSVM(fname, A, b, skylark::base::ROWS);
+    if (!hdfs.empty()) {
+#       if SKYLARK_HAVE_LIBHDFS
+
+        hdfsFS fs = hdfsConnect(hdfs.c_str(), port);
+        if (directory)
+            SKYLARK_THROW_EXCEPTION(skylark::base::io_exception() <<
+                skylark::base::error_msg("HDFS directory reading not yet supported."))
+        else
+            skylark::utility::io::ReadLIBSVM(fs, fname, A, b, skylark::base::ROWS);
+
+#       else
+
+        SKYLARK_THROW_EXCEPTION(skylark::base::io_exception() <<
+            skylark::base::error_msg("Install libhdfs for HDFS support!"));
+
+#       endif
+    } else {
+        if (directory)
+            skylark::utility::io::ReadDirLIBSVM(fname, A, b, skylark::base::ROWS);
+        else
+            skylark::utility::io::ReadLIBSVM(fname, A, b, skylark::base::ROWS);
+    }
 
     if (rank == 0)
         std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
@@ -68,7 +88,7 @@ void execute(const std::string &fname,
         timer.restart();
     }
 
-    El::Write(x, outname, El::ASCII);
+    El::Write(x, outfile, El::ASCII);
 
     if (rank == 0)
         std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
@@ -78,10 +98,6 @@ void execute(const std::string &fname,
 int main(int argc, char* argv[]) {
 
     El::Initialize(argc, argv);
-
-    int seed;
-    std::string fname, outfile;
-    bool as_sparse, high, use_single, directory;
 
     // Parse options
     bpo::options_description desc("Options");
@@ -95,7 +111,13 @@ int main(int argc, char* argv[]) {
         ("seed,s",
             bpo::value<int>(&seed)->default_value(38734),
             "Seed for random number generation. OPTIONAL.")
-
+        ("hdfs",
+            bpo::value<std::string>(&hdfs)->default_value(""),
+            "If not empty, will assume file is in an HDFS. "
+            "Parameter is filesystem name.")
+        ("port",
+            bpo::value<int>(&port)->default_value(0),
+            "For HDFS: port to use.")
         //("sparse", "Whether to load the matrix as a sparse one.")
         ("highprecision,p", "Solve to high precision.")
         ("single,f", "Whether to use single precision instead of double.")
@@ -149,8 +171,7 @@ int main(int argc, char* argv[]) {
         // else
             execute<El::DistMatrix<float>,
                     El::DistMatrix<float>,
-                    El::DistMatrix<float> >(fname, outfile, high,
-                        directory, context);
+                    El::DistMatrix<float> >(context);
 
     } else {
         // if (as_sparse)
@@ -160,8 +181,7 @@ int main(int argc, char* argv[]) {
         // else
             execute<El::DistMatrix<double>,
                     El::DistMatrix<double>,
-                    El::DistMatrix<double> >(fname, outfile, high, directory,
-                        context);
+                    El::DistMatrix<double> >(context);
     }
 
     SKYLARK_END_TRY() SKYLARK_CATCH_AND_PRINT()

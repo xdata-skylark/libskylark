@@ -282,13 +282,26 @@ endif (HDF5_FOUND)
 # 6. LIBHDFS
 find_package(LIBHDFS)
 if (LIBHDFS_FOUND)
-  set (SKYLARK_HAVE_LIBHDFS
-       1
-       CACHE
-       STRING
-       "Enables use of LIBHDFS Libraries"
-       FORCE)
-  include_directories (${LIBHDFS_INCLUDE_DIR})
+  find_package(JNI)
+  if (JNI_FOUND)
+    set (SKYLARK_HAVE_LIBHDFS
+      1
+      CACHE
+      STRING
+      "Enables use of LIBHDFS Libraries"
+      FORCE)
+    include_directories (${LIBHDFS_INCLUDE_DIR})
+  else(JNI_FOUND)
+    set (SKYLARK_HAVE_LIBHDFS
+      0
+      CACHE
+      STRING
+      "Enables use of LIBHDFS Libraries"
+      FORCE)
+    IF (NOT HDF5_FIND_QUIETLY)
+      MESSAGE(WARNING "LIBHDFS not used because JNI not found!")
+    ENDIF (NOT HDF5_FIND_QUIETLY)
+  endif (JNI_FOUND)
 else (LIBHDFS_FOUND)
   set (SKYLARK_HAVE_LIBHDFS
        0
@@ -369,8 +382,12 @@ if (SKYLARK_HAVE_COMBBLAS)
 endif (SKYLARK_HAVE_COMBBLAS)
 
 if (SKYLARK_HAVE_LIBHDFS)
-  set(OPTIONAL_LIBS "${LIBHDFS_LIBRARIES};${OPTIONAL_LIBS}")
+  set(OPTIONAL_LIBS "${LIBHDFS_LIBRARIES};${JAVA_JVM_LIBRARY};${OPTIONAL_LIBS}")
 endif (SKYLARK_HAVE_LIBHDFS)
+
+if (Boost_FILESYSTEM_FOUND)
+  set(OPTIONAL_LIBS "${Boost_FILESYSTEM_LIBRARY};${OPTIONAL_LIBS}")
+endif (Boost_FILESYSTEM_FOUND)
 
 option (USE_PROFILER "Use Skylark profiling tools" OFF)
 if (USE_PROFILER)

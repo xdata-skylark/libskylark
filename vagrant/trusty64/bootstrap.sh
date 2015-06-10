@@ -270,7 +270,7 @@ cd $HOME
 chown -R vagrant /home/vagrant
 
 
-apt-get install dtach
+apt-get install -y dtach
 ipython profile create nbserver
 
 echo "c = get_config()" > $HOME/.ipython/profile_nbserver/ipython_notebook_config.py

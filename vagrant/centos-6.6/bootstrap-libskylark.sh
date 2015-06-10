@@ -57,7 +57,7 @@ yum -y install openblas openblas-devel
 yum -y install blas blas-devel lapack lapack-devel
 
 # HDF5
-yum -y install hdf5 hdf5-devel
+yum -y install hdf5 hdf5-devel zlib-devel
 
 #FFTW
 yum -y install fftw3 fftw3-devel

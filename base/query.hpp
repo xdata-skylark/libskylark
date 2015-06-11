@@ -16,6 +16,17 @@ int Width(const sparse_matrix_t<T>& A) {
 }
 
 template<typename T>
+int Height(const sparse_dist_matrix_t<T>& A) {
+    return A.height();
+}
+
+template<typename T>
+int Width(const sparse_dist_matrix_t<T>& A) {
+    return A.width();
+}
+
+
+template<typename T>
 int Height(const El::Matrix<T>& A) {
     return A.Height();
 }

@@ -77,6 +77,17 @@ target_link_libraries( local_sparse_apply
   ${Boost_LIBRARIES} )
 add_test( local_sparse_apply_test mpirun -np 1 local_sparse_apply )
 
+add_executable( dist_sparse_test DistSparseTest.cpp)
+target_link_libraries( dist_sparse_test
+  ${SKYLARK_LIBS}
+  ${Elemental_LIBRARY}
+  ${Pmrrr_LIBRARY}
+  ${Metis_LIBRARY}
+  ${OPTIONAL_LIBS}
+  ${DEP_LIBRARIES}
+  ${Boost_LIBRARIES} )
+add_test( dist_sparse_test mpirun -np 5 dist_sparse_test )
+
 add_executable(svd_elemental_test SVDElementalTest.cpp)
 target_link_libraries(svd_elemental_test
   ${SKYLARK_LIBS}

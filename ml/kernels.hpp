@@ -121,7 +121,7 @@ struct gaussian_t {
         El::Int n = dirY == base::COLUMNS ? base::Width(Y) : base::Height(Y);
 
         K.Resize(m, n);
-        base::Euclidean(dirX, dirY, 1.0, X, Y, 0.0, K);
+        base::EuclideanDistanceMatrix(dirX, dirY, 1.0, X, Y, 0.0, K);
         typedef typename utility::typer_t<KT>::value_type value_type;
         El::EntrywiseMap(K, std::function<value_type(value_type)> (
             [this] (value_type x) {
@@ -144,7 +144,8 @@ void Gram(base::direction_t dirX, base::direction_t dirY,
     El::Int n = dirY == base::COLUMNS ? base::Width(Y) : base::Height(Y);
 
     K.Resize(m, n);
-    base::Euclidean(dirX, dirY, value_type(1.0), X, Y, value_type(0.0), K);
+    base::EuclideanDistanceMatrix(dirX, dirY, value_type(1.0), X, Y,
+        value_type(0.0), K);
     El::EntrywiseMap(K, std::function<value_type(value_type)> (
           [k] (value_type x) {
               return std::exp(-x / (2 * k._sigma * k._sigma));
@@ -160,7 +161,8 @@ void SymmetricGram(El::UpperOrLower uplo, base::direction_t dir,
     El::Int n = dir == base::COLUMNS ? base::Width(X) : base::Height(X);
 
     K.Resize(n, n);
-    base::SymmetricEuclidean(uplo, dir, value_type(1.0), X, value_type(0.0), K);
+    base::SymmetricEuclideanDistanceMatrix(uplo, dir, value_type(1.0), X,
+        value_type(0.0), K);
     base::SymmetricEntrywiseMap(uplo, K, std::function<value_type(value_type)> (
           [k] (value_type x) {
               return std::exp(-x / (2 * k._sigma * k._sigma));

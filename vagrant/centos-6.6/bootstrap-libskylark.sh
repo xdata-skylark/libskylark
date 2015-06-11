@@ -78,10 +78,6 @@ while true; do
         wget http://www.thesalmons.org/john/random123/releases/1.08/Random123-1.08.tar.gz &> /dev/null
     fi
 
-    if [ ! -f 0.86-rc1.zip ]; then
-        wget https://github.com/elemental/Elemental/archive/0.86-rc1.zip &> /dev/null
-    fi
-
     if [ ! -f CombBLAS_beta_14_0.tgz ]; then
         wget http://gauss.cs.ucsb.edu/~aydin/CombBLAS_FILES/CombBLAS_beta_14_0.tgz &> /dev/null
     fi
@@ -104,14 +100,6 @@ while true; do
         randOk=true
     else
         rm Random123-1.08.tar.gz
-    fi
-
-    eleOk=false
-    calc_md5=$(md5sum 0.86-rc1.zip | /usr/bin/cut -f 1 -d " ")
-    if [ "$calc_md5" == "65ea30b7d2a5be041086ed50bcedc71b" ]; then
-        eleOk=true
-    else
-        rm 0.86-rc1.zip
     fi
 
     cbOk=false
@@ -146,10 +134,9 @@ while true; do
         rm boost_1_55_0.tar.gz
     fi
 
-    if $randOk && $eleOk && $cbOk && $kdtOk && $spiralOk && $boostOk; then
+    if $randOk && $cbOk && $kdtOk && $spiralOk && $boostOk; then
         break
     fi
-    break
 done
 
 
@@ -165,16 +152,14 @@ if [ ! -d "boost_1_55_0" ]; then
 fi
 
 # Elemental
-#FIXME: go to newer hash due to bugs in Elemental!
 cd $HOME/deps
-if [ ! -d "Elemental-0.86-rc1" ]; then
-    unzip 0.86-rc1.zip &> /dev/null
-    cd Elemental-0.86-rc1
-    rmdir external/metis
-    git clone https://github.com/poulson/metis.git external/metis
+if [ ! -d "Elemental" ]; then
+    git clone https://github.com/elemental/Elemental.git
+    cd Elemental
+    git checkout 4a16736e44b24ced2d0dd9d3f688ce2d149611ba
     mkdir build
     cd build
-    cmake -DEL_USE_64BIT_INTS=ON -DCMAKE_BUILD_TYPE=PureRelease -DMATH_LIBS="-L/usr/lib -llapack -lopenblas -lm" ../
+    cmake -DEL_USE_64BIT_INTS=ON -DCMAKE_BUILD_TYPE=Release -DEL_HYBRID=ON -DBUILD_SHARED_LIBS=ON -DMATH_LIBS="-L/usr/lib -llapack -lopenblas -lm" ../
     make -j $NPROC
     make install
 fi

@@ -184,10 +184,22 @@ cd $HOME/deps
 if [ ! -d "CombBLAS" ]; then
     tar xvfz CombBLAS_beta_14_0.tgz &> /dev/null
     cd CombBLAS/
-    cp /vagrant/combblas.patch .
-    git apply --ignore-space-change --ignore-whitespace combblas.patch
-    rm combblas.patch
-    cmake .
+    echo """
+diff --git a/RefGen21.h b/RefGen21.h
+index b8c7974..f93592c 100644
+--- a/RefGen21.h
++++ b/RefGen21.h
+@@ -134,7 +134,7 @@ public:
+
+        /* 32-bit code */
+        uint32_t h = (uint32_t)(x >> 32);
+-       uint32_t l = (uint32_t)(x & UINT32_MAX);
++       uint32_t l = (uint32_t)(x & std::numeric_limits<uint32_t>::max());
+        #ifdef USE_GCC_BYTESWAP
+         h = __builtin_bswap32(h);
+         l = __builtin_bswap32(l);
+""" | git apply --ignore-space-change --ignore-whitespace
+    cmake -DBUILD_SHARED_LIBS=ON .
     make -j $NPROC
     cp *.so /usr/local/lib
     mkdir /usr/local/include/CombBLAS

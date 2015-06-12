@@ -25,6 +25,7 @@ FIND_LIBRARY(FFTW_LIBRARY fftw3
    $ENV{HOME}/Software/lib
    /usr/local/lib
    /usr/lib
+   /usr/lib/x86_64-linux-gnu
    NO_DEFAULT_PATH
 )
 

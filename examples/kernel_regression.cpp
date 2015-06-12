@@ -208,7 +208,7 @@ int execute(skylark::base::context_t &context) {
         timer.restart();
     }
 
-    skylark::ml::gaussian_t k(X.Height(), sigma);
+    skylark::ml::laplacian_t k(X.Height(), sigma);
     El::DistMatrix<T> A;
     std::vector<El::Int> rcoding;
 
@@ -231,7 +231,7 @@ int execute(skylark::base::context_t &context) {
         return -1;
     }
 
-    skylark::ml::kernel_model_t<skylark::ml::gaussian_t, El::Int, T> model(k,
+    skylark::ml::kernel_model_t<skylark::ml::laplacian_t, El::Int, T> model(k,
         skylark::base::COLUMNS, X, fname, A, rcoding);
 
 

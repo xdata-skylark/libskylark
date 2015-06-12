@@ -7,9 +7,7 @@ target_link_libraries(skylark_ml
   ${Metis_LIBRARY}
   ${OPTIONAL_LIBS}
   ${SKYLARK_LIBS}
-  ${Boost_LIBRARIES}
-  ${HDF5_LIBRARIES}
-  ${ZLIB_LIBRARIES})
+  ${Boost_LIBRARIES})
 
 install_targets(/bin skylark_ml)
 
@@ -21,9 +19,7 @@ target_link_libraries(skylark_community
   ${Pmrrr_LIBRARY}
   ${Metis_LIBRARY}
   ${SKYLARK_LIBS}
-  ${Boost_LIBRARIES}
-  ${HDF5_LIBRARIES}
-  ${ZLIB_LIBRARIES})
+  ${Boost_LIBRARIES})
 install_targets(/bin skylark_community)
 
 
@@ -37,8 +33,6 @@ target_link_libraries(skylark_convert2hdf5
   ${Metis_LIBRARY}
   ${OPTIONAL_LIBS}
   ${SKYLARK_LIBS}
-  ${Boost_LIBRARIES}
-  ${HDF5_LIBRARIES}
-  ${ZLIB_LIBRARIES})
+  ${Boost_LIBRARIES})
 endif (SKYLARK_HAVE_HDF5)
 

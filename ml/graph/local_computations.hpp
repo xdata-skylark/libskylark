@@ -300,8 +300,8 @@ double FindLocalCluster(const GraphType& G,
     do {
         // Create seed set.
         std::unordered_map<vertex_type, double> s;
-        for(auto it = seeds.begin(); it != seeds.end(); it++)
-            s[*it] = 1.0 / seeds.size();
+        for(auto it = cluster.begin(); it != cluster.end(); it++)
+            s[*it] = 1.0 / cluster.size();
 
         // Run the diffusion
         std::unordered_map<vertex_type, El::Matrix<double>*> y;

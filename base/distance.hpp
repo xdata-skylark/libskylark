@@ -78,6 +78,7 @@ void SymmetricEuclideanDistanceMatrix(El::UpperOrLower uplo, direction_t dir,
 
     if (dir == base::COLUMNS) {
         El::Herk(uplo, El::ADJOINT, -2.0 * alpha, A, beta, C);
+        //El::Gemm(El::ADJOINT, El::NORMAL, T(-2.0) * alpha, A, A, beta, C);
 
         El::Matrix<T> N;
         ColumnNrm2(A, N);
@@ -105,6 +106,7 @@ void SymmetricEuclideanDistanceMatrix(El::UpperOrLower uplo, direction_t dir,
 
     if (dir == base::COLUMNS) {
         El::Herk(uplo, El::ADJOINT, -2.0 * alpha, A, beta, C);
+        //El::Gemm(El::ADJOINT, El::NORMAL, T(-2.0) * alpha, A, A, beta, C); 
 
         El::DistMatrix<El::Base<T>, El::STAR, El::STAR > N;
         ColumnNrm2(A, N);

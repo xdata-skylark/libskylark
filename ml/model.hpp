@@ -287,12 +287,14 @@ struct kernel_model_t<KernelType, OutType, ComputeType,
     typedef OutType out_type;
 
     kernel_model_t(const kernel_type &k,
-        base::direction_t direction, El::DistMatrix<compute_type> &X,
+        base::direction_t direction, const El::DistMatrix<compute_type> &X,
         const std::string &dataloc, const El::DistMatrix<compute_type> &A) :
-        _X(X), _direction(direction),
-        _A(std::move(A)), _dataloc(dataloc), _k(k),
-        _input_size(k.get_dim()), _output_size(A.Width()){
+        _X(), _direction(direction),
+        _A(), _dataloc(dataloc), _k(k),
+        _input_size(k.get_dim()), _output_size(A.Width()) {
 
+        El::LockedView(_X, X);
+        El::LockedView(_A, A);
     }
 
     void predict(base::direction_t direction_XT, 
@@ -332,9 +334,9 @@ struct kernel_model_t<KernelType, OutType, ComputeType,
     }
 
 private:
-    const El::DistMatrix<compute_type> &_X;
+    const El::DistMatrix<compute_type> _X;
     const base::direction_t _direction;
-    const El::DistMatrix<compute_type> &_A;
+    const El::DistMatrix<compute_type> _A;
     const std::string _dataloc;
     const kernel_type _k;
     const El::Int _input_size, _output_size;
@@ -352,13 +354,15 @@ struct kernel_model_t<KernelType, OutType, ComputeType,
     typedef OutType out_type;
 
     kernel_model_t(const kernel_type &k,
-        base::direction_t direction, El::DistMatrix<compute_type> &X,
+        base::direction_t direction, const El::DistMatrix<compute_type> &X,
         const std::string &dataloc, const El::DistMatrix<compute_type> &A,
         const std::vector<OutType> &rcoding) :
-        _X(X), _direction(direction),
-        _A(std::move(A)), _rcoding(rcoding), _dataloc(dataloc), _k(k),
+        _X(), _direction(direction),
+        _A(), _rcoding(rcoding), _dataloc(dataloc), _k(k),
         _input_size(k.get_dim()), _output_size(A.Width()){
 
+        El::LockedView(_X, X);
+        El::LockedView(_A, A);
     }
 
     void predict(base::direction_t direction_XT,
@@ -396,9 +400,9 @@ struct kernel_model_t<KernelType, OutType, ComputeType,
     }
 
 private:
-    const El::DistMatrix<compute_type> &_X;
+    El::DistMatrix<compute_type> _X;
     const base::direction_t _direction;
-    const El::DistMatrix<compute_type> &_A;
+    El::DistMatrix<compute_type> _A;
     std::vector<OutType> _rcoding;
     const std::string _dataloc;
     const kernel_type _k;

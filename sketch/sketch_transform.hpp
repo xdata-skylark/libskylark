@@ -13,8 +13,7 @@ namespace sketch {
  */
 template < typename InputMatrixType,
            typename OutputMatrixType = InputMatrixType >
-class sketch_transform_t {
-public:
+struct sketch_transform_t {
 
     virtual void apply (const InputMatrixType& A,
         OutputMatrixType& sketch_of_A, columnwise_tag dimension) const = 0;
@@ -53,8 +52,7 @@ public:
  * Note: the convention is to pass pointers in the apply!
  */
 template<>
-class sketch_transform_t<boost::any, boost::any> {
-public:
+struct sketch_transform_t<boost::any, boost::any> {
 
     virtual void apply (const boost::any& A,
         const boost::any& sketch_of_A, columnwise_tag dimension) const = 0;
@@ -89,20 +87,19 @@ public:
 
 };
 
+typedef sketch_transform_t<boost::any, boost::any> generic_sketch_transform_t;
+typedef std::shared_ptr<generic_sketch_transform_t>  generic_sketch_transform_ptr_t;
+
 /**
  * Container of sketch_transform_t<any, any> that makes the input/output
  * types concrete.
- *
- * NOTE: the container will "own" the internal <any,any> transform and will
- * delete it when destructed.
  */
 template < typename InputMatrixType,
            typename OutputMatrixType = InputMatrixType >
-class sketch_transform_container_t 
+struct sketch_transform_container_t 
     : public sketch_transform_t<InputMatrixType, OutputMatrixType> {
-public:
 
-    sketch_transform_container_t(sketch_transform_t<boost::any, boost::any> *transform)
+    sketch_transform_container_t(const generic_sketch_transform_ptr_t &transform)
         : _transform(transform) {
 
     }
@@ -131,11 +128,11 @@ public:
 
 
     virtual ~sketch_transform_container_t() {
-        delete _transform;
+
     }
 
 private:
-    sketch_transform_t<boost::any, boost::any> *_transform;
+    generic_sketch_transform_ptr_t _transform;
 
 };
 

@@ -57,8 +57,8 @@ struct kernel_t {
     sketch::sketch_transform_t<IT, OT> *create_rft(int S,
         regular_feature_transform_tag tag, base::context_t& context) const {
 
-        return new sketch::sketch_transform_container_t<IT, OT>(
-            create_rft(S, tag, context));
+        sketch::generic_sketch_transform_ptr_t p(create_rft(S, tag, context));
+        return new sketch::sketch_transform_container_t<IT, OT>(p);
     }
 
     virtual boost::property_tree::ptree to_ptree() const = 0;

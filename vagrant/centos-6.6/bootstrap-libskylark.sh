@@ -13,11 +13,13 @@ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib
 export SKYLARK_SRC_DIR=/home/vagrant/libskylark
 export SKYLARK_BUILD_DIR=/home/vagrant/build
 export SKYLARK_INSTALL_DIR=/home/vagrant/install
+export LIBHDFS_ROOT=/usr/lib/hadoop/
 
 # populate .bashrc
 echo "export SKYLARK_SRC_DIR=${SKYLARK_SRC_DIR}" >> ./.bashrc
 echo "export SKYLARK_BUILD_DIR=${SKYLARK_BUILD_DIR}" >> ./.bashrc
 echo "export SKYLARK_INSTALL_DIR=${SKYLARK_INSTALL_DIR}" >> ./.bashrc
+echo "export LIBHDFS_ROOT=/usr/lib/hadoop/" >> ./.bashrc
 echo "export PYTHON_SITE_PACKAGES=${SKYLARK_INSTALL_DIR}" >> ./.bashrc
 echo "export PYTHONPATH=${SKYLARK_INSTALL_DIR}/lib/python2.7/site-packages:${PYTHONPATH}" >> ./.bashrc
 echo "export LD_LIBRARY_PATH=${SKYLARK_INSTALL_DIR}/lib:/usr/local/lib:/usr/lib/x86_64-linux-gnu/:${LD_LIBRARY_PATH}" >> ./.bashrc
@@ -67,6 +69,7 @@ yum -y install doxygen graphviz python-sphinx dvipng
 
 yum -y install unzip
 
+yum -y install hadoop-libhdfs-devel
 
 
 # download software dependencies that we have to build..
@@ -258,6 +261,8 @@ make install
 make doc
 
 echo "Finished libSkylark Vagrant build.."
+
+chown -R vagrant /home/vagrant
 
 # Finalize
 cd $HOME

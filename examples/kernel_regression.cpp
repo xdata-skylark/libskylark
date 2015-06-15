@@ -217,15 +217,15 @@ int execute(skylark::base::context_t &context) {
         timer.restart();
     }
 
-    skylark::ml::kernel_t *k;
+    std::shared_ptr<skylark::ml::kernel_t> k_ptr;
 
     switch (kernel_type) {
     case GAUSSIAN_KERNEL:
-        k = new skylark::ml::gaussian_t(X.Height(), sigma);
+        k_ptr.reset(new skylark::ml::gaussian_t(X.Height(), sigma));
         break;
 
     case LAPLACIAN_KERNEL:
-        k = new skylark::ml::laplacian_t(X.Height(), sigma);
+        k_ptr.reset(new skylark::ml::laplacian_t(X.Height(), sigma));
         break;
 
     default:
@@ -233,6 +233,7 @@ int execute(skylark::base::context_t &context) {
         return -1;
     }
 
+    skylark::ml::kernel_container_t k(k_ptr);
 
     El::DistMatrix<T> A;
     std::vector<El::Int> rcoding;
@@ -242,12 +243,12 @@ int execute(skylark::base::context_t &context) {
 
     switch(algorithm) {
     case CLASSIC_KRR:
-        skylark::ml::KernelRLSC(skylark::base::COLUMNS, *k, X, L,
+        skylark::ml::KernelRLSC(skylark::base::COLUMNS, k, X, L,
             T(lambda), A, rcoding, rlsc_params);
         break;
 
     case FASTER_KRR:
-        skylark::ml::FasterKernelRLSC(skylark::base::COLUMNS, *k, X, L,
+        skylark::ml::FasterKernelRLSC(skylark::base::COLUMNS, k, X, L,
             T(lambda), A, rcoding, s, context, rlsc_params);
         break;
 
@@ -256,8 +257,8 @@ int execute(skylark::base::context_t &context) {
         return -1;
     }
 
-    skylark::ml::kernel_model_t<skylark::ml::kernel_t, El::Int, T> model(*k,
-        skylark::base::COLUMNS, X, fname, A, rcoding);
+    skylark::ml::kernel_model_t<skylark::ml::kernel_container_t, El::Int, T>
+        model(k, skylark::base::COLUMNS, X, fname, A, rcoding);
 
 
     if (rank == 0)

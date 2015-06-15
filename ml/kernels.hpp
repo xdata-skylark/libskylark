@@ -54,7 +54,7 @@ struct kernel_t {
         regular_feature_transform_tag, base::context_t& context) const = 0;
 
     template<typename IT, typename OT>
-    sketch::sketch_transform_t<IT, OT> *create_rft(int S,
+    sketch::sketch_transform_t<IT, OT> *create_rft(El::Int S,
         regular_feature_transform_tag tag, base::context_t& context) const {
 
         sketch::generic_sketch_transform_ptr_t p(create_rft(S, tag, context));
@@ -79,6 +79,103 @@ void SymmetricGram(El::UpperOrLower uplo, base::direction_t dir,
 }
 
 /**
+ * Container of a kernel that supports the interface.
+ * Useful for keeping copies of the kernel inside objects.
+ */
+struct kernel_container_t : public kernel_t {
+
+    kernel_container_t(const std::shared_ptr<kernel_t> k) :
+        _k(k) {
+
+    }
+
+    virtual ~kernel_container_t() {
+
+    }
+
+    virtual El::Int get_dim() const { return _k->get_dim(); }
+
+    virtual void gram(base::direction_t dirX, base::direction_t dirY,
+        const El::Matrix<double> &X, const El::Matrix<double> &Y,
+        El::Matrix<double> &K) const {
+
+        _k->gram(dirX, dirY, X, Y, K);
+    }
+
+    virtual void gram(base::direction_t dirX, base::direction_t dirY,
+        const El::Matrix<float> &X, const El::Matrix<float> &Y,
+        El::Matrix<float> &K) const {
+
+        _k->gram(dirX, dirY, X, Y, K);
+    }
+
+    virtual void gram(base::direction_t dirX, base::direction_t dirY,
+        const El::AbstractDistMatrix<double> &X,
+        const El::AbstractDistMatrix<double> &Y,
+        El::AbstractDistMatrix<double> &K) const {
+
+        _k->gram(dirX, dirY, X, Y, K);
+    }
+
+    virtual void gram(base::direction_t dirX, base::direction_t dirY,
+        const El::AbstractDistMatrix<float> &X,
+        const El::AbstractDistMatrix<float> &Y,
+        El::AbstractDistMatrix<float> &K) const {
+
+        _k->gram(dirX, dirY, X, Y, K);
+    }
+
+    virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
+        const El::Matrix<double> &X, El::Matrix<double> &K) const {
+
+        _k->symmetric_gram(uplo, dir, X, K);
+    }
+
+    virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
+        const El::Matrix<float> &X, El::Matrix<float> &K) const {
+
+        _k->symmetric_gram(uplo, dir, X, K);
+    }
+
+    virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
+        const El::AbstractDistMatrix<double> &X,
+        El::AbstractDistMatrix<double> &K) const {
+
+        _k->symmetric_gram(uplo, dir, X, K);
+    }
+
+    virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
+        const El::AbstractDistMatrix<float> &X,
+        El::AbstractDistMatrix<float> &K) const {
+
+        _k->symmetric_gram(uplo, dir, X, K);
+    }
+
+    virtual
+    sketch::sketch_transform_t<boost::any, boost::any> *create_rft(El::Int S,
+        regular_feature_transform_tag tag, base::context_t& context) const {
+
+        return _k->create_rft(S, tag, context);
+    }
+
+    template<typename IT, typename OT>
+    sketch::sketch_transform_t<IT, OT> *create_rft(El::Int S,
+        regular_feature_transform_tag tag, base::context_t& context) const {
+
+        sketch::generic_sketch_transform_ptr_t p(create_rft(S, tag, context));
+        return new sketch::sketch_transform_container_t<IT, OT>(p);
+    }
+
+    virtual boost::property_tree::ptree to_ptree() const {
+
+        return _k->to_ptree();
+    }
+
+private:
+    std::shared_ptr<kernel_t> _k;
+};
+
+/**
  * Linear kernel: simple linear product.
  */
 struct linear_t {
@@ -99,21 +196,21 @@ struct linear_t {
     }
 
     template<typename IT, typename OT>
-    sketch::sketch_transform_t<IT, OT> *create_rft(int S,
+    sketch::sketch_transform_t<IT, OT> *create_rft(El::Int S,
         regular_feature_transform_tag, base::context_t& context) const {
         return
             new sketch::JLT_t<IT, OT>(_N, S, context);
     }
 
     template<typename IT, typename OT>
-    sketch::sketch_transform_t<IT, OT> *create_rft(int S,
+    sketch::sketch_transform_t<IT, OT> *create_rft(El::Int S,
         fast_feature_transform_tag, base::context_t& context) const {
         return
             new sketch::FJLT_t<IT, OT>(_N, S, context);
     }
 
     template<typename IT, typename OT>
-    sketch::sketch_transform_t<IT, OT> *create_rft(int S,
+    sketch::sketch_transform_t<IT, OT> *create_rft(El::Int S,
         sparse_feature_transform_tag, base::context_t& context) const {
         return
             new sketch::CWT_t<IT, OT>(_N, S, context);

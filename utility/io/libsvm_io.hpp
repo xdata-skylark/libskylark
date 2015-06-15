@@ -624,7 +624,7 @@ struct hdfs_line_streamer_t {
 
     hdfs_line_streamer_t(hdfsFS &fs, hdfsFile &fid, int bufsize) :
         _bufsize(bufsize), _fs(fs), _fid(fid),
-        _readbuf(new char[bufsize]), _eof(false), _closed(false), 
+        _readbuf(new char[bufsize]), _eof(false), _closed(false),
         _emptybuf(true), _loc(0) {
         _readbuf[0] = 0;
         _readbuf[_bufsize - 1] = 0;
@@ -942,29 +942,6 @@ void ReadLIBSVM(hdfsFS &fs, const std::string& fname,
         if (rank == 0)
             delete in;
     }
-}
-
-
-#else
-
-template<typename T>
-void ReadLIBSVM(const hdfsFS &fs, const std::string& fname,
-    El::Matrix<T>& X, El::Matrix<T>& Y,
-    base::direction_t direction, int min_d = 0) {
-
-    SKYLARK_THROW_EXCEPTION(base::io_exception() <<
-        base::error_msg("Install libhdfs for HDFS support!"));
-}
-
-template<typename T, El::Distribution UX, El::Distribution VX,
-         El::Distribution UY, El::Distribution VY>
-void ReadLIBSVM(const std::string& fname,
-    El::DistMatrix<T, UX, VX>& X, El::DistMatrix<T, UY, VY>& Y,
-    base::direction_t direction, int min_d = 0, int blocksize = 10000) {
-
-    SKYLARK_THROW_EXCEPTION(base::io_exception() <<
-        base::error_msg("Install libhdfs for HDFS support!"));
-
 }
 
 #endif

@@ -4,6 +4,11 @@
 #include <boost/mpi.hpp>
 #include <boost/format.hpp>
 
+// Some tricks to make compilation faster
+#define SKYLARK_NO_ANY
+#define SKYLARK_WITH_GAUSSIAN_RFT_ANY
+#define SKYLARK_WITH_LAPLACIAN_RFT_ANY
+
 #include <skylark.hpp>
 
 // Algorithms constants

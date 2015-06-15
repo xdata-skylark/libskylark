@@ -137,6 +137,8 @@ public:
 
 #ifdef SKYLARK_HAVE_FFTW
 
+#if     !(defined SKYLARK_NO_ANY)
+
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
             mdtypes::dist_matrix_t, FJLT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
@@ -158,7 +160,11 @@ public:
 
 #endif
 
+#endif
+
 #ifdef SKYLARK_HAVE_FFTWF
+
+#if     !(defined SKYLARK_NO_ANY)
 
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t,
             mftypes::dist_matrix_t, FJLT_t);
@@ -178,6 +184,8 @@ public:
             mftypes::root_matrix_t, FJLT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
             mftypes::shared_matrix_t, FJLT_t);
+
+#endif 
 
 #endif
 

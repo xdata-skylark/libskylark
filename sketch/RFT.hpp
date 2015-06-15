@@ -353,6 +353,8 @@ public:
     void apply(const boost::any &A, const boost::any &sketch_of_A,
                 columnwise_tag dimension) const {
 
+#if     !(defined SKYLARK_NO_ANY) || (defined SKYLARK_WITH_GAUSSIAN_RFT_ANY)
+
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::matrix_t, mdtypes::matrix_t,
             GaussianRFT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::sparse_matrix_t,
@@ -438,6 +440,8 @@ public:
             mftypes::dist_matrix_t, GaussianRFT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
             mftypes::dist_matrix_t, GaussianRFT_t);
+
+#endif
 
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()
@@ -452,6 +456,8 @@ public:
     void apply (const boost::any &A, const boost::any &sketch_of_A,
         rowwise_tag dimension) const {
 
+#if     !(defined SKYLARK_NO_ANY) || (defined SKYLARK_WITH_GAUSSIAN_RFT_ANY)
+
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::matrix_t, mdtypes::matrix_t,
             GaussianRFT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::sparse_matrix_t,
@@ -537,6 +543,8 @@ public:
             mftypes::dist_matrix_t, GaussianRFT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
             mftypes::dist_matrix_t, GaussianRFT_t);
+
+#endif 
 
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()
@@ -601,6 +609,8 @@ public:
     void apply(const boost::any &A, const boost::any &sketch_of_A,
                 columnwise_tag dimension) const {
 
+#if     !(defined SKYLARK_NO_ANY) || (defined SKYLARK_WITH_LAPLACIAN_RFT_ANY)
+
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::matrix_t, mdtypes::matrix_t,
             LaplacianRFT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::sparse_matrix_t,
@@ -686,6 +696,8 @@ public:
             mftypes::dist_matrix_t, LaplacianRFT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
             mftypes::dist_matrix_t, LaplacianRFT_t);
+
+#endif 
 
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()
@@ -700,6 +712,8 @@ public:
     void apply (const boost::any &A, const boost::any &sketch_of_A,
         rowwise_tag dimension) const {
 
+#if     !(defined SKYLARK_NO_ANY) || (defined SKYLARK_WITH_LAPLACIAN_RFT_ANY)
+
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::matrix_t, mdtypes::matrix_t,
             LaplacianRFT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::sparse_matrix_t,
@@ -785,6 +799,8 @@ public:
             mftypes::dist_matrix_t, LaplacianRFT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
             mftypes::dist_matrix_t, LaplacianRFT_t);
+
+#endif
 
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()
@@ -850,6 +866,8 @@ public:
     void apply(const boost::any &A, const boost::any &sketch_of_A,
                 columnwise_tag dimension) const {
 
+#if     !(defined SKYLARK_NO_ANY)
+
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::matrix_t, mdtypes::matrix_t,
             MaternRFT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::sparse_matrix_t,
@@ -935,6 +953,8 @@ public:
             mftypes::dist_matrix_t, MaternRFT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
             mftypes::dist_matrix_t, MaternRFT_t);
+
+#endif 
 
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()
@@ -950,6 +970,8 @@ public:
     void apply (const boost::any &A, const boost::any &sketch_of_A,
         rowwise_tag dimension) const {
 
+#if     !(defined SKYLARK_NO_ANY)
+
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::matrix_t, mdtypes::matrix_t,
             MaternRFT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::sparse_matrix_t,
@@ -1035,6 +1057,8 @@ public:
             mftypes::dist_matrix_t, MaternRFT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
             mftypes::dist_matrix_t, MaternRFT_t);
+
+#endif
 
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()

@@ -147,6 +147,8 @@ public:
     void apply(const boost::any &A, const boost::any &sketch_of_A,
                 columnwise_tag dimension) const {
 
+#if     !(defined SKYLARK_NO_ANY)
+
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::matrix_t, mdtypes::matrix_t,
             JLT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::sparse_matrix_t,
@@ -232,6 +234,8 @@ public:
             mftypes::dist_matrix_t, JLT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
             mftypes::dist_matrix_t, JLT_t);
+
+#       endif
 
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()
@@ -247,6 +251,8 @@ public:
     void apply (const boost::any &A, const boost::any &sketch_of_A,
         rowwise_tag dimension) const {
 
+#if     !(defined SKYLARK_NO_ANY)
+
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::matrix_t, mdtypes::matrix_t,
             JLT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::sparse_matrix_t,
@@ -332,6 +338,8 @@ public:
             mftypes::dist_matrix_t, JLT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
             mftypes::dist_matrix_t, JLT_t);
+
+#       endif
 
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()

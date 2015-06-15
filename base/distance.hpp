@@ -16,7 +16,7 @@ void EuclideanDistanceMatrix(direction_t dirA, direction_t dirB, T alpha,
     El::Int ldC = C.LDim();
 
     if (dirA == base::COLUMNS && dirB == base::COLUMNS) {
-        base::Gemm(El::ADJOINT, El::NORMAL, -2.0 * alpha, A, B, beta, C);
+        base::Gemm(El::ADJOINT, El::NORMAL, T(-2.0) * alpha, A, B, beta, C);
 
         El::Matrix<T> NA, NB;
         ColumnNrm2(A, NA);

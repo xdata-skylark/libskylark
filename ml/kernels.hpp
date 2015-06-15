@@ -4,7 +4,43 @@
 #include "../sketch/sketch.hpp"
 #include "feature_transform_tags.hpp"
 
-namespace skylark { namespace ml { 
+namespace skylark { namespace ml {
+
+/**
+ * Base class for all kernels.
+ */
+struct kernel_t {
+
+    virtual ~kernel_t() {
+
+    }
+
+    virtual El::Int get_dim() const = 0;
+
+    virtual void gram(base::direction_t dirX, base::direction_t dirY,
+        const El::Matrix<double> &X, const El::Matrix<double> &Y,
+        El::Matrix<double> &K) const = 0;
+
+    virtual void gram(base::direction_t dirX, base::direction_t dirY,
+        const El::Matrix<float> &X, const El::Matrix<float> &Y,
+        El::Matrix<float> &K) const = 0;
+
+    virtual void gram(base::direction_t dirX, base::direction_t dirY,
+        const El::AbstractDistMatrix<double> &X,
+        const El::AbstractDistMatrix<double> &Y,
+        El::AbstractDistMatrix<double> &K) const = 0;
+
+    virtual void gram(base::direction_t dirX, base::direction_t dirY,
+        const El::AbstractDistMatrix<float> &X,
+        const El::AbstractDistMatrix<float> &Y,
+        El::AbstractDistMatrix<float> &K) const = 0;
+
+    virtual
+    sketch::sketch_transform_t<boost::any, boost::any> *create_rft(El::Int S,
+        regular_feature_transform_tag, base::context_t& context) const = 0;
+
+    virtual boost::property_tree::ptree to_ptree() const = 0;
+};
 
 struct linear_t {
 
@@ -54,7 +90,7 @@ private:
     int _N;
 };
 
-struct gaussian_t {
+struct gaussian_t : public kernel_t {
 
     gaussian_t(El::Int N, double sigma) : _N(N), _sigma(sigma) {
 
@@ -70,6 +106,12 @@ struct gaussian_t {
         pt.put("N", _N);
 
         return pt;
+    }
+
+    sketch::sketch_transform_t<boost::any, boost::any> *create_rft(El::Int S,
+    regular_feature_transform_tag tag, base::context_t& context) const {
+
+        return create_rft<boost::any, boost::any>(S, tag, context);
     }
 
     template<typename IT, typename OT>
@@ -115,24 +157,61 @@ struct gaussian_t {
 
     template<typename XT, typename YT, typename KT>
     void gram(base::direction_t dirX, base::direction_t dirY,
-        const XT &X, const YT &Y, KT &K) {
+        const XT &X, const YT &Y, KT &K) const {
+
+        typedef typename utility::typer_t<KT>::value_type value_type;
 
         El::Int m = dirX == base::COLUMNS ? base::Width(X) : base::Height(X);
         El::Int n = dirY == base::COLUMNS ? base::Width(Y) : base::Height(Y);
 
         K.Resize(m, n);
-        base::EuclideanDistanceMatrix(dirX, dirY, 1.0, X, Y, 0.0, K);
-        typedef typename utility::typer_t<KT>::value_type value_type;
+        base::EuclideanDistanceMatrix(dirX, dirY, value_type(1.0), X, Y,
+            value_type(0.0), K);
         El::EntrywiseMap(K, std::function<value_type(value_type)> (
             [this] (value_type x) {
                 return std::exp(-x / (2 * _sigma * _sigma));
             }));
     }
 
+    void gram(base::direction_t dirX, base::direction_t dirY,
+        const El::Matrix<double> &X, const El::Matrix<double> &Y,
+        El::Matrix<double> &K) const {
+
+        typedef El::Matrix<double> matrix_type;
+        gram<matrix_type, matrix_type, matrix_type>(dirX, dirY, X, Y, K);
+    }
+
+    void gram(base::direction_t dirX, base::direction_t dirY,
+        const El::Matrix<float> &X, const El::Matrix<float> &Y,
+        El::Matrix<float> &K) const {
+
+        typedef El::Matrix<float> matrix_type;
+        gram<matrix_type, matrix_type, matrix_type>(dirX, dirY, X, Y, K);
+    }
+
+    void gram(base::direction_t dirX, base::direction_t dirY,
+        const El::AbstractDistMatrix<double> &X,
+        const El::AbstractDistMatrix<double> &Y,
+        El::AbstractDistMatrix<double> &K) const {
+
+        typedef El::AbstractDistMatrix<double> matrix_type;
+        gram<matrix_type, matrix_type, matrix_type>(dirX, dirY, X, Y, K);
+    }
+
+    void gram(base::direction_t dirX, base::direction_t dirY,
+        const El::AbstractDistMatrix<float> &X,
+        const El::AbstractDistMatrix<float> &Y,
+        El::AbstractDistMatrix<float> &K) const {
+
+        typedef El::AbstractDistMatrix<float> matrix_type;
+        gram<matrix_type, matrix_type, matrix_type>(dirX, dirY, X, Y, K);
+    }
+
 private:
     const El::Int _N;
     const double _sigma;
 };
+
 
 template<typename XT, typename YT, typename KT>
 void Gram(base::direction_t dirX, base::direction_t dirY,

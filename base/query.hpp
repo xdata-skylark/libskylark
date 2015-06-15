@@ -25,6 +25,15 @@ int Width(const El::Matrix<T>& A) {
     return A.Width();
 }
 
+template<typename T>
+int Height(const El::AbstractDistMatrix<T>& A) {
+    return A.Height();
+}
+
+template<typename T>
+int Width(const El::AbstractDistMatrix<T>& A) {
+    return A.Width();
+}
 template<typename T, El::Distribution U, El::Distribution V>
 int Height(const El::DistMatrix<T, U, V>& A) {
     return A.Height();

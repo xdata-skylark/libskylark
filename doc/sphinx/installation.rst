@@ -1227,7 +1227,7 @@ exported
 .. code-block:: sh
 
     # LAPACK library
-    export LAPACK_LIB=$HOME/local/lib/liblapack.a
+    export LAPACK_LIB=$HOME/src/lapack-3.5.0/
 
     # root installation dir of CLANG compiler
     export CLANG_ROOT=$HOME/bgclang/

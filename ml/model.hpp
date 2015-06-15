@@ -401,7 +401,7 @@ private:
     const El::DistMatrix<compute_type> &_A;
     std::vector<OutType> _rcoding;
     const std::string _dataloc;
-    const kernel_type _k;
+    const kernel_type &_k;
     const El::Int _input_size, _output_size;
 };
 

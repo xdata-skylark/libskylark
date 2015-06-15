@@ -89,6 +89,56 @@ public:
 
 };
 
+/**
+ * Container of sketch_transform_t<any, any> that makes the input/output
+ * types concrete.
+ *
+ * NOTE: the container will "own" the internal <any,any> transform and will
+ * delete it when destructed.
+ */
+template < typename InputMatrixType,
+           typename OutputMatrixType = InputMatrixType >
+class sketch_transform_container_t 
+    : public sketch_transform_t<InputMatrixType, OutputMatrixType> {
+public:
+
+    sketch_transform_container_t(sketch_transform_t<boost::any, boost::any> *transform)
+        : _transform(transform) {
+
+    }
+
+    virtual void apply (const InputMatrixType& A,
+        OutputMatrixType& sketch_of_A, columnwise_tag dimension) const {
+        _transform->apply(&A, &sketch_of_A, dimension);
+    }
+
+    virtual void apply (const InputMatrixType& A,
+        OutputMatrixType& sketch_of_A, rowwise_tag dimension) const {
+        _transform->apply(&A, &sketch_of_A, dimension);
+    }
+
+    virtual int get_N() const {
+        return _transform->get_N();
+    }
+
+    virtual int get_S() const {
+        return _transform->get_S();
+    }
+
+    virtual const sketch_transform_data_t* get_data() const {
+        return _transform->get_data();
+    }
+
+
+    virtual ~sketch_transform_container_t() {
+        delete _transform;
+    }
+
+private:
+    sketch_transform_t<boost::any, boost::any> *_transform;
+
+};
+
 /** Short types name for use in macros */
 namespace mdtypes {
 

@@ -35,13 +35,52 @@ struct kernel_t {
         const El::AbstractDistMatrix<float> &Y,
         El::AbstractDistMatrix<float> &K) const = 0;
 
+    virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir, 
+        const El::Matrix<double> &X, El::Matrix<double> &K) const = 0;
+
+    virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
+        const El::Matrix<float> &X, El::Matrix<float> &K) const = 0;
+
+    virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
+        const El::AbstractDistMatrix<double> &X,
+        El::AbstractDistMatrix<double> &K) const = 0;
+
+    virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
+        const El::AbstractDistMatrix<float> &X,
+        El::AbstractDistMatrix<float> &K) const = 0;
+
     virtual
     sketch::sketch_transform_t<boost::any, boost::any> *create_rft(El::Int S,
         regular_feature_transform_tag, base::context_t& context) const = 0;
 
+    template<typename IT, typename OT>
+    sketch::sketch_transform_t<IT, OT> *create_rft(int S,
+        regular_feature_transform_tag tag, base::context_t& context) const {
+
+        return new sketch::sketch_transform_container_t<IT, OT>(
+            create_rft(S, tag, context));
+    }
+
     virtual boost::property_tree::ptree to_ptree() const = 0;
 };
 
+template<typename Kernel, typename XT, typename YT, typename KT>
+void Gram(base::direction_t dirX, base::direction_t dirY,
+    const Kernel& k, const XT &X, const YT &Y, KT &K) {
+
+    k.gram(dirX, dirY, X, Y, K);
+}
+
+template<typename Kernel, typename XT, typename KT>
+void SymmetricGram(El::UpperOrLower uplo, base::direction_t dir,
+    const Kernel& k, const XT &X, KT &K) {
+
+    k.symmetric_gram(uplo, dir, X, K);
+}
+
+/**
+ * Linear kernel: simple linear product.
+ */
 struct linear_t {
 
     linear_t(int N) : _N(N) {
@@ -90,6 +129,9 @@ private:
     int _N;
 };
 
+/**
+ * Gaussian kernel.
+ */
 struct gaussian_t : public kernel_t {
 
     gaussian_t(El::Int N, double sigma) : _N(N), _sigma(sigma) {
@@ -148,14 +190,6 @@ struct gaussian_t : public kernel_t {
     }
 
     template<typename XT, typename YT, typename KT>
-    friend void Gram(base::direction_t dirX, base::direction_t dirY,
-        const gaussian_t& k, const XT &X, const YT &Y, KT &K);
-
-    template<typename XT, typename KT>
-    friend void SymmetricGram(El::UpperOrLower uplo, base::direction_t dir,
-        const gaussian_t& k, const XT &X, KT &K);
-
-    template<typename XT, typename YT, typename KT>
     void gram(base::direction_t dirX, base::direction_t dirY,
         const XT &X, const YT &Y, KT &K) const {
 
@@ -172,6 +206,25 @@ struct gaussian_t : public kernel_t {
                 return std::exp(-x / (2 * _sigma * _sigma));
             }));
     }
+
+    template<typename XT, typename KT>
+    void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
+        const XT &X, KT &K) const {
+
+        typedef typename utility::typer_t<KT>::value_type value_type;
+
+        El::Int n = dir == base::COLUMNS ? base::Width(X) : base::Height(X);
+
+        K.Resize(n, n);
+        base::SymmetricEuclideanDistanceMatrix(uplo, dir, value_type(1.0), X,
+            value_type(0.0), K);
+        base::SymmetricEntrywiseMap(uplo, K, std::function<value_type(value_type)> (
+              [this] (value_type x) {
+                  return std::exp(-x / (2 * _sigma * _sigma));
+              }));
+    }
+
+    /* Instantion of virtual functions in base */
 
     void gram(base::direction_t dirX, base::direction_t dirY,
         const El::Matrix<double> &X, const El::Matrix<double> &Y,
@@ -207,46 +260,41 @@ struct gaussian_t : public kernel_t {
         gram<matrix_type, matrix_type, matrix_type>(dirX, dirY, X, Y, K);
     }
 
+    virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir, 
+        const El::Matrix<double> &X, El::Matrix<double> &K) const {
+
+        typedef El::Matrix<double> matrix_type;
+        symmetric_gram<matrix_type, matrix_type>(uplo, dir, X, K);
+
+    }
+
+    virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
+        const El::Matrix<float> &X, El::Matrix<float> &K) const {
+
+        typedef El::Matrix<float> matrix_type;
+        symmetric_gram<matrix_type, matrix_type>(uplo, dir, X, K);
+    }
+
+    virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
+        const El::AbstractDistMatrix<double> &X,
+        El::AbstractDistMatrix<double> &K) const {
+
+        typedef El::AbstractDistMatrix<double> matrix_type;
+        symmetric_gram<matrix_type, matrix_type>(uplo, dir, X, K);
+    }
+
+    virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
+        const El::AbstractDistMatrix<float> &X,
+        El::AbstractDistMatrix<float> &K) const {
+
+        typedef El::AbstractDistMatrix<float> matrix_type;
+        symmetric_gram<matrix_type, matrix_type>(uplo, dir, X, K);
+    }
+
 private:
     const El::Int _N;
     const double _sigma;
 };
-
-
-template<typename XT, typename YT, typename KT>
-void Gram(base::direction_t dirX, base::direction_t dirY,
-    const gaussian_t& k, const XT &X, const YT &Y, KT &K) {
-
-    typedef typename utility::typer_t<KT>::value_type value_type;
-
-    El::Int m = dirX == base::COLUMNS ? base::Width(X) : base::Height(X);
-    El::Int n = dirY == base::COLUMNS ? base::Width(Y) : base::Height(Y);
-
-    K.Resize(m, n);
-    base::EuclideanDistanceMatrix(dirX, dirY, value_type(1.0), X, Y,
-        value_type(0.0), K);
-    El::EntrywiseMap(K, std::function<value_type(value_type)> (
-          [k] (value_type x) {
-              return std::exp(-x / (2 * k._sigma * k._sigma));
-          }));
-}
-
-template<typename XT, typename KT>
-void SymmetricGram(El::UpperOrLower uplo, base::direction_t dir,
-    const gaussian_t& k, const XT &X, KT &K) {
-
-    typedef typename utility::typer_t<KT>::value_type value_type;
-
-    El::Int n = dir == base::COLUMNS ? base::Width(X) : base::Height(X);
-
-    K.Resize(n, n);
-    base::SymmetricEuclideanDistanceMatrix(uplo, dir, value_type(1.0), X,
-        value_type(0.0), K);
-    base::SymmetricEntrywiseMap(uplo, K, std::function<value_type(value_type)> (
-          [k] (value_type x) {
-              return std::exp(-x / (2 * k._sigma * k._sigma));
-          }));
-}
 
 struct polynomial_t {
 
@@ -290,7 +338,10 @@ private:
     const double _gamma;
 };
 
-struct laplacian_t {
+/**
+ * Laplacian kernel
+ */
+struct laplacian_t : public kernel_t {
 
     laplacian_t(El::Int N, double sigma) : _N(N), _sigma(sigma) {
 
@@ -306,6 +357,12 @@ struct laplacian_t {
         pt.put("N", _N);
 
         return pt;
+    }
+
+    sketch::sketch_transform_t<boost::any, boost::any> *create_rft(El::Int S,
+    regular_feature_transform_tag tag, base::context_t& context) const {
+
+        return create_rft<boost::any, boost::any>(S, tag, context);
     }
 
     template<typename IT, typename OT>
@@ -335,27 +392,105 @@ struct laplacian_t {
     }
 
     template<typename XT, typename YT, typename KT>
-    friend void Gram(base::direction_t dirX, base::direction_t dirY,
-        const laplacian_t& k, const XT &X, const YT &Y, KT &K);
-
-    template<typename XT, typename KT>
-    friend void SymmetricGram(El::UpperOrLower uplo, base::direction_t dir,
-        const laplacian_t& k, const XT &X, KT &K);
-
-    template<typename XT, typename YT, typename KT>
     void gram(base::direction_t dirX, base::direction_t dirY,
-        const XT &X, const YT &Y, KT &K) {
+        const XT &X, const YT &Y, KT &K) const {
+
+        typedef typename utility::typer_t<KT>::value_type value_type;
 
         El::Int m = dirX == base::COLUMNS ? base::Width(X) : base::Height(X);
         El::Int n = dirY == base::COLUMNS ? base::Width(Y) : base::Height(Y);
 
         K.Resize(m, n);
-        base::L1DistanceMatrix(dirX, dirY, 1.0, X, Y, 0.0, K);
-        typedef typename utility::typer_t<KT>::value_type value_type;
+        base::L1DistanceMatrix(dirX, dirY, value_type(1.0), X, Y,
+            value_type(0.0), K);
         El::EntrywiseMap(K, std::function<value_type(value_type)> (
             [this] (value_type x) {
                 return std::exp(-x / _sigma);
             }));
+    }
+
+    template<typename XT, typename KT>
+    void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
+        const XT &X, KT &K) const {
+
+        typedef typename utility::typer_t<KT>::value_type value_type;
+
+        El::Int n = dir == base::COLUMNS ? base::Width(X) : base::Height(X);
+
+        K.Resize(n, n);
+        base::SymmetricL1DistanceMatrix(uplo, dir, value_type(1.0), X,
+            value_type(0.0), K);
+        base::SymmetricEntrywiseMap(uplo, K, std::function<value_type(value_type)> (
+              [this] (value_type x) {
+                  return std::exp(-x / _sigma);
+              }));
+    }
+
+    /* Instantion of virtual functions in base */
+
+    void gram(base::direction_t dirX, base::direction_t dirY,
+        const El::Matrix<double> &X, const El::Matrix<double> &Y,
+        El::Matrix<double> &K) const {
+
+        typedef El::Matrix<double> matrix_type;
+        gram<matrix_type, matrix_type, matrix_type>(dirX, dirY, X, Y, K);
+    }
+
+    void gram(base::direction_t dirX, base::direction_t dirY,
+        const El::Matrix<float> &X, const El::Matrix<float> &Y,
+        El::Matrix<float> &K) const {
+
+        typedef El::Matrix<float> matrix_type;
+        gram<matrix_type, matrix_type, matrix_type>(dirX, dirY, X, Y, K);
+    }
+
+    void gram(base::direction_t dirX, base::direction_t dirY,
+        const El::AbstractDistMatrix<double> &X,
+        const El::AbstractDistMatrix<double> &Y,
+        El::AbstractDistMatrix<double> &K) const {
+
+        typedef El::AbstractDistMatrix<double> matrix_type;
+        gram<matrix_type, matrix_type, matrix_type>(dirX, dirY, X, Y, K);
+    }
+
+    void gram(base::direction_t dirX, base::direction_t dirY,
+        const El::AbstractDistMatrix<float> &X,
+        const El::AbstractDistMatrix<float> &Y,
+        El::AbstractDistMatrix<float> &K) const {
+
+        typedef El::AbstractDistMatrix<float> matrix_type;
+        gram<matrix_type, matrix_type, matrix_type>(dirX, dirY, X, Y, K);
+    }
+
+    virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir, 
+        const El::Matrix<double> &X, El::Matrix<double> &K) const {
+
+        typedef El::Matrix<double> matrix_type;
+        symmetric_gram<matrix_type, matrix_type>(uplo, dir, X, K);
+
+    }
+
+    virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
+        const El::Matrix<float> &X, El::Matrix<float> &K) const {
+
+        typedef El::Matrix<float> matrix_type;
+        symmetric_gram<matrix_type, matrix_type>(uplo, dir, X, K);
+    }
+
+    virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
+        const El::AbstractDistMatrix<double> &X,
+        El::AbstractDistMatrix<double> &K) const {
+
+        typedef El::AbstractDistMatrix<double> matrix_type;
+        symmetric_gram<matrix_type, matrix_type>(uplo, dir, X, K);
+    }
+
+    virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
+        const El::AbstractDistMatrix<float> &X,
+        El::AbstractDistMatrix<float> &K) const {
+
+        typedef El::AbstractDistMatrix<float> matrix_type;
+        symmetric_gram<matrix_type, matrix_type>(uplo, dir, X, K);
     }
 
 private:
@@ -363,40 +498,6 @@ private:
     const double _sigma;
 };
 
-template<typename XT, typename YT, typename KT>
-void Gram(base::direction_t dirX, base::direction_t dirY,
-    const laplacian_t& k, const XT &X, const YT &Y, KT &K) {
-
-    typedef typename utility::typer_t<KT>::value_type value_type;
-
-    El::Int m = dirX == base::COLUMNS ? base::Width(X) : base::Height(X);
-    El::Int n = dirY == base::COLUMNS ? base::Width(Y) : base::Height(Y);
-
-    K.Resize(m, n);
-    base::L1DistanceMatrix(dirX, dirY, value_type(1.0), X, Y,
-        value_type(0.0), K);
-    El::EntrywiseMap(K, std::function<value_type(value_type)> (
-          [k] (value_type x) {
-              return std::exp(-x / k._sigma);
-          }));
-}
-
-template<typename XT, typename KT>
-void SymmetricGram(El::UpperOrLower uplo, base::direction_t dir,
-    const laplacian_t& k, const XT &X, KT &K) {
-
-    typedef typename utility::typer_t<KT>::value_type value_type;
-
-    El::Int n = dir == base::COLUMNS ? base::Width(X) : base::Height(X);
-
-    K.Resize(n, n);
-    base::SymmetricL1DistanceMatrix(uplo, dir, value_type(1.0), X,
-        value_type(0.0), K);
-    base::SymmetricEntrywiseMap(uplo, K, std::function<value_type(value_type)> (
-          [k] (value_type x) {
-              return std::exp(-x / k._sigma);
-          }));
-}
 
 struct expsemigroup_t {
 

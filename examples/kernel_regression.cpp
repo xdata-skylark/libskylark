@@ -4,16 +4,19 @@
 #include <boost/mpi.hpp>
 #include <boost/format.hpp>
 
-#define SKYLARK_NO_ANY
 #include <skylark.hpp>
 
 // Algorithms constants
 #define CLASSIC_KRR   0
 #define FASTER_KRR    1
 
+// Kernels constants
+#define GAUSSIAN_KERNEL  0
+#define LAPLACIAN_KERNEL 1
 
 std::string cmdline;
-int seed = 38734, algorithm = FASTER_KRR, s = 2000, partial = -1;
+int seed = 38734, algorithm = FASTER_KRR, kernel_type = GAUSSIAN_KERNEL;
+int s = 2000, partial = -1;
 std::string fname, testname, modelname = "model.dat", logfile = "";
 double sigma = 10.0, lambda = 0.01, tolerance=1e-3;
 bool use_single;
@@ -40,9 +43,12 @@ int parse_program_options(int argc, char* argv[]) {
         ("logfile",
             bpo::value<std::string>(&logfile)->default_value(""),
             "File to write log (standard output if empty).")
+        ("kernel,k",
+             bpo::value<int>(&kernel_type)->default_value(GAUSSIAN_KERNEL),
+            "Kernel to use (0: Gaussian, 1: Laplacian).")
         ("algorithm,a",
              bpo::value<int>(&algorithm)->default_value(FASTER_KRR),
-            "Algorithm to use (0: Classic, 1: Faster (Precond).")
+            "Algorithm to use (0: Classic, 1: Faster (Precond)).")
         ("seed,s",
             bpo::value<int>(&seed)->default_value(38734),
             "Seed for random number generation. OPTIONAL.")
@@ -124,6 +130,9 @@ int parse_program_options(int argc, char* argv[]) {
         if (flag == "--sigma" || flag == "-x")
             sigma = boost::lexical_cast<double>(value);
 
+        if (flag == "--kernel" || flag == "-k")
+            kernel_type = boost::lexical_cast<int>(value);
+
         if (flag == "--algorithm" || flag == "-a")
             algorithm = boost::lexical_cast<int>(value);
 
@@ -188,7 +197,7 @@ int execute(skylark::base::context_t &context) {
         *log_stream << "# Number of ranks is " << world.size() << std::endl;
     }
 
-    // Load A and Y
+    // Load X and Y
     if (rank == 0) {
         *log_stream << "Reading the matrix... ";
         log_stream->flush();
@@ -202,13 +211,29 @@ int execute(skylark::base::context_t &context) {
         *log_stream <<"took " << boost::format("%.2e") % timer.elapsed()
                   << " sec\n";
 
-    // Load A and Y
+    // Training
     if (rank == 0) {
         *log_stream << "Training... " << std::endl;
         timer.restart();
     }
 
-    skylark::ml::gaussian_t k(X.Height(), sigma);
+    skylark::ml::kernel_t *k;
+
+    switch (kernel_type) {
+    case GAUSSIAN_KERNEL:
+        k = new skylark::ml::gaussian_t(X.Height(), sigma);
+        break;
+
+    case LAPLACIAN_KERNEL:
+        k = new skylark::ml::laplacian_t(X.Height(), sigma);
+        break;
+
+    default:
+        *log_stream << "Invalid kernel specified." << std::endl;
+        return -1;
+    }
+
+
     El::DistMatrix<T> A;
     std::vector<El::Int> rcoding;
 
@@ -217,12 +242,12 @@ int execute(skylark::base::context_t &context) {
 
     switch(algorithm) {
     case CLASSIC_KRR:
-        skylark::ml::KernelRLSC(skylark::base::COLUMNS, k, X, L,
+        skylark::ml::KernelRLSC(skylark::base::COLUMNS, *k, X, L,
             T(lambda), A, rcoding, rlsc_params);
         break;
 
     case FASTER_KRR:
-        skylark::ml::FasterKernelRLSC(skylark::base::COLUMNS, k, X, L,
+        skylark::ml::FasterKernelRLSC(skylark::base::COLUMNS, *k, X, L,
             T(lambda), A, rcoding, s, context, rlsc_params);
         break;
 
@@ -231,7 +256,7 @@ int execute(skylark::base::context_t &context) {
         return -1;
     }
 
-    skylark::ml::kernel_model_t<skylark::ml::gaussian_t, El::Int, T> model(k,
+    skylark::ml::kernel_model_t<skylark::ml::kernel_t, El::Int, T> model(*k,
         skylark::base::COLUMNS, X, fname, A, rcoding);
 
 

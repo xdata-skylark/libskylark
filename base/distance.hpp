@@ -88,7 +88,7 @@ void SymmetricEuclideanDistanceMatrix(El::UpperOrLower uplo, direction_t dir,
 
         for(El::Int j = 0; j < n; j++)
             for(El::Int i = ((uplo == El::UPPER) ? 0 : j);
-                i < ((uplo == El::UPPER) ? j : n); i++)
+                i < ((uplo == El::UPPER) ? (j + 1) : n); i++)
                 c[j * ldC + i] += alpha * (nn[i] * nn[i] + nn[j] * nn[j]);
 
     }
@@ -112,13 +112,14 @@ void SymmetricEuclideanDistanceMatrix(El::UpperOrLower uplo, direction_t dir,
         ColumnNrm2(A, N);
         El::Base<T> *nn = N.Buffer();;
 
-        int n = C.LocalWidth();
-        int m = C.LocalHeight();
+        El::Int n = C.LocalWidth();
+        El::Int m = C.LocalHeight();
 
-        for(int j = 0; j < n; j++)
+        for(El::Int j = 0; j < n; j++)
             for(El::Int i =
                     ((uplo == El::UPPER) ? 0 : C.LocalRowOffset(A.GlobalCol(j)));
                 i < ((uplo == El::UPPER) ? C.LocalRowOffset(A.GlobalCol(j) + 1) : m); i++) {
+
                 El::Base<T> a = nn[C.GlobalRow(i)];
                 El::Base<T> b = nn[C.GlobalCol(j)];
                 c[j * ldC + i] += alpha * (a * a + b * b);
@@ -231,7 +232,7 @@ void SymmetricL1DistanceMatrix(El::UpperOrLower uplo, direction_t dir, T alpha,
     if (dir == base::COLUMNS) {
         for (El::Int j = 0; j < n; j++)
             for(El::Int i = ((uplo == El::UPPER) ? 0 : j);
-                i < ((uplo == El::UPPER) ? j : n); i++)
+                i < ((uplo == El::UPPER) ? (j + 1) : n); i++)
             for (El::Int i = 0; i < A.Width(); i++) {
                 T v = 0.0;
                 for (El::Int k = 0; k < d; k++)
@@ -251,10 +252,11 @@ namespace internal {
  * (hence the TU)
  */
 template<typename T>
-void L1DistanceMatrixTU(El::UpperOrLower uplo, 
+void L1DistanceMatrixTU(El::UpperOrLower uplo,
     direction_t dirA, direction_t dirB, T alpha,
-    const El::Matrix<T> &A, const El::Matrix<T> &B,
-    T beta, El::Matrix<T> &C) {
+    const El::DistMatrix<T, El::STAR, El::MC> &A,
+    const El::DistMatrix<T, El::STAR, El::MR> &B,
+    T beta, El::DistMatrix<T> &C) {
 
     // TODO verify sizes
 
@@ -271,10 +273,13 @@ void L1DistanceMatrixTU(El::UpperOrLower uplo,
 
     /* Not the most efficient way... but mimicking BLAS is too much work! */
     if (dirA == base::COLUMNS && dirB == base::COLUMNS) {
-        El::Int n = A.Width();
+        El::Int n = C.LocalWidth();
+        El::Int m = C.LocalHeight();
         for (El::Int j = 0; j < n; j++)
-            for(El::Int i = ((uplo == El::UPPER) ? 0 : j);
-                i < ((uplo == El::UPPER) ? j : n); i++) {
+            for(El::Int i =
+                    ((uplo == El::UPPER) ? 0 : C.LocalRowOffset(A.GlobalCol(j)));
+                i < ((uplo == El::UPPER) ? C.LocalRowOffset(A.GlobalCol(j) + 1) : m); i++) {
+
                 T v = 0.0;
                 for (El::Int k = 0; k < d; k++)
                     v += std::abs(b[j * ldB + k] - a[i * ldA + k]);
@@ -319,8 +324,8 @@ void SymmetricL1DistanceMatrix(El::UpperOrLower uplo, direction_t dir, T alpha,
             A1_STAR_MR = A1;
 
             internal::L1DistanceMatrixTU(uplo, base::COLUMNS, base::COLUMNS, 
-                alpha, A1_STAR_MC.LockedMatrix(), A1_STAR_MR.LockedMatrix(),
-                T(1.0), C.Matrix());
+                alpha, A1_STAR_MC, A1_STAR_MR,
+                T(1.0), C);
         }
     }
 

@@ -27,12 +27,12 @@
     <link rel="next" title="IO in libSkylark" href="io.html" />
     <link rel="prev" title="Numerical Linear Algebra Primitives" href="nla.html" /> 
   </head>
-  <body role="document">
-      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
+  <body>
+      <div class="header"><h1 class="heading"><a href="index.html">
           <span>libSkylark  documentation</span></a></h1>
         <h2 class="heading"><span>Machine Learning</span></h2>
       </div>
-      <div class="topnav" role="navigation" aria-label="top navigation">
+      <div class="topnav">
       
         <p>
         «&#160;&#160;<a href="nla.html">Numerical Linear Algebra Primitives</a>
@@ -79,7 +79,7 @@
 </dl>
 <p>The distributed optimization approach is based on a block-splitting variant of ADMM proposed in <a class="reference external" href="http://web.stanford.edu/~boyd/papers/block_splitting.html">Parikh and Boyd, 2014</a></p>
 <dl class="docutils">
-<dt>The full implementation (under <code class="docutils literal"><span class="pre">libskylark/ml</span></code>) is described in the following paper:</dt>
+<dt>The full implementation (under <tt class="docutils literal"><span class="pre">libskylark/ml</span></tt>) is described in the following paper:</dt>
 <dd><ul class="first last simple">
 <li>Sindhwani V. and Avron H., High-performance Kernel Machines with Implicit Distributed Optimization and Randomization, 2014</li>
 </ul>
@@ -183,7 +183,7 @@ Usage: skylark_ml --modelfile modelfile --testfile testfile :
 </div>
 <div class="section" id="library-usage">
 <h3>Library Usage<a class="headerlink" href="#library-usage" title="Permalink to this headline">¶</a></h3>
-<p>To be documented (please see <code class="docutils literal"><span class="pre">ml/skylark_ml.cpp</span></code> for a driver program).</p>
+<p>To be documented (please see <tt class="docutils literal"><span class="pre">ml/skylark_ml.cpp</span></tt> for a driver program).</p>
 </div>
 </div>
 <div class="section" id="local-graph-computations">
@@ -209,8 +209,8 @@ goal is to find a cluster in which it is a member.</p>
 </dl>
 <p>The interface is as follows:</p>
 <dl class="function">
-<dt id="_CPP16FindLocalClusterRK9GraphTypeRKNSt13unordered_setIN9GraphType11vertex_typeEEERNSt13unordered_setIN9GraphType11vertex_typeEEEdddib">
-double <code class="descclassname"></code><code class="descname">FindLocalCluster</code><span class="sig-paren">(</span><em class="property">const</em> GraphType &amp;<em>G</em>, <em class="property">const</em> std::unordered_set&lt;<em class="property">typename</em> GraphType::<a class="reference internal" href="#_CPPN9GraphType11vertex_typeE" title="GraphType::vertex_type">vertex_type</a>&gt; &amp;<em>seeds</em>, std::unordered_set&lt;<em class="property">typename</em> GraphType::<a class="reference internal" href="#_CPPN9GraphType11vertex_typeE" title="GraphType::vertex_type">vertex_type</a>&gt; &amp;<em>cluster</em>, double <em>alpha</em>, double <em>gamma</em>, double <em>epsilon</em>, int <em>NX</em>, bool <em>recursive</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPP16FindLocalClusterRK9GraphTypeRKNSt13unordered_setIN9GraphType11vertex_typeEEERNSt13unordered_setIN9GraphType11vertex_typeEEEdddib" title="Permalink to this definition">¶</a></dt>
+<dt id="FindLocalCluster__GraphTypeCR.std::unordered_set:typename-GraphType::vertex_type:CR.std::unordered_set:typename-GraphType::vertex_type:R.double.double.double.i.b">
+double <tt class="descname">FindLocalCluster</tt><big>(</big>const GraphType&amp; <em>G</em>, const std::unordered_set&lt;typename GraphType::vertex_type&gt;&amp; <em>seeds</em>, std::unordered_set&lt;typename GraphType::vertex_type&gt;&amp; <em>cluster</em>, double <em>alpha</em>, double <em>gamma</em>, double <em>epsilon</em>, int <em>NX</em>, bool <em>recursive</em><big>)</big><a class="headerlink" href="#FindLocalCluster__GraphTypeCR.std::unordered_set:typename-GraphType::vertex_type:CR.std::unordered_set:typename-GraphType::vertex_type:R.double.double.double.i.b" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <p>seeds is the set of input seeds, cluster is the set of output cluster. alpha, gamma, epsilon and NX are
@@ -221,38 +221,38 @@ improving (as measured using conductance).</p>
 <p>The graph is specified using parameter G. The type is generic: the GraphType class is expected to
 support the following:</p>
 <dl class="type">
-<dt id="_CPPN9GraphType11vertex_typeE">
-<em class="property">type </em><code class="descclassname">GraphType::</code><code class="descname">vertex_type</code><a class="headerlink" href="#_CPPN9GraphType11vertex_typeE" title="Permalink to this definition">¶</a></dt>
+<dt id="GraphType::vertex_type">
+<em class="property">type </em><tt class="descclassname">GraphType::</tt><tt class="descname">vertex_type</tt><a class="headerlink" href="#GraphType::vertex_type" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <p>Type of the graph nodes</p>
 <dl class="function">
-<dt id="_CPPN9GraphType9num_edgesEv">
-size_t <code class="descclassname">GraphType::</code><code class="descname">num_edges</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPN9GraphType9num_edgesEv" title="Permalink to this definition">¶</a></dt>
+<dt id="GraphType::num_edges">
+size_t <tt class="descclassname">GraphType::</tt><tt class="descname">num_edges</tt><big>(</big><big>)</big><a class="headerlink" href="#GraphType::num_edges" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <p>Return the number of edges in the graph.</p>
 <dl class="function">
-<dt id="_CPPN9GraphType3degE11vertex_type">
-size_t <code class="descclassname">GraphType::</code><code class="descname">deg</code><span class="sig-paren">(</span>vertex_type <em>node</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPN9GraphType3degE11vertex_type" title="Permalink to this definition">¶</a></dt>
+<dt id="GraphType::deg__vertex_type">
+size_t <tt class="descclassname">GraphType::</tt><tt class="descname">deg</tt><big>(</big>vertex_type <em>node</em><big>)</big><a class="headerlink" href="#GraphType::deg__vertex_type" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <p>Return the degree of the given node.</p>
 <dl class="function">
-<dt id="_CPPN9GraphType13adjanct_beginE11vertex_type">
-iterator <code class="descclassname">GraphType::</code><code class="descname">adjanct_begin</code><span class="sig-paren">(</span>vertex_type <em>node</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPN9GraphType13adjanct_beginE11vertex_type" title="Permalink to this definition">¶</a></dt>
+<dt id="GraphType::adjanct_begin__vertex_type">
+iterator <tt class="descclassname">GraphType::</tt><tt class="descname">adjanct_begin</tt><big>(</big>vertex_type <em>node</em><big>)</big><a class="headerlink" href="#GraphType::adjanct_begin__vertex_type" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <p>Return an iterator to the start of the list of adjanct nodes of the input
 node. The iterator can be of any kind (must support increment, deref and comparison).</p>
 <dl class="function">
-<dt id="_CPPN9GraphType11adjanct_endE11vertex_type">
-iterator <code class="descclassname">GraphType::</code><code class="descname">adjanct_end</code><span class="sig-paren">(</span>vertex_type <em>node</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPN9GraphType11adjanct_endE11vertex_type" title="Permalink to this definition">¶</a></dt>
+<dt id="GraphType::adjanct_end__vertex_type">
+iterator <tt class="descclassname">GraphType::</tt><tt class="descname">adjanct_end</tt><big>(</big>vertex_type <em>node</em><big>)</big><a class="headerlink" href="#GraphType::adjanct_end__vertex_type" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <p>Return an iterator to the end of the list of adjanct nodes of the input
 node.</p>
-<p>See <code class="docutils literal"><span class="pre">examples/community.cpp</span></code> for an example of use.</p>
+<p>See <tt class="docutils literal"><span class="pre">examples/community.cpp</span></tt> for an example of use.</p>
 </div>
 <div class="section" id="time-dependent-personalized-pagerank">
 <h3>Time-Dependent Personalized PageRank<a class="headerlink" href="#time-dependent-personalized-pagerank" title="Permalink to this headline">¶</a></h3>
@@ -274,8 +274,8 @@ output is a vector function on nodes. Each entry of the vector
 represents a different time point.</p>
 <p>The interface is as follows:</p>
 <dl class="function">
-<dt id="_CPP16TimeDependentPPRRK9GraphTypeRKNSt13unordered_mapIN9GraphType11vertex_typeE1TEERNSt13unordered_mapIN9GraphType11vertex_typeEPN2El6MatrixI1TEEEERN2El6MatrixI1TEEdddi">
-void <code class="descclassname"></code><code class="descname">TimeDependentPPR</code><span class="sig-paren">(</span><em class="property">const</em> GraphType &amp;<em>G</em>, <em class="property">const</em> std::unordered_map&lt;<em class="property">typename</em> GraphType::<a class="reference internal" href="#_CPPN9GraphType11vertex_typeE" title="GraphType::vertex_type">vertex_type</a>, T&gt; &amp;<em>s</em>, std::unordered_map&lt;<em class="property">typename</em> GraphType::<a class="reference internal" href="#_CPPN9GraphType11vertex_typeE" title="GraphType::vertex_type">vertex_type</a>, El::Matrix&lt;T&gt;*&gt; &amp;<em>y</em>, El::Matrix&lt;T&gt; &amp;<em>x</em>, double <em>alpha</em>, double <em>gamma</em>, double <em>epsilon</em>, int <em>NX</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPP16TimeDependentPPRRK9GraphTypeRKNSt13unordered_mapIN9GraphType11vertex_typeE1TEERNSt13unordered_mapIN9GraphType11vertex_typeEPN2El6MatrixI1TEEEERN2El6MatrixI1TEEdddi" title="Permalink to this definition">¶</a></dt>
+<dt id="TimeDependentPPR__GraphTypeCR.std::unordered_map:typename-GraphType::vertex_type.T:CR.std::unordered_map:typename-GraphType::vertex_type.El::Matrix:T:P:R.El::Matrix:T:R.double.double.double.i">
+void <tt class="descname">TimeDependentPPR</tt><big>(</big>const GraphType&amp; <em>G</em>, const std::unordered_map&lt;typename GraphType::vertex_type, T&gt;&amp; <em>s</em>, std::unordered_map&lt;typename GraphType::vertex_type, El::Matrix&lt;T&gt;*&gt;&amp; <em>y</em>, El::Matrix&lt;T&gt;&amp; <em>x</em>, double <em>alpha</em>, double <em>gamma</em>, double <em>epsilon</em>, int <em>NX</em><big>)</big><a class="headerlink" href="#TimeDependentPPR__GraphTypeCR.std::unordered_map:typename-GraphType::vertex_type.T:CR.std::unordered_map:typename-GraphType::vertex_type.El::Matrix:T:P:R.El::Matrix:T:R.double.double.double.i" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <p>s is the input function of nodes, while y is the output. x specifies the time points which
@@ -285,32 +285,32 @@ parameters of the algorithm. See paper for details. Defaults are specified.</p>
 support the following:</p>
 <dl class="type">
 <dt>
-<em class="property">type </em><code class="descclassname">GraphType::</code><code class="descname">vertex_type</code></dt>
+<em class="property">type </em><tt class="descclassname">GraphType::</tt><tt class="descname">vertex_type</tt></dt>
 <dd></dd></dl>
 
 <p>Type of the graph nodes</p>
 <dl class="function">
 <dt>
-size_t <code class="descclassname">GraphType::</code><code class="descname">num_edges</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
+size_t <tt class="descclassname">GraphType::</tt><tt class="descname">num_edges</tt><big>(</big><big>)</big></dt>
 <dd></dd></dl>
 
 <p>Return the number of edges in the graph.</p>
 <dl class="function">
 <dt>
-size_t <code class="descclassname">GraphType::</code><code class="descname">deg</code><span class="sig-paren">(</span>vertex_type <em>node</em><span class="sig-paren">)</span></dt>
+size_t <tt class="descclassname">GraphType::</tt><tt class="descname">deg</tt><big>(</big>vertex_type <em>node</em><big>)</big></dt>
 <dd></dd></dl>
 
 <p>Return the degree of the given node.</p>
 <dl class="function">
 <dt>
-iterator <code class="descclassname">GraphType::</code><code class="descname">adjanct_begin</code><span class="sig-paren">(</span>vertex_type <em>node</em><span class="sig-paren">)</span></dt>
+iterator <tt class="descclassname">GraphType::</tt><tt class="descname">adjanct_begin</tt><big>(</big>vertex_type <em>node</em><big>)</big></dt>
 <dd></dd></dl>
 
 <p>Return an iterator to the start of the list of adjanct nodes of the input
 node. The iterator can be of any kind (must support increment, deref and comparison).</p>
 <dl class="function">
 <dt>
-iterator <code class="descclassname">GraphType::</code><code class="descname">adjanct_end</code><span class="sig-paren">(</span>vertex_type <em>node</em><span class="sig-paren">)</span></dt>
+iterator <tt class="descclassname">GraphType::</tt><tt class="descname">adjanct_end</tt><big>(</big>vertex_type <em>node</em><big>)</big></dt>
 <dd></dd></dl>
 
 <p>Return an iterator to the end of the list of adjanct nodes of the input
@@ -321,7 +321,7 @@ node.</p>
 
 
       </div>
-      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      <div class="bottomnav">
       
         <p>
         «&#160;&#160;<a href="nla.html">Numerical Linear Algebra Primitives</a>
@@ -333,9 +333,9 @@ node.</p>
 
       </div>
 
-    <div class="footer" role="contentinfo">
+    <div class="footer">
         &copy; Copyright IBM Corporation 2012-2014.  All Rights Reserved.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3b1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

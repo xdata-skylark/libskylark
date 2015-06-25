@@ -62,7 +62,7 @@ if (SKYLARK_HAVE_COMBBLAS)
     ${OPTIONAL_LIBS}
     ${DEP_LIBRARIES}
     ${Boost_LIBRARIES} )
-  add_test( serialization_test serialization_test )
+  add_test( serialization_test mpirun -np 1 serialization_test )
 
 endif (SKYLARK_HAVE_COMBBLAS)
 

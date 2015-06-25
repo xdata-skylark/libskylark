@@ -618,7 +618,7 @@ void ReadDirLIBSVM(const std::string& dname,
 
 #if SKYLARK_HAVE_LIBHDFS
 
-namespace internal {
+namespace detail {
 
 struct hdfs_line_streamer_t {
 
@@ -718,7 +718,13 @@ void ReadLIBSVM(const hdfsFS &fs, const std::string& fname,
     char c;
 
     hdfsFile fid = hdfsOpenFile(fs, fname.c_str(), O_RDONLY, 0, 0, 0);
-    internal::hdfs_line_streamer_t in(fs, fid, 1000);
+    if(!fid) {
+        std::stringstream ss;
+        ss << "Failed to open HDFS file " << fname;
+        SKYLARK_THROW_EXCEPTION(skylark::base::io_exception() <<
+            skylark::base::error_msg(ss.str()))
+    }
+    detail::hdfs_line_streamer_t in(fs, fid, 1000);
 
     // make one pass over the data to figure out dimensions -
     // will pay in terms of preallocated storage.
@@ -812,10 +818,17 @@ void ReadLIBSVM(hdfsFS &fs, const std::string& fname,
     boost::mpi::communicator comm = skylark::utility::get_communicator(X);
     int rank = X.Grid().Rank();
 
-    internal::hdfs_line_streamer_t *in = nullptr;
+    detail::hdfs_line_streamer_t *in = nullptr;
     if (rank == 0) {
         hdfsFile fid = hdfsOpenFile(fs, fname.c_str(), O_RDONLY, 0, 0, 0);
-        in = new internal::hdfs_line_streamer_t(fs, fid, 1000);
+        if(!fid) {
+            std::stringstream ss;
+            ss << "Failed to open HDFS file " << fname;
+            SKYLARK_THROW_EXCEPTION(skylark::base::io_exception() <<
+                skylark::base::error_msg(ss.str()))
+        }
+
+        in = new detail::hdfs_line_streamer_t(fs, fid, 1000);
     }
 
     // make one pass over the data to figure out dimensions -

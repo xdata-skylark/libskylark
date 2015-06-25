@@ -13,11 +13,15 @@ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib
 export SKYLARK_SRC_DIR=/home/vagrant/libskylark
 export SKYLARK_BUILD_DIR=/home/vagrant/build
 export SKYLARK_INSTALL_DIR=/home/vagrant/install
+export LIBHDFS_ROOT=/home/vagrant/deps/hadoop-2.7.0
+export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
 
 # populate .bashrc
 echo "export SKYLARK_SRC_DIR=${SKYLARK_SRC_DIR}" >> ./.bashrc
 echo "export SKYLARK_BUILD_DIR=${SKYLARK_BUILD_DIR}" >> ./.bashrc
 echo "export SKYLARK_INSTALL_DIR=${SKYLARK_INSTALL_DIR}" >> ./.bashrc
+echo "export LIBHDFS_ROOT=/home/vagrant/deps/hadoop-2.7.0" >> ./.bashrc
+echo "export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64" >> ./.bashrc
 echo "export PYTHON_SITE_PACKAGES=${SKYLARK_INSTALL_DIR}" >> ./.bashrc
 echo "export PYTHONPATH=${SKYLARK_INSTALL_DIR}/lib/python2.7/site-packages:${PYTHONPATH}" >> ./.bashrc
 echo "export LD_LIBRARY_PATH=${SKYLARK_INSTALL_DIR}/lib:/usr/local/lib:/usr/lib/x86_64-linux-gnu/:${LD_LIBRARY_PATH}" >> ./.bashrc
@@ -81,6 +85,9 @@ apt-get install -y libfftw3-dev libfftw3-mpi-dev
 # install tools for building documentation
 apt-get install -y doxygen graphviz python-sphinx dvipng
 
+# Java for HADOOP
+apt-get install -y openjdk-7-jdk
+
 #FIXME SPHINX extensions?
 
 # numpydoc
@@ -98,10 +105,6 @@ while true; do
         wget http://www.thesalmons.org/john/random123/releases/1.08/Random123-1.08.tar.gz &> /dev/null
     fi
 
-    if [ ! -f 0.86-rc1.zip ]; then
-        wget https://github.com/elemental/Elemental/archive/0.86-rc1.zip &> /dev/null
-    fi
-
     if [ ! -f CombBLAS_beta_14_0.tgz ]; then
         wget http://gauss.cs.ucsb.edu/~aydin/CombBLAS_FILES/CombBLAS_beta_14_0.tgz &> /dev/null
     fi
@@ -114,20 +117,16 @@ while true; do
         wget http://www.ece.cmu.edu/~spiral/software/spiral-wht-1.8.tgz &> /dev/null
     fi
 
+    if [ ! -f hadoop-2.7.0.tar.gz ]; then
+        wget http://mirror.sdunix.com/apache/hadoop/common/hadoop-2.7.0/hadoop-2.7.0.tar.gz &> /dev/null
+    fi
+
     randOk=false
     calc_md5=$(md5sum Random123-1.08.tar.gz | /usr/bin/cut -f 1 -d " ")
     if [ "$calc_md5" == "87d2783831c7a95b244868bf754a7f50" ]; then
         randOk=true
     else
         rm Random123-1.08.tar.gz
-    fi
-
-    eleOk=false
-    calc_md5=$(md5sum 0.86-rc1.zip | /usr/bin/cut -f 1 -d " ")
-    if [ "$calc_md5" == "6422a203bd3941c962add1543528bb78" ]; then
-        eleOk=true
-    else
-        rm 0.86-rc1.zip
     fi
 
     cbOk=false
@@ -154,7 +153,15 @@ while true; do
         rm spiral-wht-1.8.tgz
     fi
 
-    if $randOk && $eleOk && $cbOk && $kdtOk && $spiralOk; then
+    hadoopOk=false
+    calc_md5=$(md5sum hadoop-2.7.0.tar.gz | /usr/bin/cut -f 1 -d " ")
+    if [ "$calc_md5" == "79a6e87b09011861309c153a856c3ca1" ]; then
+        hadoopOk=true
+    else
+        rm hadoop-2.7.0.tar.gz
+    fi
+
+    if $randOk && $cbOk && $kdtOk && $spiralOk & $hadoopOk ; then
         break
     fi
 done
@@ -162,28 +169,39 @@ done
 
 # Elemental
 cd $HOME/deps
-if [ ! -d "Elemental-0.86-rc1" ]; then
-    unzip 0.86-rc1.zip
-    cd Elemental-0.86-rc1
-    rmdir external/metis
-    git clone https://github.com/poulson/metis.git external/metis
+if [ ! -d "Elemental" ]; then
+    git clone https://github.com/elemental/Elemental.git
+    cd Elemental
+    git checkout 4a16736e44b24ced2d0dd9d3f688ce2d149611ba
     mkdir build
     cd build
-    cmake -DEL_USE_64BIT_INTS=ON -DCMAKE_BUILD_TYPE=PureRelease -DMATH_LIBS="-L/usr/lib -llapack -lopenblas -lm" ../
-    make -j $NPROC
-    make install
+    cmake -DEL_USE_64BIT_INTS=ON -DCMAKE_BUILD_TYPE=Release -DEL_HYBRID=ON -DBUILD_SHARED_LIBS=ON -DMATH_LIBS="-L/usr/lib -llapack -lopenblas -lm" ../
+    make -j $NPROC 1> /dev/null
+    make install 1> /dev/null
 fi
 
 # CombBLAS
 cd $HOME/deps
 if [ ! -d "CombBLAS" ]; then
-    tar xvfz CombBLAS_beta_14_0.tgz
+    tar xvfz CombBLAS_beta_14_0.tgz &> /dev/null
     cd CombBLAS/
-    cp /vagrant/combblas.patch .
-    git apply --ignore-space-change --ignore-whitespace combblas.patch
-    rm combblas.patch
-    cmake .
-    make -j $NPROC
+    echo """
+diff --git a/RefGen21.h b/RefGen21.h
+index b8c7974..f93592c 100644
+--- a/RefGen21.h
++++ b/RefGen21.h
+@@ -134,7 +134,7 @@ public:
+
+        /* 32-bit code */
+        uint32_t h = (uint32_t)(x >> 32);
+-       uint32_t l = (uint32_t)(x & UINT32_MAX);
++       uint32_t l = (uint32_t)(x & std::numeric_limits<uint32_t>::max());
+        #ifdef USE_GCC_BYTESWAP
+         h = __builtin_bswap32(h);
+         l = __builtin_bswap32(l);
+""" | git apply --ignore-space-change --ignore-whitespace
+    cmake -DBUILD_SHARED_LIBS=ON .
+    make -j $NPROC 1> /dev/null
     cp *.so /usr/local/lib
     mkdir /usr/local/include/CombBLAS
     #XXX: ugly but CombBLAS cannot be installed in an other way..
@@ -197,12 +215,12 @@ fi
 # KDT
 cd $HOME/deps
 if [ ! -d "kdt-0.3" ]; then
-    tar xvfz kdt-0.3.tar.gz
+    tar xvfz kdt-0.3.tar.gz &> /dev/null
     cd kdt-0.3
     apt-get install subversion
     export CC=mpicxx
     export CXX=mpicxx
-    python ./setup.py build
+    python ./setup.py build 1> /dev/null
     python ./setup.py install
     cd ..
     unset CC
@@ -212,19 +230,26 @@ fi
 # Random123
 cd $HOME/deps
 if [ ! -d "Random123-1.08" ]; then
-    tar xvfz Random123-1.08.tar.gz
+    tar xvfz Random123-1.08.tar.gz &> /dev/null
     cp -r Random123-1.08/include/Random123 /usr/local/include
 fi
 
 # spiral-wht
 cd $HOME/deps
 if [ ! -d "spiral-wht-1.8" ]; then
-    tar xzvf spiral-wht-1.8.tgz
+    tar xzvf spiral-wht-1.8.tgz &> /dev/null
     cd spiral-wht-1.8/
     ./configure CFLAGS="-fPIC -fopenmp" --enable-RAM=16000 --enable-DDL --enable-IL --enable-PARA=8
-    make -j $NPROC
-    make install
+    make -j $NPROC 1> /dev/null
+    make install 1> /dev/null
     #/usr/local/bin/wht_dp.prl
+fi
+
+# hadoop
+cd $HOME/deps
+if [ ! -d "hadoop-2.7.0" ]; then
+    mkdir /home/vagrant/deps
+    tar xzvf hadoop-2.7.0.tar.gz -C /home/vagrant/deps 1> /dev/null
 fi
 
 
@@ -253,7 +278,7 @@ CC=mpicc CXX=mpicxx cmake -DCMAKE_INSTALL_PREFIX=${SKYLARK_INSTALL_DIR} \
                           -DUSE_COMBBLAS=ON ${SKYLARK_SRC_DIR}
 make -j $NPROC
 make install
-make doc
+make doc 1> /dev/null
 
 echo "Finished libSkylark Vagrant build.."
 
@@ -261,8 +286,8 @@ echo "Finished libSkylark Vagrant build.."
 mkdir /home/vagrant/notebooks
 mkdir /home/vagrant/notebooks/data
 cd mkdir /home/vagrant/notebooks/data
-wget http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/multiclass/usps.bz2
-bzip2 -d usps.bz2
+wget http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/multiclass/usps.bz2 &> /dev/null
+bzip2 -d usps.bz2 &> /dev/null
 cp ${SKYLARK_SRC_DIR}/python-skylark/skylark/notebooks/* /home/vagrant/notebooks/
 
 # Finalize

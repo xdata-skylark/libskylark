@@ -120,7 +120,7 @@ struct hilbert_options_t {
                 "Loss function (0:SQUARED, 1:LAD, 2:HINGE, 3:LOGISTIC)")
             ("regularizer,r",
                 po::value<int>((int*) &regularizer)->default_value(NOREG),
-                "Regularizer (0:L2, 1:L1)")
+                "Regularizer (0:None, 1:L2, 2:L1)")
             ("kernel,k",
                 po::value<int>((int*) &kernel)->default_value(LINEAR),
                 "Kernel (0:LINEAR, 1:GAUSSIAN, 2:POLYNOMIAL, "

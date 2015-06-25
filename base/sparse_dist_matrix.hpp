@@ -196,6 +196,8 @@ struct sparse_dist_matrix_t {
         return is_local_row(i) && is_local_col(j);
     }
 
+    bool is_finalized() const { return _finalized; }
+
 
 
     int row_owner(El::Int i) const {

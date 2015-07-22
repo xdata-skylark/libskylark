@@ -464,6 +464,159 @@ void ReadLIBSVM(const std::string& fname,
 }
 
 /**
+ * Reads X and Y from a file in libsvm format.
+ * X is a sparse distributed VC/STAR matrix and Y is a dense distributed
+ * VC/STAR matrix.
+ *
+ * IMPORTANT: output is in column-major format (the rows are features).
+ *
+ * @param fname input file name.
+ * @param X output X
+ * @param Y output Y
+ * @param direction whether the examples are to be put in rows or columns
+ * @param min_d minimum number of rows in the matrix.
+ * @param blocksize blocksize for blocking of read.
+ */
+template<typename T,
+         typename R, El::Distribution UY, El::Distribution VY>
+void ReadLIBSVM(const std::string& fname,
+    base::sparse_vc_star_matrix_t<T>& X, El::DistMatrix<R, UY, VY>& Y,
+    base::direction_t direction, int min_d = 0, int blocksize = 10000) {
+
+
+    std::string line;
+    std::string token, val, ind;
+    T label;
+    unsigned int start = 0;
+    unsigned int delim, t;
+    int n = 0, nt = 0;
+    int d = 0;
+    int i, j, last;
+    char c;
+
+    std::ifstream in(fname);
+
+    boost::mpi::communicator comm = skylark::utility::get_communicator(Y);
+    int rank = comm.rank();
+
+    // make one pass over the data to figure out dimensions -
+    // will pay in terms of preallocated storage.
+    if (rank==0) {
+        while(!in.eof()) {
+            getline(in, line);
+            if(line.length()==0)
+                break;
+            delim = line.find_last_of(":");
+            if(delim > line.length())
+                continue;
+            n++;
+
+            // Figure out number of targets
+            if (n == 1) {
+                std::string tstr;
+                std::istringstream tokenstream (line);
+                tokenstream >> tstr;
+                while (tstr.find(":") == std::string::npos) {
+                    nt++;
+                    tokenstream >> tstr;
+                }
+            }
+
+            t = delim;
+            while(line[t]!=' ') {
+                t--;
+            }
+            val = line.substr(t+1, delim - t);
+            last = atoi(val.c_str());
+            if (last>d)
+                d = last;
+        }
+        if (min_d > 0)
+            d = std::max(d, min_d);
+
+        // prepare for second pass
+        in.clear();
+        in.seekg(0, std::ios::beg);
+    }
+
+    boost::mpi::broadcast(comm, n, 0);
+    boost::mpi::broadcast(comm, d, 0);
+    boost::mpi::broadcast(comm, nt, 0);
+
+    int numblocks = ((int) n/ (int) blocksize); // of size blocksize
+    int leftover = n % blocksize;
+    int block = blocksize;
+
+    if (direction == base::COLUMNS) {
+        X.resize(d, n);
+        Y.Resize(nt, n);
+    } else {
+        X.resize(n, d);
+        Y.Resize(n, nt);
+    }
+
+    El::DistMatrix<T, El::CIRC, El::CIRC> YB(Y.Grid());
+    El::DistMatrix<T, El::VC, El::STAR> Yv(Y.Grid());
+
+    for(int i=0; i<numblocks+1; i++) {
+        if (i==numblocks)
+            block = leftover;
+        if (block==0)
+            break;
+
+        if (direction == base::COLUMNS) {
+            El::Zeros(YB, nt, block);
+        } else {
+            El::Zeros(YB, block, nt);
+        }
+
+        if(rank==0) {
+            T *Ydata = YB.Matrix().Buffer();
+            int ldY = YB.Matrix().LDim();
+
+            t = 0;
+            while(!in.eof() && t<block) {
+                getline(in, line);
+                if( line.length()==0)
+                    break;
+
+                std::istringstream tokenstream (line);
+                for(int r = 0; r < nt; r++) {
+                    tokenstream >> label;
+                    if (direction == base::COLUMNS)
+                        Ydata[t * ldY + r] = label;
+                    else
+                        Ydata[r * ldY + t] = label;
+                }
+
+                while (tokenstream >> token) {
+                    delim  = token.find(':');
+                    ind = token.substr(0, delim);
+                    val = token.substr(delim+1); //.substr(delim+1);
+                    j = atoi(ind.c_str()) - 1;
+                    if (direction == base::COLUMNS)
+                        X.queue_update(j, t, atof(val.c_str()));
+                    else
+                        X.queue_update(t, j, atof(val.c_str()));
+                }
+
+                t++;
+            }
+        }
+
+        // The calls below should distribute the data to all the nodes.
+        if (direction == base::COLUMNS) {
+            El::View(Yv, Y, 0, i*blocksize, nt, block);
+        } else {
+            El::View(Yv, Y, i*blocksize, 0, block, nt);
+        }
+
+        Yv = YB;
+    }
+}
+
+
+/**
  * Write X and Y from a file in libsvm format.
  * X and Y are Elemental dense matrices.
  *
@@ -772,12 +925,12 @@ void ReadDirLIBSVM(const std::string& dname,
 }
 
 /**
- * Reads X and Y from a directory of files in libsvm format.
- * X and Y are Elemental distributed matrices.
+ * reads x and y from a directory of files in libsvm format.
+ * x and y are elemental distributed matrices.
  *
  * @param fname input file name.
- * @param X output X
- * @param Y output Y
+ * @param x output x
+ * @param y output y
  * @param direction whether the examples are to be put in rows or columns
  * @param min_d minimum number of rows in the matrix.
  * @param blocksize blocksize for blocking of read.
@@ -987,6 +1140,17 @@ void ReadDirLIBSVM(const std::string& dname,
 
     if (rank == 0)
         in.close();
+}
+
+template<typename T,
+         typename R, El::Distribution UY, El::Distribution VY>
+void ReadDirLIBSVM(const std::string& dname,
+    base::sparse_vc_star_matrix_t<T>& X, El::DistMatrix<R, UY, VY>& Y,
+    base::direction_t direction, int min_d = 0, int blocksize = 10000) {
+
+    SKYLARK_THROW_EXCEPTION(skylark::base::io_exception() <<
+        skylark::base::error_msg(
+            "readdirlibsvm not implemented for sparse_vc_star_matrix_t!"));
 }
 
 #else
@@ -1496,6 +1660,20 @@ void ReadLIBSVM(hdfsFS &fs, const std::string& fname,
         Yv = YB;
     }
 }
+
+template<typename T,
+         typename R, El::Distribution UY, El::Distribution VY>
+void ReadLIBSVM(const hdfsFS &fs, const std::string& fname,
+    base::sparse_vc_star_matrix_t<T>& X, El::DistMatrix<R, UY, VY>& Y,
+    base::direction_t direction, int min_d = 0, int blocksize = 10000) {
+
+    //TODO: implement
+    SKYLARK_THROW_EXCEPTION(skylark::base::io_exception() <<
+        skylark::base::error_msg(
+            "ReadLIBSVM from HDFS not implemented for sparse_vc_star_matrix_t!"));
+}
+
+
 
 #endif
 

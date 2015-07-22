@@ -14,9 +14,7 @@
 
 #define SKYLARK_NO_ANY
 
-#include "../../base/Gemm.hpp"
-#include "../../base/sparse_vc_star_matrix.hpp"
-#include "../../base/sparse_star_vr_matrix.hpp"
+#include "../../skylark.hpp"
 
 #include "test_utils.hpp"
 
@@ -257,6 +255,9 @@ int test_main(int argc, char *argv[]) {
     check_equal(A_vr, A_sparse_vr);
 
 
+    //////////////////////////////////////////////////////////////////////////
+    //[> Test Gemm <]
+
     const int target = 5;
 
     if(world.rank() == 0) std::cout << "sparse_vc_star -> sparse_vc_star (NORMAL, NORMAL)" << std::endl;
@@ -273,6 +274,21 @@ int test_main(int argc, char *argv[]) {
     test_gemm_vr(El::NORMAL, El::NORMAL, 1.0,
             A_sparse_vr, A_vr, 0.0, target, world, grid);
     world.barrier();
+
+
+    //////////////////////////////////////////////////////////////////////////
+    //[> Test I/O <]
+
+    sparse_vc_star_matrix_t X(0, 0, world, grid);
+    El::DistMatrix<double, El::VC, El::STAR> Y;
+    std::string fname(argv[1]);
+    skylark::utility::io::ReadLIBSVM(fname, X, Y, skylark::base::COLUMNS);
+
+    El::DistMatrix<double, El::VC, El::STAR> X_ref;
+    El::DistMatrix<double, El::VC, El::STAR> Y_ref;
+    skylark::utility::io::ReadLIBSVM(fname, X_ref, Y_ref, skylark::base::COLUMNS);
+
+    check_equal(X_ref, X);
 
     El::Finalize();
 

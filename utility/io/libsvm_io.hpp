@@ -625,9 +625,8 @@ struct hdfs_line_streamer_t {
     hdfs_line_streamer_t(hdfsFS &fs, hdfsFile &fid, int bufsize) :
         _bufsize(bufsize), _fs(fs), _fid(fid),
         _readbuf(new char[bufsize]), _eof(false), _closed(false),
-        _emptybuf(true), _loc(0) {
-        _readbuf[0] = 0;
-        _readbuf[_bufsize - 1] = 0;
+        _emptybuf(true), _readsize(0), _loc(0) {
+
     }
 
     ~hdfs_line_streamer_t() {
@@ -639,11 +638,12 @@ struct hdfs_line_streamer_t {
         line = "";
         while (!_eof) {
             if (_emptybuf) {
-                int rsize = hdfsRead(_fs, _fid, _readbuf, _bufsize - 1);
-                if (rsize == 0) {
+                _readsize = hdfsRead(_fs, _fid, _readbuf, _bufsize - 1);
+                if (_readsize == 0) {
                     _eof = true;
                     break;
                 }
+                _readbuf[_readsize] = 0;
                 _emptybuf = false;
                 _loc = 0;
             }
@@ -653,7 +653,7 @@ struct hdfs_line_streamer_t {
                 *el = 0;
                 line += std::string(_readbuf + _loc);
                 _loc += el - (_readbuf + _loc) + 1;
-                if (_loc == _bufsize)
+                if (_loc == _readsize)
                     _emptybuf = true;
                 return;
             } else {
@@ -664,8 +664,9 @@ struct hdfs_line_streamer_t {
     }
 
     void rewind() {
-        _eof = 0;
-        _readbuf[0] = 0;
+        _eof = false;
+        _emptybuf = true;
+        _readsize = 0;
         hdfsSeek(_fs, _fid, 0);
     }
 
@@ -685,6 +686,7 @@ private:
     hdfsFile &_fid;
     char *_readbuf;
     bool _eof, _closed, _emptybuf;
+    int _readsize;
     int _loc;
 
 };
@@ -819,8 +821,9 @@ void ReadLIBSVM(hdfsFS &fs, const std::string& fname,
     int rank = X.Grid().Rank();
 
     detail::hdfs_line_streamer_t *in = nullptr;
+    hdfsFile fid;
     if (rank == 0) {
-        hdfsFile fid = hdfsOpenFile(fs, fname.c_str(), O_RDONLY, 0, 0, 0);
+        fid = hdfsOpenFile(fs, fname.c_str(), O_RDONLY, 0, 0, 0);
         if(!fid) {
             std::stringstream ss;
             ss << "Failed to open HDFS file " << fname;

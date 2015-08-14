@@ -11,7 +11,8 @@
 namespace bpo = boost::program_options;
 
 template<typename InputType, typename FactorType>
-void execute(const std::string &fname, int k,
+void execute(bool directory, const std::string &fname, 
+    const std::string &hdfs, int port, int k,
     const skylark::nla::approximate_svd_params_t &params,
     const std::string &prefix,
     skylark::base::context_t &context) {
@@ -31,7 +32,31 @@ void execute(const std::string &fname, int k,
         timer.restart();
     }
 
-    skylark::utility::io::ReadLIBSVM(fname, A, Y, skylark::base::ROWS);
+    if (!hdfs.empty()) {
+#       if SKYLARK_HAVE_LIBHDFS
+
+        hdfsFS fs;
+        if (rank == 0)
+            fs = hdfsConnect(hdfs.c_str(), port);
+
+        if (directory)
+            SKYLARK_THROW_EXCEPTION(skylark::base::io_exception() <<
+                skylark::base::error_msg("HDFS directory reading not yet supported."))
+        else
+            skylark::utility::io::ReadLIBSVM(fs, fname, A, Y, skylark::base::ROWS);
+
+#       else
+
+        SKYLARK_THROW_EXCEPTION(skylark::base::io_exception() <<
+            skylark::base::error_msg("Install libhdfs for HDFS support!"));
+
+#       endif
+    } else {
+        if (directory)
+            skylark::utility::io::ReadDirLIBSVM(fname, A, Y, skylark::base::ROWS);
+        else
+            skylark::utility::io::ReadLIBSVM(fname, A, Y, skylark::base::ROWS);
+    }
 
     if (rank == 0)
         std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
@@ -70,9 +95,12 @@ int main(int argc, char* argv[]) {
 
     El::Initialize(argc, argv);
 
-    int seed, k, powerits;
-    std::string fname, prefix;
-    bool as_sparse, skipqr, use_single;
+    boost::mpi::communicator world;
+    int rank = world.rank();
+
+    int seed, k, powerits, port;
+    std::string fname, prefix, hdfs;
+    bool as_sparse, skipqr, use_single, directory;
     int oversampling_ratio, oversampling_additive;
 
     // Parse options
@@ -82,9 +110,18 @@ int main(int argc, char* argv[]) {
         ("inputfile",
             bpo::value<std::string>(&fname),
             "Input file to run approximate SVD on (libsvm format).")
+        ("directory,d", "Whether inputfile is a directory of files whose"
+            " concatination is the input.")
         ("seed,s",
             bpo::value<int>(&seed)->default_value(38734),
             "Seed for random number generation. OPTIONAL.")
+        ("hdfs",
+            bpo::value<std::string>(&hdfs)->default_value(""),
+            "If not empty, will assume file is in an HDFS. "
+            "Parameter is filesystem name.")
+        ("port",
+            bpo::value<int>(&port)->default_value(0),
+            "For HDFS: port to use.")
         ("rank,k",
             bpo::value<int>(&k)->default_value(6),
             "Target rank. OPTIONAL.")
@@ -115,14 +152,19 @@ int main(int argc, char* argv[]) {
             .options(desc).positional(positional).run(), vm);
 
         if (vm.count("help")) {
-            std::cout << "Usage: " << argv[0] << " [options] input-file-name"
-                      << std::endl;
-            std::cout << desc;
+            if (rank == 0) {
+                std::cout << "Usage: " << argv[0] << " [options] input-file-name"
+                          << std::endl;
+                std::cout << desc;
+            }
+            world.barrier();
             return 0;
         }
 
         if (!vm.count("inputfile")) {
-            std::cout << "Input file is required." << std::endl;
+            if (rank == 0)
+                std::cout << "Input file is required." << std::endl;
+            world.barrier();
             return -1;
         }
 
@@ -131,10 +173,14 @@ int main(int argc, char* argv[]) {
         as_sparse = vm.count("sparse");
         skipqr = vm.count("skipqr");
         use_single = vm.count("single");
+        directory = vm.count("directory");
 
     } catch(bpo::error& e) {
-        std::cerr << e.what() << std::endl;
-        std::cerr << desc << std::endl;
+        if (rank == 0) {
+            std::cerr << e.what() << std::endl;
+            std::cerr << desc << std::endl;
+        }
+        world.barrier();
         return -1;
     }
 
@@ -151,18 +197,22 @@ int main(int argc, char* argv[]) {
     if (use_single) {
         if (as_sparse)
             execute<skylark::base::sparse_matrix_t<float>,
-                    El::Matrix<float> >(fname, k, params, prefix, context);
+                    El::Matrix<float> >(directory, fname, hdfs, port, k, params,
+                        prefix, context);
         else
             execute<El::DistMatrix<float>,
-                    El::DistMatrix<float> >(fname, k, params, prefix, context);
+                    El::DistMatrix<float> >(directory, fname, hdfs, port, k,
+                        params, prefix, context);
 
     } else {
         if (as_sparse)
             execute<skylark::base::sparse_matrix_t<double>,
-                    El::Matrix<double> >(fname, k, params, prefix, context);
+                    El::Matrix<double> >(directory, fname, hdfs, port, k,
+                        params, prefix, context);
         else
             execute<El::DistMatrix<double>,
-                    El::DistMatrix<double> >(fname, k, params, prefix, context);
+                    El::DistMatrix<double> >(directory, fname, hdfs, port, k,
+                        params, prefix, context);
     }
 
     SKYLARK_END_TRY() SKYLARK_CATCH_AND_PRINT()

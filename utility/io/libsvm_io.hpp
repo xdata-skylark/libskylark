@@ -334,6 +334,9 @@ void ReadLIBSVM(const std::string& fname,
         }
     }
 
+    if (min_d > 0)
+        d = std::max(d, min_d);
+
     T *values = new T[nnz];
     int *rowind = new int[nnz];
     int *col_ptr = new int[direction == base::COLUMNS ? n + 1 : d + 1];
@@ -391,6 +394,158 @@ void ReadLIBSVM(const std::string& fname,
 
 
 #if SKYLARK_HAVE_BOOST_FILESYSTEM
+
+/**
+ * Reads X and Y from a directory of files in libsvm format.
+ * X is a Skylark local sparse matrix, and Y is Elemental dense matrices.
+ *
+ * @param fname input file name
+ * @param X output X
+ * @param Y output Y
+ * @param direction whether the examples are to be put in rows or columns
+ * @param min_d minimum number of rows in the matrix.
+ */
+template<typename T>
+void ReadDirLIBSVM(const std::string& dname,
+    base::sparse_matrix_t<T>& X, El::Matrix<T>& Y,
+    base::direction_t direction, int min_d = 0) {
+
+    std::string line;
+    std::string token;
+    float label;
+    unsigned int start = 0;
+    unsigned int delim, t;
+    int n = 0;
+    int d = 0;
+    int i, j, last;
+    char c;
+    int nnz=0;
+    int nz;
+
+    boostfs::path full_path(boostfs::system_complete(boostfs::path(dname)));
+    boostfs::directory_iterator end_iter;
+
+    // make one pass over the data to figure out dimensions and nnz
+    // will pay in terms of preallocated storage.
+    // Also find number of non-zeros per column.
+    std::unordered_map<int, int> colsize;
+
+    for(boostfs::directory_iterator dirit(full_path); dirit != end_iter;
+        dirit++) {
+
+        std::string fname = dirit->path().filename().string();
+        if (fname == "." || fname == ".." || fname[0] == '.')
+            continue;
+
+        std::ifstream in(dirit->path().string());
+
+        while(!in.eof()) {
+            getline(in, line);
+            if(line.length()==0)
+                break;
+            n++;
+
+            if (direction == base::COLUMNS) {
+                delim = line.find_last_of(":");
+                if(delim > line.length())
+                    continue;
+                t = delim;
+                while(line[t]!=' ')
+                    t--;
+                std::string val = line.substr(t+1, delim - t);
+                last = atoi(val.c_str());
+                if (last>d)
+                    d = last;
+
+
+                std::istringstream tokenstream (line);
+                tokenstream >> label;
+                while (tokenstream >> token)
+                    nnz++;
+            } else {
+                std::istringstream tokenstream (line);
+                tokenstream >> label;
+
+                while (tokenstream >> token) {
+                    nnz++;
+                    delim  = token.find(':');
+                    int ind = atoi(token.substr(0, delim).c_str());
+
+                    colsize[ind-1]++;
+                    if (ind > d)
+                        d = ind;
+                }
+            }
+        }
+
+        in.close();
+    }
+
+    if (min_d > 0)
+        d = std::max(d, min_d);
+
+    T *values = new T[nnz];
+    int *rowind = new int[nnz];
+    int *col_ptr = new int[direction == base::COLUMNS ? n + 1 : d + 1];
+
+    if (direction == base::ROWS) {
+        col_ptr[0] = 0;
+        for(int i = 1; i <= d; i++)
+            col_ptr[i] = col_ptr[i-1] + colsize[i-1];
+        Y.Resize(n, 1);
+    } else
+        Y.Resize(1, n);
+    T *Ydata = Y.Buffer();
+
+    // prepare for second pass
+    colsize.clear();
+    t = 0;
+
+    for(boostfs::directory_iterator dirit(full_path); dirit != end_iter;
+        dirit++) {
+
+        std::string fname = dirit->path().filename().string();
+        if (fname == "." || fname == ".." || fname[0] == '.')
+            continue;
+
+        std::ifstream in(dirit->path().string());
+        while(!in.eof()) {
+            getline(in, line);
+            if( line.length()==0)
+                break;
+            t++;
+
+            std::istringstream tokenstream (line);
+            tokenstream >> Ydata[t];
+
+            if (direction == base::COLUMNS)
+                col_ptr[t] = nnz;
+
+            while (tokenstream >> token) {
+                delim  = token.find(':');
+                std::string ind = token.substr(0, delim);
+                std::string val = token.substr(delim+1); //.substr(delim+1);
+                j = atoi(ind.c_str()) - 1;
+
+                if (direction == base::COLUMNS) {
+                    rowind[nnz] = j;
+                    values[nnz] = atof(val.c_str());
+                    nnz++;
+                } else {
+                    rowind[col_ptr[j] + colsize[j]] = t;
+                    values[col_ptr[j] + colsize[j]] = atof(val.c_str());
+                    colsize[j]++;
+                }
+            }
+        }
+    }
+
+    if (direction == base::COLUMNS) {
+        col_ptr[n] = nnz; // last entry (total number of nnz)
+        X.attach(col_ptr, rowind, values, nnz, d, n, true);
+    } else
+        X.attach(col_ptr, rowind, values, nnz, n, d, true);
+}
 
 /**
  * Reads X and Y from a directory of files in libsvm format.
@@ -468,11 +623,12 @@ void ReadDirLIBSVM(const std::string& dname,
                 if (last>d)
                     d = last;
             }
-            if (min_d > 0)
-                d = std::max(d, min_d);
 
             in.close();
         }
+
+        if (min_d > 0)
+            d = std::max(d, min_d);
     }
 
     boost::mpi::broadcast(comm, n, 0);
@@ -788,7 +944,145 @@ void ReadLIBSVM(const hdfsFS &fs, const std::string& fname,
 }
 
 /**
- * Reads X and Y from a file in libsvm format.
+ * Reads X and Y from a file in libsvm format (from HDFS filesystem).
+ * X is a Skylark local sparse matrix, and Y is Elemental dense matrices.
+ *
+ * @param fname input file name
+ * @param X output X
+ * @param Y output Y
+ * @param direction whether the examples are to be put in rows or columns
+ * @param min_d minimum number of rows in the matrix.
+ */
+template<typename T>
+void ReadLIBSVM(hdfsFS &fs, const std::string& fname,
+    base::sparse_matrix_t<T>& X, El::Matrix<T>& Y,
+    base::direction_t direction, int min_d = 0) {
+
+    std::string line;
+    std::string token;
+    float label;
+    unsigned int start = 0;
+    unsigned int delim, t;
+    int n = 0;
+    int d = 0;
+    int i, j, last;
+    char c;
+    int nnz=0;
+    int nz;
+
+    hdfsFile fid = hdfsOpenFile(fs, fname.c_str(), O_RDONLY, 0, 0, 0);
+    if(!fid) {
+        std::stringstream ss;
+        ss << "Failed to open HDFS file " << fname;
+        SKYLARK_THROW_EXCEPTION(skylark::base::io_exception() <<
+            skylark::base::error_msg(ss.str()))
+    }
+    detail::hdfs_line_streamer_t in(fs, fid, 1000);
+
+    // make one pass over the data to figure out dimensions and nnz
+    // will pay in terms of preallocated storage.
+    // Also find number of non-zeros per column.
+    std::unordered_map<int, int> colsize;
+
+    while(!in.eof()) {
+        in.getline(line);
+        if(line.length()==0)
+            break;
+        n++;
+
+        if (direction == base::COLUMNS) {
+            delim = line.find_last_of(":");
+            if(delim > line.length())
+                continue;
+            t = delim;
+            while(line[t]!=' ')
+                t--;
+            std::string val = line.substr(t+1, delim - t);
+            last = atoi(val.c_str());
+            if (last>d)
+                d = last;
+
+
+            std::istringstream tokenstream (line);
+            tokenstream >> label;
+            while (tokenstream >> token)
+                nnz++;
+        } else {
+            std::istringstream tokenstream (line);
+            tokenstream >> label;
+
+            while (tokenstream >> token) {
+                nnz++;
+                delim  = token.find(':');
+                int ind = atoi(token.substr(0, delim).c_str());
+
+                colsize[ind-1]++;
+
+                if (ind > d)
+                    d = ind;
+            }
+        }
+    }
+    if (min_d > 0)
+        d = std::max(d, min_d);
+
+    T *values = new T[nnz];
+    int *rowind = new int[nnz];
+    int *col_ptr = new int[direction == base::COLUMNS ? n + 1 : d + 1];
+
+    if (direction == base::ROWS) {
+        col_ptr[0] = 0;
+        for(int i = 1; i <= d; i++)
+            col_ptr[i] = col_ptr[i-1] + colsize[i-1];
+        Y.Resize(n, 1);
+    } else
+        Y.Resize(1, n);
+    T *Ydata = Y.Buffer();
+
+    // prepare for second pass
+    in.rewind();
+    if (direction == base::COLUMNS)
+        nnz = 0;
+
+    colsize.clear();
+    for (t = 0; t < n; t++) {
+        in.getline(line);
+        if( line.length()==0)
+            break;
+
+        std::istringstream tokenstream (line);
+        tokenstream >> Ydata[t];
+
+        if (direction == base::COLUMNS)
+            col_ptr[t] = nnz;
+
+        while (tokenstream >> token) {
+            delim  = token.find(':');
+            std::string ind = token.substr(0, delim);
+            std::string val = token.substr(delim+1); //.substr(delim+1);
+            j = atoi(ind.c_str()) - 1;
+
+            if (direction == base::COLUMNS) {
+                rowind[nnz] = j;
+                values[nnz] = atof(val.c_str());
+                nnz++;
+            } else {
+                rowind[col_ptr[j] + colsize[j]] = t;
+                values[col_ptr[j] + colsize[j]] = atof(val.c_str());
+                colsize[j]++;
+            }
+        }
+    }
+    if (direction == base::COLUMNS) {
+        col_ptr[n] = nnz; // last entry (total number of nnz)
+        X.attach(col_ptr, rowind, values, nnz, d, n, true);
+    } else
+        X.attach(col_ptr, rowind, values, nnz, n, d, true);
+    in.close();
+}
+
+/**
+ * Reads X and Y from a file in libsvm format (from HDFS filesystem).
  * X and Y are Elemental distributed matrices.
  *
  *
@@ -840,6 +1134,7 @@ void ReadLIBSVM(hdfsFS &fs, const std::string& fname,
 
         while(!in->eof()) {
             in->getline(line);
+
             if(line.length()==0)
                 break;
             delim = line.find_last_of(":");
@@ -917,7 +1212,6 @@ void ReadLIBSVM(hdfsFS &fs, const std::string& fname,
                 in->getline(line);
                 if( line.length()==0)
                     break;
-
                 std::istringstream tokenstream (line);
                 for(int r = 0; r < nt; r++) {
                     tokenstream >> label;
@@ -954,10 +1248,10 @@ void ReadLIBSVM(hdfsFS &fs, const std::string& fname,
 
         Xv = XB;
         Yv = YB;
-
-        if (rank == 0)
-            delete in;
     }
+    if (rank == 0)
+        delete in;
+
 }
 
 #endif

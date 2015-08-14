@@ -102,6 +102,9 @@ int main(int argc, char* argv[]) {
 
     El::Initialize(argc, argv);
 
+    boost::mpi::communicator world;
+    int rank = world.rank();
+
     // Parse options
     bpo::options_description desc("Options");
     desc.add_options()
@@ -138,14 +141,19 @@ int main(int argc, char* argv[]) {
             .options(desc).positional(positional).run(), vm);
 
         if (vm.count("help")) {
-            std::cout << "Usage: " << argv[0] << " [options] input-file-name"
-                      << std::endl;
-            std::cout << desc;
+            if (rank == 0) {
+                std::cout << "Usage: " << argv[0] << " [options] input-file-name"
+                          << std::endl;
+                std::cout << desc;
+            }
+            world.barrier();
             return 0;
         }
 
         if (!vm.count("inputfile")) {
-            std::cout << "Input file is required." << std::endl;
+            if (rank == 0)
+                std::cout << "Input file is required." << std::endl;
+            world.barrier();
             return -1;
         }
 
@@ -157,8 +165,11 @@ int main(int argc, char* argv[]) {
         high = vm.count("highprecision");
 
     } catch(bpo::error& e) {
-        std::cerr << e.what() << std::endl;
-        std::cerr << desc << std::endl;
+        if (rank == 0) {
+            std::cerr << e.what() << std::endl;
+            std::cerr << desc << std::endl;
+        }
+        world.barrier();
         return -1;
     }
 

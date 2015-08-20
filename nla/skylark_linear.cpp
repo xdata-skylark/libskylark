@@ -39,11 +39,7 @@ void execute(skylark::base::context_t &context) {
         if (rank == 0)
             fs = hdfsConnect(hdfs.c_str(), port);
 
-        if (directory)
-            SKYLARK_THROW_EXCEPTION(skylark::base::io_exception() <<
-                skylark::base::error_msg("HDFS directory reading not yet supported."))
-        else
-            skylark::utility::io::ReadLIBSVM(fs, fname, A, b, skylark::base::ROWS);
+        skylark::utility::io::ReadLIBSVM(fs, fname, A, b, skylark::base::ROWS);
 
 #       else
 

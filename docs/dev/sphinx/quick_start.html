@@ -1244,7 +1244,122 @@ mpiexec -np 4 python <span class="nv">$SKYLARK_SRC_DIR</span>/python-skylark/sky
 219
 220
 221
-222</pre></div></td><td class="code"><div class="highlight"><pre><span class="cp">#include &lt;iostream&gt;</span>
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298
+299
+300
+301
+302
+303
+304
+305
+306
+307
+308
+309
+310
+311
+312
+313
+314
+315
+316
+317
+318
+319
+320
+321
+322
+323
+324
+325
+326
+327
+328
+329
+330
+331
+332
+333
+334
+335
+336
+337</pre></div></td><td class="code"><div class="highlight"><pre><span class="cp">#include &lt;iostream&gt;</span>
 <span class="cp">#include &lt;boost/program_options.hpp&gt;</span>
 
 <span class="cp">#include &lt;El.hpp&gt;</span>
@@ -1257,7 +1372,7 @@ mpiexec -np 4 python <span class="nv">$SKYLARK_SRC_DIR</span>/python-skylark/sky
 <span class="k">namespace</span> <span class="n">bpo</span> <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">program_options</span><span class="p">;</span>
 
 <span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">InputType</span><span class="p">,</span> <span class="k">typename</span> <span class="n">FactorType</span><span class="o">&gt;</span>
-<span class="kt">void</span> <span class="n">execute</span><span class="p">(</span><span class="kt">bool</span> <span class="n">directory</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">fname</span><span class="p">,</span> 
+<span class="kt">void</span> <span class="n">execute</span><span class="p">(</span><span class="kt">bool</span> <span class="n">directory</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">fname</span><span class="p">,</span>
     <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">hdfs</span><span class="p">,</span> <span class="kt">int</span> <span class="n">port</span><span class="p">,</span> <span class="kt">int</span> <span class="n">k</span><span class="p">,</span>
     <span class="k">const</span> <span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="kt">approximate_svd_params_t</span> <span class="o">&amp;</span><span class="n">params</span><span class="p">,</span>
     <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">prefix</span><span class="p">,</span>
@@ -1337,6 +1452,89 @@ mpiexec -np 4 python <span class="nv">$SKYLARK_SRC_DIR</span>/python-skylark/sky
                   <span class="o">&lt;&lt;</span> <span class="s">&quot; sec</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">;</span>
 <span class="p">}</span>
 
+<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">InputType</span><span class="p">,</span> <span class="k">typename</span> <span class="n">FactorType</span><span class="o">&gt;</span>
+<span class="kt">void</span> <span class="n">execute_sym</span><span class="p">(</span><span class="kt">bool</span> <span class="n">directory</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">fname</span><span class="p">,</span>
+    <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">hdfs</span><span class="p">,</span> <span class="kt">int</span> <span class="n">port</span><span class="p">,</span>
+    <span class="kt">bool</span> <span class="n">lower</span><span class="p">,</span> <span class="kt">int</span> <span class="n">k</span><span class="p">,</span>
+    <span class="k">const</span> <span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="kt">approximate_svd_params_t</span> <span class="o">&amp;</span><span class="n">params</span><span class="p">,</span>
+    <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">prefix</span><span class="p">,</span>
+    <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="kt">context_t</span> <span class="o">&amp;</span><span class="n">context</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="n">boost</span><span class="o">::</span><span class="n">mpi</span><span class="o">::</span><span class="n">communicator</span> <span class="n">world</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">rank</span> <span class="o">=</span> <span class="n">world</span><span class="p">.</span><span class="n">rank</span><span class="p">();</span>
+
+    <span class="n">InputType</span> <span class="n">A</span><span class="p">;</span>
+    <span class="n">FactorType</span> <span class="n">S</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">Y</span><span class="p">;</span>
+
+    <span class="n">boost</span><span class="o">::</span><span class="n">mpi</span><span class="o">::</span><span class="n">timer</span> <span class="n">timer</span><span class="p">;</span>
+
+    <span class="c1">// Load A and Y (Y is thrown away)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Reading the matrix... &quot;</span><span class="p">;</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="p">.</span><span class="n">flush</span><span class="p">();</span>
+        <span class="n">timer</span><span class="p">.</span><span class="n">restart</span><span class="p">();</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">hdfs</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span> <span class="p">{</span>
+<span class="cp">#       if SKYLARK_HAVE_LIBHDFS</span>
+
+        <span class="n">hdfsFS</span> <span class="n">fs</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">fs</span> <span class="o">=</span> <span class="n">hdfsConnect</span><span class="p">(</span><span class="n">hdfs</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span> <span class="n">port</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+            <span class="n">SKYLARK_THROW_EXCEPTION</span><span class="p">(</span><span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">io_exception</span><span class="p">()</span> <span class="o">&lt;&lt;</span>
+                <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">error_msg</span><span class="p">(</span><span class="s">&quot;HDFS directory reading not yet supported.&quot;</span><span class="p">))</span>
+        <span class="k">else</span>
+            <span class="n">skylark</span><span class="o">::</span><span class="n">utility</span><span class="o">::</span><span class="n">io</span><span class="o">::</span><span class="n">ReadLIBSVM</span><span class="p">(</span><span class="n">fs</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">ROWS</span><span class="p">);</span>
+
+<span class="cp">#       else</span>
+
+        <span class="n">SKYLARK_THROW_EXCEPTION</span><span class="p">(</span><span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">io_exception</span><span class="p">()</span> <span class="o">&lt;&lt;</span>
+            <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">error_msg</span><span class="p">(</span><span class="s">&quot;Install libhdfs for HDFS support!&quot;</span><span class="p">));</span>
+
+<span class="cp">#       endif</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+            <span class="n">skylark</span><span class="o">::</span><span class="n">utility</span><span class="o">::</span><span class="n">io</span><span class="o">::</span><span class="n">ReadDirLIBSVM</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">ROWS</span><span class="p">);</span>
+        <span class="k">else</span>
+            <span class="n">skylark</span><span class="o">::</span><span class="n">utility</span><span class="o">::</span><span class="n">io</span><span class="o">::</span><span class="n">ReadLIBSVM</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">ROWS</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span><span class="s">&quot;took &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">boost</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;%.2e&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">timer</span><span class="p">.</span><span class="n">elapsed</span><span class="p">()</span>
+                  <span class="o">&lt;&lt;</span> <span class="s">&quot; sec</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">;</span>
+
+    <span class="cm">/* Compute approximate SVD */</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Computing approximate SVD...&quot;</span><span class="p">;</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="p">.</span><span class="n">flush</span><span class="p">();</span>
+        <span class="n">timer</span><span class="p">.</span><span class="n">restart</span><span class="p">();</span>
+    <span class="p">}</span>
+
+    <span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="n">ApproximateSymmetricSVD</span><span class="p">(</span><span class="n">lower</span> <span class="o">?</span> <span class="n">El</span><span class="o">::</span><span class="n">LOWER</span> <span class="o">:</span> <span class="n">El</span><span class="o">::</span><span class="n">UPPER</span><span class="p">,</span>
+        <span class="n">A</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">params</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span><span class="s">&quot;Took &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">boost</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;%.2e&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">timer</span><span class="p">.</span><span class="n">elapsed</span><span class="p">()</span>
+                  <span class="o">&lt;&lt;</span> <span class="s">&quot; sec</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">;</span>
+
+    <span class="cm">/* Write results */</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Writing results...&quot;</span><span class="p">;</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="p">.</span><span class="n">flush</span><span class="p">();</span>
+        <span class="n">timer</span><span class="p">.</span><span class="n">restart</span><span class="p">();</span>
+    <span class="p">}</span>
+
+    <span class="n">El</span><span class="o">::</span><span class="n">Write</span><span class="p">(</span><span class="n">S</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s">&quot;.S&quot;</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">ASCII</span><span class="p">);</span>
+    <span class="n">El</span><span class="o">::</span><span class="n">Write</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s">&quot;.V&quot;</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">ASCII</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span><span class="s">&quot;took &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">boost</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;%.2e&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">timer</span><span class="p">.</span><span class="n">elapsed</span><span class="p">()</span>
+                  <span class="o">&lt;&lt;</span> <span class="s">&quot; sec</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">;</span>
+<span class="p">}</span>
+
+
 <span class="kt">int</span> <span class="n">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">*</span> <span class="n">argv</span><span class="p">[])</span> <span class="p">{</span>
 
     <span class="n">El</span><span class="o">::</span><span class="n">Initialize</span><span class="p">(</span><span class="n">argc</span><span class="p">,</span> <span class="n">argv</span><span class="p">);</span>
@@ -1346,7 +1544,7 @@ mpiexec -np 4 python <span class="nv">$SKYLARK_SRC_DIR</span>/python-skylark/sky
 
     <span class="kt">int</span> <span class="n">seed</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">powerits</span><span class="p">,</span> <span class="n">port</span><span class="p">;</span>
     <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">fname</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">hdfs</span><span class="p">;</span>
-    <span class="kt">bool</span> <span class="n">as_sparse</span><span class="p">,</span> <span class="n">skipqr</span><span class="p">,</span> <span class="n">use_single</span><span class="p">,</span> <span class="n">directory</span><span class="p">;</span>
+    <span class="kt">bool</span> <span class="n">as_symmetric</span><span class="p">,</span> <span class="n">as_sparse</span><span class="p">,</span> <span class="n">skipqr</span><span class="p">,</span> <span class="n">use_single</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">directory</span><span class="p">;</span>
     <span class="kt">int</span> <span class="n">oversampling_ratio</span><span class="p">,</span> <span class="n">oversampling_additive</span><span class="p">;</span>
 
     <span class="c1">// Parse options</span>
@@ -1382,6 +1580,9 @@ mpiexec -np 4 python <span class="nv">$SKYLARK_SRC_DIR</span>/python-skylark/sky
         <span class="p">(</span><span class="s">&quot;additive,a&quot;</span><span class="p">,</span>
             <span class="n">bpo</span><span class="o">::</span><span class="n">value</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">oversampling_additive</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">default_value</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
             <span class="s">&quot;Additive factor for oversampling of rank. OPTIONAL.&quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="s">&quot;symmetric&quot;</span><span class="p">,</span> <span class="s">&quot;Whether to treat the matrix as symmetric. &quot;</span>
+         <span class="s">&quot;Only upper part will be accessed, unless --lower is used.&quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="s">&quot;lower&quot;</span><span class="p">,</span> <span class="s">&quot;For symmetric matrix, access only lower part (upper is default).&quot;</span><span class="p">)</span>
         <span class="p">(</span><span class="s">&quot;sparse&quot;</span><span class="p">,</span> <span class="s">&quot;Whether to load the matrix as a sparse one.&quot;</span><span class="p">)</span>
         <span class="p">(</span><span class="s">&quot;single&quot;</span><span class="p">,</span> <span class="s">&quot;Whether to use single precision instead of double.&quot;</span><span class="p">)</span>
         <span class="p">(</span><span class="s">&quot;prefix&quot;</span><span class="p">,</span>
@@ -1416,10 +1617,12 @@ mpiexec -np 4 python <span class="nv">$SKYLARK_SRC_DIR</span>/python-skylark/sky
 
         <span class="n">bpo</span><span class="o">::</span><span class="n">notify</span><span class="p">(</span><span class="n">vm</span><span class="p">);</span>
 
+        <span class="n">as_symmetric</span> <span class="o">=</span> <span class="n">vm</span><span class="p">.</span><span class="n">count</span><span class="p">(</span><span class="s">&quot;symmetric&quot;</span><span class="p">);</span>
         <span class="n">as_sparse</span> <span class="o">=</span> <span class="n">vm</span><span class="p">.</span><span class="n">count</span><span class="p">(</span><span class="s">&quot;sparse&quot;</span><span class="p">);</span>
         <span class="n">skipqr</span> <span class="o">=</span> <span class="n">vm</span><span class="p">.</span><span class="n">count</span><span class="p">(</span><span class="s">&quot;skipqr&quot;</span><span class="p">);</span>
         <span class="n">use_single</span> <span class="o">=</span> <span class="n">vm</span><span class="p">.</span><span class="n">count</span><span class="p">(</span><span class="s">&quot;single&quot;</span><span class="p">);</span>
         <span class="n">directory</span> <span class="o">=</span> <span class="n">vm</span><span class="p">.</span><span class="n">count</span><span class="p">(</span><span class="s">&quot;directory&quot;</span><span class="p">);</span>
+        <span class="n">lower</span> <span class="o">=</span> <span class="n">vm</span><span class="p">.</span><span class="n">count</span><span class="p">(</span><span class="s">&quot;lower&quot;</span><span class="p">);</span>
 
     <span class="p">}</span> <span class="k">catch</span><span class="p">(</span><span class="n">bpo</span><span class="o">::</span><span class="n">error</span><span class="o">&amp;</span> <span class="n">e</span><span class="p">)</span> <span class="p">{</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
@@ -1440,26 +1643,53 @@ mpiexec -np 4 python <span class="nv">$SKYLARK_SRC_DIR</span>/python-skylark/sky
 
     <span class="n">SKYLARK_BEGIN_TRY</span><span class="p">()</span>
 
-    <span class="k">if</span> <span class="p">(</span><span class="n">use_single</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">as_sparse</span><span class="p">)</span>
-            <span class="n">execute</span><span class="o">&lt;</span><span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="kt">sparse_matrix_t</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">,</span>
-                    <span class="n">El</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">hdfs</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span>
-                        <span class="n">prefix</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
-        <span class="k">else</span>
-            <span class="n">execute</span><span class="o">&lt;</span><span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">,</span>
-                    <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">hdfs</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span>
-                        <span class="n">params</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">as_symmetric</span><span class="p">)</span> <span class="p">{</span>
 
-    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">as_sparse</span><span class="p">)</span>
-            <span class="n">execute</span><span class="o">&lt;</span><span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="kt">sparse_matrix_t</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">,</span>
-                    <span class="n">El</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">hdfs</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span>
-                        <span class="n">params</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
-        <span class="k">else</span>
-            <span class="n">execute</span><span class="o">&lt;</span><span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">,</span>
-                    <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">hdfs</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span>
-                        <span class="n">params</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
-    <span class="p">}</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">use_single</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">as_sparse</span><span class="p">)</span>
+                    <span class="n">execute</span><span class="o">&lt;</span><span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="kt">sparse_matrix_t</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">,</span>
+                            <span class="n">El</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">hdfs</span><span class="p">,</span> 
+                                <span class="n">port</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+                <span class="k">else</span>
+                    <span class="n">execute</span><span class="o">&lt;</span><span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">,</span>
+                            <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">hdfs</span><span class="p">,</span> 
+                                <span class="n">port</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">as_sparse</span><span class="p">)</span>
+                    <span class="n">execute</span><span class="o">&lt;</span><span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="kt">sparse_matrix_t</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">,</span>
+                            <span class="n">El</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">hdfs</span><span class="p">,</span>
+                                <span class="n">port</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+                <span class="k">else</span>
+                    <span class="n">execute</span><span class="o">&lt;</span><span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">,</span>
+                            <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">hdfs</span><span class="p">,</span>
+                                <span class="n">port</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+            <span class="p">}</span>
+
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="n">use_single</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">as_sparse</span><span class="p">)</span>
+                    <span class="n">execute_sym</span><span class="o">&lt;</span><span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="kt">sparse_matrix_t</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">,</span>
+                                <span class="n">El</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">hdfs</span><span class="p">,</span>
+                                    <span class="n">port</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+                <span class="k">else</span>
+                    <span class="n">execute_sym</span><span class="o">&lt;</span><span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">,</span>
+                                <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">hdfs</span><span class="p">,</span>
+                                    <span class="n">port</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">as_sparse</span><span class="p">)</span>
+                    <span class="n">execute_sym</span><span class="o">&lt;</span><span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="kt">sparse_matrix_t</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">,</span>
+                                <span class="n">El</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">hdfs</span><span class="p">,</span>
+                                    <span class="n">port</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+                <span class="k">else</span>
+                    <span class="n">execute_sym</span><span class="o">&lt;</span><span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">,</span>
+                                <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">hdfs</span><span class="p">,</span>
+                                    <span class="n">port</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
 
     <span class="n">SKYLARK_END_TRY</span><span class="p">()</span> <span class="n">SKYLARK_CATCH_AND_PRINT</span><span class="p">()</span>
 

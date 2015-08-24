@@ -191,7 +191,7 @@ inline void Gemm(El::Orientation oA, El::Orientation oB,
 }
 
 /**
- * Gemm between mixed Elental, sparse input. Output is dense Elemental.
+ * Gemm between mixed Elemental, sparse input. Output is dense Elemental.
  */
 
 template<typename T>

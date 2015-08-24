@@ -353,10 +353,6 @@ void ReadLIBSVM(const std::string& fname,
             }
         }
 
-        if(line.length()==0)
-            break;
-        n++;
-
         if (direction == base::COLUMNS) {
             size_t delim = line.find_last_of(":");
             if(delim == std::string::npos)

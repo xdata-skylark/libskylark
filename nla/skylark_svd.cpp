@@ -242,11 +242,11 @@ int main(int argc, char* argv[]) {
                                 prefix, context);
 
             } else {
-                // if (as_sparse)
-                //     execute_sym<skylark::base::sparse_matrix_t<double>,
-                //             El::Matrix<double> >(fname, k, params,
-                //                 prefix, context);
-                // else
+                if (as_sparse)
+                    execute_sym<skylark::base::sparse_matrix_t<double>,
+                            El::Matrix<double> >(fname, k, params,
+                                prefix, context);
+                else
                     execute_sym<El::DistMatrix<double>,
                             El::DistMatrix<double> >(fname, k, params,
                                 prefix, context);

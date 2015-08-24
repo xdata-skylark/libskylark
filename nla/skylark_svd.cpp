@@ -232,11 +232,11 @@ int main(int argc, char* argv[]) {
         } else {
 
             if (use_single) {
-                // if (as_sparse)
-                //     execute_sym<skylark::base::sparse_matrix_t<float>,
-                //             El::Matrix<float> >(fname, k, params,
-                //                 prefix, context);
-                // else
+                if (as_sparse)
+                    execute_sym<skylark::base::sparse_matrix_t<float>,
+                            El::Matrix<float> >(fname, k, params,
+                                prefix, context);
+                else
                     execute_sym<El::DistMatrix<float>,
                             El::DistMatrix<float> >(fname, k, params,
                                 prefix, context);

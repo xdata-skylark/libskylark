@@ -67,7 +67,7 @@ void execute(const std::string &fname, int k,
 }
 
 template<typename InputType, typename FactorType>
-void execute_sym(const std::string &fname, int k,
+void execute_sym(const std::string &fname, bool lower, int k,
     const skylark::nla::approximate_svd_params_t &params,
     const std::string &prefix,
     skylark::base::context_t &context) {
@@ -100,7 +100,8 @@ void execute_sym(const std::string &fname, int k,
         timer.restart();
     }
 
-    skylark::nla::ApproximateSymmetricSVD(El::UPPER, A, V, S, k, context, params);
+    skylark::nla::ApproximateSymmetricSVD(lower ? El::LOWER : El::UPPER,
+        A, V, S, k, context, params);
 
     if (rank == 0)
         std::cout <<"Took " << boost::format("%.2e") % timer.elapsed()
@@ -128,7 +129,7 @@ int main(int argc, char* argv[]) {
 
     int seed, k, powerits;
     std::string fname, prefix;
-    bool as_symmetric, as_sparse, skipqr, use_single;
+    bool as_symmetric, as_sparse, skipqr, use_single, lower;
     int oversampling_ratio, oversampling_additive;
 
     // Parse options
@@ -155,7 +156,9 @@ int main(int argc, char* argv[]) {
         ("additive,a",
             bpo::value<int>(&oversampling_additive)->default_value(0),
             "Additive factor for oversampling of rank. OPTIONAL.")
-        ("symmetric", "Whether to treat the matrix as symmetric.")
+        ("symmetric", "Whether to treat the matrix as symmetric. "
+         "Only upper part will be accessed, unless --lower is used.")
+        ("lower", "For symmetric matrix, access only lower part (upper is default).")
         ("sparse", "Whether to load the matrix as a sparse one.")
         ("single", "Whether to use single precision instead of double.")
         ("prefix",
@@ -189,6 +192,7 @@ int main(int argc, char* argv[]) {
         as_sparse = vm.count("sparse");
         skipqr = vm.count("skipqr");
         use_single = vm.count("single");
+        lower = vm.count("lower");
 
     } catch(bpo::error& e) {
         std::cerr << e.what() << std::endl;
@@ -234,21 +238,21 @@ int main(int argc, char* argv[]) {
             if (use_single) {
                 if (as_sparse)
                     execute_sym<skylark::base::sparse_matrix_t<float>,
-                            El::Matrix<float> >(fname, k, params,
+                            El::Matrix<float> >(fname, lower, k, params,
                                 prefix, context);
                 else
                     execute_sym<El::DistMatrix<float>,
-                            El::DistMatrix<float> >(fname, k, params,
+                            El::DistMatrix<float> >(fname, lower, k, params,
                                 prefix, context);
 
             } else {
                 if (as_sparse)
                     execute_sym<skylark::base::sparse_matrix_t<double>,
-                            El::Matrix<double> >(fname, k, params,
+                             El::Matrix<double> >(fname, lower, k, params,
                                 prefix, context);
                 else
                     execute_sym<El::DistMatrix<double>,
-                            El::DistMatrix<double> >(fname, k, params,
+                             El::DistMatrix<double> >(fname, lower, k, params,
                                 prefix, context);
             }
         }

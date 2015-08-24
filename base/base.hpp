@@ -19,6 +19,7 @@
 #include "viewing.hpp"
 #include "copy.hpp"
 #include "Trsm.hpp"
+#include "Symm.hpp"
 #include "Gemm.hpp"
 #include "Gemv.hpp"
 #include "inner.hpp"

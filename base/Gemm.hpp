@@ -14,7 +14,7 @@
 namespace skylark { namespace base {
 
 /**
- * Rename the Elental Gemm function, so that we have unified access.
+ * Rename the Elemental Gemm function, so that we have unified access.
  */
 
 template<typename T>
@@ -62,8 +62,8 @@ inline void Gemm(El::Orientation oA, El::Orientation oB,
 }
 
 /**
- * The following combinations is not offered by Elental, but is useful for us.
- * We implement it partially.
+ * The following combinations is not offered by Elemental, but are useful for us.
+ * We implement them partially.
  */
 
 template<typename T>

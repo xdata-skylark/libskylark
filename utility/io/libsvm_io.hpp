@@ -34,8 +34,8 @@ void ReadLIBSVM(const std::string& fname,
     std::string token, val, ind;
     float label;
     unsigned int start = 0;
-    unsigned int delim, t;
-    int n = 0;
+    unsigned int t;
+    int n = 0, nt = 0;
     int d = 0;
     int i, j, last;
     char c;
@@ -46,12 +46,30 @@ void ReadLIBSVM(const std::string& fname,
     // will pay in terms of preallocated storage.
     while(!in.eof()) {
         getline(in, line);
-        if(line.length()==0)
+
+        // Ignore empty lines and comment lines (begin with #)
+        if(line.length() == 0 || line[0] == '#')
             break;
-        delim = line.find_last_of(":");
-        if(delim > line.length())
-            continue;
+
         n++;
+
+        // Figure out number of targets (only first line)
+        if (n == 1) {
+            std::string tstr;
+            std::istringstream tokenstream (line);
+            tokenstream >> tstr;
+            while (tstr.find(":") == std::string::npos) {
+                nt++;
+                if (tokenstream.eof())
+                    break;
+                tokenstream >> tstr;
+            }
+        }
+
+        size_t delim = line.find_last_of(":");
+        if(delim == std::string::npos)
+            continue;
+
         t = delim;
         while(line[t]!=' ') {
             t--;
@@ -70,27 +88,36 @@ void ReadLIBSVM(const std::string& fname,
 
     if (direction == base::COLUMNS) {
         X.Resize(d, n);
-        Y.Resize(1, n);
+        Y.Resize(nt, n);
     } else {
         X.Resize(n, d);
-        Y.Resize(n, 1);
+        Y.Resize(n, nt);
     }
 
     T *Xdata = X.Buffer();
     T *Ydata = Y.Buffer();
     int ldX = X.LDim();
+    int ldY = Y.LDim();
 
     for (t = 0; t < n; t++) {
         getline(in, line);
-        if( line.length()==0)
+
+        // Ignore empty lines and comment lines (begin with #)
+        if(line.length() == 0 || line[0] == '#')
             break;
 
-        std::istringstream tokenstream (line);
-        tokenstream >> label;
-        Ydata[t] = label;
+        std::istringstream tokenstream(line);
+
+        for(int r = 0; r < nt; r++) {
+            tokenstream >> label;
+            if (direction == base::COLUMNS)
+                Ydata[t * ldY + r] = label;
+            else
+                Ydata[r * ldY + t] = label;
+        }
 
         while (tokenstream >> token) {
-            delim  = token.find(':');
+            size_t delim  = token.find(':');
             ind = token.substr(0, delim);
             val = token.substr(delim+1); //.substr(delim+1);
             j = atoi(ind.c_str()) - 1;
@@ -124,7 +151,8 @@ void ReadLIBSVM(const std::string& fname,
     std::string token, val, ind;
     T label;
     unsigned int start = 0;
-    unsigned int delim, t;
+    size_t delim;
+    unsigned int t;
     int n = 0, nt = 0;
     int d = 0;
     int i, j, last;
@@ -138,31 +166,37 @@ void ReadLIBSVM(const std::string& fname,
 
     // make one pass over the data to figure out dimensions -
     // will pay in terms of preallocated storage.
-    if (rank==0) {
+    if (rank == 0) {
         while(!in.eof()) {
             getline(in, line);
-            if(line.length()==0)
+
+            // Ignore empty lines and comment lines (begin with #)
+            if(line.length() == 0 || line[0] == '#')
                 break;
-            delim = line.find_last_of(":");
-            if(delim > line.length())
-                continue;
+
             n++;
 
-            // Figure out number of targets
+            // Figure out number of targets (only first line)
             if (n == 1) {
                 std::string tstr;
                 std::istringstream tokenstream (line);
                 tokenstream >> tstr;
                 while (tstr.find(":") == std::string::npos) {
                     nt++;
+                    if (tokenstream.eof())
+                        break;
                     tokenstream >> tstr;
                 }
             }
 
+            size_t delim = line.find_last_of(":");
+            if(delim == std::string::npos)
+                continue;
+
             t = delim;
-            while(line[t]!=' ') {
+            while(line[t]!=' ')
                 t--;
-            }
+
             val = line.substr(t+1, delim - t);
             last = atoi(val.c_str());
             if (last>d)
@@ -218,10 +252,13 @@ void ReadLIBSVM(const std::string& fname,
             t = 0;
             while(!in.eof() && t<block) {
                 getline(in, line);
-                if( line.length()==0)
+
+                // Ignore empty lines and comment lines (begin with #)
+                if(line.length() == 0 || line[0] == '#')
                     break;
 
-                std::istringstream tokenstream (line);
+                std::istringstream tokenstream(line);
+
                 for(int r = 0; r < nt; r++) {
                     tokenstream >> label;
                     if (direction == base::COLUMNS)
@@ -231,7 +268,7 @@ void ReadLIBSVM(const std::string& fname,
                 }
 
                 while (tokenstream >> token) {
-                    delim  = token.find(':');
+                    size_t delim  = token.find(':');
                     ind = token.substr(0, delim);
                     val = token.substr(delim+1); //.substr(delim+1);
                     j = atoi(ind.c_str()) - 1;
@@ -279,8 +316,8 @@ void ReadLIBSVM(const std::string& fname,
     std::string token;
     float label;
     unsigned int start = 0;
-    unsigned int delim, t;
-    int n = 0;
+    unsigned int t;
+    int n = 0, nt = 0;
     int d = 0;
     int i, j, last;
     char c;
@@ -296,17 +333,39 @@ void ReadLIBSVM(const std::string& fname,
 
     while(!in.eof()) {
         getline(in, line);
+
+        // Ignore empty lines and comment lines (begin with #)
+        if(line.length() == 0 || line[0] == '#')
+            break;
+
+        n++;
+
+        // Figure out number of targets (only first line)
+        if (n == 1) {
+            std::string tstr;
+            std::istringstream tokenstream (line);
+            tokenstream >> tstr;
+            while (tstr.find(":") == std::string::npos) {
+                nt++;
+                if (tokenstream.eof())
+                    break;
+                tokenstream >> tstr;
+            }
+        }
+
         if(line.length()==0)
             break;
         n++;
 
         if (direction == base::COLUMNS) {
-            delim = line.find_last_of(":");
-            if(delim > line.length())
+            size_t delim = line.find_last_of(":");
+            if(delim == std::string::npos)
                 continue;
+
             t = delim;
             while(line[t]!=' ')
                 t--;
+
             std::string val = line.substr(t+1, delim - t);
             last = atoi(val.c_str());
             if (last>d)
@@ -323,7 +382,7 @@ void ReadLIBSVM(const std::string& fname,
 
             while (tokenstream >> token) {
                 nnz++;
-                delim  = token.find(':');
+                size_t delim  = token.find(':');
                 int ind = atoi(token.substr(0, delim).c_str());
 
                 colsize[ind-1]++;
@@ -342,10 +401,12 @@ void ReadLIBSVM(const std::string& fname,
         col_ptr[0] = 0;
         for(int i = 1; i <= d; i++)
             col_ptr[i] = col_ptr[i-1] + colsize[i-1];
-        Y.Resize(n, 1);
+        Y.Resize(n, nt);
     } else
-        Y.Resize(1, n);
+        Y.Resize(nt, n);
+
     T *Ydata = Y.Buffer();
+    int ldY = Y.LDim();
 
     // prepare for second pass
     in.clear();
@@ -356,17 +417,26 @@ void ReadLIBSVM(const std::string& fname,
     colsize.clear();
     for (t = 0; t < n; t++) {
         getline(in, line);
-        if( line.length()==0)
+
+        // Ignore empty lines and comment lines (begin with #)
+        if(line.length() == 0 || line[0] == '#')
             break;
 
         std::istringstream tokenstream (line);
-        tokenstream >> Ydata[t];
+
+        for(int r = 0; r < nt; r++) {
+            tokenstream >> label;
+            if (direction == base::COLUMNS)
+                Ydata[t * ldY + r] = label;
+            else
+                Ydata[r * ldY + t] = label;
+        }
 
         if (direction == base::COLUMNS)
             col_ptr[t] = nnz;
 
         while (tokenstream >> token) {
-            delim  = token.find(':');
+            size_t delim  = token.find(':');
             std::string ind = token.substr(0, delim);
             std::string val = token.substr(delim+1); //.substr(delim+1);
             j = atoi(ind.c_str()) - 1;
@@ -414,7 +484,7 @@ void ReadDirLIBSVM(const std::string& dname,
     std::string token, val, ind;
     T label;
     unsigned int start = 0;
-    unsigned int delim, t;
+    unsigned int t;
     int n = 0, nt = 0;
     int d = 0;
     int i, j, last;
@@ -441,23 +511,29 @@ void ReadDirLIBSVM(const std::string& dname,
 
             while(!in.eof()) {
                 getline(in, line);
-                if(line.length()==0)
-                    continue;
-                delim = line.find_last_of(":");
-                if(delim > line.length())
-                    continue;
+
+                // Ignore empty lines and comment lines (begin with #)
+                if(line.length() == 0 || line[0] == '#')
+                    break;
+
                 n++;
 
-                // Figure out number of targets
+                // Figure out number of targets (only first line)
                 if (n == 1) {
                     std::string tstr;
                     std::istringstream tokenstream (line);
                     tokenstream >> tstr;
                     while (tstr.find(":") == std::string::npos) {
                         nt++;
+                        if (tokenstream.eof())
+                            break;
                         tokenstream >> tstr;
                     }
                 }
+
+                size_t delim = line.find_last_of(":");
+                if(delim == std::string::npos)
+                    continue;
 
                 t = delim;
                 while(line[t]!=' ') {
@@ -556,8 +632,10 @@ void ReadDirLIBSVM(const std::string& dname,
                 }
 
                 getline(in, line);
-                if( line.length()==0)
-                    continue;
+
+                // Ignore empty lines and comment lines (begin with #)
+                if(line.length() == 0 || line[0] == '#')
+                    break;
 
                 std::istringstream tokenstream (line);
                 for(int r = 0; r < nt; r++) {
@@ -569,7 +647,7 @@ void ReadDirLIBSVM(const std::string& dname,
                 }
 
                 while (tokenstream >> token) {
-                    delim  = token.find(':');
+                    size_t delim  = token.find(':');
                     ind = token.substr(0, delim);
                     val = token.substr(delim+1); //.substr(delim+1);
                     j = atoi(ind.c_str()) - 1;
@@ -713,8 +791,8 @@ void ReadLIBSVM(const hdfsFS &fs, const std::string& fname,
     std::string token, val, ind;
     float label;
     unsigned int start = 0;
-    unsigned int delim, t;
-    int n = 0;
+    unsigned int t;
+    int n = 0, nt = 0;
     int d = 0;
     int i, j, last;
     char c;
@@ -732,12 +810,30 @@ void ReadLIBSVM(const hdfsFS &fs, const std::string& fname,
     // will pay in terms of preallocated storage.
     while(!in.eof()) {
         in.getline(line);
-        if(line.length()==0)
+
+        // Ignore empty lines and comment lines (begin with #)
+        if(line.length() == 0 || line[0] == '#')
             break;
-        delim = line.find_last_of(":");
-        if(delim > line.length())
-            continue;
+
         n++;
+
+        // Figure out number of targets (only first line)
+        if (n == 1) {
+            std::string tstr;
+            std::istringstream tokenstream (line);
+            tokenstream >> tstr;
+            while (tstr.find(":") == std::string::npos) {
+                nt++;
+                if (tokenstream.eof())
+                    break;
+                tokenstream >> tstr;
+            }
+        }
+
+        size_t delim = line.find_last_of(":");
+        if(delim == std::string::npos)
+            continue;
+
         t = delim;
         while(line[t]!=' ') {
             t--;
@@ -755,27 +851,36 @@ void ReadLIBSVM(const hdfsFS &fs, const std::string& fname,
 
     if (direction == base::COLUMNS) {
         X.Resize(d, n);
-        Y.Resize(1, n);
+        Y.Resize(nt, n);
     } else {
         X.Resize(n, d);
-        Y.Resize(n, 1);
+        Y.Resize(n, nt);
     }
 
     T *Xdata = X.Buffer();
     T *Ydata = Y.Buffer();
     int ldX = X.LDim();
+    int ldY = Y.LDim();
 
     for (t = 0; t < n; t++) {
         in.getline(line);
-        if( line.length()==0)
+
+        // Ignore empty lines and comment lines (begin with #)
+        if(line.length() == 0 || line[0] == '#')
             break;
 
         std::istringstream tokenstream (line);
-        tokenstream >> label;
-        Ydata[t] = label;
+
+        for(int r = 0; r < nt; r++) {
+            tokenstream >> label;
+            if (direction == base::COLUMNS)
+                Ydata[t * ldY + r] = label;
+            else
+                Ydata[r * ldY + t] = label;
+        }
 
         while (tokenstream >> token) {
-            delim  = token.find(':');
+            size_t delim  = token.find(':');
             ind = token.substr(0, delim);
             val = token.substr(delim+1); //.substr(delim+1);
             j = atoi(ind.c_str()) - 1;
@@ -810,7 +915,7 @@ void ReadLIBSVM(hdfsFS &fs, const std::string& fname,
     std::string token, val, ind;
     T label;
     unsigned int start = 0;
-    unsigned int delim, t;
+    unsigned int t;
     int n = 0, nt = 0;
     int d = 0;
     int i, j, last;
@@ -840,23 +945,29 @@ void ReadLIBSVM(hdfsFS &fs, const std::string& fname,
 
         while(!in->eof()) {
             in->getline(line);
-            if(line.length()==0)
+
+            // Ignore empty lines and comment lines (begin with #)
+            if(line.length() == 0 || line[0] == '#')
                 break;
-            delim = line.find_last_of(":");
-            if(delim > line.length())
-                continue;
+
             n++;
 
-            // Figure out number of targets
+            // Figure out number of targets (only first line)
             if (n == 1) {
                 std::string tstr;
                 std::istringstream tokenstream (line);
                 tokenstream >> tstr;
                 while (tstr.find(":") == std::string::npos) {
                     nt++;
+                    if (tokenstream.eof())
+                        break;
                     tokenstream >> tstr;
                 }
             }
+
+            size_t delim = line.find_last_of(":");
+            if(delim == std::string::npos)
+                continue;
 
             t = delim;
             while(line[t]!=' ') {
@@ -915,7 +1026,9 @@ void ReadLIBSVM(hdfsFS &fs, const std::string& fname,
             t = 0;
             while(!in->eof() && t<block) {
                 in->getline(line);
-                if( line.length()==0)
+
+                // Ignore empty lines and comment lines (begin with #)
+                if(line.length() == 0 || line[0] == '#')
                     break;
 
                 std::istringstream tokenstream (line);
@@ -928,7 +1041,7 @@ void ReadLIBSVM(hdfsFS &fs, const std::string& fname,
                 }
 
                 while (tokenstream >> token) {
-                    delim  = token.find(':');
+                    size_t delim  = token.find(':');
                     ind = token.substr(0, delim);
                     val = token.substr(delim+1); //.substr(delim+1);
                     j = atoi(ind.c_str()) - 1;

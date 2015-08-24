@@ -66,13 +66,69 @@ void execute(const std::string &fname, int k,
                   << " sec\n";
 }
 
+template<typename InputType, typename FactorType>
+void execute_sym(const std::string &fname, int k,
+    const skylark::nla::approximate_svd_params_t &params,
+    const std::string &prefix,
+    skylark::base::context_t &context) {
+
+    boost::mpi::communicator world;
+    int rank = world.rank();
+
+    InputType A;
+    FactorType S, V, Y;
+
+    boost::mpi::timer timer;
+
+    // Load A and Y (Y is thrown away)
+    if (rank == 0) {
+        std::cout << "Reading the matrix... ";
+        std::cout.flush();
+        timer.restart();
+    }
+
+    skylark::utility::io::ReadLIBSVM(fname, A, Y, skylark::base::ROWS);
+
+    if (rank == 0)
+        std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
+                  << " sec\n";
+
+    /* Compute approximate SVD */
+    if (rank == 0) {
+        std::cout << "Computing approximate SVD...";
+        std::cout.flush();
+        timer.restart();
+    }
+
+    skylark::nla::ApproximateSymmetricSVD(El::UPPER, A, V, S, k, context, params);
+
+    if (rank == 0)
+        std::cout <<"Took " << boost::format("%.2e") % timer.elapsed()
+                  << " sec\n";
+
+    /* Write results */
+    if (rank == 0) {
+        std::cout << "Writing results...";
+        std::cout.flush();
+        timer.restart();
+    }
+
+    El::Write(S, prefix + ".S", El::ASCII);
+    El::Write(V, prefix + ".V", El::ASCII);
+
+    if (rank == 0)
+        std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
+                  << " sec\n";
+}
+
+
 int main(int argc, char* argv[]) {
 
     El::Initialize(argc, argv);
 
     int seed, k, powerits;
     std::string fname, prefix;
-    bool as_sparse, skipqr, use_single;
+    bool as_symmetric, as_sparse, skipqr, use_single;
     int oversampling_ratio, oversampling_additive;
 
     // Parse options
@@ -99,6 +155,7 @@ int main(int argc, char* argv[]) {
         ("additive,a",
             bpo::value<int>(&oversampling_additive)->default_value(0),
             "Additive factor for oversampling of rank. OPTIONAL.")
+        ("symmetric", "Whether to treat the matrix as symmetric.")
         ("sparse", "Whether to load the matrix as a sparse one.")
         ("single", "Whether to use single precision instead of double.")
         ("prefix",
@@ -128,6 +185,7 @@ int main(int argc, char* argv[]) {
 
         bpo::notify(vm);
 
+        as_symmetric = vm.count("symmetric");
         as_sparse = vm.count("sparse");
         skipqr = vm.count("skipqr");
         use_single = vm.count("single");
@@ -148,22 +206,52 @@ int main(int argc, char* argv[]) {
 
     SKYLARK_BEGIN_TRY()
 
-    if (use_single) {
-        if (as_sparse)
-            execute<skylark::base::sparse_matrix_t<float>,
-                    El::Matrix<float> >(fname, k, params, prefix, context);
-        else
-            execute<El::DistMatrix<float>,
-                    El::DistMatrix<float> >(fname, k, params, prefix, context);
+        if (!as_symmetric) {
 
-    } else {
-        if (as_sparse)
-            execute<skylark::base::sparse_matrix_t<double>,
-                    El::Matrix<double> >(fname, k, params, prefix, context);
-        else
-            execute<El::DistMatrix<double>,
-                    El::DistMatrix<double> >(fname, k, params, prefix, context);
-    }
+            if (use_single) {
+                if (as_sparse)
+                    execute<skylark::base::sparse_matrix_t<float>,
+                            El::Matrix<float> >(fname, k, params,
+                                prefix, context);
+                else
+                    execute<El::DistMatrix<float>,
+                            El::DistMatrix<float> >(fname, k, params,
+                                prefix, context);
+
+            } else {
+                if (as_sparse)
+                    execute<skylark::base::sparse_matrix_t<double>,
+                            El::Matrix<double> >(fname, k, params,
+                                prefix, context);
+                else
+                    execute<El::DistMatrix<double>,
+                            El::DistMatrix<double> >(fname, k, params,
+                                prefix, context);
+            }
+
+        } else {
+
+            if (use_single) {
+                // if (as_sparse)
+                //     execute_sym<skylark::base::sparse_matrix_t<float>,
+                //             El::Matrix<float> >(fname, k, params,
+                //                 prefix, context);
+                // else
+                    execute_sym<El::DistMatrix<float>,
+                            El::DistMatrix<float> >(fname, k, params,
+                                prefix, context);
+
+            } else {
+                // if (as_sparse)
+                //     execute_sym<skylark::base::sparse_matrix_t<double>,
+                //             El::Matrix<double> >(fname, k, params,
+                //                 prefix, context);
+                // else
+                    execute_sym<El::DistMatrix<double>,
+                            El::DistMatrix<double> >(fname, k, params,
+                                prefix, context);
+            }
+        }
 
     SKYLARK_END_TRY() SKYLARK_CATCH_AND_PRINT()
 

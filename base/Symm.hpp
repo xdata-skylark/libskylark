@@ -108,7 +108,35 @@ inline void Symm(El::LeftOrRight side, El::UpperOrLower uplo,
                  }
     }
 
-    // TODO: RIGHT
+    // RIGHT - TODO: Not tested!
+    if (side == El::RIGHT) {
+        int k = A.width();
+        int n = B.Width();
+        int m = A.height();
+
+        El::Scale(beta, C);
+
+        El::Matrix<T> Bc;
+        El::Matrix<T> Cc;
+
+#       if SKYLARK_HAVE_OPENMP
+#       pragma omp parallel for private(Cc, Bc)
+#       endif
+        for(int col = 0; col < n; col++) {
+            El::View(Cc, C, 0, col, m, 1);
+            for (int j = indptr[col]; j < indptr[col + 1]; j++) {
+                int row = indices[j];
+
+                if ((uplo == El::UPPER && row > col) ||
+                    (uplo == El::LOWER && row < col))
+                    continue;
+
+                T val = values[j];
+                El::LockedView(Bc, B, 0, row, m, 1);
+                El::Axpy(alpha * val, Bc, Cc);
+            }
+        }
+    }
 }
 
 template<typename T>

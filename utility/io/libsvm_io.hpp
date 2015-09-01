@@ -925,6 +925,7 @@ struct hdfs_line_streamer_t {
         }
     }
 
+    //XXX: currently rewind is not used anymore
     void rewind() {
         _eof = false;
         _emptybuf = true;
@@ -1129,6 +1130,10 @@ void ReadLIBSVM(const hdfsFS &fs, const std::string& fname,
             while(line[t]!=' ') {
                 t--;
             }
+            val = line.substr(t+1, delim - t);
+            last = atoi(val.c_str());
+            if (last>d)
+                d = last;
         }
 
         in = itr.next();
@@ -1436,6 +1441,7 @@ void ReadLIBSVM(hdfsFS &fs, const std::string& fname,
                         nt++;
                         if (tokenstream.eof())
                             break;
+                        tokenstream >> tstr;
                     }
                 }
 
@@ -1447,6 +1453,10 @@ void ReadLIBSVM(hdfsFS &fs, const std::string& fname,
                 while(line[t]!=' ') {
                     t--;
                 }
+                val = line.substr(t+1, delim - t);
+                last = atoi(val.c_str());
+                if (last>d)
+                    d = last;
             }
 
             in = itr->next();

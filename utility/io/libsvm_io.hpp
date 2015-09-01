@@ -1184,6 +1184,7 @@ void ReadLIBSVM(const hdfsFS &fs, const std::string& fname,
                     Xdata[t * ldX + j] = atof(val.c_str());
                 else
                     Xdata[j * ldX + t] = atof(val.c_str());
+            }
 
             t++;
         }
@@ -1252,7 +1253,7 @@ void ReadLIBSVM(hdfsFS &fs, const std::string& fname,
             }
 
             if (direction == base::COLUMNS) {
-                delim = line.find_last_of(":");
+                size_t delim = line.find_last_of(":");
                 if(delim == line.length())
                     continue;
 
@@ -1275,7 +1276,7 @@ void ReadLIBSVM(hdfsFS &fs, const std::string& fname,
 
                 while (tokenstream >> token) {
                     nnz++;
-                    delim  = token.find(':');
+                    size_t delim  = token.find(':');
                     int ind = atoi(token.substr(0, delim).c_str());
 
                     colsize[ind-1]++;
@@ -1341,7 +1342,7 @@ void ReadLIBSVM(hdfsFS &fs, const std::string& fname,
                 col_ptr[t] = nnz;
 
             while (tokenstream >> token) {
-                delim  = token.find(':');
+                size_t delim  = token.find(':');
                 std::string ind = token.substr(0, delim);
                 std::string val = token.substr(delim+1); //.substr(delim+1);
                 j = atoi(ind.c_str()) - 1;
@@ -1445,6 +1446,7 @@ void ReadLIBSVM(hdfsFS &fs, const std::string& fname,
                 t = delim;
                 while(line[t]!=' ') {
                     t--;
+                }
             }
 
             in = itr->next();

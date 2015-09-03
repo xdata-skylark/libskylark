@@ -34,6 +34,13 @@ namespace detail {
  *  Row indices are not sorted.
  *  Structure is always constants, and can only be attached by Attached.
  *  Values of non-zeros can be modified.
+ *
+ *  Note that 2D distributions do not make sense (inbalance):
+ *
+ *    https://github.com/elemental/Elemental/issues/24
+ *
+ *  TODO:
+ *      - handle transpose (?)
  */
 template<typename ValueType=double>
 struct sparse_dist_matrix_t {
@@ -41,33 +48,18 @@ struct sparse_dist_matrix_t {
     typedef int index_type;
     typedef ValueType value_type;
 
-    //FIXME: comm?
-    sparse_dist_matrix_t()
+    sparse_dist_matrix_t(
+            El::Int n_rows, El::Int n_cols, const El::Grid& grid)
         : _local_buffer(new sparse_matrix_t<value_type>())
-        , _comm(boost::mpi::communicator())
-        , _grid(El::Grid(_comm))
+        , _comm(boost::mpi::communicator(grid.Comm().comm, boost::mpi::comm_attach))
         , _finalized(false)
         , _rank(_comm.rank())
         , _num_procs(_comm.size())
-        , _n_rows(0)
-        , _n_cols(0)
-        , _n_local_rows(0)
-        , _n_local_cols(0)
-    {}
-
-    sparse_dist_matrix_t(
-            El::Int n_rows, El::Int n_cols, boost::mpi::communicator& comm,
-            const El::Grid& grid)
-        : _local_buffer(new sparse_matrix_t<value_type>())
-        , _comm(comm)
-        , _grid(grid)
-        , _finalized(false)
-        , _rank(comm.rank())
-        , _num_procs(comm.size())
         , _n_rows(n_rows)
         , _n_cols(n_cols)
         , _n_local_rows(0)
         , _n_local_cols(0)
+        , _grid(grid)
     {}
 
     ~sparse_dist_matrix_t()
@@ -155,6 +147,16 @@ struct sparse_dist_matrix_t {
         _finalized = true;
     }
 
+    /**
+     * Scales the matrix by a constant. This only works for finalized matrices.
+     */
+    void scale(value_type factor) {
+        assert(_finalized == true);
+
+        for(size_t i = 0; i < _values.size(); i++)
+            _values[i] *= factor;
+    }
+
 
     El::Int height()   const { return _n_rows; }
     El::Int width()    const { return _n_cols; }
@@ -239,8 +241,7 @@ private:
     std::unique_ptr< sparse_matrix_t<value_type> > _local_buffer;
     std::map< std::pair<int, int>, value_type, detail::compare_t > _temp_buffer;
 
-    const boost::mpi::communicator& _comm;
-    const El::Grid& _grid;
+    const boost::mpi::communicator _comm;
 
     bool _finalized;
     std::vector<int> _indptr;
@@ -270,6 +271,8 @@ protected:
     int _col_align;
     int _col_shift;
     int _col_stride;
+
+    const El::Grid& _grid;
 };
 
 } }

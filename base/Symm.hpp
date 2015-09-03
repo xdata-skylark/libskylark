@@ -35,7 +35,7 @@ inline void Symm(El::LeftOrRight side, El::UpperOrLower uplo,
     T alpha, const El::DistMatrix<T, El::STAR, El::STAR>& A,
     const El::DistMatrix<T, El::STAR, El::STAR>& B,
     T beta, El::DistMatrix<T, El::STAR, El::STAR>& C) {
-    El::Symm(side, uplo,  alpha, A.LockedMatrix(), B.LockedMatrix(), 
+    El::Symm(side, uplo,  alpha, A.LockedMatrix(), B.LockedMatrix(),
         beta, C.Matrix());
 }
 
@@ -145,6 +145,24 @@ inline void Symm(El::LeftOrRight side, El::UpperOrLower uplo,
     El::Matrix<T>& C) {
 
     base::Symm(side, uplo, alpha, A, B, T(0.0), C);
+}
+
+template<typename T>
+inline void Symm(El::LeftOrRight side, El::UpperOrLower uplo,
+    T alpha, const skylark::base::sparse_vc_star_matrix_t<T>& A,
+    const El::DistMatrix<T, El::VC, El::STAR>& B, T beta,
+    El::DistMatrix<T, El::VC, El::STAR>& C) {
+
+    //TODO: implement
+}
+
+template<typename T>
+inline void Symm(El::LeftOrRight side, El::UpperOrLower uplo,
+    T alpha, const sparse_vc_star_matrix_t<T>& A,
+    const El::DistMatrix<T, El::VC, El::STAR>& B,
+    El::DistMatrix<T, El::VC, El::STAR>& C) {
+
+    base::Symm(side, uplo, alpha, A, B, static_cast<T>(1.0), C);
 }
 
 } } // namespace skylark::base

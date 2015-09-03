@@ -10,7 +10,7 @@
 
 namespace bpo = boost::program_options;
 
-template<typename InputType, typename FactorType>
+template<typename InputType, typename FactorType, typename UType = FactorType>
 void execute(bool directory, const std::string &fname,
     const std::string &hdfs, int port, int k,
     const skylark::nla::approximate_svd_params_t &params,
@@ -21,7 +21,8 @@ void execute(bool directory, const std::string &fname,
     int rank = world.rank();
 
     InputType A;
-    FactorType U, S, V, Y;
+    FactorType S, V, Y;
+    UType U;
 
     boost::mpi::timer timer;
 
@@ -58,6 +59,8 @@ void execute(bool directory, const std::string &fname,
             skylark::utility::io::ReadLIBSVM(fname, A, Y, skylark::base::ROWS);
     }
 
+    Y.Empty();
+
     if (rank == 0)
         std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
                   << " sec\n";
@@ -91,7 +94,7 @@ void execute(bool directory, const std::string &fname,
                   << " sec\n";
 }
 
-template<typename InputType, typename FactorType>
+template<typename InputType, typename FactorType, typename UType = FactorType>
 void execute_sym(bool directory, const std::string &fname,
     const std::string &hdfs, int port,
     bool lower, int k,
@@ -139,6 +142,8 @@ void execute_sym(bool directory, const std::string &fname,
         else
             skylark::utility::io::ReadLIBSVM(fname, A, Y, skylark::base::ROWS);
     }
+
+    Y.Empty();
 
     if (rank == 0)
         std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
@@ -287,11 +292,11 @@ int main(int argc, char* argv[]) {
             if (use_single) {
                 if (as_sparse)
                     execute<skylark::base::sparse_matrix_t<float>,
-                            El::Matrix<float> >(directory, fname, hdfs, 
+                            El::Matrix<float> >(directory, fname, hdfs,
                                 port, k, params, prefix, context);
                 else
                     execute<El::DistMatrix<float>,
-                            El::DistMatrix<float> >(directory, fname, hdfs, 
+                            El::DistMatrix<float> >(directory, fname, hdfs,
                                 port, k, params, prefix, context);
 
             } else {
@@ -319,9 +324,11 @@ int main(int argc, char* argv[]) {
 
             } else {
                 if (as_sparse)
-                    execute_sym<skylark::base::sparse_matrix_t<double>,
-                                El::Matrix<double> >(directory, fname, hdfs,
-                                    port, lower, k, params, prefix, context);
+                    execute_sym<skylark::base::sparse_vc_star_matrix_t<double>,
+                            El::DistMatrix<double, El::VC, El::STAR>,
+                            El::DistMatrix<double, El::VC, El::STAR> >(
+                                    directory, fname, hdfs, port, lower, k,
+                                    params, prefix, context);
                 else
                     execute_sym<El::DistMatrix<double>,
                                 El::DistMatrix<double> >(directory, fname, hdfs,

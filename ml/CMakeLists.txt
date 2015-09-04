@@ -11,16 +11,16 @@ target_link_libraries(skylark_ml
 
 install_targets(/bin skylark_ml)
 
-add_executable(skylark_community skylark_community.cpp)
+add_executable(skylark_graph_se skylark_graph_se.cpp)
 
-target_link_libraries(skylark_community
+target_link_libraries(skylark_graph_se
   ${Elemental_LIBRARY}
   ${OPTIONAL_LIBS}
   ${Pmrrr_LIBRARY}
   ${Metis_LIBRARY}
   ${SKYLARK_LIBS}
   ${Boost_LIBRARIES})
-install_targets(/bin skylark_community)
+install_targets(/bin skylark_graph_se)
 
 
 if (SKYLARK_HAVE_HDF5)

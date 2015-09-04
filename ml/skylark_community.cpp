@@ -312,7 +312,7 @@ int main(int argc, char** argv) {
 
     // Parse options
     bpo::options_description
-        desc("Options:");
+        desc("Options");
     desc.add_options()
         ("help,h", "produce a help message")
         ("graphfile,g",

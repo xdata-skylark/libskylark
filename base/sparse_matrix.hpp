@@ -250,20 +250,24 @@ private:
 
 template<typename T>
 void Transpose(const sparse_matrix_t<T>& A, sparse_matrix_t<T>& B) {
-    const int* aindptr = A.indptr();
-    const int* aindices = A.indices();
-    const T* avalues = A.locked_values();
+
+    typedef typename sparse_matrix_t<T>::index_type index_type;
+    typedef typename sparse_matrix_t<T>::value_type value_type;
+
+    const index_type* aindptr = A.indptr();
+    const index_type* aindices = A.indices();
+    const value_type* avalues = A.locked_values();
 
     int m = A.width();
     int n = A.height();
     int nnz = A.nonzeros();
 
-    int *indptr = new int[n + 1];
-    int *indices = new int[nnz];
-    T *values = new T[nnz];
+    index_type *indptr = new int[n + 1];
+    index_type *indices = new int[nnz];
+    value_type *values = new value_type[nnz];
 
     // Count nonzeros in each row
-    int *nzrow = new int[n];
+    index_type *nzrow = new int[n];
     std::fill(nzrow, nzrow + n, 0);
     for(int col = 0; col < m; col++)
         for(int idx = aindptr[col]; idx < aindptr[col + 1]; idx++)

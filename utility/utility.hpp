@@ -6,6 +6,7 @@
 #include "typer.hpp"
 #include "hash.hpp"
 #include "elem_extender.hpp"
+#include "hdfs.hpp"
 #include "io/io.hpp"
 
 /**

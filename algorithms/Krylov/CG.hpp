@@ -59,7 +59,8 @@ int CG(El::UpperOrLower uplo, const MatrixType& A, const RhsType& B, SolType& X,
     bool isprecond = !(M.is_id() && std::is_same<sol_type, rhs_type>::value);
     sol_type &Z =  !isprecond ? R : *(new sol_type(X));
 
-    El::Hemm(El::LEFT, uplo, value_type(-1.0), A, X, value_type(1.0), R);
+    // TODO should be Hemm
+    base::Symm(El::LEFT, uplo, value_type(-1.0), A, X, value_type(1.0), R);
 
     scalar_cont_type
         nrmb(internal::scalar_cont_typer_t<rhs_type>::build_compatible(k, 1, B));
@@ -88,7 +89,8 @@ int CG(El::UpperOrLower uplo, const MatrixType& A, const RhsType& B, SolType& X,
         El::DiagonalScale(El::RIGHT, El::NORMAL, beta, P);
         base::Axpy(value_type(1.0), Z, P);
 
-        El::Hemm(El::LEFT, uplo, value_type(1.0), A, P, value_type(0.0), Q);
+        // TODO should be Hemm
+        base::Symm(El::LEFT, uplo, value_type(1.0), A, P, value_type(0.0), Q);
 
         base::ColumnDot(P, Q, rhotmp);
         for(index_type i = 0; i < k; i++) {

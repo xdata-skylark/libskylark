@@ -14,16 +14,13 @@
 
 int main(int argc, char* argv[]) {
 
-    int provided;
-    MPI_Init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &provided);
+    El::Initialize (argc, argv);
 
     boost::mpi::environment env (argc, argv);
     boost::mpi::communicator comm;
 
     hilbert_options_t options (argc, argv, comm.size());
     skylark::base::context_t context (options.seed);
-
-    El::Initialize (argc, argv);
 
     if (options.exit_on_return) { return -1; }
 
@@ -167,7 +164,7 @@ int main(int argc, char* argv[]) {
 
     comm.barrier();
 
-    SKYLARK_END_TRY() SKYLARK_CATCH_AND_PRINT((comm.rank() = 0))
+    SKYLARK_END_TRY() SKYLARK_CATCH_AND_PRINT((comm.rank() == 0))
 
     El::Finalize();
 

@@ -171,7 +171,8 @@ if (BOOST_ROOT)
 endif (BOOST_ROOT)
 
 set(BOOST_MIN_VERSION 1.53.0)
-find_package (Boost REQUIRED mpi program_options serialization)
+find_package (Boost COMPONENTS filesystem)
+find_package (Boost REQUIRED mpi program_options serialization system)
 if (Boost_FOUND)
   set (SKYLARK_HAVE_BOOST
        1
@@ -183,6 +184,16 @@ if (Boost_FOUND)
   link_directories (${Boost_LIBRARY_DIRS})
   message(STATUS "Found Boost: ${Boost_INCLUDE_DIRS}" )
 endif (Boost_FOUND)
+
+if (Boost_FILESYSTEM_FOUND)
+  set (SKYLARK_HAVE_BOOST_FILESYSTEM
+       1
+       CACHE
+       STRING
+       "Enables use of Boost Libraries"
+       FORCE)
+  message(STATUS "Found Boost Filesystem: ${Boost_INCLUDE_DIRS}" )
+endif (Boost_FILESYSTEM_FOUND)
 
 # 3. Find Elemental
 set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules")
@@ -268,6 +279,40 @@ else (HDF5_FOUND)
        FORCE)
 endif (HDF5_FOUND)
 
+# 6. LIBHDFS
+find_package(LIBHDFS)
+if (LIBHDFS_FOUND)
+  find_package(JNI)
+  if (JNI_FOUND)
+    set (SKYLARK_HAVE_LIBHDFS
+      1
+      CACHE
+      STRING
+      "Enables use of LIBHDFS Libraries"
+      FORCE)
+    include_directories (${LIBHDFS_INCLUDE_DIR})
+  else(JNI_FOUND)
+    set (SKYLARK_HAVE_LIBHDFS
+      0
+      CACHE
+      STRING
+      "Enables use of LIBHDFS Libraries"
+      FORCE)
+    IF (NOT HDF5_FIND_QUIETLY)
+      MESSAGE(WARNING "LIBHDFS not used because JNI not found!")
+    ENDIF (NOT HDF5_FIND_QUIETLY)
+  endif (JNI_FOUND)
+else (LIBHDFS_FOUND)
+  set (SKYLARK_HAVE_LIBHDFS
+       0
+       CACHE
+       STRING
+       "Enables use of LIBHDFS Libraries"
+       FORCE)
+endif (LIBHDFS_FOUND)
+
+
+
 #-----------------------------------------------------------------------------
 # options
 
@@ -336,6 +381,18 @@ if (SKYLARK_HAVE_COMBBLAS)
   set(OPTIONAL_LIBS "${CombBLAS_LIBRARIES};${OPTIONAL_LIBS}")
 endif (SKYLARK_HAVE_COMBBLAS)
 
+if (SKYLARK_HAVE_HDF5)
+  set(OPTIONAL_LIBS "${HDF5_LIBRARIES};${ZLIB_LIBRARIES};${OPTIONAL_LIBS}")
+endif (SKYLARK_HAVE_HDF5)
+
+if (SKYLARK_HAVE_LIBHDFS)
+  set(OPTIONAL_LIBS "${LIBHDFS_LIBRARIES};${JAVA_JVM_LIBRARY};${OPTIONAL_LIBS}")
+endif (SKYLARK_HAVE_LIBHDFS)
+
+if (Boost_FILESYSTEM_FOUND)
+  set(OPTIONAL_LIBS "${Boost_FILESYSTEM_LIBRARY};${OPTIONAL_LIBS}")
+endif (Boost_FILESYSTEM_FOUND)
+
 option (USE_PROFILER "Use Skylark profiling tools" OFF)
 if (USE_PROFILER)
   set (SKYLARK_HAVE_PROFILER
@@ -368,12 +425,17 @@ endif (USE_HYBRID)
 option (BUILD_PYTHON "Whether we should build the python interface" ON)
 if (BUILD_PYTHON)
 
+  find_package(PythonInterp REQUIRED)
   if (DEFINED ENV{PYTHON_SITE_PACKAGES})
     set (PYTHON_SITE_PACKAGES
       $ENV{PYTHON_SITE_PACKAGES}
     )
     set (PYTHON_SYSTEM_WIDE_INSTALL 0)
   else (DEFINED ENV{PYTHON_SITE_PACKAGES})
+    if(${PYTHON_VERSION_MAJOR} GREATER 2)
+      message (FATAL_ERROR "Currently we only support Python 2.x (version ${PYTHON_VERSION_STRING} found). Please disable the BUILD_PYTHON option.")
+    endif(${PYTHON_VERSION_MAJOR} GREATER 2)
+
     execute_process (
       COMMAND python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"
       OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE

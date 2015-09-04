@@ -3,7 +3,7 @@
 Building from Source
 *********************
 
-Getting the source code
+Getting the Source Code
 ========================
 
 The source code is hosted on github. The libSkylark git repository can be
@@ -265,7 +265,7 @@ and unit testing.
 	wget http://sourceforge.net/projects/boost/files/boost/1.53.0/boost_1_53_0.tar.gz
 	tar xvfz boost_1_53_0.tar.gz
 	cd boost_1_53_0
-	./bootstrap.sh --with-libraries=mpi,serialization,program_options
+	./bootstrap.sh --with-libraries=mpi,serialization,program_options,system,filesystem
 	echo "using mpi ;" >> project-config.jam
 	./b2 link=static,shared
 	sudo ./b2 install
@@ -277,7 +277,7 @@ we call bootstrap.
 
 ::
 
-	./bootstrap.sh --with-libraries=mpi,serialization,program_options
+	./bootstrap.sh --with-libraries=mpi,serialization,program_options,system,filesystem
 
 In a next step, download :download:`jam file <files/bgq.jam>` and
 copy the Boost jam file to ``tools/build/v2/tools/``.
@@ -699,8 +699,8 @@ The elemental.cpp shows how C++ code can utilize libSkylark. Run
 
 in the :envvar:`$BUILD_DIR` to get a list of available command line options.
 
-Linking against libSkylark
---------------------------
+Using libSkylark in Your Project
+================================
 
 If you plan to use libSkylark as a library in your project, the following steps
 are necessary to build and link your application:
@@ -708,10 +708,11 @@ are necessary to build and link your application:
     * add the include path of all libSkylark headers: :file:`${SKYLARK_INSTALL_DIR}/include` (if configured with ``-DCMAKE_INSTALL_PREFIX=${SKYLARK_INSTALL_DIR}``,
     * link against all external libraries used when building libSkylark (take a look and maybe reuse the find modules in :file:`${SRC_DIR}/CMakeModules`:
         * FFTW: fftw3.h
-        * Elemental: header files, libelemental, libpmrrr
+        * Elemental: header files, libEl, libpmrrr
         * CombBLAS: header files, libMPITypelib, libCommGridlib, libMemoryPoollib
         * Random123: threefry.h, MicroURNG.hpp
         * HDF5: hdf5.h, libhdf5, libhdf5_cpp
+        * HDFS: hdfs.h, libhdfs, libjvm
 
 
 Using Cmake
@@ -719,7 +720,7 @@ Using Cmake
 
 If you are using Cmake to build your application you can use the CMake
 configuration file
-:file:`${SKYLARK_INSTALL_DIR}/lib/SKYLARK/SKYLARKConfig.cmake` in your
+:file:`${SKYLARK_INSTALL_DIR}/lib/cmake/SKYLARK/SKYLARKConfig.cmake` in your
 ``CMakeLists.txt`` to find ``SKYLARK``. After that you can simply
 include ``${SKYLARK_INCLUDE_DIRS}`` and ``${SKYLARK_LIBRARIES}`` when you
 build and link your application. A very basic CMake file for your project could
@@ -730,12 +731,15 @@ look like:
 	cmake_minimum_required (VERSION 2.8.2)
 	project (SAMPLE)
 
+        find_package (MPI REQUIRED)
+        set (CMAKE_CXX_COMPILER ${MPI_COMPILER})
+
 	find_package (SKYLARK REQUIRED HINT ${SKYLARK_INSTALL_DIR}/lib)
 
 	include_directories ( ${SKYLARK_INCLUDE_DIRS} )
 	add_definitions(${SKYLARK_DEFS})
 
-	add_executable(ex_code elemental.cpp)
+	add_executable(ex_code ex_code.cpp)
 	target_link_libraries(ex_code ${SKYLARK_LIBRARIES} )
 	set_target_properties(ex_code PROPERTIES COMPILE_FLAGS "${SKYLARK_CXX_FLAGS}" )
 
@@ -1009,6 +1013,9 @@ installation requires a `c++11` compiler. For this we are installing LLVM/Clang
 Argonne provides rpm packages for the BG/Q. Download and follow the
 instructions as stated on https://trac.alcf.anl.gov/projects/llvm-bgq.
 
+There is a fairly painless way to install nightly builds using these
+installation scripts https://github.com/sloede/install-bgq.
+
 After this step we assume you have installed LLVM/CLANG under `$HOME/bgclang/`.
 
 
@@ -1220,7 +1227,7 @@ exported
 .. code-block:: sh
 
     # LAPACK library
-    export LAPACK_LIB=$HOME/local/lib/liblapack.a
+    export LAPACK_LIB=$HOME/src/lapack-3.5.0/
 
     # root installation dir of CLANG compiler
     export CLANG_ROOT=$HOME/bgclang/

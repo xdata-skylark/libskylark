@@ -125,12 +125,12 @@ Please see :ref:`ml_example`
                                            .txt suffix)
 
 Library Usage
-------------
+-------------
  
 To be documented (please see ``ml/skylark_ml.cpp`` for a driver program).
 
-Local Graph Computations
-========================
+Graph Computations
+==================
 
 
 Community Detection using Seed Nodes
@@ -177,7 +177,6 @@ node. The iterator can be of any kind (must support increment, deref and compari
 Return an iterator to the end of the list of adjanct nodes of the input 
 node. 
 
-See ``examples/community.cpp`` for an example of use.
 
 Time-Dependent Personalized PageRank
 ------------------------------------
@@ -221,3 +220,39 @@ node. The iterator can be of any kind (must support increment, deref and compari
 .. cpp:function:: iterator GraphType::adjanct_end(vertex_type node)
 Return an iterator to the end of the list of adjanct nodes of the input 
 node. 
+
+Approximate Adjacency Spectral Embedding
+----------------------------------------
+
+The goal of graph embedding is to assign each vertex a vector such 
+that closeness in Euclidean space is well correlated with closeness
+in graph distance. Spectral embedding base the embedding on the eigenvalue 
+decomposition of some associated matrix. In Adjacency Spectral Embedding (ASE)
+the embedding is computed using the eigenvalue decomposition of the adjacency matrix.
+
+The library implements a sketched-SVD based approximate ASE, based on the description
+of ASE found in:
+ * | V. Lyzinski et al.
+   | Community Detection and Classification in Hierarchical Stochastic Blockmodels
+
+The interface is as follows:
+
+.. cpp:function:: void ApproximateASE(const GraphType& G, int k, std::vector<typename GraphType::vertex_type> &indexmap, El::Matrix<T> &X, base::context_t &context, approximate_ase_params_t params)
+
+X will be filled with the embedding. Each row of X is associated with one vertex. indexmap is a map between row index
+and the vertex. The parameter structure is similar to the one specified to approximate SVD.
+
+The graph is specified using parameter G. The type is generic: the GraphType class is expected to
+support the following:
+
+.. cpp:type:: GraphType::vertex_type
+Type of the graph nodes
+
+.. cpp:function:: size_t GraphType::adjacency_matrix(base::sparse_matrix_t<T> &A, std::vector<vertex_type> &indexmap)
+Fills the adjacency matrix of the graph
+
+.. note::
+
+    Currently, approximate ASE is computed only on a single machine, and no MPI (OpenMP is used, but in a limited manner). 
+    This will change in the future.
+

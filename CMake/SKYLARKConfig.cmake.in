@@ -8,17 +8,20 @@ SET(${PROJECT_NAME}_LIBRARY     "cskylark")
 SET(${PROJECT_NAME}_LIBRARIES
     ${Elemental_LIBRARY}
     ${Pmrrr_LIBRARY}
-    ${FFTW_LIBRARY}
+    ${Metis_LIBRARY}
+    ${OPTIONAL_LIBS}
     ${SKYLARK_LIBS}
     ${Boost_LIBRARIES}
-    ${CombBLAS_LIBRARIES}
 )
 
 SET(${PROJECT_NAME}_INCLUDE_DIRS
     ${Elemental_INCLUDE_DIR}
     ${FFTW_INCLUDE_DIR}
+    ${FFTWF_INCLUDE_DIR}
     ${CMAKE_INSTALL_PREFIX}/include/skylark
-    ${Boost_INCLUDE_DIR}
+    ${Boost_INCLUDE_DIRS}
     ${CombBLAS_INCLUDE_DIR}
     ${Random123_INCLUDE_DIR}
+    ${HDF5_INCLUDE_DIR}
+    ${LIBHDFS_INCLUDE_DIR}
 )

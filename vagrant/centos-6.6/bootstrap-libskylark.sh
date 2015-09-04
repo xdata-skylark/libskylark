@@ -13,87 +13,63 @@ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib
 export SKYLARK_SRC_DIR=/home/vagrant/libskylark
 export SKYLARK_BUILD_DIR=/home/vagrant/build
 export SKYLARK_INSTALL_DIR=/home/vagrant/install
-export LIBHDFS_ROOT=/home/vagrant/deps/hadoop-2.7.0
-export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
+export LIBHDFS_ROOT=/usr/lib/hadoop/
 
 # populate .bashrc
 echo "export SKYLARK_SRC_DIR=${SKYLARK_SRC_DIR}" >> ./.bashrc
 echo "export SKYLARK_BUILD_DIR=${SKYLARK_BUILD_DIR}" >> ./.bashrc
 echo "export SKYLARK_INSTALL_DIR=${SKYLARK_INSTALL_DIR}" >> ./.bashrc
-echo "export LIBHDFS_ROOT=/home/vagrant/deps/hadoop-2.7.0" >> ./.bashrc
-echo "export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64" >> ./.bashrc
+echo "export LIBHDFS_ROOT=/usr/lib/hadoop/" >> ./.bashrc
 echo "export PYTHON_SITE_PACKAGES=${SKYLARK_INSTALL_DIR}" >> ./.bashrc
 echo "export PYTHONPATH=${SKYLARK_INSTALL_DIR}/lib/python2.7/site-packages:${PYTHONPATH}" >> ./.bashrc
 echo "export LD_LIBRARY_PATH=${SKYLARK_INSTALL_DIR}/lib:/usr/local/lib:/usr/lib/x86_64-linux-gnu/:${LD_LIBRARY_PATH}" >> ./.bashrc
-echo "export PATH=${SKYLARK_INSTALL_DIR}/bin:${PATH}" >> ./.bashrc
-echo "export LD_PRELOAD=/usr/lib/libmpi.so" >> ./.bashrc
-#echo "export FFTW_ROOT=/usr/lib/x86_64-linux-gnu/" >> ./.bashrc
+echo "export PATH=${SKYLARK_INSTALL_DIR}/bin:/opt/rh/devtoolset-2/root/usr/bin/:${PATH}" >> ./.bashrc
+echo "module load mpich-x86_64" >> ./.bashrc
 
 chown -R vagrant /home/vagrant/.bashrc
 
 # populate .emacs with skylark coding style, in case user wants to use emacs
 echo "(load-file \"/home/vagrant/libskylark/doc/script/emacsrc\")"  >> .emacs
-
 chown -R vagrant /home/vagrant/.emacs
 
-# make sure the package information is up-to-date
-apt-get update
-
-# python development
-apt-get install -y python-dev python-setuptools
-
-# compilers
-apt-get install -y g++ gfortran
+# get latest gcc/g++
+cd /etc/yum.repos.d
+wget http://people.centos.org/tru/devtools-2/devtools-2.repo
+yum -y install devtoolset-2-gcc
+yum -y install devtoolset-2-binutils
+yum -y install devtoolset-2-gcc-gfortran
+yum -y install devtoolset-2-gcc-c++
+export PATH="/opt/rh/devtoolset-2/root/usr/bin/:$PATH"
 
 # Message Passing Interface
-apt-get install -y libcr-dev mpich2
+yum -y install mpich mpich-devel mpich-autoload
+#XXX: we cannot load the module here, done for the user
+export PATH=/usr/lib64/mpich/bin:$PATH
 
 # source control
-apt-get install -y git
+yum -y install git
 
 # configuration
-apt-get install -y cmake
-
-# BLAS and LAPACK
-apt-get install -y libblas-dev
-apt-get install -y libblas3gf
-apt-get install -y liblapack-dev
-apt-get install -y liblapack3gf
+yum -y install cmake
 
 #OpenBLAS
-apt-get install -y libopenblas-base libopenblas-dev
+yum -y install openblas openblas-devel
 
-# Boost (FIXME: we could only install selected packages)
-apt-get install -y libboost-all-dev
-
-# Numpy and Scipy stack installation as recommended at scipy.org
-apt-get install -y python-numpy python-scipy python-matplotlib ipython \
-                   ipython-notebook python-pandas python-sympy python-nose
-
-
-# mpi4py
-easy_install mpi4py
+# BLAS and LAPACK
+yum -y install blas blas-devel lapack lapack-devel
 
 # HDF5
-apt-get install -y libhdf5-serial-dev
-easy_install h5py
+yum -y install hdf5 hdf5-devel zlib-devel
 
 #FFTW
-#libfftw3-mpi3
-apt-get install -y libfftw3-dev libfftw3-mpi-dev
+yum -y install fftw3 fftw3-devel
 
 # install tools for building documentation
-apt-get install -y doxygen graphviz python-sphinx dvipng
+yum -y install doxygen graphviz python-sphinx dvipng
 
-# Java for HADOOP
-apt-get install -y openjdk-7-jdk
+yum -y install unzip
 
-#FIXME SPHINX extensions?
-
-# numpydoc
-easy_install numpydoc
-
-apt-get install -y unzip
+yum -y install hadoop-libhdfs-devel
 
 
 # download software dependencies that we have to build..
@@ -117,8 +93,8 @@ while true; do
         wget http://www.ece.cmu.edu/~spiral/software/spiral-wht-1.8.tgz &> /dev/null
     fi
 
-    if [ ! -f hadoop-2.7.0.tar.gz ]; then
-        wget http://mirror.sdunix.com/apache/hadoop/common/hadoop-2.7.0/hadoop-2.7.0.tar.gz &> /dev/null
+    if [ ! -f boost_1_55_0.tar.gz ]; then
+        wget http://downloads.sourceforge.net/project/boost/boost/1.55.0/boost_1_55_0.tar.gz &> /dev/null
     fi
 
     randOk=false
@@ -153,19 +129,30 @@ while true; do
         rm spiral-wht-1.8.tgz
     fi
 
-    hadoopOk=false
-    calc_md5=$(md5sum hadoop-2.7.0.tar.gz | /usr/bin/cut -f 1 -d " ")
-    if [ "$calc_md5" == "79a6e87b09011861309c153a856c3ca1" ]; then
-        hadoopOk=true
+    boostOk=false
+    calc_md5=$(md5sum boost_1_55_0.tar.gz | /usr/bin/cut -f 1 -d " ")
+    if [ "$calc_md5" == "93780777cfbf999a600f62883bd54b17" ]; then
+        boostOk=true
     else
-        rm hadoop-2.7.0.tar.gz
+        rm boost_1_55_0.tar.gz
     fi
 
-    if $randOk && $cbOk && $kdtOk && $spiralOk & $hadoopOk ; then
+    if $randOk && $cbOk && $kdtOk && $spiralOk && $boostOk; then
         break
     fi
 done
 
+
+# Boost
+cd $HOME/deps
+if [ ! -d "boost_1_55_0" ]; then
+    tar xvzf boost_1_55_0.tar.gz &> /dev/null
+    cd boost_1_55_0
+    ./bootstrap.sh --with-libraries=mpi,serialization,program_options,filesystem,system
+    echo "using mpi ;" >> project-config.jam
+    ./b2 link=static,shared
+    sudo ./b2 install
+fi
 
 # Elemental
 cd $HOME/deps
@@ -176,8 +163,8 @@ if [ ! -d "Elemental" ]; then
     mkdir build
     cd build
     cmake -DEL_USE_64BIT_INTS=ON -DCMAKE_BUILD_TYPE=Release -DEL_HYBRID=ON -DBUILD_SHARED_LIBS=ON -DMATH_LIBS="-L/usr/lib -llapack -lopenblas -lm" ../
-    make -j $NPROC 1> /dev/null
-    make install 1> /dev/null
+    make -j $NPROC
+    make install
 fi
 
 # CombBLAS
@@ -201,7 +188,7 @@ index b8c7974..f93592c 100644
          l = __builtin_bswap32(l);
 """ | git apply --ignore-space-change --ignore-whitespace
     cmake -DBUILD_SHARED_LIBS=ON .
-    make -j $NPROC 1> /dev/null
+    make -j $NPROC
     cp *.so /usr/local/lib
     mkdir /usr/local/include/CombBLAS
     #XXX: ugly but CombBLAS cannot be installed in an other way..
@@ -217,10 +204,10 @@ cd $HOME/deps
 if [ ! -d "kdt-0.3" ]; then
     tar xvfz kdt-0.3.tar.gz &> /dev/null
     cd kdt-0.3
-    apt-get install subversion
+    yum -y install subversion
     export CC=mpicxx
     export CXX=mpicxx
-    python ./setup.py build 1> /dev/null
+    python ./setup.py build
     python ./setup.py install
     cd ..
     unset CC
@@ -240,16 +227,9 @@ if [ ! -d "spiral-wht-1.8" ]; then
     tar xzvf spiral-wht-1.8.tgz &> /dev/null
     cd spiral-wht-1.8/
     ./configure CFLAGS="-fPIC -fopenmp" --enable-RAM=16000 --enable-DDL --enable-IL --enable-PARA=8
-    make -j $NPROC 1> /dev/null
-    make install 1> /dev/null
+    make -j $NPROC
+    make install
     #/usr/local/bin/wht_dp.prl
-fi
-
-# hadoop
-cd $HOME/deps
-if [ ! -d "hadoop-2.7.0" ]; then
-    mkdir /home/vagrant/deps
-    tar xzvf hadoop-2.7.0.tar.gz -C /home/vagrant/deps 1> /dev/null
 fi
 
 
@@ -278,37 +258,13 @@ CC=mpicc CXX=mpicxx cmake -DCMAKE_INSTALL_PREFIX=${SKYLARK_INSTALL_DIR} \
                           -DUSE_COMBBLAS=ON ${SKYLARK_SRC_DIR}
 make -j $NPROC
 make install
-make doc 1> /dev/null
+make doc
 
 echo "Finished libSkylark Vagrant build.."
 
-# Prepare notebook directory
-mkdir /home/vagrant/notebooks
-mkdir /home/vagrant/notebooks/data
-cd mkdir /home/vagrant/notebooks/data
-wget http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/multiclass/usps.bz2 &> /dev/null
-bzip2 -d usps.bz2 &> /dev/null
-cp ${SKYLARK_SRC_DIR}/python-skylark/skylark/notebooks/* /home/vagrant/notebooks/
+chown -R vagrant /home/vagrant
 
 # Finalize
 cd $HOME
 chown -R vagrant /home/vagrant
 
-
-apt-get install -y dtach
-ipython profile create nbserver
-
-echo "c = get_config()" > $HOME/.ipython/profile_nbserver/ipython_notebook_config.py
-echo "c.IPKernelApp.pylab = 'inline'" >> $HOME/.ipython/profile_nbserver/ipython_notebook_config.py
-echo "c.NotebookApp.ip = '*'" >> $HOME/.ipython/profile_nbserver/ipython_notebook_config.py
-echo "c.NotebookApp.open_browser = False" >> $HOME/.ipython/profile_nbserver/ipython_notebook_config.py
-echo "c.NotebookManager.notebook_dir = u'/home/vagrant/notebooks'" >> $HOME/.ipython/profile_nbserver/ipython_notebook_config.py
-
-cd /home/vagrant
-dtach -n /tmp/ipython_notebook -Ez ipython notebook --profile=nbserver
-
-#FIXME: dir to /home/vagrant, run as vagrant user?
-echo "LD_LIBRARY_PATH=/home/vagrant/install/lib:/usr/local/lib:$LD_LIBRARY_PATH LD_PRELOAD=/usr/lib/libmpi.so dtach -n /tmp/ipython_notebook -Ez ipython notebook --profile=nbserver" > /etc/rc.local
-echo "exit 0" >> /etc/rc.local
-
-echo "Started IPython notebook. Point your browser to http://127.0.0.1:6868"

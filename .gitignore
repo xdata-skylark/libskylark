@@ -16,3 +16,4 @@ build3/
 mnist.scale*
 *.h5
 *.hdf5
+.vagrant

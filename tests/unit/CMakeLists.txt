@@ -9,7 +9,7 @@ target_link_libraries(sparse_elemental_apply
   ${Pmrrr_LIBRARY}
   ${Metis_LIBRARY}
   ${Boost_LIBRARIES})
-add_test( sparse_elemental_apply_test sparse_elemental_apply )
+add_test( sparse_elemental_apply_test mpirun -np 1 sparse_elemental_apply )
 
 
 add_executable(dense_elemental_apply DenseSketchApplyElementalTest.cpp)
@@ -20,7 +20,7 @@ target_link_libraries(dense_elemental_apply
   ${Pmrrr_LIBRARY}
   ${Metis_LIBRARY}
   ${Boost_LIBRARIES})
-add_test( dense_elemental_apply_test dense_elemental_apply )
+add_test( dense_elemental_apply_test mpirun -np 1 dense_elemental_apply )
 
 if (SKYLARK_HAVE_COMBBLAS)
 
@@ -52,7 +52,7 @@ if (SKYLARK_HAVE_COMBBLAS)
     ${OPTIONAL_LIBS}
     ${DEP_LIBRARIES}
     ${Boost_LIBRARIES} )
-  add_test( sparse_cb_apply_test sparse_cb_apply )
+  add_test( sparse_cb_apply_test mpirun -np 1 sparse_cb_apply )
 
   add_executable(serialization_test SerializationTest.cpp)
   target_link_libraries( serialization_test
@@ -62,7 +62,7 @@ if (SKYLARK_HAVE_COMBBLAS)
     ${OPTIONAL_LIBS}
     ${DEP_LIBRARIES}
     ${Boost_LIBRARIES} )
-  add_test( serialization_test serialization_test )
+  add_test( serialization_test mpirun -np 1 serialization_test )
 
 endif (SKYLARK_HAVE_COMBBLAS)
 
@@ -75,7 +75,7 @@ target_link_libraries( local_sparse_apply
   ${OPTIONAL_LIBS}
   ${DEP_LIBRARIES}
   ${Boost_LIBRARIES} )
-add_test( local_sparse_apply_test local_sparse_apply )
+add_test( local_sparse_apply_test mpirun -np 1 local_sparse_apply )
 
 add_executable(svd_elemental_test SVDElementalTest.cpp)
 target_link_libraries(svd_elemental_test
@@ -84,7 +84,7 @@ target_link_libraries(svd_elemental_test
   ${Pmrrr_LIBRARY}
   ${Metis_LIBRARY}
   ${Boost_LIBRARIES})
-add_test( svd_elemental_test svd_elemental_test )
+add_test( svd_elemental_test mpirun -np 1 svd_elemental_test )
 
 
 find_package(PythonInterp REQUIRED)

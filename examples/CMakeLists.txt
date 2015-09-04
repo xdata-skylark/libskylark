@@ -57,9 +57,7 @@ if (SKYLARK_HAVE_HDF5)
     ${Pmrrr_LIBRARY}
     ${Metis_LIBRARY}
     ${SKYLARK_LIBS}
-    ${Boost_LIBRARIES}
-    ${HDF5_LIBRARIES}
-    ${ZLIB_LIBRARIES})
+    ${Boost_LIBRARIES})
   install_targets(/bin/skylark_examples condest)
 endif (SKYLARK_HAVE_HDF5)
 
@@ -71,8 +69,6 @@ if (SKYLARK_HAVE_OPENMP AND SKYLARK_HAVE_HDF5)
     ${Pmrrr_LIBRARY}
     ${Metis_LIBRARY}
     ${SKYLARK_LIBS}
-    ${Boost_LIBRARIES}
-    ${HDF5_LIBRARIES}
-    ${ZLIB_LIBRARIES})
+    ${Boost_LIBRARIES})
   install_targets(/bin/skylark_examples asynch)
 endif (SKYLARK_HAVE_OPENMP AND SKYLARK_HAVE_HDF5)

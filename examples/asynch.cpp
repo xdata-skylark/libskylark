@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
     krylov_params.iter_lim = 2000;
     krylov_params.am_i_printing = true;
     krylov_params.log_level = 2;
-    skyalg::CG(A, b, x, krylov_params);
+    skyalg::CG(El::LOWER, A, b, x, krylov_params);
     std::cout <<"Took " << boost::format("%.2e") % timer.elapsed() << " sec\n";
 
     std::cout << "Using FCG (high accuracy)... " << std::endl;

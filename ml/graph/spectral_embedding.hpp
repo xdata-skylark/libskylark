@@ -14,7 +14,7 @@ struct approximate_ase_params_t : public nla::approximate_svd_params_t {
 
 namespace internal {
 
-template<typename GraphType, typename AdjancyType, typename EmbeddingsType,
+template<typename GraphType, typename AdjacencyType, typename EmbeddingsType,
          typename SType>
 void TemplatedApproximateASE(const GraphType& G, int k,
     std::vector<typename GraphType::vertex_type> &indexmap,
@@ -22,8 +22,8 @@ void TemplatedApproximateASE(const GraphType& G, int k,
     base::context_t &context, approximate_ase_params_t &params) {
 
     // Get adjacency matrix.
-    AdjancyType A;
-    G.adjancy_matrix(A, indexmap);
+    AdjacencyType A;
+    G.adjacency_matrix(A, indexmap);
 
     // Compute SVD
     SType S;
@@ -38,6 +38,23 @@ void TemplatedApproximateASE(const GraphType& G, int k,
 
 }
 
+/**
+ * Approximate Adjacency Spectral Embeddings (ASE).
+ *
+ * Based on the description of ASE in
+ * "Community Detection and Classification in Hierarchical Stochastic Blockmodels"
+ * by Lyzinski et al.
+ *
+ * @tparam GraphType type of graph object. Needs to support the following:
+ *                   GraphType::vertex_type - type of vertex.
+ *                   GraphType::adjancy_matrix - fill the adjancy matrix.
+ * @param G input graph
+ * @param k dimension of the embeddings.
+ * @param X the computed spectral embeddings, in matrix form.
+ * @param indexmap A map from row index in X to vertex. Filled by the function.
+ * @param context skylark context to use.
+ * @param params parameters.
+ */
 template<typename GraphType, typename T>
 void ApproximateASE(const GraphType& G, int k,
     std::vector<typename GraphType::vertex_type> &indexmap,
@@ -45,11 +62,11 @@ void ApproximateASE(const GraphType& G, int k,
     approximate_ase_params_t params = approximate_ase_params_t()) {
 
     typedef typename GraphType::vertex_type vertex_type;
-    typedef base::sparse_matrix_t<T> adjancy_type;
+    typedef base::sparse_matrix_t<T> adjacency_type;
     typedef El::Matrix<T> embeddings_type;
     typedef El::Matrix<T> S_type;
 
-    internal::TemplatedApproximateASE<GraphType, adjancy_type,
+    internal::TemplatedApproximateASE<GraphType, adjacency_type,
                                       embeddings_type, S_type>
         (G, k, indexmap, X, context, params);
 

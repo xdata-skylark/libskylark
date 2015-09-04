@@ -46,7 +46,7 @@ struct simple_unweighted_graph_t {
     }
 
     template<typename T>
-    void adjancy_matrix(skylark::base::sparse_matrix_t<T> &A,
+    void adjacency_matrix(skylark::base::sparse_matrix_t<T> &A,
         std::vector<vertex_type> &indexmap) const;
 
 private:
@@ -136,7 +136,7 @@ simple_unweighted_graph_t(const hdfsFS &fs, const std::string &gf) {
 template<typename VertexType>
 template<typename T>
 void simple_unweighted_graph_t<VertexType>::
-adjancy_matrix(skylark::base::sparse_matrix_t<T> &A,
+adjacency_matrix(skylark::base::sparse_matrix_t<T> &A,
     std::vector<vertex_type> &indexmap) const {
 
     typedef typename skylark::base::sparse_matrix_t<T>::index_type index_type;

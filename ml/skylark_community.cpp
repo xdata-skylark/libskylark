@@ -308,6 +308,9 @@ int main(int argc, char** argv) {
 
     El::Initialize(argc, argv);
 
+    boost::mpi::communicator world;
+    int rank = world.rank();
+
     bool numeric, doall;
 
     // Parse options
@@ -399,7 +402,7 @@ int main(int argc, char** argv) {
             execute<std::string>();
     }
 
-    SKYLARK_END_TRY() SKYLARK_CATCH_AND_PRINT()
+    SKYLARK_END_TRY() SKYLARK_CATCH_AND_PRINT((rank == 0))
 
     return 0;
 }

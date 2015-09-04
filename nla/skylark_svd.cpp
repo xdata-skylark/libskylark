@@ -70,6 +70,9 @@ int main(int argc, char* argv[]) {
 
     El::Initialize(argc, argv);
 
+    boost::mpi::communicator world;
+    int rank = world.rank();
+
     int seed, k, powerits;
     std::string fname, prefix;
     bool as_sparse, skipqr, use_single;
@@ -165,7 +168,7 @@ int main(int argc, char* argv[]) {
                     El::DistMatrix<double> >(fname, k, params, prefix, context);
     }
 
-    SKYLARK_END_TRY() SKYLARK_CATCH_AND_PRINT()
+    SKYLARK_END_TRY() SKYLARK_CATCH_AND_PRINT((rank == 0))
 
     El::Finalize();
     return 0;

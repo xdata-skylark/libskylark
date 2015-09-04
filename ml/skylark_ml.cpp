@@ -167,7 +167,7 @@ int main(int argc, char* argv[]) {
 
     comm.barrier();
 
-    SKYLARK_END_TRY() SKYLARK_CATCH_AND_PRINT()
+    SKYLARK_END_TRY() SKYLARK_CATCH_AND_PRINT((comm.rank() = 0))
 
     El::Finalize();
 

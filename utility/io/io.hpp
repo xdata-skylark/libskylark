@@ -7,4 +7,5 @@
 #include "hdf5_io.hpp"
 #endif
 
+#include "matrixmarket_io.hpp"
 #endif

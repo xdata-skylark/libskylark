@@ -49,6 +49,13 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
     else if (params.tolerance>=1.0) params.tolerance=(1-eps);
     else {} /* nothing */
 
+    /* We invert R here and instead of solving for the RHS using Trsm, 
+     * we use Trmm for the same.
+     */
+    MatrixType Rinv(A.Grid());
+    El::Identity(Rinv, n, n) ;
+    R.apply(Rinv) ;
+
     /** Initialize everything */
     // We set the grid and rank for beta, and all other scalar containers
     // just copy from him to get that to be set right (not for the values).
@@ -64,14 +71,21 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
 
     sol_type V(X);     // No need to really copy, just want sizes&comm correct.
     base::Gemm(El::ADJOINT, El::NORMAL, value_type(1.0), A, U, V);
-    R.apply_adjoint(V);
+
+//    R.apply_adjoint(V);
+    El::Trmm(El::LEFT, El::UPPER, El::ADJOINT, El::NON_UNIT, value_type(1.0), Rinv, V);
+
     scalar_cont_type alpha(beta), i_alpha(beta);
     base::ColumnNrm2(V, alpha);
     for (index_type i=0; i<k; ++i)
         i_alpha[i] = 1 / alpha[i];
     El::DiagonalScale(El::RIGHT, El::NORMAL, i_alpha, V);
     sol_type Z(V);
-    R.apply(Z);
+
+
+//    R.apply(Z);
+    El::Trmm(El::LEFT, El::UPPER, El::NORMAL, El::NON_UNIT, value_type(1.0), Rinv, Z);
+
     sol_print_t::apply(V, "V Init", params.am_i_printing, params.debug_level);
 
     /* Create W=Z and X=0 */
@@ -132,13 +146,21 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
             minus_beta[i] = -beta[i];
         El::DiagonalScale(El::RIGHT, El::NORMAL, minus_beta, V);
         base::Gemm(El::ADJOINT, El::NORMAL, value_type(1.0), A, U, AU);
-        R.apply_adjoint(AU);
+
+//        R.apply_adjoint(AU);
+        El::Trmm(El::LEFT, El::UPPER, El::ADJOINT, El::NON_UNIT, value_type(1.0), Rinv, AU);
+
+
         base::Axpy(value_type(1.0), AU, V);
         base::ColumnNrm2(V, alpha);
         for (index_type i=0; i<k; ++i)
             i_alpha[i] = 1 / alpha[i];
         El::DiagonalScale(El::RIGHT, El::NORMAL, i_alpha, V);
-        Z = V; R.apply(Z);
+        Z = V; 
+
+//        R.apply(Z);
+        El::Trmm(El::LEFT, El::UPPER, El::NORMAL, El::NON_UNIT, value_type(1.0), Rinv, Z);
+
 
        /** 4. Define some variables */
         for (index_type i=0; i<k; ++i) {

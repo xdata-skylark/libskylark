@@ -3,6 +3,7 @@
 
 #include "spectral.hpp"
 #include "svd.hpp"
+#include "massive_svd.hpp"
 #include "least_squares.hpp"
 #include "CondEst.hpp"
 

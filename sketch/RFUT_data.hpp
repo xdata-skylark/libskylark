@@ -27,7 +27,7 @@ struct RFUT_data_t {
     RFUT_data_t (int N, skylark::base::context_t& context)
         : _N(N), _creation_context(context) {
 
-        build();
+//        build();
     }
 
     // TODO support to_ptree (challenging part: the distribution).

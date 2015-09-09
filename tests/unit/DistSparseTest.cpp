@@ -82,7 +82,7 @@ void test_gemm(El::Orientation oA, El::Orientation oB, double alpha,
     if(oB == El::TRANSPOSE) target_width = B_height;
 
     sparse_vc_star_matrix_t A_sparse_vc_result(
-        target_height, target_width, world, grid);
+        target_height, target_width, grid);
     skylark::base::Gemm(El::NORMAL, El::NORMAL, alpha,
         A_sparse, B, beta, A_sparse_vc_result);
 
@@ -131,6 +131,7 @@ void test_gemm_vc(El::Orientation oA, El::Orientation oB, double alpha,
     El::DistMatrix<double> B_mcmr = B;
     El::DistMatrix<double> C(grid);
     El::Uniform(C, target_height, target_width);
+    //FIXME: should be _mcmr
     El::Gemm(oA, oB, alpha, A, B, beta, C);
 
     El::DistMatrix<double, El::VC, El::STAR> A_vc_result = C;
@@ -174,6 +175,7 @@ void test_gemm_vr(El::Orientation oA, El::Orientation oB, double alpha,
     El::DistMatrix<double> B_mcmr = B;
     El::DistMatrix<double> C(grid);
     El::Uniform(C, target_height, target_width);
+    //FIXME: should be _mcmr
     El::Gemm(oA, oB, alpha, A, B, beta, C);
 
     El::DistMatrix<double, El::STAR, El::STAR> A_vr_result = C;
@@ -213,7 +215,7 @@ int test_main(int argc, char *argv[]) {
     El::Uniform(A_vc, height, width);
     El::Zero(A_vc);
 
-    sparse_vc_star_matrix_t A_sparse_vc(height, width, world, grid);
+    sparse_vc_star_matrix_t A_sparse_vc(height, width, grid);
 
     double count = 0.0;
     for(int col = 0; col < A_vc.Width(); col++) {
@@ -231,7 +233,7 @@ int test_main(int argc, char *argv[]) {
     El::Uniform(A_vr, height, width);
     El::Zero(A_vr);
 
-    sparse_star_vr_matrix_t A_sparse_vr(height, width, world, grid);
+    sparse_star_vr_matrix_t A_sparse_vr(height, width, grid);
 
     count = 0.0;
     for(int col = 0; col < A_vr.Width(); col++) {
@@ -279,7 +281,7 @@ int test_main(int argc, char *argv[]) {
     //////////////////////////////////////////////////////////////////////////
     //[> Test I/O <]
 
-    sparse_vc_star_matrix_t X(0, 0, world, grid);
+    sparse_vc_star_matrix_t X(0, 0, grid);
     El::DistMatrix<double, El::VC, El::STAR> Y;
     std::string fname(argv[1]);
     skylark::utility::io::ReadLIBSVM(fname, X, Y, skylark::base::COLUMNS);

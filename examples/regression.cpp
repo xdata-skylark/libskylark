@@ -4,6 +4,8 @@
 #include <boost/mpi.hpp>
 #include <boost/format.hpp>
 
+#include "../utility/typer.hpp"
+
 #define SKYLARK_NO_ANY
 #include <skylark.hpp>
 
@@ -59,9 +61,10 @@ class cmatrix : public skybase::computed_matrix_t<matrix_type> {
 
 public:
     cmatrix(const matrix_type& A) : _A(A) { };
+    typedef typename skyutil::typer_t<matrix_type>::index_type index_type;
 
-    int height() const { return _A.Height(); }
-    int width() const { return _A.Width(); }
+    index_type height() const { return _A.Height(); }
+    index_type width() const { return _A.Width(); }
 
     void materialize(matrix_type& Z) const { Z = _A; }
     matrix_type materialize() const { matrix_type Z(_A); return Z; }
@@ -194,7 +197,7 @@ struct sketched_solver_type :
 };
 
 template<typename ProblemType, typename RhsType, typename SolType>
-void check_solution(const ProblemType &pr, const RhsType &b, const SolType &x, 
+void check_solution(const ProblemType &pr, const RhsType &b, const SolType &x,
     const RhsType &r0,
     double &res, double &resAtr, double &resFac) {
     RhsType r(b);
@@ -316,7 +319,7 @@ int main(int argc, char** argv) {
 
     // Using sketch-and-solve
 
-#if 0 
+#if 0
     timer.restart();
     sketched_solver_type<skysk::JLT_t>(problem, t, context).solve(b, x);
     telp = timer.elapsed();

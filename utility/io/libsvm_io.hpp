@@ -1498,4 +1498,5 @@ void ReadLIBSVM(hdfsFS &fs, const std::string& fname,
 #endif
 
 } } } // namespace skylark::utility::io
+
 #endif

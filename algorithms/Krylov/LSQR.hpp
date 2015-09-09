@@ -97,7 +97,8 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
     std::vector<int> stag(k, 0);
 
     /* Reset the iteration limit if none was specified */
-    if (0>params.iter_lim) params.iter_lim = std::max(20, 2*std::min(m,n));
+    if (0>params.iter_lim)
+        params.iter_lim = std::max(static_cast<index_type>(20), 2*std::min(m,n));
 
     /* More varaibles */
     sol_type AU(X);

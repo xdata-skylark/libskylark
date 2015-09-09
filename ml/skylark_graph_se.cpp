@@ -20,7 +20,9 @@ struct simple_unweighted_graph_t {
     vertex_iterator_type;
 
     simple_unweighted_graph_t(const std::string &gf);
+#if SKYLARK_HAVE_LIBHDFS
     simple_unweighted_graph_t(const hdfsFS &fs, const std::string &gf);
+#endif
 
     size_t num_vertices() const { return _nodemap.size(); }
     size_t num_edges() const { return _num_edges; }
@@ -93,6 +95,7 @@ simple_unweighted_graph_t<VertexType>::simple_unweighted_graph_t(const std::stri
     in.close();
 }
 
+#if SKYLARK_HAVE_LIBHDFS
 template<typename VertexType>
 simple_unweighted_graph_t<VertexType>::
 simple_unweighted_graph_t(const hdfsFS &fs, const std::string &gf) {
@@ -132,6 +135,7 @@ simple_unweighted_graph_t(const hdfsFS &fs, const std::string &gf) {
 
     in.close();
 }
+#endif
 
 template<typename VertexType>
 template<typename T>

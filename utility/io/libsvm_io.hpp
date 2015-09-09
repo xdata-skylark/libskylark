@@ -26,7 +26,7 @@ namespace skylark { namespace utility { namespace io {
 template<typename T, typename R>
 void ReadLIBSVM(const std::string& fname,
     El::Matrix<T>& X, El::Matrix<R>& Y,
-    base::direction_t direction, int min_d = 0) {
+    base::direction_t direction, int min_d = 0, int max_n = -1) {
 
     std::string line;
     std::string token, val, ind;
@@ -42,7 +42,7 @@ void ReadLIBSVM(const std::string& fname,
 
     // make one pass over the data to figure out dimensions -
     // will pay in terms of preallocated storage.
-    while(!in.eof()) {
+    while(!in.eof() && n != max_n) {
         getline(in, line);
 
         // Ignore empty lines and comment lines (begin with #)
@@ -310,7 +310,7 @@ void ReadLIBSVM(const std::string& fname,
 template<typename T, typename R>
 void ReadLIBSVM(const std::string& fname,
     base::sparse_matrix_t<T>& X, El::Matrix<R>& Y, 
-    base::direction_t direction, int min_d = 0) {
+    base::direction_t direction, int min_d = 0, int max_n = -1) {
 
     std::string line;
     std::string token;
@@ -331,7 +331,7 @@ void ReadLIBSVM(const std::string& fname,
     // Also find number of non-zeros per column.
     std::unordered_map<int, int> colsize;
 
-    while(!in.eof()) {
+    while(!in.eof() && n != max_n) {
         getline(in, line);
 
         // Ignore empty lines and comment lines (begin with #)
@@ -1498,4 +1498,5 @@ void ReadLIBSVM(hdfsFS &fs, const std::string& fname,
 #endif
 
 } } } // namespace skylark::utility::io
+
 #endif

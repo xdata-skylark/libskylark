@@ -280,6 +280,37 @@ example:
 
          cat data/seeds | skylark_community --graphfile data/two_triangles -i -q
 
+Approximate Adjacency Spectral Embedding
+----------------------------------------
+
+Building libSkylark creates an executable called ``skylark_graph_se`` in
+``$SKYLARK_INSTALL_DIR/bin``. This executable can be used in standalone mode as follows.
+
+1. Prepare the input. Basically, the graph is described in a text file, with each
+row an edge. Each row has two strings that identify the node. The identifier can be
+arbitrary (does not have to be numeric). For example:
+
+.. code-block:: sh
+
+         cat data/two_triangles
+         A1 A2
+         A2 A3
+         A1 A3
+         B1 B2
+         B2 B3
+         B1 B3
+         A1 B1
+
+2. Compute a two dimensional embedding.
+
+.. code-block:: sh
+
+         skylark_graph_se -k 2 data/two_triangles
+
+3. Two files are created: out.index.txt and out.vec.txt. The vec file has the embedding
+vectors: each row corresponds to an index. The index file maps row index to vertices. 
+The prefix can be called using the prefix command line option (default is `out`).
+
 .. _cluster-label:
 
 Cluster of vagrant-controlled VMs

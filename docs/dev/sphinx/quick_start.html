@@ -291,6 +291,33 @@ example:</p>
 </pre></div>
 </div>
 </div>
+<div class="section" id="approximate-adjacency-spectral-embedding">
+<h3>Approximate Adjacency Spectral Embedding<a class="headerlink" href="#approximate-adjacency-spectral-embedding" title="Permalink to this headline">¶</a></h3>
+<p>Building libSkylark creates an executable called <tt class="docutils literal"><span class="pre">skylark_graph_se</span></tt> in
+<tt class="docutils literal"><span class="pre">$SKYLARK_INSTALL_DIR/bin</span></tt>. This executable can be used in standalone mode as follows.</p>
+<p>1. Prepare the input. Basically, the graph is described in a text file, with each
+row an edge. Each row has two strings that identify the node. The identifier can be
+arbitrary (does not have to be numeric). For example:</p>
+<div class="highlight-sh"><div class="highlight"><pre>cat data/two_triangles
+A1 A2
+A2 A3
+A1 A3
+B1 B2
+B2 B3
+B1 B3
+A1 B1
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li>Compute a two dimensional embedding.</li>
+</ol>
+<div class="highlight-sh"><div class="highlight"><pre>skylark_graph_se -k 2 data/two_triangles
+</pre></div>
+</div>
+<p>3. Two files are created: out.index.txt and out.vec.txt. The vec file has the embedding
+vectors: each row corresponds to an index. The index file maps row index to vertices.
+The prefix can be called using the prefix command line option (default is <cite>out</cite>).</p>
+</div>
 </div>
 <div class="section" id="cluster-of-vagrant-controlled-vms">
 <span id="cluster-label"></span><h2>Cluster of vagrant-controlled VMs<a class="headerlink" href="#cluster-of-vagrant-controlled-vms" title="Permalink to this headline">¶</a></h2>
@@ -1691,7 +1718,7 @@ mpiexec -np 4 python <span class="nv">$SKYLARK_SRC_DIR</span>/python-skylark/sky
         <span class="p">}</span>
 
 
-    <span class="n">SKYLARK_END_TRY</span><span class="p">()</span> <span class="n">SKYLARK_CATCH_AND_PRINT</span><span class="p">()</span>
+    <span class="n">SKYLARK_END_TRY</span><span class="p">()</span> <span class="n">SKYLARK_CATCH_AND_PRINT</span><span class="p">((</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">))</span>
 
     <span class="n">El</span><span class="o">::</span><span class="n">Finalize</span><span class="p">();</span>
     <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>

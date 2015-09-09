@@ -186,8 +186,8 @@ Usage: skylark_ml --modelfile modelfile --testfile testfile :
 <p>To be documented (please see <tt class="docutils literal"><span class="pre">ml/skylark_ml.cpp</span></tt> for a driver program).</p>
 </div>
 </div>
-<div class="section" id="local-graph-computations">
-<h2>Local Graph Computations<a class="headerlink" href="#local-graph-computations" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="graph-computations">
+<h2>Graph Computations<a class="headerlink" href="#graph-computations" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="community-detection-using-seed-nodes">
 <h3>Community Detection using Seed Nodes<a class="headerlink" href="#community-detection-using-seed-nodes" title="Permalink to this headline">¶</a></h3>
 <p>In community detection problems (i.e., graph clustering problems), one seeks to identify a set
@@ -252,7 +252,6 @@ iterator <tt class="descclassname">GraphType::</tt><tt class="descname">adjanct_
 
 <p>Return an iterator to the end of the list of adjanct nodes of the input
 node.</p>
-<p>See <tt class="docutils literal"><span class="pre">examples/community.cpp</span></tt> for an example of use.</p>
 </div>
 <div class="section" id="time-dependent-personalized-pagerank">
 <h3>Time-Dependent Personalized PageRank<a class="headerlink" href="#time-dependent-personalized-pagerank" title="Permalink to this headline">¶</a></h3>
@@ -315,6 +314,52 @@ iterator <tt class="descclassname">GraphType::</tt><tt class="descname">adjanct_
 
 <p>Return an iterator to the end of the list of adjanct nodes of the input
 node.</p>
+</div>
+<div class="section" id="approximate-adjacency-spectral-embedding">
+<h3>Approximate Adjacency Spectral Embedding<a class="headerlink" href="#approximate-adjacency-spectral-embedding" title="Permalink to this headline">¶</a></h3>
+<p>The goal of graph embedding is to assign each vertex a vector such
+that closeness in Euclidean space is well correlated with closeness
+in graph distance. Spectral embedding base the embedding on the eigenvalue
+decomposition of some associated matrix. In Adjacency Spectral Embedding (ASE)
+the embedding is computed using the eigenvalue decomposition of the adjacency matrix.</p>
+<p>The library implements a sketched-SVD based approximate ASE, based on the description
+of ASE found in:</p>
+<blockquote>
+<div><ul>
+<li><div class="first line-block">
+<div class="line">V. Lyzinski et al.</div>
+<div class="line">Community Detection and Classification in Hierarchical Stochastic Blockmodels</div>
+</div>
+</li>
+</ul>
+</div></blockquote>
+<p>The interface is as follows:</p>
+<dl class="function">
+<dt id="ApproximateASE__GraphTypeCR.i.std::vector:typename-GraphType::vertex_type:R.El::Matrix:T:R.base::context_tR.approximate_ase_params_t">
+void <tt class="descname">ApproximateASE</tt><big>(</big>const GraphType&amp; <em>G</em>, int <em>k</em>, std::vector&lt;typename GraphType::vertex_type&gt;&amp; <em>indexmap</em>, El::Matrix&lt;T&gt;&amp; <em>X</em>, base::context_t&amp; <em>context</em>, approximate_ase_params_t <em>params</em><big>)</big><a class="headerlink" href="#ApproximateASE__GraphTypeCR.i.std::vector:typename-GraphType::vertex_type:R.El::Matrix:T:R.base::context_tR.approximate_ase_params_t" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>X will be filled with the embedding. Each row of X is associated with one vertex. indexmap is a map between row index
+and the vertex. The parameter structure is similar to the one specified to approximate SVD.</p>
+<p>The graph is specified using parameter G. The type is generic: the GraphType class is expected to
+support the following:</p>
+<dl class="type">
+<dt>
+<em class="property">type </em><tt class="descclassname">GraphType::</tt><tt class="descname">vertex_type</tt></dt>
+<dd></dd></dl>
+
+<p>Type of the graph nodes</p>
+<dl class="function">
+<dt id="GraphType::adjacency_matrix__base::sparse_matrix_t:T:R.std::vector:vertex_type:R">
+size_t <tt class="descclassname">GraphType::</tt><tt class="descname">adjacency_matrix</tt><big>(</big>base::sparse_matrix_t&lt;T&gt;&amp; <em>A</em>, std::vector&lt;vertex_type&gt;&amp; <em>indexmap</em><big>)</big><a class="headerlink" href="#GraphType::adjacency_matrix__base::sparse_matrix_t:T:R.std::vector:vertex_type:R" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Fills the adjacency matrix of the graph</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Currently, approximate ASE is computed only on a single machine, and no MPI (OpenMP is used, but in a limited manner).
+This will change in the future.</p>
+</div>
 </div>
 </div>
 </div>

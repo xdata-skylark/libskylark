@@ -151,8 +151,7 @@ void test_gemm_vc(El::Orientation oA, El::Orientation oB, double alpha,
 template <typename sparse_matrix_t>
 void test_gemm_vr(El::Orientation oA, El::Orientation oB, double alpha,
         const sparse_matrix_t& A_sparse, const El::DistMatrix<double, El::STAR, El::VR>& A,
-        double beta, El::Int target_width, boost::mpi::communicator world,
-        const El::Grid& grid) {
+        double beta, El::Int target_width, boost::mpi::communicator world) {
 
     El::Int target_height = A_sparse.height();
     El::Int B_height = A.Width();
@@ -161,11 +160,11 @@ void test_gemm_vr(El::Orientation oA, El::Orientation oB, double alpha,
         B_height = A.Height();
     }
 
-    El::DistMatrix<double, El::VC, El::STAR> B(grid);
+    El::DistMatrix<double, El::VC, El::STAR> B(A.Grid());
     El::Uniform(B, B_height, target_width);
     if(oB == El::TRANSPOSE) target_width = B_height;
 
-    El::DistMatrix<double, El::STAR, El::STAR> A_sparse_vr_result(grid);
+    El::DistMatrix<double, El::STAR, El::STAR> A_sparse_vr_result(A.Grid());
     El::Uniform(A_sparse_vr_result, target_height, target_width);
     El::Zero(A_sparse_vr_result);
     skylark::base::Gemm(El::NORMAL, El::NORMAL, alpha,
@@ -173,7 +172,7 @@ void test_gemm_vr(El::Orientation oA, El::Orientation oB, double alpha,
 
     El::DistMatrix<double> A_mcmr = A;
     El::DistMatrix<double> B_mcmr = B;
-    El::DistMatrix<double> C(grid);
+    El::DistMatrix<double> C(A.Grid());
     El::Uniform(C, target_height, target_width);
     //FIXME: should be _mcmr
     El::Gemm(oA, oB, alpha, A, B, beta, C);
@@ -185,6 +184,61 @@ void test_gemm_vr(El::Orientation oA, El::Orientation oB, double alpha,
 
     if (!equal(A_vr_result, A_vr_result))
         BOOST_FAIL("Gemm STAR/VR application not equal");
+}
+
+/**
+ *  Test symmetric matrix multiply for sparse distributed matrices.
+ *  Multiply with a random (uniform) dense matrix.
+ *
+ *  FIXME: merge helper functions into test utils
+ *  FIXME: target_width is a bad name
+ */
+template <typename sparse_matrix_t>
+void test_symm(El::LeftOrRight side, El::UpperOrLower uplo, double alpha,
+        const sparse_matrix_t& A_sparse,
+        const El::DistMatrix<double, El::STAR, El::VC>& A,
+        double beta, El::Int target_width, boost::mpi::communicator world) {
+
+    // determine dimensions of random multiplier
+    El::Int target_height = A.Height();
+    El::Int B_height = A.Height();
+    if(side == El::RIGHT) {
+        target_height = target_width;
+        B_height = target_width;
+        target_width = A.Width();
+    }
+
+    // create random multiplier
+    El::DistMatrix<double, El::VC, El::STAR> B(A.Grid());
+    El::Uniform(B, B_height, target_width);
+
+    // perform sparse Symm
+    El::DistMatrix<double, El::VC, El::STAR> A_sparse_vc_result(A.Grid());
+    El::Uniform(A_sparse_vc_result, target_height, target_width);
+    El::Zero(A_sparse_vc_result);
+    skylark::base::Symm(side, uplo, alpha, A_sparse, B, beta, A_sparse_vc_result);
+
+    // controll with expected value from Elemental Symm (MC/MR)
+    El::DistMatrix<double> A_mcmr = A;
+    El::DistMatrix<double> B_mcmr = B;
+    El::DistMatrix<double> C_mcmr(A.Grid());
+    El::Uniform(C_mcmr, target_height, target_width);
+    El::Symm(side, uplo, alpha, A, B, beta, C_mcmr);
+
+    // and convert matrix back to VC/STAR
+    El::DistMatrix<double, El::VC, El::STAR> A_vc_result = C_mcmr;
+
+    // finally we can check for equality (dimensions and values)
+    BOOST_REQUIRE(A_vc_result.LocalWidth()  == A_sparse_vc_result.LocalWidth());
+    BOOST_REQUIRE(A_vc_result.LocalHeight() == A_sparse_vc_result.LocalHeight());
+
+    El::Matrix<double> A_vc_result_gathered = A_vc_result.Matrix();
+    El::Matrix<double> A_sparse_vc_result_gathered = A_sparse_vc_result.Matrix();
+
+    if (!equal(A_vc_result_gathered, A_sparse_vc_result_gathered))
+        BOOST_FAIL("Symm VC/STAR application not equal");
+
+    world.barrier();
 }
 
 
@@ -256,33 +310,86 @@ int test_main(int argc, char *argv[]) {
     check_equal(A_vc, A_sparse_vc);
     check_equal(A_vr, A_sparse_vr);
 
+    //////////////////////////////////////////////////////////////////////////
+    //[> Test Symm <]
+    //
+    //  FIXME: currently only for sparse_vc_star_matrix_t
+
+    //FIXME: use random sizes?
+    const int symm_dim    = 20;
+    const int symm_target = 5;
+
+    // create a symmetric test input matrix
+    dense_vc_star_matrix_t A_vc_symm(grid);
+    El::Uniform(A_vc_symm, symm_dim, symm_dim);
+    El::Zero(A_vc_symm);
+    sparse_vc_star_matrix_t A_sparse_vc_symm(symm_dim, symm_dim, grid);
+
+    count = 0.0;
+    for(int col = 0; col < symm_dim; col++) {
+        for(int row = 0; row < col; row++) {
+            A_vc_symm.Update(row, col, count);
+            A_vc_symm.Update(col, row, count);
+            A_sparse_vc_symm.queue_update(row, col, count);
+            A_sparse_vc_symm.queue_update(col, row, count);
+            count++;
+        }
+    }
+
+    A_sparse_vc_symm.finalize();
+
+    if(world.rank() == 0) std::cout << "Testing SYMMs..." << std::endl;
+
+    if(world.rank() == 0) std::cout << "\tsparse_vc_star -> vc_star (LEFT, UPPER):";
+    test_symm(El::LEFT, El::UPPER, 1.0,
+            A_sparse_vc_symm, A_vc_symm, 0.0, symm_target, world);
+    world.barrier();
+    if(world.rank() == 0) std::cout << " ok" << std::endl;
+
+    if(world.rank() == 0) std::cout << "\tsparse_vc_star -> vc_star (RIGHT, UPPER):";
+    test_symm(El::RIGHT, El::UPPER, 1.0,
+            A_sparse_vc_symm, A_vc_symm, 0.0, symm_target, world);
+    world.barrier();
+    if(world.rank() == 0) std::cout << " ok" << std::endl;
+
+    if(world.rank() == 0) std::cout << "Done." << std::endl;
 
     //////////////////////////////////////////////////////////////////////////
     //[> Test Gemm <]
 
     const int target = 5;
 
-    if(world.rank() == 0) std::cout << "sparse_vc_star -> sparse_vc_star (NORMAL, NORMAL)" << std::endl;
+    if(world.rank() == 0) std::cout << "Testing GEMMs..." << std::endl;
+
+    if(world.rank() == 0) std::cout << "\tsparse_vc_star -> sparse_vc_star (NORMAL, NORMAL):";
     test_gemm(El::NORMAL, El::NORMAL, 1.0,
             A_sparse_vc, A_vc, 0.0, target, world, grid);
     world.barrier();
+    if(world.rank() == 0) std::cout << " ok" << std::endl;
 
-    if(world.rank() == 0) std::cout << "sparse_vc_star -> dense_vc_star (NORMAL, NORMAL)" << std::endl;
+    if(world.rank() == 0) std::cout << "\tsparse_vc_star -> dense_vc_star (NORMAL, NORMAL):";
     test_gemm_vc(El::NORMAL, El::NORMAL, 1.0,
             A_sparse_vc, A_vc, 0.0, target, world, grid);
     world.barrier();
+    if(world.rank() == 0) std::cout << " ok" << std::endl;
 
-    if(world.rank() == 0) std::cout << "sparse_star_vr -> dense_star_star (NORMAL, NORMAL)" << std::endl;
+    if(world.rank() == 0) std::cout << "\tsparse_star_vr -> dense_star_star (NORMAL, NORMAL):";
     test_gemm_vr(El::NORMAL, El::NORMAL, 1.0,
-            A_sparse_vr, A_vr, 0.0, target, world, grid);
+            A_sparse_vr, A_vr, 0.0, target, world);
     world.barrier();
+    if(world.rank() == 0) std::cout << " ok" << std::endl;
 
+    if(world.rank() == 0) std::cout << "Done." << std::endl;
 
     //////////////////////////////////////////////////////////////////////////
     //[> Test I/O <]
 
+    if(argc < 2)
+        return 0;
+
     sparse_vc_star_matrix_t X(0, 0, grid);
     El::DistMatrix<double, El::VC, El::STAR> Y;
+
     std::string fname(argv[1]);
     skylark::utility::io::ReadLIBSVM(fname, X, Y, skylark::base::COLUMNS);
 
@@ -292,7 +399,7 @@ int test_main(int argc, char *argv[]) {
 
     check_equal(X_ref, X);
 
-    El::Finalize();
 
+    El::Finalize();
     return 0;
 }

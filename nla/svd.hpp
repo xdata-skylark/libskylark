@@ -551,8 +551,10 @@ struct ApproximateSymmetricSVD_t {
         base::Gemm(El::ADJOINT, El::NORMAL, value_type(1.0), U, V, B);
         El::HermitianEig(uplo, B, S, W, El::DESCENDING);
         S.Resize(rank, 1);
+        U.Resize(U.Height(), rank);
         VType W1 = base::ColumnView(W, 0, rank);
         base::Gemm(El::NORMAL, El::NORMAL, value_type(1.0), V, W1, U);
+        V.Resize(V.Height(), rank);
         El::Copy(U, V);
     }
 };
@@ -619,13 +621,16 @@ struct ApproximateSymmetricSVD_t<
         /** Schur-Rayleigh-Ritz (with SVD), aka factorize & truncate to rank */
         El::qr::ExplicitUnitary(V);
         base::Symm(El::LEFT, uplo, value_type(1.0), A, V, U);
+        B.Resize(U.Width(), V.Width());
         base::Gemm(El::ADJOINT, El::NORMAL, value_type(1.0), U, V, B);
+
         El::HermitianEig(uplo, B, S, W, El::DESCENDING);
         S.Resize(rank, 1);
         VType W1 = base::ColumnView(W, 0, rank);
+        U.Resize(U.Height(), rank);
         base::Gemm(El::NORMAL, El::NORMAL, value_type(1.0), V, W1, U);
+        V.Resize(V.Height(), rank);
         El::Copy(U, V);
-
     }
 };
 

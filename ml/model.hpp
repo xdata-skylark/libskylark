@@ -47,7 +47,7 @@ int classification_accuracy(El::Matrix<double>& Yt, El::Matrix<double>& Yp) {
     return correct;
 }
 
-struct model_t {
+struct hilbert_model_t {
     // TODO the following two should depend on the input type
     // TODO explicit doubles is not desired.
     typedef El::Matrix<double> intermediate_type;
@@ -57,7 +57,7 @@ struct model_t {
     feature_transform_type;
 
     template<typename SketchTransformType>
-    model_t(std::vector<const SketchTransformType *>& maps, bool scale_maps,
+    hilbert_model_t(std::vector<const SketchTransformType *>& maps, bool scale_maps,
         int num_features, int num_outputs, bool regression) :
         _coef(num_features, num_outputs), _maps(maps.size()), _scale_maps(scale_maps),
         _regression(regression), _starts(maps.size()), _finishes(maps.size()) {
@@ -78,11 +78,11 @@ struct model_t {
             num_features : _maps[0]->get_N();
     }
 
-    model_t(const boost::property_tree::ptree &pt) {
+    hilbert_model_t(const boost::property_tree::ptree &pt) {
         build_from_ptree(pt);
     }
 
-    model_t(const std::string& fname) {
+    hilbert_model_t(const std::string& fname) {
         std::ifstream is(fname);
 
         // Skip all lines begining with "#"
@@ -95,7 +95,7 @@ struct model_t {
         build_from_ptree(pt);
     }
 
-    ~model_t() {
+    ~hilbert_model_t() {
         for (auto it = _maps.begin(); it != _maps.end(); it++)
             delete *it;
     }
@@ -276,7 +276,7 @@ template<typename KernelType, typename OutType, typename ComputeType = OutType,
 struct kernel_model_t;
 
 /**
- * Kernel model for continious output - regression model
+ * Kernel model for continuous output - regression model
  */
 template<typename KernelType, typename OutType, typename ComputeType>
 struct kernel_model_t<KernelType, OutType, ComputeType,

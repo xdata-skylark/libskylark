@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
         El::DistMatrix<double, El::VC, El::STAR> DecisionValues;
         El::DistMatrix<El::Int, El::VC, El::STAR> PredictedLabels;
         El::Int n;
-        skylark::ml::model_t model(options.modelfile);
+        skylark::ml::hilbert_model_t model(options.modelfile);
 
         if (sparse) {
             skylark::base::sparse_matrix_t<double> X;
@@ -131,7 +131,7 @@ int main(int argc, char* argv[]) {
         // clean up evaluate
     } else {
         // Preidicting from stdin mode
-        skylark::ml::model_t model(options.modelfile);
+        skylark::ml::hilbert_model_t model(options.modelfile);
 
         El::Matrix<double> X, DecisionValues(1, model.get_output_size());
         El::Matrix<El::Int> PredictedLabel(1, 1);

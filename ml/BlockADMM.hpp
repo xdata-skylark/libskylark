@@ -73,7 +73,7 @@ struct BlockADMMSolver {
     void InitializeFactorizationCache();
     void InitializeTransformCache(int n);
 
-    skylark::ml::model_t* train(data_matrix_t& X,
+    skylark::ml::hilbert_model_t* train(data_matrix_t& X,
         target_matrix_t& Y, data_matrix_t& Xv, target_matrix_t& Yv,
         bool regression, const boost::mpi::communicator& comm);
 
@@ -288,7 +288,7 @@ void GetSlice(skylark::base::sparse_matrix_t<T> &X, El::Matrix<T> &Z,
 }
 
 template <class InputType>
-skylark::ml::model_t* BlockADMMSolver<InputType>::train(data_matrix_t& X, target_matrix_t& Y,
+skylark::ml::hilbert_model_t* BlockADMMSolver<InputType>::train(data_matrix_t& X, target_matrix_t& Y,
     data_matrix_t& Xv, target_matrix_t& Yv,
     bool regression, const boost::mpi::communicator& comm) {
 
@@ -301,8 +301,8 @@ skylark::ml::model_t* BlockADMMSolver<InputType>::train(data_matrix_t& X, target
     int d = skylark::base::Height(X);
     int targets = regression ? 1 : GetNumTargets(comm, Y);
 
-    skylark::ml::model_t* model =
-        new skylark::ml::model_t(featureMaps,
+    skylark::ml::hilbert_model_t* model =
+        new skylark::ml::hilbert_model_t(featureMaps,
             ScaleFeatureMaps, NumFeatures, targets, regression);
 
     local_matrix_t Wbar;

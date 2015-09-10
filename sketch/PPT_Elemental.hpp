@@ -117,7 +117,6 @@ struct PPT_t <
 
     PPT_t(const data_type& other_data)
         : data_type(other_data) {
-
         build_internal();
     }
 
@@ -158,9 +157,8 @@ struct PPT_t <
             for(int j = 0; j < S; j++)
                 P[j] = 1.0;
 
-            typename std::list<_CWT_t>::const_iterator it;
             int qc = 0;
-            for(it = _cwts.begin(); it != _cwts.end(); it++, qc++) {
+            for(auto it = _cwts.begin(); it != _cwts.end(); it++, qc++) {
                 const _CWT_t &C = *it;
                 C.apply(Av, W, columnwise_tag());
                 El::Scale((value_type)std::sqrt(data_type::_gamma), W);
@@ -222,9 +220,8 @@ struct PPT_t <
             for(int j = 0; j < S; j++)
                 P[j] = 1.0;
 
-            typename std::list<_CWT_t>::const_iterator it;
             int qc = 0;
-            for(it = _cwts.begin(); it != _cwts.end(); it++, qc++) {
+            for(auto it = _cwts.begin(); it != _cwts.end(); it++, qc++) {
                 const _CWT_t &C = *it;
                 C.apply(ATv, W, columnwise_tag());
                 El::Scale((value_type)std::sqrt(data_type::_gamma), W);
@@ -271,8 +268,7 @@ protected:
     void build_internal() {
         int S = data_type::_S;
 
-        for(typename std::list<CWT_data_t>::iterator it =
-                data_type::_cwts_data.begin();
+        for(auto  it = data_type::_cwts_data.begin(); 
             it != data_type::_cwts_data.end(); it++)
             _cwts.push_back(_CWT_t(*it));
 
@@ -389,9 +385,8 @@ struct PPT_t <
             for(int j = 0; j < S; j++)
                 P[j] = 1.0;
 
-            typename std::list<_CWT_t>::const_iterator it;
             int qc = 0;
-            for(it = _cwts.begin(); it != _cwts.end(); it++, qc++) {
+            for(auto it = _cwts.begin(); it != _cwts.end(); it++, qc++) {
                 const _CWT_t &C = *it;
                 C.apply(Av, W, columnwise_tag());
                 El::Scale((value_type)std::sqrt(data_type::_gamma), W);
@@ -452,8 +447,7 @@ protected:
     void build_internal() {
         int S = data_type::_S;
 
-        for(typename std::list<CWT_data_t>::iterator it =
-                data_type::_cwts_data.begin();
+        for(auto it = data_type::_cwts_data.begin();
             it != data_type::_cwts_data.end(); it++)
             _cwts.push_back(_CWT_t(*it));
 
@@ -794,6 +788,80 @@ private:
 
     const PPT_t<El::Matrix<value_type>, El::Matrix<value_type> > _local;
 };
+
+/**
+ * Specialization [MC, MR] to [MC, MR].
+ */
+template <typename ValueType>
+struct PPT_t <
+    El::DistMatrix<ValueType>,
+    El::DistMatrix<ValueType> > :
+        public PPT_data_t {
+    // Typedef value, matrix, transform, distribution and transform data types
+    // so that we can use them regularly and consistently.
+    typedef ValueType value_type;
+    typedef El::DistMatrix<value_type> matrix_type;
+    typedef El::DistMatrix<value_type> output_matrix_type;
+    typedef PPT_data_t data_type;
+
+public:
+
+    // No regular contructor, since need to be subclassed.
+
+    /**
+     * Copy constructor
+     */
+    PPT_t(const PPT_t<matrix_type,
+                      output_matrix_type>& other)
+        : data_type(other) {
+
+    }
+
+    /**
+     * Constructor from data
+     */
+    PPT_t(const data_type& other_data)
+        : data_type(other_data) {
+
+    }
+
+    /**
+     * Apply the sketching transform on A and write to sketch_of_A.
+     * Implementation for columnwise.
+     */
+    void apply(const matrix_type& A,
+        output_matrix_type& sketch_of_A,
+        skylark::sketch::columnwise_tag tag) const {
+
+        typedef El::DistMatrix<value_type, El::STAR, El::VR> redis_type;
+
+        // Naive implementation: redistribute, sketch and redistribute
+        PPT_t<redis_type, redis_type> S1(*this);
+        redis_type A1 = A;
+        redis_type SA1(_S, A1.Width());
+        S1.apply(A1, SA1, tag);
+        sketch_of_A = SA1;
+    }
+
+    /**
+      * Apply the sketching transform on A and write to  sketch_of_A.
+      * Implementation rowwise.
+      */
+    void apply(const matrix_type& A,
+        output_matrix_type& sketch_of_A,
+        skylark::sketch::rowwise_tag tag) const {
+
+        typedef El::DistMatrix<value_type, El::VC, El::STAR> redis_type;
+
+        // Naive implementation: redistribute, sketch and redistribute
+        PPT_t<redis_type, redis_type> S1(*this);
+        redis_type A1 = A;
+        redis_type SA1(A1.Height(), _S);
+        S1.apply(A1, SA1, tag);
+        sketch_of_A = SA1;
+    }
+};
+
 
 
 } } /** namespace skylark::sketch */

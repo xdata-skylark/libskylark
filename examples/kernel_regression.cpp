@@ -8,6 +8,7 @@
 #define SKYLARK_NO_ANY
 #define SKYLARK_WITH_GAUSSIAN_RFT_ANY
 #define SKYLARK_WITH_LAPLACIAN_RFT_ANY
+#define SKYLARK_WITH_PPT_ANY
 
 #include <skylark.hpp>
 
@@ -16,14 +17,15 @@
 #define FASTER_KRR    1
 
 // Kernels constants
-#define GAUSSIAN_KERNEL  0
-#define LAPLACIAN_KERNEL 1
+#define GAUSSIAN_KERNEL   0
+#define LAPLACIAN_KERNEL  1
+#define POLYNOMIAL_KERNEL 2
 
 std::string cmdline;
 int seed = 38734, algorithm = FASTER_KRR, kernel_type = GAUSSIAN_KERNEL;
 int s = 2000, partial = -1;
 std::string fname, testname, modelname = "model.dat", logfile = "";
-double sigma = 10.0, lambda = 0.01, tolerance=1e-3;
+double kp1 = 10.0, kp2 = 0.0, kp3 = 1.0, lambda = 0.01, tolerance=1e-3;
 bool use_single;
 
 #ifndef SKYLARK_AVOID_BOOST_PO
@@ -50,16 +52,22 @@ int parse_program_options(int argc, char* argv[]) {
             "File to write log (standard output if empty).")
         ("kernel,k",
              bpo::value<int>(&kernel_type)->default_value(GAUSSIAN_KERNEL),
-            "Kernel to use (0: Gaussian, 1: Laplacian).")
+            "Kernel to use (0: Gaussian, 1: Laplacian, 2: Polynomial).")
         ("algorithm,a",
              bpo::value<int>(&algorithm)->default_value(FASTER_KRR),
             "Algorithm to use (0: Classic, 1: Faster (Precond)).")
         ("seed,s",
             bpo::value<int>(&seed)->default_value(38734),
             "Seed for random number generation. OPTIONAL.")
-        ("sigma,x",
-            bpo::value<double>(&sigma),
-            "Kernel bandwidth.")
+        ("kernelparam,g",
+            bpo::value<double>(&kp1),
+            "Kernel parameter. REQUIRED.")
+        ("kernelparam2,x",
+            bpo::value<double>(&kp2)->default_value(0.0),
+            "If Applicable - Second Kernel Parameter (Polynomial Kernel: c).")
+        ("kernelparam3,y",
+            bpo::value<double>(&kp3)->default_value(1.0),
+            "If Applicable - Third Kernel Parameter (Polynomial Kernel: gamma).")
         ("lambda,l",
             bpo::value<double>(&lambda)->default_value(0.01),
             "Lambda regularization parameter.")
@@ -132,8 +140,14 @@ int parse_program_options(int argc, char* argv[]) {
         if (flag == "--partial" || flag == "-p")
             partial = boost::lexical_cast<int>(value);
 
-        if (flag == "--sigma" || flag == "-x")
-            sigma = boost::lexical_cast<double>(value);
+        if (flag == "--kernelparam" || flag == "-g")
+            kp1 = boost::lexical_cast<double>(value);
+
+        if (flag == "--kernelparam2" || flag == "-x")
+            kp2 = boost::lexical_cast<double>(value);
+
+        if (flag == "--kernelparam3" || flag == "-z")
+            kp3 = boost::lexical_cast<double>(value);
 
         if (flag == "--kernel" || flag == "-k")
             kernel_type = boost::lexical_cast<int>(value);
@@ -226,11 +240,15 @@ int execute(skylark::base::context_t &context) {
 
     switch (kernel_type) {
     case GAUSSIAN_KERNEL:
-        k_ptr.reset(new skylark::ml::gaussian_t(X.Height(), sigma));
+        k_ptr.reset(new skylark::ml::gaussian_t(X.Height(), kp1));
         break;
 
     case LAPLACIAN_KERNEL:
-        k_ptr.reset(new skylark::ml::laplacian_t(X.Height(), sigma));
+        k_ptr.reset(new skylark::ml::laplacian_t(X.Height(), kp1));
+        break;
+
+    case POLYNOMIAL_KERNEL:
+        k_ptr.reset(new skylark::ml::polynomial_t(X.Height(), kp1, kp2, kp3));
         break;
 
     default:

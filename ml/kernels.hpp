@@ -35,7 +35,7 @@ struct kernel_t {
         const El::AbstractDistMatrix<float> &Y,
         El::AbstractDistMatrix<float> &K) const = 0;
 
-    virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir, 
+    virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
         const El::Matrix<double> &X, El::Matrix<double> &K) const = 0;
 
     virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
@@ -393,7 +393,7 @@ private:
     const double _sigma;
 };
 
-struct polynomial_t {
+struct polynomial_t : public kernel_t {
 
     polynomial_t(El::Int N, int q = 2, double c = 1.0, double gamma = 1.0)
         : _N(N), _q(q), _c(c), _gamma(gamma) {
@@ -414,6 +414,12 @@ struct polynomial_t {
         return pt;
     }
 
+    sketch::sketch_transform_t<boost::any, boost::any> *create_rft(El::Int S,
+    regular_feature_transform_tag tag, base::context_t& context) const {
+
+        return create_rft<boost::any, boost::any>(S, tag, context);
+    }
+
     template<typename IT, typename OT>
     sketch::sketch_transform_t<IT, OT> *create_rft(El::Int S,
         regular_feature_transform_tag, base::context_t& context) const {
@@ -425,8 +431,113 @@ struct polynomial_t {
         return _N;
     }
 
-    // TODO method for gram matrix ?
+    template<typename XT, typename YT, typename KT>
+    void gram(base::direction_t dirX, base::direction_t dirY,
+        const XT &X, const YT &Y, KT &K) const {
 
+        typedef typename utility::typer_t<KT>::value_type value_type;
+
+        El::Int m = dirX == base::COLUMNS ? base::Width(X) : base::Height(X);
+        El::Int n = dirY == base::COLUMNS ? base::Width(Y) : base::Height(Y);
+
+        K.Resize(m, n);
+        El::Orientation xo = dirX == base::COLUMNS ? El::ADJOINT : El::NORMAL;
+        El::Orientation yo = dirY == base::COLUMNS ? El::NORMAL : El::ADJOINT;
+
+        // TODO should be base::Gemm, not El::Gemm
+        El::Gemm(xo, yo, value_type(1.0), X, Y, value_type(0.0), K);
+        El::EntrywiseMap(K, std::function<value_type(value_type)> (
+            [this] (value_type x) {
+                return std::pow(_gamma * x + _c, _q);
+            }));
+    }
+
+    template<typename XT, typename KT>
+    void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
+        const XT &X, KT &K) const {
+
+        typedef typename utility::typer_t<KT>::value_type value_type;
+
+        El::Int n = dir == base::COLUMNS ? base::Width(X) : base::Height(X);
+        El::Orientation o = dir == base::COLUMNS ? El::ADJOINT : El::NORMAL;
+
+        K.Resize(n, n);
+        // TODO should be base::Herk, not El::Herk
+        El::Herk(uplo, o, value_type(1.0), X, K);
+        // TODO maybe need to use Gemm version.
+        base::SymmetricEntrywiseMap(uplo, K, std::function<value_type(value_type)> (
+              [this] (value_type x) {
+                  return std::pow(_gamma * x + _c, _q);
+              }));
+    }
+
+
+    /* Instantion of virtual functions in base */
+
+    void gram(base::direction_t dirX, base::direction_t dirY,
+        const El::Matrix<double> &X, const El::Matrix<double> &Y,
+        El::Matrix<double> &K) const {
+
+        typedef El::Matrix<double> matrix_type;
+        gram<matrix_type, matrix_type, matrix_type>(dirX, dirY, X, Y, K);
+    }
+
+    void gram(base::direction_t dirX, base::direction_t dirY,
+        const El::Matrix<float> &X, const El::Matrix<float> &Y,
+        El::Matrix<float> &K) const {
+
+        typedef El::Matrix<float> matrix_type;
+        gram<matrix_type, matrix_type, matrix_type>(dirX, dirY, X, Y, K);
+    }
+
+    void gram(base::direction_t dirX, base::direction_t dirY,
+        const El::AbstractDistMatrix<double> &X,
+        const El::AbstractDistMatrix<double> &Y,
+        El::AbstractDistMatrix<double> &K) const {
+
+        typedef El::AbstractDistMatrix<double> matrix_type;
+        gram<matrix_type, matrix_type, matrix_type>(dirX, dirY, X, Y, K);
+    }
+
+    void gram(base::direction_t dirX, base::direction_t dirY,
+        const El::AbstractDistMatrix<float> &X,
+        const El::AbstractDistMatrix<float> &Y,
+        El::AbstractDistMatrix<float> &K) const {
+
+        typedef El::AbstractDistMatrix<float> matrix_type;
+        gram<matrix_type, matrix_type, matrix_type>(dirX, dirY, X, Y, K);
+    }
+
+    virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir, 
+        const El::Matrix<double> &X, El::Matrix<double> &K) const {
+
+        typedef El::Matrix<double> matrix_type;
+        symmetric_gram<matrix_type, matrix_type>(uplo, dir, X, K);
+
+    }
+
+    virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
+        const El::Matrix<float> &X, El::Matrix<float> &K) const {
+
+        typedef El::Matrix<float> matrix_type;
+        symmetric_gram<matrix_type, matrix_type>(uplo, dir, X, K);
+    }
+
+    virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
+        const El::AbstractDistMatrix<double> &X,
+        El::AbstractDistMatrix<double> &K) const {
+
+        typedef El::AbstractDistMatrix<double> matrix_type;
+        symmetric_gram<matrix_type, matrix_type>(uplo, dir, X, K);
+    }
+
+    virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
+        const El::AbstractDistMatrix<float> &X,
+        El::AbstractDistMatrix<float> &K) const {
+
+        typedef El::AbstractDistMatrix<float> matrix_type;
+        symmetric_gram<matrix_type, matrix_type>(uplo, dir, X, K);
+    }
 
 private:
     const El::Int _N;

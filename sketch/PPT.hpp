@@ -134,7 +134,8 @@ public:
     void apply(const boost::any &A, const boost::any &sketch_of_A,
                 columnwise_tag dimension) const {
 
-#if     !(defined SKYLARK_NO_ANY)
+
+#if     !(defined SKYLARK_NO_ANY) || (defined SKYLARK_WITH_GAUSSIAN_RFT_ANY)
 
 #if SKYLARK_HAVE_FFTW
 
@@ -146,6 +147,8 @@ public:
             mdtypes::shared_matrix_t, PPT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::root_matrix_t,
             mdtypes::root_matrix_t, PPT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
+            mdtypes::dist_matrix_t, PPT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
             mdtypes::dist_matrix_vc_star_t, PPT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
@@ -167,6 +170,8 @@ public:
             mftypes::shared_matrix_t, PPT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::root_matrix_t,
             mftypes::root_matrix_t, PPT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t,
+            mftypes::dist_matrix_t, PPT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
             mftypes::dist_matrix_vc_star_t, PPT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
@@ -194,7 +199,7 @@ public:
     void apply (const boost::any &A, const boost::any &sketch_of_A,
         rowwise_tag dimension) const {
 
-#if     !(defined SKYLARK_NO_ANY)
+#if     !(defined SKYLARK_NO_ANY) || (defined SKYLARK_WITH_GAUSSIAN_RFT_ANY)
 
 #if SKYLARK_HAVE_FFTW
 
@@ -206,6 +211,8 @@ public:
             mdtypes::shared_matrix_t, PPT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::root_matrix_t,
             mdtypes::root_matrix_t, PPT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
+            mdtypes::dist_matrix_t, PPT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
             mdtypes::dist_matrix_vc_star_t, PPT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
@@ -227,6 +234,8 @@ public:
             mftypes::shared_matrix_t, PPT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::root_matrix_t,
             mftypes::root_matrix_t, PPT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t,
+            mftypes::dist_matrix_t, PPT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
             mftypes::dist_matrix_vc_star_t, PPT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,

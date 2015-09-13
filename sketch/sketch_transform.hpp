@@ -99,6 +99,10 @@ template < typename InputMatrixType,
 struct sketch_transform_container_t 
     : public sketch_transform_t<InputMatrixType, OutputMatrixType> {
 
+    sketch_transform_container_t() {
+
+    }
+
     sketch_transform_container_t(const generic_sketch_transform_ptr_t &transform)
         : _transform(transform) {
 

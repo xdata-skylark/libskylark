@@ -69,6 +69,61 @@ void KernelRidge(base::direction_t direction, const KernelType &k,
                           << " sec\n";
 }
 
+template<typename T, typename KernelType>
+void ApproximateKernelRidge(base::direction_t direction, const KernelType &k,
+    const El::DistMatrix<T> &X, const El::DistMatrix<T> &Y, T lambda,
+    sketch::sketch_transform_container_t<El::DistMatrix<T>, El::DistMatrix<T> > &S,
+    El::DistMatrix<T> &W, El::Int s, base::context_t &context,
+    krr_params_t params = krr_params_t()) {
+
+    bool log_lev1 = params.am_i_printing && params.log_level >= 1;
+    bool log_lev2 = params.am_i_printing && params.log_level >= 2;
+
+    boost::mpi::timer timer;
+
+    // Create and apply the feature transform
+    if (log_lev1) {
+        params.log_stream << params.prefix
+                          << "Create and apply the feature transform... ";
+        params.log_stream.flush();
+        timer.restart();
+   }
+
+    sketch::generic_sketch_transform_ptr_t
+        p(k.create_rft(s, regular_feature_transform_tag(), context));
+    S =
+        sketch::sketch_transform_container_t<El::DistMatrix<T>,
+                                             El::DistMatrix<T> >(p);
+
+    El::DistMatrix<T> Z;
+
+    if (direction == base::COLUMNS) {
+        Z.Resize(s, X.Width());
+        S.apply(X, Z, sketch::columnwise_tag());
+    } else {
+        Z.Resize(X.Height(), s);
+        S.apply(X, Z, sketch::rowwise_tag());
+    }
+
+    if (log_lev1)
+        params.log_stream << "took " << boost::format("%.2e") % timer.elapsed()
+                          << " sec\n";
+
+    // Solving the regression problem
+    if (log_lev1) {
+        params.log_stream << params.prefix
+                          << "Solving the regression problem... ";
+        params.log_stream.flush();
+            timer.restart();
+    }
+
+    El::Ridge(direction == base::COLUMNS ? El::ADJOINT : El::NORMAL,
+        Z, Y, std::sqrt(lambda), W);
+
+    if (log_lev1)
+        params.log_stream << "took " << boost::format("%.2e") % timer.elapsed()
+                          << " sec\n";
+}
 
 template<typename MatrixType>
 class feature_map_precond_t :

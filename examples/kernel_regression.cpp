@@ -13,8 +13,9 @@
 #include <skylark.hpp>
 
 // Algorithms constants
-#define CLASSIC_KRR   0
-#define FASTER_KRR    1
+#define CLASSIC_KRR        0
+#define FASTER_KRR         1
+#define APPROXIMATE_KRR    2
 
 // Kernels constants
 #define GAUSSIAN_KERNEL   0
@@ -55,7 +56,8 @@ int parse_program_options(int argc, char* argv[]) {
             "Kernel to use (0: Gaussian, 1: Laplacian, 2: Polynomial).")
         ("algorithm,a",
              bpo::value<int>(&algorithm)->default_value(FASTER_KRR),
-            "Algorithm to use (0: Classic, 1: Faster (Precond)).")
+            "Algorithm to use (0: Classic, 1: Faster (Precond), "
+            "2: Approximate (Random Features)). OPTIONAL.")
         ("seed,s",
             bpo::value<int>(&seed)->default_value(38734),
             "Seed for random number generation. OPTIONAL.")
@@ -258,31 +260,47 @@ int execute(skylark::base::context_t &context) {
 
     skylark::ml::kernel_container_t k(k_ptr);
 
-    El::DistMatrix<T> A;
+    El::DistMatrix<T> A, W;
     std::vector<El::Int> rcoding;
+
+    skylark::sketch::sketch_transform_container_t<El::DistMatrix<T>,
+                                                  El::DistMatrix<T> > S;
 
     skylark::ml::rlsc_params_t rlsc_params(rank == 0, 4, *log_stream, "\t");
     rlsc_params.tolerance = tolerance;
+
+    skylark::ml::model_t<El::Int, T> *model;
 
     switch(algorithm) {
     case CLASSIC_KRR:
         skylark::ml::KernelRLSC(skylark::base::COLUMNS, k, X, L,
             T(lambda), A, rcoding, rlsc_params);
+        model =
+            new skylark::ml::kernel_model_t<skylark::ml::kernel_container_t,
+                  El::Int, T>(k, skylark::base::COLUMNS, X, fname, A, rcoding);
         break;
 
     case FASTER_KRR:
         skylark::ml::FasterKernelRLSC(skylark::base::COLUMNS, k, X, L,
             T(lambda), A, rcoding, s, context, rlsc_params);
+        model =
+            new skylark::ml::kernel_model_t<skylark::ml::kernel_container_t,
+                  El::Int, T>(k, skylark::base::COLUMNS, X, fname, A, rcoding);
+        break;
+
+    case APPROXIMATE_KRR:
+        skylark::ml::ApproximateKernelRLSC(skylark::base::COLUMNS, k, X, L,
+            T(lambda), S, W, rcoding, s, context, rlsc_params);
+        model =
+            new skylark::ml::feature_expansion_model_t<
+                skylark::sketch::sketch_transform_container_t, El::Int, T>
+            (S, W, rcoding);
         break;
 
     default:
         *log_stream << "Invalid algorithm value specified." << std::endl;
         return -1;
     }
-
-    skylark::ml::kernel_model_t<skylark::ml::kernel_container_t, El::Int, T>
-        model(k, skylark::base::COLUMNS, X, fname, A, rcoding);
-
 
     if (rank == 0)
         *log_stream << "Training took " << boost::format("%.2e") % timer.elapsed()
@@ -295,7 +313,7 @@ int execute(skylark::base::context_t &context) {
         timer.restart();
     }
 
-    boost::property_tree::ptree pt = model.to_ptree();
+    boost::property_tree::ptree pt = model->to_ptree();
 
     if (rank == 0) {
         std::ofstream of(modelname);
@@ -325,7 +343,7 @@ int execute(skylark::base::context_t &context) {
             skylark::base::COLUMNS, X.Height());
 
         El::DistMatrix<El::Int> LP;
-        model.predict(skylark::base::COLUMNS, XT, LP);
+        model->predict(skylark::base::COLUMNS, XT, LP);
 
         if (rank == 0)
             *log_stream << "took " << boost::format("%.2e") % timer.elapsed()
@@ -349,6 +367,8 @@ int execute(skylark::base::context_t &context) {
         ((std::ofstream *)log_stream)->close();
         delete log_stream;
     }
+
+    delete model;
 
     return 0;
 }

@@ -270,6 +270,29 @@ private:
     std::vector<int> _starts, _finishes;
 };
 
+//////////////////////////////////////////////////////////////////////////
+/**
+ * Generic (abstract) model
+ */
+template<typename OutType, typename ComputeType>
+struct model_t {
+
+    virtual void predict(base::direction_t direction_XT,
+        const El::DistMatrix<ComputeType> &XT, El::DistMatrix<OutType> &YP)
+        const = 0;
+
+    virtual boost::property_tree::ptree to_ptree() const = 0;
+
+    virtual void save(const std::string& fname, const std::string& header)
+        const = 0;
+
+    virtual ~model_t() {
+
+    }
+};
+
+
+/****************** Kernel model *****************************************/
 
 template<typename KernelType, typename OutType, typename ComputeType = OutType,
          typename dummy = OutType>
@@ -280,7 +303,9 @@ struct kernel_model_t;
  */
 template<typename KernelType, typename OutType, typename ComputeType>
 struct kernel_model_t<KernelType, OutType, ComputeType,
- typename std::enable_if<std::is_floating_point<OutType>::value, OutType>::type >
+  typename std::enable_if<std::is_floating_point<OutType>::value, OutType>::type > : 
+public model_t<OutType, ComputeType>
+
 {
     typedef KernelType kernel_type;
     typedef ComputeType compute_type;
@@ -333,6 +358,10 @@ struct kernel_model_t<KernelType, OutType, ComputeType,
         of.close();
     }
 
+    virtual ~kernel_model_t() {
+
+    }
+
 private:
     const El::DistMatrix<compute_type> _X;
     const base::direction_t _direction;
@@ -347,8 +376,9 @@ private:
  */
 template<typename KernelType, typename OutType, typename ComputeType>
 struct kernel_model_t<KernelType, OutType, ComputeType,
- typename std::enable_if<!std::is_floating_point<OutType>::value, OutType>::type >
-{
+  typename std::enable_if<!std::is_floating_point<OutType>::value, OutType>::type > :
+public model_t<OutType, ComputeType> {
+
     typedef KernelType kernel_type;
     typedef ComputeType compute_type;
     typedef OutType out_type;
@@ -399,6 +429,18 @@ struct kernel_model_t<KernelType, OutType, ComputeType,
         return pt;
     }
 
+    void save(const std::string& fname, const std::string& header) const {
+        boost::property_tree::ptree pt = to_ptree();
+        std::ofstream of(fname);
+        of << header;
+        boost::property_tree::write_json(of, pt);
+        of.close();
+    }
+
+    virtual ~kernel_model_t() {
+
+    }
+
 private:
     El::DistMatrix<compute_type> _X;
     const base::direction_t _direction;
@@ -406,6 +448,182 @@ private:
     std::vector<OutType> _rcoding;
     const std::string _dataloc;
     const kernel_type _k;
+    const El::Int _input_size, _output_size;
+};
+
+/******************************************************************************/
+
+/**
+ * Feature expansion model - expands feature expansion and then uses
+ * linear combination.
+ */
+template<template <typename, typename> class SketchType,
+         typename OutType, typename ComputeType = OutType,
+         typename dummy = OutType>
+struct feature_expansion_model_t;
+
+/**
+ * Feature expansion model for continuous output - regression model
+ */
+template<template <typename, typename> class SketchType,
+         typename OutType, typename ComputeType>
+struct feature_expansion_model_t<SketchType, OutType, ComputeType,
+  typename std::enable_if<std::is_floating_point<OutType>::value, OutType>::type > : 
+public model_t<OutType, ComputeType>
+
+{
+    typedef ComputeType compute_type;
+    typedef OutType out_type;
+
+    typedef SketchType<El::DistMatrix<compute_type>, 
+                       El::DistMatrix<compute_type> > sketch_type;
+
+
+    feature_expansion_model_t(const sketch_type &S,
+        const El::DistMatrix<compute_type> &W) :
+        _W(),  _S(S),
+        _input_size(S.get_N()), _output_size(W.Width()) {
+
+        El::LockedView(_W, W);
+    }
+
+    void predict(base::direction_t direction_XT, 
+        const El::DistMatrix<compute_type> &XT, El::DistMatrix<out_type> &YP) const {
+
+       if (direction_XT == base::COLUMNS) {
+
+            El::DistMatrix<compute_type> ZT(_S.get_S(), XT.Width());
+            _S.apply(XT, ZT, sketch::columnwise_tag());
+            El::Gemm(El::ADJOINT, El::NORMAL, compute_type(1.0), _W, ZT, YP);
+
+        } else {
+
+            El::DistMatrix<compute_type> ZT(XT.Height(), _S.get_N());
+            _S.apply(XT, ZT, sketch::rowwise_tag());
+            El::Gemm(El::NORMAL, El::NORMAL, compute_type(1.0), ZT, _W, YP);
+
+        }
+    }
+
+    boost::property_tree::ptree to_ptree() const {
+        boost::property_tree::ptree pt;
+
+        pt.put("skylark_object_type", "model:feature_expansion");
+        pt.put("skylark_version", VERSION);
+
+        pt.put("num_outputs", _output_size);
+        pt.put("input_size", _input_size);
+        pt.put("regression", true);
+
+        pt.add_child("expansion_transform", _S.to_ptree());
+
+        std::stringstream sW;
+        El::Print(_W, "", sW);
+        pt.put("weights", sW.str());
+
+        return pt;
+    }
+
+    void save(const std::string& fname, const std::string& header) const {
+        boost::property_tree::ptree pt = to_ptree();
+        std::ofstream of(fname);
+        of << header;
+        boost::property_tree::write_json(of, pt);
+        of.close();
+    }
+
+    virtual ~feature_expansion_model_t() {
+
+    }
+
+private:
+    El::DistMatrix<compute_type> _W;
+    const sketch_type _S;
+    const El::Int _input_size, _output_size;
+};
+
+/**
+ * Approximate kernel model for discrete (all other) outputs - classification
+ */
+template<template <typename, typename> class SketchType,
+         typename OutType, typename ComputeType>
+struct feature_expansion_model_t<SketchType, OutType, ComputeType,
+  typename std::enable_if<!std::is_floating_point<OutType>::value, OutType>::type > :
+public model_t<OutType, ComputeType> {
+
+    typedef ComputeType compute_type;
+    typedef OutType out_type;
+    typedef SketchType<El::DistMatrix<compute_type>,
+                       El::DistMatrix<compute_type> > sketch_type;
+
+    feature_expansion_model_t(const sketch_type &S,
+        const El::DistMatrix<compute_type> &W,
+        const std::vector<OutType> &rcoding) :
+        _W(), _rcoding(rcoding), _S(S),
+        _input_size(S.get_N()), _output_size(W.Width()){
+
+        El::LockedView(_W, W);
+    }
+
+    void predict(base::direction_t direction_XT,
+        const El::DistMatrix<compute_type> &XT, El::DistMatrix<out_type> &YP) const {
+
+        if (direction_XT == base::COLUMNS) {
+
+            El::DistMatrix<compute_type> ZT(_S.get_S(), XT.Width()), YP0;
+            _S.apply(XT, ZT, sketch::columnwise_tag());
+            El::Gemm(El::ADJOINT, El::NORMAL, compute_type(1.0), _W, ZT, YP0);
+            DummyDecode(El::ADJOINT, YP0, YP, _rcoding);
+
+        } else {
+
+            El::DistMatrix<compute_type> ZT(XT.Height(), _S.get_N()), YP0;
+            _S.apply(XT, ZT, sketch::rowwise_tag());
+            El::Gemm(El::NORMAL, El::NORMAL, compute_type(1.0), ZT, _W, YP0);
+            DummyDecode(El::NORMAL, YP0, YP, _rcoding);
+
+        }
+    }
+
+    boost::property_tree::ptree to_ptree() const {
+        boost::property_tree::ptree pt;
+
+        pt.put("skylark_object_type", "model:feature_expansion");
+        pt.put("skylark_version", VERSION);
+
+        pt.put("input_size", _input_size);
+        pt.put("regression", false);
+
+        boost::property_tree::ptree rcoding;
+        for(int i = 0; i < _rcoding.size(); i++)
+            rcoding.put(std::to_string(i), _rcoding[i]);
+        pt.add_child("rcoding", rcoding);
+
+        pt.add_child("expansion_transform", _S.to_ptree());
+
+        std::stringstream sW;
+        El::Print(_W, "", sW);
+        pt.put("weights", sW.str());
+
+        return pt;
+    }
+
+    void save(const std::string& fname, const std::string& header) const {
+        boost::property_tree::ptree pt = to_ptree();
+        std::ofstream of(fname);
+        of << header;
+        boost::property_tree::write_json(of, pt);
+        of.close();
+    }
+
+    virtual ~feature_expansion_model_t() {
+
+    }
+
+private:
+    El::DistMatrix<compute_type> _W;
+    std::vector<OutType> _rcoding;
+    const sketch_type _S;
     const El::Int _input_size, _output_size;
 };
 

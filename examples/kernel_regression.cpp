@@ -315,7 +315,8 @@ int execute(skylark::base::context_t &context) {
             T(lambda), A, rcoding, rlsc_params);
         model =
             new skylark::ml::kernel_model_t<skylark::ml::kernel_container_t,
-                  El::Int, T>(k, skylark::base::COLUMNS, X, fname, A, rcoding);
+                  El::Int, T>(k, skylark::base::COLUMNS, X, fname, fileformat,
+                      A, rcoding);
         break;
 
     case FASTER_KRR:
@@ -323,7 +324,8 @@ int execute(skylark::base::context_t &context) {
             T(lambda), A, rcoding, s, context, rlsc_params);
         model =
             new skylark::ml::kernel_model_t<skylark::ml::kernel_container_t,
-                  El::Int, T>(k, skylark::base::COLUMNS, X, fname, A, rcoding);
+                  El::Int, T>(k, skylark::base::COLUMNS, X, fname, fileformat,
+                      A, rcoding);
         break;
 
     case APPROXIMATE_KRR:

@@ -313,9 +313,10 @@ public model_t<OutType, ComputeType>
 
     kernel_model_t(const kernel_type &k,
         base::direction_t direction, const El::DistMatrix<compute_type> &X,
-        const std::string &dataloc, const El::DistMatrix<compute_type> &A) :
+        const std::string &dataloc, const int fileformat, 
+        const El::DistMatrix<compute_type> &A) :
         _X(), _direction(direction),
-        _A(), _dataloc(dataloc), _k(k),
+        _A(), _dataloc(dataloc), _fileformat(fileformat), _k(k),
         _input_size(k.get_dim()), _output_size(A.Width()) {
 
         El::LockedView(_X, X);
@@ -337,6 +338,7 @@ public model_t<OutType, ComputeType>
         pt.put("skylark_version", VERSION);
 
         pt.put("data_location", _dataloc);
+        pt.put("fileformat", _fileformat);
         pt.put("num_outputs", _output_size);
         pt.put("input_size", _input_size);
         pt.put("regression", true);
@@ -367,6 +369,7 @@ private:
     const base::direction_t _direction;
     const El::DistMatrix<compute_type> _A;
     const std::string _dataloc;
+    const int _fileformat;
     const kernel_type _k;
     const El::Int _input_size, _output_size;
 };
@@ -385,11 +388,12 @@ public model_t<OutType, ComputeType> {
 
     kernel_model_t(const kernel_type &k,
         base::direction_t direction, const El::DistMatrix<compute_type> &X,
-        const std::string &dataloc, const El::DistMatrix<compute_type> &A,
+        const std::string &dataloc, const int fileformat,
+        const El::DistMatrix<compute_type> &A,
         const std::vector<OutType> &rcoding) :
         _X(), _direction(direction),
-        _A(), _rcoding(rcoding), _dataloc(dataloc), _k(k),
-        _input_size(k.get_dim()), _output_size(A.Width()){
+        _A(), _rcoding(rcoding), _dataloc(dataloc), _fileformat(fileformat),
+        _k(k), _input_size(k.get_dim()), _output_size(A.Width()) {
 
         El::LockedView(_X, X);
         El::LockedView(_A, A);
@@ -411,6 +415,7 @@ public model_t<OutType, ComputeType> {
         pt.put("skylark_version", VERSION);
 
         pt.put("data_location", _dataloc);
+        pt.put("fileformat", _fileformat);
         pt.put("num_outputs", _output_size);
         pt.put("input_size", _input_size);
         pt.put("regression", false);
@@ -447,6 +452,7 @@ private:
     El::DistMatrix<compute_type> _A;
     std::vector<OutType> _rcoding;
     const std::string _dataloc;
+    const int _fileformat;
     const kernel_type _k;
     const El::Int _input_size, _output_size;
 };

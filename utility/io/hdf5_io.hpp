@@ -135,15 +135,16 @@ void ReadHDF5(H5::H5File& in, const std::string& name,
  * @param X output matrix.
  */
 template<typename T>
-void ReadHDF5(H5::H5File& in, const std::string& name, 
-    El::AbstractDistMatrix<T>& X) {
+void ReadHDF5(H5::H5File& in, const std::string& name,
+    El::AbstractDistMatrix<T>& X, hsize_t max_n = -1, hsize_t max_m = -1) {
+    // NOTE: -1 will wrap up to max value because of hsize_t definition
 
     H5::DataSet dataset = in.openDataSet(name);
     H5::DataSpace fs = dataset.getSpace();
     hsize_t dims[2];
     fs.getSimpleExtentDims(dims);
-    hsize_t m = dims[0];
-    hsize_t n = fs.getSimpleExtentNdims() > 1 ? dims[1] : 1;
+    hsize_t m = std::min(dims[0], max_m);
+    hsize_t n = std::min(fs.getSimpleExtentNdims() > 1 ? dims[1] : 1, max_n);
 
     X.Resize(n, m);
 
@@ -168,8 +169,16 @@ void ReadHDF5(H5::H5File& in, const std::string& name,
 
     if (fs.getSimpleExtentNdims() == 1) {
         El::DistMatrix<T, El::CIRC, El::CIRC> X1(n, m);
-        if (X1.LocalHeight() != 0)
-            dataset.read(X1.Buffer(),  internal::hdf5_type_mapper_t<T>::get_type());
+        if (X1.LocalHeight() != 0) {
+            hsize_t cnt[1], fo[1];
+            fo[0] = 0;
+            cnt[0] = m;
+            fs.selectHyperslab(H5S_SELECT_SET, cnt, fo);
+            H5::DataSpace ms(1, cnt);
+
+            dataset.read(X1.Buffer(),
+                internal::hdf5_type_mapper_t<T>::get_type(), ms, fs);
+        }
         El::Copy(X1, X);
     }
 
@@ -177,4 +186,5 @@ void ReadHDF5(H5::H5File& in, const std::string& name,
 }
 
 } } } // namespace skylark::utility::io
+
 #endif

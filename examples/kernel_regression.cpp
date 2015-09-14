@@ -255,8 +255,8 @@ int execute(skylark::base::context_t &context) {
 
     case FORMAT_HDF5: {
         H5::H5File in(fname, H5F_ACC_RDONLY);
-        skylark::utility::io::ReadHDF5(in, "X", X);
-        skylark::utility::io::ReadHDF5(in, "Y", L);
+        skylark::utility::io::ReadHDF5(in, "X", X, -1, partial);
+        skylark::utility::io::ReadHDF5(in, "Y", L, -1, partial);
         in.close();
     }
         break;

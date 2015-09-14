@@ -39,11 +39,11 @@ public:
 } // namspace internal
 
 /**
- * Reads a matrix from an HDF5 file. 
- * Output is an Elemental dense matrices.
+ * Reads a matrix from an HDF5 file.
+ * Output is an Elemental dense local matrix.
  *
  * IMPORTANT: HDF5 keeps matrices in row-major format, while Elemental works
- *            with column-major. The cosquence is that matrices are read in
+ *            with column-major. The consequence is that matrices are read in
  *            transpose form. That is, the output matrix is a transpose of the
  *            one you will see in, say, h5dump.
  *
@@ -119,6 +119,61 @@ void ReadHDF5(H5::H5File& in, const std::string& name,
             m = indices[i] + 1;
 
     X.attach(colptr, indices, values, nnz, m, n, true);
+}
+
+/**
+ * Reads a matrix from an HDF5 file.
+ * Output is an Elemental dense matrix.
+ *
+ * IMPORTANT: HDF5 keeps matrices in row-major format, while Elemental works
+ *            with column-major. The consequence is that matrices are read in
+ *            transpose form. That is, the output matrix is a transpose of the
+ *            one you will see in, say, h5dump.
+ *
+ * @param in HDF5 file to operate on.
+ * @param name name of the dataset/group holding the matrix.
+ * @param X output matrix.
+ */
+template<typename T>
+void ReadHDF5(H5::H5File& in, const std::string& name, 
+    El::AbstractDistMatrix<T>& X) {
+
+    H5::DataSet dataset = in.openDataSet(name);
+    H5::DataSpace fs = dataset.getSpace();
+    hsize_t dims[2];
+    fs.getSimpleExtentDims(dims);
+    hsize_t m = dims[0];
+    hsize_t n = fs.getSimpleExtentNdims() > 1 ? dims[1] : 1;
+
+    X.Resize(n, m);
+
+    if (fs.getSimpleExtentNdims() == 2) {
+        hsize_t fo[2], fst[2], fc[2];
+        fo[0] = X.RowShift();
+        fo[1] = X.ColShift();
+        fst[0] = X.RowStride();
+        fst[1] = X.ColStride();
+        fc[0] = X.LocalWidth();
+        fc[1] = X.LocalHeight();
+        fs.selectHyperslab(H5S_SELECT_SET, fc, fo, fst);
+
+        hsize_t md[2];
+        md[0] = X.LocalWidth();
+        md[1] = X.LocalHeight();
+        H5::DataSpace ms(2, md);
+
+        dataset.read(X.Buffer(),  internal::hdf5_type_mapper_t<T>::get_type(),
+            ms, fs);
+    }
+
+    if (fs.getSimpleExtentNdims() == 1) {
+        El::DistMatrix<T, El::CIRC, El::CIRC> X1(n, m);
+        if (X1.LocalHeight() != 0)
+            dataset.read(X1.Buffer(),  internal::hdf5_type_mapper_t<T>::get_type());
+        El::Copy(X1, X);
+    }
+
+    dataset.close();
 }
 
 } } } // namespace skylark::utility::io

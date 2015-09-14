@@ -12,6 +12,10 @@
 
 #include <skylark.hpp>
 
+// File formats
+#define FORMAT_LIBSVM  0
+#define FORMAT_HDF5    1
+
 // Algorithms constants
 #define CLASSIC_KRR                    0
 #define FASTER_KRR                     1
@@ -26,6 +30,7 @@
 
 std::string cmdline;
 int seed = 38734, algorithm = FASTER_KRR, kernel_type = GAUSSIAN_KERNEL;
+int fileformat = FORMAT_LIBSVM;
 int s = 2000, partial = -1, sketch_size = -1;
 std::string fname, testname, modelname = "model.dat", logfile = "";
 double kp1 = 10.0, kp2 = 0.0, kp3 = 1.0, lambda = 0.01, tolerance=1e-3;
@@ -91,7 +96,10 @@ int parse_program_options(int argc, char* argv[]) {
         ("sketchsize,r",
             bpo::value<int>(&sketch_size)->default_value(-1),
             "Sketch size (for regression problem; if relevant (i.e., -a 3). "
-            "-1 - will be determined by software. ");
+            "-1 - will be determined by software. ")
+        ("fileformat",
+            po::value<int>(&fileformat)->default_value(FORMAT_LIBSVM),
+            "Fileformat (default: 0 (libsvm), 1 (hdf5)");
 
     bpo::positional_options_description positional;
     positional.add("trainfile", 1);
@@ -165,6 +173,9 @@ int parse_program_options(int argc, char* argv[]) {
         if (flag == "--algorithm" || flag == "-a")
             algorithm = boost::lexical_cast<int>(value);
 
+        if (flag == "--fileformat")
+            fileformat = boost::lexical_cast<int>(value);
+
         if (flag == "--nunmfeatures" || flag == "-f")
             s = boost::lexical_cast<int>(value);
 
@@ -236,8 +247,24 @@ int execute(skylark::base::context_t &context) {
         timer.restart();
     }
 
-    skylark::utility::io::ReadLIBSVM(fname, X, L, skylark::base::COLUMNS,
-        0, partial);
+    switch (fileformat) {
+    case FORMAT_LIBSVM:
+        skylark::utility::io::ReadLIBSVM(fname, X, L, skylark::base::COLUMNS,
+            0, partial);
+        break;
+
+    case FORMAT_HDF5: {
+        H5::H5File in(fname, H5F_ACC_RDONLY);
+        skylark::utility::io::ReadHDF5(in, "X", X);
+        skylark::utility::io::ReadHDF5(in, "Y", L);
+        in.close();
+    }
+        break;
+
+    default:
+        *log_stream << "Invalid file format specified." << std::endl;
+        return -1;
+    }
 
     if (rank == 0)
         *log_stream <<"took " << boost::format("%.2e") % timer.elapsed()
@@ -363,8 +390,25 @@ int execute(skylark::base::context_t &context) {
 
         El::DistMatrix<T> XT;
         El::DistMatrix<El::Int> LT;
-        skylark::utility::io::ReadLIBSVM(testname, XT, LT,
-            skylark::base::COLUMNS, X.Height());
+
+        switch (fileformat) {
+        case FORMAT_LIBSVM:
+            skylark::utility::io::ReadLIBSVM(testname, XT, LT,
+                skylark::base::COLUMNS, X.Height());
+            break;
+
+        case FORMAT_HDF5: {
+            H5::H5File in(testname, H5F_ACC_RDONLY);
+            skylark::utility::io::ReadHDF5(in, "X", XT);
+            skylark::utility::io::ReadHDF5(in, "Y", LT);
+            in.close();
+        }
+            break;
+
+        default:
+            *log_stream << "Invalid file format specified." << std::endl;
+            return -1;
+        }
 
         El::DistMatrix<El::Int> LP;
         model->predict(skylark::base::COLUMNS, XT, LP);

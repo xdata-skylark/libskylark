@@ -166,6 +166,16 @@ public:
             mdtypes::root_matrix_t, CWT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
             mdtypes::shared_matrix_t, CWT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
+            mdtypes::dist_matrix_t, CWT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
+            mdtypes::dist_matrix_vc_star_t, CWT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
+            mdtypes::dist_matrix_vr_star_t, CWT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vc_t,
+            mdtypes::dist_matrix_star_vc_t, CWT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t,
+            mdtypes::dist_matrix_star_vr_t, CWT_t);
 
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::matrix_t, mftypes::matrix_t,
             CWT_t);
@@ -189,6 +199,16 @@ public:
             mftypes::root_matrix_t, CWT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
             mftypes::shared_matrix_t, CWT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t,
+            mftypes::dist_matrix_t, CWT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
+            mftypes::dist_matrix_vc_star_t, CWT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
+            mftypes::dist_matrix_vr_star_t, CWT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vc_t,
+            mftypes::dist_matrix_star_vc_t, CWT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
+            mftypes::dist_matrix_star_vr_t, CWT_t);
 
 #endif
 
@@ -230,6 +250,16 @@ public:
             mdtypes::root_matrix_t, CWT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
             mdtypes::shared_matrix_t, CWT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
+            mdtypes::dist_matrix_t, CWT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
+            mdtypes::dist_matrix_vc_star_t, CWT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
+            mdtypes::dist_matrix_vr_star_t, CWT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vc_t,
+            mdtypes::dist_matrix_star_vc_t, CWT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t,
+            mdtypes::dist_matrix_star_vr_t, CWT_t);
 
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::matrix_t, mftypes::matrix_t,
             CWT_t);
@@ -253,7 +283,16 @@ public:
             mftypes::root_matrix_t, CWT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
             mftypes::shared_matrix_t, CWT_t);
-
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t,
+            mftypes::dist_matrix_t, CWT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
+            mftypes::dist_matrix_vc_star_t, CWT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
+            mftypes::dist_matrix_vr_star_t, CWT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vc_t,
+            mftypes::dist_matrix_star_vc_t, CWT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
+            mftypes::dist_matrix_star_vr_t, CWT_t);
 #endif
 
         SKYLARK_THROW_EXCEPTION (

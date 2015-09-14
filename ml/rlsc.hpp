@@ -5,6 +5,11 @@ namespace skylark { namespace ml {
 
 struct rlsc_params_t : public base::params_t {
 
+    // For approximate methods (ApproximateRLSC)
+    bool sketched_rls;
+    El::Int sketch_size;
+    bool fast_sketch;
+
     // For iterative methods (FasterRLSC)
     int iter_lim;
     int res_print;
@@ -16,6 +21,10 @@ struct rlsc_params_t : public base::params_t {
         std::string prefix = "",
         int debug_level = 0) :
         base::params_t(am_i_printing, log_level, log_stream, prefix, debug_level) {
+
+        sketched_rls = false;
+        sketch_size = -1;
+        fast_sketch = false;
 
         tolerance = 1e-3;
         res_print = 10;
@@ -111,7 +120,9 @@ void ApproximateKernelRLSC(base::direction_t direction, const KernelType &k,
 
     krr_params_t krr_params(params.am_i_printing, params.log_level - 1, 
         params.log_stream, params.prefix + "\t");
-
+    krr_params.sketched_rr = params.sketched_rls;
+    krr_params.sketch_size = params.sketch_size;
+    krr_params.fast_sketch = params.fast_sketch;
 
     ApproximateKernelRidge(direction, k, X, Y,
         T(lambda), S, W, s, context, krr_params);

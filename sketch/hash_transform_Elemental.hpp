@@ -605,6 +605,664 @@ private:
     }
 };
 
+/**
+ * Specialization: [VC, STAR] to same distribution
+ */
+template <typename ValueType,
+          template <typename> class IdxDistributionType,
+          template <typename> class ValueDistribution>
+struct hash_transform_t <
+    El::DistMatrix<ValueType, El::VC, El::STAR>,
+    El::DistMatrix<ValueType, El::VC, El::STAR>,
+    IdxDistributionType,
+    ValueDistribution > :
+        public hash_transform_data_t<IdxDistributionType,
+                                     ValueDistribution>,
+        virtual public sketch_transform_t<El::DistMatrix<ValueType, El::VC,
+                                                         El::STAR>,
+                                          El::DistMatrix<ValueType, El::VC,
+                                                         El::STAR> >  {
+
+    // Typedef matrix and distribution types so that we can use them regularly
+    typedef ValueType value_type;
+    typedef El::DistMatrix<value_type, El::VC, El::STAR> matrix_type;
+    typedef El::DistMatrix<value_type, El::VC, El::STAR> output_matrix_type;
+    typedef IdxDistributionType<size_t> idx_distribution_type;
+    typedef ValueDistribution<value_type> value_distribution_type;
+    typedef hash_transform_data_t<IdxDistributionType,
+                                  ValueDistribution> data_type;
+    /**
+     * Regular constructor
+     */
+    hash_transform_t (int N, int S, base::context_t& context) :
+        data_type (N, S, context), _local(*this) {
+
+    }
+
+    /**
+     * Copy constructor
+     */
+    hash_transform_t (const hash_transform_t<matrix_type,
+                                       output_matrix_type,
+                                       IdxDistributionType,
+                                       ValueDistribution>& other) :
+        data_type(other), _local(other) {}
+
+    /**
+     * Constructor from data
+     */
+    hash_transform_t (const data_type& other_data) :
+        data_type(other_data), _local(other_data) {}
+
+    /**
+     * Apply columnwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply (const matrix_type& A, output_matrix_type& sketch_of_A,
+        columnwise_tag dimension) const {
+
+        try {
+            apply_impl_vdist (A, sketch_of_A, dimension);
+        } catch (std::logic_error e) {
+            SKYLARK_THROW_EXCEPTION (
+                base::elemental_exception()
+                    << base::error_msg(e.what()) );
+        } catch(boost::mpi::exception e) {
+            SKYLARK_THROW_EXCEPTION (
+                 base::mpi_exception()
+                     << base::error_msg(e.what()) );
+        }
+    }
+
+    /**
+     * Apply rowwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply (const matrix_type& A, output_matrix_type& sketch_of_A,
+        rowwise_tag dimension) const {
+
+        try {
+            apply_impl_vdist (A, sketch_of_A, dimension);
+        } catch (std::logic_error e) {
+            SKYLARK_THROW_EXCEPTION (
+                base::elemental_exception()
+                    << base::error_msg(e.what()) );
+        } catch(boost::mpi::exception e) {
+            SKYLARK_THROW_EXCEPTION (
+                 base::mpi_exception()
+                     << base::error_msg(e.what()) );
+        }
+    }
+
+    int get_N() const { return this->_N; } /**< Get input dimension. */
+    int get_S() const { return this->_S; } /**< Get output dimension. */
+
+    const sketch_transform_data_t* get_data() const { return this; }
+
+private:
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     * Implementation for the column-wise direction of sketching.
+     */
+    void apply_impl_vdist(const matrix_type& A,
+        output_matrix_type& sketch_of_A,
+        skylark::sketch::columnwise_tag) const {
+
+        // Naive implementation: tranpose and uses the columnwise implementation
+        // Can we do better?
+        matrix_type A_t(A.Grid());
+        El::Transpose(A, A_t);
+        output_matrix_type sketch_of_A_t(sketch_of_A.Width(),
+            sketch_of_A.Height(), sketch_of_A.Grid());
+        apply_impl_vdist(A_t, sketch_of_A_t,
+            skylark::sketch::rowwise_tag());
+        El::Transpose(sketch_of_A_t, sketch_of_A);
+    }
+
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     * Implementation for the row-wise direction of sketching.
+     */
+    void apply_impl_vdist(const matrix_type& A,
+        output_matrix_type& sketch_of_A,
+        skylark::sketch::rowwise_tag tag) const {
+
+        // Just a local operation on the Matrix
+        _local.apply(A.LockedMatrix(), sketch_of_A.Matrix(), tag);
+    }
+
+private:
+
+    const hash_transform_t<El::Matrix<value_type>, El::Matrix<value_type>,
+                           IdxDistributionType, ValueDistribution> _local;
+};
+
+/**
+ * Specialization: [VR, STAR] to same distribution
+ */
+template <typename ValueType,
+          template <typename> class IdxDistributionType,
+          template <typename> class ValueDistribution>
+struct hash_transform_t <
+    El::DistMatrix<ValueType, El::VR, El::STAR>,
+    El::DistMatrix<ValueType, El::VR, El::STAR>,
+    IdxDistributionType,
+    ValueDistribution > :
+        public hash_transform_data_t<IdxDistributionType,
+                                     ValueDistribution>,
+        virtual public sketch_transform_t<El::DistMatrix<ValueType, El::VR,
+                                                         El::STAR>,
+                                          El::DistMatrix<ValueType, El::VR,
+                                                         El::STAR> >  {
+
+    // Typedef matrix and distribution types so that we can use them regularly
+    typedef ValueType value_type;
+    typedef El::DistMatrix<value_type, El::VR, El::STAR> matrix_type;
+    typedef El::DistMatrix<value_type, El::VR, El::STAR> output_matrix_type;
+    typedef IdxDistributionType<size_t> idx_distribution_type;
+    typedef ValueDistribution<value_type> value_distribution_type;
+    typedef hash_transform_data_t<IdxDistributionType,
+                                  ValueDistribution> data_type;
+    /**
+     * Regular constructor
+     */
+    hash_transform_t (int N, int S, base::context_t& context) :
+        data_type (N, S, context), _local(*this) {
+
+    }
+
+    /**
+     * Copy constructor
+     */
+    hash_transform_t (const hash_transform_t<matrix_type,
+                                       output_matrix_type,
+                                       IdxDistributionType,
+                                       ValueDistribution>& other) :
+        data_type(other), _local(other) {}
+
+    /**
+     * Constructor from data
+     */
+    hash_transform_t (const data_type& other_data) :
+        data_type(other_data), _local(other_data) {}
+
+    /**
+     * Apply columnwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply (const matrix_type& A, output_matrix_type& sketch_of_A,
+        columnwise_tag dimension) const {
+
+        try {
+            apply_impl_vdist (A, sketch_of_A, dimension);
+        } catch (std::logic_error e) {
+            SKYLARK_THROW_EXCEPTION (
+                base::elemental_exception()
+                    << base::error_msg(e.what()) );
+        } catch(boost::mpi::exception e) {
+            SKYLARK_THROW_EXCEPTION (
+                 base::mpi_exception()
+                     << base::error_msg(e.what()) );
+        }
+    }
+
+    /**
+     * Apply rowwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply (const matrix_type& A, output_matrix_type& sketch_of_A,
+        rowwise_tag dimension) const {
+
+        try {
+            apply_impl_vdist (A, sketch_of_A, dimension);
+        } catch (std::logic_error e) {
+            SKYLARK_THROW_EXCEPTION (
+                base::elemental_exception()
+                    << base::error_msg(e.what()) );
+        } catch(boost::mpi::exception e) {
+            SKYLARK_THROW_EXCEPTION (
+                 base::mpi_exception()
+                     << base::error_msg(e.what()) );
+        }
+    }
+
+    int get_N() const { return this->_N; } /**< Get input dimension. */
+    int get_S() const { return this->_S; } /**< Get output dimension. */
+
+    const sketch_transform_data_t* get_data() const { return this; }
+
+private:
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     * Implementation for the column-wise direction of sketching.
+     */
+    void apply_impl_vdist(const matrix_type& A,
+        output_matrix_type& sketch_of_A,
+        skylark::sketch::columnwise_tag) const {
+
+        // Naive implementation: tranpose and uses the columnwise implementation
+        // Can we do better?
+        matrix_type A_t(A.Grid());
+        El::Transpose(A, A_t);
+        output_matrix_type sketch_of_A_t(sketch_of_A.Width(),
+            sketch_of_A.Height(), sketch_of_A.Grid());
+        apply_impl_vdist(A_t, sketch_of_A_t,
+            skylark::sketch::rowwise_tag());
+        El::Transpose(sketch_of_A_t, sketch_of_A);
+    }
+
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     * Implementation for the row-wise direction of sketching.
+     */
+    void apply_impl_vdist(const matrix_type& A,
+        output_matrix_type& sketch_of_A,
+        skylark::sketch::rowwise_tag tag) const {
+
+        // Just a local operation on the Matrix
+        _local.apply(A.LockedMatrix(), sketch_of_A.Matrix(), tag);
+    }
+
+private:
+
+    const hash_transform_t<El::Matrix<value_type>, El::Matrix<value_type>,
+                           IdxDistributionType, ValueDistribution> _local;
+};
+
+
+/**
+ * Specialization: [STAR, VC] to same distribution
+ */
+template <typename ValueType,
+          template <typename> class IdxDistributionType,
+          template <typename> class ValueDistribution>
+struct hash_transform_t <
+    El::DistMatrix<ValueType, El::STAR, El::VC>,
+    El::DistMatrix<ValueType, El::STAR, El::VC>,
+    IdxDistributionType,
+    ValueDistribution > :
+        public hash_transform_data_t<IdxDistributionType,
+                                     ValueDistribution>,
+        virtual public sketch_transform_t<El::DistMatrix<ValueType, El::STAR,
+                                                         El::VC>,
+                                          El::DistMatrix<ValueType, El::STAR,
+                                                         El::VC> >  {
+
+    // Typedef matrix and distribution types so that we can use them regularly
+    typedef ValueType value_type;
+    typedef El::DistMatrix<value_type, El::STAR, El::VC> matrix_type;
+    typedef El::DistMatrix<value_type, El::STAR, El::VC> output_matrix_type;
+    typedef IdxDistributionType<size_t> idx_distribution_type;
+    typedef ValueDistribution<value_type> value_distribution_type;
+    typedef hash_transform_data_t<IdxDistributionType,
+                                  ValueDistribution> data_type;
+    /**
+     * Regular constructor
+     */
+    hash_transform_t (int N, int S, base::context_t& context) :
+        data_type (N, S, context), _local(*this) {
+
+    }
+
+    /**
+     * Copy constructor
+     */
+    hash_transform_t (const hash_transform_t<matrix_type,
+                                       output_matrix_type,
+                                       IdxDistributionType,
+                                       ValueDistribution>& other) :
+        data_type(other), _local(other) {}
+
+    /**
+     * Constructor from data
+     */
+    hash_transform_t (const data_type& other_data) :
+        data_type(other_data), _local(other_data) {}
+
+    /**
+     * Apply columnwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply (const matrix_type& A, output_matrix_type& sketch_of_A,
+        columnwise_tag dimension) const {
+
+        try {
+            apply_impl_vdist (A, sketch_of_A, dimension);
+        } catch (std::logic_error e) {
+            SKYLARK_THROW_EXCEPTION (
+                base::elemental_exception()
+                    << base::error_msg(e.what()) );
+        } catch(boost::mpi::exception e) {
+            SKYLARK_THROW_EXCEPTION (
+                 base::mpi_exception()
+                     << base::error_msg(e.what()) );
+        }
+    }
+
+    /**
+     * Apply rowwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply (const matrix_type& A, output_matrix_type& sketch_of_A,
+        rowwise_tag dimension) const {
+
+        try {
+            apply_impl_vdist (A, sketch_of_A, dimension);
+        } catch (std::logic_error e) {
+            SKYLARK_THROW_EXCEPTION (
+                base::elemental_exception()
+                    << base::error_msg(e.what()) );
+        } catch(boost::mpi::exception e) {
+            SKYLARK_THROW_EXCEPTION (
+                 base::mpi_exception()
+                     << base::error_msg(e.what()) );
+        }
+    }
+
+    int get_N() const { return this->_N; } /**< Get input dimension. */
+    int get_S() const { return this->_S; } /**< Get output dimension. */
+
+    const sketch_transform_data_t* get_data() const { return this; }
+
+private:
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     * Implementation for the column-wise direction of sketching.
+     */
+    void apply_impl_vdist (const matrix_type& A,
+        output_matrix_type& sketch_of_A,
+        skylark::sketch::columnwise_tag tag) const {
+
+        // Just a local operation on the Matrix
+        _local.apply(A.LockedMatrix(), sketch_of_A.Matrix(), tag);
+    }
+
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     * Implementation for the row-wise direction of sketching.
+     */
+    void apply_impl_vdist(const matrix_type& A,
+        output_matrix_type& sketch_of_A,
+        skylark::sketch::rowwise_tag tag) const {
+
+        // Naive implementation: tranpose and uses the columnwise implementation
+        // Can we do better?
+        matrix_type A_t(A.Grid());
+        El::Transpose(A, A_t);
+        output_matrix_type sketch_of_A_t(sketch_of_A.Width(),
+            sketch_of_A.Height(), sketch_of_A.Grid());
+        apply_impl_vdist(A_t, sketch_of_A_t,
+            skylark::sketch::rowwise_tag());
+        El::Transpose(sketch_of_A_t, sketch_of_A);
+    }
+
+private:
+
+    const hash_transform_t<El::Matrix<value_type>, El::Matrix<value_type>,
+                           IdxDistributionType, ValueDistribution> _local;
+};
+
+/**
+ * Specialization: [STAR, VR] to same distribution
+ */
+template <typename ValueType,
+          template <typename> class IdxDistributionType,
+          template <typename> class ValueDistribution>
+struct hash_transform_t <
+    El::DistMatrix<ValueType, El::STAR, El::VR>,
+    El::DistMatrix<ValueType, El::STAR, El::VR>,
+    IdxDistributionType,
+    ValueDistribution > :
+        public hash_transform_data_t<IdxDistributionType,
+                                     ValueDistribution>,
+        virtual public sketch_transform_t<El::DistMatrix<ValueType, El::STAR,
+                                                         El::VR>,
+                                          El::DistMatrix<ValueType, El::STAR,
+                                                         El::VR> >  {
+
+    // Typedef matrix and distribution types so that we can use them regularly
+    typedef ValueType value_type;
+    typedef El::DistMatrix<value_type, El::STAR, El::VR> matrix_type;
+    typedef El::DistMatrix<value_type, El::STAR, El::VR> output_matrix_type;
+    typedef IdxDistributionType<size_t> idx_distribution_type;
+    typedef ValueDistribution<value_type> value_distribution_type;
+    typedef hash_transform_data_t<IdxDistributionType,
+                                  ValueDistribution> data_type;
+    /**
+     * Regular constructor
+     */
+    hash_transform_t (int N, int S, base::context_t& context) :
+        data_type (N, S, context), _local(*this) {
+
+    }
+
+    /**
+     * Copy constructor
+     */
+    hash_transform_t (const hash_transform_t<matrix_type,
+                                       output_matrix_type,
+                                       IdxDistributionType,
+                                       ValueDistribution>& other) :
+        data_type(other), _local(other) {}
+
+    /**
+     * Constructor from data
+     */
+    hash_transform_t (const data_type& other_data) :
+        data_type(other_data), _local(other_data) {}
+
+    /**
+     * Apply columnwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply (const matrix_type& A, output_matrix_type& sketch_of_A,
+        columnwise_tag dimension) const {
+
+        try {
+            apply_impl_vdist (A, sketch_of_A, dimension);
+        } catch (std::logic_error e) {
+            SKYLARK_THROW_EXCEPTION (
+                base::elemental_exception()
+                    << base::error_msg(e.what()) );
+        } catch(boost::mpi::exception e) {
+            SKYLARK_THROW_EXCEPTION (
+                 base::mpi_exception()
+                     << base::error_msg(e.what()) );
+        }
+    }
+
+    /**
+     * Apply rowwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply (const matrix_type& A, output_matrix_type& sketch_of_A,
+        rowwise_tag dimension) const {
+
+        try {
+            apply_impl_vdist (A, sketch_of_A, dimension);
+        } catch (std::logic_error e) {
+            SKYLARK_THROW_EXCEPTION (
+                base::elemental_exception()
+                    << base::error_msg(e.what()) );
+        } catch(boost::mpi::exception e) {
+            SKYLARK_THROW_EXCEPTION (
+                 base::mpi_exception()
+                     << base::error_msg(e.what()) );
+        }
+    }
+
+    int get_N() const { return this->_N; } /**< Get input dimension. */
+    int get_S() const { return this->_S; } /**< Get output dimension. */
+
+    const sketch_transform_data_t* get_data() const { return this; }
+
+private:
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     * Implementation for the column-wise direction of sketching.
+     */
+    void apply_impl_vdist (const matrix_type& A,
+        output_matrix_type& sketch_of_A,
+        skylark::sketch::columnwise_tag tag) const {
+
+        // Just a local operation on the Matrix
+        _local.apply(A.LockedMatrix(), sketch_of_A.Matrix(), tag);
+    }
+
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     * Implementation for the row-wise direction of sketching.
+     */
+    void apply_impl_vdist(const matrix_type& A,
+        output_matrix_type& sketch_of_A,
+        skylark::sketch::rowwise_tag tag) const {
+
+        // Naive implementation: tranpose and uses the columnwise implementation
+        // Can we do better?
+        matrix_type A_t(A.Grid());
+        El::Transpose(A, A_t);
+        output_matrix_type sketch_of_A_t(sketch_of_A.Width(),
+            sketch_of_A.Height(), sketch_of_A.Grid());
+        apply_impl_vdist(A_t, sketch_of_A_t,
+            skylark::sketch::rowwise_tag());
+        El::Transpose(sketch_of_A_t, sketch_of_A);
+    }
+
+private:
+
+    const hash_transform_t<El::Matrix<value_type>, El::Matrix<value_type>,
+                           IdxDistributionType, ValueDistribution> _local;
+};
+
+/**
+ * Specialization: [MC, MR] -> [MC, MR]
+ * TODO not sure this is the best way to do this
+ */
+template <typename ValueType,
+          template <typename> class IdxDistributionType,
+          template <typename> class ValueDistribution>
+struct hash_transform_t <
+    El::DistMatrix<ValueType>, El::DistMatrix<ValueType>,
+    IdxDistributionType, ValueDistribution > :
+        public hash_transform_data_t<IdxDistributionType,
+                                     ValueDistribution>,
+        virtual public sketch_transform_t<El::DistMatrix<ValueType>,
+                                          El::DistMatrix<ValueType> >  {
+
+    // Typedef matrix and distribution types so that we can use them regularly
+    typedef ValueType value_type;
+    typedef El::DistMatrix<value_type> matrix_type;
+    typedef El::DistMatrix<value_type> output_matrix_type;
+    typedef IdxDistributionType<size_t> idx_distribution_type;
+    typedef ValueDistribution<value_type> value_distribution_type;
+    typedef hash_transform_data_t<IdxDistributionType,
+                                  ValueDistribution> data_type;
+    /**
+     * Regular constructor
+     */
+    hash_transform_t (int N, int S, base::context_t& context) :
+        data_type (N, S, context) {
+
+    }
+
+    /**
+     * Copy constructor
+     */
+    hash_transform_t (const hash_transform_t<matrix_type,
+                                       output_matrix_type,
+                                       IdxDistributionType,
+                                       ValueDistribution>& other) :
+        data_type(other) {}
+
+    /**
+     * Constructor from data
+     */
+    hash_transform_t (const data_type& other_data) :
+        data_type(other_data) {}
+
+    /**
+     * Apply columnwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply (const matrix_type& A, output_matrix_type& sketch_of_A,
+        columnwise_tag dimension) const {
+        try {
+            apply_impl(A, sketch_of_A, dimension);
+        } catch (std::logic_error e) {
+            SKYLARK_THROW_EXCEPTION (
+                base::elemental_exception()
+                    << base::error_msg(e.what()) );
+        } catch(boost::mpi::exception e) {
+            SKYLARK_THROW_EXCEPTION (
+                base::mpi_exception()
+                    << base::error_msg(e.what()) );
+        }
+    }
+
+    /**
+     * Apply rowwise the sketching transform that is described by the
+     * the transform with output sketch_of_A.
+     */
+    void apply (const matrix_type& A, output_matrix_type& sketch_of_A,
+        rowwise_tag dimension) const {
+        try {
+            apply_impl(A, sketch_of_A, dimension);
+        } catch (std::logic_error e) {
+            SKYLARK_THROW_EXCEPTION (
+                base::elemental_exception()
+                    << base::error_msg(e.what()) );
+        } catch(boost::mpi::exception e) {
+            SKYLARK_THROW_EXCEPTION (
+                base::mpi_exception()
+                    << base::error_msg(e.what()) );
+        }
+    }
+
+    int get_N() const { return this->_N; } /**< Get input dimension. */
+    int get_S() const { return this->_S; } /**< Get output dimension. */
+
+    const sketch_transform_data_t* get_data() const { return this; }
+
+private:
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     * Implementation for the column-wise direction of sketching.
+     */
+    void apply_impl (const matrix_type& A,
+        output_matrix_type& sketch_of_A,
+        skylark::sketch::columnwise_tag tag) const {
+
+         typedef El::DistMatrix<value_type, El::STAR, El::VR> redis_type;
+
+        // Naive implementation: redistribute, sketch and redistribute
+        hash_transform_t<redis_type, redis_type,
+                         IdxDistributionType, ValueDistribution> S1(*this);
+        redis_type A1 = A;
+        redis_type SA1(this->_S, A1.Width());
+        S1.apply(A1, SA1, tag);
+        sketch_of_A = SA1;
+    }
+
+    /**
+     * Apply the sketching transform that is described in by the sketch_of_A.
+     * Implementation for the row-wise direction of sketching.
+     */
+    void apply_impl (const matrix_type& A,
+        output_matrix_type& sketch_of_A,
+        skylark::sketch::rowwise_tag tag) const {
+
+        typedef El::DistMatrix<value_type, El::VC, El::STAR> redis_type;
+
+        // Naive implementation: redistribute, sketch and redistribute
+        hash_transform_t<redis_type, redis_type,
+                         IdxDistributionType, ValueDistribution> S1(*this);
+        redis_type A1 = A;
+        redis_type SA1(A1.Height(), this->_S);
+        S1.apply(A1, SA1, tag);
+        sketch_of_A = SA1;
+    }
+};
+
 } } /** namespace skylark::sketch */
 
 #endif // SKYLARK_HASH_TRANSFORM_ELEMENTAL_HPP

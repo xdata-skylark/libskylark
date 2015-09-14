@@ -13,9 +13,11 @@
 #include <skylark.hpp>
 
 // Algorithms constants
-#define CLASSIC_KRR        0
-#define FASTER_KRR         1
-#define APPROXIMATE_KRR    2
+#define CLASSIC_KRR                    0
+#define FASTER_KRR                     1
+#define APPROXIMATE_KRR                2
+#define DOUBLE_APPROXIMATE_KRR         3
+#define FAST_DOUBLE_APPROXIMATE_KRR    4
 
 // Kernels constants
 #define GAUSSIAN_KERNEL   0
@@ -24,7 +26,7 @@
 
 std::string cmdline;
 int seed = 38734, algorithm = FASTER_KRR, kernel_type = GAUSSIAN_KERNEL;
-int s = 2000, partial = -1;
+int s = 2000, partial = -1, sketch_size = -1;
 std::string fname, testname, modelname = "model.dat", logfile = "";
 double kp1 = 10.0, kp2 = 0.0, kp3 = 1.0, lambda = 0.01, tolerance=1e-3;
 bool use_single;
@@ -57,7 +59,9 @@ int parse_program_options(int argc, char* argv[]) {
         ("algorithm,a",
              bpo::value<int>(&algorithm)->default_value(FASTER_KRR),
             "Algorithm to use (0: Classic, 1: Faster (Precond), "
-            "2: Approximate (Random Features)). OPTIONAL.")
+            "2: Approximate (Random Features)), "
+            "3: Double Approximate (Random Features + Sketched Solve)), "
+            "4: Double Approximate w/ Faster Sketching. OPTIONAL.")
         ("seed,s",
             bpo::value<int>(&seed)->default_value(38734),
             "Seed for random number generation. OPTIONAL.")
@@ -83,7 +87,11 @@ int parse_program_options(int argc, char* argv[]) {
         ("single", "Whether to use single precision instead of double.")
         ("numfeatures,f",
             bpo::value<int>(&s),
-            "Number of random features.");
+            "Number of random features (if relevant).")
+        ("sketchsize,r",
+            bpo::value<int>(&sketch_size)->default_value(-1),
+            "Sketch size (for regression problem; if relevant (i.e., -a 3). "
+            "-1 - will be determined by software. ");
 
     bpo::positional_options_description positional;
     positional.add("trainfile", 1);
@@ -159,6 +167,9 @@ int parse_program_options(int argc, char* argv[]) {
 
         if (flag == "--nunmfeatures" || flag == "-f")
             s = boost::lexical_cast<int>(value);
+
+        if (flag == "--sketchsize" || flag == "-r")
+            sketch_size = boost::lexical_cast<int>(value);
 
         if (flag == "--single") {
             use_single = true;
@@ -289,6 +300,19 @@ int execute(skylark::base::context_t &context) {
         break;
 
     case APPROXIMATE_KRR:
+        skylark::ml::ApproximateKernelRLSC(skylark::base::COLUMNS, k, X, L,
+            T(lambda), S, W, rcoding, s, context, rlsc_params);
+        model =
+            new skylark::ml::feature_expansion_model_t<
+                skylark::sketch::sketch_transform_container_t, El::Int, T>
+            (S, W, rcoding);
+        break;
+
+    case DOUBLE_APPROXIMATE_KRR:
+    case FAST_DOUBLE_APPROXIMATE_KRR:
+        rlsc_params.sketched_rls = true;
+        rlsc_params.sketch_size = sketch_size;
+        rlsc_params.fast_sketch = algorithm == FAST_DOUBLE_APPROXIMATE_KRR;
         skylark::ml::ApproximateKernelRLSC(skylark::base::COLUMNS, k, X, L,
             T(lambda), S, W, rcoding, s, context, rlsc_params);
         model =

@@ -5,6 +5,11 @@ namespace skylark { namespace ml {
 
 struct krr_params_t : public base::params_t {
 
+    // For approximate methods (ApproximateKRR)
+    bool sketched_rr;
+    El::Int sketch_size;
+    bool fast_sketch;
+
     // For iterative methods (FasterKRR)
     int iter_lim;
     int res_print;
@@ -13,9 +18,13 @@ struct krr_params_t : public base::params_t {
     krr_params_t(bool am_i_printing = 0,
         int log_level = 0,
         std::ostream &log_stream = std::cout,
-        std::string prefix = "", 
+        std::string prefix = "",
         int debug_level = 0) :
         base::params_t(am_i_printing, log_level, log_stream, prefix, debug_level) {
+
+        sketched_rr = false;
+        sketch_size = -1;
+        fast_sketch = false;
 
         tolerance = 1e-3;
         res_print = 10;
@@ -109,6 +118,53 @@ void ApproximateKernelRidge(base::direction_t direction, const KernelType &k,
         params.log_stream << "took " << boost::format("%.2e") % timer.elapsed()
                           << " sec\n";
 
+    // Sketch the problem (if requested)
+    El::DistMatrix<T> SZ, SY;
+    if (params.sketched_rr) {
+
+        if (log_lev1) {
+            params.log_stream << params.prefix
+                              << "Sketching the regression problem... ";
+            params.log_stream.flush();
+            timer.restart();
+        }
+
+        El::Int m = direction ==  base::COLUMNS ? Z.Width() : Z.Height();
+        El::Int t = params.sketch_size == -1 ? 4 * s : params.sketch_size;
+
+        sketch::sketch_transform_t<El::DistMatrix<T>, El::DistMatrix<T> > *R;
+        if (params.fast_sketch)
+            R = new sketch::CWT_t<El::DistMatrix<T>,
+                                  El::DistMatrix<T> >(m, t, context);
+        else
+            R = new sketch::FJLT_t<El::DistMatrix<T>,
+                                   El::DistMatrix<T> >(m, t, context);
+
+        if (direction == base::COLUMNS) {
+            SZ.Resize(s, t);
+            R->apply(Z, SZ, sketch::rowwise_tag());
+
+            // TODO it is "wrong" that Y is oriented differently than X/Z
+            SY.Resize(t, Y.Width());
+            R->apply(Y, SY, sketch::columnwise_tag());
+
+        } else {
+            SZ.Resize(t, s);
+            R->apply(Z, SZ, sketch::columnwise_tag());
+            SY.Resize(t, Y.Width());
+            R->apply(Y, SY, sketch::columnwise_tag());
+        }
+
+        delete R;
+
+        if (log_lev1)
+            params.log_stream << "took " << boost::format("%.2e") % timer.elapsed()
+                              << " sec\n";
+    } else {
+        El::View(SZ, Z);
+        El::LockedView(SY, Y);
+    }
+
     // Solving the regression problem
     if (log_lev1) {
         params.log_stream << params.prefix
@@ -118,7 +174,7 @@ void ApproximateKernelRidge(base::direction_t direction, const KernelType &k,
     }
 
     El::Ridge(direction == base::COLUMNS ? El::ADJOINT : El::NORMAL,
-        Z, Y, std::sqrt(lambda), W);
+        SZ, SY, std::sqrt(lambda), W);
 
     if (log_lev1)
         params.log_stream << "took " << boost::format("%.2e") % timer.elapsed()

@@ -760,7 +760,6 @@ private:
         output_matrix_type& sketch_of_A,
         skylark::sketch::columnwise_tag tag) const {
 
-
         // Just a local operation on the Matrix
         _local.apply(A.LockedMatrix(), sketch_of_A.Matrix(), tag);
     }

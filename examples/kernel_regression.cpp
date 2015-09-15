@@ -164,7 +164,7 @@ int parse_program_options(int argc, char* argv[]) {
         if (flag == "--kernelparam2" || flag == "-x")
             kp2 = boost::lexical_cast<double>(value);
 
-        if (flag == "--kernelparam3" || flag == "-z")
+        if (flag == "--kernelparam3" || flag == "-y")
             kp3 = boost::lexical_cast<double>(value);
 
         if (flag == "--kernel" || flag == "-k")

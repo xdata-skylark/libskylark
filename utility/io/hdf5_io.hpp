@@ -36,6 +36,14 @@ public:
     }
 };
 
+template<>
+class hdf5_type_mapper_t<long long> {
+public:
+    static const H5::DataType& get_type() {
+        return H5::PredType::NATIVE_LLONG;
+    }
+};
+
 } // namspace internal
 
 /**
@@ -134,11 +142,71 @@ void ReadHDF5(H5::H5File& in, const std::string& name,
  * @param name name of the dataset/group holding the matrix.
  * @param X output matrix.
  */
-template<typename T>
+template<typename T, El::Distribution U, El::Distribution V>
 void ReadHDF5(H5::H5File& in, const std::string& name,
-    El::AbstractDistMatrix<T>& X, hsize_t max_n = -1, hsize_t max_m = -1) {
+    El::DistMatrix<T, U, V>& X, hsize_t max_n = -1, hsize_t max_m = -1,
+              int block_size = 10000) {
     // NOTE: -1 will wrap up to max value because of hsize_t definition
 
+    boost::mpi::communicator comm = skylark::utility::get_communicator(X);
+    int rank = X.Grid().Rank();
+
+    // Read matrix size
+    H5::DataSet dataset;
+    H5::DataSpace fs;
+    hsize_t m, n;
+
+    if (rank == 0) {
+        dataset = in.openDataSet(name);
+        fs = dataset.getSpace();
+        hsize_t dims[2];
+        fs.getSimpleExtentDims(dims);
+        m = std::min(dims[0], max_m);
+        n = std::min(fs.getSimpleExtentNdims() > 1 ? dims[1] : 1, max_n);
+    }
+
+    boost::mpi::broadcast(comm, m, 0);
+    boost::mpi::broadcast(comm, n, 0);
+
+    X.Resize(n, m);
+
+    hsize_t remainm = m;
+    hsize_t startm = 0;
+
+    El::DistMatrix<T, U, V> Xv;
+    El::DistMatrix<T, El::CIRC, El::CIRC> XB;
+
+    while (remainm > 0) {
+        hsize_t mym = remainm < 2 * block_size ? remainm : block_size;
+        XB.Resize(n, mym);
+        if (rank == 0) {
+            hsize_t fo[2], fst[2], fc[2];
+            fo[0] = startm;
+            fo[1] = 0;
+            fc[0] = mym;
+            fc[1] = n;
+            fs.selectHyperslab(H5S_SELECT_SET, fc, fo);
+
+            hsize_t md[2];
+            md[0] = mym;
+            md[1] = n;
+            H5::DataSpace ms(2, md);
+
+            dataset.read(XB.Buffer(),  internal::hdf5_type_mapper_t<T>::get_type(),
+                ms, fs);
+        }
+
+        base::ColumnView(Xv, X, startm, mym);
+        Xv = XB;
+
+        remainm -= mym;
+        startm += mym;
+    }
+
+    if (rank == 0)
+        dataset.close();
+
+    /*
     H5::DataSet dataset = in.openDataSet(name);
     H5::DataSpace fs = dataset.getSpace();
     hsize_t dims[2];
@@ -183,6 +251,8 @@ void ReadHDF5(H5::H5File& in, const std::string& name,
     }
 
     dataset.close();
+    */
+
 }
 
 } } } // namespace skylark::utility::io

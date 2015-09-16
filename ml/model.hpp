@@ -173,6 +173,7 @@ struct hilbert_model_t {
                 _maps[j]->apply(&X, &z, sketch::columnwise_tag());
 
                 if (_scale_maps)
+                    // TODO shouldn't it be s instead of d?
                     El::Scale(sqrt(double(sj) / d), z);
 
                 DecisionType o(n, k);
@@ -487,27 +488,51 @@ public model_t<OutType, ComputeType>
 
     feature_expansion_model_t(const sketch_type &S,
         const El::DistMatrix<compute_type> &W) :
-        _W(),  _S(S),
-        _input_size(S.get_N()), _output_size(W.Width()) {
+        _W(),  _scale_maps(false), _feature_transforms(1),
+        _input_size(S.get_N()), _output_size(W.Width()),
+        _feature_size(S.get_S()) {
 
+       _feature_transforms[0] = S;
         El::LockedView(_W, W);
     }
 
     void predict(base::direction_t direction_XT, 
         const El::DistMatrix<compute_type> &XT, El::DistMatrix<out_type> &YP) const {
 
-       if (direction_XT == base::COLUMNS) {
+        El::Zeros(YP, XT.Height(), _output_size);
 
-            El::DistMatrix<compute_type> ZT(_S.get_S(), XT.Width());
-            _S.apply(XT, ZT, sketch::columnwise_tag());
-            El::Gemm(El::ADJOINT, El::NORMAL, compute_type(1.0), _W, ZT, YP);
+        if (direction_XT == base::COLUMNS) {
+
+            El::DistMatrix<compute_type> ZT, VW;
+            El::Int starts = 0;
+            for(int i = 0; i < _feature_transforms.size(); i++) {
+                const sketch_type &S = _feature_transforms[i];
+                ZT.Resize(S.get_S(), XT.Width());
+                S.apply(XT, ZT, sketch::columnwise_tag());
+                if (_scale_maps)
+                    El::Scale<compute_type, compute_type>
+                        (sqrt(double(S.get_S()) / _feature_size), ZT);
+                base::RowView(VW, _W, starts, S.get_S());
+                starts += S.get_S();
+                El::Gemm(El::ADJOINT, El::NORMAL, compute_type(1.0), VW, ZT,
+                    compute_type(1.0), YP);
+            }
 
         } else {
 
-            El::DistMatrix<compute_type> ZT(XT.Height(), _S.get_N());
-            _S.apply(XT, ZT, sketch::rowwise_tag());
-            El::Gemm(El::NORMAL, El::NORMAL, compute_type(1.0), ZT, _W, YP);
-
+            El::DistMatrix<compute_type> ZT, VW;
+            El::Int starts = 0;
+            for(int i = 0; i < _feature_transforms.size(); i++) {
+                const sketch_type &S = _feature_transforms[i];
+                S.apply(XT, ZT, sketch::rowwise_tag());
+                if (_scale_maps)
+                    El::Scale<compute_type, compute_type>
+                        (sqrt(double(S.get_S()) / _feature_size), ZT);
+                base::RowView(VW, _W, starts, S.get_S());
+                starts += S.get_S();
+                El::Gemm(El::NORMAL, El::NORMAL, compute_type(1.0), ZT, VW,
+                    compute_type(1.0), YP);
+            }
         }
     }
 
@@ -521,7 +546,18 @@ public model_t<OutType, ComputeType>
         pt.put("input_size", _input_size);
         pt.put("regression", true);
 
-        pt.add_child("expansion_transform", _S.to_ptree());
+        boost::property_tree::ptree ptfmap;
+        ptfmap.put("number_transforms", _feature_transforms.size());
+        ptfmap.put("scale_maps", _scale_maps);
+
+        boost::property_tree::ptree ptmaps;
+        for(El::Int i = 0; i < _feature_transforms.size(); i++)
+            ptmaps.push_back(std::make_pair(std::to_string(i),
+                    _feature_transforms[i].to_ptree()));
+        ptfmap.add_child("transforms", ptmaps);
+        pt.add_child("feature_mapping", ptfmap);
+
+        pt.add_child("expansion_transforms", ptfmap);
 
         std::stringstream sW;
         El::Print(_W, "", sW);
@@ -544,8 +580,10 @@ public model_t<OutType, ComputeType>
 
 private:
     El::DistMatrix<compute_type> _W;
-    const sketch_type _S;
+    const bool _scale_maps;
+    std::vector<sketch_type> _feature_transforms;
     const El::Int _input_size, _output_size;
+    El::Int _feature_size;
 };
 
 /**
@@ -559,15 +597,33 @@ public model_t<OutType, ComputeType> {
 
     typedef ComputeType compute_type;
     typedef OutType out_type;
+
     typedef SketchType<El::DistMatrix<compute_type>,
                        El::DistMatrix<compute_type> > sketch_type;
 
     feature_expansion_model_t(const sketch_type &S,
         const El::DistMatrix<compute_type> &W,
         const std::vector<OutType> &rcoding) :
-        _W(), _rcoding(rcoding), _S(S),
-        _input_size(S.get_N()), _output_size(W.Width()){
+        _W(), _rcoding(rcoding), _scale_maps(false), _feature_transforms(1),
+        _input_size(S.get_N()), _output_size(W.Width()),
+        _feature_size(S.get_S()) {
 
+        _feature_transforms[0] = S;
+        El::LockedView(_W, W);
+    }
+
+    feature_expansion_model_t(bool scale_maps,
+        const std::vector<sketch_type> &transforms,
+        const El::DistMatrix<compute_type> &W,
+        const std::vector<OutType> &rcoding) :
+        _W(), _rcoding(rcoding), _scale_maps(scale_maps), 
+        _feature_transforms(transforms),
+        _input_size(_feature_transforms[0].get_N()), _output_size(W.Width()),
+        _feature_size(0) {
+
+        for(auto it = _feature_transforms.begin(); 
+            it != _feature_transforms.end(); it++)
+            _feature_size += it->get_S();
         El::LockedView(_W, W);
     }
 
@@ -576,16 +632,39 @@ public model_t<OutType, ComputeType> {
 
         if (direction_XT == base::COLUMNS) {
 
-            El::DistMatrix<compute_type> ZT(_S.get_S(), XT.Width()), YP0;
-            _S.apply(XT, ZT, sketch::columnwise_tag());
-            El::Gemm(El::ADJOINT, El::NORMAL, compute_type(1.0), _W, ZT, YP0);
+            El::DistMatrix<compute_type> YP0(_output_size, XT.Width()), ZT, VW;
+            El::Zero(YP0);
+            El::Int starts = 0;
+            for(int i = 0; i < _feature_transforms.size(); i++) {
+                const sketch_type &S = _feature_transforms[i];
+                ZT.Resize(S.get_S(), XT.Width());
+                S.apply(XT, ZT, sketch::columnwise_tag());
+                if (_scale_maps)
+                    El::Scale<compute_type, compute_type>
+                        (sqrt(double(S.get_S()) / _feature_size), ZT);
+                base::RowView(VW, _W, starts, S.get_S());
+                starts += S.get_S();
+                El::Gemm(El::ADJOINT, El::NORMAL, compute_type(1.0), VW, ZT,
+                    compute_type(1.0), YP0);
+            }
             DummyDecode(El::ADJOINT, YP0, YP, _rcoding);
 
         } else {
 
-            El::DistMatrix<compute_type> ZT(XT.Height(), _S.get_N()), YP0;
-            _S.apply(XT, ZT, sketch::rowwise_tag());
-            El::Gemm(El::NORMAL, El::NORMAL, compute_type(1.0), ZT, _W, YP0);
+            El::DistMatrix<compute_type> YP0(XT.Height(), _output_size), ZT, VW;
+            El::Zero(YP0);
+            El::Int starts = 0;
+            for(int i = 0; i < _feature_transforms.size(); i++) {
+                const sketch_type &S = _feature_transforms[i];
+                S.apply(XT, ZT, sketch::rowwise_tag());
+                if (_scale_maps)
+                    El::Scale<compute_type, compute_type>
+                        (sqrt(double(S.get_S()) / _feature_size), ZT);
+                base::RowView(VW, _W, starts, S.get_S());
+                starts += S.get_S();
+                El::Gemm(El::NORMAL, El::NORMAL, compute_type(1.0), ZT, VW,
+                    compute_type(1.0), YP0);
+            }
             DummyDecode(El::NORMAL, YP0, YP, _rcoding);
 
         }
@@ -605,7 +684,18 @@ public model_t<OutType, ComputeType> {
             rcoding.put(std::to_string(i), _rcoding[i]);
         pt.add_child("rcoding", rcoding);
 
-        pt.add_child("expansion_transform", _S.to_ptree());
+        boost::property_tree::ptree ptfmap;
+        ptfmap.put("number_transforms", _feature_transforms.size());
+        ptfmap.put("scale_maps", _scale_maps);
+
+        boost::property_tree::ptree ptmaps;
+        for(El::Int i = 0; i < _feature_transforms.size(); i++)
+            ptmaps.push_back(std::make_pair(std::to_string(i),
+                    _feature_transforms[i].to_ptree()));
+        ptfmap.add_child("transforms", ptmaps);
+        pt.add_child("feature_mapping", ptfmap);
+
+        pt.add_child("expansion_transforms", ptfmap);
 
         std::stringstream sW;
         El::Print(_W, "", sW);
@@ -629,8 +719,10 @@ public model_t<OutType, ComputeType> {
 private:
     El::DistMatrix<compute_type> _W;
     std::vector<OutType> _rcoding;
-    const sketch_type _S;
+    const bool _scale_maps;
+    std::vector<sketch_type> _feature_transforms;
     const El::Int _input_size, _output_size;
+    El::Int _feature_size;
 };
 
 } }

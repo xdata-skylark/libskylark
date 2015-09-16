@@ -28,6 +28,18 @@ const El::DistMatrix<T,U,V> ColumnView(const El::DistMatrix<T,U,V>& B,
 }
 
 template<typename T>
+inline void ColumnView(El::AbstractDistMatrix<T>& A, El::AbstractDistMatrix<T>& B,
+    El::Int j, El::Int width) {
+    El::View(A, B, 0, j, B.Height(), width);
+}
+
+template<typename T>
+inline void ColumnView(El::AbstractDistMatrix<T>& A, const El::AbstractDistMatrix<T>& B,
+    El::Int j, El::Int width) {
+    El::LockedView(A, B, 0, j, B.Height(), width);
+}
+
+template<typename T>
 inline void RowView(El::Matrix<T>& A, El::Matrix<T>& B,
     El::Int i, El::Int height) {
     El::View(A, B, i, 0, height, B.Width());
@@ -39,6 +51,19 @@ const El::Matrix<T> RowView(const El::Matrix<T>& B, El::Int i, El::Int height) {
     El::Matrix<T> A;
     El::LockedView(A, B, i, 0, height, B.Width());
     return A;
+}
+
+template<typename T>
+inline void RowView(El::AbstractDistMatrix<T>& A, El::AbstractDistMatrix<T>& B,
+    El::Int i, El::Int height) {
+    El::View(A, B, i, 0, height, B.Width());
+}
+
+template<typename T>
+inline void RowView(El::AbstractDistMatrix<T>& A,
+    const El::AbstractDistMatrix<T>& B,
+    El::Int i, El::Int height) {
+    El::LockedView(A, B, i, 0, height, B.Width());
 }
 
 template<typename T>

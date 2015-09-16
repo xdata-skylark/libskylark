@@ -17,11 +17,11 @@
 #define FORMAT_HDF5    1
 
 // Algorithms constants
-#define CLASSIC_KRR                    0
-#define FASTER_KRR                     1
-#define APPROXIMATE_KRR                2
-#define DOUBLE_APPROXIMATE_KRR         3
-#define FAST_DOUBLE_APPROXIMATE_KRR    4
+#define CLASSIC_KRR                      0
+#define FASTER_KRR                       1
+#define APPROXIMATE_KRR                  2
+#define SKETCHED_APPROXIMATE_KRR         3
+#define FAST_SKETCHED_APPROXIMATE_KRR    4
 
 // Kernels constants
 #define GAUSSIAN_KERNEL   0
@@ -65,8 +65,8 @@ int parse_program_options(int argc, char* argv[]) {
              bpo::value<int>(&algorithm)->default_value(FASTER_KRR),
             "Algorithm to use (0: Classic, 1: Faster (Precond), "
             "2: Approximate (Random Features)), "
-            "3: Double Approximate (Random Features + Sketched Solve)), "
-            "4: Double Approximate w/ Faster Sketching. OPTIONAL.")
+            "3: Sketched Approximate (Piecemeal Random Features + Sketch)), "
+            "4: Sketched Approximate w/ Faster Sketching. OPTIONAL.")
         ("seed,s",
             bpo::value<int>(&seed)->default_value(38734),
             "Seed for random number generation. OPTIONAL.")
@@ -302,7 +302,11 @@ int execute(skylark::base::context_t &context) {
     std::vector<El::Int> rcoding;
 
     skylark::sketch::sketch_transform_container_t<El::DistMatrix<T>,
-                                                  El::DistMatrix<T> > S;
+                                                  El::DistMatrix<T> >  S;
+    bool scale_maps = true;
+    std::vector<
+        skylark::sketch::sketch_transform_container_t<El::DistMatrix<T>,
+                                                      El::DistMatrix<T> > > transforms;
 
     skylark::ml::rlsc_params_t rlsc_params(rank == 0, 4, *log_stream, "\t");
     rlsc_params.tolerance = tolerance;
@@ -337,17 +341,18 @@ int execute(skylark::base::context_t &context) {
             (S, W, rcoding);
         break;
 
-    case DOUBLE_APPROXIMATE_KRR:
-    case FAST_DOUBLE_APPROXIMATE_KRR:
+    case SKETCHED_APPROXIMATE_KRR:
+    case FAST_SKETCHED_APPROXIMATE_KRR:
         rlsc_params.sketched_rls = true;
         rlsc_params.sketch_size = sketch_size;
-        rlsc_params.fast_sketch = algorithm == FAST_DOUBLE_APPROXIMATE_KRR;
-        skylark::ml::ApproximateKernelRLSC(skylark::base::COLUMNS, k, X, L,
-            T(lambda), S, W, rcoding, s, context, rlsc_params);
+        rlsc_params.fast_sketch = algorithm == FAST_SKETCHED_APPROXIMATE_KRR;
+        skylark::ml::SketchedApproximateKernelRLSC(skylark::base::COLUMNS, k, X, L,
+            T(lambda), scale_maps, transforms, W, rcoding, s, sketch_size,
+            context, rlsc_params);
         model =
             new skylark::ml::feature_expansion_model_t<
                 skylark::sketch::sketch_transform_container_t, El::Int, T>
-            (S, W, rcoding);
+            (scale_maps, transforms, W, rcoding);
         break;
 
     default:

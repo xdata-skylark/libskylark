@@ -85,7 +85,6 @@ struct UST_t <
         for (El::Int j = 0; j < data_type::_S; j++)
             for (El::Int i = 0; i < A.Height(); i++)
                 sa[j * ldsa + i] = a[data_type::samples[j] * lda + i];
-
     }
 
     int get_N() const { return data_type::_N; } /**< Get input dimesion. */

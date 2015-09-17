@@ -31,7 +31,7 @@
 std::string cmdline;
 int seed = 38734, algorithm = FASTER_KRR, kernel_type = GAUSSIAN_KERNEL;
 int fileformat = FORMAT_LIBSVM;
-int s = 2000, partial = -1, sketch_size = -1;
+int s = 2000, partial = -1, sketch_size = -1, sample = -1;
 std::string fname, testname, modelname = "model.dat", logfile = "";
 double kp1 = 10.0, kp2 = 0.0, kp3 = 1.0, lambda = 0.01, tolerance=1e-3;
 bool use_single;
@@ -89,6 +89,9 @@ int parse_program_options(int argc, char* argv[]) {
             bpo::value<int>(&partial)->default_value(-1),
             "Load only specified quantity examples from training. "
             "Will read all if -1.")
+        ("sample,z",
+            bpo::value<int>(&sample)->default_value(-1),
+            "Sample the input data. Will use all if -1. ")
         ("single", "Whether to use single precision instead of double.")
         ("numfeatures,f",
             bpo::value<int>(&s),
@@ -157,6 +160,9 @@ int parse_program_options(int argc, char* argv[]) {
 
         if (flag == "--partial" || flag == "-p")
             partial = boost::lexical_cast<int>(value);
+
+        if (flag == "--sample" || flag == "-z")
+            sample = boost::lexical_cast<int>(value);
 
         if (flag == "--kernelparam" || flag == "-g")
             kp1 = boost::lexical_cast<double>(value);
@@ -228,8 +234,8 @@ int execute(skylark::base::context_t &context) {
         ((std::ofstream *)log_stream)->open(logfile);
     }
 
-    El::DistMatrix<T> X;
-    El::DistMatrix<El::Int> L;
+    El::DistMatrix<T> X0, X;
+    El::DistMatrix<El::Int> L0, L;
 
     boost::mpi::timer timer;
 
@@ -249,14 +255,14 @@ int execute(skylark::base::context_t &context) {
 
     switch (fileformat) {
     case FORMAT_LIBSVM:
-        skylark::utility::io::ReadLIBSVM(fname, X, L, skylark::base::COLUMNS,
+        skylark::utility::io::ReadLIBSVM(fname, X0, L0, skylark::base::COLUMNS,
             0, partial);
         break;
 
     case FORMAT_HDF5: {
         H5::H5File in(fname, H5F_ACC_RDONLY);
-        skylark::utility::io::ReadHDF5(in, "X", X, -1, partial);
-        skylark::utility::io::ReadHDF5(in, "Y", L, -1, partial);
+        skylark::utility::io::ReadHDF5(in, "X", X0, -1, partial);
+        skylark::utility::io::ReadHDF5(in, "Y", L0, -1, partial);
         in.close();
     }
         break;
@@ -269,6 +275,35 @@ int execute(skylark::base::context_t &context) {
     if (rank == 0)
         *log_stream <<"took " << boost::format("%.2e") % timer.elapsed()
                   << " sec\n";
+
+    if (sample == -1) {
+
+        El::View(X, X0);
+        El::View(L, L0);
+
+    } else {
+        // Sample X and Y
+        if (rank == 0) {
+            *log_stream << "Sampling the data... ";
+            log_stream->flush();
+            timer.restart();
+        }
+
+
+        skylark::sketch::UST_data_t S(X0.Width(), sample, context);
+
+        X.Resize(X0.Height(), sample);
+        skylark::sketch::UST_t<El::DistMatrix<T> > (S).apply(X0,
+            X, skylark::sketch::rowwise_tag());
+
+        L.Resize(1, sample);
+        skylark::sketch::UST_t<El::DistMatrix<El::Int> >(S).apply(L0,
+            L, skylark::sketch::rowwise_tag());
+
+        if (rank == 0)
+            *log_stream <<"took " << boost::format("%.2e") % timer.elapsed()
+                        << " sec\n";
+    }
 
     // Training
     if (rank == 0) {

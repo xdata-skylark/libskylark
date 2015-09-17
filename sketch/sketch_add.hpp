@@ -26,6 +26,7 @@ sketch_transform_data_t::from_ptree(const boost::property_tree::ptree& pt) {
     AUTO_LOAD_DISPATCH(MMT, MMT_data_t);
     AUTO_LOAD_DISPATCH(WZT, WZT_data_t);
     AUTO_LOAD_DISPATCH(PPT, PPT_data_t);
+    AUTO_LOAD_DISPATCH(UST, UST_data_t);
 
     AUTO_LOAD_DISPATCH(GaussianRFT,  GaussianRFT_data_t);
     AUTO_LOAD_DISPATCH(LaplacianRFT, LaplacianRFT_data_t);
@@ -67,6 +68,7 @@ sketch_transform_t<IT, OT>::from_ptree(const boost::property_tree::ptree& pt) {
     AUTO_LOAD_DISPATCH(MMT, MMT_t);
     AUTO_LOAD_DISPATCH(WZT, WZT_t);
     AUTO_LOAD_DISPATCH(PPT, PPT_t);
+    AUTO_LOAD_DISPATCH(UST, UST_t);
 
     AUTO_LOAD_DISPATCH(GaussianRFT,  GaussianRFT_t);
     AUTO_LOAD_DISPATCH(LaplacianRFT, LaplacianRFT_t);
@@ -111,6 +113,7 @@ sketch_transform_t<boost::any, boost::any>::from_ptree(const boost::property_tre
     AUTO_LOAD_DISPATCH(MMT, MMT_t);
     AUTO_LOAD_DISPATCH(WZT, WZT_t);
     AUTO_LOAD_DISPATCH(PPT, PPT_t);
+    AUTO_LOAD_DISPATCH(UST, UST_t);
 
     AUTO_LOAD_DISPATCH(GaussianRFT,  GaussianRFT_t);
     AUTO_LOAD_DISPATCH(LaplacianRFT, LaplacianRFT_t);
@@ -167,6 +170,10 @@ sketch_transform_t<boost::any, boost::any> *WZT_data_t::get_transform() const {
 
 sketch_transform_t<boost::any, boost::any> *FJLT_data_t::get_transform() const {
     return new FJLT_t<boost::any, boost::any>(*this);
+}
+
+sketch_transform_t<boost::any, boost::any> *UST_data_t::get_transform() const {
+    return new UST_t<boost::any, boost::any>(*this);
 }
 
 sketch_transform_t<boost::any, boost::any> *PPT_data_t::get_transform() const {

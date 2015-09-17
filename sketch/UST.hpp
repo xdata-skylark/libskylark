@@ -1,5 +1,5 @@
-#ifndef SKYLARK_PPT_HPP
-#define SKYLARK_PPT_HPP
+#ifndef SKYLARK_UST_HPP
+#define SKYLARK_UST_HPP
 
 #ifndef SKYLARK_SKETCH_HPP
 #error "Include top-level sketch.hpp instead of including individuals headers"
@@ -9,46 +9,46 @@ namespace skylark { namespace sketch {
 
 template < typename InputMatrixType,
            typename OutputMatrixType = InputMatrixType >
-struct PPT_t :
-        public PPT_data_t,
+struct UST_t :
+        public UST_data_t,
         virtual public sketch_transform_t<InputMatrixType, OutputMatrixType > {
+
     // To be specilized and derived. Just some guards here.
     typedef InputMatrixType matrix_type;
     typedef OutputMatrixType output_matrix_type;
 
-    typedef PPT_data_t data_type;
+    typedef UST_data_t data_type;
     typedef data_type::params_t params_t;
 
-    PPT_t(int N, int S, int q, double c, double gamma,
-        base::context_t& context) :
-        data_type(N, S, q, c, gamma, context) {
+    UST_t(int N, int S, base::context_t& context) : data_type(N, S, context) {
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()
               << base::error_msg(
-                 "This combination has not yet been implemented for PPT"));
+                 "This combination has not yet been implemented for UST"));
     }
 
-    PPT_t(int N, int S, const params_t& params, base::context_t& context) :
-        data_type(N, S, params, context) {
+    UST_t(int N, int S, const params_t& params, base::context_t& context)
+        : data_type(N, S, params, context) {
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()
               << base::error_msg(
-                 "This combination has not yet been implemented for PPT"));
+                 "This combination has not yet been implemented for UST"));
     }
 
-    PPT_t(const data_type& other_data)
+    UST_t(const data_type& other_data)
         : data_type(other_data) {
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()
               << base::error_msg(
-                 "This combination has not yet been implemented for PPT"));
+                 "This combination has not yet been implemented for UST"));
     }
-    PPT_t(const boost::property_tree::ptree &pt)
+
+    UST_t(const boost::property_tree::ptree &pt)
         : data_type(pt) {
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()
               << base::error_msg(
-                 "This combination has not yet been implemented for PPT"));
+                 "This combination has not yet been implemented for UST"));
     }
 
     void apply (const matrix_type& A,
@@ -57,7 +57,7 @@ struct PPT_t :
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()
               << base::error_msg(
-                 "This combination has not yet been implemented for PPT"));
+                 "This combination has not yet been implemented for UST"));
     }
 
     void apply (const matrix_type& A,
@@ -66,7 +66,7 @@ struct PPT_t :
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()
               << base::error_msg(
-                 "This combination has not yet been implemented for PPT"));
+                 "This combination has not yet been implemented for UST"));
     }
 
     int get_N() const { return this->_N; } /**< Get input dimesion. */
@@ -75,36 +75,37 @@ struct PPT_t :
     const sketch_transform_data_t* get_data() const { return this; }
 };
 
-} } 
+} } /** namespace skylark::sketch */
 
 /**** Now the implementations */
-#include "PPT_Elemental.hpp"
+# include "UST_Elemental.hpp"
+
 
 /**** Now the any,any implementations */
 namespace skylark { namespace sketch {
 
 template<>
-class PPT_t<boost::any, boost::any> :
-  public PPT_data_t,
+class UST_t<boost::any, boost::any> :
+  public UST_data_t,
   virtual public sketch_transform_t<boost::any, boost::any > {
 
 public:
 
-    typedef PPT_data_t data_type;
+    typedef UST_data_t data_type;
     typedef data_type::params_t params_t;
 
-    PPT_t(int N, int S, int q, double c, double gamma, base::context_t& context)
-        : data_type(N, S, q, c, gamma, context) {
+    UST_t(int N, int S, base::context_t& context)
+        : data_type(N, S, context) {
 
     }
 
-    PPT_t(int N, int S, const params_t& params, base::context_t& context)
+    UST_t(int N, int S, const params_t& params, base::context_t& context)
         : data_type(N, S, params, context) {
 
     }
 
 
-    PPT_t(const boost::property_tree::ptree &pt)
+    UST_t(const boost::property_tree::ptree &pt)
         : data_type(pt) {
 
     }
@@ -114,7 +115,7 @@ public:
      */
     template <typename OtherInputMatrixType,
               typename OtherOutputMatrixType>
-    PPT_t (const PPT_t<OtherInputMatrixType, OtherOutputMatrixType>& other)
+    UST_t (const UST_t<OtherInputMatrixType, OtherOutputMatrixType>& other)
         : data_type(other) {
 
     }
@@ -122,7 +123,7 @@ public:
     /**
      * Constructor from data
      */
-    PPT_t (const data_type& other)
+    UST_t (const data_type& other)
         : data_type(other) {
 
     }
@@ -134,61 +135,52 @@ public:
     void apply(const boost::any &A, const boost::any &sketch_of_A,
                 columnwise_tag dimension) const {
 
-
-#if     !(defined SKYLARK_NO_ANY) || (defined SKYLARK_WITH_PPT_ANY)
-
-#if SKYLARK_HAVE_FFTW
+#if     !(defined SKYLARK_NO_ANY) || (defined SKYLARK_WITH_UST_ANY)
 
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::matrix_t, mdtypes::matrix_t,
-            PPT_t);
-        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::sparse_matrix_t,
-            mdtypes::matrix_t, PPT_t);
+            UST_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::shared_matrix_t,
-            mdtypes::shared_matrix_t, PPT_t);
+            mdtypes::shared_matrix_t, UST_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::root_matrix_t,
-            mdtypes::root_matrix_t, PPT_t);
+            mdtypes::root_matrix_t, UST_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
-            mdtypes::dist_matrix_t, PPT_t);
+            mdtypes::dist_matrix_t, UST_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
-            mdtypes::dist_matrix_vc_star_t, PPT_t);
+            mdtypes::dist_matrix_vc_star_t, UST_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
-            mdtypes::dist_matrix_vr_star_t, PPT_t);
+            mdtypes::dist_matrix_vr_star_t, UST_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vc_t,
-            mdtypes::dist_matrix_star_vc_t, PPT_t);
+            mdtypes::dist_matrix_star_vc_t, UST_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t,
-            mdtypes::dist_matrix_star_vr_t, PPT_t);
+            mdtypes::dist_matrix_star_vr_t, UST_t);
 
 #endif
 
-#if SKYLARK_HAVE_FFTWF
+#if     !(defined SKYLARK_NO_ANY) || (defined SKYLARK_WITH_UST_ANY)
 
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::matrix_t, mftypes::matrix_t,
-            PPT_t);
-        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::sparse_matrix_t,
-            mftypes::matrix_t, PPT_t);
+            UST_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::shared_matrix_t,
-            mftypes::shared_matrix_t, PPT_t);
+            mftypes::shared_matrix_t, UST_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::root_matrix_t,
-            mftypes::root_matrix_t, PPT_t);
+            mftypes::root_matrix_t, UST_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t,
-            mftypes::dist_matrix_t, PPT_t);
+            mftypes::dist_matrix_t, UST_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
-            mftypes::dist_matrix_vc_star_t, PPT_t);
+            mftypes::dist_matrix_vc_star_t, UST_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
-            mftypes::dist_matrix_vr_star_t, PPT_t);
+            mftypes::dist_matrix_vr_star_t, UST_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vc_t,
-            mftypes::dist_matrix_star_vc_t, PPT_t);
+            mftypes::dist_matrix_star_vc_t, UST_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
-            mftypes::dist_matrix_star_vr_t, PPT_t);
-
-#endif
+            mftypes::dist_matrix_star_vr_t, UST_t);
 
 #endif
 
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()
               << base::error_msg(
-                 "This combination has not yet been implemented for PPT"));
+                 "This combination has not yet been implemented for UST"));
 
     }
 
@@ -199,60 +191,53 @@ public:
     void apply (const boost::any &A, const boost::any &sketch_of_A,
         rowwise_tag dimension) const {
 
-#if     !(defined SKYLARK_NO_ANY) || (defined SKYLARK_WITH_PPT_ANY)
-
-#if SKYLARK_HAVE_FFTW
+#if     !(defined SKYLARK_NO_ANY) || (defined SKYLARK_WITH_UST_ANY)
 
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::matrix_t, mdtypes::matrix_t,
-            PPT_t);
-        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::sparse_matrix_t,
-            mdtypes::matrix_t, PPT_t);
+            UST_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::shared_matrix_t,
-            mdtypes::shared_matrix_t, PPT_t);
+            mdtypes::shared_matrix_t, UST_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::root_matrix_t,
-            mdtypes::root_matrix_t, PPT_t);
+            mdtypes::root_matrix_t, UST_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
-            mdtypes::dist_matrix_t, PPT_t);
+            mdtypes::dist_matrix_t, UST_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
-            mdtypes::dist_matrix_vc_star_t, PPT_t);
+            mdtypes::dist_matrix_vc_star_t, UST_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
-            mdtypes::dist_matrix_vr_star_t, PPT_t);
+            mdtypes::dist_matrix_vr_star_t, UST_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vc_t,
-            mdtypes::dist_matrix_star_vc_t, PPT_t);
+            mdtypes::dist_matrix_star_vc_t, UST_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t,
-            mdtypes::dist_matrix_star_vr_t, PPT_t);
+            mdtypes::dist_matrix_star_vr_t, UST_t);
 
 #endif
 
-#if SKYLARK_HAVE_FFTWF
+#if     !(defined SKYLARK_NO_ANY) || (defined SKYLARK_WITH_UST_ANY)
 
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::matrix_t, mftypes::matrix_t,
-            PPT_t);
-        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::sparse_matrix_t,
-            mftypes::matrix_t, PPT_t);
+            UST_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::shared_matrix_t,
-            mftypes::shared_matrix_t, PPT_t);
+            mftypes::shared_matrix_t, UST_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::root_matrix_t,
-            mftypes::root_matrix_t, PPT_t);
+            mftypes::root_matrix_t, UST_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t,
-            mftypes::dist_matrix_t, PPT_t);
+            mftypes::dist_matrix_t, UST_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
-            mftypes::dist_matrix_vc_star_t, PPT_t);
+            mftypes::dist_matrix_vc_star_t, UST_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
-            mftypes::dist_matrix_vr_star_t, PPT_t);
+            mftypes::dist_matrix_vr_star_t, UST_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vc_t,
-            mftypes::dist_matrix_star_vc_t, PPT_t);
+            mftypes::dist_matrix_star_vc_t, UST_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
-            mftypes::dist_matrix_star_vr_t, PPT_t);
-
-#endif
+            mftypes::dist_matrix_star_vr_t, UST_t);
 
 #endif
 
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()
               << base::error_msg(
-                 "This combination has not yet been implemented for PPT"));
+                 "This combination has not yet been implemented for UST"));
+
     }
 
     int get_N() const { return this->_N; } /**< Get input dimesion. */
@@ -263,5 +248,4 @@ public:
 
 } } /** namespace skylark::sketch */
 
-
-#endif // SKYLARK_PPT_HPP
+#endif // SKYLARK_UST_HPP

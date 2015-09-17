@@ -38,6 +38,8 @@
 #include "WZT.hpp"
 #include "PPT_data.hpp"
 #include "PPT.hpp"
+#include "UST_data.hpp"
+#include "UST.hpp"
 #include "sketch_add.hpp"
 
 #endif // SKYLARK_SKETCH_HPP

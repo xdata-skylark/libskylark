@@ -399,28 +399,30 @@ int execute(skylark::base::context_t &context) {
         *log_stream << "Training took " << boost::format("%.2e") % timer.elapsed()
                   << " sec\n";
 
-    // Save model
-    if (rank == 0) {
-        *log_stream << "Saving model... ";
-        log_stream->flush();
-        timer.restart();
+    if (modelname != "NOSAVE") {
+        // Save model
+        if (rank == 0) {
+            *log_stream << "Saving model... ";
+            log_stream->flush();
+            timer.restart();
+        }
+
+        boost::property_tree::ptree pt = model->to_ptree();
+
+        if (rank == 0) {
+            std::ofstream of(modelname);
+            of << "# Generated using kernel_regression ";
+            of << "using the following command-line: " << std::endl;
+            of << "#\t" << cmdline << std::endl;
+            of << "# Number of ranks is " << world.size() << std::endl;
+            boost::property_tree::write_json(of, pt);
+            of.close();
+        }
+
+        if (rank == 0)
+            *log_stream <<"took " << boost::format("%.2e") % timer.elapsed()
+                        << " sec\n";
     }
-
-    boost::property_tree::ptree pt = model->to_ptree();
-
-    if (rank == 0) {
-        std::ofstream of(modelname);
-        of << "# Generated using kernel_regression ";
-        of << "using the following command-line: " << std::endl;
-        of << "#\t" << cmdline << std::endl;
-        of << "# Number of ranks is " << world.size() << std::endl;
-        boost::property_tree::write_json(of, pt);
-        of.close();
-    }
-
-    if (rank == 0)
-        *log_stream <<"took " << boost::format("%.2e") % timer.elapsed()
-                  << " sec\n";
 
     // Test
     if (!testname.empty()) {

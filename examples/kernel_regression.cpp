@@ -290,7 +290,7 @@ int execute(skylark::base::context_t &context) {
         }
 
 
-        skylark::sketch::UST_data_t S(X0.Width(), sample, context);
+        skylark::sketch::UST_data_t S(X0.Width(), sample, false, context);
 
         X.Resize(X0.Height(), sample);
         skylark::sketch::UST_t<El::DistMatrix<T> > (S).apply(X0,

@@ -126,6 +126,13 @@ struct context_t {
         return random_samples_array;
     }
 
+    template <typename Distribution >
+    typename Distribution::result_type random_value(Distribution distribution) {
+        random_samples_array_t<Distribution>
+            allocated_random_samples_array(_counter, 1, _seed, distribution);
+        _counter++;
+        return allocated_random_samples_array[0];
+    }
 
     /**
      * Returns a container of random numbers to be accessed as an array.

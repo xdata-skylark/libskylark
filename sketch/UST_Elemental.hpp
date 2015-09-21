@@ -21,8 +21,8 @@ struct UST_t <
     typedef UST_data_t data_type;
     typedef data_type::params_t params_t;
 
-    UST_t(int N, int S, base::context_t& context)
-        : data_type (N, S, context)  {
+    UST_t(int N, int S, bool replace, base::context_t& context)
+        : data_type (N, S, replace, context)  {
 
      }
 
@@ -66,7 +66,7 @@ struct UST_t <
 
         for (El::Int j = 0; j < A.Width(); j++)
             for (El::Int i = 0; i < data_type::_S; i++)
-                sa[j * ldsa + i] = a[j * lda + data_type::samples[i]];
+                sa[j * ldsa + i] = a[j * lda + data_type::_samples[i]];
     }
 
     /**
@@ -84,7 +84,7 @@ struct UST_t <
 
         for (El::Int j = 0; j < data_type::_S; j++)
             for (El::Int i = 0; i < A.Height(); i++)
-                sa[j * ldsa + i] = a[data_type::samples[j] * lda + i];
+                sa[j * ldsa + i] = a[data_type::_samples[j] * lda + i];
     }
 
     int get_N() const { return data_type::_N; } /**< Get input dimesion. */

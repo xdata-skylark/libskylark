@@ -31,9 +31,9 @@ struct UST_data_t : public sketch_transform_data_t {
         const double replace;
     };
 
-    UST_data_t (int N, int S, bool _replace, base::context_t& context)
+    UST_data_t (int N, int S, bool replace, base::context_t& context)
         : base_t(N, S, context, "UST"),
-          _samples(base_t::_S), _replace(_replace) {
+          _samples(base_t::_S), _replace(replace) {
 
         context = build();
     }

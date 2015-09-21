@@ -20,7 +20,7 @@ struct UST_t :
     typedef UST_data_t data_type;
     typedef data_type::params_t params_t;
 
-    UST_t(int N, int S, bool repalce, base::context_t& context) 
+    UST_t(int N, int S, bool replace, base::context_t& context) 
         : data_type(N, S, replace, context) {
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()

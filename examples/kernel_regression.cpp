@@ -32,9 +32,9 @@
 std::string cmdline;
 int seed = 38734, algorithm = FASTER_KRR, kernel_type = GAUSSIAN_KERNEL;
 int fileformat = FORMAT_LIBSVM;
-int s = 2000, partial = -1, sketch_size = -1, sample = -1;
+int s = 2000, partial = -1, sketch_size = -1, sample = -1, maxit = 0;
 std::string fname, testname, modelname = "model.dat", logfile = "";
-double kp1 = 10.0, kp2 = 0.0, kp3 = 1.0, lambda = 0.01, tolerance=1e-3;
+double kp1 = 10.0, kp2 = 0.0, kp3 = 1.0, lambda = 0.01, tolerance=0;
 bool use_single;
 
 #ifndef SKYLARK_AVOID_BOOST_PO
@@ -85,8 +85,13 @@ int parse_program_options(int argc, char* argv[]) {
             bpo::value<double>(&lambda)->default_value(0.01),
             "Lambda regularization parameter.")
         ("tolerance,t",
-            bpo::value<double>(&tolerance)->default_value(1e-3),
-            "Tolerance for the iterative method (when used).")
+            bpo::value<double>(&tolerance)->default_value(0),
+            "Tolerance for the iterative method (when used). "
+            "0 will default based on algorithm (1e-3 for -a 1, 1e-1 for -a 5)")
+        ("maxit,i",
+            bpo::value<int>(&maxit)->default_value(0),
+            "Maximum number of iterations for the iterative method (when used). "
+            "0 will default based on algorithm (1000 for -a 1, 20 for -a 5)")
         ("partial,p",
             bpo::value<int>(&partial)->default_value(-1),
             "Load only specified quantity examples from training. "
@@ -159,6 +164,9 @@ int parse_program_options(int argc, char* argv[]) {
 
         if (flag == "--tolerance" || flag == "-t")
             tolerance = boost::lexical_cast<double>(value);
+
+        if (flag == "--maxit" || flag == "-i")
+            maxit = boost::lexical_cast<int>(value);
 
         if (flag == "--partial" || flag == "-p")
             partial = boost::lexical_cast<int>(value);
@@ -346,8 +354,6 @@ int execute(skylark::base::context_t &context) {
                                                       El::DistMatrix<T> > > transforms;
 
     skylark::ml::rlsc_params_t rlsc_params(rank == 0, 4, *log_stream, "\t");
-    rlsc_params.tolerance = tolerance;
-
     skylark::ml::model_t<El::Int, T> *model;
 
     switch(algorithm) {
@@ -361,6 +367,8 @@ int execute(skylark::base::context_t &context) {
         break;
 
     case FASTER_KRR:
+        rlsc_params.iter_lim = (maxit == 0) ? 1000 : maxit;
+        rlsc_params.tolerance = (tolerance == 0) ? 1e-3 : tolerance;
         skylark::ml::FasterKernelRLSC(skylark::base::COLUMNS, k, X, L,
             T(lambda), A, rcoding, s, context, rlsc_params);
         model =
@@ -393,6 +401,8 @@ int execute(skylark::base::context_t &context) {
         break;
 
     case LARGE_SCALE_KRR:
+        rlsc_params.iter_lim = (maxit == 0) ? 20 : maxit;
+        rlsc_params.tolerance = (tolerance == 0) ? 1e-1 : tolerance;
         skylark::ml::LargeScaleKernelRLSC(skylark::base::COLUMNS, k, X, L,
             T(lambda), scale_maps, transforms, W, rcoding, s,
             context, rlsc_params);

@@ -278,9 +278,9 @@ void LargeScaleKernelRLSC(base::direction_t direction, const KernelType &k,
 
     krr_params_t krr_params(params.am_i_printing, params.log_level - 1, 
         params.log_stream, params.prefix + "\t");
-    krr_params.sketched_rr = params.sketched_rls;
-    krr_params.sketch_size = params.sketch_size;
-    krr_params.fast_sketch = params.fast_sketch;
+    krr_params.iter_lim = params.iter_lim;
+    krr_params.res_print = params.res_print;
+    krr_params.tolerance = params.tolerance;
 
     LargeScaleKernelRidge(direction, k, X, Y,
         T(lambda), scale_maps, transforms, W, s, context, krr_params);

@@ -10,7 +10,7 @@ struct krr_params_t : public base::params_t {
     El::Int sketch_size;
     bool fast_sketch;
 
-    // For iterative methods (FasterKRR)
+    // For iterative methods (FasterKRR, LargeScale)
     int iter_lim;
     int res_print;
     double tolerance;
@@ -574,14 +574,15 @@ void LargeScaleKernelRidge(base::direction_t direction, const KernelType &k,
     // More iterations...
     if (log_lev1) {
         params.log_stream << params.prefix
-                          << "More iterations... ";
+                          << "More iterations... " << std::endl;
         params.log_stream.flush();
         timer.restart();
     }
 
-    for(int it = 0; it < 20; it++) {
+    for(int it = 1; it < params.iter_lim; it++) {
 
         starts = 0;
+        double delsize = 0.0;
 
         for(int c = 0; c < C; c++) {
             El::Int s0 = transforms[c].get_S();
@@ -610,12 +611,31 @@ void LargeScaleKernelRidge(base::direction_t direction, const KernelType &k,
             El::Gemm(direction == base::COLUMNS ? El::ADJOINT : El::NORMAL,
                 El::NORMAL, T(-1.0), Z, delW0, T(1.0), R);
 
+            delsize += std::pow(El::FrobeniusNorm(delW0), 2);
+
             starts += s0;
+        }
+
+        double reldel = std::sqrt(delsize) / El::FrobeniusNorm(W);
+
+        if (log_lev2)
+            params.log_stream << params.prefix << "\t"
+                              << "Iteration " << it
+                              << ", relupdate = "
+                              << boost::format("%.2e") % reldel
+                              << std::endl;
+
+        if (reldel < params.tolerance) {
+            if (log_lev2)
+                params.log_stream << params.prefix  << "\t"
+                                  << "Convergence!" << std::endl;
+            break;
         }
     }
 
     if (log_lev1)
-        params.log_stream << "took " << boost::format("%.2e") % timer.elapsed()
+        params.log_stream << params.prefix
+                          << "Took " << boost::format("%.2e") % timer.elapsed()
                           << " sec\n";
 }
 

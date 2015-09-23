@@ -555,8 +555,7 @@ public model_t<OutType, ComputeType>
             ptmaps.push_back(std::make_pair(std::to_string(i),
                     _feature_transforms[i].to_ptree()));
         ptfmap.add_child("transforms", ptmaps);
-        pt.add_child("feature_mapping", ptfmap);
-
+ 
         pt.add_child("expansion_transforms", ptfmap);
 
         std::stringstream sW;

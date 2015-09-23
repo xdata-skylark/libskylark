@@ -53,9 +53,13 @@ struct kernel_t {
     sketch::sketch_transform_t<boost::any, boost::any> *create_rft(El::Int S,
         regular_feature_transform_tag, base::context_t& context) const = 0;
 
-    template<typename IT, typename OT>
+    virtual
+    sketch::sketch_transform_t<boost::any, boost::any> *create_rft(El::Int S,
+        fast_feature_transform_tag, base::context_t& context) const = 0;
+
+    template<typename IT, typename OT, typename TT>
     sketch::sketch_transform_t<IT, OT> *create_rft(El::Int S,
-        regular_feature_transform_tag tag, base::context_t& context) const {
+        TT tag, base::context_t& context) const {
 
         sketch::generic_sketch_transform_ptr_t p(create_rft(S, tag, context));
         return new sketch::sketch_transform_container_t<IT, OT>(p);
@@ -158,9 +162,16 @@ struct kernel_container_t : public kernel_t {
         return _k->create_rft(S, tag, context);
     }
 
-    template<typename IT, typename OT>
+    virtual
+    sketch::sketch_transform_t<boost::any, boost::any> *create_rft(El::Int S,
+        fast_feature_transform_tag tag, base::context_t& context) const {
+
+        return _k->create_rft(S, tag, context);
+    }
+
+    template<typename IT, typename OT, typename TT>
     sketch::sketch_transform_t<IT, OT> *create_rft(El::Int S,
-        regular_feature_transform_tag tag, base::context_t& context) const {
+        TT tag, base::context_t& context) const {
 
         sketch::generic_sketch_transform_ptr_t p(create_rft(S, tag, context));
         return new sketch::sketch_transform_container_t<IT, OT>(p);
@@ -249,6 +260,12 @@ struct gaussian_t : public kernel_t {
 
     sketch::sketch_transform_t<boost::any, boost::any> *create_rft(El::Int S,
     regular_feature_transform_tag tag, base::context_t& context) const {
+
+        return create_rft<boost::any, boost::any>(S, tag, context);
+    }
+
+    sketch::sketch_transform_t<boost::any, boost::any> *create_rft(El::Int S,
+    fast_feature_transform_tag tag, base::context_t& context) const {
 
         return create_rft<boost::any, boost::any>(S, tag, context);
     }
@@ -420,9 +437,23 @@ struct polynomial_t : public kernel_t {
         return create_rft<boost::any, boost::any>(S, tag, context);
     }
 
+    sketch::sketch_transform_t<boost::any, boost::any> *create_rft(El::Int S,
+    fast_feature_transform_tag tag, base::context_t& context) const {
+
+        return create_rft<boost::any, boost::any>(S, tag, context);
+    }
+
     template<typename IT, typename OT>
     sketch::sketch_transform_t<IT, OT> *create_rft(El::Int S,
         regular_feature_transform_tag, base::context_t& context) const {
+        return
+            new sketch::PPT_t<IT, OT>(_N, S, _q, _c, _gamma, context);
+    }
+
+    template<typename IT, typename OT>
+    sketch::sketch_transform_t<IT, OT> *create_rft(El::Int S,
+        fast_feature_transform_tag, base::context_t& context) const {
+        // PPT is also "fast"
         return
             new sketch::PPT_t<IT, OT>(_N, S, _q, _c, _gamma, context);
     }
@@ -571,6 +602,13 @@ struct laplacian_t : public kernel_t {
     regular_feature_transform_tag tag, base::context_t& context) const {
 
         return create_rft<boost::any, boost::any>(S, tag, context);
+    }
+
+    sketch::sketch_transform_t<boost::any, boost::any> *create_rft(El::Int S,
+    fast_feature_transform_tag tag, base::context_t& context) const {
+
+        // TODO
+        return nullptr;
     }
 
     template<typename IT, typename OT>

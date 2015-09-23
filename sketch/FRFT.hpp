@@ -275,9 +275,9 @@ public:
     void apply(const boost::any &A, const boost::any &sketch_of_A,
                 columnwise_tag dimension) const {
 
-#if     !(defined SKYLARK_NO_ANY)
+#if     !(defined SKYLARK_NO_ANY) || (defined SKYLARK_WITH_FAST_GAUSSIAN_RFT_ANY)
 
-#if SKYLARK_HAVE_FFTW
+#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT
 
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::matrix_t, mdtypes::matrix_t,
             FastGaussianRFT_t);
@@ -295,10 +295,12 @@ public:
             mdtypes::dist_matrix_star_vc_t, FastGaussianRFT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t,
             mdtypes::dist_matrix_star_vr_t, FastGaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
+            mdtypes::dist_matrix_t, FastGaussianRFT_t);
 
 #endif
 
-#if SKYLARK_HAVE_FFTWF
+#if SKYLARK_HAVE_FFTWF || SKYLARK_HAVE_SPIRALWHT
 
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::matrix_t, mftypes::matrix_t,
             FastGaussianRFT_t);
@@ -316,6 +318,8 @@ public:
             mftypes::dist_matrix_star_vc_t, FastGaussianRFT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
             mftypes::dist_matrix_star_vr_t, FastGaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t,
+            mftypes::dist_matrix_t, FastGaussianRFT_t);
 
 #endif
 
@@ -334,9 +338,9 @@ public:
     void apply (const boost::any &A, const boost::any &sketch_of_A,
         rowwise_tag dimension) const {
 
-#if     !(defined SKYLARK_NO_ANY)
+#if     !(defined SKYLARK_NO_ANY) || (defined SKYLARK_WITH_FAST_GAUSSIAN_RFT_ANY)
 
-#if SKYLARK_HAVE_FFTW
+#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT
 
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::matrix_t, mdtypes::matrix_t,
             FastGaussianRFT_t);
@@ -354,10 +358,12 @@ public:
             mdtypes::dist_matrix_star_vc_t, FastGaussianRFT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t,
             mdtypes::dist_matrix_star_vr_t, FastGaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
+            mdtypes::dist_matrix_t, FastGaussianRFT_t);
 
 #endif
 
-#if SKYLARK_HAVE_FFTWF
+#if SKYLARK_HAVE_FFTWF || SKYLARK_HAVE_SPIRALWHT
 
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::matrix_t, mftypes::matrix_t,
             FastGaussianRFT_t);
@@ -375,6 +381,8 @@ public:
             mftypes::dist_matrix_star_vc_t, FastGaussianRFT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
             mftypes::dist_matrix_star_vr_t, FastGaussianRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t,
+            mftypes::dist_matrix_t, FastGaussianRFT_t);
 
 #endif
 
@@ -443,9 +451,9 @@ public:
     void apply(const boost::any &A, const boost::any &sketch_of_A,
                 columnwise_tag dimension) const {
 
-#if     !(defined SKYLARK_NO_ANY)
+#if     !(defined SKYLARK_NO_ANY) || (defined SKYLARK_WITH_FAST_MATERN_RFT_ANY)
 
-#if SKYLARK_HAVE_FFTW
+#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT
 
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::matrix_t, mdtypes::matrix_t,
             FastMaternRFT_t);
@@ -463,10 +471,12 @@ public:
             mdtypes::dist_matrix_star_vc_t, FastMaternRFT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t,
             mdtypes::dist_matrix_star_vr_t, FastMaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
+            mdtypes::dist_matrix_t, FastMaternnRFT_t);
 
 #endif
 
-#if SKYLARK_HAVE_FFTWF
+#if SKYLARK_HAVE_FFTWF || SKYLARK_HAVE_SPIRALWHT
 
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::matrix_t, mftypes::matrix_t,
             FastMaternRFT_t);
@@ -484,6 +494,8 @@ public:
             mftypes::dist_matrix_star_vc_t, FastMaternRFT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
             mftypes::dist_matrix_star_vr_t, FastMaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t,
+            mftypes::dist_matrix_t, FastMaternnRFT_t);
 
 #endif
 
@@ -498,9 +510,9 @@ public:
     void apply (const boost::any &A, const boost::any &sketch_of_A,
         rowwise_tag dimension) const {
 
-#if     !(defined SKYLARK_NO_ANY)
+#if     !(defined SKYLARK_NO_ANY) || (defined SKYLARK_WITH_FAST_MATERN_RFT_ANY)
 
-#if SKYLARK_HAVE_FFTW
+#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT
 
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::matrix_t, mdtypes::matrix_t,
             FastMaternRFT_t);
@@ -518,10 +530,11 @@ public:
             mdtypes::dist_matrix_star_vc_t, FastMaternRFT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t,
             mdtypes::dist_matrix_star_vr_t, FastMaternRFT_t);
-
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
+            mdtypes::dist_matrix_t, FastMaternnRFT_t);
 #endif
 
-#if SKYLARK_HAVE_FFTWF
+#if SKYLARK_HAVE_FFTWF || SKYLARK_HAVE_SPIRALWHT
 
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::matrix_t, mftypes::matrix_t,
             FastMaternRFT_t);
@@ -539,6 +552,8 @@ public:
             mftypes::dist_matrix_star_vc_t, FastMaternRFT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
             mftypes::dist_matrix_star_vr_t, FastMaternRFT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t,
+            mftypes::dist_matrix_t, FastMaternnRFT_t);
 
 #endif
 

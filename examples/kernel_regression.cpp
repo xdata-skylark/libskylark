@@ -9,6 +9,7 @@
 #define SKYLARK_WITH_GAUSSIAN_RFT_ANY
 #define SKYLARK_WITH_LAPLACIAN_RFT_ANY
 #define SKYLARK_WITH_PPT_ANY
+#define SKYLARK_WITH_FAST_GAUSSIAN_RFT_ANY
 
 #include <skylark.hpp>
 
@@ -35,7 +36,7 @@ int fileformat = FORMAT_LIBSVM;
 int s = 2000, partial = -1, sketch_size = -1, sample = -1, maxit = 0;
 std::string fname, testname, modelname = "model.dat", logfile = "";
 double kp1 = 10.0, kp2 = 0.0, kp3 = 1.0, lambda = 0.01, tolerance=0;
-bool use_single;
+bool use_single, use_fast;
 
 #ifndef SKYLARK_AVOID_BOOST_PO
 
@@ -100,6 +101,7 @@ int parse_program_options(int argc, char* argv[]) {
             bpo::value<int>(&sample)->default_value(-1),
             "Sample the input data. Will use all if -1. ")
         ("single", "Whether to use single precision instead of double.")
+        ("fast", "Try using a fast feature transform.")
         ("numfeatures,f",
             bpo::value<int>(&s),
             "Number of random features (if relevant).")
@@ -136,6 +138,7 @@ int parse_program_options(int argc, char* argv[]) {
         bpo::notify(vm);
 
         use_single = vm.count("single");
+        use_fast = vm.count("fast");
 
     } catch(bpo::error& e) {
         std::cerr << e.what() << std::endl;
@@ -200,6 +203,11 @@ int parse_program_options(int argc, char* argv[]) {
 
         if (flag == "--single") {
             use_single = true;
+            i--;
+        }
+
+        if (flag == "--fast") {
+            use_fast = true;
             i--;
         }
 
@@ -354,6 +362,8 @@ int execute(skylark::base::context_t &context) {
                                                       El::DistMatrix<T> > > transforms;
 
     skylark::ml::rlsc_params_t rlsc_params(rank == 0, 4, *log_stream, "\t");
+    rlsc_params.use_fast = use_fast;
+
     skylark::ml::model_t<El::Int, T> *model;
 
     switch(algorithm) {

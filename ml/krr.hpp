@@ -5,12 +5,15 @@ namespace skylark { namespace ml {
 
 struct krr_params_t : public base::params_t {
 
+    // For all methods that use feature transforms
+    bool use_fast;
+
     // For approximate methods (ApproximateKRR)
     bool sketched_rr;
     El::Int sketch_size;
     bool fast_sketch;
 
-    // For iterative methods (FasterKRR, LargeScale)
+    // For iterative methods (FasterKRR, LargeScaleKRR)
     int iter_lim;
     int res_print;
     double tolerance;
@@ -21,6 +24,8 @@ struct krr_params_t : public base::params_t {
         std::string prefix = "",
         int debug_level = 0) :
         base::params_t(am_i_printing, log_level, log_stream, prefix, debug_level) {
+
+        use_fast = false;
 
         sketched_rr = false;
         sketch_size = -1;
@@ -98,8 +103,10 @@ void ApproximateKernelRidge(base::direction_t direction, const KernelType &k,
         timer.restart();
    }
 
-    sketch::generic_sketch_transform_ptr_t
-        p(k.create_rft(s, regular_feature_transform_tag(), context));
+    sketch::generic_sketch_transform_t *p0 = params.use_fast ?
+        k.create_rft(s, fast_feature_transform_tag(), context) :
+        k.create_rft(s, regular_feature_transform_tag(), context);
+    sketch::generic_sketch_transform_ptr_t p(p0);
     S =
         sketch::sketch_transform_container_t<El::DistMatrix<T>,
                                              El::DistMatrix<T> >(p);
@@ -234,8 +241,10 @@ void SketchedApproximateKernelRidge(base::direction_t direction, const KernelTyp
 
     while (remains > 0) {
         El::Int thiss = (remains < 2 * d) ? remains : d;
-        sketch::generic_sketch_transform_ptr_t
-            p(k.create_rft(thiss, regular_feature_transform_tag(), context));
+        sketch::generic_sketch_transform_t *p0 = params.use_fast ?
+            k.create_rft(thiss, fast_feature_transform_tag(), context) :
+            k.create_rft(thiss, regular_feature_transform_tag(), context);
+        sketch::generic_sketch_transform_ptr_t p(p0);
         sketch::sketch_transform_container_t<El::DistMatrix<T>,
                                              El::DistMatrix<T> > S(p);
         transforms.push_back(S);
@@ -320,6 +329,11 @@ public:
 
         U.Resize(s, X.Width());
         sketch::sketch_transform_t<InputType, matrix_type> *S =
+            params.use_fast ? 
+            k.template create_rft<InputType, matrix_type>(s,
+                ml::fast_feature_transform_tag(),
+                context)
+            :
             k.template create_rft<InputType, matrix_type>(s,
                 ml::regular_feature_transform_tag(),
                 context);
@@ -490,8 +504,11 @@ void LargeScaleKernelRidge(base::direction_t direction, const KernelType &k,
 
     while (remains > 0) {
         El::Int thiss = (remains < 2 * d) ? remains : d;
-        sketch::generic_sketch_transform_ptr_t
-            p(k.create_rft(thiss, regular_feature_transform_tag(), context));
+
+        sketch::generic_sketch_transform_t *p0 = params.use_fast ?
+            k.create_rft(thiss, fast_feature_transform_tag(), context) :
+            k.create_rft(thiss, regular_feature_transform_tag(), context);
+        sketch::generic_sketch_transform_ptr_t p(p0);
         sketch::sketch_transform_container_t<El::DistMatrix<T>,
                                              El::DistMatrix<T> > S(p);
         transforms.push_back(S);

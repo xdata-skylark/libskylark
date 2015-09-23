@@ -569,6 +569,79 @@ private:
     const FastRFT_t<El::Matrix<value_type>, El::Matrix<value_type> > _local;
 };
 
+/**
+ * Specialization [MC, MR] to [MC, MR].
+ */
+template <typename ValueType>
+struct FastRFT_t <
+    El::DistMatrix<ValueType>,
+    El::DistMatrix<ValueType> > :
+        public FastRFT_data_t {
+    // Typedef value, matrix, transform, distribution and transform data types
+    // so that we can use them regularly and consistently.
+    typedef ValueType value_type;
+    typedef El::DistMatrix<value_type> matrix_type;
+    typedef El::DistMatrix<value_type> output_matrix_type;
+    typedef FastRFT_data_t data_type;
+
+public:
+
+    // No regular contructor, since need to be subclassed.
+
+    /**
+     * Copy constructor
+     */
+    FastRFT_t(const FastRFT_t<matrix_type,
+                      output_matrix_type>& other)
+        : data_type(other) {
+
+    }
+
+    /**
+     * Constructor from data
+     */
+    FastRFT_t(const data_type& other_data)
+        : data_type(other_data) {
+
+    }
+
+    /**
+     * Apply the sketching transform on A and write to sketch_of_A.
+     * Implementation for columnwise.
+     */
+    void apply(const matrix_type& A,
+        output_matrix_type& sketch_of_A,
+        skylark::sketch::columnwise_tag tag) const {
+
+        typedef El::DistMatrix<value_type, El::STAR, El::VR> redis_type;
+
+        // Naive implementation: redistribute, sketch and redistribute
+        FastRFT_t<redis_type, redis_type> S1(*this);
+        redis_type A1 = A;
+        redis_type SA1(_S, A1.Width());
+        S1.apply(A1, SA1, tag);
+        sketch_of_A = SA1;
+    }
+
+    /**
+      * Apply the sketching transform on A and write to  sketch_of_A.
+      * Implementation rowwise.
+      */
+    void apply(const matrix_type& A,
+        output_matrix_type& sketch_of_A,
+        skylark::sketch::rowwise_tag tag) const {
+
+        typedef El::DistMatrix<value_type, El::VC, El::STAR> redis_type;
+
+        // Naive implementation: redistribute, sketch and redistribute
+        FastRFT_t<redis_type, redis_type> S1(*this);
+        redis_type A1 = A;
+        redis_type SA1(A1.Height(), _S);
+        S1.apply(A1, SA1, tag);
+        sketch_of_A = SA1;
+    }
+};
+
 #endif // SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT
 
 } } /** namespace skylark::sketch */

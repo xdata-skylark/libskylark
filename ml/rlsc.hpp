@@ -5,12 +5,15 @@ namespace skylark { namespace ml {
 
 struct rlsc_params_t : public base::params_t {
 
+    // For all methods that use feature transforms
+    bool use_fast;
+
     // For approximate methods (ApproximateRLSC)
     bool sketched_rls;
     El::Int sketch_size;
     bool fast_sketch;
 
-    // For iterative methods (FasterRLSC)
+    // For iterative methods (FasterRLSC, LargeScaleRLSC)
     int iter_lim;
     int res_print;
     double tolerance;
@@ -21,6 +24,8 @@ struct rlsc_params_t : public base::params_t {
         std::string prefix = "",
         int debug_level = 0) :
         base::params_t(am_i_printing, log_level, log_stream, prefix, debug_level) {
+
+        use_fast = false;
 
         sketched_rls = false;
         sketch_size = -1;
@@ -69,6 +74,7 @@ void KernelRLSC(base::direction_t direction, const KernelType &k,
 
     krr_params_t krr_params(params.am_i_printing, params.log_level - 1, 
         params.log_stream, params.prefix + "\t");
+    krr_params.use_fast = params.use_fast;
     krr_params.iter_lim = params.iter_lim;
     krr_params.res_print = params.res_print;
     krr_params.tolerance = params.tolerance;
@@ -120,6 +126,7 @@ void ApproximateKernelRLSC(base::direction_t direction, const KernelType &k,
 
     krr_params_t krr_params(params.am_i_printing, params.log_level - 1, 
         params.log_stream, params.prefix + "\t");
+    krr_params.use_fast = params.use_fast;
     krr_params.sketched_rr = params.sketched_rls;
     krr_params.sketch_size = params.sketch_size;
     krr_params.fast_sketch = params.fast_sketch;
@@ -174,6 +181,7 @@ void SketchedApproximateKernelRLSC(base::direction_t direction, const KernelType
 
     krr_params_t krr_params(params.am_i_printing, params.log_level - 1, 
         params.log_stream, params.prefix + "\t");
+    krr_params.use_fast = params.use_fast;
     krr_params.sketched_rr = params.sketched_rls;
     krr_params.sketch_size = params.sketch_size;
     krr_params.fast_sketch = params.fast_sketch;
@@ -224,6 +232,7 @@ void FasterKernelRLSC(base::direction_t direction, const KernelType &k,
 
     krr_params_t krr_params(params.am_i_printing, params.log_level - 1, 
         params.log_stream, params.prefix + "\t");
+    krr_params.use_fast = params.use_fast;
     krr_params.iter_lim = params.iter_lim;
     krr_params.res_print = params.res_print;
     krr_params.tolerance = params.tolerance;
@@ -278,6 +287,7 @@ void LargeScaleKernelRLSC(base::direction_t direction, const KernelType &k,
 
     krr_params_t krr_params(params.am_i_printing, params.log_level - 1, 
         params.log_stream, params.prefix + "\t");
+    krr_params.use_fast = params.use_fast;
     krr_params.iter_lim = params.iter_lim;
     krr_params.res_print = params.res_print;
     krr_params.tolerance = params.tolerance;

@@ -24,6 +24,8 @@
 #define SKETCHED_APPROXIMATE_KRR         3
 #define FAST_SKETCHED_APPROXIMATE_KRR    4
 #define LARGE_SCALE_KRR                  5
+#define EXPERIMENTAL_1                 100
+#define EXPERIMENTAL_2                 101
 
 // Kernels constants
 #define GAUSSIAN_KERNEL   0
@@ -420,6 +422,18 @@ int execute(skylark::base::context_t &context) {
             new skylark::ml::feature_expansion_model_t<
                 skylark::sketch::sketch_transform_container_t, El::Int, T>
             (scale_maps, transforms, W, rcoding);
+        break;
+
+    case EXPERIMENTAL_1:
+    case EXPERIMENTAL_2:
+        rlsc_params.sketched_rls = true;
+        rlsc_params.use_fast = algorithm == EXPERIMENTAL_2;
+        skylark::ml::ApproximateKernelRLSC(skylark::base::COLUMNS, k, X, L,
+            T(lambda), S, W, rcoding, s, context, rlsc_params);
+        model =
+            new skylark::ml::feature_expansion_model_t<
+                skylark::sketch::sketch_transform_container_t, El::Int, T>
+            (S, W, rcoding);
         break;
 
     default:

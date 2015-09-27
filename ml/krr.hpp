@@ -414,13 +414,19 @@ void FasterKernelRidge(base::direction_t direction, const KernelType &k,
         timer.restart();
     }
 
-    El::DistMatrix<T> K;
+    El::DistMatrix<T> K, D;
+
+    // Hack for experiments!
+    if (params.iter_lim == -1)
+        goto skip_kernel_creation;
+
     SymmetricGram(El::LOWER, direction, k, X, K);
 
     // Add regularizer
-    El::DistMatrix<T> D;
     El::Ones(D, X.Width(), 1);
     El::UpdateDiagonal(K, lambda, D);
+
+ skip_kernel_creation:
 
     if (log_lev1)
         params.log_stream << "took " << boost::format("%.2e") % timer.elapsed()
@@ -456,12 +462,18 @@ void FasterKernelRidge(base::direction_t direction, const KernelType &k,
 
 
     // Solve
-    algorithms::krylov_iter_params_t cg_params(params.tolerance, params.iter_lim,
-        params.am_i_printing, params.log_level - 1, params.res_print, 
-        params.log_stream, params.prefix + "\t");
+    if (params.iter_lim != -1) {
+        algorithms::krylov_iter_params_t cg_params(params.tolerance, params.iter_lim,
+            params.am_i_printing, params.log_level - 1, params.res_print, 
+            params.log_stream, params.prefix + "\t");
 
-    El::Zeros(A, X.Width(), Y.Width());
-    algorithms::CG(El::LOWER, K, Y, A, cg_params, P);
+        El::Zeros(A, X.Width(), Y.Width());
+        algorithms::CG(El::LOWER, K, Y, A, cg_params, P);
+    } else {
+        // Hack for experiments!
+        El::Zeros(A, X.Width(), Y.Width());
+        P.apply(Y, A);
+    }
 
     if (log_lev1)
         params.log_stream  << params.prefix

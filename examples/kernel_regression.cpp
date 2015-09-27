@@ -427,7 +427,7 @@ int execute(skylark::base::context_t &context) {
     case EXPERIMENTAL_1:
     case EXPERIMENTAL_2:
         rlsc_params.sketched_rls = true;
-        rlsc_params.use_fast = algorithm == EXPERIMENTAL_2;
+        rlsc_params.fast_sketch = algorithm == EXPERIMENTAL_2;
         skylark::ml::ApproximateKernelRLSC(skylark::base::COLUMNS, k, X, L,
             T(lambda), S, W, rcoding, s, context, rlsc_params);
         model =

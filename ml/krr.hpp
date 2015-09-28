@@ -441,7 +441,12 @@ void FasterKernelRidge(base::direction_t direction, const KernelType &k,
         timer.restart();
     }
 
-    feature_map_precond_t<El::DistMatrix<T> > P(k, lambda, X, s, context, params);
+    algorithms::outplace_precond_t<El::DistMatrix<T> > *P;
+    if (s == 0)
+        P = new algorithms::outplace_id_precond_t<El::DistMatrix<T> >();
+    else
+        P = new feature_map_precond_t<El::DistMatrix<T> >(k, lambda,
+            X, s, context, params);
 
     if (log_lev1 && !log_lev2)
         params.log_stream << "took " << boost::format("%.2e") % timer.elapsed()
@@ -468,17 +473,19 @@ void FasterKernelRidge(base::direction_t direction, const KernelType &k,
             params.log_stream, params.prefix + "\t");
 
         El::Zeros(A, X.Width(), Y.Width());
-        algorithms::CG(El::LOWER, K, Y, A, cg_params, P);
+        algorithms::CG(El::LOWER, K, Y, A, cg_params, *P);
     } else {
         // Hack for experiments!
         El::Zeros(A, X.Width(), Y.Width());
-        P.apply(Y, A);
+        P->apply(Y, A);
     }
 
     if (log_lev1)
         params.log_stream  << params.prefix
                            <<"Took " << boost::format("%.2e") % timer.elapsed()
                            << " sec\n";
+
+    delete P;
 
 }
 

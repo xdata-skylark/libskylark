@@ -29,7 +29,7 @@ struct inplace_precond_t {
  *
  * @tparam T type of solution vector on which the preconditioner is applied.
  */
-template<typename RhsType, typename SolType>
+template<typename RhsType, typename SolType = RhsType>
 struct outplace_precond_t {
 
     // Is this really a no-op? (Identity preconditioner)
@@ -59,7 +59,7 @@ struct inplace_id_precond_t : public inplace_precond_t<T> {
 /**
  * Out-of-place identity preconditioner - just copies.
  */
-template<typename RhsType, typename SolType>
+template<typename RhsType, typename SolType = RhsType>
 struct outplace_id_precond_t : public outplace_precond_t<RhsType, SolType> {
     bool is_id() const { return true; }
 

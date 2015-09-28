@@ -472,7 +472,7 @@ public:
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t,
             mdtypes::dist_matrix_star_vr_t, FastMaternRFT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
-            mdtypes::dist_matrix_t, FastMaternnRFT_t);
+            mdtypes::dist_matrix_t, FastMaternRFT_t);
 
 #endif
 
@@ -495,7 +495,7 @@ public:
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
             mftypes::dist_matrix_star_vr_t, FastMaternRFT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t,
-            mftypes::dist_matrix_t, FastMaternnRFT_t);
+            mftypes::dist_matrix_t, FastMaternRFT_t);
 
 #endif
 
@@ -531,7 +531,7 @@ public:
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t,
             mdtypes::dist_matrix_star_vr_t, FastMaternRFT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
-            mdtypes::dist_matrix_t, FastMaternnRFT_t);
+            mdtypes::dist_matrix_t, FastMaternRFT_t);
 #endif
 
 #if SKYLARK_HAVE_FFTWF || SKYLARK_HAVE_SPIRALWHT
@@ -553,7 +553,7 @@ public:
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
             mftypes::dist_matrix_star_vr_t, FastMaternRFT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t,
-            mftypes::dist_matrix_t, FastMaternnRFT_t);
+            mftypes::dist_matrix_t, FastMaternRFT_t);
 
 #endif
 

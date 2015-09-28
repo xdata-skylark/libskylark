@@ -10,6 +10,12 @@ inline void Copy(const El::Matrix<T>& A, El::Matrix<T>& B) {
     El::Copy(A, B);
 }
 
+template<typename T>
+inline void Copy(const El::AbstractDistMatrix<T>& A,
+    El::AbstractDistMatrix<T>& B) {
+    El::Copy(A, B);
+}
+
 /**
  * Copy matrix A into B, densifiying it in the process.
  */

@@ -597,10 +597,9 @@ void LargeScaleKernelRidge(base::direction_t direction, const KernelType &k,
         El::Cholesky(El::LOWER, L);
 
         // Compute ZR
-        ZR.Resize(s0, t);
+        ZR = W0;
         El::Gemm(direction == base::COLUMNS ? El::NORMAL : El::ADJOINT,
-            El::NORMAL, T(1.0), Z, R, T(0.0), ZR);
-        El::Axpy(-lambda, W0, ZR);
+            El::NORMAL, T(1.0), Z, R, T(-lambda), ZR);
 
         // Compute solution, W0
         El::cholesky::SolveAfter(El::LOWER, El::NORMAL, L, ZR);
@@ -644,10 +643,9 @@ void LargeScaleKernelRidge(base::direction_t direction, const KernelType &k,
             }
 
             // Compute ZR
-            ZR.Resize(s0, t);
+            ZR = W0;
             El::Gemm(direction == base::COLUMNS ? El::NORMAL : El::ADJOINT,
-                El::NORMAL, T(1.0), Z, R, T(0.0), ZR);
-            El::Axpy(-lambda, W0, ZR);
+                El::NORMAL, T(1.0), Z, R, T(-lambda), ZR);
 
             // Compute solution, W0
             El::cholesky::SolveAfter(El::LOWER, El::NORMAL, L, ZR);

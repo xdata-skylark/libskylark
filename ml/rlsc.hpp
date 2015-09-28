@@ -18,6 +18,9 @@ struct rlsc_params_t : public base::params_t {
     int res_print;
     double tolerance;
 
+    // For memory limited methods (SketchedApproximateRLSC, LargeScaleRLSC)
+    El::Int max_split;
+
     rlsc_params_t(bool am_i_printing = 0,
         int log_level = 0,
         std::ostream &log_stream = std::cout,
@@ -185,6 +188,7 @@ void SketchedApproximateKernelRLSC(base::direction_t direction, const KernelType
     krr_params.sketched_rr = params.sketched_rls;
     krr_params.sketch_size = params.sketch_size;
     krr_params.fast_sketch = params.fast_sketch;
+    krr_params.max_split = params.max_split;
 
     SketchedApproximateKernelRidge(direction, k, X, Y,
         T(lambda), scale_maps, transforms, W, s, t, context, krr_params);
@@ -291,6 +295,7 @@ void LargeScaleKernelRLSC(base::direction_t direction, const KernelType &k,
     krr_params.iter_lim = params.iter_lim;
     krr_params.res_print = params.res_print;
     krr_params.tolerance = params.tolerance;
+    krr_params.max_split = params.max_split;
 
     LargeScaleKernelRidge(direction, k, X, Y,
         T(lambda), scale_maps, transforms, W, s, context, krr_params);

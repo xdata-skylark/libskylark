@@ -18,6 +18,9 @@ struct krr_params_t : public base::params_t {
     int res_print;
     double tolerance;
 
+    // For memory limited methods (SketchedApproximateKRR, LargeScaleKRR)
+    El::Int max_split;
+
     krr_params_t(bool am_i_printing = 0,
         int log_level = 0,
         std::ostream &log_stream = std::cout,
@@ -34,6 +37,8 @@ struct krr_params_t : public base::params_t {
         tolerance = 1e-3;
         res_print = 10;
         iter_lim = 1000;
+
+        max_split = 0;
   }
 
 };
@@ -214,8 +219,7 @@ void SketchedApproximateKernelRidge(base::direction_t direction, const KernelTyp
     El::DistMatrix<T> Z, RZ, SZ, SY, VSZ;
 
     El::Int d = direction == base::COLUMNS ? X.Height() : X.Width();
-    transforms.resize(0);
-    transforms.reserve((s / d) + 1);
+
 
     El::Int m = direction ==  base::COLUMNS ? X.Width() : X.Height();
     t = t == -1 ? 4 * s : t;
@@ -238,9 +242,13 @@ void SketchedApproximateKernelRidge(base::direction_t direction, const KernelTyp
     R->apply(Y, SY, sketch::columnwise_tag());
 
     El::Int starts = 0, remains = s;
+    El::Int sinc = (params.max_split == 0) ? d : params.max_split / 2;
+
+    transforms.resize(0);
+    transforms.reserve((s / sinc) + 1);
 
     while (remains > 0) {
-        El::Int thiss = (remains < 2 * d) ? remains : d;
+        El::Int thiss = (remains <= 2 * sinc) ? remains : sinc;
         sketch::generic_sketch_transform_t *p0 = params.use_fast ?
             k.create_rft(thiss, fast_feature_transform_tag(), context) :
             k.create_rft(thiss, regular_feature_transform_tag(), context);
@@ -516,13 +524,15 @@ void LargeScaleKernelRidge(base::direction_t direction, const KernelType &k,
 
 
     El::Int d = direction == base::COLUMNS ? X.Height() : X.Width();
-    transforms.resize(0);
-    transforms.reserve((s / d) + 1);
 
     El::Int starts = 0, remains = s;
+    El::Int sinc = (params.max_split == 0) ? d : params.max_split / 2;
+
+    transforms.resize(0);
+    transforms.reserve((s / sinc) + 1);
 
     while (remains > 0) {
-        El::Int thiss = (remains < 2 * d) ? remains : d;
+        El::Int thiss = (remains <= 2 * sinc) ? remains : sinc;
 
         sketch::generic_sketch_transform_t *p0 = params.use_fast ?
             k.create_rft(thiss, fast_feature_transform_tag(), context) :

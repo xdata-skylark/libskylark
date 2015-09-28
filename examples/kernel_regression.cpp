@@ -35,7 +35,7 @@
 std::string cmdline;
 int seed = 38734, algorithm = FASTER_KRR, kernel_type = GAUSSIAN_KERNEL;
 int fileformat = FORMAT_LIBSVM;
-int s = 2000, partial = -1, sketch_size = -1, sample = -1, maxit = 0;
+int s = 2000, partial = -1, sketch_size = -1, sample = -1, maxit = 0, maxsplit = 0;
 std::string fname, testname, modelname = "model.dat", logfile = "";
 double kp1 = 10.0, kp2 = 0.0, kp3 = 1.0, lambda = 0.01, tolerance=0;
 bool use_single, use_fast;
@@ -91,6 +91,10 @@ int parse_program_options(int argc, char* argv[]) {
             bpo::value<double>(&tolerance)->default_value(0),
             "Tolerance for the iterative method (when used). "
             "0 will default based on algorithm (1e-3 for -a 1, 1e-1 for -a 5)")
+        ("maxsplit,c",
+            bpo::value<int>(&maxsplit)->default_value(0),
+            "Maximum number of random features in a split for large scale "
+            "algorithms (-a 3 to 5). 0 will default to 2 * input dimension. ")
         ("maxit,i",
             bpo::value<int>(&maxit)->default_value(0),
             "Maximum number of iterations for the iterative method (when used). "
@@ -172,6 +176,9 @@ int parse_program_options(int argc, char* argv[]) {
 
         if (flag == "--maxit" || flag == "-i")
             maxit = boost::lexical_cast<int>(value);
+
+        if (flag == "--maxsplit" || flag == "-c")
+            maxsplit = boost::lexical_cast<int>(value);
 
         if (flag == "--partial" || flag == "-p")
             partial = boost::lexical_cast<int>(value);
@@ -403,6 +410,7 @@ int execute(skylark::base::context_t &context) {
         rlsc_params.sketched_rls = true;
         rlsc_params.sketch_size = sketch_size;
         rlsc_params.fast_sketch = algorithm == FAST_SKETCHED_APPROXIMATE_KRR;
+        rlsc_params.max_split = maxsplit;
         skylark::ml::SketchedApproximateKernelRLSC(skylark::base::COLUMNS, k, X, L,
             T(lambda), scale_maps, transforms, W, rcoding, s, sketch_size,
             context, rlsc_params);
@@ -415,6 +423,7 @@ int execute(skylark::base::context_t &context) {
     case LARGE_SCALE_KRR:
         rlsc_params.iter_lim = (maxit == 0) ? 20 : maxit;
         rlsc_params.tolerance = (tolerance == 0) ? 1e-1 : tolerance;
+        rlsc_params.max_split = maxsplit;
         skylark::ml::LargeScaleKernelRLSC(skylark::base::COLUMNS, k, X, L,
             T(lambda), scale_maps, transforms, W, rcoding, s,
             context, rlsc_params);

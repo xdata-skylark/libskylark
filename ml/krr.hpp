@@ -569,7 +569,6 @@ void LargeScaleKernelRidge(base::direction_t direction, const KernelType &k,
     for(int c = 0; c < C; c++) {
         El::Int s0 = transforms[c].get_S();
         El::DistMatrix<T> &L = Ls[c];
-        El::Identity(L, s0, s0);
         base::RowView(W0, W, starts, s0);
 
         // Apply feature transform
@@ -583,8 +582,8 @@ void LargeScaleKernelRidge(base::direction_t direction, const KernelType &k,
 
         // Compute factor of local covariance matrix.
         El::Herk(El::LOWER, direction == base::COLUMNS ? El::NORMAL : El::ADJOINT,
-            T(1.0), Z, T(lambda), L);
-
+            T(1.0), Z, L);
+        El::ShiftDiagonal(L, T(lambda));
         El::Cholesky(El::LOWER, L);
 
         // Compute ZR

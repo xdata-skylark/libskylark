@@ -197,6 +197,8 @@ void parallelChunkedRead(
  *
  *  FIXME:
  *      - read for a subcommunicator...
+ *      - 0-based vnodes s. 1-based nodes
+ *      - relabeling?
  *      - on BG/Q there seems to be an issue with setting the rdbuf (why?)
  *
  *  @param fname input file name

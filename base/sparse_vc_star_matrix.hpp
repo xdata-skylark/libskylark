@@ -13,7 +13,7 @@ namespace skylark { namespace base {
 
 /**
  *  This implements a very crude sparse VC / STAR matrix using a CSC sparse
- *  matrix container intended to hold the local sparse matrix.
+ *  matrix container to hold the local sparse matrix.
  */
 template<typename ValueType=double>
 struct sparse_vc_star_matrix_t : public sparse_dist_matrix_t<ValueType> {

@@ -560,11 +560,12 @@ struct ApproximateSymmetricSVD_t {
 };
 
 
+/**
+ * Specialization for sparse (VC/STAR) symmetric SVD.
+ */
 template <typename VType, typename SType>
 struct ApproximateSymmetricSVD_t<
-      typename base::sparse_vc_star_matrix_t<double>
-    , VType
-    , SType> {
+        typename base::sparse_vc_star_matrix_t<double>, VType, SType> {
 
     typedef base::sparse_vc_star_matrix_t<double> InputType;
 
@@ -610,7 +611,8 @@ struct ApproximateSymmetricSVD_t<
         /** Apply sketch transformation on the input matrix */
         VType U(n, k), B, W;
         V.Resize(n, k);
-        //FIXME:
+
+        //FIXME: JLT (improve perf)
         sketch::CWT_t<InputType, VType> Omega(n, k, context);
         Omega.apply(A, V, sketch::rowwise_tag());
 
@@ -652,8 +654,8 @@ void ApproximateSymmetricSVD(El::UpperOrLower uplo,
         base::context_t& context,
         approximate_svd_params_t params = approximate_svd_params_t()) {
 
-    detail::ApproximateSymmetricSVD_t<InputType, SType, VType> svd;
-    svd(uplo, A, V, S, rank, context, params);
+    detail::ApproximateSymmetricSVD_t<InputType, SType, VType> symmetric_svd;
+    symmetric_svd(uplo, A, V, S, rank, context, params);
 }
 
 

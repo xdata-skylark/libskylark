@@ -10,6 +10,11 @@
 
 namespace bpo = boost::program_options;
 
+enum file_types {
+    LIBSVM,
+    ARC_LIST
+};
+
 template<typename InputType, typename FactorType, typename UType = FactorType>
 void execute(bool directory, const std::string &fname,
     const std::string &hdfs, int port, int k,
@@ -96,6 +101,7 @@ void execute(bool directory, const std::string &fname,
 
 template<typename InputType, typename FactorType, typename UType = FactorType>
 void execute_sym(bool directory, const std::string &fname,
+    const std::string& ftype,
     const std::string &hdfs, int port,
     bool lower, int k,
     const skylark::nla::approximate_svd_params_t &params,
@@ -137,16 +143,23 @@ void execute_sym(bool directory, const std::string &fname,
 
 #       endif
     } else {
-        if (directory)
-            skylark::utility::io::ReadDirLIBSVM(fname, A, Y, skylark::base::ROWS);
-        else
-            skylark::utility::io::ReadLIBSVM(fname, A, Y, skylark::base::ROWS);
+        // FIXME: ugly, fix options
+        if (ftype.compare("ARC_LIST") == 0) {
+            //FIXME: comm
+            boost::mpi::communicator world;
+            skylark::utility::io::ReadArcList(fname, A, world);
+        } else {
+            if (directory)
+                skylark::utility::io::ReadDirLIBSVM(fname, A, Y, skylark::base::ROWS);
+            else
+                skylark::utility::io::ReadLIBSVM(fname, A, Y, skylark::base::ROWS);
+        }
     }
 
     Y.Empty();
 
     if (rank == 0)
-        std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
+        std::cout << "took " << boost::format("%.2e") % timer.elapsed()
                   << " sec\n";
 
     /* Compute approximate SVD */
@@ -187,7 +200,7 @@ int main(int argc, char* argv[]) {
     int rank = world.rank();
 
     int seed, k, powerits, port;
-    std::string fname, prefix, hdfs;
+    std::string fname, ftype, prefix, hdfs;
     bool as_symmetric, as_sparse, skipqr, use_single, lower, directory;
     int oversampling_ratio, oversampling_additive;
 
@@ -197,7 +210,10 @@ int main(int argc, char* argv[]) {
         ("help,h", "produce a help message")
         ("inputfile",
             bpo::value<std::string>(&fname),
-            "Input file to run approximate SVD on (libsvm format).")
+            "Input file to run approximate SVD on (default libsvm format).")
+        ("filetype",
+            bpo::value<std::string>(&ftype),
+            "Input file type (LIBSVM or ARC_LIST).")
         ("directory,d", "Whether inputfile is a directory of files whose"
             " concatination is the input.")
         ("seed,s",
@@ -315,24 +331,27 @@ int main(int argc, char* argv[]) {
             if (use_single) {
                 if (as_sparse)
                     execute_sym<skylark::base::sparse_matrix_t<float>,
-                                El::Matrix<float> >(directory, fname, hdfs,
-                                    port, lower, k, params, prefix, context);
+                                El::Matrix<float> >(directory, fname, ftype,
+                                    hdfs, port, lower, k, params, prefix,
+                                    context);
                 else
                     execute_sym<El::DistMatrix<float>,
-                                El::DistMatrix<float> >(directory, fname, hdfs,
-                                    port, lower, k, params, prefix, context);
+                                El::DistMatrix<float> >(directory, fname, ftype,
+                                    hdfs, port, lower, k, params, prefix,
+                                    context);
 
             } else {
                 if (as_sparse)
                     execute_sym<skylark::base::sparse_vc_star_matrix_t<double>,
                             El::DistMatrix<double, El::VC, El::STAR>,
                             El::DistMatrix<double, El::VC, El::STAR> >(
-                                    directory, fname, hdfs, port, lower, k,
-                                    params, prefix, context);
+                                    directory, fname, ftype, hdfs, port, lower,
+                                    k, params, prefix, context);
                 else
                     execute_sym<El::DistMatrix<double>,
-                                El::DistMatrix<double> >(directory, fname, hdfs,
-                                    port, lower, k, params, prefix, context);
+                                El::DistMatrix<double> >(directory, fname,
+                                    ftype, hdfs, port, lower, k, params,
+                                    prefix, context);
             }
         }
 

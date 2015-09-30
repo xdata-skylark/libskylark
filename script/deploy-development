@@ -1,0 +1,19 @@
+cd /tmp
+
+if [ -d "/tmp/libskylark" ]; then
+    rm -rf /tmp/libskylark
+fi
+
+git clone -b gh-pages git@github.com:xdata-skylark/libskylark.git
+rsync -av --delete /tmp/Documentation/sphinx libskylark/docs/dev
+
+# if we have changes
+cd libskylark
+if ! git diff-index --quiet HEAD --; then
+    git add . -A
+    git commit -m "updating doc"
+    git push
+fi
+
+rm -rf /tmp/libskylark
+rm -rf /tmp/Documentation

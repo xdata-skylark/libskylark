@@ -286,6 +286,7 @@ int execute(skylark::base::context_t &context) {
             0, partial);
         break;
 
+#ifdef SKYLARK_HAVE_HDF5
     case FORMAT_HDF5: {
         H5::H5File in(fname, H5F_ACC_RDONLY);
         skylark::utility::io::ReadHDF5(in, "X", X0, -1, partial);
@@ -293,6 +294,7 @@ int execute(skylark::base::context_t &context) {
         in.close();
     }
         break;
+#endif
 
     default:
         *log_stream << "Invalid file format specified." << std::endl;
@@ -496,6 +498,7 @@ int execute(skylark::base::context_t &context) {
                 skylark::base::COLUMNS, X.Height());
             break;
 
+#ifdef SKYLARK_HAVE_HDF5
         case FORMAT_HDF5: {
             H5::H5File in(testname, H5F_ACC_RDONLY);
             skylark::utility::io::ReadHDF5(in, "X", XT);
@@ -503,6 +506,7 @@ int execute(skylark::base::context_t &context) {
             in.close();
         }
             break;
+#endif
 
         default:
             *log_stream << "Invalid file format specified." << std::endl;

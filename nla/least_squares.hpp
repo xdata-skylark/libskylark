@@ -234,6 +234,57 @@ void FastLeastSquares(El::Orientation orientation, const AT& A, const BT& B,
 }
 
 
+/**
+ * Solve the linear least-squares problem
+ *
+ *   argmin_X ||A * X - B||_F
+ *
+ * using a sketching-accelerated algorithm. This algorithm uses sketching
+ * to build a preconditioner, and then uses the preconditioner in an iterative
+ * method. While technically the solution found is approximate (due to the use
+ * of an iterative method), the threshold is set close to machine precision
+ * so the solution's accuracy is close to the full accuracy possible on a
+ * machine.
+ *
+ * \param A input matrix
+ * \param B right-hand side
+ * \param X solution matrix
+ */
+template<typename AT, typename BT, typename XT>
+void BatchwiseLeastSquares(El::Orientation orientation, const AT& A, const AT& A1, 
+        const BT& B, XT& X, int samplingfactor, base::context_t& context) {
+
+    if (orientation != El::NORMAL)
+        SKYLARK_THROW_EXCEPTION (
+          base::sketch_exception()
+              << base::error_msg(
+                 "Only NORMAL orientation is supported for FastLeastSquares"));
+
+    typedef algorithms::regression_problem_t<AT,
+                                             algorithms::linear_tag,
+                                             algorithms::l2_tag,
+                                             algorithms::no_reg_tag> ptype;
+    ptype problem(base::Height(A1), base::Width(A1), A1);
+
+    algorithms::accelerated_regression_solver_t<ptype, BT, XT,
+                                    algorithms::batchwise_blendenpik_tag<
+                                        algorithms::qr_precond_tag> >
+        solver(problem, samplingfactor, context);
+
+    El::Int commSize = El::mpi::Size( El::mpi::COMM_WORLD );
+    El::Int commRank = El::mpi::Rank( El::mpi::COMM_WORLD );
+    double starttime = El::mpi::Time() ;
+    int retval = solver.solve(A, B, X);
+    double stoptime  = El::mpi::Time() ;
+
+    if (commRank == 0)
+        std::cout << "Time taken for LSQR is :: " << "\t" << (stoptime - starttime) << "\tseconds." << std::endl ;
+
+    if (commRank == 0)
+        std::cout << "Return value for LSQR is :: " << "\t" << retval  << std::endl ;
+
+}
+
 } }
 
 #endif

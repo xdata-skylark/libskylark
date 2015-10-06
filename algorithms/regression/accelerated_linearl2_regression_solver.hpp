@@ -26,6 +26,12 @@ struct simplified_blendenpik_tag : public linearl2_reg_fast_alg_tag { };
 template<typename PrecondTag = qr_precond_tag>
 struct blendenpik_tag : public linearl2_reg_fast_alg_tag { };
 
+// Batchwise Blendenpik performs a batchwise transformation of the
+// sketch and uses the sketched matrix as a preconditioner.
+template<typename PrecondTag = qr_precond_tag>
+struct batchwise_blendenpik_tag : public linearl2_reg_fast_alg_tag { };
+
+
 // The algorithm described in the LSRN paper
 template<typename PrecondTag = svd_precond_tag>
 struct lsrn_tag : public linearl2_reg_fast_alg_tag { };

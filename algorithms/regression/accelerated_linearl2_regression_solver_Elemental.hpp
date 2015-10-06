@@ -383,6 +383,119 @@ public:
 };
 
 /**
+ * Specialization: Batchwise Blendenpik, [MC, MR] input, [MC, MR] solution.
+ */
+template <typename ValueType, El::Distribution U, El::Distribution V,
+          typename PrecondTag>
+class accelerated_regression_solver_t<
+    regression_problem_t<El::DistMatrix<ValueType, U, V>,
+                         linear_tag, l2_tag, no_reg_tag>,
+    El::DistMatrix<ValueType>,
+    El::DistMatrix<ValueType>,
+    batchwise_blendenpik_tag<PrecondTag> > {
+
+public:
+
+    typedef ValueType value_type;
+
+    typedef El::DistMatrix<ValueType> matrix_type;
+    typedef El::DistMatrix<ValueType> rhs_type;
+    typedef El::DistMatrix<ValueType> sol_type;
+
+    typedef regression_problem_t<matrix_type,
+                                 linear_tag, l2_tag, no_reg_tag> problem_type;
+
+private:
+
+    typedef El::DistMatrix<ValueType> precond_type;
+    typedef precond_type sketch_type;
+    // The assumption is that the sketch is not much bigger than the
+    // preconditioner, so we should use the same matrix distribution.
+
+    const int _m;
+    const int _n;
+    const matrix_type &_A;
+    precond_type _R;
+    algorithms::inplace_precond_t<sol_type> *_precond_R;
+
+    regression_solver_t<problem_type, rhs_type, sol_type, svd_l2_solver_tag>
+    *_alt_solver;
+
+public:
+    /**
+     * Prepares the regressor to quickly solve given a right-hand side.
+     *
+     * @param problem Problem to solve given right-hand side.
+     */
+    accelerated_regression_solver_t(const problem_type& problem, int samplingfactor, base::context_t& context) :
+        _m(problem.m), _n(problem.n), _A(problem.input_matrix),
+        _R(_n, _n, problem.input_matrix.Grid()) {
+        // TODO n < m ???
+
+        int t = samplingfactor * _n;    // TODO parameter.
+        sketch_type SA(t, _n, _A.Grid());
+
+        double condest = 0;
+        int attempts = 0;
+
+        El::Int commSize = El::mpi::Size( El::mpi::COMM_WORLD );
+        El::Int commRank = El::mpi::Rank( El::mpi::COMM_WORLD );
+
+        do {
+            double starttime = El::mpi::Time() ;
+            sketch::RFUT_t<El::DistMatrix<value_type>,
+                           typename sketch::fft_futs<value_type>::DCT_t,
+                           utility::rademacher_distribution_t<double> >
+                F(_m, context);
+
+            F.apply(_A, SA, context, sketch::columnwise_tag());
+            double stoptime  = El::mpi::Time() ;
+            if (commRank == 0)
+                std::cout << "Time taken for transform is :: " << "\t" << (stoptime - starttime) << "\tseconds." << std::endl ;
+
+            starttime = El::mpi::Time() ;
+            condest = flinl2_internal::build_precond(SA, _R, _precond_R,
+                PrecondTag());
+            stoptime  = El::mpi::Time() ;
+            if (commRank == 0)
+                std::cout << "Time taken for preconditioning is :: " << "\t" << (stoptime - starttime) << "\tseconds." << std::endl ;
+
+            attempts++;
+        } while (condest > 1e14 && attempts < 3); // TODO parameters
+
+        if (condest <= 1e14)
+            _alt_solver = nullptr;
+        else {
+            _alt_solver =
+                new regression_solver_t<problem_type,
+                                      rhs_type,
+                                      sol_type, svd_l2_solver_tag>(problem);
+            delete _precond_R;
+            std::cout << "FAILED to create!" << std::endl;
+            _precond_R = nullptr;
+        }
+    }
+
+    ~accelerated_regression_solver_t() {
+        if (_precond_R != nullptr)
+            delete _precond_R;
+        if (_alt_solver != nullptr)
+            delete _alt_solver;
+    }
+
+    int solve(const matrix_type& A, const rhs_type& b, sol_type& x) {
+        if (_precond_R != nullptr)
+            return LSQR(A, b, x, algorithms::krylov_iter_params_t(),
+                *_precond_R);
+        else {
+            _alt_solver->solve(b, x);
+            return 0;
+        }
+    }
+};
+
+
+/**
  * Specialization: LSRN, [VC/VR,STAR] input, [STAR, STAR] solution.
  */
 template <typename ValueType, El::Distribution VD,

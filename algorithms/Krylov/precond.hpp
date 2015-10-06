@@ -113,6 +113,7 @@ struct inplace_tri_inverse_precond_t : public inplace_precond_t<XType> {
         typedef typename utility::typer_t<XType>::value_type value_type;
         base::Trsm(El::LEFT, UL, El::ADJOINT, D, value_type(1.0), R, X);
     }
+
 };
 
 } } /** namespace skylark::algorithms */

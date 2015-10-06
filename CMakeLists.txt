@@ -81,7 +81,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     )
 
     set (COMPILER_SPEC_FLAGS
-        "-W -Wall -Wno-write-strings -Wno-strict-aliasing -Wno-format -Wno-deprecated -Wno-unused-variable -Wno-unused-parameter -Wno-sign-compare"
+        "-W -Wall -Wno-write-strings -Wno-strict-aliasing -Wno-format -Wno-deprecated -Wno-unused-variable -Wno-unused-parameter -Wno-sign-compare -Wno-unused-local-typedefs"
     )
 
     #set (LINK_FLAGS
@@ -169,6 +169,10 @@ if (BOOST_ROOT)
   set(Boost_NO_SYSTEM_PATHS ON)
   set(Boost_NO_BOOST_CMAKE ON)
 endif (BOOST_ROOT)
+
+if (BOOST_STATIC)
+  set(Boost_USE_STATIC_LIBS ON)
+endif (BOOST_STATIC)
 
 set(BOOST_MIN_VERSION 1.53.0)
 find_package (Boost COMPONENTS filesystem)

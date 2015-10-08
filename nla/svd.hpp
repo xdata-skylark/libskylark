@@ -407,7 +407,7 @@ struct ApproximateSVD_t<
 
             /** Apply sketch transformation on the input matrix */
             UType Q(m, k);
-            sketch::CWT_t<InputType, UType> Omega(n, k, context);
+            sketch::JLT_t<InputType, UType> Omega(n, k, context);
             Omega.apply(A, Q, sketch::rowwise_tag());
 
             /** Power iteration */
@@ -444,7 +444,7 @@ struct ApproximateSVD_t<
 
             /** Apply sketch transformation on the input matrix */
             VType Q(k, n);
-            sketch::CWT_t<InputType, VType> Omega(m, k, context);
+            sketch::JLT_t<InputType, VType> Omega(m, k, context);
             Omega.apply(A, Q, sketch::columnwise_tag());
 
             /** Power iteration */
@@ -612,8 +612,7 @@ struct ApproximateSymmetricSVD_t<
         VType U(n, k), B, W;
         V.Resize(n, k);
 
-        //FIXME: JLT (improve perf)
-        sketch::CWT_t<InputType, VType> Omega(n, k, context);
+        sketch::JLT_t<InputType, VType> Omega(n, k, context);
         Omega.apply(A, V, sketch::rowwise_tag());
 
         /** Power iteration */

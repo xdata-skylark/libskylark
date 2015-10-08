@@ -5,6 +5,8 @@
 #include <boost/test/minimal.hpp>
 #endif
 
+#include "../../skylark.hpp"
+
 #include <El.hpp>
 
 namespace test { namespace util {

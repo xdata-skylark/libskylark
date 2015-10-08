@@ -4,7 +4,6 @@
 #include "config.h"
 #include "test_utils.hpp"
 
-
 namespace po = boost::program_options;
 
 int test_main(int argc, char* argv[]) {

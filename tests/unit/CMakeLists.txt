@@ -105,6 +105,8 @@ target_link_libraries(svd_elemental_test
   ${Elemental_LIBRARY}
   ${Pmrrr_LIBRARY}
   ${Metis_LIBRARY}
+  ${OPTIONAL_LIBS}
+  ${DEP_LIBRARIES}
   ${Boost_LIBRARIES})
 add_test( svd_elemental_test mpirun -np 1 svd_elemental_test )
 

@@ -15,16 +15,9 @@
 #include <boost/mpi.hpp>
 #include <boost/test/minimal.hpp>
 
-//FIXME: ugly
-#define SKYLARK_SKETCH_HPP 1
+#include <skylark.hpp>
 
 #define SKYLARK_NO_ANY
-#include "El.hpp"
-#include "../../base/sparse_vc_star_matrix.hpp"
-
-#include "../../utility/distributions.hpp"
-#include "../../base/context.hpp"
-#include "../../sketch/hash_transform.hpp"
 
 #include "test_utils.hpp"
 
@@ -82,7 +75,7 @@ int test_main(int argc, char *argv[]) {
     El::Uniform(A_vc, n, m);
     El::Zero(A_vc);
 
-    sparse_vc_star_matrix_t A_sparse_vc(n, m, world, grid);
+    sparse_vc_star_matrix_t A_sparse_vc(n, m, grid);
 
     double count = 1.0;
     for(int col = 0; col < A_vc.Width(); col++) {

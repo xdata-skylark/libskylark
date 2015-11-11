@@ -97,47 +97,47 @@ void PowerIteration(El::Orientation orientation, El::Orientation vorientation,
 
     if (vorientation == El::NORMAL && uorientation == El::NORMAL) {
         if (ortho) El::qr::ExplicitUnitary(V);
-        base::Gemm(orientation, El::NORMAL, value_type(1.0), A, V, U);
+        base::Gemm(orientation, El::NORMAL, static_cast<value_type>(1.0), A, V, U);
         for(int i = 0; i < iternum; i++) {
-            base::Gemm(orientation, El::NORMAL, value_type(1.0), A, V, U);
+            base::Gemm(orientation, El::NORMAL, static_cast<value_type>(1.0), A, V, U);
             if (ortho) El::qr::ExplicitUnitary(U);
-            base::Gemm(adjorientation, El::NORMAL, value_type(1.0), A, U, V);
+            base::Gemm(adjorientation, El::NORMAL, static_cast<value_type>(1.0), A, U, V);
             if (ortho) El::qr::ExplicitUnitary(V);
         }
-        base::Gemm(orientation, El::NORMAL, value_type(1.0), A, V, U);
+        base::Gemm(orientation, El::NORMAL, static_cast<value_type>(1.0), A, V, U);
     }
 
     if (vorientation != El::NORMAL && uorientation == El::NORMAL) {
         if (ortho) El::lq::ExplicitUnitary(V);
         for(int i = 0; i < iternum; i++) {
-            base::Gemm(orientation, El::ADJOINT, value_type(1.0), A, V, U);
+            base::Gemm(orientation, El::ADJOINT, static_cast<value_type>(1.0), A, V, U);
             if (ortho) El::qr::ExplicitUnitary(U);
-            base::Gemm(El::ADJOINT, orientation, value_type(1.0), U, A, V);
+            base::Gemm(El::ADJOINT, orientation, static_cast<value_type>(1.0), U, A, V);
             if (ortho) El::lq::ExplicitUnitary(V);
         }
-        base::Gemm(orientation, El::ADJOINT, value_type(1.0), A, V, U);
+        base::Gemm(orientation, El::ADJOINT, static_cast<value_type>(1.0), A, V, U);
     }
 
     if (vorientation == El::NORMAL && uorientation != El::NORMAL) {
         if (ortho) El::qr::ExplicitUnitary(V);
         for(int i = 0; i < iternum; i++) {
-            base::Gemm(El::ADJOINT, adjorientation, value_type(1.0), V, A, U);
+            base::Gemm(El::ADJOINT, adjorientation, static_cast<value_type>(1.0), V, A, U);
             if (ortho) El::lq::ExplicitUnitary(U);
-            base::Gemm(adjorientation, El::ADJOINT, value_type(1.0), A, U, V);
+            base::Gemm(adjorientation, El::ADJOINT, static_cast<value_type>(1.0), A, U, V);
             if (ortho) El::qr::ExplicitUnitary(V);
         }
-        base::Gemm(El::ADJOINT, adjorientation, value_type(1.0), V, A, U);
+        base::Gemm(El::ADJOINT, adjorientation, static_cast<value_type>(1.0), V, A, U);
     }
 
     if (vorientation != El::NORMAL && uorientation != El::NORMAL) {
         if (ortho) El::lq::ExplicitUnitary(V);
         for(int i = 0; i < iternum; i++) {
-            base::Gemm(El::NORMAL, adjorientation, value_type(1.0), V, A, U);
+            base::Gemm(El::NORMAL, adjorientation, static_cast<value_type>(1.0), V, A, U);
             if (ortho) El::lq::ExplicitUnitary(U);
-            base::Gemm(El::NORMAL, orientation, value_type(1.0), U, A, V);
+            base::Gemm(El::NORMAL, orientation, static_cast<value_type>(1.0), U, A, V);
             if (ortho) El::lq::ExplicitUnitary(V);
         }
-        base::Gemm(orientation, El::ADJOINT, value_type(1.0), A, V, U);
+        base::Gemm(orientation, El::ADJOINT, static_cast<value_type>(1.0), A, V, U);
     }
 }
 
@@ -185,13 +185,13 @@ void SymmetricPowerIteration(El::UpperOrLower uplo, El::Orientation vorientation
 
         for(int i = 0; i < (iternum / 2); i++) {
             if (ortho) El::qr::ExplicitUnitary(V);
-            base::Symm(El::LEFT, uplo, value_type(1.0), A, V, U);
+            base::Symm(El::LEFT, uplo, static_cast<value_type>(1.0), A, V, U);
             if (ortho) El::qr::ExplicitUnitary(U);
-            base::Symm(El::LEFT, uplo, value_type(1.0), A, U, V);
+            base::Symm(El::LEFT, uplo, static_cast<value_type>(1.0), A, U, V);
         }
         if (iternum % 2 == 1) {
             if (ortho) El::qr::ExplicitUnitary(V);
-            base::Symm(El::LEFT, uplo, value_type(1.0), A, V, U);
+            base::Symm(El::LEFT, uplo, static_cast<value_type>(1.0), A, V, U);
             El::Copy(U, V);
         }
 
@@ -199,16 +199,16 @@ void SymmetricPowerIteration(El::UpperOrLower uplo, El::Orientation vorientation
 
     if (vorientation != El::NORMAL) {
 
-        base::Symm(El::LEFT, uplo, value_type(1.0), A, V, V);
+        base::Symm(El::LEFT, uplo, static_cast<value_type>(1.0), A, V, V);
         for(int i = 0; i < (iternum / 2); i++) {
             if (ortho) El::lq::ExplicitUnitary(V);
-            base::Symm(El::RIGHT, uplo, value_type(1.0), A, V, U);
+            base::Symm(El::RIGHT, uplo, static_cast<value_type>(1.0), A, V, U);
             if (ortho) El::lq::ExplicitUnitary(U);
-            base::Symm(El::RIGHT, uplo, value_type(1.0), A, U, V);
+            base::Symm(El::RIGHT, uplo, static_cast<value_type>(1.0), A, U, V);
         }
         if (iternum % 2 == 1) {
             if (ortho) El::lq::ExplicitUnitary(V);
-            base::Symm(El::LEFT, uplo, value_type(1.0), A, V, U);
+            base::Symm(El::LEFT, uplo, static_cast<value_type>(1.0), A, V, U);
             El::Copy(U, V);
         }
     }
@@ -283,13 +283,13 @@ struct ApproximateSVD_t {
                     VType R;
                     El::qr::Explicit(Q, R);
                     El::Trsm(El::RIGHT, El::UPPER, El::NORMAL, El::NON_UNIT,
-                        value_type(1.0), R, V);
+                        static_cast<value_type>(1.0), R, V);
                 } else {
                     // The above computation, while mathemetically correct for
                     // any number of iterations, is not robust enough numerically
                     // when number of power iteration is greater than 0.
                     El::qr::ExplicitUnitary(Q);
-                    base::Gemm(El::ADJOINT, El::NORMAL, value_type(1.0), A, Q, V);
+                    base::Gemm(El::ADJOINT, El::NORMAL, static_cast<value_type>(1.0), A, Q, V);
                 }
             }
 
@@ -298,7 +298,7 @@ struct ApproximateSVD_t {
             El::SVD(V, S, B);
             S.Resize(rank, 1); V.Resize(n, rank);
             VType B1 = base::ColumnView(B, 0, rank);
-            //base::Gemm(El::NORMAL, El::NORMAL, value_type(1.0), Q, B1, U);
+            //base::Gemm(El::NORMAL, El::NORMAL, static_cast<value_type>(1.0), Q, B1, U);
         }
 
         /** Code for m < n */
@@ -321,7 +321,7 @@ struct ApproximateSVD_t {
                 // num_iteration == 0, but the LQ factorization in Elemental
                 // does not work for this... (do not know why).
                 El::lq::ExplicitUnitary(Q);
-                base::Gemm(El::NORMAL, El::ADJOINT, value_type(1.0), A, Q, U);
+                base::Gemm(El::NORMAL, El::ADJOINT, static_cast<value_type>(1.0), A, Q, U);
             }
 
             /** Compute factorization & truncate to rank */
@@ -329,7 +329,7 @@ struct ApproximateSVD_t {
             El::SVD(U, S, B);
             S.Resize(rank, 1); U.Resize(m, rank);
             VType B1 = base::ColumnView(B, 0, rank);
-            base::Gemm(El::ADJOINT, El::NORMAL, value_type(1.0), Q, B1, V);
+            base::Gemm(El::ADJOINT, El::NORMAL, static_cast<value_type>(1.0), Q, B1, V);
         }
     }
 };
@@ -361,26 +361,19 @@ struct ApproximateSVD_t {
  * \param rank target rank
  * \param context Skylark context
  * \param params parameter strcture
- *
- * FIXME:
- *      - input type -> double
  */
-template <typename UType, typename SType, typename VType>
+template <typename UType, typename SType, typename VType, typename value_type>
 struct ApproximateSVD_t<
-          typename base::sparse_vc_star_matrix_t<double>
+          typename base::sparse_vc_star_matrix_t<value_type>
         , UType
         , SType
         , VType> {
 
-    void operator()(const base::sparse_vc_star_matrix_t<double> &A,
+    void operator()(const base::sparse_vc_star_matrix_t<value_type> &A,
         UType &U, SType &S, VType &V,
         int rank, base::context_t& context, approximate_svd_params_t params) {
 
-        //FIXME:
-        //typedef typename skylark::utility::typer_t<InputType>::value_type
-            //value_type;
-        typedef double value_type;
-        typedef base::sparse_vc_star_matrix_t<double> InputType;
+        typedef base::sparse_vc_star_matrix_t<value_type> InputType;
 
         bool log_lev1 = params.am_i_printing && params.log_level >= 1;
         bool log_lev2 = params.am_i_printing && params.log_level >= 2;
@@ -419,13 +412,13 @@ struct ApproximateSVD_t<
                     VType R;
                     El::qr::Explicit(Q, R);
                     El::Trsm(El::RIGHT, El::UPPER, El::NORMAL, El::NON_UNIT,
-                        value_type(1.0), R, V);
+                        static_cast<value_type>(1.0), R, V);
                 } else {
                     // The above computation, while mathemetically correct for
                     // any number of iterations, is not robust enough numerically
                     // when number of power iteration is greater than 0.
                     El::qr::ExplicitUnitary(Q);
-                    base::Gemm(El::ADJOINT, El::NORMAL, value_type(1.0), A, Q, V);
+                    base::Gemm(El::ADJOINT, El::NORMAL, static_cast<value_type>(1.0), A, Q, V);
                 }
             }
 
@@ -434,7 +427,7 @@ struct ApproximateSVD_t<
             El::SVD(V, S, B);
             S.Resize(rank, 1); V.Resize(n, rank);
             VType B1 = base::ColumnView(B, 0, rank);
-            base::Gemm(El::NORMAL, El::NORMAL, value_type(1.0), Q, B1, U);
+            base::Gemm(El::NORMAL, El::NORMAL, static_cast<value_type>(1.0), Q, B1, U);
 
         } else { /** Code for m < n */
 
@@ -456,7 +449,7 @@ struct ApproximateSVD_t<
                 // num_iteration == 0, but the LQ factorization in Elemental
                 // does not work for this... (do not know why).
                 El::lq::ExplicitUnitary(Q);
-                base::Gemm(El::NORMAL, El::ADJOINT, value_type(1.0), A, Q, U);
+                base::Gemm(El::NORMAL, El::ADJOINT, static_cast<value_type>(1.0), A, Q, U);
             }
 
             /** Compute factorization & truncate to rank */
@@ -464,7 +457,7 @@ struct ApproximateSVD_t<
             El::SVD(U, S, B);
             S.Resize(rank, 1); U.Resize(m, rank);
             VType B1 = base::ColumnView(B, 0, rank);
-            base::Gemm(El::ADJOINT, El::NORMAL, value_type(1.0), Q, B1, V);
+            base::Gemm(El::ADJOINT, El::NORMAL, static_cast<value_type>(1.0), Q, B1, V);
         }
     }
 };
@@ -547,13 +540,13 @@ struct ApproximateSymmetricSVD_t {
 
         /** Schur-Rayleigh-Ritz (with SVD), aka factorize & truncate to rank */
         El::qr::ExplicitUnitary(V);
-        base::Symm(El::LEFT, uplo, value_type(1.0), A, V, U);
-        base::Gemm(El::ADJOINT, El::NORMAL, value_type(1.0), U, V, B);
+        base::Symm(El::LEFT, uplo, static_cast<value_type>(1.0), A, V, U);
+        base::Gemm(El::ADJOINT, El::NORMAL, static_cast<value_type>(1.0), U, V, B);
         El::HermitianEig(uplo, B, S, W, El::DESCENDING);
         S.Resize(rank, 1);
         U.Resize(U.Height(), rank);
         VType W1 = base::ColumnView(W, 0, rank);
-        base::Gemm(El::NORMAL, El::NORMAL, value_type(1.0), V, W1, U);
+        base::Gemm(El::NORMAL, El::NORMAL, static_cast<value_type>(1.0), V, W1, U);
         V.Resize(V.Height(), rank);
         El::Copy(U, V);
     }
@@ -563,19 +556,16 @@ struct ApproximateSymmetricSVD_t {
 /**
  * Specialization for sparse (VC/STAR) symmetric SVD.
  */
-template <typename VType, typename SType>
+template <typename VType, typename SType, typename value_type>
 struct ApproximateSymmetricSVD_t<
-        typename base::sparse_vc_star_matrix_t<double>, VType, SType> {
+        typename base::sparse_vc_star_matrix_t<value_type>, VType, SType> {
 
-    typedef base::sparse_vc_star_matrix_t<double> InputType;
+    typedef base::sparse_vc_star_matrix_t<value_type> InputType;
 
     void operator()(El::UpperOrLower uplo,
         InputType &A, VType &V, SType &S, int rank,
         base::context_t& context,
         approximate_svd_params_t params) {
-
-        //FIXME:
-        typedef double value_type;
 
         bool log_lev1 = params.am_i_printing && params.log_level >= 1;
         bool log_lev2 = params.am_i_printing && params.log_level >= 2;
@@ -621,15 +611,15 @@ struct ApproximateSymmetricSVD_t<
 
         /** Schur-Rayleigh-Ritz (with SVD), aka factorize & truncate to rank */
         El::qr::ExplicitUnitary(V);
-        base::Symm(El::LEFT, uplo, value_type(1.0), A, V, U);
+        base::Symm(El::LEFT, uplo, static_cast<value_type>(1.0), A, V, U);
         B.Resize(U.Width(), V.Width());
-        base::Gemm(El::ADJOINT, El::NORMAL, value_type(1.0), U, V, B);
+        base::Gemm(El::ADJOINT, El::NORMAL, static_cast<value_type>(1.0), U, V, B);
 
         El::HermitianEig(uplo, B, S, W, El::DESCENDING);
         S.Resize(rank, 1);
         VType W1 = base::ColumnView(W, 0, rank);
         U.Resize(U.Height(), rank);
-        base::Gemm(El::NORMAL, El::NORMAL, value_type(1.0), V, W1, U);
+        base::Gemm(El::NORMAL, El::NORMAL, static_cast<value_type>(1.0), V, W1, U);
         V.Resize(V.Height(), rank);
         El::Copy(U, V);
     }

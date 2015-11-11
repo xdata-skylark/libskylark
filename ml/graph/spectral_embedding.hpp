@@ -12,23 +12,21 @@ struct approximate_ase_params_t : public nla::approximate_svd_params_t {
 
 };
 
-namespace internal {
+namespace detail {
 
-template<typename GraphType, typename AdjacencyType, typename EmbeddingsType,
-         typename SType>
+template<typename GraphType, typename EmbeddingsType, typename SType>
 void TemplatedApproximateASE(const GraphType& G, int k,
     std::vector<typename GraphType::vertex_type> &indexmap,
     EmbeddingsType &X,
     base::context_t &context, approximate_ase_params_t &params) {
 
     // Get adjacency matrix.
-    AdjacencyType A;
+    typename GraphType::adjacency_type A;
     G.adjacency_matrix(A, indexmap);
 
     // Compute SVD
     SType S;
-    nla::ApproximateSymmetricSVD(El::LOWER,
-        A, X, S, k, context, params);
+    nla::ApproximateSymmetricSVD(El::LOWER, A, X, S, k, context, params);
 
     // Scale columns
     for(El::Int i = 0; i < S.Height(); i++)
@@ -36,7 +34,7 @@ void TemplatedApproximateASE(const GraphType& G, int k,
     El::DiagonalScale(El::RIGHT, El::NORMAL, S, X);
 }
 
-}
+} // namespace detail
 
 /**
  * Approximate Adjacency Spectral Embeddings (ASE).
@@ -55,23 +53,18 @@ void TemplatedApproximateASE(const GraphType& G, int k,
  * @param context skylark context to use.
  * @param params parameters.
  */
-template<typename GraphType, typename T>
+template<typename GraphType, typename EmbeddingsType, typename SType>
 void ApproximateASE(const GraphType& G, int k,
     std::vector<typename GraphType::vertex_type> &indexmap,
-    El::Matrix<T> &X, base::context_t &context,
+    EmbeddingsType &X, base::context_t &context,
     approximate_ase_params_t params = approximate_ase_params_t()) {
 
-    typedef typename GraphType::vertex_type vertex_type;
-    typedef base::sparse_matrix_t<T> adjacency_type;
-    typedef El::Matrix<T> embeddings_type;
-    typedef El::Matrix<T> S_type;
-
-    internal::TemplatedApproximateASE<GraphType, adjacency_type,
-                                      embeddings_type, S_type>
+    detail::TemplatedApproximateASE<GraphType, EmbeddingsType, SType>
         (G, k, indexmap, X, context, params);
 
 }
 
-} }   // namespace skylark::ml
+} // namespace ml
+} // namespace skylark
 
 #endif // SKYLARK_SPECTRAL_EMBEDDINGS_HPP

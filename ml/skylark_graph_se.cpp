@@ -11,9 +11,51 @@
 namespace bpo = boost::program_options;
 
 template<typename VertexType>
+struct simple_parallel_graph_t {
+
+    typedef VertexType vertex_type;
+    typedef skylark::base::sparse_vc_star_matrix_t<vertex_type> adjacency_type;
+
+    simple_parallel_graph_t(const std::string &gf) {
+        skylark::utility::io::ReadArcList(gf, _adj_matrix, _world);
+    }
+
+#if SKYLARK_HAVE_LIBHDFS
+    simple_parallel_graph_t(const hdfsFS &fs, const std::string &gf) {
+        SKYLARK_THROW_EXCEPTION(skylark::base::io_exception() <<
+            skylark::base::error_msg("No HDFS support yet!"));
+    }
+#endif
+
+    size_t num_vertices() const { return _adj_matrix.num_rows(); }
+    size_t num_edges()    const { return _adj_matrix.num_nnz(); }
+
+    size_t degree(const vertex_type &vertex) const {
+        assert(vertex < _adj_matrix.num_rows());
+        return _adj_matrix.indptr[vertex + 1] - _adj_matrix.indptr[vertex];
+    }
+
+    void adjacency_matrix(
+            adjacency_type &A,
+            std::vector<vertex_type> &indexmap) const {
+
+        //TODO;
+    }
+
+private:
+    skylark::base::sparse_vc_star_matrix_t<vertex_type> _adj_matrix;
+    boost::mpi::communicator _world;
+};
+
+
+
+template<typename VertexType>
 struct simple_unweighted_graph_t {
 
     typedef VertexType vertex_type;
+    //FIXME:
+    typedef skylark::base::sparse_matrix_t<float> adjacency_type;
+
     typedef typename std::vector<vertex_type>::const_iterator iterator_type;
     typedef typename std::unordered_map<vertex_type,
                                         std::vector<vertex_type> >::const_iterator
@@ -187,11 +229,9 @@ int oversampling_ratio, oversampling_additive;
 std::string graphfile, indexfile, prefix, hdfs;
 bool use_single, skipqr, directory;
 
-template<typename T>
+template<typename graph_type, typename embeddings_type,
+         typename s_type = embeddings_type>
 void execute() {
-
-    typedef std::string vertex_type;
-    typedef simple_unweighted_graph_t<vertex_type> graph_type;
 
     skylark::base::context_t context(seed);
     graph_type *G;
@@ -236,8 +276,8 @@ void execute() {
         timer.restart();
     }
 
-    std::vector<vertex_type> indexmap;
-    El::Matrix<T> X;
+    std::vector<typename graph_type::vertex_type> indexmap;
+    embeddings_type X;
 
     skylark::ml::approximate_ase_params_t params;
     params.skip_qr = skipqr;
@@ -245,7 +285,8 @@ void execute() {
     params.oversampling_ratio = oversampling_ratio;
     params.oversampling_additive = oversampling_additive;
 
-    skylark::ml::ApproximateASE(*G, k, indexmap, X, context, params);
+    skylark::ml::ApproximateASE<graph_type, embeddings_type, s_type>(
+            *G, k, indexmap, X, context, params);
 
     if (rank == 0)
         std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
@@ -349,10 +390,29 @@ int main(int argc, char** argv) {
 
     SKYLARK_BEGIN_TRY()
 
+        typedef El::Matrix<float> matrix_single_type;
+        typedef El::Matrix<double> matrix_double_type;
+        typedef simple_unweighted_graph_t<std::string> graph_type;
+
+        typedef El::DistMatrix<float, El::VC, El::STAR>
+            parallel_matrix_single_type;
+        typedef El::DistMatrix<double, El::VC, El::STAR>
+            parallel_matrix_double_type;
+        typedef simple_parallel_graph_t<float> parallel_graph_type_single;
+        typedef simple_parallel_graph_t<double> parallel_graph_type_double;
+
         if (use_single)
-            execute<float>();
+            if(world.size() > 0)
+                execute<parallel_graph_type_single,
+                        parallel_matrix_single_type>();
+            else
+                execute<graph_type, matrix_single_type>();
         else
-            execute<double>();
+            if(world.size() > 0)
+                execute<parallel_graph_type_double,
+                        parallel_matrix_double_type>();
+            //else
+                //execute<graph_type, matrix_double_type>();
 
     SKYLARK_END_TRY() SKYLARK_CATCH_AND_PRINT((rank == 0))
 

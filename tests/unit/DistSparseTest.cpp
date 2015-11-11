@@ -361,23 +361,25 @@ int test_main(int argc, char *argv[]) {
 
     if(world.rank() == 0) std::cout << "Testing GEMMs..." << std::endl;
 
-    if(world.rank() == 0) std::cout << "\tsparse_vc_star -> sparse_vc_star (NORMAL, NORMAL):";
+    if(world.rank() == 0) std::cout << "\tsparse(VC/STAR) * dense(STAR/STAR) -> sparse(VC/STAR) (NORMAL, NORMAL):";
     test_gemm(El::NORMAL, El::NORMAL, 1.0,
             A_sparse_vc, A_vc, 0.0, target, world, grid);
     world.barrier();
     if(world.rank() == 0) std::cout << " ok" << std::endl;
 
-    if(world.rank() == 0) std::cout << "\tsparse_vc_star -> dense_vc_star (NORMAL, NORMAL):";
+#if 0
+    if(world.rank() == 0) std::cout << "\tsparse(VC/STAR) x dense(STAR/STAR) -> dense(VC/STAR) (NORMAL, NORMAL):";
     test_gemm_vc(El::NORMAL, El::NORMAL, 1.0,
             A_sparse_vc, A_vc, 0.0, target, world, grid);
     world.barrier();
     if(world.rank() == 0) std::cout << " ok" << std::endl;
 
-    if(world.rank() == 0) std::cout << "\tsparse_star_vr -> dense_star_star (NORMAL, NORMAL):";
+    if(world.rank() == 0) std::cout << "\tsparse(STAR/VR) x dense(VC/STAR) -> dense(STAR/STAR) (NORMAL, NORMAL):";
     test_gemm_vr(El::NORMAL, El::NORMAL, 1.0,
             A_sparse_vr, A_vr, 0.0, target, world);
     world.barrier();
     if(world.rank() == 0) std::cout << " ok" << std::endl;
+#endif
 
     if(world.rank() == 0) std::cout << "Done." << std::endl;
 

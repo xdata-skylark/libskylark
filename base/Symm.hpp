@@ -220,7 +220,7 @@ inline void Symm(El::LeftOrRight side, El::UpperOrLower uplo,
                     int l_col = g_col / comm.size();
                     // FIXME: why do we need ^^ and B.LocalRow(g_col) does not
                     //        work? Noticed that it produces l_col = 10 for the
-                    //        a local matrix [0,9] row inidices!
+                    //        a local matrix [0,9] row indices!
 
                     T tmp_val = tmp.Get(l_col, i);
                     for (int j = indptr[col]; j < indptr[col + 1]; j++) {

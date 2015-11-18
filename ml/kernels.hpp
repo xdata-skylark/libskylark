@@ -26,14 +26,14 @@ struct kernel_t {
         El::Matrix<float> &K) const = 0;
 
     virtual void gram(base::direction_t dirX, base::direction_t dirY,
-        const El::AbstractDistMatrix<double> &X,
-        const El::AbstractDistMatrix<double> &Y,
-        El::AbstractDistMatrix<double> &K) const = 0;
+        const El::ElementalMatrix<double> &X,
+        const El::ElementalMatrix<double> &Y,
+        El::ElementalMatrix<double> &K) const = 0;
 
     virtual void gram(base::direction_t dirX, base::direction_t dirY,
-        const El::AbstractDistMatrix<float> &X,
-        const El::AbstractDistMatrix<float> &Y,
-        El::AbstractDistMatrix<float> &K) const = 0;
+        const El::ElementalMatrix<float> &X,
+        const El::ElementalMatrix<float> &Y,
+        El::ElementalMatrix<float> &K) const = 0;
 
     virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
         const El::Matrix<double> &X, El::Matrix<double> &K) const = 0;
@@ -42,12 +42,12 @@ struct kernel_t {
         const El::Matrix<float> &X, El::Matrix<float> &K) const = 0;
 
     virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
-        const El::AbstractDistMatrix<double> &X,
-        El::AbstractDistMatrix<double> &K) const = 0;
+        const El::ElementalMatrix<double> &X,
+        El::ElementalMatrix<double> &K) const = 0;
 
     virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
-        const El::AbstractDistMatrix<float> &X,
-        El::AbstractDistMatrix<float> &K) const = 0;
+        const El::ElementalMatrix<float> &X,
+        El::ElementalMatrix<float> &K) const = 0;
 
     virtual
     sketch::sketch_transform_t<boost::any, boost::any> *create_rft(El::Int S,
@@ -114,17 +114,17 @@ struct kernel_container_t : public kernel_t {
     }
 
     virtual void gram(base::direction_t dirX, base::direction_t dirY,
-        const El::AbstractDistMatrix<double> &X,
-        const El::AbstractDistMatrix<double> &Y,
-        El::AbstractDistMatrix<double> &K) const {
+        const El::ElementalMatrix<double> &X,
+        const El::ElementalMatrix<double> &Y,
+        El::ElementalMatrix<double> &K) const {
 
         _k->gram(dirX, dirY, X, Y, K);
     }
 
     virtual void gram(base::direction_t dirX, base::direction_t dirY,
-        const El::AbstractDistMatrix<float> &X,
-        const El::AbstractDistMatrix<float> &Y,
-        El::AbstractDistMatrix<float> &K) const {
+        const El::ElementalMatrix<float> &X,
+        const El::ElementalMatrix<float> &Y,
+        El::ElementalMatrix<float> &K) const {
 
         _k->gram(dirX, dirY, X, Y, K);
     }
@@ -142,15 +142,15 @@ struct kernel_container_t : public kernel_t {
     }
 
     virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
-        const El::AbstractDistMatrix<double> &X,
-        El::AbstractDistMatrix<double> &K) const {
+        const El::ElementalMatrix<double> &X,
+        El::ElementalMatrix<double> &K) const {
 
         _k->symmetric_gram(uplo, dir, X, K);
     }
 
     virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
-        const El::AbstractDistMatrix<float> &X,
-        El::AbstractDistMatrix<float> &K) const {
+        const El::ElementalMatrix<float> &X,
+        El::ElementalMatrix<float> &K) const {
 
         _k->symmetric_gram(uplo, dir, X, K);
     }
@@ -357,20 +357,20 @@ struct gaussian_t : public kernel_t {
     }
 
     void gram(base::direction_t dirX, base::direction_t dirY,
-        const El::AbstractDistMatrix<double> &X,
-        const El::AbstractDistMatrix<double> &Y,
-        El::AbstractDistMatrix<double> &K) const {
+        const El::ElementalMatrix<double> &X,
+        const El::ElementalMatrix<double> &Y,
+        El::ElementalMatrix<double> &K) const {
 
-        typedef El::AbstractDistMatrix<double> matrix_type;
+        typedef El::ElementalMatrix<double> matrix_type;
         gram<matrix_type, matrix_type, matrix_type>(dirX, dirY, X, Y, K);
     }
 
     void gram(base::direction_t dirX, base::direction_t dirY,
-        const El::AbstractDistMatrix<float> &X,
-        const El::AbstractDistMatrix<float> &Y,
-        El::AbstractDistMatrix<float> &K) const {
+        const El::ElementalMatrix<float> &X,
+        const El::ElementalMatrix<float> &Y,
+        El::ElementalMatrix<float> &K) const {
 
-        typedef El::AbstractDistMatrix<float> matrix_type;
+        typedef El::ElementalMatrix<float> matrix_type;
         gram<matrix_type, matrix_type, matrix_type>(dirX, dirY, X, Y, K);
     }
 
@@ -390,18 +390,18 @@ struct gaussian_t : public kernel_t {
     }
 
     virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
-        const El::AbstractDistMatrix<double> &X,
-        El::AbstractDistMatrix<double> &K) const {
+        const El::ElementalMatrix<double> &X,
+        El::ElementalMatrix<double> &K) const {
 
-        typedef El::AbstractDistMatrix<double> matrix_type;
+        typedef El::ElementalMatrix<double> matrix_type;
         symmetric_gram<matrix_type, matrix_type>(uplo, dir, X, K);
     }
 
     virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
-        const El::AbstractDistMatrix<float> &X,
-        El::AbstractDistMatrix<float> &K) const {
+        const El::ElementalMatrix<float> &X,
+        El::ElementalMatrix<float> &K) const {
 
-        typedef El::AbstractDistMatrix<float> matrix_type;
+        typedef El::ElementalMatrix<float> matrix_type;
         symmetric_gram<matrix_type, matrix_type>(uplo, dir, X, K);
     }
 
@@ -522,20 +522,20 @@ struct polynomial_t : public kernel_t {
     }
 
     void gram(base::direction_t dirX, base::direction_t dirY,
-        const El::AbstractDistMatrix<double> &X,
-        const El::AbstractDistMatrix<double> &Y,
-        El::AbstractDistMatrix<double> &K) const {
+        const El::ElementalMatrix<double> &X,
+        const El::ElementalMatrix<double> &Y,
+        El::ElementalMatrix<double> &K) const {
 
-        typedef El::AbstractDistMatrix<double> matrix_type;
+        typedef El::ElementalMatrix<double> matrix_type;
         gram<matrix_type, matrix_type, matrix_type>(dirX, dirY, X, Y, K);
     }
 
     void gram(base::direction_t dirX, base::direction_t dirY,
-        const El::AbstractDistMatrix<float> &X,
-        const El::AbstractDistMatrix<float> &Y,
-        El::AbstractDistMatrix<float> &K) const {
+        const El::ElementalMatrix<float> &X,
+        const El::ElementalMatrix<float> &Y,
+        El::ElementalMatrix<float> &K) const {
 
-        typedef El::AbstractDistMatrix<float> matrix_type;
+        typedef El::ElementalMatrix<float> matrix_type;
         gram<matrix_type, matrix_type, matrix_type>(dirX, dirY, X, Y, K);
     }
 
@@ -555,18 +555,18 @@ struct polynomial_t : public kernel_t {
     }
 
     virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
-        const El::AbstractDistMatrix<double> &X,
-        El::AbstractDistMatrix<double> &K) const {
+        const El::ElementalMatrix<double> &X,
+        El::ElementalMatrix<double> &K) const {
 
-        typedef El::AbstractDistMatrix<double> matrix_type;
+        typedef El::ElementalMatrix<double> matrix_type;
         symmetric_gram<matrix_type, matrix_type>(uplo, dir, X, K);
     }
 
     virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
-        const El::AbstractDistMatrix<float> &X,
-        El::AbstractDistMatrix<float> &K) const {
+        const El::ElementalMatrix<float> &X,
+        El::ElementalMatrix<float> &K) const {
 
-        typedef El::AbstractDistMatrix<float> matrix_type;
+        typedef El::ElementalMatrix<float> matrix_type;
         symmetric_gram<matrix_type, matrix_type>(uplo, dir, X, K);
     }
 
@@ -691,20 +691,20 @@ struct laplacian_t : public kernel_t {
     }
 
     void gram(base::direction_t dirX, base::direction_t dirY,
-        const El::AbstractDistMatrix<double> &X,
-        const El::AbstractDistMatrix<double> &Y,
-        El::AbstractDistMatrix<double> &K) const {
+        const El::ElementalMatrix<double> &X,
+        const El::ElementalMatrix<double> &Y,
+        El::ElementalMatrix<double> &K) const {
 
-        typedef El::AbstractDistMatrix<double> matrix_type;
+        typedef El::ElementalMatrix<double> matrix_type;
         gram<matrix_type, matrix_type, matrix_type>(dirX, dirY, X, Y, K);
     }
 
     void gram(base::direction_t dirX, base::direction_t dirY,
-        const El::AbstractDistMatrix<float> &X,
-        const El::AbstractDistMatrix<float> &Y,
-        El::AbstractDistMatrix<float> &K) const {
+        const El::ElementalMatrix<float> &X,
+        const El::ElementalMatrix<float> &Y,
+        El::ElementalMatrix<float> &K) const {
 
-        typedef El::AbstractDistMatrix<float> matrix_type;
+        typedef El::ElementalMatrix<float> matrix_type;
         gram<matrix_type, matrix_type, matrix_type>(dirX, dirY, X, Y, K);
     }
 
@@ -724,18 +724,18 @@ struct laplacian_t : public kernel_t {
     }
 
     virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
-        const El::AbstractDistMatrix<double> &X,
-        El::AbstractDistMatrix<double> &K) const {
+        const El::ElementalMatrix<double> &X,
+        El::ElementalMatrix<double> &K) const {
 
-        typedef El::AbstractDistMatrix<double> matrix_type;
+        typedef El::ElementalMatrix<double> matrix_type;
         symmetric_gram<matrix_type, matrix_type>(uplo, dir, X, K);
     }
 
     virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
-        const El::AbstractDistMatrix<float> &X,
-        El::AbstractDistMatrix<float> &K) const {
+        const El::ElementalMatrix<float> &X,
+        El::ElementalMatrix<float> &K) const {
 
-        typedef El::AbstractDistMatrix<float> matrix_type;
+        typedef El::ElementalMatrix<float> matrix_type;
         symmetric_gram<matrix_type, matrix_type>(uplo, dir, X, K);
     }
 

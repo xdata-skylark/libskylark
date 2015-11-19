@@ -26,19 +26,20 @@ namespace skylark { namespace nla {
  * Note: it is assume that a sketch_size x Width(A) matrix can fit in memory
  * of a single node.
  *
- * \param orientation If El::NORMAL will approximate 
+ * \param orientation If El::NORMAL will approximate
  *                    argmin_X ||A * X - B||_F
  *                    If El::ADJOINT will approximate (NOT YET SUPPORTED)
  *                    argmin_X ||A^H * X - B||_F
  * \param A input matrix
  * \param B right-hand side
  * \param X solution matrix
- * \param sketch_size Sketch size to use. Higher values will produce better 
+ * \param context Skylark context
+ * \param sketch_size Sketch size to use. Higher values will produce better
  *                    approximations. Default is 4 * Width(A).
  */
 template<typename T>
 void ApproximateLeastSquares(El::Orientation orientation,
-    const El::Matrix<T>& A, const El::Matrix<T>& B, El::Matrix<T>& X, 
+    const El::Matrix<T>& A, const El::Matrix<T>& B, El::Matrix<T>& X,
     base::context_t& context, int sketch_size = -1) {
 
     if (orientation != El::NORMAL)
@@ -202,13 +203,14 @@ void ApproximateLeastSquares(El::Orientation orientation,
  * Note: it is assume that a 4*Width(A)^2 matrix can fit in memory
  * of a single node.
  *
- * \param orientation If El::NORMAL will approximate 
+ * \param orientation If El::NORMAL will approximate
  *                    argmin_X ||A * X - B||_F
  *                    If El::ADJOINT will approximate (NOT YET SUPPORTED)
  *                    argmin_X ||A^H * X - B||_F
  * \param A input matrix
  * \param B right-hand side
  * \param X solution matrix
+ * \param context Skylark context
  */
 template<typename AT, typename BT, typename XT>
 void FastLeastSquares(El::Orientation orientation, const AT& A, const BT& B,

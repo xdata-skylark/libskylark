@@ -43,7 +43,7 @@ struct RLT_data_t : public sketch_transform_data_t {
     /**
      *  Serializes a sketch to a string.
      *
-     *  @param[out] property_tree describing the sketch.
+     *  @return property_tree describing the sketch.
      */
     virtual boost::property_tree::ptree to_ptree() const {
         SKYLARK_THROW_EXCEPTION (
@@ -79,12 +79,12 @@ protected:
    base::context_t build() {
        base::context_t ctx = base_t::build();
        _underlying_data = boost::shared_ptr<underlying_data_type>(new
-           underlying_data_type(base_t::_N, base_t::_S, _inscale, 
+           underlying_data_type(base_t::_N, base_t::_S, _inscale,
                _distribution, ctx));
        return ctx;
    }
 
-    double _inscale; 
+    double _inscale;
     double _outscale; /** Scaling for exponential factor */
     boost::shared_ptr<underlying_data_type> _underlying_data;
     /**< Data of the underlying dense transformation */
@@ -141,7 +141,7 @@ struct ExpSemigroupRLT_data_t :
     /**
      *  Serializes a sketch to a string.
      *
-     *  @param[out] property_tree describing the sketch.
+     *  @return property_tree describing the sketch.
      */
     virtual boost::property_tree::ptree to_ptree() const {
         boost::property_tree::ptree pt;

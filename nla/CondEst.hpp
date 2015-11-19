@@ -31,7 +31,7 @@ struct condest_params_t : public base::params_t {
         bool am_i_printing = 0,
         int log_level = 0,
         std::ostream &log_stream = std::cout,
-        std::string prefix = "", 
+        std::string prefix = "",
         int debug_level = 0) :
         base::params_t(am_i_printing, log_level, log_stream, prefix, debug_level),
         iter_lim(iter_lim) {
@@ -58,7 +58,7 @@ struct condest_params_t : public base::params_t {
  *                               sigma_max * u_max = A * v_max / sigma_max,
  *                               ||v_max|| = ||u_max|| = 1,
  * \param sigma_min Best estimate for smallest singular value.
- * \param sigma_min_c,v_min u_min Estimate of smallest singular value with
+ * \param sigma_min_c,v_min,u_min Estimate of smallest singular value with
  *                                certificate
  * \param context Skylark context
  * \param params Parameters.
@@ -113,7 +113,7 @@ int CondEst(const MatrixType& A, double &cond,
     El::Scale(1.0 / nrm_xhat, xhat);
 
     if (log_lev2)
-        params.log_stream << params.prefix 
+        params.log_stream << params.prefix
                           << "CondEst: tau = " << tau << std::endl;
 
     /** Generate b, and iteration x */

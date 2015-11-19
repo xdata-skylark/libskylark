@@ -45,14 +45,14 @@ struct MMT_data_t : public hash_transform_data_t<
 
     MMT_data_t(const boost::property_tree::ptree& pt) :
         base_t(pt.get<int>("N"), pt.get<int>("S"),
-            base::context_t(pt.get_child("creation_context")), "MMT") { 
+            base::context_t(pt.get_child("creation_context")), "MMT") {
         base_t::build();
     }
 
     /**
      *  Serializes a sketch to a string.
      *
-     *  @param[out] property_tree describing the sketch.
+     *  @return property_tree describing the sketch.
      */
     virtual boost::property_tree::ptree to_ptree() const {
         boost::property_tree::ptree pt;
@@ -67,7 +67,7 @@ struct MMT_data_t : public hash_transform_data_t<
 
 protected:
 
-    MMT_data_t(int N, int S, const base::context_t& context, 
+    MMT_data_t(int N, int S, const base::context_t& context,
         std::string type)
         : base_t(N, S, context, type) {
 

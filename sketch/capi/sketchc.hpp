@@ -98,6 +98,7 @@ SKYLARK_EXTERN_API bool sl_has_combblas();
 
 /** Creating a default Skylark context required for applying sketches.
  *  @param seed for the rng generator
+ *  @param ctxt Skylark context
  *  @return a Skylark context
  */
 SKYLARK_EXTERN_API int sl_create_default_context(int seed,
@@ -106,6 +107,7 @@ SKYLARK_EXTERN_API int sl_create_default_context(int seed,
 /** Creating a Skylark context required for applying sketches.
  *  @param seed for the rng generator
  *  @param cm MPI communicator used
+ *  @param ctxt Skylark context
  *  @return a Skylark context
  */
 SKYLARK_EXTERN_API int sl_create_context(int seed, MPI_Comm cm,
@@ -121,6 +123,7 @@ SKYLARK_EXTERN_API int sl_free_context(base::context_t *ctxt);
  *  @param type type of the sketch
  *  @param n input size
  *  @param s output size
+ *  @param sketch
  *  @return sketch transformation
  */
 SKYLARK_EXTERN_API int sl_create_sketch_transform(

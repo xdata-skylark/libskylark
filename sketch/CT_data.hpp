@@ -62,7 +62,7 @@ struct CT_data_t :
     /**
      *  Serializes a sketch to a string.
      *
-     *  @param[out] property_tree describing the sketch.
+     *  @return property_tree describing the sketch.
      */
     virtual boost::property_tree::ptree to_ptree() const {
         boost::property_tree::ptree pt;
@@ -78,7 +78,7 @@ struct CT_data_t :
 
 protected:
 
-    CT_data_t(int N, int S, double C, const skylark::base::context_t& context, 
+    CT_data_t(int N, int S, double C, const skylark::base::context_t& context,
         std::string type)
         : base_t(N, S, C / static_cast<double>(S),
             bstrand::cauchy_distribution<double>(),

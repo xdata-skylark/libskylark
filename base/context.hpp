@@ -20,6 +20,7 @@ struct context_t {
     /**
      * Initialize context with a seed.
      * @param[in] seed Random seed to be used for all computations.
+     * @param[in] counter Optional, start of the next stream of random numbers.
      */
     context_t (int seed, int counter=0) :
         _counter(counter),
@@ -44,7 +45,7 @@ struct context_t {
 
     /**
      * Load context from a serialized JSON structure.
-     * @param[in] filename of JSON structure encoding serialized state.
+     * @param[in] json Filename of JSON structure encoding serialized state.
      */
     context_t (const boost::property_tree::ptree& json) {
         _seed = json.get<int>("seed");
@@ -139,7 +140,7 @@ struct context_t {
      * @param[in] size The size of the container.
      * @return Random numbers' container.
      *
-     * @caveat This should be used as a global operation to keep the
+     * @note This should be used as a global operation to keep the
      * the internal state of the context synchronized.
      */
     random_array_t allocate_random_array(size_t size) {
@@ -153,7 +154,7 @@ struct context_t {
      * Returns an integer random number.
      * @return Random integer number.
      *
-     * @caveat This should be used as a global operation to keep the
+     * @note This should be used as a global operation to keep the
      * the internal state of the context synchronized.
      */
      int random_int() {
@@ -168,7 +169,8 @@ struct context_t {
 
     /**
      * Serializes the context to a JSON structure.
-     * @param[out] JSON encoded state of the context.
+     * @param[out] sk JSON encoded state of the context.
+     * @param[in]  data Skylark context to be serialized.
      */
     friend boost::property_tree::ptree& operator<<(
             boost::property_tree::ptree &sk, const context_t &data);

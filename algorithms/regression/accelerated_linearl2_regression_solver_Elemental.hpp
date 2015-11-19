@@ -133,8 +133,9 @@ public:
      * Prepares the regressor to quickly solve given a right-hand side.
      *
      * @param problem Problem to solve given right-hand side.
+     * @param context Skylark context.
      */
-    accelerated_regression_solver_t(const problem_type& problem, 
+    accelerated_regression_solver_t(const problem_type& problem,
         base::context_t& context) :
         _m(problem.m), _n(problem.n), _A(problem.input_matrix),
         _R(_n, _n, problem.input_matrix.Grid()) {
@@ -184,7 +185,7 @@ public:
 private:
 
     typedef El::DistMatrix<ValueType, El::STAR, El::STAR> precond_type;
-    typedef precond_type sketch_type; 
+    typedef precond_type sketch_type;
     // The assumption is that the sketch is not much bigger than the
     // preconditioner, so we should use the same matrix distribution.
 
@@ -194,7 +195,7 @@ private:
     precond_type _R;
     algorithms::inplace_precond_t<sol_type> *_precond_R;
 
-    regression_solver_t<problem_type, rhs_type, sol_type, svd_l2_solver_tag> 
+    regression_solver_t<problem_type, rhs_type, sol_type, svd_l2_solver_tag>
     *_alt_solver;
 
 public:
@@ -202,6 +203,7 @@ public:
      * Prepares the regressor to quickly solve given a right-hand side.
      *
      * @param problem Problem to solve given right-hand side.
+     * @param context Skylark context.
      */
     accelerated_regression_solver_t(const problem_type& problem, base::context_t& context) :
         _m(problem.m), _n(problem.n), _A(problem.input_matrix),
@@ -222,7 +224,7 @@ public:
         do {
             sketch::RFUT_t<El::DistMatrix<ValueType, El::STAR, VD>,
                            sketch::fft_futs<double>::DCT_t,
-                           utility::rademacher_distribution_t<value_type> > 
+                           utility::rademacher_distribution_t<value_type> >
                 F(_m, context);
             F.apply(Ar, Ar, sketch::columnwise_tag());
 
@@ -313,8 +315,10 @@ public:
      * Prepares the regressor to quickly solve given a right-hand side.
      *
      * @param problem Problem to solve given right-hand side.
+     * @param context Skylark context.
      */
-    accelerated_regression_solver_t(const problem_type& problem, base::context_t& context) :
+    accelerated_regression_solver_t(const problem_type& problem,
+            base::context_t& context) :
         _m(problem.m), _n(problem.n), _A(problem.input_matrix),
         _R(_n, _n, problem.input_matrix.Grid()) {
         // TODO n < m ???
@@ -426,6 +430,7 @@ public:
      * Prepares the regressor to quickly solve given a right-hand side.
      *
      * @param problem Problem to solve given right-hand side.
+     * @param context Skylark context.
      */
     accelerated_regression_solver_t(const problem_type& problem, base::context_t& context) :
         _m(problem.m), _n(problem.n), _A(problem.input_matrix),

@@ -53,7 +53,7 @@ struct QRLT_data_t : public sketch_transform_data_t {
     /**
      *  Serializes a sketch to a string.
      *
-     *  @param[out] property_tree describing the sketch.
+     *  @return property_tree describing the sketch.
      */
     virtual boost::property_tree::ptree to_ptree() const {
         SKYLARK_THROW_EXCEPTION (
@@ -89,7 +89,7 @@ protected:
    base::context_t build() {
        base::context_t ctx = base_t::build();
        _underlying_data = boost::shared_ptr<underlying_data_type>(new
-           underlying_data_type(base_t::_N, base_t::_S, _inscale, 
+           underlying_data_type(base_t::_N, base_t::_S, _inscale,
                _sequence, _skip, ctx));
        return ctx;
    }
@@ -105,10 +105,10 @@ protected:
 namespace internal {
 
 // There is no boost::math class for levy's distribution.
-// However, we need only the quantile function, which 
+// However, we need only the quantile function, which
 // we implement in this skeleton.
 
-template <class ValueType = double, 
+template <class ValueType = double,
           class Policy = boost::math::policies::policy<> >
 struct levy_distribution_t
 {
@@ -206,7 +206,7 @@ struct ExpSemigroupQRLT_data_t :
     /**
      *  Serializes a sketch to a string.
      *
-     *  @param[out] property_tree describing the sketch.
+     *  @return property_tree describing the sketch.
      */
     virtual boost::property_tree::ptree to_ptree() const {
         boost::property_tree::ptree pt;
@@ -226,7 +226,7 @@ protected:
     ExpSemigroupQRLT_data_t(int N, int S, double beta,
         const sequence_type& sequence, int skip,
         const skylark::base::context_t& context, std::string type)
-        : base_t(N, S,  beta * beta / 2, std::sqrt(1.0 / S), context, type), 
+        : base_t(N, S,  beta * beta / 2, std::sqrt(1.0 / S), context, type),
           _beta(beta), _sequence(sequence), _skip(skip) {
 
     }

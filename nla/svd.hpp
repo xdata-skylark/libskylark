@@ -24,7 +24,7 @@ namespace skylark { namespace nla {
  * \param V input starting vector, and output of iteration
  * \param U on output: U = A*V or A^T*V.
  * \param iternum how many iterations to do
- * \param otho whether to orthonormalize after every multipication.
+ * \param ortho whether to orthonormalize after every multipication.
  */
 template<typename MatrixType, typename LeftType, typename RightType>
 void PowerIteration(El::Orientation orientation, El::Orientation vorientation,
@@ -117,11 +117,11 @@ void PowerIteration(El::Orientation orientation, El::Orientation vorientation,
  *
  * \param uplo Whether A is stored in upper or lower part. Might be not-relevant
  *             for certain MatrixType.
- * \param orientation Whether to hold V in transpose or not.
+ * \param vorientation Whether to hold V in transpose or not.
  * \param A input matrix
  * \param V input starting vector, and output of iteration
  * \param iternum how many iterations to do
- * \param otho whether to orthonormalize after every multipication.
+ * \param ortho whether to orthonormalize after every multipication.
  */
 template<typename MatrixType, typename VType>
 void SymmetricPowerIteration(El::UpperOrLower uplo, El::Orientation vorientation,
@@ -228,6 +228,7 @@ struct approximate_svd_params_t : public base::params_t {
  * \param S output: approximate singular values
  * \param V output: approximate right-singular vectors
  * \param rank target rank
+ * \param context Skylark context
  * \param params parameter strcture
  */
 template <typename InputType, typename UType, typename SType, typename VType>
@@ -340,11 +341,12 @@ void ApproximateSVD(InputType &A, UType &U, SType &S, VType &V, int rank,
  * Approximate Matrix Decompositions
  * SIAM Rev., 53(2), 217–288. (72 pages)
  *
+ * \param uplo Upper or lower triangular matrix
  * \param A input matrix
- * \param U output: approximate left-singular vectors
+ * \param V output: approximate left-singular vectors
  * \param S output: approximate singular values
- * \param V output: approximate right-singular vectors
  * \param rank target rank
+ * \param context Skylark context
  * \param params parameter strcture
  */
 template <typename InputType, typename VType, typename SType>

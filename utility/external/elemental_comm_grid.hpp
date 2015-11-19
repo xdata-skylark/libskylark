@@ -1,13 +1,14 @@
 #ifndef SKYLARK_ELEMENTAL_COMM_GRID_HPP
 #define SKYLARK_ELEMENTAL_COMM_GRID_HPP
 
+#include <El.hpp>
+
+
 // A collection of helpers to compute information about distribution of
 // Elemental objects.
 
 namespace skylark {
 namespace utility {
-
-#include <El.hpp>
 
 /// computes the rank owning the global (row_idx, col_idx) element
 //template<typename index_type, typename value_type,

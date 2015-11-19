@@ -392,7 +392,7 @@ SKYLARK_EXTERN_API bool sl_has_combblas() {
 #endif
 }
 
-/** Support for skylark::base::context_t. */
+/* Support for skylark::base::context_t. */
 SKYLARK_EXTERN_API int sl_create_default_context(int seed,
         base::context_t **ctxt) {
     SKYLARK_BEGIN_TRY()
@@ -419,7 +419,7 @@ SKYLARK_EXTERN_API int sl_free_context(base::context_t *ctxt) {
     return 0;
 }
 
-/** Transforms */
+/* Transforms */
 SKYLARK_EXTERN_API int sl_create_sketch_transform(base::context_t *ctxt,
     char *type_, int n, int s,
     sketchc::sketch_transform_t **sketch, ...) {

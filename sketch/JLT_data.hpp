@@ -51,7 +51,7 @@ struct JLT_data_t :
     /**
      *  Serializes a sketch to a string.
      *
-     *  @param[out] property_tree describing the sketch.
+     *  @return property_tree describing the sketch.
      */
     virtual boost::property_tree::ptree to_ptree() const {
         boost::property_tree::ptree pt;
@@ -68,7 +68,7 @@ protected:
 
     JLT_data_t(int N, int S, const skylark::base::context_t& context,
         std::string type)
-        : base_t(N, S, sqrt(1.0 / static_cast<double>(S)), 
+        : base_t(N, S, sqrt(1.0 / static_cast<double>(S)),
             bstrand::normal_distribution<double>(),
             context, type) {
 

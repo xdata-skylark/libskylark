@@ -12,7 +12,7 @@
 namespace skylark { namespace sketch {
 
 /**
- * This is the base data class for UST (Uniform Sampling Transform). 
+ * This is the base data class for UST (Uniform Sampling Transform).
  * Essentially, it holds the vector of samples.
  */
 struct UST_data_t : public sketch_transform_data_t {
@@ -56,7 +56,7 @@ struct UST_data_t : public sketch_transform_data_t {
     /**
      *  Serializes a sketch to a string.
      *
-     *  @param[out] property_tree describing the sketch.
+     *  @return property_tree describing the sketch.
      */
     virtual boost::property_tree::ptree to_ptree() const {
         boost::property_tree::ptree pt;

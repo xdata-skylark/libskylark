@@ -22,6 +22,7 @@ namespace skylark { namespace utility { namespace io {
  * @param Y output Y
  * @param direction whether the examples are to be put in rows or columns
  * @param min_d minimum number of rows in the matrix.
+ * @param max_n maximum number of columns in the matrix.
  */
 template<typename T, typename R>
 void ReadLIBSVM(const std::string& fname,
@@ -306,10 +307,11 @@ void ReadLIBSVM(const std::string& fname,
  * @param Y output Y
  * @param direction whether the examples are to be put in rows or columns
  * @param min_d minimum number of rows in the matrix.
+ * @param max_n maximum number of cols in the matrix.
  */
 template<typename T, typename R>
 void ReadLIBSVM(const std::string& fname,
-    base::sparse_matrix_t<T>& X, El::Matrix<R>& Y, 
+    base::sparse_matrix_t<T>& X, El::Matrix<R>& Y,
     base::direction_t direction, int min_d = 0, int max_n = -1) {
 
     std::string line;
@@ -401,7 +403,7 @@ void ReadLIBSVM(const std::string& fname,
         for(int i = 1; i <= d; i++)
             col_ptr[i] = col_ptr[i-1] + colsize[i-1];
         Y.Resize(n, nt);
-    } else 
+    } else
         Y.Resize(nt, n);
     R *Ydata = Y.Buffer();
     int ldY = Y.LDim();
@@ -538,7 +540,7 @@ void WriteLIBSVM(const std::string& fname,
         d = X.Width();
     }
 
-    El::Int numblocks = ((int) n/ (int) blocksize); 
+    El::Int numblocks = ((int) n/ (int) blocksize);
     El::Int leftover = n % blocksize;
     El::Int block = blocksize;
 

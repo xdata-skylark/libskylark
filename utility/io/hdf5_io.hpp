@@ -85,7 +85,7 @@ void ReadHDF5(H5::H5File& in, const std::string& name, El::Matrix<T>& X) {
  * @param in HDF5 file to operate on.
  * @param name name of the dataset/group holding the matrix.
  * @param X output matrix.
- * @param min_m minimum value of m. 
+ * @param min_m minimum value of m.
  */
 template<typename T>
 void ReadHDF5(H5::H5File& in, const std::string& name,
@@ -141,6 +141,8 @@ void ReadHDF5(H5::H5File& in, const std::string& name,
  * @param in HDF5 file to operate on.
  * @param name name of the dataset/group holding the matrix.
  * @param X output matrix.
+ * @param max_n, max_m optionally set max height and width
+ * @param block_size
  */
 template<typename T, El::Distribution U, El::Distribution V>
 void ReadHDF5(H5::H5File& in, const std::string& name,

@@ -20,7 +20,7 @@ struct sketch_params_t {
 };
 
 template<typename InputMatrixType, typename OutputMatrixType>
-class sketch_transform_t;
+struct sketch_transform_t;
 
 /**
  * Base class for all sketch tranform data.

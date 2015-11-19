@@ -263,7 +263,7 @@ protected:
 
 private:
     coef_type _coef;
-    El::Int _input_size, _output_size;
+    El::Int _input_size;
     std::vector<const feature_transform_type *> _maps; // TODO use shared_ptr
     bool _scale_maps;
     bool _regression;
@@ -304,7 +304,7 @@ struct kernel_model_t;
  */
 template<typename KernelType, typename OutType, typename ComputeType>
 struct kernel_model_t<KernelType, OutType, ComputeType,
-  typename std::enable_if<std::is_floating_point<OutType>::value, OutType>::type > : 
+  typename std::enable_if<std::is_floating_point<OutType>::value, OutType>::type > :
 public model_t<OutType, ComputeType>
 
 {
@@ -314,7 +314,7 @@ public model_t<OutType, ComputeType>
 
     kernel_model_t(const kernel_type &k,
         base::direction_t direction, const El::DistMatrix<compute_type> &X,
-        const std::string &dataloc, const int fileformat, 
+        const std::string &dataloc, const int fileformat,
         const El::DistMatrix<compute_type> &A) :
         _X(), _direction(direction),
         _A(), _dataloc(dataloc), _fileformat(fileformat), _k(k),
@@ -324,7 +324,7 @@ public model_t<OutType, ComputeType>
         El::LockedView(_A, A);
     }
 
-    void predict(base::direction_t direction_XT, 
+    void predict(base::direction_t direction_XT,
         const El::DistMatrix<compute_type> &XT, El::DistMatrix<out_type> &YP) const {
 
         El::DistMatrix<compute_type> KT;
@@ -475,14 +475,14 @@ struct feature_expansion_model_t;
 template<template <typename, typename> class SketchType,
          typename OutType, typename ComputeType>
 struct feature_expansion_model_t<SketchType, OutType, ComputeType,
-  typename std::enable_if<std::is_floating_point<OutType>::value, OutType>::type > : 
+  typename std::enable_if<std::is_floating_point<OutType>::value, OutType>::type > :
 public model_t<OutType, ComputeType>
 
 {
     typedef ComputeType compute_type;
     typedef OutType out_type;
 
-    typedef SketchType<El::DistMatrix<compute_type>, 
+    typedef SketchType<El::DistMatrix<compute_type>,
                        El::DistMatrix<compute_type> > sketch_type;
 
 
@@ -496,7 +496,7 @@ public model_t<OutType, ComputeType>
         El::LockedView(_W, W);
     }
 
-    void predict(base::direction_t direction_XT, 
+    void predict(base::direction_t direction_XT,
         const El::DistMatrix<compute_type> &XT, El::DistMatrix<out_type> &YP) const {
 
         El::Zeros(YP, XT.Height(), _output_size);
@@ -555,7 +555,7 @@ public model_t<OutType, ComputeType>
             ptmaps.push_back(std::make_pair(std::to_string(i),
                     _feature_transforms[i].to_ptree()));
         ptfmap.add_child("transforms", ptmaps);
- 
+
         pt.add_child("expansion_transforms", ptfmap);
 
         std::stringstream sW;
@@ -615,12 +615,12 @@ public model_t<OutType, ComputeType> {
         const std::vector<sketch_type> &transforms,
         const El::DistMatrix<compute_type> &W,
         const std::vector<OutType> &rcoding) :
-        _W(), _rcoding(rcoding), _scale_maps(scale_maps), 
+        _W(), _rcoding(rcoding), _scale_maps(scale_maps),
         _feature_transforms(transforms),
         _input_size(_feature_transforms[0].get_N()), _output_size(W.Width()),
         _feature_size(0) {
 
-        for(auto it = _feature_transforms.begin(); 
+        for(auto it = _feature_transforms.begin();
             it != _feature_transforms.end(); it++)
             _feature_size += it->get_S();
         El::LockedView(_W, W);

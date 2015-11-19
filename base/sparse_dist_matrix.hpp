@@ -17,7 +17,7 @@ namespace skylark { namespace base {
 namespace detail {
 
     struct compare_t {
-        bool operator()(const std::pair<int, int>& x, const std::pair<int, int>& y) {
+        bool operator()(const std::pair<int, int>& x, const std::pair<int, int>& y) const {
             if(x.second == y.second)
                 return x.first < y.first;
 

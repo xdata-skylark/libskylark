@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 export NPROC=`nproc`
+export UNAME=vagrant
 
 # Suppressing "dpkg-preconfigure: unable to re-open stdin"
 export LANGUAGE=en_US.UTF-8
@@ -10,9 +11,9 @@ dpkg-reconfigure locales
 
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib
 
-export SKYLARK_SRC_DIR=/home/vagrant/libskylark
-export SKYLARK_BUILD_DIR=/home/vagrant/build
-export SKYLARK_INSTALL_DIR=/home/vagrant/install
+export SKYLARK_SRC_DIR=/home/${UNAME}/libskylark
+export SKYLARK_BUILD_DIR=/home/${UNAME}/build
+export SKYLARK_INSTALL_DIR=/home/${UNAME}/install
 export LIBHDFS_ROOT=/usr/lib/hadoop/
 
 # populate .bashrc
@@ -26,11 +27,11 @@ echo "export LD_LIBRARY_PATH=${SKYLARK_INSTALL_DIR}/lib:/usr/local/lib:/usr/lib/
 echo "export PATH=${SKYLARK_INSTALL_DIR}/bin:/opt/rh/devtoolset-2/root/usr/bin/:${PATH}" >> ./.bashrc
 echo "module load mpich-x86_64" >> ./.bashrc
 
-chown -R vagrant /home/vagrant/.bashrc
+chown -R ${UNAME} /home/${UNAME}/.bashrc
 
 # populate .emacs with skylark coding style, in case user wants to use emacs
-echo "(load-file \"/home/vagrant/libskylark/doc/script/emacsrc\")"  >> .emacs
-chown -R vagrant /home/vagrant/.emacs
+echo "(load-file \"/home/${UNAME}/libskylark/doc/script/emacsrc\")"  >> .emacs
+chown -R ${UNAME} /home/${UNAME}/.emacs
 
 # get latest gcc/g++
 cd /etc/yum.repos.d
@@ -235,8 +236,8 @@ fi
 
 # To build libSkylark (everything enabled):
 cd $HOME
-source /home/vagrant/.bashrc
-cd /home/vagrant
+source /home/${UNAME}/.bashrc
+cd /home/${UNAME}
 
 if [ ! -d "libskylark" ]; then
     yes | git clone https://github.com/xdata-skylark/libskylark.git
@@ -260,11 +261,11 @@ make -j $NPROC
 make install
 make doc
 
-echo "Finished libSkylark Vagrant build.."
+echo "Finished libSkylark ${UNAME} build.."
 
-chown -R vagrant /home/vagrant
+chown -R ${UNAME} /home/${UNAME}
 
 # Finalize
 cd $HOME
-chown -R vagrant /home/vagrant
+chown -R ${UNAME} /home/${UNAME}
 

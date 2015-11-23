@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 export NPROC=`nproc`
+export UNAME=vagrant
 
 # Suppressing "dpkg-preconfigure: unable to re-open stdin"
 export LANGUAGE=en_US.UTF-8
@@ -10,17 +11,17 @@ dpkg-reconfigure locales
 
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib
 
-export SKYLARK_SRC_DIR=/home/vagrant/libskylark
-export SKYLARK_BUILD_DIR=/home/vagrant/build
-export SKYLARK_INSTALL_DIR=/home/vagrant/install
-export LIBHDFS_ROOT=/home/vagrant/deps/hadoop-2.7.0
+export SKYLARK_SRC_DIR=/home/${UNAME}/libskylark
+export SKYLARK_BUILD_DIR=/home/${UNAME}/build
+export SKYLARK_INSTALL_DIR=/home/${UNAME}/install
+export LIBHDFS_ROOT=/home/${UNAME}/deps/hadoop-2.7.0
 export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
 
 # populate .bashrc
 echo "export SKYLARK_SRC_DIR=${SKYLARK_SRC_DIR}" >> ./.bashrc
 echo "export SKYLARK_BUILD_DIR=${SKYLARK_BUILD_DIR}" >> ./.bashrc
 echo "export SKYLARK_INSTALL_DIR=${SKYLARK_INSTALL_DIR}" >> ./.bashrc
-echo "export LIBHDFS_ROOT=/home/vagrant/deps/hadoop-2.7.0" >> ./.bashrc
+echo "export LIBHDFS_ROOT=/home/${UNAME}/deps/hadoop-2.7.0" >> ./.bashrc
 echo "export JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64" >> ./.bashrc
 echo "export PYTHON_SITE_PACKAGES=${SKYLARK_INSTALL_DIR}" >> ./.bashrc
 echo "export PYTHONPATH=${SKYLARK_INSTALL_DIR}/lib/python2.7/site-packages:${PYTHONPATH}" >> ./.bashrc
@@ -29,12 +30,12 @@ echo "export PATH=${SKYLARK_INSTALL_DIR}/bin:${PATH}" >> ./.bashrc
 echo "export LD_PRELOAD=/usr/lib/libmpi.so" >> ./.bashrc
 #echo "export FFTW_ROOT=/usr/lib/x86_64-linux-gnu/" >> ./.bashrc
 
-chown -R vagrant /home/vagrant/.bashrc
+chown -R ${UNAME} /home/${UNAME}/.bashrc
 
 # populate .emacs with skylark coding style, in case user wants to use emacs
-echo "(load-file \"/home/vagrant/libskylark/doc/script/emacsrc\")"  >> .emacs
+echo "(load-file \"/home/${UNAME}/libskylark/doc/script/emacsrc\")"  >> .emacs
 
-chown -R vagrant /home/vagrant/.emacs
+chown -R ${UNAME} /home/${UNAME}/.emacs
 
 # make sure the package information is up-to-date
 apt-get update
@@ -172,7 +173,7 @@ cd $HOME/deps
 if [ ! -d "Elemental" ]; then
     git clone https://github.com/elemental/Elemental.git
     cd Elemental
-    git checkout 4a16736e44b24ced2d0dd9d3f688ce2d149611ba
+    git checkout b56573c9e71a2338ec2751b1c60e5126b01180df
     mkdir build
     cd build
     cmake -DEL_USE_64BIT_INTS=ON -DCMAKE_BUILD_TYPE=Release -DEL_HYBRID=ON -DBUILD_SHARED_LIBS=ON -DMATH_LIBS="-L/usr/lib -llapack -lopenblas -lm" ../
@@ -248,15 +249,15 @@ fi
 # hadoop
 cd $HOME/deps
 if [ ! -d "hadoop-2.7.0" ]; then
-    mkdir /home/vagrant/deps
-    tar xzvf hadoop-2.7.0.tar.gz -C /home/vagrant/deps 1> /dev/null
+    mkdir /home/${UNAME}/deps
+    tar xzvf hadoop-2.7.0.tar.gz -C /home/${UNAME}/deps 1> /dev/null
 fi
 
 
 # To build libSkylark (everything enabled):
 cd $HOME
-source /home/vagrant/.bashrc
-cd /home/vagrant
+source /home/${UNAME}/.bashrc
+cd /home/${UNAME}
 
 if [ ! -d "libskylark" ]; then
     yes | git clone https://github.com/xdata-skylark/libskylark.git
@@ -280,19 +281,19 @@ make -j $NPROC
 make install
 make doc 1> /dev/null
 
-echo "Finished libSkylark Vagrant build.."
+echo "Finished libSkylark ${UNAME} build.."
 
 # Prepare notebook directory
-mkdir /home/vagrant/notebooks
-mkdir /home/vagrant/notebooks/data
-cd mkdir /home/vagrant/notebooks/data
+mkdir /home/${UNAME}/notebooks
+mkdir /home/${UNAME}/notebooks/data
+cd mkdir /home/${UNAME}/notebooks/data
 wget http://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/multiclass/usps.bz2 &> /dev/null
 bzip2 -d usps.bz2 &> /dev/null
-cp ${SKYLARK_SRC_DIR}/python-skylark/skylark/notebooks/* /home/vagrant/notebooks/
+cp ${SKYLARK_SRC_DIR}/python-skylark/skylark/notebooks/* /home/${UNAME}/notebooks/
 
 # Finalize
 cd $HOME
-chown -R vagrant /home/vagrant
+chown -R ${UNAME} /home/${UNAME}
 
 
 apt-get install -y dtach
@@ -302,13 +303,13 @@ echo "c = get_config()" > $HOME/.ipython/profile_nbserver/ipython_notebook_confi
 echo "c.IPKernelApp.pylab = 'inline'" >> $HOME/.ipython/profile_nbserver/ipython_notebook_config.py
 echo "c.NotebookApp.ip = '*'" >> $HOME/.ipython/profile_nbserver/ipython_notebook_config.py
 echo "c.NotebookApp.open_browser = False" >> $HOME/.ipython/profile_nbserver/ipython_notebook_config.py
-echo "c.NotebookManager.notebook_dir = u'/home/vagrant/notebooks'" >> $HOME/.ipython/profile_nbserver/ipython_notebook_config.py
+echo "c.NotebookManager.notebook_dir = u'/home/${UNAME}/notebooks'" >> $HOME/.ipython/profile_nbserver/ipython_notebook_config.py
 
-cd /home/vagrant
+cd /home/${UNAME}
 dtach -n /tmp/ipython_notebook -Ez ipython notebook --profile=nbserver
 
 #FIXME: dir to /home/vagrant, run as vagrant user?
-echo "LD_LIBRARY_PATH=/home/vagrant/install/lib:/usr/local/lib:$LD_LIBRARY_PATH LD_PRELOAD=/usr/lib/libmpi.so dtach -n /tmp/ipython_notebook -Ez ipython notebook --profile=nbserver" > /etc/rc.local
+echo "LD_LIBRARY_PATH=/home/${UNAME}/install/lib:/usr/local/lib:$LD_LIBRARY_PATH LD_PRELOAD=/usr/lib/libmpi.so dtach -n /tmp/ipython_notebook -Ez ipython notebook --profile=nbserver" > /etc/rc.local
 echo "exit 0" >> /etc/rc.local
 
 echo "Started IPython notebook. Point your browser to http://127.0.0.1:6868"

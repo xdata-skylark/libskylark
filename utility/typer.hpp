@@ -28,6 +28,12 @@ struct typer_t< El::AbstractDistMatrix<F> > {
     typedef El::Int index_type;
 };
 
+template<typename F>
+struct typer_t< El::ElementalMatrix<F> > {
+    typedef F value_type;
+    typedef El::Int index_type;
+};
+
 template<typename F, El::Distribution CD, El::Distribution RD>
 struct typer_t< El::DistMatrix<F, CD, RD> > {
     typedef F value_type;

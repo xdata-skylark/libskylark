@@ -37,8 +37,8 @@ void EuclideanDistanceMatrix(direction_t dirA, direction_t dirB, T alpha,
 
 template<typename T>
 void EuclideanDistanceMatrix(direction_t dirA, direction_t dirB, T alpha,
-    const El::AbstractDistMatrix<T> &A, const El::AbstractDistMatrix<T> &B,
-    T beta, El::AbstractDistMatrix<T> &C) {
+    const El::ElementalMatrix<T> &A, const El::ElementalMatrix<T> &B,
+    T beta, El::ElementalMatrix<T> &C) {
 
     T *c = C.Buffer();
     El::Int ldC = C.LDim();
@@ -98,8 +98,8 @@ void SymmetricEuclideanDistanceMatrix(El::UpperOrLower uplo, direction_t dir,
 
 template<typename T>
 void SymmetricEuclideanDistanceMatrix(El::UpperOrLower uplo, direction_t dir,
-    T alpha, const El::AbstractDistMatrix<T> &A,
-    T beta, El::AbstractDistMatrix<T> &C) {
+    T alpha, const El::ElementalMatrix<T> &A,
+    T beta, El::ElementalMatrix<T> &C) {
 
     T *c = C.Buffer();
     int ldC = C.LDim();
@@ -167,8 +167,8 @@ void L1DistanceMatrix(direction_t dirA, direction_t dirB, T alpha,
 
 template<typename T>
 void L1DistanceMatrix(direction_t dirA, direction_t dirB, T alpha,
-    const El::AbstractDistMatrix<T> &APre, const El::AbstractDistMatrix<T> &BPre,
-    T beta, El::AbstractDistMatrix<T> &CPre) {
+    const El::ElementalMatrix<T> &APre, const El::ElementalMatrix<T> &BPre,
+    T beta, El::ElementalMatrix<T> &CPre) {
 
     if (dirA == base::COLUMNS && dirB == base::COLUMNS) {
         // Use a SUMMA-like routine, with C as stationary
@@ -295,7 +295,7 @@ void L1DistanceMatrixTU(El::UpperOrLower uplo,
 
 template<typename T>
 void SymmetricL1DistanceMatrix(El::UpperOrLower uplo, direction_t dir, T alpha,
-    const El::AbstractDistMatrix<T> &APre, T beta, El::AbstractDistMatrix<T> &CPre) {
+    const El::ElementalMatrix<T> &APre, T beta, El::ElementalMatrix<T> &CPre) {
 
     if (dir == base::COLUMNS) {
 

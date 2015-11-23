@@ -1,18 +1,12 @@
 message(STATUS "Building with ${CMAKE_CXX_COMPILER_ID} compiler")
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 
-    if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin" )
-        include_directories (
-            /usr/llvm-gcc-4.2/lib/gcc/i686-apple-darwin11/4.2.1/include
-        )
-    endif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin" )
-
     set (SKYLARK_LIBS
         m
     )
 
     set (COMPILER_SPEC_FLAGS
-        "-W -Wall -Wno-write-strings -Wno-strict-aliasing -Wno-format -Wno-deprecated -Wno-unused-variable -Wno-unused-parameter -Wno-sign-compare"
+        "-W -Wall -Wno-write-strings -Wno-strict-aliasing -Wno-format -Wno-deprecated -Wno-unused-variable -Wno-unused-parameter -Wno-sign-compare -Wno-unused-local-typedef"
     )
 
     #set (LINK_FLAGS

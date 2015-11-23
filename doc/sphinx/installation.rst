@@ -45,9 +45,10 @@ for Python dependencies.
 
 .. note::
 
-    On a fresh 64-bit Ubuntu-based (release 12.04 LTS, aka precise) you can
-    use the provided bootstrap script ``vagrant/precise64/boostrap.sh`` to
-    install libSkylark dependencies.
+    On a fresh 64-bit Ubuntu-based (release 14.04 LTS, aka Trusty Tahr) you can
+    use the provided bootstrap script ``vagrant/trusty64/boostrap.sh`` to
+    install libSkylark dependencies. Before executing the script, be sure to 
+    set the user name in the UNAME variable at the start of the script.
 
 
 python-setuptools

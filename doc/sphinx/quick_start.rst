@@ -19,7 +19,7 @@ Simply follow the instructions shown below.
     .. code-block:: sh
 
         git clone https://github.com/xdata-skylark/libskylark.git
-        cd libskylark/vagrant/precise64
+        cd libskylark/vagrant/trusty64
         vagrant up
         vagrant ssh
 
@@ -76,8 +76,8 @@ Finally, some examples are provided in the :ref:`examples-label` section.
 Vagrant
 ========
 
-Under ``vagrant/precise64`` we provide an easy way to materialize an
-64-bit Ubuntu-based virtual machine (release 12.04 LTS, aka precise) with all
+Under ``vagrant/trusty64`` we provide an easy way to materialize an
+64-bit Ubuntu-based virtual machine (release 14.04 LTS, aka Trusty Tahr) with all
 software dependencies required for a fresh build of libSkylark.
 
 The ``Vagrantfile`` is the input to `Vagrant <http://www.vagrantup.com/>`_, a
@@ -92,7 +92,7 @@ require *exactly* the same commands).
 .. code-block:: sh
 
     git clone https://github.com/xdata-skylark/libskylark.git
-    cd vagrant/precise64
+    cd vagrant/trusty64
     vagrant up
     vagrant ssh
 

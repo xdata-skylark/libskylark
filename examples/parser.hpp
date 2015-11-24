@@ -7,13 +7,13 @@
 
 #include <string>
 #include <cstdlib>
-#include <ext/hash_map>
+#include <unordered_map>
 
 #include "utilities.hpp"
 
 static const char* description = "Example for SKYLARK";
-typedef __gnu_cxx::hash_map<const char*, const char*> string_string_map_t;
-typedef __gnu_cxx::hash_map<const char*, int> string_int_map_t;
+typedef std::unordered_map<const char*, const char*> string_string_map_t;
+typedef std::unordered_map<const char*, int> string_int_map_t;
 
 static inline void print_help (const string_string_map_t& help_map,
                                const char* option=NULL,

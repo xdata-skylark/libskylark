@@ -6,8 +6,8 @@
 #include <iostream>
 #include <utility>
 #include <algorithm>
-#include <ext/hash_map>
-#include <ext/hash_set>
+#include <unordered_map>
+#include <unordered_set>
 
 /* Definitions for all the parameters and constants that we will ever use */
 static const int ROOT                    = 0;
@@ -37,7 +37,7 @@ extern char* chr_params[NUM_CHR_PARAMETERS];
 
 // namespace std {
 //   /* Specialize std::equal_to for strings; used for parameter passing */
-//   template <> 
+//   template <>
 //   struct equal_to<const char*> {
 //     bool operator()(const char* one, const char* two) const {
 //       return (0==strcmp(one,two));
@@ -45,9 +45,9 @@ extern char* chr_params[NUM_CHR_PARAMETERS];
 //   };
 
 //   /* Specialize std::equal_to for pairs; used for parameter passing */
-//   template <typename T1, typename T2> 
+//   template <typename T1, typename T2>
 //   struct equal_to<std::pair<T1,T2> >{
-//     bool operator()(const std::pair<T1,T2>& one, 
+//     bool operator()(const std::pair<T1,T2>& one,
 //                     const std::pair<T1,T2>& two) const {
 //       return (one.first==two.first && one.second==two.second);
 //     }

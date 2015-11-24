@@ -3,7 +3,7 @@
 #include <cstring>
 #include <vector>
 #include <utility>
-#include <ext/hash_map>
+#include <unordered_map>
 
 #include <El.hpp>
 #include <boost/mpi.hpp>

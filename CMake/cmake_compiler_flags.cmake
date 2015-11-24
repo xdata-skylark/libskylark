@@ -6,7 +6,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     )
 
     set (COMPILER_SPEC_FLAGS
-        "-W -Wall -Wno-write-strings -Wno-strict-aliasing -Wno-format -Wno-deprecated -Wno-unused-variable -Wno-unused-parameter -Wno-sign-compare -Wno-unused-local-typedef"
+        "-W -Wall -Wno-write-strings -Wno-unused-variable -Wno-unused-parameter -Wno-sign-compare -Wno-unused-local-typedef"
     )
 
     #set (LINK_FLAGS

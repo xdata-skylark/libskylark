@@ -378,6 +378,16 @@ void ReadArcList(const std::string& fname,
     base::sparse_matrix_t<value_t>& X,
     boost::mpi::communicator &comm) {
 
+    // TODO: temp!
+    SKYLARK_THROW_EXCEPTION(base::unsupported_base_operation());
+
+}
+
+template <typename T>
+void ReadArcList(const std::string& fname,
+    El::Matrix<T>& X, boost::mpi::communicator &comm) {
+
+    // TODO: should we add this?
     SKYLARK_THROW_EXCEPTION(base::unsupported_base_operation());
 
 }
@@ -387,6 +397,7 @@ void ReadArcList(const std::string& fname,
     El::DistMatrix<value_t, U, V>& X,
     boost::mpi::communicator &comm) {
 
+    // TODO: should we add this?
     SKYLARK_THROW_EXCEPTION(base::unsupported_base_operation());
 
 }

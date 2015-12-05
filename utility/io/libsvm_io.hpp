@@ -747,6 +747,165 @@ void WriteLIBSVM(const std::string& fname,
 
 /**
  * Reads X and Y from a directory of files in libsvm format.
+ * X and Y are Elemental dense matrices.
+ *
+ * @param fname input file name
+ * @param X output X
+ * @param Y output Y
+ * @param direction whether the examples are to be put in rows or columns
+ * @param min_d minimum number of rows in the matrix.
+ */
+template<typename T, typename R>
+void ReadDirLIBSVM(const std::string& dname,
+    El::Matrix<T>& X, El::Matrix<R>& Y,
+    base::direction_t direction, int min_d = 0) {
+
+    std::string line;
+    std::string token;
+    R label;
+    unsigned int start = 0;
+    unsigned int t;
+    int n = 0, nt = 0;
+    int d = 0;
+    int i, j, last;
+    char c;
+    int nnz=0;
+    int nz;
+
+    boostfs::path full_path(boostfs::system_complete(boostfs::path(dname)));
+    boostfs::directory_iterator end_iter;
+
+    for(boostfs::directory_iterator dirit(full_path); dirit != end_iter;
+        dirit++) {
+
+        std::string fname = dirit->path().filename().string();
+        if (fname == "." || fname == ".." || fname[0] == '.')
+            continue;
+
+        std::ifstream in(dirit->path().string());
+
+        while(!in.eof()) {
+            getline(in, line);
+
+            // Ignore empty lines and comment lines (begin with #)
+            if(line.length() == 0 || line[0] == '#')
+                break;
+
+            n++;
+
+            // Figure out number of targets (only first line)
+            if (n == 1) {
+                std::string tstr;
+                std::istringstream tokenstream (line);
+                tokenstream >> tstr;
+                while (tstr.find(":") == std::string::npos) {
+                    nt++;
+                    if (tokenstream.eof())
+                        break;
+                    tokenstream >> tstr;
+                }
+            }
+
+            if (direction == base::COLUMNS) {
+                size_t delim = line.find_last_of(":");
+                if(delim == std::string::npos)
+                    continue;
+
+                t = delim;
+                while(line[t]!=' ')
+                    t--;
+                std::string val = line.substr(t+1, delim - t);
+                last = atoi(val.c_str());
+                if (last>d)
+                    d = last;
+
+
+                std::istringstream tokenstream (line);
+                tokenstream >> label;
+                while (tokenstream >> token)
+                    nnz++;
+            } else {
+                std::istringstream tokenstream (line);
+                tokenstream >> label;
+
+                while (tokenstream >> token) {
+                    nnz++;
+                    size_t delim  = token.find(':');
+                    int ind = atoi(token.substr(0, delim).c_str());
+
+                    if (ind > d)
+                        d = ind;
+                }
+            }
+        }
+
+        in.close();
+    }
+
+    if (min_d > 0)
+        d = std::max(d, min_d);
+
+
+    if (direction == base::ROWS) {
+        X.Resize(n, d);
+        Y.Resize(n, nt);
+    } else {
+        X.Resize(d, n);
+        Y.Resize(nt, n);
+    }
+
+    T *Xdata = X.Buffer();
+    El::Int ldX = X.LDim();
+    R *Ydata = Y.Buffer();
+    El::Int ldY = Y.LDim();
+
+    // prepare for second pass
+    t = 0;
+
+    for(boostfs::directory_iterator dirit(full_path); dirit != end_iter;
+        dirit++) {
+
+        std::string fname = dirit->path().filename().string();
+        if (fname == "." || fname == ".." || fname[0] == '.')
+            continue;
+
+        std::ifstream in(dirit->path().string());
+        while(!in.eof()) {
+            getline(in, line);
+
+            // Ignore empty lines and comment lines (begin with #)
+            if(line.length() == 0 || line[0] == '#')
+                break;
+            t++;
+
+            std::istringstream tokenstream (line);
+
+            for(int r = 0; r < nt; r++) {
+                tokenstream >> label;
+                if (direction == base::COLUMNS)
+                    Ydata[t * ldY + r] = label;
+                else
+                    Ydata[r * ldY + t] = label;
+            }
+
+            while (tokenstream >> token) {
+                size_t delim  = token.find(':');
+                std::string ind = token.substr(0, delim);
+                std::string val = token.substr(delim+1); //.substr(delim+1);
+                j = atoi(ind.c_str()) - 1;
+
+                if (direction == base::COLUMNS)
+                    Xdata[t * ldX + j] = atof(val.c_str());
+                else
+                    Xdata[j * ldX + t] = atof(val.c_str());
+
+            }
+        }
+    }
+}
+
+/**
+ * Reads X and Y from a directory of files in libsvm format.
  * X is a Skylark local sparse matrix, and Y is Elemental dense matrices.
  *
  * @param fname input file name
@@ -1155,10 +1314,8 @@ void ReadDirLIBSVM(const std::string& dname,
 
 #else
 
-template<typename T, El::Distribution UX, El::Distribution VX,
-         typename R, El::Distribution UY, El::Distribution VY>
-void ReadDirLIBSVM(const std::string& dname,
-    El::DistMatrix<T, UX, VX>& X, El::DistMatrix<R, UY, VY>& Y,
+template<typename XType, typename YType>
+void ReadDirLIBSVM(const std::string& dname, XType& X, YType& Y,
     base::direction_t direction, int min_d = 0, int blocksize = 10000) {
 
     SKYLARK_THROW_EXCEPTION(base::io_exception() <<

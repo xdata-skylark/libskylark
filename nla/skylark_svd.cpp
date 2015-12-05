@@ -198,6 +198,7 @@ int main(int argc, char* argv[]) {
 
     boost::mpi::communicator world;
     int rank = world.rank();
+    int size = world.size();
 
     int seed, k, powerits, port;
     std::string fname, ftype, prefix, hdfs;
@@ -303,55 +304,116 @@ int main(int argc, char* argv[]) {
 
     SKYLARK_BEGIN_TRY()
 
-        if (!as_symmetric) {
+        if (size == 1) {
+            if (!as_symmetric) {
 
-            if (use_single) {
-                if (as_sparse)
-                    execute<skylark::base::sparse_matrix_t<float>,
-                            El::Matrix<float> >(directory, fname, hdfs,
-                                port, k, params, prefix, context);
-                else
-                    execute<El::DistMatrix<float>,
-                            El::DistMatrix<float> >(directory, fname, hdfs,
-                                port, k, params, prefix, context);
+                if (use_single) {
+                    if (as_sparse)
+                        execute<skylark::base::sparse_matrix_t<float>,
+                                El::Matrix<float> >(
+                                    directory, fname, hdfs,
+                                    port, k, params, prefix, context);
+                    else
+                        execute<El::Matrix<float>,
+                                El::Matrix<float> >(directory, fname, hdfs,
+                                    port, k, params, prefix, context);
+
+                } else {
+                    if (as_sparse)
+                        execute<skylark::base::sparse_matrix_t<double>,
+                                El::Matrix<double> >(
+                                    directory, fname, hdfs,
+                                    port, k, params, prefix, context);
+                    else
+                        execute<El::Matrix<double>,
+                                El::Matrix<double> >(directory, fname, hdfs,
+                                    port, k, params, prefix, context);
+                }
 
             } else {
-                if (as_sparse)
-                    execute<skylark::base::sparse_matrix_t<double>,
-                            El::Matrix<double> >(directory, fname, hdfs,
-                                port, k, params, prefix, context);
-                else
-                    execute<El::DistMatrix<double>,
-                            El::DistMatrix<double> >(directory, fname, hdfs,
-                                port, k, params, prefix, context);
+
+                if (use_single) {
+                    if (as_sparse)
+                        execute_sym<skylark::base::sparse_matrix_t<float>,
+                                    El::Matrix<float> >(
+                                        directory, fname, ftype,
+                                        hdfs, port, lower, k, params, prefix,
+                                        context);
+                    else
+                        execute_sym<El::Matrix<float>,
+                                    El::Matrix<float> >(directory, fname, ftype,
+                                        hdfs, port, lower, k, params, prefix,
+                                        context);
+
+                } else {
+                    if (as_sparse)
+                        execute_sym<skylark::base::sparse_matrix_t<double>,
+                                    El::Matrix<double>,
+                                    El::Matrix<double> >(
+                                        directory, fname, ftype, hdfs, port, lower,
+                                        k, params, prefix, context);
+                    else
+                        execute_sym<El::Matrix<double>,
+                                    El::Matrix<double> >(directory, fname,
+                                        ftype, hdfs, port, lower, k, params,
+                                        prefix, context);
+                }
             }
 
         } else {
+            if (!as_symmetric) {
 
-            if (use_single) {
-                if (as_sparse)
-                    execute_sym<skylark::base::sparse_matrix_t<float>,
-                                El::Matrix<float> >(directory, fname, ftype,
-                                    hdfs, port, lower, k, params, prefix,
-                                    context);
-                else
-                    execute_sym<El::DistMatrix<float>,
-                                El::DistMatrix<float> >(directory, fname, ftype,
-                                    hdfs, port, lower, k, params, prefix,
-                                    context);
+                if (use_single) {
+                    if (as_sparse)
+                        execute<skylark::base::sparse_vc_star_matrix_t<float>,
+                                El::DistMatrix<float, El::VC, El::STAR> >(
+                                    directory, fname, hdfs,
+                                    port, k, params, prefix, context);
+                    else
+                        execute<El::DistMatrix<float>,
+                                El::DistMatrix<float> >(directory, fname, hdfs,
+                                    port, k, params, prefix, context);
+
+                } else {
+                    if (as_sparse)
+                        execute<skylark::base::sparse_vc_star_matrix_t<double>,
+                                El::DistMatrix<double, El::VC, El::STAR> >(
+                                    directory, fname, hdfs,
+                                    port, k, params, prefix, context);
+                    else
+                        execute<El::DistMatrix<double>,
+                                El::DistMatrix<double> >(directory, fname, hdfs,
+                                    port, k, params, prefix, context);
+                }
 
             } else {
-                if (as_sparse)
-                    execute_sym<skylark::base::sparse_vc_star_matrix_t<double>,
-                            El::DistMatrix<double, El::VC, El::STAR>,
-                            El::DistMatrix<double, El::VC, El::STAR> >(
-                                    directory, fname, ftype, hdfs, port, lower,
-                                    k, params, prefix, context);
-                else
-                    execute_sym<El::DistMatrix<double>,
-                                El::DistMatrix<double> >(directory, fname,
-                                    ftype, hdfs, port, lower, k, params,
-                                    prefix, context);
+
+                if (use_single) {
+                    if (as_sparse)
+                        execute_sym<skylark::base::sparse_vc_star_matrix_t<float>,
+                                    El::DistMatrix<float, El::VC, El::STAR> >(
+                                        directory, fname, ftype,
+                                        hdfs, port, lower, k, params, prefix,
+                                        context);
+                    else
+                        execute_sym<El::DistMatrix<float>,
+                                    El::DistMatrix<float> >(directory, fname, ftype,
+                                        hdfs, port, lower, k, params, prefix,
+                                        context);
+
+                } else {
+                    if (as_sparse)
+                        execute_sym<skylark::base::sparse_vc_star_matrix_t<double>,
+                                    El::DistMatrix<double, El::VC, El::STAR>,
+                                    El::DistMatrix<double, El::VC, El::STAR> >(
+                                        directory, fname, ftype, hdfs, port, lower,
+                                        k, params, prefix, context);
+                    else
+                        execute_sym<El::DistMatrix<double>,
+                                    El::DistMatrix<double> >(directory, fname,
+                                        ftype, hdfs, port, lower, k, params,
+                                        prefix, context);
+                }
             }
         }
 

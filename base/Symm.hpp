@@ -26,7 +26,7 @@ template<typename T>
 inline void Symm(El::LeftOrRight side, El::UpperOrLower uplo,
     T alpha, const El::Matrix<T>& A, const El::Matrix<T>& B,
     El::Matrix<T>& C) {
-    El::Symm(side, uplo, alpha, A, B, C);
+    El::Symm(side, uplo, alpha, A, B, T(0.0), C);
 }
 
 template<typename T>

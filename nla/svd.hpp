@@ -36,10 +36,6 @@ struct approximate_svd_params_t : public base::params_t {
         num_iterations(num_iterations), skip_qr(skip_qr) {};
 };
 
-
-
-namespace detail {
-
 /**
  * Power iteration from a specific starting vectors (the V input).
  *
@@ -214,8 +210,9 @@ void SymmetricPowerIteration(El::UpperOrLower uplo, El::Orientation vorientation
     }
 }
 
+namespace detail {
+
 /**
- * Parameter structure for approximate SVD
  * Approximate SVD computation.
  *
  * Compute an approximate SVD-like decomposition of the input A (m-by-n).

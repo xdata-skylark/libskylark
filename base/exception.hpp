@@ -19,6 +19,7 @@ const char* const skylark_errmsg[] = {
     , "Skylark failed due to a unsupported base operation"
     , "Skylark failed in I/O calls"
     , "Skylark failed because invalid parameter was passed"
+    , "Skylark failed because base classes were used incorrectly"
 };
 
 /// resolves an error_code to a human readable failure message
@@ -207,6 +208,17 @@ public:
         *this << error_code(111);
     }
 };
+
+/// exceptions for invalid usage of base classes (runtime check that detects bugs)
+struct invalid_usage : virtual skylark_exception {
+public:
+    using skylark_exception::operator<<;
+
+    invalid_usage() {
+        *this << error_code(112);
+    }
+};
+
 
 
 } // namespace base

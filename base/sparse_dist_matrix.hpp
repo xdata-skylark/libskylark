@@ -157,6 +157,13 @@ struct sparse_dist_matrix_t {
             _values[i] *= factor;
     }
 
+    sparse_matrix_t<ValueType> &matrix() {
+        return *_local_buffer;
+    }
+
+    const sparse_matrix_t<ValueType> &locked_matrix() const {
+        return *_local_buffer;
+    }
 
     El::Int height()   const { return _n_rows; }
     El::Int width()    const { return _n_cols; }

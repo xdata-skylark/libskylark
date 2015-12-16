@@ -9,9 +9,6 @@
 #include "computed_matrix.hpp"
 #include "../utility/typer.hpp"
 
-#include "detail/dist_mixed_gemm.hpp"
-#include "detail/combblas_mixed_gemm.hpp"
-
 // Defines a generic Gemm function that receives both dense and sparse matrices.
 
 namespace skylark { namespace base {
@@ -571,6 +568,10 @@ inline void Gemm(El::Orientation oA, El::Orientation oB,
     base::Gemm(oA, oB, alpha, A.materialize(), B.materialize(), C);
 }
 
-
 } } // namespace skylark::base
+
+// Additional implementations
+#include "detail/dist_mixed_gemm.hpp"
+#include "detail/combblas_mixed_gemm.hpp"
+
 #endif // SKYLARK_GEMM_HPP

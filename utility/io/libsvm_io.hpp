@@ -10,6 +10,7 @@ namespace boostfs = boost::filesystem;
 #endif
 
 #include <unordered_map>
+#include <boost/serialization/list.hpp>
 
 namespace skylark { namespace utility { namespace io {
 
@@ -498,6 +499,10 @@ void ReadLIBSVM(const std::string& fname,
 
     boost::mpi::communicator comm = skylark::utility::get_communicator(Y);
     int rank = comm.rank();
+    int size = comm.size();
+
+    std::list<int> non_local_updates_j[size], non_local_updates_row[size];
+    std::list<T> non_local_updates_v[size];
 
     // make one pass over the data to figure out dimensions -
     // will pay in terms of preallocated storage.
@@ -558,6 +563,7 @@ void ReadLIBSVM(const std::string& fname,
     El::DistMatrix<T, El::CIRC, El::CIRC> YB(Y.Grid());
     El::DistMatrix<T, El::VC, El::STAR> Yv(Y.Grid());
 
+    int row = 0;
     for(int i=0; i<numblocks+1; i++) {
         if (i==numblocks)
             block = leftover;
@@ -594,14 +600,58 @@ void ReadLIBSVM(const std::string& fname,
                     ind = token.substr(0, delim);
                     val = token.substr(delim+1); //.substr(delim+1);
                     j = atoi(ind.c_str()) - 1;
-                    if (direction == base::COLUMNS)
-                        X.queue_update(j, t, atof(val.c_str()));
-                    else
-                        X.queue_update(t, j, atof(val.c_str()));
+                    int owner = (direction == base::COLUMNS) ?
+                        X.owner(j, row) : X.owner(row, j);
+                    if (owner == 0) {
+                        if (direction == base::COLUMNS) 
+                            X.queue_update_local(j, row, atof(val.c_str()));
+                        else
+                            X.queue_update_local(row, j, atof(val.c_str()));
+                    } else {
+                        non_local_updates_j[owner].push_back(j);
+                        non_local_updates_row[owner].push_back(row);
+                        non_local_updates_v[owner].push_back(atof(val.c_str()));
+                    }
                 }
 
+                row++;
                 t++;
             }
+
+            for (int rk = 1; rk < size; rk++) {
+                comm.send(rk, 0, non_local_updates_j[rk]);
+                comm.send(rk, 0, non_local_updates_row[rk]);
+                comm.send(rk, 0, non_local_updates_v[rk]);
+
+                non_local_updates_j[rk].clear();
+                non_local_updates_row[rk].clear();
+                non_local_updates_v[rk].clear();
+            }
+        } else {
+                comm.recv(0, 0, non_local_updates_j[rank]);
+                comm.recv(0, 0, non_local_updates_row[rank]);
+                comm.recv(0, 0, non_local_updates_v[rank]);
+
+                auto it_j = non_local_updates_j[rank].begin();
+                auto it_row = non_local_updates_row[rank].begin();
+                auto it_v = non_local_updates_v[rank].begin();
+
+                for(; it_j != non_local_updates_j[rank].end();) {
+
+                    int j = *it_j, row = *it_row;
+                    T val = *it_v;
+
+                    if (direction == base::COLUMNS) 
+                        X.queue_update_local(j, row, val);
+                    else
+                        X.queue_update_local(row, j, val);
+
+                    it_j++; it_row++; it_v++;
+                }
+
+                non_local_updates_j[rank].clear();
+                non_local_updates_row[rank].clear();
+                non_local_updates_v[rank].clear();
         }
 
         // The calls below should distribute the data to all the nodes.
@@ -613,6 +663,8 @@ void ReadLIBSVM(const std::string& fname,
 
         Yv = YB;
     }
+
+    X.finalize();
 }
 
 

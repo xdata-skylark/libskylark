@@ -15,7 +15,8 @@ enum file_types {
     ARC_LIST
 };
 
-template<typename InputType, typename FactorType, typename UType = FactorType>
+template<typename InputType, typename FactorType, typename UType = FactorType,
+         typename YType = FactorType>
 void execute(bool directory, const std::string &fname,
     const std::string &hdfs, int port, int k,
     const skylark::nla::approximate_svd_params_t &params,
@@ -26,8 +27,9 @@ void execute(bool directory, const std::string &fname,
     int rank = world.rank();
 
     InputType A;
-    FactorType S, V, Y;
+    FactorType S, V;
     UType U;
+    YType Y;
 
     boost::mpi::timer timer;
 
@@ -99,7 +101,8 @@ void execute(bool directory, const std::string &fname,
                   << " sec\n";
 }
 
-template<typename InputType, typename FactorType, typename UType = FactorType>
+template<typename InputType, typename FactorType, typename UType = FactorType,
+         typename YType = FactorType>
 void execute_sym(bool directory, const std::string &fname,
     const std::string& ftype,
     const std::string &hdfs, int port,
@@ -112,7 +115,8 @@ void execute_sym(bool directory, const std::string &fname,
     int rank = world.rank();
 
     InputType A;
-    FactorType S, V, Y;
+    FactorType S, V;
+    YType Y;
 
     boost::mpi::timer timer;
 
@@ -366,6 +370,8 @@ int main(int argc, char* argv[]) {
                 if (use_single) {
                     if (as_sparse)
                         execute<skylark::base::sparse_vc_star_matrix_t<float>,
+                                El::DistMatrix<float, El::STAR, El::STAR>,
+                                El::DistMatrix<float, El::VC, El::STAR>,
                                 El::DistMatrix<float, El::VC, El::STAR> >(
                                     directory, fname, hdfs,
                                     port, k, params, prefix, context);
@@ -377,6 +383,8 @@ int main(int argc, char* argv[]) {
                 } else {
                     if (as_sparse)
                         execute<skylark::base::sparse_vc_star_matrix_t<double>,
+                                El::DistMatrix<double, El::STAR, El::STAR>,
+                                El::DistMatrix<double, El::VC, El::STAR>,
                                 El::DistMatrix<double, El::VC, El::STAR> >(
                                     directory, fname, hdfs,
                                     port, k, params, prefix, context);
@@ -391,6 +399,7 @@ int main(int argc, char* argv[]) {
                 if (use_single) {
                     if (as_sparse)
                         execute_sym<skylark::base::sparse_vc_star_matrix_t<float>,
+                                    El::DistMatrix<float, El::VC, El::STAR>,
                                     El::DistMatrix<float, El::VC, El::STAR> >(
                                         directory, fname, ftype,
                                         hdfs, port, lower, k, params, prefix,

@@ -27,14 +27,14 @@ struct sparse_matrix_t {
 
     sparse_matrix_t()
         : _ownindptr(false), _ownindices(false), _ownvalues(false),
-          _dirty_struct(false), _height(0), _width(0), _nnz(0),
+          _readonly(false), _dirty_struct(false), _height(0), _width(0), _nnz(0),
           _indptr(nullptr), _indices(nullptr), _values(nullptr)
     {}
 
     // The following relies on C++11
     sparse_matrix_t(sparse_matrix_t<ValueType>&& A) :
         _ownindptr(A._ownindptr), _ownindices(A._ownindices),
-        _ownvalues(A._ownvalues), _dirty_struct(A._dirty_struct),
+        _ownvalues(A._ownvalues), _readonly(A._readonly), _dirty_struct(A._dirty_struct),
         _height(A._height), _width(A._width), _nnz(A._nnz),
         _indptr(A._indptr), _indices(A._indices), _values(A._values)
     {
@@ -93,6 +93,38 @@ struct sparse_matrix_t {
         _ownvalues = ownvalues;
 
         _dirty_struct = true;
+        _readonly = false;
+    }
+
+    /**
+     * Attach new structure and values. Values are read-only;
+     */
+    void readonly_attach(const index_type *indptr, const index_type *indices,
+        value_type *values, int nnz, int n_rows, int n_cols, bool _own = false) {
+        attach(indptr, indices, values, nnz, n_rows, n_cols, _own, _own, _own);
+    }
+
+    /**
+     * Attach new structure and values. Values are read-only;
+     */
+    void readonly_attach(const index_type *indptr, const index_type *indices,
+        const value_type *values, int nnz, int n_rows, int n_cols,
+        bool ownindptr, bool ownindices, bool ownvalues) {
+        _free_data();
+
+        _indptr = indptr;
+        _indices = indices;
+        _values = const_cast<value_type*>(values);
+        _nnz = nnz;
+        _width = n_cols;
+        _height = n_rows;
+
+        _ownindptr = ownindptr;
+        _ownindices = ownindices;
+        _ownvalues = ownvalues;
+
+        _dirty_struct = true;
+        _readonly = true;
     }
 
 
@@ -174,6 +206,9 @@ struct sparse_matrix_t {
     }
 
     value_type* values() {
+        if (_readonly)
+            SKYLARK_THROW_EXCEPTION(base::invalid_usage());
+
         return _values;
     }
 
@@ -216,6 +251,8 @@ private:
     bool _ownindptr;
     bool _ownindices;
     bool _ownvalues;
+
+    bool _readonly; // Is the numerical values read-only?
 
     bool _dirty_struct;
 

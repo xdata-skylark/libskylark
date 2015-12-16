@@ -12,10 +12,10 @@ namespace skylark { namespace base {
 
 // sparse(VC/STAR) * dense(VC/STAR) -> dense(VC/STAR)
 template<typename value_type>
-void Gemm(El::Orientation oA, El::Orientation oB, double alpha,
+void Gemm(El::Orientation oA, El::Orientation oB, value_type alpha,
           const sparse_vc_star_matrix_t<value_type> &A,
           const El::DistMatrix<value_type, El::VC, El::STAR> &B,
-          double beta,
+          value_type beta,
           El::DistMatrix<value_type, El::VC, El::STAR> &C) {
 
     //TODO:
@@ -24,44 +24,54 @@ void Gemm(El::Orientation oA, El::Orientation oB, double alpha,
 
 // sparse(VC/STAR) * dense(VC/STAR) -> dense(VC/STAR)
 template<typename value_type>
-void Gemm(El::Orientation oA, El::Orientation oB, double alpha,
+void Gemm(El::Orientation oA, El::Orientation oB, value_type alpha,
           const sparse_vc_star_matrix_t<value_type> &A,
           const El::DistMatrix<value_type, El::VC, El::STAR> &B,
           El::DistMatrix<value_type, El::VC, El::STAR> &C) {
 
-    base::Gemm<value_type>(oA, oB, alpha, A, B, 0.0, C);
+    base::Gemm(oA, oB, alpha, A, B, value_type(0.0), C);
 }
 
 
 // sparse(VC/STAR) * dense(VC/STAR) -> dense(STAR/STAR)
 template<typename value_type>
-void Gemm(El::Orientation oA, El::Orientation oB, double alpha,
+void Gemm(El::Orientation oA, El::Orientation oB, value_type alpha,
           const sparse_vc_star_matrix_t<value_type> &A,
           const El::DistMatrix<value_type, El::VC, El::STAR> &B,
-          double beta,
+          value_type beta,
           El::DistMatrix<value_type, El::STAR, El::STAR> &C) {
 
-    //TODO:
-    SKYLARK_THROW_EXCEPTION(base::unsupported_base_operation());
+    if ((oA == El::ADJOINT || oA == El::TRANSPOSE) && oB == El::NORMAL) {
+        boost::mpi::communicator comm(C.Grid().Comm().comm,
+            boost::mpi::comm_attach);
+
+        int size = comm.size();
+        base::Gemm(oA, oB, alpha, A.locked_matrix(), B.LockedMatrix(),
+            beta / value_type(size), C.Matrix());
+        boost::mpi::all_reduce (comm,
+            boost::mpi::inplace_t<value_type *>(C.Buffer()),
+            C.LDim() * C.LocalWidth(), std::plus<value_type>());
+    } else
+        SKYLARK_THROW_EXCEPTION(base::unsupported_base_operation());
 }
 
 // sparse(VC/STAR) * dense(VC/STAR) -> dense(STAR/STAR)
 template<typename value_type>
-void Gemm(El::Orientation oA, El::Orientation oB, double alpha,
+void Gemm(El::Orientation oA, El::Orientation oB, value_type alpha,
           const sparse_vc_star_matrix_t<value_type> &A,
           const El::DistMatrix<value_type, El::VC, El::STAR> &B,
           El::DistMatrix<value_type, El::STAR, El::STAR> &C) {
 
-    base::Gemm<value_type>(oA, oB, alpha, A, B, 0.0, C);
+    base::Gemm(oA, oB, alpha, A, B, value_type(0.0), C);
 }
 
 
 // dense(VC/STAR) * sparse(VC/STAR) -> dense(VC/STAR)
 template<typename value_type>
-void Gemm(El::Orientation oA, El::Orientation oB, double alpha,
+void Gemm(El::Orientation oA, El::Orientation oB, value_type alpha,
           const El::DistMatrix<value_type, El::VC, El::STAR> &A,
           const sparse_vc_star_matrix_t<value_type> &B,
-          double beta,
+          value_type beta,
           El::DistMatrix<value_type, El::VC, El::STAR> &C) {
 
     //TODO
@@ -70,21 +80,21 @@ void Gemm(El::Orientation oA, El::Orientation oB, double alpha,
 
 // dense(VC/STAR) * sparse(VC/STAR) -> dense(VC/STAR)
 template<typename value_type>
-void Gemm(El::Orientation oA, El::Orientation oB, double alpha,
+void Gemm(El::Orientation oA, El::Orientation oB, value_type alpha,
           const El::DistMatrix<value_type, El::VC, El::STAR> &A,
           const sparse_vc_star_matrix_t<value_type> &B,
           El::DistMatrix<value_type, El::VC, El::STAR> &C) {
 
-    base::Gemm<value_type>(oA, oB, alpha, A, B, 0.0, C);
+    base::Gemm(oA, oB, alpha, A, B, value_type(0.0), C);
 }
 
 
 // dense(STAR/STAR) * sparse(VC/STAR) -> dense(VC/STAR)
 template<typename value_type>
-void Gemm(El::Orientation oA, El::Orientation oB, double alpha,
+void Gemm(El::Orientation oA, El::Orientation oB, value_type alpha,
           const El::DistMatrix<value_type, El::STAR, El::STAR> &A,
           const sparse_vc_star_matrix_t<value_type> &B,
-          double beta,
+          value_type beta,
           El::DistMatrix<value_type, El::VC, El::STAR> &C) {
 
     //TODO:
@@ -93,21 +103,21 @@ void Gemm(El::Orientation oA, El::Orientation oB, double alpha,
 
 // dense(STAR/STAR) * sparse(VC/STAR) -> dense(VC/STAR)
 template<typename value_type>
-void Gemm(El::Orientation oA, El::Orientation oB, double alpha,
+void Gemm(El::Orientation oA, El::Orientation oB, value_type alpha,
           const El::DistMatrix<value_type, El::STAR, El::STAR> &A,
           const sparse_vc_star_matrix_t<value_type> &B,
           El::DistMatrix<value_type, El::VC, El::STAR> &C) {
 
-    base::Gemm<value_type>(oA, oB, alpha, A, B, 0.0, C);
+    base::Gemm(oA, oB, alpha, A, B, value_type(0.0), C);
 }
 
 
 // dense(VC/STAR) * sparse(VC/STAR) -> dense(STAR/STAR)
 template<typename value_type>
-void Gemm(El::Orientation oA, El::Orientation oB, double alpha,
+void Gemm(El::Orientation oA, El::Orientation oB, value_type alpha,
           const El::DistMatrix<value_type, El::VC, El::STAR> &A,
           const sparse_vc_star_matrix_t<value_type> &B,
-          double beta,
+          value_type beta,
           El::DistMatrix<value_type, El::STAR, El::STAR> &C) {
 
     //TODO:
@@ -116,22 +126,22 @@ void Gemm(El::Orientation oA, El::Orientation oB, double alpha,
 
 // dense(VC/STAR) * sparse(VC/STAR) -> dense(STAR/STAR)
 template<typename value_type>
-void Gemm(El::Orientation oA, El::Orientation oB, double alpha,
+void Gemm(El::Orientation oA, El::Orientation oB, value_type alpha,
           const El::DistMatrix<value_type, El::VC, El::STAR> &A,
           const sparse_vc_star_matrix_t<value_type> &B,
           El::DistMatrix<value_type, El::STAR, El::STAR> &C) {
 
-    base::Gemm<value_type>(oA, oB, alpha, A, B, 0.0, C);
+    base::Gemm(oA, oB, alpha, A, B, value_type(0.0), C);
 }
 
 
 
 // sparse(VC/STAR) * dense(STAR/STAR) -> dense(VC/STAR)
 template<typename value_type>
-void Gemm(El::Orientation oA, El::Orientation oB, double alpha,
+void Gemm(El::Orientation oA, El::Orientation oB, value_type alpha,
           const sparse_vc_star_matrix_t<value_type> &A,
           const El::DistMatrix<value_type, El::STAR, El::STAR> &B,
-          double beta,
+          value_type beta,
           El::DistMatrix<value_type, El::VC, El::STAR> &C) {
 
     assert(A.is_finalized());
@@ -155,9 +165,9 @@ void Gemm(El::Orientation oA, El::Orientation oB, double alpha,
 
         El::Scale(beta, C);
 
-#if SKYLARK_HAVE_OPENMP
-        #pragma omp parallel for
-#endif
+#       if SKYLARK_HAVE_OPENMP
+#       pragma omp parallel for
+#       endif
         for(int i = 0; i < n; i++)
             for(int col = 0; col < k; col++) {
                 int g_col = A.global_col(col);
@@ -193,22 +203,22 @@ void Gemm(El::Orientation oA, El::Orientation oB, double alpha,
 
 // sparse(VC/STAR) * dense(STAR/STAR) -> dense(VC/STAR)
 template<typename value_type>
-void Gemm(El::Orientation oA, El::Orientation oB, double alpha,
+void Gemm(El::Orientation oA, El::Orientation oB, value_type alpha,
           const sparse_vc_star_matrix_t<value_type> &A,
           const El::DistMatrix<value_type, El::STAR, El::STAR> &B,
           El::DistMatrix<value_type, El::VC, El::STAR> &C) {
 
-    base::Gemm<value_type>(oA, oB, alpha, A, B, 0.0, C);
+    base::Gemm(oA, oB, alpha, A, B, value_type(0.0), C);
 }
 
 
 
 // sparse(STAR/VR) * dense(VC/STAR) -> dense(STAR/STAR)
 template<typename value_type>
-void Gemm(El::Orientation oA, El::Orientation oB, double alpha,
+void Gemm(El::Orientation oA, El::Orientation oB, value_type alpha,
           const sparse_star_vr_matrix_t<value_type> &A,
           const El::DistMatrix<value_type, El::VC, El::STAR> &B,
-          double beta,
+          value_type beta,
           El::DistMatrix<value_type, El::STAR, El::STAR> &C) {
 
     assert(A.is_finalized());
@@ -255,10 +265,10 @@ void Gemm(El::Orientation oA, El::Orientation oB, double alpha,
 
 // sparse(STAR/VR) * dense(STAR/STAR) -> sparse(VC/STAR)
 template<typename value_type>
-void Gemm(El::Orientation oA, El::Orientation oB, double alpha,
+void Gemm(El::Orientation oA, El::Orientation oB, value_type alpha,
           const sparse_vc_star_matrix_t<value_type> &A,
           const El::DistMatrix<value_type, El::STAR, El::STAR> &B,
-          double beta,
+          value_type beta,
           sparse_vc_star_matrix_t<value_type> &C) {
 
     assert(A.is_finalized());
@@ -378,12 +388,12 @@ void Gemm(El::Orientation oA, El::Orientation oB, double alpha,
     C.finalize();
 }
 
-// sparse(VC/STAR) * sparse(VC/STAR) -> dense(STAR/STAR)
+// sparse(STAR/Vr) * sparse(VC/STAR) -> dense(STAR/STAR)
 template<typename value_type>
-void Gemm(El::Orientation oA, El::Orientation oB, double alpha,
+void Gemm(El::Orientation oA, El::Orientation oB, value_type alpha,
           const sparse_star_vr_matrix_t<value_type> &A,
           const sparse_vc_star_matrix_t<value_type> &B,
-          double beta,
+          value_type beta,
           El::DistMatrix<value_type, El::STAR, El::STAR> &C) {
 
     assert(A.is_finalized());

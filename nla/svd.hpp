@@ -215,254 +215,6 @@ namespace detail {
 /**
  * Approximate SVD computation.
  *
- * Compute an approximate SVD-like decomposition of the input A (m-by-n).
- * That is compute U (m-by-rank), S (rank-by-rank), and V (n-by-rank) such
- * that A ~= U * S * V^T. S is diagonal, with positive values, U and V have
- * orthonormal columns.
- *
- * Based on:
- *
- * Halko, Martinsson and Tropp
- * Finding Structure with Randomness: Probabilistic Algorithms for Constructing
- * Approximate Matrix Decompositions
- * SIAM Rev., 53(2), 217–288. (72 pages)
- *
- * \param A input matrix
- * \param U output: approximate left-singular vectors
- * \param S output: approximate singular values
- * \param V output: approximate right-singular vectors
- * \param rank target rank
- * \param params parameter strcture
- */
-template <typename InputType, typename UType, typename SType, typename VType>
-struct ApproximateSVD_t {
-
-    void operator()(const InputType &A, UType &U, SType &S, VType &V, int rank,
-    base::context_t& context, approximate_svd_params_t params) {
-
-        typedef typename skylark::utility::typer_t<InputType>::value_type
-            value_type;
-
-        bool log_lev1 = params.am_i_printing && params.log_level >= 1;
-        bool log_lev2 = params.am_i_printing && params.log_level >= 2;
-
-        int m = base::Height(A);
-        int n = base::Width(A);
-
-        /**
-        * Check if sizes match.
-        */
-        if (rank > std::min(m, n)) {
-            std::string msg = "Incompatible matrix dimensions and target rank";
-            if (log_lev1)
-                params.log_stream << msg << std::endl;
-            SKYLARK_THROW_EXCEPTION(base::skylark_exception()
-                << base::error_msg(msg));
-        }
-
-        /** Code for m >= n */
-        if (m >= n) {
-            int k = std::max(rank, std::min(n,
-                    params.oversampling_ratio * rank +
-                    params.oversampling_additive));
-
-            /** Apply sketch transformation on the input matrix */
-            UType Q(m, k);
-            sketch::JLT_t<InputType, UType> Omega(n, k, context);
-            Omega.apply(A, Q, sketch::rowwise_tag());
-
-            /** Power iteration */
-            PowerIteration(El::ADJOINT, El::NORMAL, El::NORMAL, A, Q, V,
-                params.num_iterations, !params.skip_qr);
-
-            if (params.skip_qr) {
-                if (params.num_iterations == 0) {
-                    VType R;
-                    El::qr::Explicit(Q, R);
-                    El::Trsm(El::RIGHT, El::UPPER, El::NORMAL, El::NON_UNIT,
-                        static_cast<value_type>(1.0), R, V);
-                } else {
-                    // The above computation, while mathemetically correct for
-                    // any number of iterations, is not robust enough numerically
-                    // when number of power iteration is greater than 0.
-                    El::qr::ExplicitUnitary(Q);
-                    base::Gemm(El::ADJOINT, El::NORMAL, static_cast<value_type>(1.0), A, Q, V);
-                }
-            }
-
-            /** Compute factorization & truncate to rank */
-            VType B;
-            El::SVD(V, S, B);
-            S.Resize(rank, 1); V.Resize(n, rank);
-            VType B1 = base::ColumnView(B, 0, rank);
-            base::Gemm(El::NORMAL, El::NORMAL, static_cast<value_type>(1.0), Q, B1, U);
-        }
-
-        /** Code for m < n */
-        if (m < n) {
-            int k = std::max(rank, std::min(m,
-                    params.oversampling_ratio * rank +
-                    params.oversampling_additive));
-
-            /** Apply sketch transformation on the input matrix */
-            VType Q(k, n);
-            sketch::JLT_t<InputType, UType> Omega(m, k, context);
-            Omega.apply(A, Q, sketch::columnwise_tag());
-
-            /** Power iteration */
-            PowerIteration(El::NORMAL, El::ADJOINT, El::NORMAL, A, Q, U,
-                params.num_iterations, !params.skip_qr);
-
-            if (params.skip_qr) {
-                // We should be able to do the same trick as for m>=n if
-                // num_iteration == 0, but the LQ factorization in Elemental
-                // does not work for this... (do not know why).
-                El::lq::ExplicitUnitary(Q);
-                base::Gemm(El::NORMAL, El::ADJOINT, static_cast<value_type>(1.0), A, Q, U);
-            }
-
-            /** Compute factorization & truncate to rank */
-            UType B;
-            El::SVD(U, S, B);
-            S.Resize(rank, 1); U.Resize(m, rank);
-            VType B1 = base::ColumnView(B, 0, rank);
-            base::Gemm(El::ADJOINT, El::NORMAL, static_cast<value_type>(1.0), Q, B1, V);
-        }
-    }
-};
-
-/**
- * Approximate SVD computation.
- *
- * Compute an approximate SVD-like decomposition of the input A (m-by-n).
- * That is compute U (m-by-rank), S (rank-by-rank), and V (n-by-rank) such
- * that A ~= U * S * V^T. S is diagonal, with positive values, U and V have
- * orthonormal columns.
- *
- * Based on:
- *
- * Halko, Martinsson and Tropp
- * Finding Structure with Randomness: Probabilistic Algorithms for Constructing
- * Approximate Matrix Decompositions
- * SIAM Rev., 53(2), 217–288. (72 pages)
- *
- * If the input type is VC/STAR, then presumably the matrix is
- * tall-and-skiny
- * Then U is tall and skinny and V is square. So, shouldn't UType be
- * VC/STAR and VType STAR/STAR ?
- *
- * \param A input matrix
- * \param U output: approximate left-singular vectors
- * \param S output: approximate singular values
- * \param V output: approximate right-singular vectors
- * \param rank target rank
- * \param context Skylark context
- * \param params parameter strcture
- */
-template <typename UType, typename SType, typename VType, typename value_type>
-struct ApproximateSVD_t<
-          typename base::sparse_vc_star_matrix_t<value_type>
-        , UType
-        , SType
-        , VType> {
-
-    void operator()(const base::sparse_vc_star_matrix_t<value_type> &A,
-        UType &U, SType &S, VType &V,
-        int rank, base::context_t& context, approximate_svd_params_t params) {
-
-        typedef base::sparse_vc_star_matrix_t<value_type> InputType;
-
-        bool log_lev1 = params.am_i_printing && params.log_level >= 1;
-        bool log_lev2 = params.am_i_printing && params.log_level >= 2;
-
-        int m = base::Height(A);
-        int n = base::Width(A);
-
-        /**
-        * Check if sizes match.
-        */
-        if (rank > std::min(m, n)) {
-            std::string msg = "Incompatible matrix dimensions and target rank";
-            if (log_lev1)
-                params.log_stream << msg << std::endl;
-            SKYLARK_THROW_EXCEPTION(base::skylark_exception()
-                << base::error_msg(msg));
-        }
-
-        /** Code for m >= n */
-        if (m >= n) {
-            int k = std::max(rank, std::min(n,
-                    params.oversampling_ratio * rank +
-                    params.oversampling_additive));
-
-            /** Apply sketch transformation on the input matrix */
-            UType Q(m, k);
-            sketch::JLT_t<InputType, UType> Omega(n, k, context);
-            Omega.apply(A, Q, sketch::rowwise_tag());
-
-            /** Power iteration */
-            PowerIteration(El::ADJOINT, El::NORMAL, El::NORMAL, A, Q, V,
-                params.num_iterations, !params.skip_qr);
-
-            if (params.skip_qr) {
-                if (params.num_iterations == 0) {
-                    VType R;
-                    El::qr::Explicit(Q, R);
-                    El::Trsm(El::RIGHT, El::UPPER, El::NORMAL, El::NON_UNIT,
-                        static_cast<value_type>(1.0), R, V);
-                } else {
-                    // The above computation, while mathemetically correct for
-                    // any number of iterations, is not robust enough numerically
-                    // when number of power iteration is greater than 0.
-                    El::qr::ExplicitUnitary(Q);
-                    base::Gemm(El::ADJOINT, El::NORMAL, static_cast<value_type>(1.0), A, Q, V);
-                }
-            }
-
-            /** Compute factorization & truncate to rank */
-            VType B;
-            El::SVD(V, S, B);
-            S.Resize(rank, 1); V.Resize(n, rank);
-            VType B1 = base::ColumnView(B, 0, rank);
-            base::Gemm(El::NORMAL, El::NORMAL, static_cast<value_type>(1.0), Q, B1, U);
-
-        } else { /** Code for m < n */
-
-            int k = std::max(rank, std::min(m,
-                    params.oversampling_ratio * rank +
-                    params.oversampling_additive));
-
-            /** Apply sketch transformation on the input matrix */
-            VType Q(k, n);
-            sketch::JLT_t<InputType, VType> Omega(m, k, context);
-            Omega.apply(A, Q, sketch::columnwise_tag());
-
-            /** Power iteration */
-            PowerIteration(El::NORMAL, El::ADJOINT, El::NORMAL, A, Q, U,
-                params.num_iterations, !params.skip_qr);
-
-            if (params.skip_qr) {
-                // We should be able to do the same trick as for m>=n if
-                // num_iteration == 0, but the LQ factorization in Elemental
-                // does not work for this... (do not know why).
-                El::lq::ExplicitUnitary(Q);
-                base::Gemm(El::NORMAL, El::ADJOINT, static_cast<value_type>(1.0), A, Q, U);
-            }
-
-            /** Compute factorization & truncate to rank */
-            UType B;
-            El::SVD(U, S, B);
-            S.Resize(rank, 1); U.Resize(m, rank);
-            VType B1 = base::ColumnView(B, 0, rank);
-            base::Gemm(El::ADJOINT, El::NORMAL, static_cast<value_type>(1.0), Q, B1, V);
-        }
-    }
-};
-
-
-/**
- * Approximate SVD computation.
- *
  * Compute an approximate SVD-like decomposition of the input A (symmetric, n-by-n).
  * That is compute V (n-by-rank), S (rank-by-rank) such
  * that A ~= V * S * V^T. S is diagonal, with positive values,  V has
@@ -630,8 +382,96 @@ void ApproximateSVD(const InputType &A, UType &U, SType &S, VType &V,
     int rank, base::context_t& context,
     approximate_svd_params_t params = approximate_svd_params_t()) {
 
-    detail::ApproximateSVD_t<InputType, UType, SType, VType> svd;
-    svd(A, U, S, V, rank, context, params);
+    typedef typename skylark::utility::typer_t<InputType>::value_type
+        value_type;
+
+    bool log_lev1 = params.am_i_printing && params.log_level >= 1;
+    bool log_lev2 = params.am_i_printing && params.log_level >= 2;
+
+    int m = base::Height(A);
+    int n = base::Width(A);
+
+    /**
+     * Check if sizes match.
+     */
+    if (rank > std::min(m, n)) {
+        std::string msg = "Incompatible matrix dimensions and target rank";
+        if (log_lev1)
+            params.log_stream << msg << std::endl;
+        SKYLARK_THROW_EXCEPTION(base::skylark_exception()
+            << base::error_msg(msg));
+    }
+
+    /** Code for m >= n */
+    if (m >= n) {
+        int k = std::max(rank, std::min(n,
+                params.oversampling_ratio * rank +
+                params.oversampling_additive));
+
+        /** Apply sketch transformation on the input matrix */
+        UType Q(m, k);
+        sketch::JLT_t<InputType, UType> Omega(n, k, context);
+        Omega.apply(A, Q, sketch::rowwise_tag());
+
+        /** Power iteration */
+        PowerIteration(El::ADJOINT, El::NORMAL, El::NORMAL, A, Q, V,
+            params.num_iterations, !params.skip_qr);
+
+        if (params.skip_qr) {
+            if (params.num_iterations == 0) {
+                VType R;
+                El::qr::Explicit(Q, R);
+                El::Trsm(El::RIGHT, El::UPPER, El::NORMAL, El::NON_UNIT,
+                    static_cast<value_type>(1.0), R, V);
+            } else {
+                // The above computation, while mathemetically correct for
+                // any number of iterations, is not robust enough numerically
+                // when number of power iteration is greater than 0.
+                El::qr::ExplicitUnitary(Q);
+                base::Gemm(El::ADJOINT, El::NORMAL,
+                    static_cast<value_type>(1.0), A, Q, V);
+            }
+        }
+
+        /** Compute factorization & truncate to rank */
+        VType B;
+        El::SVD(V, S, B);
+        S.Resize(rank, 1); V.Resize(n, rank);
+        VType B1 = base::ColumnView(B, 0, rank);
+        base::Gemm(El::NORMAL, El::NORMAL,
+            static_cast<value_type>(1.0), Q, B1, U);
+    }
+
+    /** Code for m < n */
+    if (m < n) {
+        int k = std::max(rank, std::min(m,
+                params.oversampling_ratio * rank +
+                params.oversampling_additive));
+
+        /** Apply sketch transformation on the input matrix */
+        VType Q(k, n);
+        sketch::JLT_t<InputType, VType> Omega(m, k, context);
+        Omega.apply(A, Q, sketch::columnwise_tag());
+
+        /** Power iteration */
+        PowerIteration(El::NORMAL, El::ADJOINT, El::NORMAL, A, Q, U,
+            params.num_iterations, !params.skip_qr);
+
+        if (params.skip_qr) {
+            // We should be able to do the same trick as for m>=n if
+            // num_iteration == 0, but the LQ factorization in Elemental
+            // does not work for this... (do not know why).
+            El::lq::ExplicitUnitary(Q);
+            base::Gemm(El::NORMAL, El::ADJOINT, static_cast<value_type>(1.0), A, Q, U);
+        }
+
+        /** Compute factorization & truncate to rank */
+        UType B;
+        El::SVD(U, S, B);
+        S.Resize(rank, 1); U.Resize(m, rank);
+        VType B1 = base::ColumnView(B, 0, rank);
+        base::Gemm(El::ADJOINT, El::NORMAL, static_cast<value_type>(1.0), Q, B1, V);
+    }
 }
 
 template <typename InputType, typename SType, typename VType>

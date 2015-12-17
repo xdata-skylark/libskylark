@@ -6,6 +6,8 @@
 #include <boost/tuple/tuple.hpp>
 #include <boost/unordered_map.hpp>
 
+#include "exception.hpp"
+
 namespace skylark { namespace base {
 
 /**

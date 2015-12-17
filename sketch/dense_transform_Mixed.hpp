@@ -11,21 +11,21 @@
 #include "sketch_params.hpp"
 
 namespace skylark { namespace sketch {
+
 /**
- * Specialization distributed input sparse_vc_star_matrix_t and output in [SOMETHING, *]
+ * Specialization distributed input sparse_vc_star_matrix_t and output in [VC, *]
  */
-template <typename ValueType, El::Distribution ColDist,
-          typename ValuesAccessor>
+template <typename ValueType, typename ValuesAccessor>
 struct dense_transform_t <
     base::sparse_vc_star_matrix_t<ValueType>,
-    El::DistMatrix<ValueType, ColDist, El::STAR>,
+    El::DistMatrix<ValueType, El::VC, El::STAR>,
     ValuesAccessor> :
         public dense_transform_data_t<ValuesAccessor> {
 
     // Typedef matrix and distribution types so that we can use them regularly
     typedef ValueType value_type;
     typedef base::sparse_vc_star_matrix_t<value_type> matrix_type;
-    typedef El::DistMatrix<value_type, ColDist, El::STAR>
+    typedef El::DistMatrix<value_type, El::VC, El::STAR>
     output_matrix_type;
     typedef dense_transform_data_t<ValuesAccessor> data_type;
 
@@ -33,7 +33,7 @@ struct dense_transform_t <
      * Regular constructor
      */
     dense_transform_t (int N, int S, double scale, base::context_t& context)
-        : data_type (N, S, scale, context) {
+        : data_type (N, S, scale, context), _local(*this) {
 
     }
 
@@ -43,13 +43,13 @@ struct dense_transform_t <
     dense_transform_t (dense_transform_t<matrix_type,
                                          output_matrix_type,
                                          ValuesAccessor>& other)
-        : data_type(other) {}
+        : data_type(other), _local(other) {}
 
     /**
      * Constructor from data
      */
     dense_transform_t(const data_type& other_data)
-        : data_type(other_data) {}
+        : data_type(other_data), _local(other_data) {}
 
     /**
      * Apply the sketching transform that is described in by the sketch_of_A.
@@ -59,27 +59,16 @@ struct dense_transform_t <
                 output_matrix_type& sketch_of_A,
                 Dimension dimension) const {
 
-        switch(ColDist) {
-        case El::VR:
-        case El::VC:
-            try {
-                // FIXME: for now only one implementation
-                outer_panel_gemm(A, sketch_of_A, dimension);
-            } catch (std::logic_error e) {
-                SKYLARK_THROW_EXCEPTION (
-                    base::elemental_exception()
-                        << base::error_msg(e.what()) );
-            } catch(boost::mpi::exception e) {
-                SKYLARK_THROW_EXCEPTION (
-                    base::mpi_exception()
-                        << base::error_msg(e.what()) );
-            }
-
-            break;
-
-        default:
+        try {
+            apply_impl(A, sketch_of_A, dimension);
+        } catch (std::logic_error e) {
             SKYLARK_THROW_EXCEPTION (
-                base::unsupported_matrix_distribution() );
+                base::elemental_exception()
+                    << base::error_msg(e.what()) );
+        } catch(boost::mpi::exception e) {
+            SKYLARK_THROW_EXCEPTION (
+                base::mpi_exception()
+                    << base::error_msg(e.what()) );
         }
     }
 
@@ -90,61 +79,24 @@ struct dense_transform_t <
 
 private:
 
-    void outer_panel_gemm(const matrix_type& A,
-                          output_matrix_type& sketch_of_A,
-                          skylark::sketch::rowwise_tag) const {
+    void apply_impl(const matrix_type& A,
+        output_matrix_type& sketch_of_A,
+        skylark::sketch::rowwise_tag tag) const {
 
-        El::Zero(sketch_of_A);
-        const El::Grid& grid = sketch_of_A.Grid();
+        _local.apply(A.locked_matrix(), sketch_of_A.Matrix(), tag);
 
-        // create temporary matrix for sketch
-        El::DistMatrix<value_type, El::STAR, El::STAR> R1(grid);
-        R1.AlignWith(sketch_of_A);
-
-        // if no blocksize is specified use full width
-        El::Int blocksize = get_blocksize();
-        if (blocksize == 0) {
-            blocksize = A.width();
-        }
-
-        const int* indptr  = A.indptr();
-        const int* indices = A.indices();
-        const value_type *values = A.locked_values();
-
-        El::Int base = 0;
-        El::Int remaining_width = A.width();
-        while (base < A.width()) {
-
-            El::Int b = std::min(A.width() - base, blocksize);
-            data_type::realize_matrix_view(R1, 0, base, sketch_of_A.Width(), b);
-
-            // Perform local Gemm starting from column base with with b
-            // FIXME: we should provide a proper View on sparse matrices, even
-            //        though that may not be optimal for all distributions.
-#if SKYLARK_HAVE_OPENMP
-            #pragma omp parallel for
-#endif
-            for(int i = 0; i < sketch_of_A.Width(); i++)
-                for(int col = base; col < base + b; col++) {
-                    int g_col = A.global_col(col);
-                    for (int j = indptr[col]; j < indptr[col + 1]; j++) {
-                        int row = A.global_row(indices[j]);
-                        value_type val = values[j];
-                        sketch_of_A.Update(row, i, val * R1.Get(i, g_col));
-                    }
-                }
-
-            base += b;
-        }
     }
 
-    void outer_panel_gemm(const matrix_type& A,
+    void apply_impl(const matrix_type& A,
                           output_matrix_type& sketch_of_A,
                           skylark::sketch::columnwise_tag) const {
 
         SKYLARK_THROW_EXCEPTION(base::unsupported_base_operation());
 
     }
+
+    const dense_transform_t<base::sparse_matrix_t<ValueType>,
+                            El::Matrix<ValueType>, ValuesAccessor> _local;
 
 };
 

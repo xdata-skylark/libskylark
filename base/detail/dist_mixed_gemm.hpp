@@ -161,29 +161,9 @@ void Gemm(El::Orientation oA, El::Orientation oB, value_type alpha,
         oB = El::TRANSPOSE;
 
     // NN
-    if (oA == El::NORMAL && oB == El::NORMAL) {
+    if (oA == El::NORMAL && oB == El::NORMAL) 
         base::Gemm(oA, oB, alpha, A.locked_matrix(), B.LockedMatrix(),
             beta, C.Matrix());
-        /*
-        El::Scale(beta, C);
-
-#       if SKYLARK_HAVE_OPENMP
-#       pragma omp parallel for
-#       endif
-        for(int i = 0; i < n; i++)
-            for(int col = 0; col < k; col++) {
-                int g_col = A.global_col(col);
-                value_type tmp_val = alpha * B.Get(g_col, i);
-                for (int j = indptr[col]; j < indptr[col + 1]; j++) {
-                    assert(indices[j] < C.LocalHeight());
-                    assert(i < C.LocalWidth());
-                    C.UpdateLocal(indices[j], i, values[j] * tmp_val);
-                    //FIXME why is ^^ getting into a double free corruption?
-                    //      The asserts hold, and the memory should be reserved?
-                }
-            }
-        */
-    }
 
     // NT
     if (oA == El::NORMAL && (oB == El::TRANSPOSE /*|| oB == El::ADJOINT*/)) {

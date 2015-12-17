@@ -606,7 +606,45 @@ void ReadLIBSVM(const std::string& fname,
                         if (direction == base::COLUMNS) 
                             X.queue_update(j, row, atof(val.c_str()));
                         else
-                            X.queue_update(row, j, val);
+                            X.queue_update(row, j, atof(val.c_str()));
+                    } else {
+                        non_local_updates_j[owner].push_back(j);
+                        non_local_updates_row[owner].push_back(row);
+                        non_local_updates_v[owner].push_back(atof(val.c_str()));
+                    }
+                }
+
+                row++;
+                t++;
+            }
+
+            for (int rk = 1; rk < size; rk++) {
+                comm.send(rk, 0, non_local_updates_j[rk]);
+                comm.send(rk, 0, non_local_updates_row[rk]);
+                comm.send(rk, 0, non_local_updates_v[rk]);
+
+                non_local_updates_j[rk].clear();
+                non_local_updates_row[rk].clear();
+                non_local_updates_v[rk].clear();
+            }
+        } else {
+                comm.recv(0, 0, non_local_updates_j[rank]);
+                comm.recv(0, 0, non_local_updates_row[rank]);
+                comm.recv(0, 0, non_local_updates_v[rank]);
+
+                auto it_j = non_local_updates_j[rank].begin();
+                auto it_row = non_local_updates_row[rank].begin();
+                auto it_v = non_local_updates_v[rank].begin();
+
+                for(; it_j != non_local_updates_j[rank].end();) {
+
+                    int j = *it_j, row = *it_row;
+                    T val = *it_v;
+
+                    if (direction == base::COLUMNS) 
+                        X.queue_update(j, row, val);
+                    else
+                        X.queue_update(row, j, val);
 
                     it_j++; it_row++; it_v++;
                 }

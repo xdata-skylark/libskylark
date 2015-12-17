@@ -604,9 +604,9 @@ void ReadLIBSVM(const std::string& fname,
                         X.owner(j, row) : X.owner(row, j);
                     if (owner == 0) {
                         if (direction == base::COLUMNS) 
-                            X.queue_update_local(j, row, atof(val.c_str()));
+                            X.queue_update(j, row, atof(val.c_str()));
                         else
-                            X.queue_update_local(row, j, atof(val.c_str()));
+                            X.queue_update(row, j, atof(val.c_str()));
                     } else {
                         non_local_updates_j[owner].push_back(j);
                         non_local_updates_row[owner].push_back(row);

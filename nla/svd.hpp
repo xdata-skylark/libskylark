@@ -295,7 +295,7 @@ struct ApproximateSVD_t {
             El::SVD(V, S, B);
             S.Resize(rank, 1); V.Resize(n, rank);
             VType B1 = base::ColumnView(B, 0, rank);
-            //base::Gemm(El::NORMAL, El::NORMAL, static_cast<value_type>(1.0), Q, B1, U);
+            base::Gemm(El::NORMAL, El::NORMAL, static_cast<value_type>(1.0), Q, B1, U);
         }
 
         /** Code for m < n */

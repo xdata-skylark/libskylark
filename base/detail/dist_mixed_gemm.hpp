@@ -162,7 +162,9 @@ void Gemm(El::Orientation oA, El::Orientation oB, value_type alpha,
 
     // NN
     if (oA == El::NORMAL && oB == El::NORMAL) {
-
+        base::Gemm(oA, oB, alpha, A.locked_matrix(), B.LockedMatrix(),
+            beta, C.Matrix());
+        /*
         El::Scale(beta, C);
 
 #       if SKYLARK_HAVE_OPENMP
@@ -180,6 +182,7 @@ void Gemm(El::Orientation oA, El::Orientation oB, value_type alpha,
                     //      The asserts hold, and the memory should be reserved?
                 }
             }
+        */
     }
 
     // NT

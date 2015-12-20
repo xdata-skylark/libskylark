@@ -22,6 +22,17 @@ target_link_libraries(skylark_graph_se
   ${Boost_LIBRARIES})
 install_targets(/bin skylark_graph_se)
 
+add_executable(skylark_community skylark_community.cpp)
+
+target_link_libraries(skylark_community
+  ${Elemental_LIBRARY}
+  ${OPTIONAL_LIBS}
+  ${Pmrrr_LIBRARY}
+  ${Metis_LIBRARY}
+  ${SKYLARK_LIBS}
+  ${Boost_LIBRARIES})
+install_targets(/bin skylark_community)
+
 
 if (SKYLARK_HAVE_HDF5)
 add_executable(skylark_convert2hdf5 skylark_convert2hdf5.cpp)

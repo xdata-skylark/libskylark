@@ -480,7 +480,7 @@ void ApproximateSymmetricSVD(El::UpperOrLower uplo,
         base::context_t& context,
         approximate_svd_params_t params = approximate_svd_params_t()) {
 
-    detail::ApproximateSymmetricSVD_t<InputType, SType, VType> symmetric_svd;
+    detail::ApproximateSymmetricSVD_t<InputType, VType, SType> symmetric_svd;
     symmetric_svd(uplo, A, V, S, rank, context, params);
 }
 

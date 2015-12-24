@@ -53,8 +53,6 @@ template<typename VertexType>
 struct simple_unweighted_graph_t {
 
     typedef VertexType vertex_type;
-    //FIXME:
-    typedef skylark::base::sparse_matrix_t<float> adjacency_type;
 
     typedef typename std::vector<vertex_type>::const_iterator iterator_type;
     typedef typename std::unordered_map<vertex_type,
@@ -285,8 +283,7 @@ void execute() {
     params.oversampling_ratio = oversampling_ratio;
     params.oversampling_additive = oversampling_additive;
 
-    skylark::ml::ApproximateASE<graph_type, embeddings_type, s_type>(
-            *G, k, indexmap, X, context, params);
+    skylark::ml::ApproximateASE(*G, k, indexmap, X, context, params);
 
     if (rank == 0)
         std::cout <<"took " << boost::format("%.2e") % timer.elapsed()

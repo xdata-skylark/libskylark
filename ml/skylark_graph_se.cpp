@@ -363,7 +363,12 @@ int main(int argc, char** argv) {
             .options(desc).positional(positional).run(), vm);
 
         if (vm.count("help")) {
-            std::cout << desc;
+            if (rank == 0) {
+                std::cout << "Usage: " << argv[0] << " [options] input-file-name"
+                          << std::endl;
+                std::cout << desc;
+            }
+            world.barrier();
             return 0;
         }
 

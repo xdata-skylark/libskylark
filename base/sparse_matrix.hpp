@@ -249,6 +249,17 @@ struct sparse_matrix_t {
         return true;
     }
 
+    /**
+     * Make the other matrix a view of this matrix.
+     */
+    void view(sparse_matrix_t<ValueType> &B) const {
+        B.attach(_indptr, _indices, _values, _nnz, _height, _width, false);
+    }
+
+    void readonly_view(sparse_matrix_t<ValueType> &B) const {
+        B.readonly_attach(_indptr, _indices, _values, _nnz, _height, _width, false);
+    }
+
 private:
     bool _ownindptr;
     bool _ownindices;

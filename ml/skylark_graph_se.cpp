@@ -17,7 +17,9 @@ struct simple_parallel_graph_t {
     typedef skylark::base::sparse_vc_star_matrix_t<vertex_type> adjacency_type;
 
     simple_parallel_graph_t(const std::string &gf) {
-        skylark::utility::io::ReadArcList(gf, _adj_matrix, _world);
+        skylark::utility::io::ReadArcList(gf, _adj_matrix, _world, true);
+        std::fill(_adj_matrix.values(),
+            _adj_matrix.values() + _adj_matrix.local_nonzeros(), 1.0);
     }
 
 #if SKYLARK_HAVE_LIBHDFS
@@ -38,8 +40,7 @@ struct simple_parallel_graph_t {
     void adjacency_matrix(
             adjacency_type &A,
             std::vector<vertex_type> &indexmap) const {
-
-        //TODO;
+        _adj_matrix.view(A);
     }
 
 private:
@@ -392,29 +393,23 @@ int main(int argc, char** argv) {
 
     SKYLARK_BEGIN_TRY()
 
-        typedef El::Matrix<float> matrix_single_type;
-        typedef El::Matrix<double> matrix_double_type;
-        typedef simple_unweighted_graph_t<std::string> graph_type;
+        if (use_single) {
+            if(world.size() > 1)
+                execute<simple_parallel_graph_t<float>,
+                        El::DistMatrix<float, El::VC, El::STAR> >();
 
-        typedef El::DistMatrix<float, El::VC, El::STAR>
-            parallel_matrix_single_type;
-        typedef El::DistMatrix<double, El::VC, El::STAR>
-            parallel_matrix_double_type;
-        typedef simple_parallel_graph_t<float> parallel_graph_type_single;
-        typedef simple_parallel_graph_t<double> parallel_graph_type_double;
-
-        if (use_single)
-            if(world.size() > 0)
-                execute<parallel_graph_type_single,
-                        parallel_matrix_single_type>();
             else
-                execute<graph_type, matrix_single_type>();
-        else
-            if(world.size() > 0)
-                execute<parallel_graph_type_double,
-                        parallel_matrix_double_type>();
-            //else
-                //execute<graph_type, matrix_double_type>();
+                execute<simple_unweighted_graph_t<std::string>,
+                        El::Matrix<float> >();
+        } else {
+            if(world.size() > 1)
+                execute<simple_parallel_graph_t<double>,
+                        El::DistMatrix<double, El::VC, El::STAR> >();
+
+            else
+                execute<simple_unweighted_graph_t<std::string>,
+                        El::Matrix<double> >();
+        }
 
     SKYLARK_END_TRY() SKYLARK_CATCH_AND_PRINT((rank == 0))
 

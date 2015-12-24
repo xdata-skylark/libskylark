@@ -241,7 +241,16 @@ struct sparse_dist_matrix_t {
         return _local_buffer->values();
     }
 
+    void view(sparse_dist_matrix_t<value_type> &B) const {
+        // TODO exceptions?!
+        assert(typeid(B) == typeid(*this));
+        assert(_finalized);
 
+        // TODO set-up grid!
+        B.resize(_n_rows, _n_cols);
+        _local_buffer->view(*B._local_buffer);
+        B._finalized = true;
+    }
 
 private:
 

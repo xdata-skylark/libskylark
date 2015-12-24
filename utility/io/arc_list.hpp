@@ -202,12 +202,14 @@ void parallelChunkedRead(
  *      - on BG/Q there seems to be an issue with setting the rdbuf (why?)
  *
  *  @param fname input file name
- *  @param X output distributed CombBLAS matrix
+ *  @param X output distributed sparse matrix
+ *  @param comm communicator
+ *  @param symmetrize make the matrix symmetric by returning (A + A')/2
  */
 template <typename value_t>
 void ReadArcList(const std::string& fname,
     base::sparse_vc_star_matrix_t<value_t>& X,
-    boost::mpi::communicator &comm) {
+    boost::mpi::communicator &comm, bool symmetrize = false) {
 
     assert(X.is_finalized() == false);
 
@@ -270,10 +272,14 @@ void ReadArcList(const std::string& fname,
             }
         }
 
-        max_col = std::max(from, max_col);
+        max_col = std::max(to, max_col);
         max_row = std::max(from, max_row);
 
-        edge_list.push_back(std::make_tuple(from, to, value));
+        if (symmetrize) {
+            edge_list.push_back(std::make_tuple(from, to, value / 2));
+            edge_list.push_back(std::make_tuple(to, from, value / 2));
+        } else
+            edge_list.push_back(std::make_tuple(from, to, value));
 
         std::getline(data, line);
     }
@@ -283,8 +289,14 @@ void ReadArcList(const std::string& fname,
     boost::mpi::all_reduce(comm, max_col, ncol, boost::mpi::maximum<size_t>());
     boost::mpi::all_reduce(comm, max_row, nrow, boost::mpi::maximum<size_t>());
 
-    if(rank == 0)
-        std::cout << "Read matrix of size " << nrow << " x " << ncol << std::endl;
+    if (symmetrize) {
+        size_t n = std::max(ncol, nrow);
+        ncol = n;
+        nrow = n;
+    }
+
+    //if(rank == 0)
+    //    std::cout << "Read matrix of size " << nrow << " x " << ncol << std::endl;
 
     // FIXME: 0-based??
     X.resize(nrow + 1, ncol + 1);

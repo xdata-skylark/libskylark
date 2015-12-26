@@ -347,11 +347,15 @@ void ApproximateSymmetricSVD(El::UpperOrLower uplo,
             params.oversampling_ratio * rank +
             params.oversampling_additive));
 
-    /** Apply sketch transformation on the input matrix */
     VType U(n, k), B(k, k), W(k,k);
     V.Resize(n, k);
-    sketch::JLT_t<InputType, VType> Omega(n, k, context);
-    Omega.apply(A, V, sketch::rowwise_tag());
+    
+    /** Apply sketch transformation on the input matrix */
+    // Optimally, we will use JLT_t. But the matrix is potentially only
+    // specified in sub/super diagonal, so we explicitly form the random matrix.
+    VType Omega;
+    base::GaussianMatrix(Omega, n, k, context);
+    base::Symm(El::LEFT, uplo, static_cast<value_type>(1.0), A, Omega, V);
 
     /** Power iteration */
     SymmetricPowerIteration(uplo, El::NORMAL, A, V,params.num_iterations,

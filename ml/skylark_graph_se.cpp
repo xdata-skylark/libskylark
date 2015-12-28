@@ -223,10 +223,47 @@ adjacency_matrix(skylark::base::sparse_matrix_t<T> &A,
     A.attach(colptr, rowind, values, nnz, n, n, true);
 }
 
+template<>
+template<typename T>
+void simple_unweighted_graph_t<int>::
+adjacency_matrix(skylark::base::sparse_matrix_t<T> &A,
+    std::vector<vertex_type> &indexmap) const {
+
+    typedef typename skylark::base::sparse_matrix_t<T>::index_type index_type;
+    typedef typename skylark::base::sparse_matrix_t<T>::value_type value_type;
+
+    index_type nnz = num_edges();
+    int n = 0;
+    for (vertex_iterator_type vit = vertex_begin();
+         vit != vertex_end(); vit++)
+        n = std::max(vit->first + 1, n);
+
+    // Allocate space for the matrix
+    index_type *colptr = new index_type[n + 1];
+    index_type *rowind = new index_type[nnz];
+    value_type *values = new value_type[nnz];
+
+    indexmap.resize(n);
+    colptr[0] = 0;
+    for(index_type j = 0; j < n; j++) {
+        indexmap[j] = j;
+        colptr[j + 1] = colptr[j] + degree(j);
+        index_type i = 0;
+        for(iterator_type it = adjanct_begin(j);
+            it != adjanct_end(j); it++) {
+            values[colptr[j] + i] = 1.0;
+            rowind[colptr[j] + i] = *it;
+            i++;
+        }
+    }
+
+    A.attach(colptr, rowind, values, nnz, n, n, true);
+}
+
 int seed, k, powerits, port;
 int oversampling_ratio, oversampling_additive;
 std::string graphfile, indexfile, prefix, hdfs;
-bool use_single, skipqr, directory;
+bool use_single, skipqr, directory, numeric;
 
 template<typename graph_type, typename embeddings_type,
          typename s_type = embeddings_type>
@@ -350,6 +387,8 @@ int main(int argc, char** argv) {
             bpo::value<int>(&oversampling_additive)->default_value(0),
             "Additive factor for oversampling of rank. OPTIONAL.")
         ("single", "Whether to use single precision instead of double.")
+        ("numeric,n",
+            "If present, node labels are numeric and the code exploits that.")
         ("prefix",
             bpo::value<std::string>(&prefix)->default_value("out"),
             "Prefix for output files (prefix.vec.txt and prefix.index.txt)."
@@ -376,7 +415,8 @@ int main(int argc, char** argv) {
         use_single = vm.count("single");
         skipqr = vm.count("skipqr");
         //directory = vm.count("directory");
-
+        numeric = vm.count("numeric");
+        
         if (!vm.count("graphfile")) {
             std::cout << "Input graph-file is required." << std::endl;
             return -1;
@@ -393,19 +433,31 @@ int main(int argc, char** argv) {
 
     SKYLARK_BEGIN_TRY()
 
-        if (use_single) {
-            if(world.size() > 1)
-                execute<simple_parallel_graph_t<float>,
-                        El::DistMatrix<float, El::VC, El::STAR> >();
+        if (numeric) {
+            if (use_single) {
+                if(world.size() > 1)
+                    execute<simple_parallel_graph_t<float>,
+                            El::DistMatrix<float, El::VC, El::STAR> >();
+                else
+                    execute<simple_unweighted_graph_t<int>,
+                            El::Matrix<float> >();
+            } else {
+                if(world.size() > 1)
+                    execute<simple_parallel_graph_t<double>,
+                            El::DistMatrix<double, El::VC, El::STAR> >();
+                else
+                    execute<simple_unweighted_graph_t<int>,
+                            El::Matrix<double> >();
+            }
+        } else {
+            if (world.size() > 1)
+                SKYLARK_THROW_EXCEPTION(skylark::base::unsupported_matrix_distribution() <<
+                    skylark::base::error_msg("Non-numeric indexes are not yet"
+                        "supported for parallel computation."));
 
-            else
+            if (use_single)
                 execute<simple_unweighted_graph_t<std::string>,
                         El::Matrix<float> >();
-        } else {
-            if(world.size() > 1)
-                execute<simple_parallel_graph_t<double>,
-                        El::DistMatrix<double, El::VC, El::STAR> >();
-
             else
                 execute<simple_unweighted_graph_t<std::string>,
                         El::Matrix<double> >();

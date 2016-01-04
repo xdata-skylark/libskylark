@@ -501,8 +501,9 @@ void ReadLIBSVM(const std::string& fname,
     int rank = comm.rank();
     int size = comm.size();
 
-    std::list<int> non_local_updates_j[size], non_local_updates_row[size];
-    std::list<T> non_local_updates_v[size];
+    std::vector< std::list<int> > non_local_updates_j(size);
+    std::vector< std::list<int> > non_local_updates_row(size);
+    std::vector< std::list<T> > non_local_updates_v(size);
 
     // make one pass over the data to figure out dimensions -
     // will pay in terms of preallocated storage.
@@ -603,7 +604,7 @@ void ReadLIBSVM(const std::string& fname,
                     int owner = (direction == base::COLUMNS) ?
                         X.owner(j, row) : X.owner(row, j);
                     if (owner == 0) {
-                        if (direction == base::COLUMNS) 
+                        if (direction == base::COLUMNS)
                             X.queue_update(j, row, atof(val.c_str()));
                         else
                             X.queue_update(row, j, atof(val.c_str()));
@@ -641,7 +642,7 @@ void ReadLIBSVM(const std::string& fname,
                     int j = *it_j, row = *it_row;
                     T val = *it_v;
 
-                    if (direction == base::COLUMNS) 
+                    if (direction == base::COLUMNS)
                         X.queue_update(j, row, val);
                     else
                         X.queue_update(row, j, val);

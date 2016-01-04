@@ -2,6 +2,7 @@
 #define SKYLARK_SYMM_HPP
 
 #include <boost/mpi.hpp>
+
 #include "exception.hpp"
 #include "sparse_matrix.hpp"
 #include "computed_matrix.hpp"
@@ -79,7 +80,6 @@ inline void Symm(El::LeftOrRight side, El::UpperOrLower uplo,
 
     // LEFT
     if (side == El::LEFT) {
-
         El::Scale(beta, C);
 
         T *c = C.Buffer();
@@ -91,8 +91,8 @@ inline void Symm(El::LeftOrRight side, El::UpperOrLower uplo,
 #       if SKYLARK_HAVE_OPENMP
 #       pragma omp parallel for
 #       endif
-        for(int i = 0; i < n; i++)
-            for(int col = 0; col < k; col++)
+        for (int i = 0; i < n; i++)
+            for (int col = 0; col < k; col++)
                  for (int j = indptr[col]; j < indptr[col + 1]; j++) {
                      int row = indices[j];
 
@@ -121,7 +121,7 @@ inline void Symm(El::LeftOrRight side, El::UpperOrLower uplo,
 #       if SKYLARK_HAVE_OPENMP
 #       pragma omp parallel for private(Cc, Bc)
 #       endif
-        for(int col = 0; col < n; col++) {
+        for (int col = 0; col < n; col++) {
             El::View(Cc, C, 0, col, m, 1);
             for (int j = indptr[col]; j < indptr[col + 1]; j++) {
                 int row = indices[j];
@@ -165,8 +165,8 @@ inline void Symm(El::LeftOrRight side, El::UpperOrLower uplo,
 
     El::Scale(beta, C);
 
-    //FIXME: there is a visibility issue here??! Check header includes
-    //boost::mpi::communicator comm = get_communicator(B);
+    // FIXME: there is a visibility issue here??! Check header includes
+    // boost::mpi::communicator comm = get_communicator(B);
     boost::mpi::communicator comm =
         boost::mpi::communicator(B.DistComm().comm, boost::mpi::comm_attach);
 
@@ -177,13 +177,12 @@ inline void Symm(El::LeftOrRight side, El::UpperOrLower uplo,
     // temporary matrix (only used in RIGHT case)
     El::DistMatrix<T, El::STAR, El::STAR>
         C_STAR_STAR(C.Grid());
-    if(side == El::RIGHT) {
+    if (side == El::RIGHT) {
         C_STAR_STAR.Resize(C.Height(), C.Width());
         El::Zero(C_STAR_STAR);
     }
 
-    for(int rank = 0; rank < comm.size(); rank++) {
-
+    for (int rank = 0; rank < comm.size(); rank++) {
         // broadcast the local values owned by rank, assuming that B is the
         // smallest matrix (assuming A is very tall an skinny)
         El::Matrix<T> tmp;
@@ -192,7 +191,7 @@ inline void Symm(El::LeftOrRight side, El::UpperOrLower uplo,
         //        El::Broadcast?
         size_t width = 0;
         size_t height = 0;
-        if(comm.rank() == rank) {
+        if (comm.rank() == rank) {
             width  = B.LocalWidth();
             height = B.LocalHeight();
         }
@@ -200,46 +199,40 @@ inline void Symm(El::LeftOrRight side, El::UpperOrLower uplo,
         boost::mpi::broadcast(comm, height, rank);
         tmp.Resize(height, width);
 
-        if(comm.rank() == rank) tmp = B.LockedMatrix();
+        if (comm.rank() == rank) tmp = B.LockedMatrix();
         boost::mpi::broadcast(comm, tmp.Buffer(), width * height, rank);
 
-        // LEFT
         if (side == El::LEFT) {
-
             const int k = A.local_width();
             const int n = tmp.Width();
 
 #if SKYLARK_HAVE_OPENMP
             #pragma omp parallel for
 #endif
-            for(int i = 0; i < n; i++)
-                for(int col = 0; col < k; col++) {
+            for (int i = 0; i < n; i++)
+                for (int col = 0; col < k; col++) {
                     int g_col = A.global_col(col);
 
-                    if(B.RowOwner(g_col) != rank) continue;
+                    if (B.RowOwner(g_col) != rank) continue;
                     int l_col = g_col / comm.size();
-                    // FIXME: why do we need ^^ and B.LocalRow(g_col) does not
-                    //        work? Noticed that it produces l_col = 10 for the
-                    //        a local matrix [0,9] row indices!
-
                     T tmp_val = tmp.Get(l_col, i);
                     for (int j = indptr[col]; j < indptr[col + 1]; j++) {
-                        C.UpdateLocal(indices[j], i, alpha * values[j] * tmp_val);
+                        C.UpdateLocal(
+                            indices[j], i, alpha * values[j] * tmp_val);
                     }
                 }
 
         } else {
-
             const int k = A.local_width();
             const int n = tmp.Height();
 
 #if SKYLARK_HAVE_OPENMP
             #pragma omp parallel for
 #endif
-            for(int i = 0; i < n; i++) {
+            for (int i = 0; i < n; i++) {
                 int global_row = comm.size() * i + rank;
 
-                for(int col = 0; col < k; col++) {
+                for (int col = 0; col < k; col++) {
                     T sum = 0.;
                     for (int j = indptr[col]; j < indptr[col + 1]; j++) {
                         int g_row = A.global_row(indices[j]);
@@ -249,17 +242,12 @@ inline void Symm(El::LeftOrRight side, El::UpperOrLower uplo,
                     C_STAR_STAR.UpdateLocal(global_row, col, sum);
                 }
             }
-
-            // Reduce-scatter within process grid
-            //El::AxpyContract(static_cast<T>(1), C_STAR_STAR, C);
         }
     }
 
     // Reduce-scatter within process grid
     if (side == El::RIGHT) {
-        //El::Print(C_STAR_STAR);
         El::AxpyContract(static_cast<T>(1), C_STAR_STAR, C);
-        //El::Print(C);
     }
 }
 
@@ -272,6 +260,7 @@ inline void Symm(El::LeftOrRight side, El::UpperOrLower uplo,
     base::Symm(side, uplo, alpha, A, B, static_cast<T>(1.0), C);
 }
 
-} } // namespace skylark::base
+}  // namespace base
+}  // namespace skylark
 
-#endif // SKYLARK_SYMM_HPP
+#endif  // SKYLARK_SYMM_HPP

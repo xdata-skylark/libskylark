@@ -1,10 +1,11 @@
 #ifndef SKYLARK_SPARSE_MATRIX_HPP
 #define SKYLARK_SPARSE_MATRIX_HPP
 
-#include <set>
-#include <vector>
-#include <boost/tuple/tuple.hpp>
 #include <boost/unordered_map.hpp>
+
+#include <set>
+#include <tuple>
+#include <vector>
 
 #include "exception.hpp"
 
@@ -24,7 +25,7 @@ struct sparse_matrix_t {
     typedef int index_type;
     typedef ValueType value_type;
 
-    typedef boost::tuple<index_type, index_type, value_type> coord_tuple_t;
+    typedef std::tuple<index_type, index_type, value_type> coord_tuple_t;
     typedef std::vector<coord_tuple_t> coords_t;
 
     sparse_matrix_t()
@@ -136,18 +137,18 @@ struct sparse_matrix_t {
 
         sort(coords.begin(), coords.end(), &sparse_matrix_t::_sort_coords);
 
-        n_cols = std::max(n_cols, boost::get<1>(coords.back()) + 1);
+        n_cols = std::max(n_cols, std::get<1>(coords.back()) + 1);
         index_type *indptr = new index_type[n_cols + 1];
 
         // Count non-zeros
         int nnz = 0;
         for(size_t i = 0; i < coords.size(); ++i) {
             nnz++;
-            index_type cur_row = boost::get<0>(coords[i]);
-            index_type cur_col = boost::get<1>(coords[i]);
+            index_type cur_row = std::get<0>(coords[i]);
+            index_type cur_col = std::get<1>(coords[i]);
             while(i + 1 < coords.size() &&
-                  cur_row == boost::get<0>(coords[i + 1]) &&
-                  cur_col == boost::get<1>(coords[i + 1]))
+                  cur_row == std::get<0>(coords[i + 1]) &&
+                  cur_col == std::get<1>(coords[i + 1]))
                 i++;
         }
 
@@ -158,9 +159,9 @@ struct sparse_matrix_t {
         int indptr_idx = 0;
         indptr[indptr_idx] = 0;
         for(size_t i = 0; i < coords.size(); ++i) {
-            index_type cur_row = boost::get<0>(coords[i]);
-            index_type cur_col = boost::get<1>(coords[i]);
-            value_type cur_val = boost::get<2>(coords[i]);
+            index_type cur_row = std::get<0>(coords[i]);
+            index_type cur_col = std::get<1>(coords[i]);
+            value_type cur_val = std::get<2>(coords[i]);
 
             for(; indptr_idx < cur_col; ++indptr_idx)
                 indptr[indptr_idx + 1] = nnz;
@@ -168,10 +169,10 @@ struct sparse_matrix_t {
 
             // sum duplicates
             while(i + 1 < coords.size() &&
-                  cur_row == boost::get<0>(coords[i + 1]) &&
-                  cur_col == boost::get<1>(coords[i + 1])) {
+                  cur_row == std::get<0>(coords[i + 1]) &&
+                  cur_col == std::get<1>(coords[i + 1])) {
 
-                cur_val += boost::get<2>(coords[i + 1]);
+                cur_val += std::get<2>(coords[i + 1]);
                 i++;
             }
 
@@ -291,10 +292,10 @@ private:
     }
 
     static bool _sort_coords(coord_tuple_t lhs, coord_tuple_t rhs) {
-        if(boost::get<1>(lhs) != boost::get<1>(rhs))
-            return boost::get<1>(lhs) < boost::get<1>(rhs);
+        if(std::get<1>(lhs) != std::get<1>(rhs))
+            return std::get<1>(lhs) < std::get<1>(rhs);
         else
-            return boost::get<0>(lhs) < boost::get<0>(rhs);
+            return std::get<0>(lhs) < std::get<0>(rhs);
     }
 };
 

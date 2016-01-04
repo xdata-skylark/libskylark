@@ -1,10 +1,10 @@
 #ifndef SKYLARK_EXCEPTION_HPP
 #define SKYLARK_EXCEPTION_HPP
 
-#include <string>
-#include <exception>
-
 #include <boost/exception/all.hpp>
+
+#include <exception>
+#include <string>
 
 const char* const skylark_errmsg[] = {
     "Skylark failure"
@@ -52,8 +52,8 @@ const char* skylark_strerror(int error_code) {
 // catch and print message
 #define SKYLARK_CATCH_AND_PRINT(p) \
     catch (const skylark::base::skylark_exception& ex) { \
-        if (p == true) SKYLARK_PRINT_EXCEPTION_DETAILS(ex);      \
-    }\
+        if (p == true) SKYLARK_PRINT_EXCEPTION_DETAILS(ex); \
+    } \
 
 /// catch a Skylark exceptions and returns an error code
 #define SKYLARK_CATCH_AND_RETURN_ERROR_CODE() \
@@ -78,16 +78,14 @@ typedef boost::error_info<struct tag_append_trace, std::string> append_trace;
 
 /// define a base exception
 struct skylark_exception : virtual boost::exception, virtual std::exception {
-
     skylark_exception() {
         *this << error_code(100);
     }
 
     skylark_exception& operator<< (const append_trace& rhs) {
-
         std::string trace_value = "";
 
-        if( const std::string *cur_trace =
+        if (const std::string *cur_trace =
             boost::get_error_info<stack_trace, skylark_exception>(*this) ) {
             trace_value.append(*cur_trace);
             trace_value.append("\n");
@@ -97,30 +95,31 @@ struct skylark_exception : virtual boost::exception, virtual std::exception {
         *this << stack_trace(trace_value);
         return *this;
     }
-
 };
 
 /// exceptions thrown by Elemental
 struct elemental_exception : virtual skylark_exception {
-public:
+ public:
     using skylark_exception::operator<<;
 
     elemental_exception() {
         *this << error_code(102);
     }
 };
+
 /// exceptions thrown by CombBLAS
 struct combblas_exception : virtual skylark_exception {
-public:
+ public:
     using skylark_exception::operator<<;
 
     combblas_exception() {
         *this << error_code(104);
     }
 };
+
 /// exceptions thrown by Boost MPI
 struct mpi_exception : virtual skylark_exception {
-public:
+ public:
     using skylark_exception::operator<<;
 
     mpi_exception() {
@@ -130,7 +129,7 @@ public:
 
 /// exceptions in the sketch layer
 struct sketch_exception : virtual skylark_exception {
-public:
+ public:
     using skylark_exception::operator<<;
 
     sketch_exception() {
@@ -140,7 +139,7 @@ public:
 
 /// exceptions in the nla layer
 struct nla_exception : virtual skylark_exception {
-public:
+ public:
     using skylark_exception::operator<<;
 
     nla_exception() {
@@ -148,10 +147,9 @@ public:
     }
 };
 
-
 /// exceptions in the Random123 layer
 struct random123_exception : virtual skylark_exception {
-public:
+ public:
     using skylark_exception::operator<<;
 
     random123_exception() {
@@ -161,7 +159,7 @@ public:
 
 /// exceptions when doing I/O
 struct io_exception : virtual skylark_exception {
-public:
+ public:
     using skylark_exception::operator<<;
 
     io_exception() {
@@ -171,7 +169,7 @@ public:
 
 /// exceptions for allocating memory in sketch layer
 struct allocation_exception : virtual sketch_exception  {
-public:
+ public:
     using sketch_exception::operator<<;
 
     allocation_exception() {
@@ -181,7 +179,7 @@ public:
 
 /// exceptions for unsupported matrix distributions in Elemental
 struct unsupported_matrix_distribution : virtual elemental_exception {
-public:
+ public:
     using elemental_exception::operator<<;
 
     unsupported_matrix_distribution() {
@@ -191,7 +189,7 @@ public:
 
 /// exceptions for unsupported base operation
 struct unsupported_base_operation : virtual elemental_exception {
-public:
+ public:
     using skylark_exception::operator<<;
 
     unsupported_base_operation() {
@@ -201,7 +199,7 @@ public:
 
 /// exceptions for invalid parameters passed
 struct invalid_parameters : virtual skylark_exception {
-public:
+ public:
     using skylark_exception::operator<<;
 
     invalid_parameters() {
@@ -209,9 +207,10 @@ public:
     }
 };
 
-/// exceptions for invalid usage of base classes (runtime check that detects bugs)
+/// exceptions for invalid usage of base classes (runtime check that detects
+/// bugs)
 struct invalid_usage : virtual skylark_exception {
-public:
+ public:
     using skylark_exception::operator<<;
 
     invalid_usage() {
@@ -219,9 +218,7 @@ public:
     }
 };
 
+}  // namespace base
+}  // namespace skylark
 
-
-} // namespace base
-} // namespace skylark
-
-#endif
+#endif  // SKYLARK_EXCEPTION_HPP

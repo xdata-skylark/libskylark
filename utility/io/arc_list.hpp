@@ -371,9 +371,10 @@ void ReadArcList(const std::string& fname,
     // creating a local structure to hold sparse data triplets
     std::vector<tuple_type> matrix_data;
     try {
-       matrix_data.resize(total_count);
+        matrix_data.resize(total_count);
     } catch (std::bad_alloc &e) {
-        std::cout << "BAD ALLOC" << std::endl;
+        SKYLARK_THROW_EXCEPTION(
+            base::allocation_exception() << base::error_msg("Out of memory."));
     }
 
     // FIXME: for now use synchronous comm, because Boost has an issue with

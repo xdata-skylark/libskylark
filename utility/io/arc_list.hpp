@@ -29,6 +29,22 @@ namespace skylark { namespace utility { namespace io {
 //FIXME: move to io util header
 namespace detail {
 
+template <typename value_t>
+void local_insert(
+    base::sparse_vc_star_matrix_t<value_t>& X,
+    const std::vector<std::tuple<El::Int, El::Int, value_t> >& edge_list) {
+
+    assert(X.is_finalized() == false);
+
+    typedef std::tuple<El::Int, El::Int, El::Int> tuple_type;
+    std::vector<tuple_type>::const_iterator itr;
+
+    for(size_t i = 0; i < edge_list.size(); i++)
+        X.queue_update(get<0>(edge_list[i]), get<1>(edge_list[i]), get<2>(edge_list[i]));
+
+    X.finalize();
+}
+
 void parallelChunkedRead(
         const std::string& fname, boost::mpi::communicator &comm,
         int num_partitions, std::stringstream& data) {
@@ -58,7 +74,9 @@ void parallelChunkedRead(
 
     size_t mySize  = myEnd - myStart;
 
-    if(mySize > static_cast<size_t>(INT_MAX)) {
+    // in case we rely on MPI I/O we need to make sure the max buffer size
+    // is respected
+    if(comm.size() > 1 && mySize > static_cast<size_t>(INT_MAX)) {
         std::ostringstream os;
         os << "ERROR: file " << fname << " cannot be opened."
            << std::endl
@@ -72,35 +90,39 @@ void parallelChunkedRead(
             base::io_exception() << base::error_msg(os.str()));
     }
 
-    std::vector<char> buff(mySize);
+    int err = 0;
+    if(num_partitions == 1) {
+        std::ifstream infile(fname);
+        if (infile) {
+            data << infile.rdbuf();
+            infile.close();
+        }
+    } else {
 
-    // Reading a portion of the file that is an initial guess of what
-    // should belong to this process. Might not consist of entire lines,
-    // balance later.
-    MPI_Status readStatus;
-    MPI_Offset offset = myStart;
-    int err =
-        MPI_File_read_at(file, offset, &buff[0], mySize, MPI_BYTE, &readStatus);
-    if (err != MPI_SUCCESS)
-        SKYLARK_THROW_EXCEPTION (
-            base::io_exception()
-                << base::error_msg("Error while MPI_File_read_ordered!"));
+        // Reading a portion of the file that is an initial guess of what
+        // should belong to this process. Might not consist of entire lines,
+        // balance later.
+        std::vector<char> buff(mySize);
+        MPI_Status readStatus;
+        MPI_Offset offset = myStart;
 
+        err =
+            MPI_File_read_at(file, offset, &buff[0], mySize, MPI_BYTE, &readStatus);
+        if (err != MPI_SUCCESS)
+            SKYLARK_THROW_EXCEPTION (
+                base::io_exception()
+                    << base::error_msg("Error while MPI_File_read_ordered!"));
 
-    data << std::string(buff.begin(), buff.end());
-
-    //FIXME: why does this not work on the BGQ?
-    //std::stringstream data("", std::ios::app | std::ios::out | std::ios::in);
-    //data.rdbuf()->pubsetbuf(&buff[0], mySize);
-
+        data << std::string(buff.begin(), buff.end());
+    }
 
     if(num_partitions > 1) {
 
         // now we go about "redistributing" (reading the correct offsets)
-        // corresponding to the underlaying CombBLAS distribution.
+        // corresponding to the underlaying distribution.
         // 1) we need to figure out where our line ends and read the rest of the
         //    line.
-        // 2) we need to find out what we own in the CombBLAS matrix and comm (?)
+        // 2) we need to find out what rows/cols we own and comm (?)
         //    the appropriate values
 
         MPI_Request recReq, sendReq;
@@ -164,14 +186,15 @@ void parallelChunkedRead(
                         << base::error_msg("Error while MPI_file_read_at!"));
 
             // append the extra data
+            data.seekg(0, data.end);
             data << std::string(extbuff.begin(), extbuff.end());
-            //buff.insert(buff.end(), extbuff.begin(), extbuff.end());
-            //data.rdbuf()->pubsetbuf(&buff[prevNumExtraBytes], mySize +
-                                    //myNumExtraBytes - prevNumExtraBytes);
         }
 
         // waiting for the completion of all send requests
         if (rank != 0) MPI_Wait(&sendReq, &sendStatus);
+
+        data.seekp(prevNumExtraBytes);
+        data.seekg(prevNumExtraBytes);
     }
 
     MPI_File_close(&file);
@@ -186,20 +209,14 @@ void parallelChunkedRead(
  *
  *  Current implementation reads a "fair" part of the file and determines from
  *  the read indices which portions it should get. This corresponds to
- *  computing a distributed index map and then do a final read to get the
- *  right values.
+ *  a block read, computing a distributed index map and then do a final
+ *  communication step to get the local values.
  *
  *  Determines an initial guess of where the current process should
  *  start reading the file. Can also be used to find where to stop
  *  using the rank following the rank of this process.
  *  Current implementation aims to divide the file into equal portions
  *  in bytes.
- *
- *  FIXME:
- *      - read for a subcommunicator...
- *      - 0-based vnodes s. 1-based nodes
- *      - relabeling?
- *      - on BG/Q there seems to be an issue with setting the rdbuf (why?)
  *
  *  @param fname input file name
  *  @param X output distributed sparse matrix
@@ -223,13 +240,11 @@ void ReadArcList(const std::string& fname,
     detail::parallelChunkedRead(fname, comm, num_partitions, data);
 
     // parse local buffer and insert edges into temporary list
-    size_t max_row = 0, max_col = 0;
+    size_t max_row_idx = 0, max_col_idx = 0;
     edge_list_t edge_list;
 
     std::string line;
-    std::getline(data, line);
-
-    while (!data.eof()) {
+    while(std::getline(data, line)) {
         if (!data.good())
             SKYLARK_THROW_EXCEPTION (
                 base::io_exception() << base::error_msg("Stream went bad!"));
@@ -240,25 +255,36 @@ void ReadArcList(const std::string& fname,
         std::vector<std::string> values;
         boost::split(values, line, boost::is_any_of("\t "));
 
-        //XXX: maybe we need to trim left/right?
-        //boost::trim_left_if(values[0],  boost::is_any_of("\t "));
-
         size_t from = 0, to = 0;
+
+        if (values.size() < 2) {
+            std::stringstream err;
+            err << rank << ": Invalid line \"" << line << "\""
+                << std::endl;
+            SKYLARK_THROW_EXCEPTION (
+                base::io_exception() << base::error_msg(err.str()));
+        }
 
         try {
             from = boost::lexical_cast<size_t>(values[0]);
         } catch(boost::bad_lexical_cast &) {
-            std::cerr << rank << ": cannot convert: \"" << values[0]
-                      << "\" of line \""
-                      << line << "\"" << std::flush << std::endl;
+            std::stringstream err;
+            err << rank << ": cannot convert: \"" << values[0]
+               << "\" of line \""
+               << line << "\"" << std::endl;
+            SKYLARK_THROW_EXCEPTION (
+                base::io_exception() << base::error_msg(err.str()));
         }
 
         try {
             to = boost::lexical_cast<size_t>(values[1]);
         } catch(boost::bad_lexical_cast &) {
-            std::cerr << rank << ": cannot convert: \"" << values[1]
-                      << "\" of line \""
-                      << line << "\"" << std::flush << std::endl;
+            std::stringstream err;
+            err << rank << ": cannot convert: \"" << values[1]
+                << "\" of line \""
+                << line << "\"" << std::endl;
+            SKYLARK_THROW_EXCEPTION (
+                base::io_exception() << base::error_msg(err.str()));
         }
 
         value_t value = 1.0;
@@ -266,40 +292,43 @@ void ReadArcList(const std::string& fname,
             try {
                 value = boost::lexical_cast<value_t>(values[2]);
             } catch(boost::bad_lexical_cast &) {
-                std::cerr << rank << ": cannot convert: \"" << values[2]
-                          << "\" of line \""
-                          << line << "\"" << std::flush << std::endl;
+                std::stringstream err;
+                err << rank << ": cannot convert: \"" << values[2]
+                    << "\" of line \""
+                    << line << "\"" << std::endl;
+                SKYLARK_THROW_EXCEPTION (
+                    base::io_exception() << base::error_msg(err.str()));
             }
         }
 
-        max_col = std::max(to, max_col);
-        max_row = std::max(from, max_row);
+        max_col_idx = std::max(to, max_col_idx);
+        max_row_idx = std::max(from, max_row_idx);
 
         if (symmetrize) {
             edge_list.push_back(std::make_tuple(from, to, value / 2));
             edge_list.push_back(std::make_tuple(to, from, value / 2));
         } else
             edge_list.push_back(std::make_tuple(from, to, value));
+    }
 
-        std::getline(data, line);
+    if (symmetrize) {
+        size_t dim = std::max(max_col_idx, max_row_idx) + 1;
+        max_col_idx = dim;
+        max_row_idx = dim;
     }
 
     //XXX: boost::mpi::inplace_t was added in version 1.55
     size_t ncol = 0, nrow = 0;
-    boost::mpi::all_reduce(comm, max_col, ncol, boost::mpi::maximum<size_t>());
-    boost::mpi::all_reduce(comm, max_row, nrow, boost::mpi::maximum<size_t>());
-
-    if (symmetrize) {
-        size_t n = std::max(ncol, nrow);
-        ncol = n;
-        nrow = n;
-    }
+    boost::mpi::all_reduce(comm, max_col_idx, ncol, boost::mpi::maximum<size_t>());
+    boost::mpi::all_reduce(comm, max_row_idx, nrow, boost::mpi::maximum<size_t>());
 
     //if(rank == 0)
-    //    std::cout << "Read matrix of size " << nrow << " x " << ncol << std::endl;
+        //std::cout << "Read matrix of size " << nrow << " x " << ncol << std::endl;
 
-    // FIXME: 0-based??
     X.resize(nrow + 1, ncol + 1);
+
+    if(comm.size() == 1)
+        return detail::local_insert(X, edge_list);
 
     // finally we can redistribute the data, create a plan
     std::vector<edge_list_t> proc_set(comm.size());
@@ -315,8 +344,6 @@ void ReadArcList(const std::string& fname,
     }
 
     //XXX: what comm strategy: p2p, collective, one-sided?
-    //XXX: what to send: send data or file offsets?
-
     // first communicate sizes that we will receive from other procs
     std::vector< std::vector<size_t> > vector_proc_counts;
     boost::mpi::all_gather(comm, proc_count, vector_proc_counts);
@@ -377,7 +404,7 @@ void ReadArcList(const std::string& fname,
     for(matrix_itr = matrix_data.begin(); matrix_itr != matrix_data.end();
         matrix_itr++) {
 
-        // converts global indices to local
+        // converts global to local
         X.queue_update(
             get<0>(*matrix_itr), get<1>(*matrix_itr), get<2>(*matrix_itr));
     }
@@ -391,17 +418,20 @@ void ReadArcList(const std::string& fname,
     boost::mpi::communicator &comm) {
 
     // TODO: temp!
-    SKYLARK_THROW_EXCEPTION(base::unsupported_base_operation());
-
+    SKYLARK_THROW_EXCEPTION (
+        base::unsupported_base_operation()
+            << base::error_msg("ReadArcList sparse_matrix_t not implemented."));
 }
 
 template <typename T>
 void ReadArcList(const std::string& fname,
-    El::Matrix<T>& X, boost::mpi::communicator &comm) {
+    El::Matrix<T>& X,
+    boost::mpi::communicator &comm) {
 
     // TODO: should we add this?
-    SKYLARK_THROW_EXCEPTION(base::unsupported_base_operation());
-
+    SKYLARK_THROW_EXCEPTION (
+        base::unsupported_base_operation()
+            << base::error_msg("ReadArcList El::Matrix not implemented."));
 }
 
 template <typename value_t, El::Distribution U, El::Distribution V>
@@ -410,8 +440,9 @@ void ReadArcList(const std::string& fname,
     boost::mpi::communicator &comm) {
 
     // TODO: should we add this?
-    SKYLARK_THROW_EXCEPTION(base::unsupported_base_operation());
-
+    SKYLARK_THROW_EXCEPTION (
+        base::unsupported_base_operation()
+            << base::error_msg("ReadArcList El::DistMatrix not implemented."));
 }
 
 

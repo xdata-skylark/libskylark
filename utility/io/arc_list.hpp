@@ -415,7 +415,8 @@ void ReadArcList(const std::string& fname,
 template <typename value_t>
 void ReadArcList(const std::string& fname,
     base::sparse_matrix_t<value_t>& X,
-    boost::mpi::communicator &comm) {
+    boost::mpi::communicator &comm,
+    bool symmetrize = false) {
 
     // TODO: temp!
     SKYLARK_THROW_EXCEPTION (
@@ -426,7 +427,8 @@ void ReadArcList(const std::string& fname,
 template <typename T>
 void ReadArcList(const std::string& fname,
     El::Matrix<T>& X,
-    boost::mpi::communicator &comm) {
+    boost::mpi::communicator &comm,
+    bool symmetrize = false) {
 
     // TODO: should we add this?
     SKYLARK_THROW_EXCEPTION (
@@ -437,7 +439,8 @@ void ReadArcList(const std::string& fname,
 template <typename value_t, El::Distribution U, El::Distribution V>
 void ReadArcList(const std::string& fname,
     El::DistMatrix<value_t, U, V>& X,
-    boost::mpi::communicator &comm) {
+    boost::mpi::communicator &comm,
+    bool symmetrize = false) {
 
     // TODO: should we add this?
     SKYLARK_THROW_EXCEPTION (

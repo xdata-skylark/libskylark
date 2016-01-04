@@ -151,7 +151,7 @@ void execute_sym(bool directory, const std::string &fname,
         if (ftype.compare("ARC_LIST") == 0) {
             //FIXME: comm
             boost::mpi::communicator world;
-            skylark::utility::io::ReadArcList(fname, A, world);
+            skylark::utility::io::ReadArcList(fname, A, world, true);
         } else {
             if (directory)
                 skylark::utility::io::ReadDirLIBSVM(fname, A, Y, skylark::base::ROWS);

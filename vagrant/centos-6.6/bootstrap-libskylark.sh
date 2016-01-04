@@ -160,7 +160,7 @@ cd $HOME/deps
 if [ ! -d "Elemental" ]; then
     git clone https://github.com/elemental/Elemental.git
     cd Elemental
-    git checkout b56573c9e71a2338ec2751b1c60e5126b01180df
+    git checkout a27f9f0a6fc33a971dd81c61f6fbe3ce71f61814
     mkdir build
     cd build
     cmake -DEL_USE_64BIT_INTS=ON -DCMAKE_BUILD_TYPE=Release -DEL_HYBRID=ON -DBUILD_SHARED_LIBS=ON -DMATH_LIBS="-L/usr/lib -llapack -lopenblas -lm" ../

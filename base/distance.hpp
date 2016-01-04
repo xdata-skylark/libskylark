@@ -180,12 +180,12 @@ void L1DistanceMatrix(direction_t dirA, direction_t dirB, T alpha,
         const El::Int bsize = El::Blocksize();
         const El::Grid& g = APre.Grid();
 
-        auto APtr = El::ReadProxy<T, El::MC, El::MR>(&APre);
-        auto& A = *APtr;
-        auto BPtr = El::ReadProxy<T, El::MC, El::MR>(&BPre);
-        auto& B = *BPtr;
-        auto CPtr = El::ReadWriteProxy<T, El::MC, El::MR>(&CPre);
-        auto& C = *CPtr;
+        El::DistMatrixReadProxy<T, T, El::MC, El::MR> AProx(APre);
+        El::DistMatrixReadProxy<T, T, El::MC, El::MR> BProx(BPre);
+        El::DistMatrixReadWriteProxy<T, T, El::MC, El::MR> CProx(CPre);
+        auto& A = AProx.GetLocked();
+        auto& B = BProx.GetLocked();
+        auto& C = CProx.Get();
 
         // Temporary distributions
         El::DistMatrix<T, El::STAR, El::MC> A1_STAR_MC(g);
@@ -303,10 +303,10 @@ void SymmetricL1DistanceMatrix(El::UpperOrLower uplo, direction_t dir, T alpha,
         const El::Int bsize = El::Blocksize();
         const El::Grid& g = APre.Grid();
 
-        auto APtr = El::ReadProxy<T, El::MC, El::MR>(&APre);
-        auto& A = *APtr;
-        auto CPtr = El::ReadWriteProxy<T, El::MC, El::MR>(&CPre);
-        auto& C = *CPtr;
+        El::DistMatrixReadProxy<T, T, El::MC, El::MR> AProx(APre);
+        El::DistMatrixReadWriteProxy<T, T, El::MC, El::MR> CProx(CPre);
+        auto& A = AProx.GetLocked();
+        auto& C = CProx.Get();
 
         // Temporary distributions
         El::DistMatrix<T, El::STAR, El::MR> A1_STAR_MR(g);

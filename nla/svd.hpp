@@ -2,6 +2,10 @@
 #define SKYLARK_APPROXIMATE_SVD_HPP
 
 #include <El.hpp>
+
+#include <algorithm>
+#include <string>
+
 #include "../sketch/sketch.hpp"
 
 namespace skylark { namespace nla {
@@ -16,7 +20,6 @@ namespace skylark { namespace nla {
  * skip_qr: skip doing QR in every iteration (less accurate).
  */
 struct approximate_svd_params_t : public base::params_t {
-
     int oversampling_ratio, oversampling_additive;
     int num_iterations;
     bool skip_qr;
@@ -33,7 +36,7 @@ struct approximate_svd_params_t : public base::params_t {
         base::params_t(am_i_printing, log_level, log_stream, prefix, debug_level),
         oversampling_ratio(oversampling_ratio),
         oversampling_additive(oversampling_additive),
-        num_iterations(num_iterations), skip_qr(skip_qr) {};
+        num_iterations(num_iterations), skip_qr(skip_qr) {}
 };
 
 /**
@@ -178,8 +181,7 @@ void SymmetricPowerIteration(El::UpperOrLower uplo, El::Orientation vorientation
         U.Resize(k, n);
 
     if (vorientation == El::NORMAL) {
-
-        for(int i = 0; i < (iternum / 2); i++) {
+        for (int i = 0; i < (iternum / 2); i++) {
             if (ortho) El::qr::ExplicitUnitary(V);
             base::Symm(El::LEFT, uplo, static_cast<value_type>(1.0), A, V, U);
             if (ortho) El::qr::ExplicitUnitary(U);
@@ -190,13 +192,11 @@ void SymmetricPowerIteration(El::UpperOrLower uplo, El::Orientation vorientation
             base::Symm(El::LEFT, uplo, static_cast<value_type>(1.0), A, V, U);
             El::Copy(U, V);
         }
-
     }
 
     if (vorientation != El::NORMAL) {
-
         base::Symm(El::LEFT, uplo, static_cast<value_type>(1.0), A, V, V);
-        for(int i = 0; i < (iternum / 2); i++) {
+        for (int i = 0; i < (iternum / 2); i++) {
             if (ortho) El::lq::ExplicitUnitary(V);
             base::Symm(El::RIGHT, uplo, static_cast<value_type>(1.0), A, V, U);
             if (ortho) El::lq::ExplicitUnitary(U);
@@ -228,11 +228,13 @@ void ApproximateSVD(const InputType &A, UType &U, SType &S, VType &V,
      * Check if sizes match.
      */
     if (rank > std::min(m, n)) {
-        std::string msg = "Incompatible matrix dimensions and target rank";
+        std::stringstream err;
+        err << "Incompatible matrix dimensions (" << std::min(m, n)
+            << ") and target rank (" << rank << ")";
         if (log_lev1)
-            params.log_stream << msg << std::endl;
+            params.log_stream << err.str() << std::endl;
         SKYLARK_THROW_EXCEPTION(base::skylark_exception()
-            << base::error_msg(msg));
+            << base::error_msg(err.str()));
     }
 
     /** Code for m >= n */
@@ -325,31 +327,35 @@ void ApproximateSymmetricSVD(El::UpperOrLower uplo,
      * Sanity check: is the matrix even square?
      */
     if (base::Height(A) != n) {
-        std::string msg = "Matrix is not square (so is not symmetric)";
+        std::stringstream err;
+        err << "Matrix is not square (" << base::Height(A) << " x "
+            << n << ") -- symmetric matrix required";
         if (log_lev1)
-            params.log_stream << msg << std::endl;
+            params.log_stream << err.str() << std::endl;
         SKYLARK_THROW_EXCEPTION(base::skylark_exception()
-            << base::error_msg(msg));
+            << base::error_msg(err.str()));
     }
 
     /**
      * Check if sizes match.
      */
     if (rank > n) {
-        std::string msg = "Incompatible matrix dimensions and target rank";
+        std::stringstream err;
+        err << "Incompatible matrix dimensions (" << n << ") and target rank ("
+            << rank << ").";
         if (log_lev1)
-            params.log_stream << msg << std::endl;
+            params.log_stream << err.str() << std::endl;
         SKYLARK_THROW_EXCEPTION(base::skylark_exception()
-            << base::error_msg(msg));
+            << base::error_msg(err.str()));
     }
 
     int k = std::max(rank, std::min(n,
             params.oversampling_ratio * rank +
             params.oversampling_additive));
 
-    VType U(n, k), B(k, k), W(k,k);
+    VType U(n, k), B(k, k), W(k, k);
     V.Resize(n, k);
-    
+
     /** Apply sketch transformation on the input matrix */
     // Optimally, we will use JLT_t. But the matrix is potentially only
     // specified in sub/super diagonal, so we explicitly form the random matrix.
@@ -358,7 +364,7 @@ void ApproximateSymmetricSVD(El::UpperOrLower uplo,
     base::Symm(El::LEFT, uplo, static_cast<value_type>(1.0), A, Omega, V);
 
     /** Power iteration */
-    SymmetricPowerIteration(uplo, El::NORMAL, A, V,params.num_iterations,
+    SymmetricPowerIteration(uplo, El::NORMAL, A, V, params.num_iterations,
         !params.skip_qr);
 
     /** Schur-Rayleigh-Ritz (with SVD), aka factorize & truncate to rank */
@@ -374,7 +380,7 @@ void ApproximateSymmetricSVD(El::UpperOrLower uplo,
     El::Copy(U, V);
 }
 
-
-} } /** namespace skylark::nla */
+}  // namespace nla
+}  // namespace skylark
 
 #endif /** SKYLARK_APPROXIMATE_SVD_HPP */

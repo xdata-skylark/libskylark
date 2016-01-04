@@ -110,6 +110,16 @@ target_link_libraries(svd_elemental_test
   ${Boost_LIBRARIES})
 add_test( svd_elemental_test mpirun -np 1 svd_elemental_test )
 
+add_executable(read_arc_list_test ReadArcList.cpp)
+target_link_libraries(read_arc_list_test
+  ${SKYLARK_LIBS}
+  ${Elemental_LIBRARY}
+  ${Pmrrr_LIBRARY}
+  ${Metis_LIBRARY}
+  ${OPTIONAL_LIBS}
+  ${DEP_LIBRARIES}
+  ${Boost_LIBRARIES})
+# add_test( read_arc_list_test mpirun -np 1 read_arc_list_test TEST_GRAPH )
 
 find_package(PythonInterp REQUIRED)
 #FIXME: Because of mpi4py/kdt MPI initialization issue we cannot run the test

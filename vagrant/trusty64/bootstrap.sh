@@ -65,7 +65,7 @@ apt-get install -y liblapack3gf
 apt-get install -y libopenblas-base libopenblas-dev
 
 # Boost (FIXME: we could only install selected packages)
-apt-get install -y libboost-all-dev
+apt-get install -y libboost1.55-all-dev
 
 # Numpy and Scipy stack installation as recommended at scipy.org
 apt-get install -y python-numpy python-scipy python-matplotlib ipython \

@@ -330,18 +330,12 @@ void ReadArcList(const std::string& fname,
     detail::parse<edge_list_t, value_t>(data, edge_list,
         max_row_idx, max_col_idx, symmetrize);
 
-    // XXX: boost::mpi::inplace_t was added in version 1.55
-    size_t ncol = 0, nrow = 0;
-    boost::mpi::all_reduce(comm,
-        max_col_idx, ncol, boost::mpi::maximum<size_t>());
-    boost::mpi::all_reduce(comm,
-        max_row_idx, nrow, boost::mpi::maximum<size_t>());
+    boost::mpi::all_reduce(comm, boost::mpi::inplace_t<size_t>(max_col_idx),
+        boost::mpi::maximum<size_t>());
+    boost::mpi::all_reduce(comm, boost::mpi::inplace_t<size_t>(max_row_idx),
+        boost::mpi::maximum<size_t>());
 
-    // if (rank == 0)
-    //     std::cout << "Read matrix of size " << nrow << " x "
-    //               << ncol << std::endl;
-
-    X.resize(nrow + 1, ncol + 1);
+    X.resize(max_row_idx + 1, max_col_idx + 1);
 
     if (comm.size() == 1)
         return detail::local_insert(X, edge_list);

@@ -27,7 +27,7 @@ template<typename T>
 inline void Symm(El::LeftOrRight side, El::UpperOrLower uplo,
     T alpha, const El::Matrix<T>& A, const El::Matrix<T>& B,
     El::Matrix<T>& C) {
-    El::Symm(side, uplo, alpha, A, B, T(0.0), C);
+    El::Symm(side, uplo, alpha, A, B, static_cast<T>(0.0), C);
 }
 
 template<typename T>
@@ -58,7 +58,7 @@ template<typename T>
 inline void Symm(El::LeftOrRight side, El::UpperOrLower uplo,
     T alpha, const El::DistMatrix<T>& A, const El::DistMatrix<T>& B,
     El::DistMatrix<T>& C) {
-    El::Symm(side, uplo, alpha, A, B, T(0.0), C);
+    El::Symm(side, uplo, alpha, A, B, static_cast<T>(0.0), C);
 }
 
 /**
@@ -143,7 +143,7 @@ inline void Symm(El::LeftOrRight side, El::UpperOrLower uplo,
     T alpha, const sparse_matrix_t<T>& A, const El::Matrix<T>& B,
     El::Matrix<T>& C) {
 
-    base::Symm(side, uplo, alpha, A, B, T(0.0), C);
+    base::Symm(side, uplo, alpha, A, B, static_cast<T>(0.0), C);
 }
 
 
@@ -257,7 +257,7 @@ inline void Symm(El::LeftOrRight side, El::UpperOrLower uplo,
     const El::DistMatrix<T, El::VC, El::STAR>& B,
     El::DistMatrix<T, El::VC, El::STAR>& C) {
 
-    base::Symm(side, uplo, alpha, A, B, static_cast<T>(1.0), C);
+    base::Symm(side, uplo, alpha, A, B, static_cast<T>(0.0), C);
 }
 
 }  // namespace base

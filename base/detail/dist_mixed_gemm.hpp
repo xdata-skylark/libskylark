@@ -161,7 +161,7 @@ void Gemm(El::Orientation oA, El::Orientation oB, value_type alpha,
         oB = El::TRANSPOSE;
 
     // NN
-    if (oA == El::NORMAL && oB == El::NORMAL) 
+    if (oA == El::NORMAL && oB == El::NORMAL)
         base::Gemm(oA, oB, alpha, A.locked_matrix(), B.LockedMatrix(),
             beta, C.Matrix());
 
@@ -246,7 +246,7 @@ void Gemm(El::Orientation oA, El::Orientation oB, value_type alpha,
 }
 
 
-// sparse(STAR/VR) * dense(STAR/STAR) -> sparse(VC/STAR)
+// sparse(VC/STAR) * dense(STAR/STAR) -> sparse(VC/STAR)
 template<typename value_type>
 void Gemm(El::Orientation oA, El::Orientation oB, value_type alpha,
           const sparse_vc_star_matrix_t<value_type> &A,
@@ -256,62 +256,58 @@ void Gemm(El::Orientation oA, El::Orientation oB, value_type alpha,
 
     assert(A.is_finalized());
 
-    //FIXME that is currently a problem: C can only be non-finalized!
+    // FIXME: that is currently a problem: C can only be non-finalized, so there
+    // no way to scale.
     assert(!C.is_finalized());
-
-    //FIXME: use sparse GEMMs from above or create a new one
 
     const int* indptr  = A.indptr();
     const int* indices = A.indices();
     const value_type *values = A.locked_values();
 
-    //FIXME: what is k ??
     int k = A.local_width();
-    //int k = A.width();
     int n = B.Width();
     int m = B.Height();
 
-    if (oA == El::ADJOINT && std::is_same<value_type, El::Base<value_type> >::value)
+    if (oA == El::ADJOINT &&
+        std::is_same<value_type, El::Base<value_type> >::value)
         oA = El::TRANSPOSE;
 
-    if (oB == El::ADJOINT && std::is_same<value_type, El::Base<value_type> >::value)
+    if (oB == El::ADJOINT &&
+        std::is_same<value_type, El::Base<value_type> >::value)
         oB = El::TRANSPOSE;
 
     // NN
     if (oA == El::NORMAL && oB == El::NORMAL) {
 
-        //FIXME
-        //El::Scale(beta, C);
+        // FIXME: El::Scale(beta, C);
 
 #if SKYLARK_HAVE_OPENMP
         #pragma omp parallel for
 #endif
-        for(int i = 0; i < n; i++)
-            for(int col = 0; col < k; col++) {
+        for (int i = 0; i < n; i++)
+            for (int col = 0; col < k; col++) {
                 int g_col = A.global_col(col);
                 for (int j = indptr[col]; j < indptr[col + 1]; j++) {
-                    int row = A.global_row(indices[j]);
+                    int row = indices[j];
                     value_type val = values[j];
-                    //FIXME: does not work in parallel, we can only update local (row, i)
-                    C.queue_update(row, i, alpha * val * B.Get(g_col, i));
+                    C.queue_update_local(row, i, alpha * val * B.Get(g_col, i));
                 }
             }
     }
 
     // NT
     if (oA == El::NORMAL && (oB == El::TRANSPOSE /*|| oB == El::ADJOINT*/)) {
-
         SKYLARK_THROW_EXCEPTION(base::unsupported_base_operation());
 
 #if 0
-        //FIXME:
-        //El::Scale(beta, C);
+        // FIXME: El::Scale(beta, C);
 
 #if SKYLARK_HAVE_OPENMP
         #pragma omp parallel for
 #endif
-        for(int i = 0; i < n; i++)
-            for(int col = 0; col < k; col++) {
+        // XXX: untested
+        for (int i = 0; i < n; i++)
+            for (int col = 0; col < k; col++) {
                 int g_col = A.global_col(col);
                 for (int j = indptr[col]; j < indptr[col + 1]; j++) {
                     int row = A.global_row(indices[j]);
@@ -324,17 +320,16 @@ void Gemm(El::Orientation oA, El::Orientation oB, value_type alpha,
 
     // TN
     if (oA == El::TRANSPOSE && oB == El::NORMAL) {
-
         SKYLARK_THROW_EXCEPTION(base::unsupported_base_operation());
 
 #if 0
 #if SKYLARK_HAVE_OPENMP
         #pragma omp parallel for collapse(2)
 #endif
+        // XXX: untested
         for (int j = 0; j < n; j++)
-            for(int row = 0; row < k; row++) {
-                //FIXME:
-                //C.Scale(row, j, beta);
+            for (int row = 0; row < k; row++) {
+                // FIXME: C.Scale(row, j, beta);
                 int g_row = A.global_row(row);
                 for (int l = indptr[row]; l < indptr[row + 1]; l++) {
                     int col = A.global_col(indices[l]);
@@ -347,17 +342,16 @@ void Gemm(El::Orientation oA, El::Orientation oB, value_type alpha,
 
     // TT
     if (oA == El::TRANSPOSE && (oB == El::TRANSPOSE /*|| oB == El::ADJOINT*/)) {
-
         SKYLARK_THROW_EXCEPTION(base::unsupported_base_operation());
 
 #if 0
 #if SKYLARK_HAVE_OPENMP
         #pragma omp parallel for collapse(2)
 #endif
+        // XXX: untested
         for (int j = 0; j < n; j++)
-            for(int row = 0; row < k; row++) {
-                //FIXME:
-                //C.Scale(row, j, beta);
+            for (int row = 0; row < k; row++) {
+                // FIXME: C.Scale(row, j, beta);
                 int g_row = A.global_row(row);
                 for (int l = indptr[row]; l < indptr[row + 1]; l++) {
                     int col = A.global_col(indices[l]);
@@ -371,7 +365,7 @@ void Gemm(El::Orientation oA, El::Orientation oB, value_type alpha,
     C.finalize();
 }
 
-// sparse(STAR/Vr) * sparse(VC/STAR) -> dense(STAR/STAR)
+// sparse(STAR/VR) * sparse(VC/STAR) -> dense(STAR/STAR)
 template<typename value_type>
 void Gemm(El::Orientation oA, El::Orientation oB, value_type alpha,
           const sparse_star_vr_matrix_t<value_type> &A,
@@ -382,14 +376,11 @@ void Gemm(El::Orientation oA, El::Orientation oB, value_type alpha,
     assert(A.is_finalized());
     assert(B.is_finalized());
 
-    //TODO: implement (use local GEMM)
+    // TODO: implement (use local GEMM)
     SKYLARK_THROW_EXCEPTION(base::unsupported_base_operation());
-
-    // Sum-scatter after local GEMM
-    //El::AxpyContract(static_cast<T>(1), C_STAR_STAR, C);
 }
 
-} // namespace base
-} // namespace skylark
+}  // namespace base
+}  // namespace skylark
 
-#endif // SKYLARK_DIST_MIXED_GEMM_HPP
+#endif  // SKYLARK_DIST_MIXED_GEMM_HPP

@@ -4,8 +4,6 @@
 #include <boost/mpi.hpp>
 #include "exception.hpp"
 #include "sparse_matrix.hpp"
-#include "sparse_star_vr_matrix.hpp"
-#include "sparse_vc_star_matrix.hpp"
 #include "computed_matrix.hpp"
 #include "../utility/typer.hpp"
 

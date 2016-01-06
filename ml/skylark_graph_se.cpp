@@ -1,5 +1,3 @@
-#include <iostream>
-#include <unordered_map>
 #include <El.hpp>
 #include <boost/mpi.hpp>
 #include <boost/format.hpp>
@@ -7,6 +5,12 @@
 
 #define SKYLARK_NO_ANY
 #include <skylark.hpp>
+
+#include <iostream>
+#include <unordered_map>
+#include <string>
+#include <vector>
+
 
 namespace bpo = boost::program_options;
 
@@ -41,6 +45,9 @@ struct simple_parallel_graph_t {
             adjacency_type &A,
             std::vector<vertex_type> &indexmap) const {
         _adj_matrix.view(A);
+        // XXX: for now we just have the id index map
+        for (size_t i = 0; i < _adj_matrix.height(); i ++)
+            indexmap.push_back(i);
     }
 
 private:
@@ -298,8 +305,9 @@ void execute() {
             skylark::base::error_msg("Install libhdfs for HDFS support!"));
 
 #       endif
-    } else
+    } else {
         G = new graph_type(graphfile);
+    }
 
     if (rank == 0)
         std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
@@ -335,14 +343,19 @@ void execute() {
 
     El::Write(X, prefix + ".vec", El::ASCII);
 
-    std::ofstream of(prefix + ".index.txt");
-    for(size_t i = 0; i < indexmap.size(); i++)
-        of << i << "\t" << indexmap[i] << std::endl;
-    of.close();
+    // the index map is the same for all procs
+    if (rank == 0) {
+        std::ofstream of(prefix + ".index.txt");
+        for (size_t i = 0; i < indexmap.size(); i++)
+            of << i << "\t" << indexmap[i] << std::endl;
+        of.close();
+    }
 
     if (rank == 0)
-        std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
+        std::cout << "took " << boost::format("%.2e") % timer.elapsed()
                   << " sec\n";
+
+    world.barrier();
 }
 
 int main(int argc, char** argv) {
@@ -404,8 +417,8 @@ int main(int argc, char** argv) {
 
         if (vm.count("help")) {
             if (rank == 0) {
-                std::cout << "Usage: " << argv[0] << " [options] input-file-name"
-                          << std::endl;
+                std::cout << "Usage: " << argv[0]
+                          << " [options] input-file-name" << std::endl;
                 std::cout << desc;
             }
             world.barrier();
@@ -416,7 +429,7 @@ int main(int argc, char** argv) {
         skipqr = vm.count("skipqr");
         //directory = vm.count("directory");
         numeric = vm.count("numeric");
-        
+
         if (!vm.count("graphfile")) {
             std::cout << "Input graph-file is required." << std::endl;
             return -1;
@@ -451,9 +464,11 @@ int main(int argc, char** argv) {
             }
         } else {
             if (world.size() > 1)
-                SKYLARK_THROW_EXCEPTION(skylark::base::unsupported_matrix_distribution() <<
-                    skylark::base::error_msg("Non-numeric indexes are not yet"
-                        "supported for parallel computation."));
+                SKYLARK_THROW_EXCEPTION(
+                    skylark::base::unsupported_matrix_distribution()
+                        << skylark::base::error_msg(
+                            "Non-numeric indexes are not yet"
+                            "supported for parallel computation."));
 
             if (use_single)
                 execute<simple_unweighted_graph_t<std::string>,

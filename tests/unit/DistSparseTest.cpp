@@ -412,22 +412,42 @@ int test_main(int argc, char *argv[]) {
     //////////////////////////////////////////////////////////////////////////
     //[> Test I/O <]
 
-    if (argc < 2)
+    // only run test if we got a file name
+    if (argc < 2) {
+        El::Finalize();
         return 0;
+    }
 
     sparse_vc_star_matrix_t X(0, 0, grid);
     El::DistMatrix<double, El::VC, El::STAR> Y;
 
     std::string fname(argv[1]);
-    skylark::utility::io::ReadLIBSVM(fname, X, Y, skylark::base::COLUMNS);
+    try {
+        skylark::utility::io::ReadLIBSVM(fname, X, Y, skylark::base::COLUMNS);
+    } catch (skylark::base::skylark_exception ex) {
+        SKYLARK_PRINT_EXCEPTION_DETAILS(ex);
+        SKYLARK_PRINT_EXCEPTION_TRACE(ex);
+        errno = *(boost::get_error_info<skylark::base::error_code>(ex));
+        std::cout << "Caught exception, exiting with error " << errno << ": ";
+        std::cout << skylark_strerror(errno) << std::endl;
+        BOOST_FAIL("Exception when reading libSVM file.");
+    }
 
     El::DistMatrix<double, El::VC, El::STAR> X_ref;
     El::DistMatrix<double, El::VC, El::STAR> Y_ref;
-    skylark::utility::io::ReadLIBSVM(
-        fname, X_ref, Y_ref, skylark::base::COLUMNS);
+    try {
+        skylark::utility::io::ReadLIBSVM(
+            fname, X_ref, Y_ref, skylark::base::COLUMNS);
+    } catch (skylark::base::skylark_exception ex) {
+        SKYLARK_PRINT_EXCEPTION_DETAILS(ex);
+        SKYLARK_PRINT_EXCEPTION_TRACE(ex);
+        errno = *(boost::get_error_info<skylark::base::error_code>(ex));
+        std::cout << "Caught exception, exiting with error " << errno << ": ";
+        std::cout << skylark_strerror(errno) << std::endl;
+        BOOST_FAIL("Exception when reading libSVM file.");
+    }
 
     check_equal(X_ref, X);
-
 
     El::Finalize();
     return 0;

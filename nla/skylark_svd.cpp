@@ -1,12 +1,13 @@
-#include <iostream>
-#include <boost/program_options.hpp>
-
 #include <El.hpp>
+
+#include <boost/program_options.hpp>
 #include <boost/mpi.hpp>
 #include <boost/format.hpp>
 
 #define SKYLARK_NO_ANY
 #include <skylark.hpp>
+
+#include <iostream>
 
 namespace bpo = boost::program_options;
 
@@ -49,9 +50,11 @@ void execute(bool directory, const std::string &fname,
 
         if (directory)
             SKYLARK_THROW_EXCEPTION(skylark::base::io_exception() <<
-                skylark::base::error_msg("HDFS directory reading not yet supported."))
+                skylark::base::error_msg(
+                    "HDFS directory reading not yet supported."))
         else
-            skylark::utility::io::ReadLIBSVM(fs, fname, A, Y, skylark::base::ROWS);
+            skylark::utility::io::ReadLIBSVM(
+                fs, fname, A, Y, skylark::base::ROWS);
 
 #       else
 
@@ -61,7 +64,8 @@ void execute(bool directory, const std::string &fname,
 #       endif
     } else {
         if (directory)
-            skylark::utility::io::ReadDirLIBSVM(fname, A, Y, skylark::base::ROWS);
+            skylark::utility::io::ReadDirLIBSVM(
+                fname, A, Y, skylark::base::ROWS);
         else
             skylark::utility::io::ReadLIBSVM(fname, A, Y, skylark::base::ROWS);
     }
@@ -136,9 +140,11 @@ void execute_sym(bool directory, const std::string &fname,
 
         if (directory)
             SKYLARK_THROW_EXCEPTION(skylark::base::io_exception() <<
-                skylark::base::error_msg("HDFS directory reading not yet supported."))
+                skylark::base::error_msg(
+                    "HDFS directory reading not yet supported."))
         else
-            skylark::utility::io::ReadLIBSVM(fs, fname, A, Y, skylark::base::ROWS);
+            skylark::utility::io::ReadLIBSVM(
+                fs, fname, A, Y, skylark::base::ROWS);
 
 #       else
 
@@ -149,14 +155,14 @@ void execute_sym(bool directory, const std::string &fname,
     } else {
         // FIXME: ugly, fix options
         if (ftype.compare("ARC_LIST") == 0) {
-            //FIXME: comm
-            boost::mpi::communicator world;
             skylark::utility::io::ReadArcList(fname, A, world, true);
         } else {
             if (directory)
-                skylark::utility::io::ReadDirLIBSVM(fname, A, Y, skylark::base::ROWS);
+                skylark::utility::io::ReadDirLIBSVM(
+                    fname, A, Y, skylark::base::ROWS);
             else
-                skylark::utility::io::ReadLIBSVM(fname, A, Y, skylark::base::ROWS);
+                skylark::utility::io::ReadLIBSVM(
+                    fname, A, Y, skylark::base::ROWS);
         }
     }
 
@@ -193,6 +199,8 @@ void execute_sym(bool directory, const std::string &fname,
     if (rank == 0)
         std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
                   << " sec\n";
+
+    world.barrier();
 }
 
 
@@ -265,8 +273,8 @@ int main(int argc, char* argv[]) {
 
         if (vm.count("help")) {
             if (rank == 0) {
-                std::cout << "Usage: " << argv[0] << " [options] input-file-name"
-                          << std::endl;
+                std::cout << "Usage: " << argv[0]
+                          << " [options] input-file-name" << std::endl;
                 std::cout << desc;
             }
             world.barrier();
@@ -354,8 +362,8 @@ int main(int argc, char* argv[]) {
                         execute_sym<skylark::base::sparse_matrix_t<double>,
                                     El::Matrix<double>,
                                     El::Matrix<double> >(
-                                        directory, fname, ftype, hdfs, port, lower,
-                                        k, params, prefix, context);
+                                        directory, fname, ftype, hdfs, port,
+                                        lower, k, params, prefix, context);
                     else
                         execute_sym<El::Matrix<double>,
                                     El::Matrix<double> >(directory, fname,

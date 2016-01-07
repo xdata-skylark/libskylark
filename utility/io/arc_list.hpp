@@ -49,11 +49,17 @@ void local_insert(
     X.finalize();
 }
 
-/// parse local buffer and insert edges into temporary list
+/**
+ * Parse local buffer and insert edges into temporary lists for target
+ * processors.
+ *
+ * FIXME: target_rank computation only works for VC/STAR distribution (current
+ * implementation). Better to use the Owner method to compute the target rank.
+*/
 template <typename edge_list_t, typename value_t>
-void parse(std::stringstream& data, edge_list_t& edge_list,
+void parse(std::stringstream& data, std::vector<edge_list_t>& proc_edge_list,
         size_t& max_row_idx, size_t& max_col_idx,
-        bool symmetrize) {
+        boost::mpi::communicator &comm, bool symmetrize) {
     std::string line;
     while (std::getline(data, line)) {
         if (!data.good())
@@ -115,11 +121,14 @@ void parse(std::stringstream& data, edge_list_t& edge_list,
         max_col_idx = std::max(to, max_col_idx);
         max_row_idx = std::max(from, max_row_idx);
 
+        size_t target_rank = from % comm.size();
+
         if (symmetrize) {
-            edge_list.push_back(std::make_tuple(from, to, value / 2));
-            edge_list.push_back(std::make_tuple(to, from, value / 2));
+            proc_edge_list[target_rank].push_back(std::make_tuple(from, to, value / 2));
+            target_rank = to % comm.size();
+            proc_edge_list[target_rank].push_back(std::make_tuple(to, from, value / 2));
         } else {
-            edge_list.push_back(std::make_tuple(from, to, value));
+            proc_edge_list[target_rank].push_back(std::make_tuple(from, to, value));
         }
     }
 
@@ -130,6 +139,15 @@ void parse(std::stringstream& data, edge_list_t& edge_list,
     }
 }
 
+/**
+ * Reads a text file in chunks and ensures that each partition/rank gets
+ * full lines.
+ *
+ * \param fname name of the file
+ * \param comm (sub-)communicator to read the and distribute the file
+ * \param num_partitions number of partitions to split the file
+ * \param data stream of read data
+*/
 void parallelChunkedRead(
         const std::string& fname, boost::mpi::communicator &comm,
         int num_partitions, std::stringstream& data) {
@@ -306,7 +324,7 @@ void parallelChunkedRead(
  *
  *  @param fname input file name
  *  @param X output distributed sparse matrix
- *  @param comm communicator
+ *  @param comm MPI communicator reading and distributing the file
  *  @param symmetrize make the matrix symmetric by returning (A + A')/2
  */
 template <typename value_t>
@@ -325,10 +343,10 @@ void ReadArcList(const std::string& fname,
     std::stringstream data;
     detail::parallelChunkedRead(fname, comm, num_partitions, data);
 
-    edge_list_t edge_list;
+    std::vector<edge_list_t> proc_set(comm.size());
     size_t max_row_idx = 0, max_col_idx = 0;
-    detail::parse<edge_list_t, value_t>(data, edge_list,
-        max_row_idx, max_col_idx, symmetrize);
+    detail::parse<edge_list_t, value_t>(data, proc_set,
+        max_row_idx, max_col_idx, comm, symmetrize);
 
     boost::mpi::all_reduce(comm, boost::mpi::inplace_t<size_t>(max_col_idx),
         boost::mpi::maximum<size_t>());
@@ -338,20 +356,12 @@ void ReadArcList(const std::string& fname,
     X.resize(max_row_idx + 1, max_col_idx + 1);
 
     if (comm.size() == 1)
-        return detail::local_insert(X, edge_list);
+        return detail::local_insert(X, proc_set[0]);
 
     // finally we can redistribute the data, create a plan
-    std::vector<edge_list_t> proc_set(comm.size());
     std::vector<size_t> proc_count(comm.size(), 0);
-    typename edge_list_t::const_iterator itr;
-    for (itr = edge_list.begin(); itr != edge_list.end(); itr++) {
-        const size_t target_rank = X.owner(
-                static_cast<El::Int>(get<0>(*itr)),
-                static_cast<El::Int>(get<1>(*itr)));
-        assert(target_rank < comm.size());
-        proc_set[target_rank].push_back(*itr);
-        proc_count[target_rank]++;
-    }
+    for (size_t i = 0; i < comm.size(); i++)
+        proc_count[i] = proc_set[i].size();
 
     // XXX: what comm strategy: p2p, collective, one-sided?
     // first communicate sizes that we will receive from other procs
@@ -445,11 +455,11 @@ void ReadArcList(const std::string& fname,
 
     typedef typename base::sparse_matrix_t<value_t>::coord_tuple_t coord_tuple_t;
     typedef std::vector<coord_tuple_t> edge_list_t;
-    edge_list_t edge_list;
+    std::vector<edge_list_t> edge_list(1);
     size_t max_row_idx = 0, max_col_idx = 0;
     detail::parse<edge_list_t, value_t>(data, edge_list,
-        max_row_idx, max_col_idx, symmetrize);
-    X.set(edge_list, max_row_idx + 1, max_col_idx + 1);
+        max_row_idx, max_col_idx, comm, symmetrize);
+    X.set(edge_list[0], max_row_idx + 1, max_col_idx + 1);
 }
 
 template <typename T>

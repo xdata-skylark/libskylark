@@ -45,9 +45,6 @@ struct simple_parallel_graph_t {
             adjacency_type &A,
             std::vector<vertex_type> &indexmap) const {
         _adj_matrix.view(A);
-        // XXX: for now we just have the id index map
-        for (size_t i = 0; i < _adj_matrix.height(); i ++)
-            indexmap.push_back(i);
     }
 
 private:
@@ -344,7 +341,7 @@ void execute() {
     El::Write(X, prefix + ".vec", El::ASCII);
 
     // the index map is the same for all procs
-    if (rank == 0) {
+    if (rank == 0 && !numeric) {
         std::ofstream of(prefix + ".index.txt");
         for (size_t i = 0; i < indexmap.size(); i++)
             of << i << "\t" << indexmap[i] << std::endl;

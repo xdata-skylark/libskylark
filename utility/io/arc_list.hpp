@@ -62,7 +62,7 @@ void parse(std::stringstream& data, std::vector<edge_list_t>& proc_edge_list,
         boost::mpi::communicator &comm, bool symmetrize) {
     std::string line;
     while (std::getline(data, line)) {
-        if (!data.good())
+        if (!data.good() && !data.eof())
             SKYLARK_THROW_EXCEPTION(
                 base::io_exception() << base::error_msg("Stream went bad!"));
 

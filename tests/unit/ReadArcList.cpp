@@ -111,23 +111,55 @@ int test_main(int argc, char *argv[]) {
         BOOST_FAIL("Exception when reading arc list.");
     }
 
-    std::cout << "Read a " << A.width() << " x " << A.height()
-              << " matrix on " << world.size() << " procs." << std::endl;
-
     std::stringstream ss;
     ss << "Read matrix (" << A.local_height() << " x " << A.local_width()
        << ") on " << world.rank() << "." << std::endl;
     std::cout << ss.str() << std::flush;
 
-    // holds for vc/star
-    BOOST_REQUIRE(A.local_width() == A.width());
+    world.barrier();
+
+    // holds for vc/star (some rows can be shorter if the last element was
+    // not set)
+    BOOST_REQUIRE(A.local_width() <= A.width());
 
     El::Int total_rows = 0;
     boost::mpi::all_reduce(
         world, A.local_height(), total_rows, std::plus<El::Int>());
     BOOST_REQUIRE(total_rows == A.height());
 
-    // TODO(yin): check the values/coords?
+    // check the values/coords
+    skylark::base::sparse_matrix_t<double> X;
+    try {
+        std::string fname(argv[1]);
+        skylark::utility::io::ReadArcList(fname, X, world, true);
+    } catch (skylark::base::skylark_exception ex) {
+        SKYLARK_PRINT_EXCEPTION_DETAILS(ex);
+        SKYLARK_PRINT_EXCEPTION_TRACE(ex);
+        errno = *(boost::get_error_info<skylark::base::error_code>(ex));
+        std::cout << "Caught exception, exiting with error " << errno << ": ";
+        std::cout << skylark_strerror(errno) << std::endl;
+        BOOST_FAIL("Exception when reading arc list (serial).");
+    }
+
+    typedef skylark::base::sparse_matrix_t<double>::index_type index_type;
+
+    const index_type* ref_indptr  = X.indptr();
+    const index_type* ref_indices = X.indices();
+    const double* ref_values      = X.locked_values();
+
+    const index_type* indptr  = A.indptr();
+    const index_type* indices = A.indices();
+    const double* values      = A.locked_values();
+
+    // traverse local data and compare
+    for (int col = 0; col < A.local_width(); col++) {
+        int k = ref_indptr[col];
+        for (int j = indptr[col]; j < indptr[col + 1]; j++) {
+            int row = A.global_row(indices[j]);
+            while(ref_indices[k] != row) k++;
+            BOOST_REQUIRE(values[j] == ref_values[k]);
+        }
+    }
 
     return 0;
 }

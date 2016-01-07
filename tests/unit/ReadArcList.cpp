@@ -118,14 +118,14 @@ int test_main(int argc, char *argv[]) {
 
     world.barrier();
 
-    // holds for vc/star (some rows can be shorter if the last element was
-    // not set)
+    // equality holds only if all procs have one value in the last column
     BOOST_REQUIRE(A.local_width() <= A.width());
 
     El::Int total_rows = 0;
     boost::mpi::all_reduce(
         world, A.local_height(), total_rows, std::plus<El::Int>());
-    BOOST_REQUIRE(total_rows == A.height());
+    // equality holds only if there are no empty rows
+    BOOST_REQUIRE(total_rows <= A.height());
 
     // check the values/coords
     skylark::base::sparse_matrix_t<double> X;

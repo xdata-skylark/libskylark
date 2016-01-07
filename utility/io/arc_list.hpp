@@ -348,9 +348,9 @@ void ReadArcList(const std::string& fname,
     detail::parse<edge_list_t, value_t>(data, proc_set,
         max_row_idx, max_col_idx, comm, symmetrize);
 
-    boost::mpi::all_reduce(comm, boost::mpi::inplace_t<size_t>(max_col_idx),
-        boost::mpi::maximum<size_t>());
     boost::mpi::all_reduce(comm, boost::mpi::inplace_t<size_t>(max_row_idx),
+        boost::mpi::maximum<size_t>());
+    boost::mpi::all_reduce(comm, boost::mpi::inplace_t<size_t>(max_col_idx),
         boost::mpi::maximum<size_t>());
 
     X.resize(max_row_idx + 1, max_col_idx + 1);
@@ -433,13 +433,23 @@ void ReadArcList(const std::string& fname,
     X.finalize();
 }
 
+
+/**
+ *  Read arc list, assuming the file contains triplets (from, to, weigh)
+ *  separated by spaces or tabs on every processor into a local sparse matrix.
+ *
+ *  @param fname input file name
+ *  @param X output local sparse matrix
+ *  @param comm MPI communicator reading and distributing the file
+ *  @param symmetrize make the matrix symmetric by returning (A + A')/2
+ */
 template <typename value_t>
 void ReadArcList(const std::string& fname,
     base::sparse_matrix_t<value_t>& X,
     boost::mpi::communicator &comm,
     bool symmetrize = false) {
 
-    if (comm.rank() != 0) return;
+    boost::mpi::communicator self(MPI_COMM_SELF, boost::mpi::comm_attach);
 
     std::stringstream data;
     std::ifstream file(fname);
@@ -453,14 +463,16 @@ void ReadArcList(const std::string& fname,
             base::io_exception() << base::error_msg(err.str()));
     }
 
-    typedef typename base::sparse_matrix_t<value_t>::coord_tuple_t coord_tuple_t;
+    typedef typename base::sparse_matrix_t<value_t>::coord_tuple_t
+        coord_tuple_t;
     typedef std::vector<coord_tuple_t> edge_list_t;
     std::vector<edge_list_t> edge_list(1);
     size_t max_row_idx = 0, max_col_idx = 0;
     detail::parse<edge_list_t, value_t>(data, edge_list,
-        max_row_idx, max_col_idx, comm, symmetrize);
+        max_row_idx, max_col_idx, self, symmetrize);
     X.set(edge_list[0], max_row_idx + 1, max_col_idx + 1);
 }
+
 
 template <typename T>
 void ReadArcList(const std::string& fname,
@@ -473,6 +485,7 @@ void ReadArcList(const std::string& fname,
         base::unsupported_base_operation()
             << base::error_msg("ReadArcList El::Matrix not implemented."));
 }
+
 
 template <typename value_t, El::Distribution U, El::Distribution V>
 void ReadArcList(const std::string& fname,
@@ -490,6 +503,5 @@ void ReadArcList(const std::string& fname,
 }  // namespace io
 }  // namespace utility
 }  // namespace skylark
-
 
 #endif  // SKYLARK_ARC_LIST_HPP_

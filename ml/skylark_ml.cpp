@@ -10,17 +10,21 @@
 
 #if SKYLARK_HAVE_OPENMP
 #include <omp.h>
-#endif 
+#endif
 
 int main(int argc, char* argv[]) {
 
-    El::Initialize (argc, argv);
+    El::Initialize(argc, argv);
 
-    boost::mpi::environment env (argc, argv);
+    boost::mpi::environment env(argc, argv);
     boost::mpi::communicator comm;
 
-    hilbert_options_t options (argc, argv, comm.size());
-    skylark::base::context_t context (options.seed);
+    boost::mpi::communicator world;
+    int rank = world.rank();
+    int size = world.size();
+
+    hilbert_options_t options(argc, argv, size);
+    skylark::base::context_t context(options.seed);
 
     if (options.exit_on_return) { return -1; }
 
@@ -31,7 +35,7 @@ int main(int argc, char* argv[]) {
 
     if (!options.trainfile.empty()) {
         // Training
-        if (comm.rank() == 0) {
+        if (rank == 0) {
             std::cout << options.print();
             std::cout << "Mode: Training. Loading data..." << std::endl;
         }
@@ -39,16 +43,16 @@ int main(int argc, char* argv[]) {
         if (sparse) {
             skylark::base::sparse_matrix_t<double> X;
             El::Matrix<double> Y;
-            read(comm, options.fileformat, options.trainfile, X, Y);
-            skylark::ml::LargeScaleKernelLearning(comm, X, Y, context, options);
+            read(world, options.fileformat, options.trainfile, X, Y);
+            skylark::ml::LargeScaleKernelLearning(world, X, Y, context, options);
         } else {
             El::Matrix<double> X, Y;
-            read(comm, options.fileformat, options.trainfile, X, Y);
-            skylark::ml::LargeScaleKernelLearning(comm, X, Y, context, options);
+            read(world, options.fileformat, options.trainfile, X, Y);
+            skylark::ml::LargeScaleKernelLearning(world, X, Y, context, options);
         }
     } else if (!options.testfile.empty()) {
         // Testing from file
-        if (comm.rank() == 0) {
+        if (rank) {
             std::cout << "Mode: Predicting (from file). Loading data..."
                       << std::endl;
             std::cout << options.print();
@@ -62,10 +66,10 @@ int main(int argc, char* argv[]) {
 
         if (sparse) {
             skylark::base::sparse_matrix_t<double> X;
-            read(comm, options.fileformat, options.testfile, X, Y,
+            read(world, options.fileformat, options.testfile, X, Y,
                 model.get_input_size());
 
-            boost::mpi::reduce(comm, Y.Height(), n, std::plus<El::Int>(), 0);
+            boost::mpi::reduce(world, Y.Height(), n, std::plus<El::Int>(), 0);
             PredictedLabels.Resize(n, 1);
             DecisionValues.Resize(n, model.get_output_size());
 
@@ -73,10 +77,10 @@ int main(int argc, char* argv[]) {
                 options.numthreads);
         } else {
             El::Matrix<double> X;
-            read(comm, options.fileformat, options.testfile, X, Y,
+            read(world, options.fileformat, options.testfile, X, Y,
                 model.get_input_size());
 
-            boost::mpi::reduce(comm, Y.Height(), n, std::plus<El::Int>(), 0);
+            boost::mpi::reduce(world, Y.Height(), n, std::plus<El::Int>(), 0);
             PredictedLabels.Resize(n, 1);
             DecisionValues.Resize(n, model.get_output_size());
 
@@ -87,18 +91,18 @@ int main(int argc, char* argv[]) {
         double accuracy = 0.0;
         if (model.is_regression()) {
 
-            // TODO can be done better if Y and VC,STAR as well...
+            // TODO can be done better if Y is VC,STAR as well...
             El::Matrix<double> Ye = DecisionValues.Matrix();
             El::Axpy(-1.0, Y, Ye);
             double localerr = std::pow(El::Nrm2(Ye), 2);
             double localnrm = std::pow(El::Nrm2(Y), 2);
             double err, nrm;
-            boost::mpi::reduce(comm, localerr, err,
+            boost::mpi::reduce(world, localerr, err,
                 std::plus<double>(), 0);
-            boost::mpi::reduce(comm, localnrm, nrm,
+            boost::mpi::reduce(world, localnrm, nrm,
                 std::plus<double>(), 0);
 
-            if (comm.rank() == 0)
+            if (rank == 0)
                     accuracy = std::sqrt(err / nrm);
 
             if (!options.outputfile.empty())
@@ -108,10 +112,10 @@ int main(int argc, char* argv[]) {
             El::Int correct = skylark::ml::classification_accuracy(Y,
                 DecisionValues.Matrix());
             El::Int totalcorrect, total;
-            boost::mpi::reduce(comm, correct, totalcorrect,
+            boost::mpi::reduce(world, correct, totalcorrect,
                 std::plus<El::Int>(), 0);
 
-            if (comm.rank() == 0)
+            if (rank == 0)
                 accuracy =  totalcorrect*100.0/n;
 
             if (!options.outputfile.empty()) {
@@ -122,7 +126,7 @@ int main(int argc, char* argv[]) {
             }
         }
 
-        if(comm.rank() == 0)
+        if(rank == 0)
             std::cout << "Test Accuracy = " <<  accuracy << " %" << std::endl;
 
         // TODO list?
@@ -162,7 +166,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    comm.barrier();
+    world.barrier();
 
     SKYLARK_END_TRY() SKYLARK_CATCH_AND_PRINT((comm.rank() == 0))
 

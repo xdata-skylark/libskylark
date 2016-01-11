@@ -1,5 +1,3 @@
-#include <iostream>
-#include <unordered_map>
 #include <El.hpp>
 #include <boost/mpi.hpp>
 #include <boost/format.hpp>
@@ -8,12 +6,59 @@
 #define SKYLARK_NO_ANY
 #include <skylark.hpp>
 
+#include <iostream>
+#include <unordered_map>
+#include <string>
+#include <vector>
+
+
 namespace bpo = boost::program_options;
+
+template<typename VertexType>
+struct simple_parallel_graph_t {
+
+    typedef VertexType vertex_type;
+    typedef skylark::base::sparse_vc_star_matrix_t<vertex_type> adjacency_type;
+
+    simple_parallel_graph_t(const std::string &gf) {
+        skylark::utility::io::ReadArcList(gf, _adj_matrix, _world, true);
+        std::fill(_adj_matrix.values(),
+            _adj_matrix.values() + _adj_matrix.local_nonzeros(), 1.0);
+    }
+
+#if SKYLARK_HAVE_LIBHDFS
+    simple_parallel_graph_t(const hdfsFS &fs, const std::string &gf) {
+        SKYLARK_THROW_EXCEPTION(skylark::base::io_exception() <<
+            skylark::base::error_msg("No HDFS support yet!"));
+    }
+#endif
+
+    size_t num_vertices() const { return _adj_matrix.num_rows(); }
+    size_t num_edges()    const { return _adj_matrix.num_nnz(); }
+
+    size_t degree(const vertex_type &vertex) const {
+        assert(vertex < _adj_matrix.num_rows());
+        return _adj_matrix.indptr[vertex + 1] - _adj_matrix.indptr[vertex];
+    }
+
+    void adjacency_matrix(
+            adjacency_type &A,
+            std::vector<vertex_type> &indexmap) const {
+        _adj_matrix.view(A);
+    }
+
+private:
+    skylark::base::sparse_vc_star_matrix_t<vertex_type> _adj_matrix;
+    boost::mpi::communicator _world;
+};
+
+
 
 template<typename VertexType>
 struct simple_unweighted_graph_t {
 
     typedef VertexType vertex_type;
+
     typedef typename std::vector<vertex_type>::const_iterator iterator_type;
     typedef typename std::unordered_map<vertex_type,
                                         std::vector<vertex_type> >::const_iterator
@@ -182,16 +227,51 @@ adjacency_matrix(skylark::base::sparse_matrix_t<T> &A,
     A.attach(colptr, rowind, values, nnz, n, n, true);
 }
 
+template<>
+template<typename T>
+void simple_unweighted_graph_t<int>::
+adjacency_matrix(skylark::base::sparse_matrix_t<T> &A,
+    std::vector<vertex_type> &indexmap) const {
+
+    typedef typename skylark::base::sparse_matrix_t<T>::index_type index_type;
+    typedef typename skylark::base::sparse_matrix_t<T>::value_type value_type;
+
+    index_type nnz = num_edges();
+    int n = 0;
+    for (vertex_iterator_type vit = vertex_begin();
+         vit != vertex_end(); vit++)
+        n = std::max(vit->first + 1, n);
+
+    // Allocate space for the matrix
+    index_type *colptr = new index_type[n + 1];
+    index_type *rowind = new index_type[nnz];
+    value_type *values = new value_type[nnz];
+
+    indexmap.resize(n);
+    colptr[0] = 0;
+    for(index_type j = 0; j < n; j++) {
+        indexmap[j] = j;
+        colptr[j + 1] = colptr[j] + degree(j);
+        index_type i = 0;
+        for(iterator_type it = adjanct_begin(j);
+            it != adjanct_end(j); it++) {
+            values[colptr[j] + i] = 1.0;
+            rowind[colptr[j] + i] = *it;
+            i++;
+        }
+    }
+
+    A.attach(colptr, rowind, values, nnz, n, n, true);
+}
+
 int seed, k, powerits, port;
 int oversampling_ratio, oversampling_additive;
 std::string graphfile, indexfile, prefix, hdfs;
-bool use_single, skipqr, directory;
+bool use_single, skipqr, directory, numeric;
 
-template<typename T>
+template<typename graph_type, typename embeddings_type,
+         typename s_type = embeddings_type>
 void execute() {
-
-    typedef std::string vertex_type;
-    typedef simple_unweighted_graph_t<vertex_type> graph_type;
 
     skylark::base::context_t context(seed);
     graph_type *G;
@@ -222,8 +302,9 @@ void execute() {
             skylark::base::error_msg("Install libhdfs for HDFS support!"));
 
 #       endif
-    } else
+    } else {
         G = new graph_type(graphfile);
+    }
 
     if (rank == 0)
         std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
@@ -236,8 +317,8 @@ void execute() {
         timer.restart();
     }
 
-    std::vector<vertex_type> indexmap;
-    El::Matrix<T> X;
+    std::vector<typename graph_type::vertex_type> indexmap;
+    embeddings_type X;
 
     skylark::ml::approximate_ase_params_t params;
     params.skip_qr = skipqr;
@@ -259,14 +340,19 @@ void execute() {
 
     El::Write(X, prefix + ".vec", El::ASCII);
 
-    std::ofstream of(prefix + ".index.txt");
-    for(size_t i = 0; i < indexmap.size(); i++)
-        of << i << "\t" << indexmap[i] << std::endl;
-    of.close();
+    // the index map is the same for all procs
+    if (rank == 0 && !numeric) {
+        std::ofstream of(prefix + ".index.txt");
+        for (size_t i = 0; i < indexmap.size(); i++)
+            of << i << "\t" << indexmap[i] << std::endl;
+        of.close();
+    }
 
     if (rank == 0)
-        std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
+        std::cout << "took " << boost::format("%.2e") % timer.elapsed()
                   << " sec\n";
+
+    world.barrier();
 }
 
 int main(int argc, char** argv) {
@@ -311,6 +397,8 @@ int main(int argc, char** argv) {
             bpo::value<int>(&oversampling_additive)->default_value(0),
             "Additive factor for oversampling of rank. OPTIONAL.")
         ("single", "Whether to use single precision instead of double.")
+        ("numeric,n",
+            "If present, node labels are numeric and the code exploits that.")
         ("prefix",
             bpo::value<std::string>(&prefix)->default_value("out"),
             "Prefix for output files (prefix.vec.txt and prefix.index.txt)."
@@ -325,13 +413,19 @@ int main(int argc, char** argv) {
             .options(desc).positional(positional).run(), vm);
 
         if (vm.count("help")) {
-            std::cout << desc;
+            if (rank == 0) {
+                std::cout << "Usage: " << argv[0]
+                          << " [options] input-file-name" << std::endl;
+                std::cout << desc;
+            }
+            world.barrier();
             return 0;
         }
 
         use_single = vm.count("single");
         skipqr = vm.count("skipqr");
         //directory = vm.count("directory");
+        numeric = vm.count("numeric");
 
         if (!vm.count("graphfile")) {
             std::cout << "Input graph-file is required." << std::endl;
@@ -349,10 +443,37 @@ int main(int argc, char** argv) {
 
     SKYLARK_BEGIN_TRY()
 
-        if (use_single)
-            execute<float>();
-        else
-            execute<double>();
+        if (numeric) {
+            if (use_single) {
+                if(world.size() > 1)
+                    execute<simple_parallel_graph_t<float>,
+                            El::DistMatrix<float, El::VC, El::STAR> >();
+                else
+                    execute<simple_unweighted_graph_t<int>,
+                            El::Matrix<float> >();
+            } else {
+                if(world.size() > 1)
+                    execute<simple_parallel_graph_t<double>,
+                            El::DistMatrix<double, El::VC, El::STAR> >();
+                else
+                    execute<simple_unweighted_graph_t<int>,
+                            El::Matrix<double> >();
+            }
+        } else {
+            if (world.size() > 1)
+                SKYLARK_THROW_EXCEPTION(
+                    skylark::base::unsupported_matrix_distribution()
+                        << skylark::base::error_msg(
+                            "Non-numeric indexes are not yet"
+                            "supported for parallel computation."));
+
+            if (use_single)
+                execute<simple_unweighted_graph_t<std::string>,
+                        El::Matrix<float> >();
+            else
+                execute<simple_unweighted_graph_t<std::string>,
+                        El::Matrix<double> >();
+        }
 
     SKYLARK_END_TRY() SKYLARK_CATCH_AND_PRINT((rank == 0))
 

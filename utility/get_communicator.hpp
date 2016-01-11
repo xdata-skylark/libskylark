@@ -40,6 +40,18 @@ mpi::communicator get_communicator(const El::DistMatrix<T, U, V>& A,
     return mpi::communicator(A.DistComm().comm, kind);
 }
 
+template<typename T>
+mpi::communicator get_communicator(const base::sparse_vc_star_matrix_t<T>& A,
+    mpi::comm_create_kind kind = mpi::comm_attach) {
+    return mpi::communicator(A.comm(), kind);
+}
+
+template<typename T>
+mpi::communicator get_communicator(const base::sparse_star_vr_matrix_t<T>& A,
+    mpi::comm_create_kind kind = mpi::comm_attach) {
+    return mpi::communicator(A.comm(), kind);
+}
+
 
 #if SKYLARK_HAVE_COMBBLAS
 

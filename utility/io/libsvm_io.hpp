@@ -10,6 +10,7 @@ namespace boostfs = boost::filesystem;
 #endif
 
 #include <unordered_map>
+#include <boost/serialization/list.hpp>
 
 namespace skylark { namespace utility { namespace io {
 
@@ -464,6 +465,211 @@ void ReadLIBSVM(const std::string& fname,
 }
 
 /**
+ * Reads X and Y from a file in libsvm format.
+ * X is a sparse distributed VC/STAR matrix and Y is a dense distributed
+ * VC/STAR matrix.
+ *
+ * IMPORTANT: output is in column-major format (the rows are features).
+ *
+ * @param fname input file name.
+ * @param X output X
+ * @param Y output Y
+ * @param direction whether the examples are to be put in rows or columns
+ * @param min_d minimum number of rows in the matrix.
+ * @param blocksize blocksize for blocking of read.
+ */
+template<typename T,
+         typename R, El::Distribution UY, El::Distribution VY>
+void ReadLIBSVM(const std::string& fname,
+    base::sparse_vc_star_matrix_t<T>& X, El::DistMatrix<R, UY, VY>& Y,
+    base::direction_t direction, int min_d = 0, int blocksize = 10000) {
+
+
+    std::string line;
+    std::string token, val, ind;
+    T label;
+    unsigned int start = 0;
+    unsigned int delim, t;
+    int n = 0, nt = 0;
+    int d = 0;
+    int i, j, last;
+    char c;
+
+    std::ifstream in(fname);
+
+    boost::mpi::communicator comm = skylark::utility::get_communicator(Y);
+    int rank = comm.rank();
+    int size = comm.size();
+
+    std::vector< std::list<int> > non_local_updates_j(size);
+    std::vector< std::list<int> > non_local_updates_row(size);
+    std::vector< std::list<T> > non_local_updates_v(size);
+
+    // make one pass over the data to figure out dimensions -
+    // will pay in terms of preallocated storage.
+    if (rank==0) {
+        while(!in.eof()) {
+            getline(in, line);
+            if(line.length()==0)
+                break;
+            delim = line.find_last_of(":");
+            if(delim > line.length())
+                continue;
+            n++;
+
+            // Figure out number of targets
+            if (n == 1) {
+                std::string tstr;
+                std::istringstream tokenstream (line);
+                tokenstream >> tstr;
+                while (tstr.find(":") == std::string::npos) {
+                    nt++;
+                    tokenstream >> tstr;
+                }
+            }
+
+            t = delim;
+            while(line[t]!=' ') {
+                t--;
+            }
+            val = line.substr(t+1, delim - t);
+            last = atoi(val.c_str());
+            if (last>d)
+                d = last;
+        }
+        if (min_d > 0)
+            d = std::max(d, min_d);
+
+        // prepare for second pass
+        in.clear();
+        in.seekg(0, std::ios::beg);
+    }
+
+    boost::mpi::broadcast(comm, n, 0);
+    boost::mpi::broadcast(comm, d, 0);
+    boost::mpi::broadcast(comm, nt, 0);
+
+    int numblocks = ((int) n/ (int) blocksize); // of size blocksize
+    int leftover = n % blocksize;
+    int block = blocksize;
+
+    if (direction == base::COLUMNS) {
+        X.resize(d, n);
+        Y.Resize(nt, n);
+    } else {
+        X.resize(n, d);
+        Y.Resize(n, nt);
+    }
+
+    El::DistMatrix<T, El::CIRC, El::CIRC> YB(Y.Grid());
+    El::DistMatrix<T, El::VC, El::STAR> Yv(Y.Grid());
+
+    int row = 0;
+    for(int i=0; i<numblocks+1; i++) {
+        if (i==numblocks)
+            block = leftover;
+        if (block==0)
+            break;
+
+        if (direction == base::COLUMNS) {
+            El::Zeros(YB, nt, block);
+        } else {
+            El::Zeros(YB, block, nt);
+        }
+
+        if(rank==0) {
+            T *Ydata = YB.Matrix().Buffer();
+            int ldY = YB.Matrix().LDim();
+
+            t = 0;
+            while(!in.eof() && t<block) {
+                getline(in, line);
+                if( line.length()==0)
+                    break;
+
+                std::istringstream tokenstream (line);
+                for(int r = 0; r < nt; r++) {
+                    tokenstream >> label;
+                    if (direction == base::COLUMNS)
+                        Ydata[t * ldY + r] = label;
+                    else
+                        Ydata[r * ldY + t] = label;
+                }
+
+                while (tokenstream >> token) {
+                    delim  = token.find(':');
+                    ind = token.substr(0, delim);
+                    val = token.substr(delim+1); //.substr(delim+1);
+                    j = atoi(ind.c_str()) - 1;
+                    int owner = (direction == base::COLUMNS) ?
+                        X.owner(j, row) : X.owner(row, j);
+                    if (owner == 0) {
+                        if (direction == base::COLUMNS)
+                            X.queue_update(j, row, atof(val.c_str()));
+                        else
+                            X.queue_update(row, j, atof(val.c_str()));
+                    } else {
+                        non_local_updates_j[owner].push_back(j);
+                        non_local_updates_row[owner].push_back(row);
+                        non_local_updates_v[owner].push_back(atof(val.c_str()));
+                    }
+                }
+
+                row++;
+                t++;
+            }
+
+            for (int rk = 1; rk < size; rk++) {
+                comm.send(rk, 0, non_local_updates_j[rk]);
+                comm.send(rk, 0, non_local_updates_row[rk]);
+                comm.send(rk, 0, non_local_updates_v[rk]);
+
+                non_local_updates_j[rk].clear();
+                non_local_updates_row[rk].clear();
+                non_local_updates_v[rk].clear();
+            }
+        } else {
+                comm.recv(0, 0, non_local_updates_j[rank]);
+                comm.recv(0, 0, non_local_updates_row[rank]);
+                comm.recv(0, 0, non_local_updates_v[rank]);
+
+                auto it_j = non_local_updates_j[rank].begin();
+                auto it_row = non_local_updates_row[rank].begin();
+                auto it_v = non_local_updates_v[rank].begin();
+
+                for(; it_j != non_local_updates_j[rank].end();) {
+
+                    int j = *it_j, row = *it_row;
+                    T val = *it_v;
+
+                    if (direction == base::COLUMNS)
+                        X.queue_update(j, row, val);
+                    else
+                        X.queue_update(row, j, val);
+
+                    it_j++; it_row++; it_v++;
+                }
+
+                non_local_updates_j[rank].clear();
+                non_local_updates_row[rank].clear();
+                non_local_updates_v[rank].clear();
+        }
+
+        // The calls below should distribute the data to all the nodes.
+        if (direction == base::COLUMNS) {
+            El::View(Yv, Y, 0, i*blocksize, nt, block);
+        } else {
+            El::View(Yv, Y, i*blocksize, 0, block, nt);
+        }
+
+        Yv = YB;
+    }
+
+    X.finalize();
+}
+
+
+/**
  * Write X and Y from a file in libsvm format.
  * X and Y are Elemental dense matrices.
  *
@@ -591,6 +797,165 @@ void WriteLIBSVM(const std::string& fname,
 }
 
 #if SKYLARK_HAVE_BOOST_FILESYSTEM
+
+/**
+ * Reads X and Y from a directory of files in libsvm format.
+ * X and Y are Elemental dense matrices.
+ *
+ * @param fname input file name
+ * @param X output X
+ * @param Y output Y
+ * @param direction whether the examples are to be put in rows or columns
+ * @param min_d minimum number of rows in the matrix.
+ */
+template<typename T, typename R>
+void ReadDirLIBSVM(const std::string& dname,
+    El::Matrix<T>& X, El::Matrix<R>& Y,
+    base::direction_t direction, int min_d = 0) {
+
+    std::string line;
+    std::string token;
+    R label;
+    unsigned int start = 0;
+    unsigned int t;
+    int n = 0, nt = 0;
+    int d = 0;
+    int i, j, last;
+    char c;
+    int nnz=0;
+    int nz;
+
+    boostfs::path full_path(boostfs::system_complete(boostfs::path(dname)));
+    boostfs::directory_iterator end_iter;
+
+    for(boostfs::directory_iterator dirit(full_path); dirit != end_iter;
+        dirit++) {
+
+        std::string fname = dirit->path().filename().string();
+        if (fname == "." || fname == ".." || fname[0] == '.')
+            continue;
+
+        std::ifstream in(dirit->path().string());
+
+        while(!in.eof()) {
+            getline(in, line);
+
+            // Ignore empty lines and comment lines (begin with #)
+            if(line.length() == 0 || line[0] == '#')
+                break;
+
+            n++;
+
+            // Figure out number of targets (only first line)
+            if (n == 1) {
+                std::string tstr;
+                std::istringstream tokenstream (line);
+                tokenstream >> tstr;
+                while (tstr.find(":") == std::string::npos) {
+                    nt++;
+                    if (tokenstream.eof())
+                        break;
+                    tokenstream >> tstr;
+                }
+            }
+
+            if (direction == base::COLUMNS) {
+                size_t delim = line.find_last_of(":");
+                if(delim == std::string::npos)
+                    continue;
+
+                t = delim;
+                while(line[t]!=' ')
+                    t--;
+                std::string val = line.substr(t+1, delim - t);
+                last = atoi(val.c_str());
+                if (last>d)
+                    d = last;
+
+
+                std::istringstream tokenstream (line);
+                tokenstream >> label;
+                while (tokenstream >> token)
+                    nnz++;
+            } else {
+                std::istringstream tokenstream (line);
+                tokenstream >> label;
+
+                while (tokenstream >> token) {
+                    nnz++;
+                    size_t delim  = token.find(':');
+                    int ind = atoi(token.substr(0, delim).c_str());
+
+                    if (ind > d)
+                        d = ind;
+                }
+            }
+        }
+
+        in.close();
+    }
+
+    if (min_d > 0)
+        d = std::max(d, min_d);
+
+
+    if (direction == base::ROWS) {
+        X.Resize(n, d);
+        Y.Resize(n, nt);
+    } else {
+        X.Resize(d, n);
+        Y.Resize(nt, n);
+    }
+
+    T *Xdata = X.Buffer();
+    El::Int ldX = X.LDim();
+    R *Ydata = Y.Buffer();
+    El::Int ldY = Y.LDim();
+
+    // prepare for second pass
+    t = 0;
+
+    for(boostfs::directory_iterator dirit(full_path); dirit != end_iter;
+        dirit++) {
+
+        std::string fname = dirit->path().filename().string();
+        if (fname == "." || fname == ".." || fname[0] == '.')
+            continue;
+
+        std::ifstream in(dirit->path().string());
+        while(!in.eof()) {
+            getline(in, line);
+
+            // Ignore empty lines and comment lines (begin with #)
+            if(line.length() == 0 || line[0] == '#')
+                break;
+            t++;
+
+            std::istringstream tokenstream (line);
+
+            for(int r = 0; r < nt; r++) {
+                tokenstream >> label;
+                if (direction == base::COLUMNS)
+                    Ydata[t * ldY + r] = label;
+                else
+                    Ydata[r * ldY + t] = label;
+            }
+
+            while (tokenstream >> token) {
+                size_t delim  = token.find(':');
+                std::string ind = token.substr(0, delim);
+                std::string val = token.substr(delim+1); //.substr(delim+1);
+                j = atoi(ind.c_str()) - 1;
+
+                if (direction == base::COLUMNS)
+                    Xdata[t * ldX + j] = atof(val.c_str());
+                else
+                    Xdata[j * ldX + t] = atof(val.c_str());
+
+            }
+        }
+    }
+}
 
 /**
  * Reads X and Y from a directory of files in libsvm format.
@@ -772,12 +1137,12 @@ void ReadDirLIBSVM(const std::string& dname,
 }
 
 /**
- * Reads X and Y from a directory of files in libsvm format.
- * X and Y are Elemental distributed matrices.
+ * reads x and y from a directory of files in libsvm format.
+ * x and y are elemental distributed matrices.
  *
  * @param fname input file name.
- * @param X output X
- * @param Y output Y
+ * @param x output x
+ * @param y output y
  * @param direction whether the examples are to be put in rows or columns
  * @param min_d minimum number of rows in the matrix.
  * @param blocksize blocksize for blocking of read.
@@ -989,12 +1354,21 @@ void ReadDirLIBSVM(const std::string& dname,
         in.close();
 }
 
-#else
-
-template<typename T, El::Distribution UX, El::Distribution VX,
+template<typename T,
          typename R, El::Distribution UY, El::Distribution VY>
 void ReadDirLIBSVM(const std::string& dname,
-    El::DistMatrix<T, UX, VX>& X, El::DistMatrix<R, UY, VY>& Y,
+    base::sparse_vc_star_matrix_t<T>& X, El::DistMatrix<R, UY, VY>& Y,
+    base::direction_t direction, int min_d = 0, int blocksize = 10000) {
+
+    SKYLARK_THROW_EXCEPTION(skylark::base::io_exception() <<
+        skylark::base::error_msg(
+            "readdirlibsvm not implemented for sparse_vc_star_matrix_t!"));
+}
+
+#else
+
+template<typename XType, typename YType>
+void ReadDirLIBSVM(const std::string& dname, XType& X, YType& Y,
     base::direction_t direction, int min_d = 0, int blocksize = 10000) {
 
     SKYLARK_THROW_EXCEPTION(base::io_exception() <<
@@ -1496,6 +1870,20 @@ void ReadLIBSVM(hdfsFS &fs, const std::string& fname,
         Yv = YB;
     }
 }
+
+template<typename T,
+         typename R, El::Distribution UY, El::Distribution VY>
+void ReadLIBSVM(const hdfsFS &fs, const std::string& fname,
+    base::sparse_vc_star_matrix_t<T>& X, El::DistMatrix<R, UY, VY>& Y,
+    base::direction_t direction, int min_d = 0, int blocksize = 10000) {
+
+    //TODO: implement
+    SKYLARK_THROW_EXCEPTION(skylark::base::io_exception() <<
+        skylark::base::error_msg(
+            "ReadLIBSVM from HDFS not implemented for sparse_vc_star_matrix_t!"));
+}
+
+
 
 #endif
 

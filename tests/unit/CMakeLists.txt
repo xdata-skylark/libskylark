@@ -77,15 +77,49 @@ target_link_libraries( local_sparse_apply
   ${Boost_LIBRARIES} )
 add_test( local_sparse_apply_test mpirun -np 1 local_sparse_apply )
 
+add_executable( dist_sparse_test DistSparseTest.cpp)
+target_link_libraries( dist_sparse_test
+  ${SKYLARK_LIBS}
+  ${Elemental_LIBRARY}
+  ${Pmrrr_LIBRARY}
+  ${Metis_LIBRARY}
+  ${OPTIONAL_LIBS}
+  ${DEP_LIBRARIES}
+  ${Boost_LIBRARIES} )
+add_test( dist_sparse_test mpirun -np 5 dist_sparse_test )
+
+add_executable( internal_sparse_apply_test InternalSparseSketchApplyTest.cpp)
+target_link_libraries( internal_sparse_apply_test
+  ${SKYLARK_LIBS}
+  ${Elemental_LIBRARY}
+  ${Pmrrr_LIBRARY}
+  ${Metis_LIBRARY}
+  ${OPTIONAL_LIBS}
+  ${DEP_LIBRARIES}
+  ${Boost_LIBRARIES} )
+add_test( internal_sparse_apply_test mpirun -np 5 internal_sparse_apply_test)
+
 add_executable(svd_elemental_test SVDElementalTest.cpp)
 target_link_libraries(svd_elemental_test
   ${SKYLARK_LIBS}
   ${Elemental_LIBRARY}
   ${Pmrrr_LIBRARY}
   ${Metis_LIBRARY}
+  ${OPTIONAL_LIBS}
+  ${DEP_LIBRARIES}
   ${Boost_LIBRARIES})
 add_test( svd_elemental_test mpirun -np 1 svd_elemental_test )
 
+add_executable(read_arc_list_test ReadArcList.cpp)
+target_link_libraries(read_arc_list_test
+  ${SKYLARK_LIBS}
+  ${Elemental_LIBRARY}
+  ${Pmrrr_LIBRARY}
+  ${Metis_LIBRARY}
+  ${OPTIONAL_LIBS}
+  ${DEP_LIBRARIES}
+  ${Boost_LIBRARIES})
+# add_test( read_arc_list_test mpirun -np 1 read_arc_list_test TEST_GRAPH )
 
 find_package(PythonInterp REQUIRED)
 #FIXME: Because of mpi4py/kdt MPI initialization issue we cannot run the test

@@ -72,6 +72,23 @@ void ApproximateASE(const GraphType& G, int k,
 
 }
 
+template<typename GraphType, typename T>
+void ApproximateASE(const GraphType& G, int k,
+    std::vector<typename GraphType::vertex_type> &indexmap,
+    El::DistMatrix<T, El::VC, El::STAR> &X, base::context_t &context,
+    approximate_ase_params_t params = approximate_ase_params_t()) {
+
+    typedef typename GraphType::vertex_type vertex_type;
+    typedef base::sparse_vc_star_matrix_t<T> adjacency_type;
+    typedef El::DistMatrix<T, El::VC, El::STAR> embeddings_type;
+    typedef El::DistMatrix<T, El::STAR, El::STAR> S_type;
+
+    internal::TemplatedApproximateASE<GraphType, adjacency_type,
+                                      embeddings_type, S_type>
+        (G, k, indexmap, X, context, params);
+
+}
+
 } }   // namespace skylark::ml
 
 #endif // SKYLARK_SPECTRAL_EMBEDDINGS_HPP

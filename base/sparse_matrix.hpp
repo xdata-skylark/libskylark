@@ -1,10 +1,13 @@
 #ifndef SKYLARK_SPARSE_MATRIX_HPP
 #define SKYLARK_SPARSE_MATRIX_HPP
 
-#include <set>
-#include <vector>
-#include <boost/tuple/tuple.hpp>
 #include <boost/unordered_map.hpp>
+
+#include <set>
+#include <tuple>
+#include <vector>
+
+#include "exception.hpp"
 
 namespace skylark { namespace base {
 
@@ -22,19 +25,19 @@ struct sparse_matrix_t {
     typedef int index_type;
     typedef ValueType value_type;
 
-    typedef boost::tuple<index_type, index_type, value_type> coord_tuple_t;
+    typedef std::tuple<index_type, index_type, value_type> coord_tuple_t;
     typedef std::vector<coord_tuple_t> coords_t;
 
     sparse_matrix_t()
         : _ownindptr(false), _ownindices(false), _ownvalues(false),
-          _dirty_struct(false), _height(0), _width(0), _nnz(0),
+          _readonly(false), _dirty_struct(false), _height(0), _width(0), _nnz(0),
           _indptr(nullptr), _indices(nullptr), _values(nullptr)
     {}
 
     // The following relies on C++11
     sparse_matrix_t(sparse_matrix_t<ValueType>&& A) :
         _ownindptr(A._ownindptr), _ownindices(A._ownindices),
-        _ownvalues(A._ownvalues), _dirty_struct(A._dirty_struct),
+        _ownvalues(A._ownvalues), _readonly(A._readonly), _dirty_struct(A._dirty_struct),
         _height(A._height), _width(A._width), _nnz(A._nnz),
         _indptr(A._indptr), _indices(A._indices), _values(A._values)
     {
@@ -93,6 +96,38 @@ struct sparse_matrix_t {
         _ownvalues = ownvalues;
 
         _dirty_struct = true;
+        _readonly = false;
+    }
+
+    /**
+     * Attach new structure and values. Values are read-only;
+     */
+    void readonly_attach(const index_type *indptr, const index_type *indices,
+        value_type *values, int nnz, int n_rows, int n_cols, bool _own = false) {
+        attach(indptr, indices, values, nnz, n_rows, n_cols, _own, _own, _own);
+    }
+
+    /**
+     * Attach new structure and values. Values are read-only;
+     */
+    void readonly_attach(const index_type *indptr, const index_type *indices,
+        const value_type *values, int nnz, int n_rows, int n_cols,
+        bool ownindptr, bool ownindices, bool ownvalues) {
+        _free_data();
+
+        _indptr = indptr;
+        _indices = indices;
+        _values = const_cast<value_type*>(values);
+        _nnz = nnz;
+        _width = n_cols;
+        _height = n_rows;
+
+        _ownindptr = ownindptr;
+        _ownindices = ownindices;
+        _ownvalues = ownvalues;
+
+        _dirty_struct = true;
+        _readonly = true;
     }
 
 
@@ -102,18 +137,18 @@ struct sparse_matrix_t {
 
         sort(coords.begin(), coords.end(), &sparse_matrix_t::_sort_coords);
 
-        n_cols = std::max(n_cols, boost::get<1>(coords.back()) + 1);
+        n_cols = std::max(n_cols, std::get<1>(coords.back()) + 1);
         index_type *indptr = new index_type[n_cols + 1];
 
         // Count non-zeros
         int nnz = 0;
         for(size_t i = 0; i < coords.size(); ++i) {
             nnz++;
-            index_type cur_row = boost::get<0>(coords[i]);
-            index_type cur_col = boost::get<1>(coords[i]);
+            index_type cur_row = std::get<0>(coords[i]);
+            index_type cur_col = std::get<1>(coords[i]);
             while(i + 1 < coords.size() &&
-                  cur_row == boost::get<0>(coords[i + 1]) &&
-                  cur_col == boost::get<1>(coords[i + 1]))
+                  cur_row == std::get<0>(coords[i + 1]) &&
+                  cur_col == std::get<1>(coords[i + 1]))
                 i++;
         }
 
@@ -124,9 +159,9 @@ struct sparse_matrix_t {
         int indptr_idx = 0;
         indptr[indptr_idx] = 0;
         for(size_t i = 0; i < coords.size(); ++i) {
-            index_type cur_row = boost::get<0>(coords[i]);
-            index_type cur_col = boost::get<1>(coords[i]);
-            value_type cur_val = boost::get<2>(coords[i]);
+            index_type cur_row = std::get<0>(coords[i]);
+            index_type cur_col = std::get<1>(coords[i]);
+            value_type cur_val = std::get<2>(coords[i]);
 
             for(; indptr_idx < cur_col; ++indptr_idx)
                 indptr[indptr_idx + 1] = nnz;
@@ -134,10 +169,10 @@ struct sparse_matrix_t {
 
             // sum duplicates
             while(i + 1 < coords.size() &&
-                  cur_row == boost::get<0>(coords[i + 1]) &&
-                  cur_col == boost::get<1>(coords[i + 1])) {
+                  cur_row == std::get<0>(coords[i + 1]) &&
+                  cur_col == std::get<1>(coords[i + 1])) {
 
-                cur_val += boost::get<2>(coords[i + 1]);
+                cur_val += std::get<2>(coords[i + 1]);
                 i++;
             }
 
@@ -174,6 +209,9 @@ struct sparse_matrix_t {
     }
 
     value_type* values() {
+        if (_readonly)
+            SKYLARK_THROW_EXCEPTION(base::invalid_usage());
+
         return _values;
     }
 
@@ -212,10 +250,23 @@ struct sparse_matrix_t {
         return true;
     }
 
+    /**
+     * Make the other matrix a view of this matrix.
+     */
+    void view(sparse_matrix_t<ValueType> &B) const {
+        B.attach(_indptr, _indices, _values, _nnz, _height, _width, false);
+    }
+
+    void readonly_view(sparse_matrix_t<ValueType> &B) const {
+        B.readonly_attach(_indptr, _indices, _values, _nnz, _height, _width, false);
+    }
+
 private:
     bool _ownindptr;
     bool _ownindices;
     bool _ownvalues;
+
+    bool _readonly; // Is the numerical values read-only?
 
     bool _dirty_struct;
 
@@ -241,10 +292,10 @@ private:
     }
 
     static bool _sort_coords(coord_tuple_t lhs, coord_tuple_t rhs) {
-        if(boost::get<1>(lhs) != boost::get<1>(rhs))
-            return boost::get<1>(lhs) < boost::get<1>(rhs);
+        if(std::get<1>(lhs) != std::get<1>(rhs))
+            return std::get<1>(lhs) < std::get<1>(rhs);
         else
-            return boost::get<0>(lhs) < boost::get<0>(rhs);
+            return std::get<0>(lhs) < std::get<0>(rhs);
     }
 };
 

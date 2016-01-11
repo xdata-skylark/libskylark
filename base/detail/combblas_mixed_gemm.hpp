@@ -1,57 +1,24 @@
-#ifndef SKYLARK_GEMM_DETAIL_HPP
-#define SKYLARK_GEMM_DETAIL_HPP
+#ifndef SKYLARK_COMBBLAS_MIXED_GEMM_HPP
+#define SKYLARK_COMBBLAS_MIXED_GEMM_HPP
+
+#include <boost/mpi.hpp>
+#include "../exception.hpp"
 
 #if SKYLARK_HAVE_COMBBLAS
 #include <CombBLAS.h>
 #include <CommGrid.h>
 #endif
 
-#include "../utility/external/view.hpp"
-#include "../utility/external/combblas_comm_grid.hpp"
-#include "../utility/external/elemental_comm_grid.hpp"
+#include "../../utility/external/view.hpp"
+#include "../../utility/external/combblas_comm_grid.hpp"
+#include "../../utility/external/elemental_comm_grid.hpp"
 
-namespace skylark { namespace base { namespace detail {
 
 #if SKYLARK_HAVE_COMBBLAS
 
-/// only compute local product:
-///   elem(n x k) x local_part_cb(k x m) -> array(n x m)
-template<typename index_type, typename value_type>
-inline void mixed_gemm_local_part_nn (
-        const double alpha,
-        const SpParMat<index_type, value_type, SpDCCols<index_type, value_type> > &A,
-        const El::DistMatrix<value_type, El::STAR, El::STAR> &S,
-        const double beta,
-        std::vector<value_type> &local_matrix) {
+namespace skylark { namespace base {
 
-    typedef SpDCCols< index_type, value_type > col_t;
-    typedef SpParMat< index_type, value_type, col_t > matrix_type;
-    matrix_type &_A = const_cast<matrix_type&>(A);
-    col_t &data = _A.seq();
-
-    //FIXME
-    local_matrix.resize(S.Width() * data.getnrow(), 0);
-    size_t cb_col_offset = utility::cb_my_col_offset(A);
-
-    for(typename col_t::SpColIter col = data.begcol();
-        col != data.endcol(); col++) {
-        for(typename col_t::SpColIter::NzIter nz = data.begnz(col);
-            nz != data.endnz(col); nz++) {
-
-            // we want local index here to fill local dense matrix
-            index_type rowid = nz.rowid();
-            // column needs to be global
-            index_type colid = col.colid() + cb_col_offset;
-
-            // compute application of S to yield a partial row in the result.
-            for(size_t bcol = 0; bcol < S.Width(); ++bcol) {
-                local_matrix[rowid * S.Width() + bcol] +=
-                        alpha * S.Get(colid, bcol) * nz.value();
-            }
-        }
-    }
-}
-
+namespace detail {
 
 /// implementing gemm for CB * (*/*) = (SOMETHING/*)
 //FIXME: benchmark against one-sided
@@ -290,8 +257,119 @@ inline void outer_panel_mixed_gemm_impl_tn(
                         std::plus<value_type>());
 }
 
+} // namespace detail
+
+/**
+ * Mixed GEMM for Elental and CombBLAS matrices. For a distributed Elemental
+ * input matrix, the output has the same distribution.
+ */
+
+/// Gemm for distCombBLAS x distElental(* / *) -> distElental (SOMETHING / *)
+template<typename index_type, typename value_type, El::Distribution col_d>
+void Gemm(El::Orientation oA, El::Orientation oB, double alpha,
+          const SpParMat<index_type, value_type, SpDCCols<index_type, value_type> > &A,
+          const El::DistMatrix<value_type, El::STAR, El::STAR> &B,
+          double beta,
+          El::DistMatrix<value_type, col_d, El::STAR> &C) {
+
+    if(oA == El::NORMAL && oB == El::NORMAL) {
+
+        if(A.getnol() != B.Height())
+            SKYLARK_THROW_EXCEPTION (
+                base::combblas_exception()
+                    << base::error_msg("Gemm: Dimensions do not agree"));
+
+        if(A.getnrow() != C.Height())
+            SKYLARK_THROW_EXCEPTION (
+                base::combblas_exception()
+                    << base::error_msg("Gemm: Dimensions do not agree"));
+
+        if(B.Width() != C.Width())
+            SKYLARK_THROW_EXCEPTION (
+                base::combblas_exception()
+                    << base::error_msg("Gemm: Dimensions do not agree"));
+
+        //XXX: simple heuristic to decide what to communicate (improve!)
+        //     or just if A.getncol() < B.Width..
+        if(A.getnnz() < B.Height() * B.Width())
+            detail::outer_panel_mixed_gemm_impl_nn(alpha, A, B, beta, C);
+        else
+            detail::inner_panel_mixed_gemm_impl_nn(alpha, A, B, beta, C);
+    }
+}
+
+/// Gemm for distCombBLAS x distElental(SOMETHING / *) -> distElental (* / *)
+template<typename index_type, typename value_type, El::Distribution col_d>
+void Gemm(El::Orientation oA, El::Orientation oB, double alpha,
+          const SpParMat<index_type, value_type, SpDCCols<index_type, value_type> > &A,
+          const El::DistMatrix<value_type, col_d, El::STAR> &B,
+          double beta,
+          El::DistMatrix<value_type, El::STAR, El::STAR> &C) {
+
+    if(oA == El::TRANSPOSE && oB == El::NORMAL) {
+
+        if(A.getrow() != B.Height())
+            SKYLARK_THROW_EXCEPTION (
+                base::combblas_exception()
+                    << base::error_msg("Gemm: Dimensions do not agree"));
+
+        if(A.getncol() != C.Height())
+            SKYLARK_THROW_EXCEPTION (
+                    base::combblas_exception()
+                    << base::error_msg("Gemm: Dimensions do not agree"));
+
+        if(B.Width() != C.Width())
+            SKYLARK_THROW_EXCEPTION (
+                base::combblas_exception()
+                    << base::error_msg("Gemm: Dimensions do not agree"));
+
+        detail::outer_panel_mixed_gemm_impl_tn(alpha, A, B, beta, C);
+    }
+
+}
+
+/// only compute local product:
+///   elem(n x k) x local_part_cb(k x m) -> array(n x m)
+template<typename index_type, typename value_type>
+inline void mixed_gemm_local_part_nn (
+        const double alpha,
+        const SpParMat<index_type, value_type, SpDCCols<index_type, value_type> > &A,
+        const El::DistMatrix<value_type, El::STAR, El::STAR> &S,
+        const double beta,
+        std::vector<value_type> &local_matrix) {
+
+    typedef SpDCCols< index_type, value_type > col_t;
+    typedef SpParMat< index_type, value_type, col_t > matrix_type;
+    matrix_type &_A = const_cast<matrix_type&>(A);
+    col_t &data = _A.seq();
+
+    //FIXME
+    local_matrix.resize(S.Width() * data.getnrow(), 0);
+    size_t cb_col_offset = utility::cb_my_col_offset(A);
+
+    for(typename col_t::SpColIter col = data.begcol();
+        col != data.endcol(); col++) {
+        for(typename col_t::SpColIter::NzIter nz = data.begnz(col);
+            nz != data.endnz(col); nz++) {
+
+            // we want local index here to fill local dense matrix
+            index_type rowid = nz.rowid();
+            // column needs to be global
+            index_type colid = col.colid() + cb_col_offset;
+
+            // compute application of S to yield a partial row in the result.
+            for(size_t bcol = 0; bcol < S.Width(); ++bcol) {
+                local_matrix[rowid * S.Width() + bcol] +=
+                        alpha * S.Get(colid, bcol) * nz.value();
+            }
+        }
+    }
+}
+
+
+} // namespace base
+} // namespace skylark
+
 #endif // SKYLARK_HAVE_COMBBLAS
 
-} } } // namespace skylark::base::detail
-
-#endif //SKYLARK_GEMM_DETAIL_HPP
+#endif // SKYLARK_COMBBLAS_MIXED_GEMM_HPP_

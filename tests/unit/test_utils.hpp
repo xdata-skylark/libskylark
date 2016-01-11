@@ -5,7 +5,36 @@
 #include <boost/test/minimal.hpp>
 #endif
 
+#include "../../skylark.hpp"
+
 #include <El.hpp>
+
+namespace test { namespace util {
+
+template < typename InputMatrixType,
+           typename OutputMatrixType = InputMatrixType >
+struct hash_transform_test_t : public skylark::sketch::hash_transform_t<
+    InputMatrixType, OutputMatrixType,
+    boost::random::uniform_int_distribution,
+    skylark::utility::rademacher_distribution_t > {
+
+    typedef skylark::sketch::hash_transform_t<
+        InputMatrixType, OutputMatrixType,
+        boost::random::uniform_int_distribution,
+        skylark::utility::rademacher_distribution_t >
+            hash_t;
+
+    hash_transform_test_t(int N, int S, skylark::base::context_t& context)
+        : skylark::sketch::hash_transform_t<InputMatrixType, OutputMatrixType,
+          boost::random::uniform_int_distribution,
+          skylark::utility::rademacher_distribution_t>(N, S, context)
+    {}
+
+    std::vector<size_t> getRowIdx() { return hash_t::row_idx; }
+    std::vector<double> getRowValues() { return hash_t::row_value; }
+};
+
+} }
 
 template<typename MatrixType>
 MatrixType operator-(MatrixType& A, MatrixType& B) {

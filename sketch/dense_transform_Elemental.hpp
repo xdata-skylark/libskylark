@@ -13,5 +13,7 @@
 #include "dense_transform_Elemental_star_rowdist_star_star.hpp"
 #include "dense_transform_Elemental_star_rowdist_circ_circ.hpp"
 
+// sparse to dense
+#include "dense_transform_Mixed.hpp"
 
 #endif // SKYLARK_DENSE_TRANSFORM_ELEMENTAL_HPP

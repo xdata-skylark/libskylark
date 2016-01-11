@@ -12,19 +12,29 @@
 #include <omp.h>
 #endif
 
+template<typename XType, typename YType>
+void execute_train(hilbert_options_t options) {
+
+    boost::mpi::communicator world;
+    skylark::base::context_t context(options.seed);
+
+    XType X;
+    YType Y;
+    read(world, options.fileformat, options.trainfile, X, Y);
+    skylark::ml::LargeScaleKernelLearning(world, X, Y, context, options);
+}
+
 int main(int argc, char* argv[]) {
 
     El::Initialize(argc, argv);
 
     boost::mpi::environment env(argc, argv);
-    boost::mpi::communicator comm;
 
     boost::mpi::communicator world;
     int rank = world.rank();
     int size = world.size();
 
     hilbert_options_t options(argc, argv, size);
-    skylark::base::context_t context(options.seed);
 
     if (options.exit_on_return) { return -1; }
 
@@ -40,16 +50,12 @@ int main(int argc, char* argv[]) {
             std::cout << "Mode: Training. Loading data..." << std::endl;
         }
 
-        if (sparse) {
-            skylark::base::sparse_matrix_t<double> X;
-            El::Matrix<double> Y;
-            read(world, options.fileformat, options.trainfile, X, Y);
-            skylark::ml::LargeScaleKernelLearning(world, X, Y, context, options);
-        } else {
-            El::Matrix<double> X, Y;
-            read(world, options.fileformat, options.trainfile, X, Y);
-            skylark::ml::LargeScaleKernelLearning(world, X, Y, context, options);
-        }
+        if (sparse)
+            execute_train<skylark::base::sparse_matrix_t<double>,
+                    El::Matrix<double> >(options);
+        else
+            execute_train<El::Matrix<double>, El::Matrix<double> >(options);
+
     } else if (!options.testfile.empty()) {
         // Testing from file
         if (rank) {
@@ -168,7 +174,7 @@ int main(int argc, char* argv[]) {
 
     world.barrier();
 
-    SKYLARK_END_TRY() SKYLARK_CATCH_AND_PRINT((comm.rank() == 0))
+    SKYLARK_END_TRY() SKYLARK_CATCH_AND_PRINT((world.rank() == 0))
 
     El::Finalize();
 

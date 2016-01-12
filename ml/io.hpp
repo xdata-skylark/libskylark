@@ -797,7 +797,7 @@ void read_libsvm(const boost::mpi::communicator &comm, std::string fName,
 
                     X.attach(_col_ptr, _rowind, _values, nnz_local, d, examples_local, true);
 
-                    El::Matrix<T> Y2(examples_local, 1, &y[0], 0);
+                    El::Matrix<T> Y2(1, examples_local, &y[0], 1);
 
                     //  Y.Resize(examples_local,1);
                     // but this is not!
@@ -844,7 +844,7 @@ void read_libsvm(const boost::mpi::communicator &comm, std::string fName,
                 // TODO why not resize Y, and then just recive into buffer?
                 double* y = new double[t];
                 comm.recv(0, 7, y, t);
-                El::Matrix<T> Y2(t, 1, y, 0);
+                El::Matrix<T> Y2(1, t, y, 1);
                 Y = Y2; // copy
                 delete[] y;
 

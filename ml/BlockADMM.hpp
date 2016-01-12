@@ -348,8 +348,8 @@ skylark::ml::hilbert_model_t* BlockADMMSolver<InputType>::train(data_matrix_t& X
 
     local_matrix_t sum_o, del_o, wbar_output;
     El::Zeros(del_o, k, ni);
-    local_matrix_t Yp(Yv.Height(), k);
-    local_matrix_t Yp_labels(Yv.Height(), 1);
+    local_matrix_t Yp(k, Yv.Width());
+    local_matrix_t Yp_labels(1, Yv.Width());
 
     if (CacheTransforms)
         InitializeTransformCache(ni);
@@ -529,7 +529,7 @@ skylark::ml::hilbert_model_t* BlockADMMSolver<InputType>::train(data_matrix_t& X
                 El::Int totalcorrect, total;
                 boost::mpi::reduce(comm, correct, totalcorrect,
                     std::plus<El::Int>(), 0);
-                boost::mpi::reduce(comm, Yv.Height(), total,
+                boost::mpi::reduce(comm, Yv.Width(), total,
                     std::plus<El::Int>(), 0);
 
                 if(comm.rank() == 0)

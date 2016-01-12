@@ -533,7 +533,7 @@ void read_libsvm(const boost::mpi::communicator &comm, std::string fName,
     MPI_Comm mpi_comm(comm);
     El::Grid grid(mpi_comm);
     El::DistMatrix<T, El::STAR, El::VC> X(grid);
-    El::DistMatrix<T, El::VC, El::STAR> Y(grid);
+    El::DistMatrix<T, El::STAR, El::VC> Y(grid);
 
     int rank = comm.rank();
     if (rank==0)
@@ -590,13 +590,13 @@ void read_libsvm(const boost::mpi::communicator &comm, std::string fName,
     int block = blocksize;
 
     X.Resize(d, n);
-    Y.Resize(n,1);
+    Y.Resize(1, n);
 
     El::Zeros(Xlocal, X.LocalHeight(), X.LocalWidth());
-    El::Zeros(Ylocal, Y.LocalHeight(), 1);
+    El::Zeros(Ylocal, 1, Y.LocalWidth());
 
     X.Attach(d,n,El::DefaultGrid(),0,0,Xlocal);
-    Y.Attach(n,1,El::DefaultGrid(),0,0,Ylocal);
+    Y.Attach(1,n,El::DefaultGrid(),0,0,Ylocal);
 
 
     for(int i=0; i<numblocks+1; i++) {
@@ -606,7 +606,7 @@ void read_libsvm(const boost::mpi::communicator &comm, std::string fName,
         if (block==0)
             break;
 
-        El::DistMatrix<double, El::CIRC, El::CIRC> x(d, block), y(block, 1);
+        El::DistMatrix<double, El::CIRC, El::CIRC> x(d, block), y(1, block);
         x.SetRoot(0);
         y.SetRoot(0);
         El::Zero(x);
@@ -646,10 +646,10 @@ void read_libsvm(const boost::mpi::communicator &comm, std::string fName,
         //    std::cout << "Distributing Data.." << std::endl;
 
         El::DistMatrix<T, El::STAR, El::VC> viewX;
-        El::DistMatrix<T, El::VC, El::STAR> viewY;
+        El::DistMatrix<T, El::STAR, El::VC> viewY;
 
         El::View(viewX, X, 0, i*blocksize, x.Height(), x.Width());
-        El::View(viewY, Y, i*blocksize, 0, x.Width(), 1);
+        El::View(viewY, Y, 0, i*blocksize, 1, x.Width());
 
         viewX = x;
         viewY = y;

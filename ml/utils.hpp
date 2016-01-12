@@ -4,12 +4,14 @@
 #include <El.hpp>
 
 int max(El::Matrix<double> Y) {
-    int k =  (int) *std::max_element(Y.Buffer(), Y.Buffer() + Y.Height());
+    int k =  (int) *std::max_element(Y.Buffer(),
+        Y.Buffer() + Y.Height() * Y.Width());
     return k;
 }
 
 int min(El::Matrix<double> Y) {
-    int k =  (int) *std::min_element(Y.Buffer(), Y.Buffer() + Y.Height());
+    int k =  (int) *std::min_element(Y.Buffer(),
+        Y.Buffer() + Y.Height() * Y.Width());
     return k;
 }
 

@@ -27,21 +27,21 @@ int classification_accuracy(El::Matrix<double>& Yt, El::Matrix<double>& Yp) {
     int pred;
 
 
-    for(int i=0; i < Yp.Height(); i++) {
-        o = Yp.Get(i,0);
+    for(int i=0; i < Yp.Width(); i++) {
+        o = Yp.Get(0, i);
         pred = 0;
-        if (Yp.Width()==1)
+        if (Yp.Height() == 1)
             pred = (o >= 0)? +1:-1;
 
-        for(int j=1; j < Yp.Width(); j++) {
-            o1 = Yp.Get(i,j);
+        for(int j=1; j < Yp.Height(); j++) {
+            o1 = Yp.Get(j, i);
             if ( o1 > o) {
                 o = o1;
                 pred = j;
             }
         }
 
-        if(pred == (int) Yt.Get(i,0))
+        if(pred == (int) Yt.Get(0, i))
             correct++;
     }
     return correct;
@@ -153,14 +153,14 @@ struct hilbert_model_t {
         if (_maps.size() == 0)  {
             // No maps (linear case)
 
-            DV.Resize(n, k);
-            base::Gemm(El::TRANSPOSE,El::NORMAL,1.0, X, _coef, 0.0, DV);
+            DV.Resize(k, n);
+            base::Gemm(El::TRANSPOSE,El::NORMAL,1.0, _coef, X, 0.0, DV);
         } else {
             // Non-linear case
             coef_type Wslice;
             int j, start, finish, sj;
 
-            El::Zeros(DV, n, k);
+            El::Zeros(DV, k, n);
 #           ifdef SKYLARK_HAVE_OPENMP
 #           pragma omp parallel for if(num_threads > 1) private(j, start, finish, sj) num_threads(num_threads)
 #           endif
@@ -176,10 +176,10 @@ struct hilbert_model_t {
                     // TODO shouldn't it be s instead of d?
                     El::Scale(sqrt(double(sj) / d), z);
 
-                DecisionType o(n, k);
+                DecisionType o(k, n);
 
                 El::LockedView(Wslice, _coef, start, 0, sj, k);
-                base::Gemm(El::TRANSPOSE, El::NORMAL, 1.0, z, Wslice, o);
+                base::Gemm(El::TRANSPOSE, El::NORMAL, 1.0, Wslice, z, o);
 
 #               ifdef SKYLARK_HAVE_OPENMP
 #               pragma omp critical
@@ -190,21 +190,21 @@ struct hilbert_model_t {
 
         if (!_regression) {
             double o, o1, pred;
-            PV.Resize(n, 1);
-            for(int i=0; i < DV.Height(); i++) {
-                o = DV.Get(i,0);
+            PV.Resize(1, n);
+            for(int i=0; i < DV.Width(); i++) {
+                o = DV.Get(0, i);
                 pred = 0;
-                if (DV.Width()==1)
+                if (DV.Height()==1)
                     pred = (o >= 0)? +1:-1;
 
-                for(int j=1; j < DV.Width(); j++) {
-                    o1 = DV.Get(i,j);
+                for(int j=1; j < DV.Height(); j++) {
+                    o1 = DV.Get(j, i);
                     if ( o1 > o) {
                         o = o1;
                         pred = j;
                     }
                 }
-                PV.Set(i,0, pred);
+                PV.Set(0, i, pred);
             }
         }
     }

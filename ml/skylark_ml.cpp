@@ -37,7 +37,7 @@ void execute_train<skylark::base::sparse_matrix_t<double>,
         skylark::base::sparse_star_vr_matrix_t<double> X;
         El::DistMatrix<double, El::STAR, El::VR> Y;
         skylark::utility::io::ReadLIBSVM(options.trainfile, X, Y,
-            skylark::base::COLUMNS);
+            skylark::base::COLUMNS, 0, options.partial);
         skylark::ml::LargeScaleKernelLearning(world, X.matrix(), Y.Matrix(),
             context, options);
     } else {
@@ -61,7 +61,7 @@ void execute_train<El::Matrix<double>,
 
         El::DistMatrix<double, El::STAR, El::VR> X, Y;
         skylark::utility::io::ReadLIBSVM(options.trainfile, X, Y,
-            skylark::base::COLUMNS);
+            skylark::base::COLUMNS, 0, options.partial);
         skylark::ml::LargeScaleKernelLearning(world, X.Matrix(), Y.Matrix(),
             context, options);
     } else {

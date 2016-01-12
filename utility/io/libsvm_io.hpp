@@ -482,7 +482,8 @@ template<typename T,
          typename R, El::Distribution UY, El::Distribution VY>
 void ReadLIBSVM(const std::string& fname,
     base::sparse_dist_matrix_t<T>& X, El::DistMatrix<R, UY, VY>& Y,
-    base::direction_t direction, int min_d = 0, int blocksize = 10000) {
+    base::direction_t direction, int min_d = 0, int max_n = -1,
+    int blocksize = 10000) {
 
     std::string line;
     std::string token, val, ind;
@@ -507,7 +508,7 @@ void ReadLIBSVM(const std::string& fname,
     // make one pass over the data to figure out dimensions -
     // will pay in terms of preallocated storage.
     if (rank==0) {
-        while(!in.eof()) {
+        while(!in.eof() && n != max_n) {
             getline(in, line);
             if(line.length()==0)
                 break;

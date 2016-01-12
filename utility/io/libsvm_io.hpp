@@ -481,9 +481,8 @@ void ReadLIBSVM(const std::string& fname,
 template<typename T,
          typename R, El::Distribution UY, El::Distribution VY>
 void ReadLIBSVM(const std::string& fname,
-    base::sparse_vc_star_matrix_t<T>& X, El::DistMatrix<R, UY, VY>& Y,
+    base::sparse_dist_matrix_t<T>& X, El::DistMatrix<R, UY, VY>& Y,
     base::direction_t direction, int min_d = 0, int blocksize = 10000) {
-
 
     std::string line;
     std::string token, val, ind;
@@ -562,7 +561,7 @@ void ReadLIBSVM(const std::string& fname,
     }
 
     El::DistMatrix<T, El::CIRC, El::CIRC> YB(Y.Grid());
-    El::DistMatrix<T, El::VC, El::STAR> Yv(Y.Grid());
+    El::DistMatrix<T, UY, VY> Yv(Y.Grid());
 
     int row = 0;
     for(int i=0; i<numblocks+1; i++) {

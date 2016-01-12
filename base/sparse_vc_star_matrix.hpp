@@ -31,6 +31,13 @@ struct sparse_vc_star_matrix_t : public sparse_dist_matrix_t<ValueType> {
         : base_t(n_rows, n_cols, grid) {
 
         _setup_grid();
+        base_t::_n_local_cols = n_cols;
+    }
+
+    virtual void resize(El::Int n_rows, El::Int n_cols) {
+
+        base_t::resize(n_rows, n_cols);
+        base_t::_n_local_cols = n_cols;
     }
 
 private:

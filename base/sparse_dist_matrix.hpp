@@ -69,7 +69,7 @@ struct sparse_dist_matrix_t {
         return _comm;
     }
 
-    void resize(El::Int n_rows, El::Int n_cols) {
+    virtual void resize(El::Int n_rows, El::Int n_cols) {
 
         //FIXME: later ignore values that are outside
         assert(_finalized == false);
@@ -92,8 +92,8 @@ struct sparse_dist_matrix_t {
 
         assert(_finalized == false);
 
-        _n_local_rows = std::max(_n_local_rows, i);
-        _n_local_cols = std::max(_n_local_cols, j);
+        _n_local_rows = std::max(_n_local_rows, i + 1);
+        _n_local_cols = std::max(_n_local_cols, j + 1);
 
         //XXX: we should use a nicer structure for the temporary storage..
         _temp_buffer[std::make_pair(i, j)] += value;
@@ -104,8 +104,6 @@ struct sparse_dist_matrix_t {
 
         assert(_finalized == false);
 
-        _n_local_rows++;
-        _n_local_cols++;
         _nnz = _temp_buffer.size();
 
         _indptr.resize(_n_local_cols + 1);

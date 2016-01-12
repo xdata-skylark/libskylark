@@ -25,6 +25,31 @@ void execute_train(const hilbert_options_t &options) {
 }
 
 template<>
+void execute_train<skylark::base::sparse_matrix_t<double>,
+                   El::Matrix<double> > (const hilbert_options_t &options) {
+
+    boost::mpi::communicator world;
+    skylark::base::context_t context(options.seed);
+
+
+    if (options.fileformat == LIBSVM_SPARSE) {
+
+        skylark::base::sparse_star_vr_matrix_t<double> X;
+        El::DistMatrix<double, El::STAR, El::VR> Y;
+        skylark::utility::io::ReadLIBSVM(options.trainfile, X, Y,
+            skylark::base::COLUMNS);
+        skylark::ml::LargeScaleKernelLearning(world, X.matrix(), Y.Matrix(),
+            context, options);
+    } else {
+
+        skylark::base::sparse_matrix_t<double> X;
+        El::Matrix<double> Y;
+        read(world, options.fileformat, options.trainfile, X, Y);
+        skylark::ml::LargeScaleKernelLearning(world, X, Y, context, options);
+    }
+}
+
+template<>
 void execute_train<El::Matrix<double>,
                    El::Matrix<double> > (const hilbert_options_t &options) {
 

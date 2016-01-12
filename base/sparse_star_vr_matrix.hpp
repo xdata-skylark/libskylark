@@ -27,7 +27,13 @@ struct sparse_star_vr_matrix_t : public sparse_dist_matrix_t<ValueType> {
         : base_t(n_rows, n_cols, grid) {
 
         _setup_grid();
+        base_t::_n_local_rows = n_rows;
+    }
 
+    virtual void resize(El::Int n_rows, El::Int n_cols) {
+
+        base_t::resize(n_rows, n_cols);
+        base_t::_n_local_rows = n_rows;
     }
 
 private:
@@ -45,6 +51,8 @@ private:
         base_t::_col_rank = El::mpi::Rank(El::mpi::COMM_SELF);
         base_t::_row_rank = El::mpi::Rank(base_t::_grid.VRComm());
     }
+
+
 };
 
 } }

@@ -87,9 +87,12 @@ struct hilbert_options_t {
     int numthreads;
     int nummpiprocesses;
 
-    int fileformat;
+    /* Partial use of dataset */
+    int partial;
+    int sample;
 
     /**  IO */
+    int fileformat;
     std::string trainfile;
     std::string modelfile;
     std::string testfile;
@@ -173,6 +176,13 @@ struct hilbert_options_t {
             ("fileformat",
                 po::value<int>(&fileformat)->default_value(DEFAULT_FILEFORMAT),
                 "Fileformat (default: 0 (libsvm->dense), 1 (libsvm->sparse), 2 (hdf5->dense), 3 (hdf5->sparse)")
+            ("partial,p",
+                po::value<int>(&partial)->default_value(-1),
+                "Load only specified quantity examples for training. "
+                "Will read all if -1.")
+            ("sample,z",
+                po::value<int>(&sample)->default_value(-1),
+                "Sample the input data. Will use all if -1. ")
             ("MAXITER,i",
                 po::value<int>(&MAXITER)->default_value(DEFAULT_MAXITER),
                 "Maximum Number of Iterations (default: 10)")
@@ -305,6 +315,10 @@ struct hilbert_options_t {
             if (flag == "--fileformat")
                 fileformat =
                     static_cast<FileFormatType>(boost::lexical_cast<int>(value));
+            if (flag == "--partial" || flag == "-p")
+                partial = boost::lexical_cast<int>(value);
+            if (flag == "--sample" || flag == "-z")
+            sample = boost::lexical_cast<int>(value);
             if (flag == "--MAXITER" || flag == "-i")
                 MAXITER = boost::lexical_cast<int>(value);
             if (flag == "--trainfile")
@@ -343,6 +357,8 @@ struct hilbert_options_t {
         optionstring << "# Validation File = " << valfile << std::endl;
         optionstring << "# Test File = " << testfile << std::endl;
         optionstring << "# File Format = " << fileformat << std::endl;
+        optionstring << "# Partial = " << partial << std::endl;
+        optionstring << "# sample = " << sample << std::endl;
         optionstring << "# Loss function = " << lossfunction
                      << " ("<< Losses[lossfunction]<< ")" << std::endl;
         optionstring << "# Regularizer = " << regularizer

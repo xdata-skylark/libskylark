@@ -232,7 +232,7 @@ namespace skylark { namespace ml {
 template <class InputType, class LabelType>
 void LargeScaleKernelLearning(const boost::mpi::communicator& comm,
     InputType &X, LabelType &Y, skylark::base::context_t& context,
-    hilbert_options_t& options) {
+    const hilbert_options_t& options) {
 
     int rank = comm.rank();
 

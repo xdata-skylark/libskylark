@@ -13,7 +13,7 @@
 #endif
 
 template<typename XType, typename YType>
-void execute_train(hilbert_options_t options) {
+void execute_train(const hilbert_options_t &options) {
 
     boost::mpi::communicator world;
     skylark::base::context_t context(options.seed);
@@ -23,6 +23,30 @@ void execute_train(hilbert_options_t options) {
     read(world, options.fileformat, options.trainfile, X, Y);
     skylark::ml::LargeScaleKernelLearning(world, X, Y, context, options);
 }
+
+template<>
+void execute_train<El::Matrix<double>,
+                   El::Matrix<double> > (const hilbert_options_t &options) {
+
+    boost::mpi::communicator world;
+    skylark::base::context_t context(options.seed);
+
+
+    if (options.fileformat == LIBSVM_DENSE) {
+
+        El::DistMatrix<double, El::STAR, El::VR> X, Y;
+        skylark::utility::io::ReadLIBSVM(options.trainfile, X, Y,
+            skylark::base::COLUMNS);
+        skylark::ml::LargeScaleKernelLearning(world, X.Matrix(), Y.Matrix(),
+            context, options);
+    } else {
+
+        El::Matrix<double> X, Y;
+        read(world, options.fileformat, options.trainfile, X, Y);
+        skylark::ml::LargeScaleKernelLearning(world, X, Y, context, options);
+    }
+}
+
 
 int main(int argc, char* argv[]) {
 

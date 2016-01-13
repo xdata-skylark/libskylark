@@ -58,9 +58,10 @@ void execute_train<El::Matrix<double>,
 
     int rank = world.rank();
 
+    El::DistMatrix<double, El::STAR, El::VR> X, Y, X0, Y0;
+
     if (options.fileformat == LIBSVM_DENSE) {
 
-        El::DistMatrix<double, El::STAR, El::VR> X, Y, X0, Y0;
         skylark::utility::io::ReadLIBSVM(options.trainfile, X0, Y0,
             skylark::base::COLUMNS, 0, options.partial);
 
@@ -91,12 +92,15 @@ void execute_train<El::Matrix<double>,
             context, options);
     } else {
 
-        El::Matrix<double> X, Y;
-        read(world, options.fileformat, options.trainfile, X, Y);
-        skylark::ml::LargeScaleKernelLearning(world, X, Y, context, options);
+        H5::H5File in(options.trainfile, H5F_ACC_RDONLY);
+        skylark::utility::io::ReadHDF5(in, "X", X);
+        skylark::utility::io::ReadHDF5(in, "Y", Y);
+        in.close();
+
+        skylark::ml::LargeScaleKernelLearning(world, X.Matrix(), Y.Matrix(),
+            context, options);
     }
 }
-
 
 int main(int argc, char* argv[]) {
 

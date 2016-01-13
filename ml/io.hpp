@@ -19,10 +19,10 @@ int write_hdf5(const boost::mpi::communicator &comm,
     std::string fName, El::Matrix<double>& X,
     El::Matrix<double>& Y) {
 
-    ElInt n, d;
+    ElInt n, d, k;
     boost::mpi::reduce(comm, X.Width(), n, std::plus<ElInt>(), 0);
     d = X.Height();
-
+    k = Y.Height();
 
     if (comm.rank() == 0) {
         try {
@@ -41,7 +41,8 @@ int write_hdf5(const boost::mpi::communicator &comm,
             H5::DataSet datasetX = file.createDataSet("X", datatype, dataspaceX);
 
             dimsf[0] = n;
-            H5::DataSpace dataspaceY(1, dimsf);
+            dimsf[1] = k;
+            H5::DataSpace dataspaceY(2, dimsf);
             H5::DataSet datasetY = file.createDataSet("Y", datatype, dataspaceY);
 
             hsize_t stride[2]; // Stride of hyperslab
@@ -61,9 +62,9 @@ int write_hdf5(const boost::mpi::communicator &comm,
                     int nn;
                     comm.recv(p, 1, nn);
                     XX.Resize(d, nn);
-                    YY.Resize(nn, 1);
+                    YY.Resize(k, nn);
                     comm.recv(p, 2, XX.Buffer(), nn * d);
-                    comm.recv(p, 3, YY.Buffer(), nn);
+                    comm.recv(p, 3, YY.Buffer(), nn * k);
 
                 }
 
@@ -79,7 +80,8 @@ int write_hdf5(const boost::mpi::communicator &comm,
                     memspaceX, dataspaceX);
                 dataspaceX.selectNone();
                 dataspaceY.selectHyperslab(H5S_SELECT_SET, count, start, stride, block);
-                H5::DataSpace memspaceY(1, count);
+                count[1] = k;
+                H5::DataSpace memspaceY(2, count);
                 memspaceX.selectHyperslab(H5S_SELECT_SET, count, mstart, stride, block);
                 datasetY.write(YY.Buffer(), H5::PredType::NATIVE_DOUBLE,
                     memspaceY, dataspaceY);
@@ -113,7 +115,7 @@ int write_hdf5(const boost::mpi::communicator &comm,
     } else {
         comm.send(0, 1, X.Width());
         comm.send(0, 2, X.Buffer(), X.Width() * X.Height());
-        comm.send(0, 3, Y.Buffer(), Y.Height());
+        comm.send(0, 3, Y.Buffer(), Y.Width() * Y.Height());
     }
 
     comm.barrier();

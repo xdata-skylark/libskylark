@@ -56,12 +56,37 @@ void execute_train<El::Matrix<double>,
     boost::mpi::communicator world;
     skylark::base::context_t context(options.seed);
 
+    int rank = world.rank();
 
     if (options.fileformat == LIBSVM_DENSE) {
 
-        El::DistMatrix<double, El::STAR, El::VR> X, Y;
-        skylark::utility::io::ReadLIBSVM(options.trainfile, X, Y,
+        El::DistMatrix<double, El::STAR, El::VR> X, Y, X0, Y0;
+        skylark::utility::io::ReadLIBSVM(options.trainfile, X0, Y0,
             skylark::base::COLUMNS, 0, options.partial);
+
+
+        if (options.sample == -1) {
+
+            El::View(X, X0);
+            El::View(Y, Y0);
+
+        } else {
+            // Sample X and Y
+            if (rank == 0) {
+                std::cout << "Sampling the data... ";
+                std::cout.flush();
+            }
+
+            skylark::sketch::UST_t<El::DistMatrix<double, El::STAR, El::VR> >
+                S(X0.Width(), options.sample, false, context);
+
+            X.Resize(X0.Height(), options.sample);
+            S.apply(X0, X, skylark::sketch::rowwise_tag());
+
+            Y.Resize(1, options.sample);
+            S.apply(Y0, Y, skylark::sketch::rowwise_tag());
+        }
+
         skylark::ml::LargeScaleKernelLearning(world, X.Matrix(), Y.Matrix(),
             context, options);
     } else {

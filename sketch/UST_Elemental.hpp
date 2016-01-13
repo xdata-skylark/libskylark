@@ -112,20 +112,22 @@ struct UST_t <
 
 public:
 
-    // No regular contructor, since need to be subclassed.
+    UST_t(int N, int S, bool replace, base::context_t& context)
+        : data_type (N, S, replace, context), _local(*this)  {
 
-    /**
-     * Copy constructor
-     */
+     }
+
+    UST_t(int N, int S, const params_t& params, base::context_t& context)
+        : data_type (N, S, params, context), _local(*this)  {
+
+    }
+
     UST_t(const UST_t<matrix_type,
                       output_matrix_type>& other)
         : data_type(other), _local(other) {
 
     }
 
-    /**
-     * Constructor from data
-     */
     UST_t(const data_type& other_data)
         : data_type(other_data), _local(other_data) {
 
@@ -164,20 +166,22 @@ struct UST_t <
 
 public:
 
-    // No regular contructor, since need to be subclassed.
+    UST_t(int N, int S, bool replace, base::context_t& context)
+        : data_type (N, S, replace, context), _local(*this)  {
 
-    /**
-     * Copy constructor
-     */
+     }
+
+    UST_t(int N, int S, const params_t& params, base::context_t& context)
+        : data_type (N, S, params, context), _local(*this)  {
+
+    }
+
     UST_t(const UST_t<matrix_type,
                       output_matrix_type>& other)
         : data_type(other), _local(other) {
 
     }
 
-    /**
-     * Constructor from data
-     */
     UST_t(const data_type& other_data)
         : data_type(other_data), _local(other_data) {
 
@@ -219,20 +223,22 @@ struct UST_t <
 
 public:
 
-    // No regular contructor, since need to be subclassed.
+    UST_t(int N, int S, bool replace, base::context_t& context)
+        : data_type (N, S, replace, context), _local(*this)  {
 
-    /**
-     * Copy constructor
-     */
+     }
+
+    UST_t(int N, int S, const params_t& params, base::context_t& context)
+        : data_type (N, S, params, context), _local(*this)  {
+
+    }
+
     UST_t(const UST_t<matrix_type,
                       output_matrix_type>& other)
         : data_type(other), _local(other) {
 
     }
 
-    /**
-     * Constructor from data
-     */
     UST_t(const data_type& other_data)
         : data_type(other_data), _local(other_data) {
 
@@ -323,20 +329,22 @@ struct UST_t <
 
 public:
 
-    // No regular contructor, since need to be subclassed.
+    UST_t(int N, int S, bool replace, base::context_t& context)
+        : data_type (N, S, replace, context), _local(*this)  {
 
-    /**
-     * Copy constructor
-     */
+     }
+
+    UST_t(int N, int S, const params_t& params, base::context_t& context)
+        : data_type (N, S, params, context), _local(*this)  {
+
+    }
+
     UST_t(const UST_t<matrix_type,
                       output_matrix_type>& other)
         : data_type(other), _local(other) {
 
     }
 
-    /**
-     * Constructor from data
-     */
     UST_t(const data_type& other_data)
         : data_type(other_data), _local(other_data) {
 
@@ -401,7 +409,7 @@ private:
         output_matrix_type sketch_of_A_t(sketch_of_A.Width(),
             sketch_of_A.Height(), sketch_of_A.Grid());
         apply_impl_vdist(A_t, sketch_of_A_t,
-            skylark::sketch::rowwise_tag());
+            skylark::sketch::columnwise_tag());
         El::Transpose(sketch_of_A_t, sketch_of_A);
     }
 
@@ -427,20 +435,22 @@ struct UST_t <
 
 public:
 
-    // No regular contructor, since need to be subclassed.
+    UST_t(int N, int S, bool replace, base::context_t& context)
+        : data_type (N, S, replace, context) {
 
-    /**
-     * Copy constructor
-     */
+     }
+
+    UST_t(int N, int S, const params_t& params, base::context_t& context)
+        : data_type (N, S, params, context) {
+
+    }
+
     UST_t(const UST_t<matrix_type,
                       output_matrix_type>& other)
         : data_type(other) {
 
     }
 
-    /**
-     * Constructor from data
-     */
     UST_t(const data_type& other_data)
         : data_type(other_data) {
 

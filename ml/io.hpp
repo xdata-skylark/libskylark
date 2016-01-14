@@ -557,12 +557,14 @@ void read_libsvm(const boost::mpi::communicator &comm, std::string fName,
     if (rank==0) {
         while(!file.eof()) {
             getline(file, line);
-            if(line.length()==0)
+            if(line.length()==0) {
                 break;
-            delim = line.find_last_of(":");
-            if(delim > line.length())
-                continue;
+            }
             n++;
+            delim = line.find_last_of(":");
+            if(delim > line.length()) {
+                continue;
+            }
             t = delim;
             while(line[t]!=' ') {
                 t--;

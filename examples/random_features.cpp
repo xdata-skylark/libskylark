@@ -110,7 +110,7 @@ int main(int argc, char* argv[]) {
     int rank = world.rank();
 
     typedef El::DistMatrix<double, El::STAR, El::VR> data_matrix_t;
-    typedef El::DistMatrix<int, El::STAR, El::VR> label_matrix_t;
+    typedef El::DistMatrix<El::Int, El::STAR, El::VR> label_matrix_t;
 
     data_matrix_t X;
     label_matrix_t L;

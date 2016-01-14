@@ -8,6 +8,6 @@ setup(name='skylark',
       url='http://xdata-skylark.github.io/libskylark/',
       packages=['skylark', 'skylark.nla', 'skylark.ml'],
       package_data={'skylark' : ['datasets/*', 'examples/*']}, 
-      data_files= [('lib', ['../sketch/capi/libcskylark.so'])],
+      data_files= [('lib', ['${CMAKE_BINARY_DIR}/sketch/capi/libcskylark.so'])],
       package_dir = {'': '${CMAKE_CURRENT_SOURCE_DIR}'}
      )

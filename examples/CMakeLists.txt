@@ -28,6 +28,16 @@ target_link_libraries(regression
   ${Boost_LIBRARIES})
 install_targets(/bin/skylark_examples regression)
 
+add_executable(random_features random_features.cpp)
+target_link_libraries(random_features
+  ${Elemental_LIBRARY}
+  ${OPTIONAL_LIBS}
+  ${Pmrrr_LIBRARY}
+  ${Metis_LIBRARY}
+  ${SKYLARK_LIBS}
+  ${Boost_LIBRARIES})
+install_targets(/bin/skylark_examples random_features)
+
 add_executable(least_squares least_squares)
 target_link_libraries(least_squares
   ${Elemental_LIBRARY}

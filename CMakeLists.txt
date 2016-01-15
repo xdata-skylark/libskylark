@@ -114,8 +114,11 @@ include (${CMAKE_SOURCE_DIR}/CMake/cmake_build_nla.cmake)
 include (${CMAKE_SOURCE_DIR}/CMake/cmake_build_ml.cmake)
 include (${CMAKE_SOURCE_DIR}/CMake/cmake_build_examples.cmake)
 
-enable_testing()
-add_subdirectory(tests)
+option (BUILD_TESTS "Whether we should build the tests" OFF)
+if (BUILD_TESTS)
+  enable_testing()
+  add_subdirectory(tests)
+endif (BUILD_TESTS)
 
 include (${CMAKE_SOURCE_DIR}/CMake/cmake_documentation.cmake)
 

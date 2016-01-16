@@ -231,15 +231,10 @@ namespace skylark { namespace ml {
 
 template <class InputType, class LabelType>
 void LargeScaleKernelLearning(const boost::mpi::communicator& comm,
-    InputType &X, LabelType &Y, skylark::base::context_t& context,
-    const hilbert_options_t& options) {
+    InputType &X, LabelType &Y, InputType &Xv, LabelType &Yv,
+    skylark::base::context_t& context, const hilbert_options_t& options) {
 
-    int rank = comm.rank();
-
-    InputType Xv;
-    LabelType Yv;
-
-
+    // TODO variable number of targets for regression
     int dimensions = skylark::base::Height(X);
     int targets = options.regression ? 1 : GetNumTargets<LabelType>(comm, Y);
     bool shift = false;
@@ -254,20 +249,13 @@ void LargeScaleKernelLearning(const boost::mpi::communicator& comm,
     BlockADMMSolver<InputType>* Solver =
         GetSolver<InputType>(context, options, dimensions);
 
-    if(!options.valfile.empty()) {
-        comm.barrier();
-        if(rank == 0)
-            std::cout << "Loading validation data." << std::endl;
-
-        read(comm, options.fileformat, options.valfile, Xv, Yv,
-            skylark::base::Height(X));
-
-        if ((options.lossfunction == LOGISTIC) && shift) 
-            ShiftForLogistic(Yv);
-    }
+    if (!options.valfile.empty() && (options.lossfunction == LOGISTIC) && shift) 
+        ShiftForLogistic(Yv);
 
     skylark::ml::hilbert_model_t* model =
         Solver->train(X, Y, Xv, Yv, options.regression, comm);
+
+    // TODO unshift logistic
 
     // TODO should be done "outside"
     if (comm.rank() == 0)

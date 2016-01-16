@@ -60,14 +60,15 @@ public:
  * @param X output matrix.
  */
 template<typename T>
-void ReadHDF5(H5::H5File& in, const std::string& name, El::Matrix<T>& X) {
+void ReadHDF5(H5::H5File& in, const std::string& name, El::Matrix<T>& X,
+    hsize_t max_n = 0, hsize_t max_m = 0) {
 
     H5::DataSet dataset = in.openDataSet(name);
     H5::DataSpace fs = dataset.getSpace();
     hsize_t dims[2];
     fs.getSimpleExtentDims(dims);
-    hsize_t m = dims[0];
-    hsize_t n = fs.getSimpleExtentNdims() > 1 ? dims[1] : 1;
+    hsize_t m = std::max(dims[0], max_m);
+    hsize_t n = std::max(fs.getSimpleExtentNdims() > 1 ? dims[1] : 1, max_n);
 
     X.Resize(n, m);
 
@@ -163,8 +164,10 @@ void ReadHDF5(H5::H5File& in, const std::string& name,
         fs = dataset.getSpace();
         hsize_t dims[2];
         fs.getSimpleExtentDims(dims);
-        m = std::min(dims[0], max_m);
-        n = std::min(fs.getSimpleExtentNdims() > 1 ? dims[1] : 1, max_n);
+        m = dims[0];
+        n = fs.getSimpleExtentNdims() > 1 ? dims[1] : 1;
+        if (max_m != -1) m = std::min(m, max_m);
+        if (max_n != -1) n = std::min(n, max_n);
     }
 
     boost::mpi::broadcast(comm, m, 0);

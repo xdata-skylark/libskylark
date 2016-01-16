@@ -34,18 +34,25 @@ void execute_train<skylark::base::sparse_matrix_t<double>,
 
     if (options.fileformat == LIBSVM_SPARSE) {
 
-        skylark::base::sparse_star_vr_matrix_t<double> X;
-        El::DistMatrix<double, El::STAR, El::VR> Y;
+        skylark::base::sparse_star_vr_matrix_t<double> X, Xv;
+        El::DistMatrix<double, El::STAR, El::VR> Y, Yv;
         skylark::utility::io::ReadLIBSVM(options.trainfile, X, Y,
             skylark::base::COLUMNS, 0, options.partial);
+        if (!options.valfile.empty())
+            skylark::utility::io::ReadLIBSVM(options.trainfile, Xv, Yv,
+                skylark::base::COLUMNS, skylark::base::Height(X));
         skylark::ml::LargeScaleKernelLearning(world, X.matrix(), Y.Matrix(),
-            context, options);
+            Xv.matrix(), Yv.Matrix(),context, options);
     } else {
 
-        skylark::base::sparse_matrix_t<double> X;
-        El::Matrix<double> Y;
+        skylark::base::sparse_matrix_t<double> X, Xv;
+        El::Matrix<double> Y, Yv;
         read(world, options.fileformat, options.trainfile, X, Y);
-        skylark::ml::LargeScaleKernelLearning(world, X, Y, context, options);
+        if (!options.valfile.empty())
+            read(world, options.fileformat, options.valfile, Xv, Yv,
+                skylark::base::Height(X));
+        skylark::ml::LargeScaleKernelLearning(world, X, Y, Xv, Yv,
+            context, options);
     }
 }
 
@@ -55,51 +62,69 @@ void execute_train<El::Matrix<double>,
 
     boost::mpi::communicator world;
     skylark::base::context_t context(options.seed);
-
+    El::DistMatrix<double, El::STAR, El::VR> X, Y, X0, Y0, Xv, Yv;
     int rank = world.rank();
 
-    El::DistMatrix<double, El::STAR, El::VR> X, Y, X0, Y0;
+    if(rank == 0)
+        std::cout << "Loading training data..." << std::endl;
 
-    if (options.fileformat == LIBSVM_DENSE) {
+    switch(options.fileformat) {
 
+    case LIBSVM_DENSE:
         skylark::utility::io::ReadLIBSVM(options.trainfile, X0, Y0,
             skylark::base::COLUMNS, 0, options.partial);
+        if (!options.valfile.empty())
+            skylark::utility::io::ReadLIBSVM(options.trainfile, Xv, Yv,
+                skylark::base::COLUMNS, skylark::base::Height(X0));
+        break;
 
-
-        if (options.sample == -1) {
-
-            El::View(X, X0);
-            El::View(Y, Y0);
-
-        } else {
-            // Sample X and Y
-            if (rank == 0) {
-                std::cout << "Sampling the data... ";
-                std::cout.flush();
-            }
-
-            skylark::sketch::UST_t<El::DistMatrix<double, El::STAR, El::VR> >
-                S(X0.Width(), options.sample, false, context);
-
-            X.Resize(X0.Height(), options.sample);
-            S.apply(X0, X, skylark::sketch::rowwise_tag());
-
-            Y.Resize(1, options.sample);
-            S.apply(Y0, Y, skylark::sketch::rowwise_tag());
-        }
-
-        skylark::ml::LargeScaleKernelLearning(world, X.Matrix(), Y.Matrix(),
-            context, options);
-    } else {
-
+    case HDF5_DENSE: {
         H5::H5File in(options.trainfile, H5F_ACC_RDONLY);
-        skylark::utility::io::ReadHDF5(in, "X", X);
-        skylark::utility::io::ReadHDF5(in, "Y", Y);
+        skylark::utility::io::ReadHDF5(in, "X", X0, -1, options.partial);
+        skylark::utility::io::ReadHDF5(in, "Y", Y0, -1, options.partial);
         in.close();
 
-        skylark::ml::LargeScaleKernelLearning(world, X.Matrix(), Y.Matrix(),
-            context, options);
+        if (!options.valfile.empty()) {
+            if(rank == 0)
+                std::cout << "Loading validation data..." << std::endl;
+
+            H5::H5File in(options.valfile, H5F_ACC_RDONLY);
+            skylark::utility::io::ReadHDF5(in, "X", Xv);
+            skylark::utility::io::ReadHDF5(in, "Y", Yv);
+            in.close();
+        }
     }
+        break;
+
+    default:
+        // TODO exception
+        break;
+    }
+
+    if (options.sample == -1) {
+
+        El::View(X, X0);
+        El::View(Y, Y0);
+
+    } else {
+        // Sample X and Y
+        if (rank == 0) {
+            std::cout << "Sampling the data... " << std::endl;
+            std::cout.flush();
+        }
+
+        skylark::sketch::UST_t<El::DistMatrix<double, El::STAR, El::VR> >
+            S(X0.Width(), options.sample, false, context);
+
+        X.Resize(X0.Height(), options.sample);
+        S.apply(X0, X, skylark::sketch::rowwise_tag());
+
+        Y.Resize(1, options.sample);
+        S.apply(Y0, Y, skylark::sketch::rowwise_tag());
+    }
+
+    skylark::ml::LargeScaleKernelLearning(world, X.Matrix(), Y.Matrix(),
+        Xv.Matrix(), Yv.Matrix(), context, options);
 }
 
 int main(int argc, char* argv[]) {
@@ -125,7 +150,7 @@ int main(int argc, char* argv[]) {
         // Training
         if (rank == 0) {
             std::cout << options.print();
-            std::cout << "Mode: Training. Loading data..." << std::endl;
+            std::cout << "Mode: Training." << std::endl;
         }
 
         if (sparse)
@@ -218,7 +243,7 @@ int main(int argc, char* argv[]) {
         // option for probabilities in predicition
         // clean up evaluate
     } else {
-        // Preidicting from stdin mode
+        // Predicting from stdin mode
         skylark::ml::hilbert_model_t model(options.modelfile);
 
         El::Matrix<double> X, DecisionValues(1, model.get_output_size());

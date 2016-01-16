@@ -79,10 +79,12 @@ int write_hdf5(const boost::mpi::communicator &comm,
                 datasetX.write(XX.Buffer(), H5::PredType::NATIVE_DOUBLE,
                     memspaceX, dataspaceX);
                 dataspaceX.selectNone();
+
+                start[0] = sumn; start[1] = 0;
+                count[0] = XX.Width(); count[1] = k;
                 dataspaceY.selectHyperslab(H5S_SELECT_SET, count, start, stride, block);
-                count[1] = k;
                 H5::DataSpace memspaceY(2, count);
-                memspaceX.selectHyperslab(H5S_SELECT_SET, count, mstart, stride, block);
+                memspaceY.selectHyperslab(H5S_SELECT_SET, count, mstart, stride, block);
                 datasetY.write(YY.Buffer(), H5::PredType::NATIVE_DOUBLE,
                     memspaceY, dataspaceY);
                 dataspaceY.selectNone();

@@ -36,10 +36,13 @@ int main (int argc, char** argv) {
         std::cout << "input: " << inputfile << " hdf5file:" << hdf5file << " mode:" <<  mode << " min_d:" << min_d << std::endl;
 
     if (mode==0) { // dense
-        El::Matrix<double> X;
-        El::Matrix<double> Y;
-    	read_libsvm(comm, inputfile, X, Y, min_d);
-        write_hdf5(comm, hdf5file, X,Y);
+        //El::Matrix<double> X;
+        //El::Matrix<double> Y;
+    	//read_libsvm(comm, inputfile, X, Y, min_d);
+        El::DistMatrix<double, El::STAR, El::VR> X, Y;
+        skylark::utility::io::ReadLIBSVM(inputfile, X, Y,
+            skylark::base::COLUMNS, min_d);
+        write_hdf5(comm, hdf5file, X.Matrix(), Y.Matrix());
     } else {
         skylark::base::sparse_matrix_t<double> X;
         El::Matrix<double> Y;

@@ -15,13 +15,7 @@
 template<typename XType, typename YType>
 void execute_train(const hilbert_options_t &options) {
 
-    boost::mpi::communicator world;
-    skylark::base::context_t context(options.seed);
-
-    XType X;
-    YType Y;
-    read(world, options.fileformat, options.trainfile, X, Y);
-    skylark::ml::LargeScaleKernelLearning(world, X, Y, context, options);
+    // TODO
 }
 
 template<>
@@ -57,8 +51,9 @@ void execute_train<skylark::base::sparse_matrix_t<double>,
 }
 
 template<>
-void execute_train<El::Matrix<double>,
-                   El::Matrix<double> > (const hilbert_options_t &options) {
+void execute_train<El::DistMatrix<double, El::STAR, El::VR>,
+                   El::DistMatrix<double, El::STAR, El::VR> >
+(const hilbert_options_t &options) {
 
     boost::mpi::communicator world;
     skylark::base::context_t context(options.seed);
@@ -127,6 +122,12 @@ void execute_train<El::Matrix<double>,
         Xv.Matrix(), Yv.Matrix(), context, options);
 }
 
+template<typename XType, typename YType>
+void execute_predict(const hilbert_options_t &options) {
+
+    // TODO
+}
+
 int main(int argc, char* argv[]) {
 
     El::Initialize(argc, argv);
@@ -157,7 +158,8 @@ int main(int argc, char* argv[]) {
             execute_train<skylark::base::sparse_matrix_t<double>,
                     El::Matrix<double> >(options);
         else
-            execute_train<El::Matrix<double>, El::Matrix<double> >(options);
+            execute_train<El::DistMatrix<double, El::STAR, El::VR>,
+                          El::DistMatrix<double, El::STAR, El::VR> >(options);
 
     } else if (!options.testfile.empty()) {
         // Testing from file
@@ -168,8 +170,8 @@ int main(int argc, char* argv[]) {
         }
 
         El::Matrix<double> Y;
-        El::DistMatrix<double, El::VC, El::STAR> DecisionValues;
-        El::DistMatrix<El::Int, El::VC, El::STAR> PredictedLabels;
+        El::DistMatrix<double, El::VR, El::STAR> DecisionValues;
+        El::DistMatrix<El::Int, El::VR, El::STAR> PredictedLabels;
         El::Int n;
         skylark::ml::hilbert_model_t model(options.modelfile);
 

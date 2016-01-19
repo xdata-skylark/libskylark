@@ -1,4 +1,0 @@
-{
-    "srv1": {"connection": "joe@srv1.com", "dir": "/tmp/data/"},
-    "srv2": {"connection": "joe@srv2.com", "dir": "/tmp/data/"}
-}

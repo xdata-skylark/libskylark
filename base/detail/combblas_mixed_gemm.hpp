@@ -20,6 +20,45 @@ namespace skylark { namespace base {
 
 namespace detail {
 
+/// only compute local product:
+///   elem(n x k) x local_part_cb(k x m) -> array(n x m)
+template<typename index_type, typename value_type>
+inline void mixed_gemm_local_part_nn (
+        const double alpha,
+        const SpParMat<index_type, value_type, SpDCCols<index_type, value_type> > &A,
+        const El::DistMatrix<value_type, El::STAR, El::STAR> &S,
+        const double beta,
+        std::vector<value_type> &local_matrix) {
+
+    typedef SpDCCols< index_type, value_type > col_t;
+    typedef SpParMat< index_type, value_type, col_t > matrix_type;
+    matrix_type &_A = const_cast<matrix_type&>(A);
+    col_t &data = _A.seq();
+
+    //FIXME
+    local_matrix.resize(S.Width() * data.getnrow(), 0);
+    size_t cb_col_offset = utility::cb_my_col_offset(A);
+
+    for(typename col_t::SpColIter col = data.begcol();
+        col != data.endcol(); col++) {
+        for(typename col_t::SpColIter::NzIter nz = data.begnz(col);
+            nz != data.endnz(col); nz++) {
+
+            // we want local index here to fill local dense matrix
+            index_type rowid = nz.rowid();
+            // column needs to be global
+            index_type colid = col.colid() + cb_col_offset;
+
+            // compute application of S to yield a partial row in the result.
+            for(size_t bcol = 0; bcol < S.Width(); ++bcol) {
+                local_matrix[rowid * S.Width() + bcol] +=
+                        alpha * S.Get(colid, bcol) * nz.value();
+            }
+        }
+    }
+}
+
+
 /// implementing gemm for CB * (*/*) = (SOMETHING/*)
 //FIXME: benchmark against one-sided
 template<typename index_type, typename value_type, El::Distribution col_d>
@@ -326,44 +365,6 @@ void Gemm(El::Orientation oA, El::Orientation oB, double alpha,
         detail::outer_panel_mixed_gemm_impl_tn(alpha, A, B, beta, C);
     }
 
-}
-
-/// only compute local product:
-///   elem(n x k) x local_part_cb(k x m) -> array(n x m)
-template<typename index_type, typename value_type>
-inline void mixed_gemm_local_part_nn (
-        const double alpha,
-        const SpParMat<index_type, value_type, SpDCCols<index_type, value_type> > &A,
-        const El::DistMatrix<value_type, El::STAR, El::STAR> &S,
-        const double beta,
-        std::vector<value_type> &local_matrix) {
-
-    typedef SpDCCols< index_type, value_type > col_t;
-    typedef SpParMat< index_type, value_type, col_t > matrix_type;
-    matrix_type &_A = const_cast<matrix_type&>(A);
-    col_t &data = _A.seq();
-
-    //FIXME
-    local_matrix.resize(S.Width() * data.getnrow(), 0);
-    size_t cb_col_offset = utility::cb_my_col_offset(A);
-
-    for(typename col_t::SpColIter col = data.begcol();
-        col != data.endcol(); col++) {
-        for(typename col_t::SpColIter::NzIter nz = data.begnz(col);
-            nz != data.endnz(col); nz++) {
-
-            // we want local index here to fill local dense matrix
-            index_type rowid = nz.rowid();
-            // column needs to be global
-            index_type colid = col.colid() + cb_col_offset;
-
-            // compute application of S to yield a partial row in the result.
-            for(size_t bcol = 0; bcol < S.Width(); ++bcol) {
-                local_matrix[rowid * S.Width() + bcol] +=
-                        alpha * S.Get(colid, bcol) * nz.value();
-            }
-        }
-    }
 }
 
 

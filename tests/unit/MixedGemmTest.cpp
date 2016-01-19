@@ -13,7 +13,7 @@
 #include <skylark.hpp>
 
 #include "../../base/Gemm.hpp"
-#include "../../base/Gemm_detail.hpp"
+#include "../../base/detail/combblas_mixed_gemm.hpp"
 
 /** Typedef DistMatrix and Matrix */
 typedef El::Matrix<double> MatrixType;

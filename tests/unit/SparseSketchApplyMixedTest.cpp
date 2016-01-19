@@ -126,11 +126,12 @@ int test_main(int argc, char *argv[]) {
     //[> Setup test <]
     namespace mpi = boost::mpi;
 
+    El::Initialize(argc, argv);
+
     mpi::environment env(argc, argv);
     mpi::communicator world;
 
     MPI_Comm mpi_world(world);
-    El::Initialize(argc, argv);
     El::Grid grid(mpi_world);
 
     const size_t rank = world.rank();

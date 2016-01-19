@@ -91,9 +91,11 @@ struct sparse_dist_matrix_t {
     void queue_update_local(El::Int i, El::Int j, value_type value) {
 
         assert(_finalized == false);
+        assert(i < height());
+        assert(j < width());
 
-        _n_local_rows = std::max(_n_local_rows, i);
-        _n_local_cols = std::max(_n_local_cols, j);
+        _n_local_rows = std::max(_n_local_rows, i + 1);
+        _n_local_cols = std::max(_n_local_cols, j + 1);
 
         //XXX: we should use a nicer structure for the temporary storage..
         _temp_buffer[std::make_pair(i, j)] += value;
@@ -103,21 +105,21 @@ struct sparse_dist_matrix_t {
     void finalize() {
 
         assert(_finalized == false);
+        _finalized = true;
 
-        _n_local_rows++;
-        _n_local_cols++;
         _nnz = _temp_buffer.size();
 
         _indptr.resize(_n_local_cols + 1);
         _indices.resize(_nnz);
         _values.resize(_nnz);
 
-        int nnz = 0;
+        size_t nnz = 0;
         int indptr_idx = 0;
         _indptr[indptr_idx] = 0;
 
         typename std::map< std::pair<int, int>, value_type >::const_iterator itr;
-        for(itr = _temp_buffer.begin(); itr != _temp_buffer.end(); itr++) {
+        for(itr = _temp_buffer.begin(); itr != _temp_buffer.end();
+                itr++, nnz++) {
 
             int cur_row = itr->first.first;
             int cur_col = itr->first.second;
@@ -129,7 +131,6 @@ struct sparse_dist_matrix_t {
 
             _indices[nnz] = cur_row;
             _values[nnz]  = cur_val;
-            nnz++;
         }
 
         for(; indptr_idx < _n_local_cols; ++indptr_idx)
@@ -139,12 +140,10 @@ struct sparse_dist_matrix_t {
         _temp_buffer.clear();
 
         _local_buffer->attach(&_indptr[0], &_indices[0], &_values[0],
-                _nnz, _n_local_rows, _n_local_cols, false);
+                _nnz, _n_local_rows, _n_local_cols, false, false, false);
 
         _global_nnz = 0;
         boost::mpi::all_reduce(_comm, _nnz, _global_nnz, std::plus<int>());
-
-        _finalized = true;
     }
 
     /**

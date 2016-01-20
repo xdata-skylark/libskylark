@@ -13,4 +13,4 @@ export PYTHONPATH=$PYTHON_SITE_PACKAGES/lib/python2.7/site-packages:$PYTHON_SITE
 LD_PRELOAD=/usr/lib/libmpi.so make sphinx-doc
 cp -R Documentation /tmp/
 
-make test
+ctest --output-on-failure

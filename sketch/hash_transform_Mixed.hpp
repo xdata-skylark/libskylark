@@ -172,7 +172,7 @@ private:
 
                 assert(ar_idx < values.size());
                 values[ar_idx]  += A_values[j] *
-                    data_type::getValue(A_indices[j], i, dist);
+                    data_type::getValue(A.global_row(A_indices[j]), i, dist);
             }
         }
 

@@ -65,29 +65,29 @@ void <tt class="descname">read</tt><big>(</big>const boost::mpi::communicator&am
 </ul>
 </dd></dl>
 
-<p><cite>*_DENSE</cite> correspond to the case of elem::Matrix&lt;T&gt; (dense) matrix <cite>X</cite>; <cite>*_SPARSE</cite> is for the skylark::base::sparse_matrix_t&lt;T&gt; (sparse) matrix <cite>X</cite>.
+<p><cite>*_DENSE</cite> correspond to the case of El::Matrix&lt;T&gt; (dense) matrix <cite>X</cite>; <cite>*_SPARSE</cite> is for the skylark::base::sparse_matrix_t&lt;T&gt; (sparse) matrix <cite>X</cite>.
 <cite>HDF5_*</cite> are for <a class="reference external" href="http://www.hdfgroup.org/HDF5/">Hierarchical Data Format, version 5 (HDF5)</a> files  while <cite>LIBSVM_*</cite> are for <a class="reference external" href="http://www.csie.ntu.edu.tw/~cjlin/libsvm/">Library for Support Vector Machines (LIBSVM)</a> ones.</p>
 <p><strong>HDF5-specific routines</strong></p>
 <dl class="function">
-<dt id="read_hdf5__boost::mpi::communicatorCR.ss.elem::Matrix:double:R.elem::Matrix:double:R.i">
-void <tt class="descname">read_hdf5</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>filename</em>, elem::Matrix&lt;double&gt;&amp; <em>X</em>, elem::Matrix&lt;double&gt;&amp; <em>Y</em>, int <em>blocksize</em><em>=10000</em><big>)</big><a class="headerlink" href="#read_hdf5__boost::mpi::communicatorCR.ss.elem::Matrix:double:R.elem::Matrix:double:R.i" title="Permalink to this definition">¶</a></dt>
+<dt id="read_hdf5__boost::mpi::communicatorCR.ss.El::Matrix:double:R.El::Matrix:double:R.i">
+void <tt class="descname">read_hdf5</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>filename</em>, El::Matrix&lt;double&gt;&amp; <em>X</em>, El::Matrix&lt;double&gt;&amp; <em>Y</em>, int <em>blocksize</em><em>=10000</em><big>)</big><a class="headerlink" href="#read_hdf5__boost::mpi::communicatorCR.ss.El::Matrix:double:R.El::Matrix:double:R.i" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="read_hdf5__boost::mpi::communicatorCR.ss.skylark::base::sparse_matrix_t:double:R.elem::Matrix:double:R.i">
-void <tt class="descname">read_hdf5</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>filename</em>, skylark::base::sparse_matrix_t&lt;double&gt;&amp; <em>X</em>, elem::Matrix&lt;double&gt;&amp; <em>Y</em>, int <em>min_d</em><em>=0</em><big>)</big><a class="headerlink" href="#read_hdf5__boost::mpi::communicatorCR.ss.skylark::base::sparse_matrix_t:double:R.elem::Matrix:double:R.i" title="Permalink to this definition">¶</a></dt>
+<dt id="read_hdf5__boost::mpi::communicatorCR.ss.skylark::base::sparse_matrix_t:double:R.El::Matrix:double:R.i">
+void <tt class="descname">read_hdf5</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>filename</em>, skylark::base::sparse_matrix_t&lt;double&gt;&amp; <em>X</em>, El::Matrix&lt;double&gt;&amp; <em>Y</em>, int <em>min_d</em><em>=0</em><big>)</big><a class="headerlink" href="#read_hdf5__boost::mpi::communicatorCR.ss.skylark::base::sparse_matrix_t:double:R.El::Matrix:double:R.i" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads datasets <cite>X</cite> and <cite>Y</cite> from HDF5 <cite>filename</cite> as a pair of matrices <cite>X</cite>, <cite>Y</cite>. Instances are read in bunches of <cite>blocksize</cite> each; <cite>min_d</cite> is the minimum number of features.</p>
 </dd></dl>
 
 <p><strong>LIBSVM-specific routines</strong></p>
 <dl class="function">
-<dt id="read_libsvm__boost::mpi::communicatorCR.ss.elem::Matrix:T:R.elem::Matrix:T:R.i.i">
-void <tt class="descname">read_libsvm</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>filename</em>, elem::Matrix&lt;T&gt;&amp; <em>X</em>, elem::Matrix&lt;T&gt;&amp; <em>Y</em>, int <em>min_d</em><em>=0</em>, int <em>blocksize</em><em>=10000</em><big>)</big><a class="headerlink" href="#read_libsvm__boost::mpi::communicatorCR.ss.elem::Matrix:T:R.elem::Matrix:T:R.i.i" title="Permalink to this definition">¶</a></dt>
+<dt id="read_libsvm__boost::mpi::communicatorCR.ss.El::Matrix:T:R.El::Matrix:T:R.i.i">
+void <tt class="descname">read_libsvm</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>filename</em>, El::Matrix&lt;T&gt;&amp; <em>X</em>, El::Matrix&lt;T&gt;&amp; <em>Y</em>, int <em>min_d</em><em>=0</em>, int <em>blocksize</em><em>=10000</em><big>)</big><a class="headerlink" href="#read_libsvm__boost::mpi::communicatorCR.ss.El::Matrix:T:R.El::Matrix:T:R.i.i" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="read_libsvm__boost::mpi::communicatorCR.ss.skylark::base::sparse_matrix_t:T:R.elem::Matrix:T:R.i">
-void <tt class="descname">read_libsvm</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>filename</em>, skylark::base::sparse_matrix_t&lt;T&gt;&amp; <em>X</em>, elem::Matrix&lt;T&gt;&amp; <em>Y</em>, int <em>min_d</em><em>=0</em><big>)</big><a class="headerlink" href="#read_libsvm__boost::mpi::communicatorCR.ss.skylark::base::sparse_matrix_t:T:R.elem::Matrix:T:R.i" title="Permalink to this definition">¶</a></dt>
+<dt id="read_libsvm__boost::mpi::communicatorCR.ss.skylark::base::sparse_matrix_t:T:R.El::Matrix:T:R.i">
+void <tt class="descname">read_libsvm</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>filename</em>, skylark::base::sparse_matrix_t&lt;T&gt;&amp; <em>X</em>, El::Matrix&lt;T&gt;&amp; <em>Y</em>, int <em>min_d</em><em>=0</em><big>)</big><a class="headerlink" href="#read_libsvm__boost::mpi::communicatorCR.ss.skylark::base::sparse_matrix_t:T:R.El::Matrix:T:R.i" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads data from LIBSVM <cite>filename</cite> as a pair of matrices <cite>X</cite>, <cite>Y</cite>. Instances are read in bunches of <cite>blocksize</cite> each; <cite>min_d</cite> is the minimum number of features.</p>
 </dd></dl>
 
@@ -104,8 +104,8 @@ void <tt class="descname">read_hdf5_dataset</tt><big>(</big>H5::H5File&amp; <em>
 </dd></dl>
 
 <dl class="function">
-<dt id="read_model_file__ss.elem::Matrix:double:R">
-void <tt class="descname">read_model_file</tt><big>(</big>std::string <em>filename</em>, elem::Matrix&lt;double&gt;&amp; <em>W</em><big>)</big><a class="headerlink" href="#read_model_file__ss.elem::Matrix:double:R" title="Permalink to this definition">¶</a></dt>
+<dt id="read_model_file__ss.El::Matrix:double:R">
+void <tt class="descname">read_model_file</tt><big>(</big>std::string <em>filename</em>, El::Matrix&lt;double&gt;&amp; <em>W</em><big>)</big><a class="headerlink" href="#read_model_file__ss.El::Matrix:double:R" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads the values from model file <cite>filename</cite> into matrix <cite>W</cite>; model file is expected to start with a line of the form:
 <cite># Dimensions m n</cite> for an <cite>m x n</cite> matrix <cite>W</cite> followed by lines containing the values of successive rows of the matrix.</p>
 </dd></dl>
@@ -120,17 +120,17 @@ std::string <tt class="descname">read_header</tt><big>(</big>const boost::mpi::c
 <div class="section" id="writing">
 <h3>Writing<a class="headerlink" href="#writing" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
-<dt id="write_hdf5__boost::mpi::communicatorCR.ss.elem::Matrix:double:R.elem::Matrix:double:R">
-int <tt class="descname">write_hdf5</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>filename</em>, elem::Matrix&lt;double&gt;&amp; <em>X</em>, elem::Matrix&lt;double&gt;&amp; <em>Y</em><big>)</big><a class="headerlink" href="#write_hdf5__boost::mpi::communicatorCR.ss.elem::Matrix:double:R.elem::Matrix:double:R" title="Permalink to this definition">¶</a></dt>
+<dt id="write_hdf5__boost::mpi::communicatorCR.ss.El::Matrix:double:R.El::Matrix:double:R">
+int <tt class="descname">write_hdf5</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>filename</em>, El::Matrix&lt;double&gt;&amp; <em>X</em>, El::Matrix&lt;double&gt;&amp; <em>Y</em><big>)</big><a class="headerlink" href="#write_hdf5__boost::mpi::communicatorCR.ss.El::Matrix:double:R.El::Matrix:double:R" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="write_hdf5__ss.skylark::base::sparse_matrix_t:double:R.elem::Matrix:double:R">
-int <tt class="descname">write_hdf5</tt><big>(</big>std::string <em>filename</em>, skylark::base::sparse_matrix_t&lt;double&gt;&amp; <em>X</em>, elem::Matrix&lt;double&gt;&amp; <em>Y</em><big>)</big><a class="headerlink" href="#write_hdf5__ss.skylark::base::sparse_matrix_t:double:R.elem::Matrix:double:R" title="Permalink to this definition">¶</a></dt>
+<dt id="write_hdf5__ss.skylark::base::sparse_matrix_t:double:R.El::Matrix:double:R">
+int <tt class="descname">write_hdf5</tt><big>(</big>std::string <em>filename</em>, skylark::base::sparse_matrix_t&lt;double&gt;&amp; <em>X</em>, El::Matrix&lt;double&gt;&amp; <em>Y</em><big>)</big><a class="headerlink" href="#write_hdf5__ss.skylark::base::sparse_matrix_t:double:R.El::Matrix:double:R" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes feature/value pairs (in matrix <cite>X</cite>) and labels (in matrix <cite>Y</cite>) to the HDF5 <cite>filename</cite> and returns 0 to signal successfully completed operation.</p>
 <blockquote>
 <div><ul class="simple">
-<li>For the case of dense matrix input <cite>X</cite> (elem::Matrix&lt;double&gt; type) 2 datasets named <cite>X</cite> and <cite>Y</cite> are created in the file for all data.</li>
+<li>For the case of dense matrix input <cite>X</cite> (El::Matrix&lt;double&gt; type) 2 datasets named <cite>X</cite> and <cite>Y</cite> are created in the file for all data.</li>
 <li>For the case of sparse matrix <cite>X</cite> (skylark::base::sparse_matrix_t&lt;double&gt; type) 5 datasets are created in the file for all data: <cite>dimensions</cite> (for <cite>X</cite> matrix size), <cite>indptr</cite>, <cite>indices</cite>, <cite>values</cite> (for <cite>X</cite> matrix) and <cite>Y</cite> (for <cite>Y</cite> matrix).</li>
 </ul>
 </div></blockquote>
@@ -232,13 +232,18 @@ C++.</p>
 <span class="n">skylark</span><span class="o">::</span><span class="n">sketch</span><span class="o">::</span><span class="n">CWT_t</span><span class="o">&lt;</span><span class="n">DistMatrixType</span><span class="p">,</span> <span class="n">DistMatrixType</span><span class="o">&gt;</span> <span class="n">tmp</span><span class="p">(</span><span class="n">json_tree</span><span class="p">);</span>
 </pre></div>
 </div>
-<p>This functionality is also exposed to the Python layer.</p>
+<p>This functionality is also exposed to the Python layer in two ways.
+The first, is straightforward serialize method of sketch objects, and a
+corresponding deserialize_sketch on the module level. The following is a
+short example.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">S</span> <span class="o">=</span> <span class="n">sketch</span><span class="o">.</span><span class="n">CWT</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
 <span class="n">sketch_dict</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">serialize</span><span class="p">()</span>
 
-<span class="n">S_clone</span> <span class="o">=</span> <span class="n">deserialize_sketch</span><span class="p">(</span><span class="n">sketch_dict</span><span class="p">)</span>
+<span class="n">S_clone</span> <span class="o">=</span> <span class="n">sketch</span><span class="o">.</span><span class="n">deserialize_sketch</span><span class="p">(</span><span class="n">sketch_dict</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>Alternatively, sketch objects also support the Pickle and cPickle modules.
+This allows them to be easily used by external libraries or software like Spark.</p>
 </div>
 </div>
 
@@ -258,7 +263,7 @@ C++.</p>
 
     <div class="footer">
         &copy; Copyright IBM Corporation 2012-2014.  All Rights Reserved.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

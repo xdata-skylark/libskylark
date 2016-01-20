@@ -339,17 +339,17 @@ The sketching is done using <em>Johnson-Lindenstrauss (JLT)</em> transform.</p>
 <span class="p">...</span>
 
 <span class="cm">/* Local Matrix Type */</span>
-<span class="k">typedef</span> <span class="n">elem</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="n">MatrixType</span><span class="p">;</span>
+<span class="k">typedef</span> <span class="n">El</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="n">MatrixType</span><span class="p">;</span>
 
 <span class="cm">/* Row distributed Matrix Type */</span>
-<span class="k">typedef</span> <span class="n">elem</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">VC</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="n">DistMatrixType</span><span class="p">;</span>
+<span class="k">typedef</span> <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">VC</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="n">DistMatrixType</span><span class="p">;</span>
 
  <span class="cm">/* Initialize libSkylark context with a seed */</span>
 <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="kt">context_t</span> <span class="n">context</span> <span class="p">(</span><span class="mi">12345</span><span class="p">);</span>
 
 <span class="cm">/* Row distributed Elemental Matrix A of size N x M */</span>
-<span class="n">elem</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">VR</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="n">A</span><span class="p">(</span><span class="n">grid</span><span class="p">);</span>
-<span class="n">elem</span><span class="o">::</span><span class="n">Uniform</span> <span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">M</span><span class="p">);</span>
+<span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">VR</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="n">A</span><span class="p">(</span><span class="n">grid</span><span class="p">);</span>
+<span class="n">El</span><span class="o">::</span><span class="n">Uniform</span> <span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">M</span><span class="p">);</span>
 
 <span class="cm">/* Create the Johnson-Lindenstrauss Sketch object to map R^N to R^S*/</span>
 <span class="n">skys</span><span class="o">::</span><span class="n">JLT_t</span><span class="o">&lt;</span><span class="n">DistMatrixType</span><span class="p">,</span> <span class="n">MatrixType</span><span class="o">&gt;</span> <span class="n">JLT</span> <span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="n">S</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
@@ -399,20 +399,20 @@ when detected as garbage (no references).</p>
 <h3>Python Examples<a class="headerlink" href="#python-examples" title="Permalink to this headline">¶</a></h3>
 <p><strong>Sketching Dense Distributed Matrices</strong></p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c">#!/usr/bin/env python</span>
-<span class="c"># MPI usage: </span>
+<span class="c"># MPI usage:</span>
 <span class="c"># mpiexec -np 2 python skylark/examples/example_sketch.py</span>
 
 <span class="c"># prevent mpi4py from calling MPI_Finalize()</span>
 <span class="kn">import</span> <span class="nn">mpi4py.rc</span>
 <span class="n">mpi4py</span><span class="o">.</span><span class="n">rc</span><span class="o">.</span><span class="n">finalize</span>   <span class="o">=</span> <span class="bp">False</span>
 
-<span class="kn">import</span> <span class="nn">elem</span>
+<span class="kn">import</span> <span class="nn">El</span>
 <span class="kn">from</span> <span class="nn">skylark</span> <span class="kn">import</span> <span class="n">sketch</span><span class="p">,</span> <span class="n">elemhelper</span>
 <span class="kn">from</span> <span class="nn">mpi4py</span> <span class="kn">import</span> <span class="n">MPI</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">time</span>
 
-<span class="c"># Configuration </span>
+<span class="c"># Configuration</span>
 <span class="n">m</span> <span class="o">=</span> <span class="mi">20000</span><span class="p">;</span>
 <span class="n">n</span> <span class="o">=</span> <span class="mi">300</span><span class="p">;</span>
 <span class="n">t</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">;</span>
@@ -420,34 +420,35 @@ when detected as garbage (no references).</p>
 <span class="n">sketches</span> <span class="o">=</span> <span class="p">{</span> <span class="s">&quot;JLT&quot;</span> <span class="p">:</span> <span class="n">sketch</span><span class="o">.</span><span class="n">JLT</span><span class="p">,</span> <span class="s">&quot;CWT&quot;</span> <span class="p">:</span> <span class="n">sketch</span><span class="o">.</span><span class="n">CWT</span> <span class="p">}</span>
 
 <span class="c"># Set up the random regression problem.</span>
-<span class="n">A</span> <span class="o">=</span> <span class="n">elem</span><span class="o">.</span><span class="n">DistMatrix_d_VR_STAR</span><span class="p">()</span>
-<span class="n">elem</span><span class="o">.</span><span class="n">Uniform</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
-<span class="n">b</span> <span class="o">=</span> <span class="n">elem</span><span class="o">.</span><span class="n">DistMatrix_d_VR_STAR</span><span class="p">()</span>
-<span class="n">elem</span><span class="o">.</span><span class="n">Uniform</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">A</span> <span class="o">=</span> <span class="n">El</span><span class="o">.</span><span class="n">DistMatrix</span><span class="p">((</span><span class="n">El</span><span class="o">.</span><span class="n">dTag</span><span class="p">,</span> <span class="n">El</span><span class="o">.</span><span class="n">VR</span><span class="p">,</span> <span class="n">El</span><span class="o">.</span><span class="n">STAR</span><span class="p">))</span>
+<span class="n">El</span><span class="o">.</span><span class="n">Uniform</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">El</span><span class="o">.</span><span class="n">DistMatrix</span><span class="p">((</span><span class="n">El</span><span class="o">.</span><span class="n">dTag</span><span class="p">,</span> <span class="n">El</span><span class="o">.</span><span class="n">VR</span><span class="p">,</span> <span class="n">El</span><span class="o">.</span><span class="n">STAR</span><span class="p">))</span>
+<span class="n">El</span><span class="o">.</span><span class="n">Uniform</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
 <span class="c"># Solve using Elemental</span>
 <span class="c"># Elemental currently does not support LS on VR,STAR.</span>
 <span class="c"># So we copy.</span>
-<span class="n">A1</span> <span class="o">=</span> <span class="n">elem</span><span class="o">.</span><span class="n">DistMatrix_d</span><span class="p">()</span>
-<span class="n">elem</span><span class="o">.</span><span class="n">Copy</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">A1</span><span class="p">)</span>
-<span class="n">b1</span> <span class="o">=</span> <span class="n">elem</span><span class="o">.</span><span class="n">DistMatrix_d</span><span class="p">()</span>
-<span class="n">elem</span><span class="o">.</span><span class="n">Copy</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">b1</span><span class="p">)</span>
-<span class="n">x</span> <span class="o">=</span> <span class="n">elem</span><span class="o">.</span><span class="n">DistMatrix_d</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">A1</span> <span class="o">=</span> <span class="n">El</span><span class="o">.</span><span class="n">DistMatrix</span><span class="p">()</span>
+<span class="n">El</span><span class="o">.</span><span class="n">Copy</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">A1</span><span class="p">)</span>
+<span class="n">b1</span> <span class="o">=</span> <span class="n">El</span><span class="o">.</span><span class="n">DistMatrix</span><span class="p">()</span>
+<span class="n">El</span><span class="o">.</span><span class="n">Copy</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">b1</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">El</span><span class="o">.</span><span class="n">DistMatrix</span><span class="p">(</span><span class="n">El</span><span class="o">.</span><span class="n">dTag</span><span class="p">,</span> <span class="n">El</span><span class="o">.</span><span class="n">MC</span><span class="p">,</span> <span class="n">El</span><span class="o">.</span><span class="n">MR</span><span class="p">)</span>
+<span class="n">El</span><span class="o">.</span><span class="n">Uniform</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
-<span class="n">elem</span><span class="o">.</span><span class="n">LeastSquares</span><span class="p">(</span><span class="n">elem</span><span class="o">.</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">A1</span><span class="p">,</span> <span class="n">b1</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+<span class="n">El</span><span class="o">.</span><span class="n">LeastSquares</span><span class="p">(</span><span class="n">A1</span><span class="p">,</span> <span class="n">b1</span><span class="p">,</span> <span class="n">El</span><span class="o">.</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
 <span class="n">telp</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
 
 <span class="c"># Compute residual</span>
-<span class="n">r</span> <span class="o">=</span> <span class="n">elem</span><span class="o">.</span><span class="n">DistMatrix_d</span><span class="p">()</span>
-<span class="n">elem</span><span class="o">.</span><span class="n">Copy</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
-<span class="n">elem</span><span class="o">.</span><span class="n">Gemv</span><span class="p">(</span><span class="n">elem</span><span class="o">.</span><span class="n">NORMAL</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">A1</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
-<span class="n">res</span> <span class="o">=</span> <span class="n">elem</span><span class="o">.</span><span class="n">Norm</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+<span class="n">r</span> <span class="o">=</span> <span class="n">El</span><span class="o">.</span><span class="n">DistMatrix</span><span class="p">()</span>
+<span class="n">El</span><span class="o">.</span><span class="n">Copy</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+<span class="n">El</span><span class="o">.</span><span class="n">Gemv</span><span class="p">(</span><span class="n">El</span><span class="o">.</span><span class="n">NORMAL</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">A1</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+<span class="n">res</span> <span class="o">=</span> <span class="n">El</span><span class="o">.</span><span class="n">Norm</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
 <span class="k">if</span> <span class="p">(</span><span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span><span class="o">.</span><span class="n">Get_rank</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
   <span class="k">print</span> <span class="s">&quot;Exact solution residual </span><span class="si">%(res).3f</span><span class="se">\t\t\t</span><span class="s">took </span><span class="si">%(elp).2e</span><span class="s"> sec&quot;</span> <span class="o">%</span> \
       <span class="p">{</span> <span class="s">&quot;res&quot;</span> <span class="p">:</span> <span class="n">res</span><span class="p">,</span> <span class="s">&quot;elp&quot;</span><span class="p">:</span> <span class="n">telp</span> <span class="p">}</span>
 
 <span class="c"># Lower-layers are automatically initilalized when you import Skylark,</span>
-<span class="c"># It will use system time to generate the seed. However, we can </span>
+<span class="c"># It will use system time to generate the seed. However, we can</span>
 <span class="c"># reinitialize for so to fix the seed.</span>
 <span class="n">sketch</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="mi">123834</span><span class="p">);</span>
 
@@ -456,21 +457,21 @@ when detected as garbage (no references).</p>
 <span class="c">#</span>
 <span class="k">for</span> <span class="n">sname</span> <span class="ow">in</span> <span class="n">sketches</span><span class="p">:</span>
   <span class="n">stype</span> <span class="o">=</span> <span class="n">sketches</span><span class="p">[</span><span class="n">sname</span><span class="p">]</span>
-  
+
   <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
 
-  <span class="c"># Create transform. </span>
-  <span class="n">S</span> <span class="o">=</span> <span class="n">stype</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">defouttype</span><span class="o">=</span><span class="s">&quot;DistMatrix_STAR_STAR&quot;</span><span class="p">)</span>
+  <span class="c"># Create transform.</span>
+  <span class="n">S</span> <span class="o">=</span> <span class="n">stype</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">defouttype</span><span class="o">=</span><span class="s">&quot;SharedMatrix&quot;</span><span class="p">)</span>
 
   <span class="c"># Sketch both A and b using the same sketch</span>
   <span class="n">SA</span> <span class="o">=</span> <span class="n">S</span> <span class="o">*</span> <span class="n">A</span>
   <span class="n">Sb</span> <span class="o">=</span> <span class="n">S</span> <span class="o">*</span> <span class="n">b</span>
-  
-  <span class="c"># SA and Sb reside on rank zero, so solving the equation is </span>
+
+  <span class="c"># SA and Sb reside on rank zero, so solving the equation is</span>
   <span class="c"># done there.</span>
   <span class="k">if</span> <span class="p">(</span><span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span><span class="o">.</span><span class="n">Get_rank</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
     <span class="c"># Solve using NumPy</span>
-    <span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">rank</span><span class="p">,</span> <span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">SA</span><span class="o">.</span><span class="n">Matrix</span><span class="p">,</span> <span class="n">Sb</span><span class="o">.</span><span class="n">Matrix</span><span class="p">)</span>
+    <span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">rank</span><span class="p">,</span> <span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">lstsq</span><span class="p">(</span><span class="n">SA</span><span class="o">.</span><span class="n">Matrix</span><span class="p">()</span><span class="o">.</span><span class="n">ToNumPy</span><span class="p">(),</span> <span class="n">Sb</span><span class="o">.</span><span class="n">Matrix</span><span class="p">()</span><span class="o">.</span><span class="n">ToNumPy</span><span class="p">())</span>
   <span class="k">else</span><span class="p">:</span>
     <span class="n">x</span> <span class="o">=</span> <span class="bp">None</span>
 
@@ -478,16 +479,16 @@ when detected as garbage (no references).</p>
 
   <span class="c"># Distribute the solution so to compute residual in a distributed fashion</span>
   <span class="n">x</span> <span class="o">=</span> <span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span><span class="o">.</span><span class="n">bcast</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-    
+
   <span class="c"># Convert x to a distributed matrix.</span>
   <span class="c"># Here we give the type explictly, but the value used is the default.</span>
-  <span class="n">x</span> <span class="o">=</span> <span class="n">elemhelper</span><span class="o">.</span><span class="n">local2distributed</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">elem</span><span class="o">.</span><span class="n">DistMatrix_d</span><span class="p">)</span>
+  <span class="n">x</span> <span class="o">=</span> <span class="n">elemhelper</span><span class="o">.</span><span class="n">local2distributed</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">El</span><span class="o">.</span><span class="n">DistMatrix</span><span class="p">)</span>
 
   <span class="c"># Compute residual</span>
-  <span class="n">r</span> <span class="o">=</span> <span class="n">elem</span><span class="o">.</span><span class="n">DistMatrix_d</span><span class="p">()</span>
-  <span class="n">elem</span><span class="o">.</span><span class="n">Copy</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
-  <span class="n">elem</span><span class="o">.</span><span class="n">Gemv</span><span class="p">(</span><span class="n">elem</span><span class="o">.</span><span class="n">NORMAL</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">A1</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
-  <span class="n">res</span> <span class="o">=</span> <span class="n">elem</span><span class="o">.</span><span class="n">Norm</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+  <span class="n">r</span> <span class="o">=</span> <span class="n">El</span><span class="o">.</span><span class="n">DistMatrix</span><span class="p">()</span>
+  <span class="n">El</span><span class="o">.</span><span class="n">Copy</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+  <span class="n">El</span><span class="o">.</span><span class="n">Gemv</span><span class="p">(</span><span class="n">El</span><span class="o">.</span><span class="n">NORMAL</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">A1</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+  <span class="n">res</span> <span class="o">=</span> <span class="n">El</span><span class="o">.</span><span class="n">Norm</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
   <span class="k">if</span> <span class="p">(</span><span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span><span class="o">.</span><span class="n">Get_rank</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
     <span class="k">print</span> <span class="s">&quot;</span><span class="si">%(name)s</span><span class="s">:</span><span class="se">\t</span><span class="s">Sketched solution residual </span><span class="si">%(val).3f</span><span class="se">\t</span><span class="s">took </span><span class="si">%(elp).2e</span><span class="s"> sec&quot;</span> <span class="o">%</span>\
         <span class="p">{</span><span class="s">&quot;name&quot;</span> <span class="p">:</span> <span class="n">sname</span><span class="p">,</span> <span class="s">&quot;val&quot;</span> <span class="p">:</span> <span class="n">res</span><span class="p">,</span> <span class="s">&quot;elp&quot;</span> <span class="p">:</span> <span class="n">telp</span><span class="p">}</span>
@@ -585,7 +586,7 @@ when detected as garbage (no references).</p>
 
     <div class="footer">
         &copy; Copyright IBM Corporation 2012-2014.  All Rights Reserved.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

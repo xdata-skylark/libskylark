@@ -53,8 +53,8 @@ Note: it is assume that a :math:`s \times n` matrix can fit in the memory of a s
 
 *****
 
-.. cpp:function:: void ApproximateLeastSquares(elem::Orientation orientation, const elem::Matrix<T>& A, const elem::Matrix<T>& B, elem::Matrix<T>& X, base::context_t& context, int sketch_size = -1)
-.. cpp:function:: void ApproximateLeastSquares(elem::Orientation orientation, const elem::DistMatrix<T, elem::VC, elem::STAR>& A, const elem::DistMatrix<T, elem::VC, elem::STAR>& B, elem::DistMatrix<T, elem::STAR, elem::STAR>& X, base::context_t& context, int sketch_size = -1)
+.. cpp:function:: void ApproximateLeastSquares(El::Orientation orientation, const El::Matrix<T>& A, const El::Matrix<T>& B, El::Matrix<T>& X, base::context_t& context, int sketch_size = -1)
+.. cpp:function:: void ApproximateLeastSquares(El::Orientation orientation, const El::DistMatrix<T, El::VC, El::STAR>& A, const El::DistMatrix<T, El::VC, El::STAR>& B, El::DistMatrix<T, El::STAR, El::STAR>& X, base::context_t& context, int sketch_size = -1)
 
 If `orientation` is set to ``NORMAL``, then approximate :math:`\arg\min_X \|A * X - B\|_F`, otherwise
 `orientation` must be equal to ``ADJOINT`` and :math:`\arg\min_X \|A^H * X - B\|_F` is approximated.
@@ -76,7 +76,7 @@ A flavor of usage is given in the code snippet below.
      skybase::context_t context(23234);
 
      // Solve the Least Squres problem of minimizing || AX - B||_2 over X
-     skylark::nla::ApproximateLeastSquares(elem::NORMAL, A, X, B, context);
+     skylark::nla::ApproximateLeastSquares(El::NORMAL, A, X, B, context);
 
 Faster Least-squares
 --------------------
@@ -88,7 +88,7 @@ of an iterative method), the threshold is set close to machine precision
 so the solution's accuracy is close to the full accuracy possible on a machine.
 
 The algorithm used is the one described in:
- * | Haim Avron, Petar Maymounkov, and Sivan Toledo
+ * | H. Avron, P. Maymounkov, and S. Toledo
    | `Blendenpik: Supercharging LAPACK's Least-Squares Solver <http://epubs.siam.org/doi/abs/10.1137/090767911>`_
    | SIAM Journal on Scientific Computing 32(3), 1217-1236, 2010
 
@@ -97,7 +97,7 @@ Note: it is assume that a :math:`4 n^2` matrix can fit in the memory of a single
 
 *****
 
-.. cpp:function:: void FastLeastSquares(elem::Orientation orientation, const elem::DistMatrix<T, elem::VC, elem::STAR>& A, const elem::DistMatrix<T, elem::VC, elem::STAR>& B, elem::DistMatrix<T, elem::STAR, elem::STAR>& X, base::context_t& context)
+.. cpp:function:: void FastLeastSquares(El::Orientation orientation, const El::DistMatrix<T, El::VC, El::STAR>& A, const El::DistMatrix<T, El::VC, El::STAR>& B, El::DistMatrix<T, El::STAR, El::STAR>& X, base::context_t& context)
 
 If `orientation` is set to ``NORMAL``, then approximate :math:`\arg\min_X \|A * X - B\|_F`, otherwise
 `orientation` must be equal to ``ADJOINT`` and :math:`\arg\min_X \|A^H * X - B\|_F` is approximated.
@@ -117,7 +117,7 @@ A flavor of usage is given in the code snippet below.
      skybase::context_t context(23234);
 
      // Solve the Least Squres problem of minimizing || AX - B||_2 over X
-     skylark::nla::FasterLeastSquares(elem::NORMAL, A, X, B, context);
+     skylark::nla::FasterLeastSquares(El::NORMAL, A, X, B, context);
 
 Randomized Singular Value Decomposition
 ========================================
@@ -133,62 +133,35 @@ The randomized SVD functionality provides a distributed implementation of algori
 
 The first step is accelerated using sketching.
 
-Rand SVD
---------
+Approximate SVD
+---------------
 
-Randomized SVD is implemented by the use of functors which are first initialized to the type of transform and then the arguments are passed
-to the constructed functor.
+Compute an approximate SVD in the sense that :math:`A \approx U S V^T`. The inner 
+dimension :math:`k` is specified by the user as parameter.
 
-.. cpp:type:: struct skylark::nla::randsvd_t<skylark::sketch::sketch_transform_t<InputMatrixType, OutputMatrixType>>
+.. cpp:function:: void ApproximateSVD(InputType &A, UType &U, SType &S, VType &V, int rank, base::context_t& context, approximate_svd_params_t params = approximate_svd_params_t())
 
-    **Constructor**
+For a running example, please see *libskylark/examples/svd.cpp*. This example provides a
+complete driver for running this functionality from command-line.
 
-    .. cpp:function:: randsvd_t (skylark::sketch::sketch_transform_t& st)
+Condition Number Estimation
+===========================
 
-        Initialize the functor with the sketching transform desired.
+Estimate the condition number of a matrix using a low-memory iterative method. Only
+the ability to multiply the matrix by a vector, and its transpose by a vector is
+required. No factorization is involved, so can estimate the condition number of very
+large and unstructured matrices.
 
-    **Accessors**
+The algorithm used is the one described in:
+ * | H. Avron, A. Durinsky, and S. Toledo
+   | `Spectral Condition-Number Estimation of Large Sparse Matrices <http://arxiv.org/pdf/1301.1107v3.pdf>`_
 
-    .. cpp:function:: void operator()<InputMatrixType, UMatrixType, SingularValuesMatrixType, VMatrixType> (InputMatrixType &A, int target_rank, UMatrixType &U, SingularValuesMatrixType &SV, VMatrixType &V, rand_svd_params_t params, skylark::base::context_t& context)
+.. cpp:function:: int CondEst(const MatrixType& A, double &cond, double &sigma_max, RightType &v_max, LeftType &u_max, double &sigma_min, double &sigma_min_c, RightType &v_min, LeftType &u_min, base::context_t &context, condest_params_t params = condest_params_t())
 
-        The overloaded operator takes the input matrix A and produces the output matrices U, SV and V. In addition, a params object is passed which contains the parameters shown below.
-
-.. cpp:type:: struct skylark::nla::rand_svd_params_t
-
-    **Constructor**
-
-    .. cpp:function:: rand_svd_params_t (int oversampling,int num_iterations = 0, bool skip_qr = 0)
-
-	The arguments include how much oversampling needs to be performed (oversampling), the number of subspace iterations needed (num_iterations)
-	and an optimization flag (skip_qr) to skip a step in the algorithm.
-
-*****
-
-
-A flavor of usage is given in the code snippet below.
-
-.. code-block:: cpp
-
-     #include <elemental.hpp>
-     #include <skylark.hpp>
-     ...
-     /* params structure contains parameters of the randomized SVD algorithm */
-     /* These parameters include oversampling, number of power iterations and
-     whether repeated QR iterations should be skipped */
-
-     skylark::nla::rand_svd_params_t params(oversampling_parameter);
-
-     /* create a rand_svd object parameterized by the Sketch */
-     skylark::nla::randsvd_t<skylark::sketch::JLT_t> rand_svd;
-
-     ...
-     /* Call the randomized SVD algorithm on Elemental or CombBLAS matrix A */
-     rand_svd(A, target_rank, U, S, V, params, context);
-
-The **rand_svd** function accepts certain combinations of matrix types for the input A and the SVD factors:
-U, S and V. Currently, the matrix types are Elemental MC/MR or elem::Matrix types.
-
-For a running example, please see *libskylark/examples/rand_svd.cpp*.
-
-
-
+   Estimate the condition number of :math:`A`: estimate the largest and smallest 
+   singular value. The estimate of the largest is highly accurate, and the 
+   estimate of the lowest is typically a  not-too-bad upper bound. Returns also  
+   certificate left and right vectors. For the 
+   smallest singular vector, two estimates are returned: one with a certificate, and 
+   one that is potentially (but not always) smaller but without certificate (it will 
+   never be bigger than the estimate with certificate).

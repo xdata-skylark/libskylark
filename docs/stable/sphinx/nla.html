@@ -91,13 +91,13 @@ There is also a default value, but it is much lower than the one suggested by th
 (<img class="math" src="_images/math/413f8a8e40062a9090d9d50b88bc7b551b314c26.png" alt="n"/> is the number of columns in <img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/>).</p>
 <hr class="docutils" />
 <dl class="function">
-<dt id="ApproximateLeastSquares__elem::Orientation.elem::Matrix:T:CR.elem::Matrix:T:CR.elem::Matrix:T:R.base::context_tR.i">
-void <tt class="descname">ApproximateLeastSquares</tt><big>(</big>elem::Orientation <em>orientation</em>, const elem::Matrix&lt;T&gt;&amp; <em>A</em>, const elem::Matrix&lt;T&gt;&amp; <em>B</em>, elem::Matrix&lt;T&gt;&amp; <em>X</em>, base::context_t&amp; <em>context</em>, int <em>sketch_size</em><em>=-1</em><big>)</big><a class="headerlink" href="#ApproximateLeastSquares__elem::Orientation.elem::Matrix:T:CR.elem::Matrix:T:CR.elem::Matrix:T:R.base::context_tR.i" title="Permalink to this definition">¶</a></dt>
+<dt id="ApproximateLeastSquares__El::Orientation.El::Matrix:T:CR.El::Matrix:T:CR.El::Matrix:T:R.base::context_tR.i">
+void <tt class="descname">ApproximateLeastSquares</tt><big>(</big>El::Orientation <em>orientation</em>, const El::Matrix&lt;T&gt;&amp; <em>A</em>, const El::Matrix&lt;T&gt;&amp; <em>B</em>, El::Matrix&lt;T&gt;&amp; <em>X</em>, base::context_t&amp; <em>context</em>, int <em>sketch_size</em><em>=-1</em><big>)</big><a class="headerlink" href="#ApproximateLeastSquares__El::Orientation.El::Matrix:T:CR.El::Matrix:T:CR.El::Matrix:T:R.base::context_tR.i" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="ApproximateLeastSquares__elem::Orientation.elem::DistMatrix:T.elem::VC.elem::STAR:CR.elem::DistMatrix:T.elem::VC.elem::STAR:CR.elem::DistMatrix:T.elem::STAR.elem::STAR:R.base::context_tR.i">
-void <tt class="descname">ApproximateLeastSquares</tt><big>(</big>elem::Orientation <em>orientation</em>, const elem::DistMatrix&lt;T, elem::VC, elem::STAR&gt;&amp; <em>A</em>, const elem::DistMatrix&lt;T, elem::VC, elem::STAR&gt;&amp; <em>B</em>, elem::DistMatrix&lt;T, elem::STAR, elem::STAR&gt;&amp; <em>X</em>, base::context_t&amp; <em>context</em>, int <em>sketch_size</em><em>=-1</em><big>)</big><a class="headerlink" href="#ApproximateLeastSquares__elem::Orientation.elem::DistMatrix:T.elem::VC.elem::STAR:CR.elem::DistMatrix:T.elem::VC.elem::STAR:CR.elem::DistMatrix:T.elem::STAR.elem::STAR:R.base::context_tR.i" title="Permalink to this definition">¶</a></dt>
+<dt id="ApproximateLeastSquares__El::Orientation.El::DistMatrix:T.El::VC.El::STAR:CR.El::DistMatrix:T.El::VC.El::STAR:CR.El::DistMatrix:T.El::STAR.El::STAR:R.base::context_tR.i">
+void <tt class="descname">ApproximateLeastSquares</tt><big>(</big>El::Orientation <em>orientation</em>, const El::DistMatrix&lt;T, El::VC, El::STAR&gt;&amp; <em>A</em>, const El::DistMatrix&lt;T, El::VC, El::STAR&gt;&amp; <em>B</em>, El::DistMatrix&lt;T, El::STAR, El::STAR&gt;&amp; <em>X</em>, base::context_t&amp; <em>context</em>, int <em>sketch_size</em><em>=-1</em><big>)</big><a class="headerlink" href="#ApproximateLeastSquares__El::Orientation.El::DistMatrix:T.El::VC.El::STAR:CR.El::DistMatrix:T.El::VC.El::STAR:CR.El::DistMatrix:T.El::STAR.El::STAR:R.base::context_tR.i" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <p>If <cite>orientation</cite> is set to <tt class="docutils literal"><span class="pre">NORMAL</span></tt>, then approximate <img class="math" src="_images/math/485e12a6c8da2e147f54242e795622ddb82bed52.png" alt="\arg\min_X \|A * X - B\|_F"/>, otherwise
@@ -114,7 +114,7 @@ void <tt class="descname">ApproximateLeastSquares</tt><big>(</big>elem::Orientat
 <span class="n">skybase</span><span class="o">::</span><span class="kt">context_t</span> <span class="n">context</span><span class="p">(</span><span class="mi">23234</span><span class="p">);</span>
 
 <span class="c1">// Solve the Least Squres problem of minimizing || AX - B||_2 over X</span>
-<span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="n">ApproximateLeastSquares</span><span class="p">(</span><span class="n">elem</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+<span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="n">ApproximateLeastSquares</span><span class="p">(</span><span class="n">El</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -129,7 +129,7 @@ so the solution&#8217;s accuracy is close to the full accuracy possible on a mac
 <dt>The algorithm used is the one described in:</dt>
 <dd><ul class="first last">
 <li><div class="first line-block">
-<div class="line">Haim Avron, Petar Maymounkov, and Sivan Toledo</div>
+<div class="line">H. Avron, P. Maymounkov, and S. Toledo</div>
 <div class="line"><a class="reference external" href="http://epubs.siam.org/doi/abs/10.1137/090767911">Blendenpik: Supercharging LAPACK&#8217;s Least-Squares Solver</a></div>
 <div class="line">SIAM Journal on Scientific Computing 32(3), 1217-1236, 2010</div>
 </div>
@@ -141,8 +141,8 @@ so the solution&#8217;s accuracy is close to the full accuracy possible on a mac
 (<img class="math" src="_images/math/413f8a8e40062a9090d9d50b88bc7b551b314c26.png" alt="n"/> is the number of columns in <img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/>).</p>
 <hr class="docutils" />
 <dl class="function">
-<dt id="FastLeastSquares__elem::Orientation.elem::DistMatrix:T.elem::VC.elem::STAR:CR.elem::DistMatrix:T.elem::VC.elem::STAR:CR.elem::DistMatrix:T.elem::STAR.elem::STAR:R.base::context_tR">
-void <tt class="descname">FastLeastSquares</tt><big>(</big>elem::Orientation <em>orientation</em>, const elem::DistMatrix&lt;T, elem::VC, elem::STAR&gt;&amp; <em>A</em>, const elem::DistMatrix&lt;T, elem::VC, elem::STAR&gt;&amp; <em>B</em>, elem::DistMatrix&lt;T, elem::STAR, elem::STAR&gt;&amp; <em>X</em>, base::context_t&amp; <em>context</em><big>)</big><a class="headerlink" href="#FastLeastSquares__elem::Orientation.elem::DistMatrix:T.elem::VC.elem::STAR:CR.elem::DistMatrix:T.elem::VC.elem::STAR:CR.elem::DistMatrix:T.elem::STAR.elem::STAR:R.base::context_tR" title="Permalink to this definition">¶</a></dt>
+<dt id="FastLeastSquares__El::Orientation.El::DistMatrix:T.El::VC.El::STAR:CR.El::DistMatrix:T.El::VC.El::STAR:CR.El::DistMatrix:T.El::STAR.El::STAR:R.base::context_tR">
+void <tt class="descname">FastLeastSquares</tt><big>(</big>El::Orientation <em>orientation</em>, const El::DistMatrix&lt;T, El::VC, El::STAR&gt;&amp; <em>A</em>, const El::DistMatrix&lt;T, El::VC, El::STAR&gt;&amp; <em>B</em>, El::DistMatrix&lt;T, El::STAR, El::STAR&gt;&amp; <em>X</em>, base::context_t&amp; <em>context</em><big>)</big><a class="headerlink" href="#FastLeastSquares__El::Orientation.El::DistMatrix:T.El::VC.El::STAR:CR.El::DistMatrix:T.El::VC.El::STAR:CR.El::DistMatrix:T.El::STAR.El::STAR:R.base::context_tR" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <p>If <cite>orientation</cite> is set to <tt class="docutils literal"><span class="pre">NORMAL</span></tt>, then approximate <img class="math" src="_images/math/485e12a6c8da2e147f54242e795622ddb82bed52.png" alt="\arg\min_X \|A * X - B\|_F"/>, otherwise
@@ -158,7 +158,7 @@ void <tt class="descname">FastLeastSquares</tt><big>(</big>elem::Orientation <em
 <span class="n">skybase</span><span class="o">::</span><span class="kt">context_t</span> <span class="n">context</span><span class="p">(</span><span class="mi">23234</span><span class="p">);</span>
 
 <span class="c1">// Solve the Least Squres problem of minimizing || AX - B||_2 over X</span>
-<span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="n">FasterLeastSquares</span><span class="p">(</span><span class="n">elem</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+<span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="n">FasterLeastSquares</span><span class="p">(</span><span class="n">El</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
@@ -187,65 +187,48 @@ void <tt class="descname">FastLeastSquares</tt><big>(</big>elem::Orientation <em
 </dl>
 </div></blockquote>
 <p>The first step is accelerated using sketching.</p>
-<div class="section" id="rand-svd">
-<h3>Rand SVD<a class="headerlink" href="#rand-svd" title="Permalink to this headline">¶</a></h3>
-<p>Randomized SVD is implemented by the use of functors which are first initialized to the type of transform and then the arguments are passed
-to the constructed functor.</p>
-<dl class="type">
-<dt id="struct-skylark::nla::randsvd_t:skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType::">
-<em class="property">type </em><tt class="descname">struct skylark::nla::randsvd_t&lt;skylark::sketch::sketch_transform_t&lt;InputMatrixType, OutputMatrixType&gt;&gt;</tt><a class="headerlink" href="#struct-skylark::nla::randsvd_t:skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType::" title="Permalink to this definition">¶</a></dt>
-<dd><p><strong>Constructor</strong></p>
+<div class="section" id="approximate-svd">
+<h3>Approximate SVD<a class="headerlink" href="#approximate-svd" title="Permalink to this headline">¶</a></h3>
+<p>Compute an approximate SVD in the sense that <img class="math" src="_images/math/893632b6baf3aac6618bbe86b297f72fd866b218.png" alt="A \approx U S V^T"/>. The inner
+dimension <img class="math" src="_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> is specified by the user as parameter.</p>
 <dl class="function">
-<dt id="struct-skylark::nla::randsvd_t:skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType::::randsvd_t__skylark::sketch::sketch_transform_tR">
- <tt class="descname">randsvd_t</tt><big>(</big>skylark::sketch::sketch_transform_t&amp; <em>st</em><big>)</big><a class="headerlink" href="#struct-skylark::nla::randsvd_t:skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType::::randsvd_t__skylark::sketch::sketch_transform_tR" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialize the functor with the sketching transform desired.</p>
-</dd></dl>
+<dt id="ApproximateSVD__InputTypeR.UTypeR.STypeR.VTypeR.i.base::context_tR.approximate_svd_params_t">
+void <tt class="descname">ApproximateSVD</tt><big>(</big>InputType&amp; <em>A</em>, UType&amp; <em>U</em>, SType&amp; <em>S</em>, VType&amp; <em>V</em>, int <em>rank</em>, base::context_t&amp; <em>context</em>, approximate_svd_params_t <em>params</em><em>=approximate_svd_params_t()</em><big>)</big><a class="headerlink" href="#ApproximateSVD__InputTypeR.UTypeR.STypeR.VTypeR.i.base::context_tR.approximate_svd_params_t" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
-<p><strong>Accessors</strong></p>
-<dl class="function">
-<dt id="struct-skylark::nla::randsvd_t:skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType::::call-operator:InputMatrixType.UMatrixType.SingularValuesMatrixType.VMatrixType:__InputMatrixTypeR.i.UMatrixTypeR.SingularValuesMatrixTypeR.VMatrixTypeR.rand_svd_params_t.skylark::base::context_tR">
-void <tt class="descname">operator()&lt;InputMatrixType, UMatrixType, SingularValuesMatrixType, VMatrixType&gt;</tt><big>(</big>InputMatrixType&amp; <em>A</em>, int <em>target_rank</em>, UMatrixType&amp; <em>U</em>, SingularValuesMatrixType&amp; <em>SV</em>, VMatrixType&amp; <em>V</em>, rand_svd_params_t <em>params</em>, skylark::base::context_t&amp; <em>context</em><big>)</big><a class="headerlink" href="#struct-skylark::nla::randsvd_t:skylark::sketch::sketch_transform_t:InputMatrixType.OutputMatrixType::::call-operator:InputMatrixType.UMatrixType.SingularValuesMatrixType.VMatrixType:__InputMatrixTypeR.i.UMatrixTypeR.SingularValuesMatrixTypeR.VMatrixTypeR.rand_svd_params_t.skylark::base::context_tR" title="Permalink to this definition">¶</a></dt>
-<dd><p>The overloaded operator takes the input matrix A and produces the output matrices U, SV and V. In addition, a params object is passed which contains the parameters shown below.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="type">
-<dt id="struct-skylark::nla::rand_svd_params_t">
-<em class="property">type </em><tt class="descname">struct skylark::nla::rand_svd_params_t</tt><a class="headerlink" href="#struct-skylark::nla::rand_svd_params_t" title="Permalink to this definition">¶</a></dt>
-<dd><p><strong>Constructor</strong></p>
-<dl class="function">
-<dt id="struct-skylark::nla::rand_svd_params_t::rand_svd_params_t__i.i.b">
- <tt class="descname">rand_svd_params_t</tt><big>(</big>int <em>oversampling</em>, int <em>num_iterations</em><em>=0</em>, bool <em>skip_qr</em><em>=0</em><big>)</big><a class="headerlink" href="#struct-skylark::nla::rand_svd_params_t::rand_svd_params_t__i.i.b" title="Permalink to this definition">¶</a></dt>
-<dd><p>The arguments include how much oversampling needs to be performed (oversampling), the number of subspace iterations needed (num_iterations)
-and an optimization flag (skip_qr) to skip a step in the algorithm.</p>
-</dd></dl>
-
-</dd></dl>
-
-<hr class="docutils" />
-<p>A flavor of usage is given in the code snippet below.</p>
-<div class="highlight-cpp"><div class="highlight"><pre><span class="cp">#include &lt;elemental.hpp&gt;</span>
-<span class="cp">#include &lt;skylark.hpp&gt;</span>
-<span class="p">...</span>
-<span class="cm">/* params structure contains parameters of the randomized SVD algorithm */</span>
-<span class="cm">/* These parameters include oversampling, number of power iterations and</span>
-<span class="cm">whether repeated QR iterations should be skipped */</span>
-
-<span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="kt">rand_svd_params_t</span> <span class="n">params</span><span class="p">(</span><span class="n">oversampling_parameter</span><span class="p">);</span>
-
-<span class="cm">/* create a rand_svd object parameterized by the Sketch */</span>
-<span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="kt">randsvd_t</span><span class="o">&lt;</span><span class="n">skylark</span><span class="o">::</span><span class="n">sketch</span><span class="o">::</span><span class="n">JLT_t</span><span class="o">&gt;</span> <span class="n">rand_svd</span><span class="p">;</span>
-
-<span class="p">...</span>
-<span class="cm">/* Call the randomized SVD algorithm on Elemental or CombBLAS matrix A */</span>
-<span class="n">rand_svd</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">target_rank</span><span class="p">,</span> <span class="n">U</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
-</pre></div>
+<p>For a running example, please see <em>libskylark/examples/svd.cpp</em>. This example provides a
+complete driver for running this functionality from command-line.</p>
 </div>
-<p>The <strong>rand_svd</strong> function accepts certain combinations of matrix types for the input A and the SVD factors:
-U, S and V. Currently, the matrix types are Elemental MC/MR or elem::Matrix types.</p>
-<p>For a running example, please see <em>libskylark/examples/rand_svd.cpp</em>.</p>
 </div>
+<div class="section" id="condition-number-estimation">
+<h2>Condition Number Estimation<a class="headerlink" href="#condition-number-estimation" title="Permalink to this headline">¶</a></h2>
+<p>Estimate the condition number of a matrix using a low-memory iterative method. Only
+the ability to multiply the matrix by a vector, and its transpose by a vector is
+required. No factorization is involved, so can estimate the condition number of very
+large and unstructured matrices.</p>
+<dl class="docutils">
+<dt>The algorithm used is the one described in:</dt>
+<dd><ul class="first last">
+<li><div class="first line-block">
+<div class="line">H. Avron, A. Durinsky, and S. Toledo</div>
+<div class="line"><a class="reference external" href="http://arxiv.org/pdf/1301.1107v3.pdf">Spectral Condition-Number Estimation of Large Sparse Matrices</a></div>
+</div>
+</li>
+</ul>
+</dd>
+</dl>
+<dl class="function">
+<dt id="CondEst__MatrixTypeCR.doubleR.doubleR.RightTypeR.LeftTypeR.doubleR.doubleR.RightTypeR.LeftTypeR.base::context_tR.condest_params_t">
+int <tt class="descname">CondEst</tt><big>(</big>const MatrixType&amp; <em>A</em>, double&amp; <em>cond</em>, double&amp; <em>sigma_max</em>, RightType&amp; <em>v_max</em>, LeftType&amp; <em>u_max</em>, double&amp; <em>sigma_min</em>, double&amp; <em>sigma_min_c</em>, RightType&amp; <em>v_min</em>, LeftType&amp; <em>u_min</em>, base::context_t&amp; <em>context</em>, condest_params_t <em>params</em><em>=condest_params_t()</em><big>)</big><a class="headerlink" href="#CondEst__MatrixTypeCR.doubleR.doubleR.RightTypeR.LeftTypeR.doubleR.doubleR.RightTypeR.LeftTypeR.base::context_tR.condest_params_t" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate the condition number of <img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/>: estimate the largest and smallest
+singular value. The estimate of the largest is highly accurate, and the
+estimate of the lowest is typically a  not-too-bad upper bound. Returns also
+certificate left and right vectors. For the
+smallest singular vector, two estimates are returned: one with a certificate, and
+one that is potentially (but not always) smaller but without certificate (it will
+never be bigger than the estimate with certificate).</p>
+</dd></dl>
+
 </div>
 </div>
 
@@ -265,7 +248,7 @@ U, S and V. Currently, the matrix types are Elemental MC/MR or elem::Matrix type
 
     <div class="footer">
         &copy; Copyright IBM Corporation 2012-2014.  All Rights Reserved.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

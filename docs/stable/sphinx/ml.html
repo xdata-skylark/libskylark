@@ -62,8 +62,9 @@
 <p>The following kernels are supported:</p>
 <blockquote>
 <div><ul class="simple">
-<li>Gaussian and Laplacian Kernels via Random Fourier Transform (<a class="reference external" href="http://www.eecs.berkeley.edu/~brecht/papers/07.rah.rec.nips.pdf">Rahimi and Recht, 2007</a>)</li>
-<li>Gaussian and Laplacian Kernels via Fast Random Fourier Transform (<a class="reference external" href="http://jmlr.org/proceedings/papers/v28/le13.html">Le, Sarlos and Smola, 2013</a>)</li>
+<li>Gaussian, Laplacian and Matern Kernels via Random Fourier Transform (<a class="reference external" href="http://www.eecs.berkeley.edu/~brecht/papers/07.rah.rec.nips.pdf">Rahimi and Recht, 2007</a>)</li>
+<li>Gaussian and Matern Kernels via Fast Random Fourier Transform (<a class="reference external" href="http://jmlr.org/proceedings/papers/v28/le13.html">Le, Sarlos and Smola, 2013</a>)</li>
+<li>Gaussian and Matern Kernels via Quasi Random Fourier Transform (<a class="reference external" href="http://jmlr.org/proceedings/papers/v32/yangb14.pdf">Yang et al, 2014</a>)</li>
 <li>Polynomial Kernels via Tensor Sketch (<a class="reference external" href="http://www.itu.dk/people/ndap/TensorSketch.pdf">Pahm and Pagh, 2013</a>)</li>
 <li>Exponential Semigroup Kernels via Random Laplace Transform (<a class="reference external" href="http://vikas.sindhwani.org/RandomLaplace.pdf">Yang et al, 2014</a>)</li>
 </ul>
@@ -127,24 +128,19 @@ sparse format.</p>
 </div></blockquote>
 <p>Examples of such files can be downloaded from <a class="reference external" href="http://vikas.sindhwani.org/data.tar.gz">here</a>. The HDF5 files can be viewed using <a class="reference external" href="http://http://www.hdfgroup.org/HDF5/Tutor/hdfview.html">HDFView</a>. A screenshot is shown below.</p>
 <a class="reference internal image-reference" href="_images/hdfview_screenshot.png"><img alt="_images/hdfview_screenshot.png" class="align-center" src="_images/hdfview_screenshot.png" style="width: 750px;" /></a>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">For all fileformats described above, the current implementation is geared towards classification problems and requires the label to assume values from 0 to (K-1) for a K-class problem, or +1/-1 for binary classification problems. This assumption will be relaxed.</p>
-</div>
-</div>
 </div>
 <div class="section" id="example-and-commandline-usage">
-<h2>Example and Commandline Usage<a class="headerlink" href="#example-and-commandline-usage" title="Permalink to this headline">¶</a></h2>
-<p>Please see <a class="reference internal" href="quick_start.html#ml-example"><em>ML</em></a></p>
-<div class="highlight-python"><div class="highlight"><pre>Training mode usage: skylark_ml [options] --trainfile trainfile --modelfile modelfile
-Testing mode usage: skylark_ml --modelfile modelfile --testfile testfile
+<h3>Example and Commandline Usage<a class="headerlink" href="#example-and-commandline-usage" title="Permalink to this headline">¶</a></h3>
+<p>Please see <a class="reference internal" href="quick_start.html#ml-example"><em>Learning Non-Linear Models</em></a></p>
+<div class="highlight-python"><div class="highlight"><pre>Usage: skylark_ml [options] --trainfile trainfile --modelfile modelfile
+Usage: skylark_ml --modelfile modelfile --testfile testfile :
   -h [ --help ]                         produce a help message
-  -l [ --lossfunction ] arg (=0)        Loss function (0:SQUARED (L2), 1:LAD
-                                        (L1), 2:HINGE, 3:LOGISTIC)
+  -l [ --lossfunction ] arg (=0)        Loss function (0:SQUARED, 1:LAD,
+                                        2:HINGE, 3:LOGISTIC)
   -r [ --regularizer ] arg (=0)         Regularizer (0:L2, 1:L1)
-  -k [ --kernel ] arg (=0)              Kernel (1:GAUSSIAN,
+  -k [ --kernel ] arg (=0)              Kernel (0:LINEAR, 1:GAUSSIAN,
                                         2:POLYNOMIAL, 3:LAPLACIAN,
-                                        4:EXPSEMIGROUP)
+                                        4:EXPSEMIGROUP, 5:MATERN)
   -g [ --kernelparam ] arg (=1)         Kernel Parameter
   -x [ --kernelparam2 ] arg (=0)        If Applicable - Second Kernel Parameter
                                         (Polynomial Kernel: c)
@@ -160,31 +156,211 @@ Testing mode usage: skylark_ml --modelfile modelfile --testfile testfile
                                         Number of Feature Partitions (default:
                                         1)
   -t [ --numthreads ] arg (=1)          Number of Threads (default: 1)
-  --regular arg (=1)                    Default is to use &#39;fast&#39; feature
-                                        mapping, if available.Use this flag to
-                                        force regular mapping (default: false)
-  --cachetransforms arg (=0)            Default is to not cache feature
-                                        transforms per iteration, but generate
-                                        on fly. Use this flag to force
-                                        transform caching if you have enough
-                                        memory (default: false)
+  --regression                          Build a regression model(default is
+                                        classification).
+  --usefast                             Use &#39;fast&#39; feature mapping, if
+                                        available. Default is to use &#39;regular&#39;
+                                        mapping.
+  -q [ --usequasi ] arg (=0)            If possible, change the underlying
+                                        sequence of samples (0:Regular/Monte
+                                        Carlo, 1:Leaped Halton)
+  --cachetransforms                     Cache feature expanded data (faster,
+                                        but more memory demanding).
   --fileformat arg (=0)                 Fileformat (default: 0 (libsvm-&gt;dense),
                                         1 (libsvm-&gt;sparse), 2 (hdf5-&gt;dense), 3
                                         (hdf5-&gt;sparse)
-  -i [ --MAXITER ] arg (=100)           Maximum Number of Iterations (default:
-                                        100)
+  -i [ --MAXITER ] arg (=20)            Maximum Number of Iterations (default:
+                                        10)
   --trainfile arg                       Training data file (required in
                                         training mode)
   --modelfile arg                       Model output file
   --valfile arg                         Validation file (optional)
-  --testfile arg                        Test file (optional in training mode;
-                                        required in testing mode)
+  --testfile arg                        Test file (required in testing mode)
+  --outputfile arg                      Base name for output file (will attach
+                                        .txt suffix)
 </pre></div>
 </div>
 </div>
 <div class="section" id="library-usage">
-<h2>Library Usage<a class="headerlink" href="#library-usage" title="Permalink to this headline">¶</a></h2>
-<p>To be documented (please see <tt class="docutils literal"><span class="pre">ml/run.hpp</span></tt> for a driver program).</p>
+<h3>Library Usage<a class="headerlink" href="#library-usage" title="Permalink to this headline">¶</a></h3>
+<p>To be documented (please see <tt class="docutils literal"><span class="pre">ml/skylark_ml.cpp</span></tt> for a driver program).</p>
+</div>
+</div>
+<div class="section" id="graph-computations">
+<h2>Graph Computations<a class="headerlink" href="#graph-computations" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="community-detection-using-seed-nodes">
+<h3>Community Detection using Seed Nodes<a class="headerlink" href="#community-detection-using-seed-nodes" title="Permalink to this headline">¶</a></h3>
+<p>In community detection problems (i.e., graph clustering problems), one seeks to identify a set
+of nodes in a graph that are both internally cohesive and also well separated from the remainder
+of the graph. Such sets are then referred to as communities or clusters. In one important variant
+of community detection, the goal is to build a community around a given seed node or set of seed
+nodes. That is, the algorithm is given, as an input, a node (or nodes) in the graph, and the
+goal is to find a cluster in which it is a member.</p>
+<dl class="docutils">
+<dt>The library implements the algorithm reported in the following paper:</dt>
+<dd><ul class="first last">
+<li><div class="first line-block">
+<div class="line">H. Avron and L. Horesh</div>
+<div class="line">Community Detection Using Time-Dependent Personalized PageRank</div>
+</div>
+</li>
+</ul>
+</dd>
+</dl>
+<p>The interface is as follows:</p>
+<dl class="function">
+<dt id="FindLocalCluster__GraphTypeCR.std::unordered_set:typename-GraphType::vertex_type:CR.std::unordered_set:typename-GraphType::vertex_type:R.double.double.double.i.b">
+double <tt class="descname">FindLocalCluster</tt><big>(</big>const GraphType&amp; <em>G</em>, const std::unordered_set&lt;typename GraphType::vertex_type&gt;&amp; <em>seeds</em>, std::unordered_set&lt;typename GraphType::vertex_type&gt;&amp; <em>cluster</em>, double <em>alpha</em>, double <em>gamma</em>, double <em>epsilon</em>, int <em>NX</em>, bool <em>recursive</em><big>)</big><a class="headerlink" href="#FindLocalCluster__GraphTypeCR.std::unordered_set:typename-GraphType::vertex_type:CR.std::unordered_set:typename-GraphType::vertex_type:R.double.double.double.i.b" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>seeds is the set of input seeds, cluster is the set of output cluster. alpha, gamma, epsilon and NX are
+parameters of the algorithm. See paper for details. Defaults are specified.
+If recursive is set to true (default is false)
+the algorithm will recursively use the output cluster as seed until the cluster stops
+improving (as measured using conductance).</p>
+<p>The graph is specified using parameter G. The type is generic: the GraphType class is expected to
+support the following:</p>
+<dl class="type">
+<dt id="GraphType::vertex_type">
+<em class="property">type </em><tt class="descclassname">GraphType::</tt><tt class="descname">vertex_type</tt><a class="headerlink" href="#GraphType::vertex_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Type of the graph nodes</p>
+<dl class="function">
+<dt id="GraphType::num_edges">
+size_t <tt class="descclassname">GraphType::</tt><tt class="descname">num_edges</tt><big>(</big><big>)</big><a class="headerlink" href="#GraphType::num_edges" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Return the number of edges in the graph.</p>
+<dl class="function">
+<dt id="GraphType::deg__vertex_type">
+size_t <tt class="descclassname">GraphType::</tt><tt class="descname">deg</tt><big>(</big>vertex_type <em>node</em><big>)</big><a class="headerlink" href="#GraphType::deg__vertex_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Return the degree of the given node.</p>
+<dl class="function">
+<dt id="GraphType::adjanct_begin__vertex_type">
+iterator <tt class="descclassname">GraphType::</tt><tt class="descname">adjanct_begin</tt><big>(</big>vertex_type <em>node</em><big>)</big><a class="headerlink" href="#GraphType::adjanct_begin__vertex_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Return an iterator to the start of the list of adjanct nodes of the input
+node. The iterator can be of any kind (must support increment, deref and comparison).</p>
+<dl class="function">
+<dt id="GraphType::adjanct_end__vertex_type">
+iterator <tt class="descclassname">GraphType::</tt><tt class="descname">adjanct_end</tt><big>(</big>vertex_type <em>node</em><big>)</big><a class="headerlink" href="#GraphType::adjanct_end__vertex_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Return an iterator to the end of the list of adjanct nodes of the input
+node.</p>
+</div>
+<div class="section" id="time-dependent-personalized-pagerank">
+<h3>Time-Dependent Personalized PageRank<a class="headerlink" href="#time-dependent-personalized-pagerank" title="Permalink to this headline">¶</a></h3>
+<p>The community detection algorithm is based on a localized solution of
+a Time-Dependent Personlized PageRank diffusion problem. See the
+paper for details:</p>
+<blockquote>
+<div><ul>
+<li><div class="first line-block">
+<div class="line">H. Avron and L. Horesh</div>
+<div class="line">Community Detection Using Time-Dependent Personalized PageRank</div>
+</div>
+</li>
+</ul>
+</div></blockquote>
+<p>The library also exposes the ability to solve the diffusion problem.
+In this functionality, the input is a scalar function on nodes, and the
+output is a vector function on nodes. Each entry of the vector
+represents a different time point.</p>
+<p>The interface is as follows:</p>
+<dl class="function">
+<dt id="TimeDependentPPR__GraphTypeCR.std::unordered_map:typename-GraphType::vertex_type.T:CR.std::unordered_map:typename-GraphType::vertex_type.El::Matrix:T:P:R.El::Matrix:T:R.double.double.double.i">
+void <tt class="descname">TimeDependentPPR</tt><big>(</big>const GraphType&amp; <em>G</em>, const std::unordered_map&lt;typename GraphType::vertex_type, T&gt;&amp; <em>s</em>, std::unordered_map&lt;typename GraphType::vertex_type, El::Matrix&lt;T&gt;*&gt;&amp; <em>y</em>, El::Matrix&lt;T&gt;&amp; <em>x</em>, double <em>alpha</em>, double <em>gamma</em>, double <em>epsilon</em>, int <em>NX</em><big>)</big><a class="headerlink" href="#TimeDependentPPR__GraphTypeCR.std::unordered_map:typename-GraphType::vertex_type.T:CR.std::unordered_map:typename-GraphType::vertex_type.El::Matrix:T:P:R.El::Matrix:T:R.double.double.double.i" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>s is the input function of nodes, while y is the output. x specifies the time points which
+corresponds to the entries of x[node]. alpha, gamma, epsilon and NX are
+parameters of the algorithm. See paper for details. Defaults are specified.</p>
+<p>The graph is specified using parameter G. The type is generic: the GraphType class is expected to
+support the following:</p>
+<dl class="type">
+<dt>
+<em class="property">type </em><tt class="descclassname">GraphType::</tt><tt class="descname">vertex_type</tt></dt>
+<dd></dd></dl>
+
+<p>Type of the graph nodes</p>
+<dl class="function">
+<dt>
+size_t <tt class="descclassname">GraphType::</tt><tt class="descname">num_edges</tt><big>(</big><big>)</big></dt>
+<dd></dd></dl>
+
+<p>Return the number of edges in the graph.</p>
+<dl class="function">
+<dt>
+size_t <tt class="descclassname">GraphType::</tt><tt class="descname">deg</tt><big>(</big>vertex_type <em>node</em><big>)</big></dt>
+<dd></dd></dl>
+
+<p>Return the degree of the given node.</p>
+<dl class="function">
+<dt>
+iterator <tt class="descclassname">GraphType::</tt><tt class="descname">adjanct_begin</tt><big>(</big>vertex_type <em>node</em><big>)</big></dt>
+<dd></dd></dl>
+
+<p>Return an iterator to the start of the list of adjanct nodes of the input
+node. The iterator can be of any kind (must support increment, deref and comparison).</p>
+<dl class="function">
+<dt>
+iterator <tt class="descclassname">GraphType::</tt><tt class="descname">adjanct_end</tt><big>(</big>vertex_type <em>node</em><big>)</big></dt>
+<dd></dd></dl>
+
+<p>Return an iterator to the end of the list of adjanct nodes of the input
+node.</p>
+</div>
+<div class="section" id="approximate-adjacency-spectral-embedding">
+<h3>Approximate Adjacency Spectral Embedding<a class="headerlink" href="#approximate-adjacency-spectral-embedding" title="Permalink to this headline">¶</a></h3>
+<p>The goal of graph embedding is to assign each vertex a vector such
+that closeness in Euclidean space is well correlated with closeness
+in graph distance. Spectral embedding base the embedding on the eigenvalue
+decomposition of some associated matrix. In Adjacency Spectral Embedding (ASE)
+the embedding is computed using the eigenvalue decomposition of the adjacency matrix.</p>
+<p>The library implements a sketched-SVD based approximate ASE, based on the description
+of ASE found in:</p>
+<blockquote>
+<div><ul>
+<li><div class="first line-block">
+<div class="line">V. Lyzinski et al.</div>
+<div class="line">Community Detection and Classification in Hierarchical Stochastic Blockmodels</div>
+</div>
+</li>
+</ul>
+</div></blockquote>
+<p>The interface is as follows:</p>
+<dl class="function">
+<dt id="ApproximateASE__GraphTypeCR.i.std::vector:typename-GraphType::vertex_type:R.El::Matrix:T:R.base::context_tR.approximate_ase_params_t">
+void <tt class="descname">ApproximateASE</tt><big>(</big>const GraphType&amp; <em>G</em>, int <em>k</em>, std::vector&lt;typename GraphType::vertex_type&gt;&amp; <em>indexmap</em>, El::Matrix&lt;T&gt;&amp; <em>X</em>, base::context_t&amp; <em>context</em>, approximate_ase_params_t <em>params</em><big>)</big><a class="headerlink" href="#ApproximateASE__GraphTypeCR.i.std::vector:typename-GraphType::vertex_type:R.El::Matrix:T:R.base::context_tR.approximate_ase_params_t" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>X will be filled with the embedding. Each row of X is associated with one vertex. indexmap is a map between row index
+and the vertex. The parameter structure is similar to the one specified to approximate SVD.</p>
+<p>The graph is specified using parameter G. The type is generic: the GraphType class is expected to
+support the following:</p>
+<dl class="type">
+<dt>
+<em class="property">type </em><tt class="descclassname">GraphType::</tt><tt class="descname">vertex_type</tt></dt>
+<dd></dd></dl>
+
+<p>Type of the graph nodes</p>
+<dl class="function">
+<dt id="GraphType::adjacency_matrix__base::sparse_matrix_t:T:R.std::vector:vertex_type:R">
+size_t <tt class="descclassname">GraphType::</tt><tt class="descname">adjacency_matrix</tt><big>(</big>base::sparse_matrix_t&lt;T&gt;&amp; <em>A</em>, std::vector&lt;vertex_type&gt;&amp; <em>indexmap</em><big>)</big><a class="headerlink" href="#GraphType::adjacency_matrix__base::sparse_matrix_t:T:R.std::vector:vertex_type:R" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Fills the adjacency matrix of the graph</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Currently, approximate ASE is computed only on a single machine, and no MPI (OpenMP is used, but in a limited manner).
+This will change in the future.</p>
+</div>
+</div>
 </div>
 </div>
 
@@ -204,7 +380,7 @@ Testing mode usage: skylark_ml --modelfile modelfile --testfile testfile
 
     <div class="footer">
         &copy; Copyright IBM Corporation 2012-2014.  All Rights Reserved.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

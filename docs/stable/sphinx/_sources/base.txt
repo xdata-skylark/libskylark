@@ -166,6 +166,24 @@ hold local sparse matrices.
         Attach CSC matrix data where the caller can decide who retains the
         ownership.
 
+Random Dense Matrices
+---------------------
+
+The library provides functions for filling Elemental dense matrices (local or distributed) using the library's random number generator.
+
+    .. cpp:function:: void RandomMatrix(El::Matrix<T> &A, El::Int m, El::Int n, DistributionType<T> &dist, context_t &context)
+
+    .. cpp:function:: void RandomMatrix(El::DistMatrix<T, CD, RD> &A, El::Int m, El::Int n, DistributionType<T> &dist, context_t &context)
+
+       Resize matrix to m-by-n and fill with entries which are i.i.d samples of the distribution.
+
+    .. cpp:function:: void GaussianMatrix(MatrixType &A, El::Int m, El::Int n, context_t &context)
+
+       Resize matrix to m-by-n and fill with entries which are i.i.d samples from standard normal distribution.
+
+    .. cpp:function:: void UniformMatrix(MatrixType &A, El::Int m, El::Int n, context_t &context)
+
+       Resize matrix to m-by-n and fill with entries which are i.i.d samples from a uniform distrbution on [0,1).
 
 Cross matrix-type GEMM and other linear algebra routines
 --------------------------------------------------------

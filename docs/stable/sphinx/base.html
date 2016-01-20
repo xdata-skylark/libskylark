@@ -258,6 +258,35 @@ ownership.</p>
 </dd></dl>
 
 </div>
+<div class="section" id="random-dense-matrices">
+<h2>Random Dense Matrices<a class="headerlink" href="#random-dense-matrices" title="Permalink to this headline">¶</a></h2>
+<p>The library provides functions for filling Elemental dense matrices (local or distributed) using the library&#8217;s random number generator.</p>
+<blockquote>
+<div><dl class="function">
+<dt id="RandomMatrix__El::Matrix:T:R.El::Int.El::Int.DistributionType:T:R.context_tR">
+void <tt class="descname">RandomMatrix</tt><big>(</big>El::Matrix&lt;T&gt;&amp; <em>A</em>, El::Int <em>m</em>, El::Int <em>n</em>, DistributionType&lt;T&gt;&amp; <em>dist</em>, context_t&amp; <em>context</em><big>)</big><a class="headerlink" href="#RandomMatrix__El::Matrix:T:R.El::Int.El::Int.DistributionType:T:R.context_tR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="RandomMatrix__El::DistMatrix:T.CD.RD:R.El::Int.El::Int.DistributionType:T:R.context_tR">
+void <tt class="descname">RandomMatrix</tt><big>(</big>El::DistMatrix&lt;T, CD, RD&gt;&amp; <em>A</em>, El::Int <em>m</em>, El::Int <em>n</em>, DistributionType&lt;T&gt;&amp; <em>dist</em>, context_t&amp; <em>context</em><big>)</big><a class="headerlink" href="#RandomMatrix__El::DistMatrix:T.CD.RD:R.El::Int.El::Int.DistributionType:T:R.context_tR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resize matrix to m-by-n and fill with entries which are i.i.d samples of the distribution.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="GaussianMatrix__MatrixTypeR.El::Int.El::Int.context_tR">
+void <tt class="descname">GaussianMatrix</tt><big>(</big>MatrixType&amp; <em>A</em>, El::Int <em>m</em>, El::Int <em>n</em>, context_t&amp; <em>context</em><big>)</big><a class="headerlink" href="#GaussianMatrix__MatrixTypeR.El::Int.El::Int.context_tR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resize matrix to m-by-n and fill with entries which are i.i.d samples from standard normal distribution.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="UniformMatrix__MatrixTypeR.El::Int.El::Int.context_tR">
+void <tt class="descname">UniformMatrix</tt><big>(</big>MatrixType&amp; <em>A</em>, El::Int <em>m</em>, El::Int <em>n</em>, context_t&amp; <em>context</em><big>)</big><a class="headerlink" href="#UniformMatrix__MatrixTypeR.El::Int.El::Int.context_tR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resize matrix to m-by-n and fill with entries which are i.i.d samples from a uniform distrbution on [0,1).</p>
+</dd></dl>
+
+</div></blockquote>
+</div>
 <div class="section" id="cross-matrix-type-gemm-and-other-linear-algebra-routines">
 <h2>Cross matrix-type GEMM and other linear algebra routines<a class="headerlink" href="#cross-matrix-type-gemm-and-other-linear-algebra-routines" title="Permalink to this headline">¶</a></h2>
 <p>To be added...</p>
@@ -280,7 +309,7 @@ ownership.</p>
 
     <div class="footer">
         &copy; Copyright IBM Corporation 2012-2014.  All Rights Reserved.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

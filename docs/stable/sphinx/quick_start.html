@@ -65,7 +65,7 @@ not be compatible with older versions.</p>
 <li><p class="first">Execute the following commands in a terminal:</p>
 <blockquote>
 <div><div class="highlight-sh"><div class="highlight"><pre>git clone https://github.com/xdata-skylark/libskylark.git
-<span class="nb">cd </span>libskylark/vagrant/precise64
+<span class="nb">cd </span>libskylark/vagrant/trusty64
 vagrant up
 vagrant ssh
 </pre></div>
@@ -107,11 +107,20 @@ pointing to the libSkylark source and install directory:</p>
 works and some trouble shooting.
 Additionally we provide instruction on how to install on a cluster
 (see <a class="reference internal" href="#cluster-label"><em>Cluster of vagrant-controlled VMs</em></a>) and running on AWS (see <a class="reference internal" href="#aws-label"><em>Running Vagrant on AWS</em></a>).</p>
-<p>Finally, some examples are provided in the <a class="reference internal" href="#examples-label"><em>Examples</em></a> section.</p>
+<p>Finally, some examples are provided in the <a class="reference internal" href="#examples-label"><em>Examples of Library Usage</em></a> section.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>You might get a warning concerning AVX instructions when running the
+examples</p>
+<blockquote>
+<div><cite>OpenBLAS : Your OS does not support AVX instructions. OpenBLAS is using Nehalem kernels as a fallback, which may give poorer performance.</cite></div></blockquote>
+<p class="last">because some VM providers do not support AVX instructions yet (e.g. see:
+<cite>https://www.virtualbox.org/ticket/11347</cite>).</p>
+</div>
 <div class="section" id="vagrant-label">
 <span id="id1"></span><h2>Vagrant<a class="headerlink" href="#vagrant-label" title="Permalink to this headline">¶</a></h2>
-<p>Under <tt class="docutils literal"><span class="pre">vagrant/precise64</span></tt> we provide an easy way to materialize an
-64-bit Ubuntu-based virtual machine (release 12.04 LTS, aka precise) with all
+<p>Under <tt class="docutils literal"><span class="pre">vagrant/trusty64</span></tt> we provide an easy way to materialize an
+64-bit Ubuntu-based virtual machine (release 14.04 LTS, aka Trusty Tahr) with all
 software dependencies required for a fresh build of libSkylark.</p>
 <p>The <tt class="docutils literal"><span class="pre">Vagrantfile</span></tt> is the input to <a class="reference external" href="http://www.vagrantup.com/">Vagrant</a>, a
 program that facilitates the management of virtual machines.
@@ -121,7 +130,7 @@ host operating system (<em>Windows</em>, <em>Mac OS X</em> and <em>Linux</em> ho
 require <em>exactly</em> the same commands).</p>
 <p><em>After installing VirtualBox and Vagrant</em> the following commands suffice</p>
 <div class="highlight-sh"><div class="highlight"><pre>git clone https://github.com/xdata-skylark/libskylark.git
-<span class="nb">cd </span>vagrant/precise64
+<span class="nb">cd </span>vagrant/trusty64
 vagrant up
 vagrant ssh
 </pre></div>
@@ -130,6 +139,11 @@ vagrant ssh
 If you want to customize the installed libSkylark follow the instructions
 (see <a class="reference internal" href="installation.html#build-libskylark-label"><em>Building libSkylark</em></a>) for building and installing
 libSkylark.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">To customize the amount of memory (4096) and CPU (75%) cap that will be
+used for the VM, check the Vagrant file.</p>
+</div>
 <p>The vagrant box can be stopped by issuing <tt class="docutils literal"><span class="pre">vagrant</span> <span class="pre">halt</span></tt>.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -166,6 +180,145 @@ delete the virtual machine (halt than delete the machine in the VirtualBox
 GUI) and start with a fresh Vagrant build.</p>
 </div>
 </div>
+<div class="section" id="command-line-usage">
+<h2>Command-line Usage<a class="headerlink" href="#command-line-usage" title="Permalink to this headline">¶</a></h2>
+<p>While libSkylark is designed to be a library, it also provides access to many
+of its feature using standalone applications. For all applications, running with
+the &#8211;help options reveals the command-line options.</p>
+<p>The following example sessions assume the following commands have been performed
+in advance (it downloads and extracts some demo data):</p>
+<div class="highlight-sh"><div class="highlight"><pre>wget http://vikas.sindhwani.org/data.tar.gz
+tar -xvzf data.tar.gz
+</pre></div>
+</div>
+<div class="section" id="approximate-singular-value-decomposition">
+<span id="svd-app"></span><h3>Approximate Singular Value Decomposition<a class="headerlink" href="#approximate-singular-value-decomposition" title="Permalink to this headline">¶</a></h3>
+<p>Building libSkylark creates an executable called <tt class="docutils literal"><span class="pre">skylark_svd</span></tt> in
+<tt class="docutils literal"><span class="pre">$SKYLARK_INSTALL_DIR/bin</span></tt>. This executable can be used in standalone mode
+to compute an approximate SVD with 10 leading singular vectors as follows:</p>
+<div class="highlight-sh"><div class="highlight"><pre>skylark_svd -k 10 --prefix usps data/usps.train
+</pre></div>
+</div>
+<p>The files usps.U.txt, usps.S.txt and usps.V.txt contain the approximate SVD that
+was computed.</p>
+</div>
+<div class="section" id="linear-least-squares">
+<h3>Linear Least-Squares<a class="headerlink" href="#linear-least-squares" title="Permalink to this headline">¶</a></h3>
+<p>Building libSkylark creates an executable called <tt class="docutils literal"><span class="pre">skylark_linear</span></tt> in
+<tt class="docutils literal"><span class="pre">$SKYLARK_INSTALL_DIR/bin</span></tt>. This executable can be used in standalone mode to
+approximately solve linear least squares problems. Here is an example command-line:</p>
+<div class="highlight-sh"><div class="highlight"><pre>skylark_linear data/cpu.train cpu.sol
+</pre></div>
+</div>
+<p>The file cpu.sol.txt contains the computed approximate solution.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Currently, only overdetermined least squares of dense matrices is supported.
+No regularization options are available. This will be relaxed in the future.</p>
+</div>
+</div>
+<div class="section" id="learning-non-linear-models">
+<span id="ml-example"></span><h3>Learning Non-Linear Models<a class="headerlink" href="#learning-non-linear-models" title="Permalink to this headline">¶</a></h3>
+<p>In <tt class="file docutils literal"><span class="pre">$</span><em><span class="pre">SKYLARK_SRC_DIR</span></em><span class="pre">/ml/skylark_ml.cpp</span></tt>, an ADMM-based solver is
+setup to train and predict with a randomized kernel based model for
+nonlinear classification and regression problems.</p>
+<p>Building libSkylark creates an executable called <tt class="docutils literal"><span class="pre">skylark_ml</span></tt> in
+<tt class="docutils literal"><span class="pre">$SKYLARK_INSTALL_DIR/bin</span></tt>. This executable can be used in standalone mode as follows.</p>
+<ol class="arabic simple">
+<li>Train an SVM with Randomized Gaussian Kernel</li>
+</ol>
+<div class="highlight-sh"><div class="highlight"><pre>mpiexec -np 4 skylark_ml -g 10 -k 1 -l 2 -i 30 -f 1000 --trainfile data/usps.train --valfile data/usps.test --modelfile model
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li>Test accuracy of the generated model and generate predictions</li>
+</ol>
+<div class="highlight-sh"><div class="highlight"><pre>mpiexec -np 4 skylark_ml --outputfile output --testfile data/usps.test --modelfile model
+</pre></div>
+</div>
+<p>An output file named output.txt with the predicted labels is created.</p>
+<ol class="arabic simple" start="3">
+<li>In the above, the entire test data is loaded to memory and the result is computed. This is the fast, but it is limited to cases where the test data is fixed. skylark_ml also supports an interactive (streaming) mode in which the software prompts for data line by line from stdin and outputs in prediction after each line is received. The mode is invoked by not passing either training data or testing data. An example for using this mode is the following:</li>
+</ol>
+<div class="highlight-sh"><div class="highlight"><pre>cut -d <span class="s1">&#39; &#39;</span> -f 1 --complement data/usps.test | skylark_ml --modelfile model
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Interactive mode is much slower, since there is significant overhead that is repeated for each new line of data. In the future, batching will be supported, to avoid some of this overhead.</p>
+</div>
+<ol class="arabic simple" start="5">
+<li>It is also possible to load the model in Python and do predictions. Here is an example:</li>
+</ol>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">skylark.io</span><span class="o">,</span> <span class="nn">skylark.ml.modeling</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">skylark</span><span class="o">.</span><span class="n">ml</span><span class="o">.</span><span class="n">modeling</span><span class="o">.</span><span class="n">LinearizedKernelModel</span><span class="p">(</span><span class="s">&#39;model&#39;</span><span class="p">)</span>
+<span class="n">testfile</span> <span class="o">=</span> <span class="n">skylark</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">libsvm</span><span class="p">(</span><span class="s">&#39;data/usps.test&#39;</span><span class="p">)</span>
+<span class="n">Xt</span><span class="p">,</span> <span class="n">Yt</span> <span class="o">=</span> <span class="n">testfile</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">get_input_dimension</span><span class="p">())</span>
+<span class="n">Yp</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">Xt</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="community-detection-using-seed-node">
+<h3>Community Detection Using Seed Node<a class="headerlink" href="#community-detection-using-seed-node" title="Permalink to this headline">¶</a></h3>
+<p>Building libSkylark creates an executable called <tt class="docutils literal"><span class="pre">skylark_community</span></tt> in
+<tt class="docutils literal"><span class="pre">$SKYLARK_INSTALL_DIR/bin</span></tt>. This executable can be used in standalone mode as follows.
+(Note that an interactive mode is also present.)</p>
+<p>1. Prepare the input. Basically, the graph is described in a text file, with each
+row an edge. Each row has two strings that identify the node. The identifier can be
+arbitrary (does not have to be numeric). For example:</p>
+<div class="highlight-sh"><div class="highlight"><pre>cat data/two_triangles
+A1 A2
+A2 A3
+A1 A3
+B1 B2
+B2 B3
+B1 B3
+A1 B1
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li>Detect the community with A1 as the seed:</li>
+</ol>
+<div class="highlight-sh"><div class="highlight"><pre>skylark_community --graphfile data/two_triangles --seed A1
+</pre></div>
+</div>
+<p>3. The community detection algorithm is local, so it operates only on a few nodes.
+So, for large graphs the majority of the time for detecting a single community will
+be spent on just loading the file. To detect multiple communities with the graph
+already loaded in memory, an interactive quiet mode is provided. Here is an
+example:</p>
+<div class="highlight-sh"><div class="highlight"><pre>cat data/seeds | skylark_community --graphfile data/two_triangles -i -q
+</pre></div>
+</div>
+</div>
+<div class="section" id="approximate-adjacency-spectral-embedding">
+<h3>Approximate Adjacency Spectral Embedding<a class="headerlink" href="#approximate-adjacency-spectral-embedding" title="Permalink to this headline">¶</a></h3>
+<p>Building libSkylark creates an executable called <tt class="docutils literal"><span class="pre">skylark_graph_se</span></tt> in
+<tt class="docutils literal"><span class="pre">$SKYLARK_INSTALL_DIR/bin</span></tt>. This executable can be used in standalone mode as follows.</p>
+<p>1. Prepare the input. Basically, the graph is described in a text file, with each
+row an edge. Each row has two strings that identify the node. The identifier can be
+arbitrary (does not have to be numeric). For example:</p>
+<div class="highlight-sh"><div class="highlight"><pre>cat data/two_triangles
+A1 A2
+A2 A3
+A1 A3
+B1 B2
+B2 B3
+B1 B3
+A1 B1
+</pre></div>
+</div>
+<ol class="arabic simple" start="2">
+<li>Compute a two dimensional embedding.</li>
+</ol>
+<div class="highlight-sh"><div class="highlight"><pre>skylark_graph_se -k 2 data/two_triangles
+</pre></div>
+</div>
+<p>3. Two files are created: out.index.txt and out.vec.txt. The vec file has the embedding
+vectors: each row corresponds to an index. The index file maps row index to vertices.
+The prefix can be called using the prefix command line option (default is <cite>out</cite>).</p>
+</div>
+</div>
 <div class="section" id="cluster-of-vagrant-controlled-vms">
 <span id="cluster-label"></span><h2>Cluster of vagrant-controlled VMs<a class="headerlink" href="#cluster-of-vagrant-controlled-vms" title="Permalink to this headline">¶</a></h2>
 <p>Here is a simple approach for building a cluster of vagrant-controlled VMs;
@@ -183,7 +336,7 @@ for more information on <cite>Networking in VirtualBox</cite>.</p>
 <li><p class="first">During <tt class="docutils literal"><span class="pre">vagrant</span> <span class="pre">up</span></tt> choose the ethernet interface to use.</p>
 </li>
 <li><dl class="first docutils">
-<dt>After <tt class="docutils literal"><span class="pre">vagrant</span> <span class="pre">ssh</span></tt> do <tt class="docutils literal"><span class="pre">ifconfig</span></tt>, get the interface name - let&#8217;s say</dt>
+<dt>After <tt class="docutils literal"><span class="pre">vagrant</span> <span class="pre">ssh</span></tt> do <tt class="docutils literal"><span class="pre">ifconfig</span></tt>, get the interface name - say</dt>
 <dd><p class="first last"><tt class="docutils literal"><span class="pre">eth1</span></tt> - and then for the VMs at nodes 1, 2,...  do:</p>
 </dd>
 </dl>
@@ -244,16 +397,67 @@ end
 <p>It will take a while to compile and install everything specified in the
 <tt class="docutils literal"><span class="pre">bootstrap.sh</span></tt> script.</p>
 </div>
-<div class="section" id="examples">
-<span id="examples-label"></span><h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="running-mpi-on-hadoop-yarn">
+<h2>Running MPI on Hadoop/Yarn<a class="headerlink" href="#running-mpi-on-hadoop-yarn" title="Permalink to this headline">¶</a></h2>
+<p>libSkylark can be run on on a Yarn scheduled cluster using the blueprint
+outlined below.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The installation requires admin privileges. Also make sure to satisfy the
+recommended dependencies.</p>
+</div>
+<div class="section" id="building-mpich2">
+<h3>1. Building MPICH2<a class="headerlink" href="#building-mpich2" title="Permalink to this headline">¶</a></h3>
+<p>Download the MPICH version specified in the dependencies (MPICH-3.1.2).</p>
+<div class="highlight-sh"><div class="highlight"><pre>sh autogen.sh
+./configure --prefix<span class="o">=</span><span class="nv">$HOME</span>/mpi/bin
+make
+make install
+sudo ln -s /home/ubuntu/mpi/bin/bin/* /usr/local/bin
+</pre></div>
+</div>
+<p>and copy MPI binaries to all nodes, i.e.</p>
+<div class="highlight-sh"><div class="highlight"><pre>scp /home/ubuntu/mpi/bin/bin/* root@hadoopX:/usr/local/bin
+</pre></div>
+</div>
+<p>Make sure that all the MPI executables are accessible on all the nodes.</p>
+</div>
+<div class="section" id="building-mpich2-yarn">
+<h3>2. Building mpich2-yarn<a class="headerlink" href="#building-mpich2-yarn" title="Permalink to this headline">¶</a></h3>
+<p>Finally we have all the dependencies ready and can continue to mpich2-yarn
+<a class="reference external" href="https://github.com/alibaba/mpich2-yarn">https://github.com/alibaba/mpich2-yarn</a>:</p>
+<div class="highlight-sh"><div class="highlight"><pre><span class="nb">cd</span> ~/mpi
+git clone https://github.com/alibaba/mpich2-yarn
+<span class="nb">cd </span>mpich2-yarn
+mvn clean package -Dmaven.test.skip<span class="o">=</span><span class="nb">true</span>
+</pre></div>
+</div>
+<p>The configuration for Hadoop/Yarn can be found on on the Github project page.
+Note that the HDFS permission must be set correctly for the temporary folders
+used to distribute MPI executables.</p>
+<p>Finally, an MPI job can be submitted, i.e. with</p>
+<div class="highlight-sh"><div class="highlight"><pre>sudo -u yarn hadoop jar target/mpich2-yarn-1.0-SNAPSHOT.jar -a hellow -M 1024 -m 1024 -n 1
+</pre></div>
+</div>
+<p>where we chose to run as the yarn user (double check permission for any user
+that runs <cite>mpich2-yarn</cite>).
+More examples can be found on the mpich2-yarn Github page.</p>
+</div>
+</div>
+<div class="section" id="examples-of-library-usage">
+<span id="examples-label"></span><h2>Examples of Library Usage<a class="headerlink" href="#examples-of-library-usage" title="Permalink to this headline">¶</a></h2>
 <p>Here, we provide a flavor of the library and its usage. We assume that
 the reader is familiar with sketching and its applications in randomized
 Numerical Linear algebra and Machine Learning. If not, we refer the
 reader to subsequent sections which provide the necessary background and
 references.</p>
 <p>When libSkylark is built, executables instantiating these examples can be found
-under <tt class="docutils literal"><span class="pre">$SKYLARK_INSTALL_DIR/bin/examples</span></tt> and
-<tt class="docutils literal"><span class="pre">$SKYLARK_INSTALL_DIR/bin/ml</span></tt>.</p>
+under <tt class="docutils literal"><span class="pre">$SKYLARK_INSTALL_DIR/bin/skylark_examples</span></tt> and
+<tt class="docutils literal"><span class="pre">$SKYLARK_INSTALL_DIR/bin</span></tt>.</p>
+<p>In addition Vagrant provisions a
+<cite>IPyhton notebook &lt;http://ipython.org/notebook.html&gt;</cite> server with access to the
+libSkylark Python bindings. To play with libSkylark just open your browser and
+direct it to <cite>localhost:6868</cite>.</p>
 <div class="section" id="sketching">
 <h3>Sketching<a class="headerlink" href="#sketching" title="Permalink to this headline">¶</a></h3>
 <p>In <tt class="file docutils literal"><span class="pre">$</span><em><span class="pre">SKYLARK_SRC_DIR</span></em><span class="pre">/examples/elemental.cpp</span></tt> an example is provided that illustrates
@@ -410,15 +614,19 @@ sketching. Below, three types of sketches are illustrated in the highlighted lin
 145
 146
 147
-148</pre></div></td><td class="code"><div class="highlight"><pre><span class="cp">#include &lt;iostream&gt;</span>
+148
+149
+150</pre></div></td><td class="code"><div class="highlight"><pre><span class="cp">#include &lt;iostream&gt;</span>
 <span class="cp">#include &lt;functional&gt;</span>
 <span class="cp">#include &lt;cstring&gt;</span>
 <span class="cp">#include &lt;vector&gt;</span>
 <span class="cp">#include &lt;utility&gt;</span>
-<span class="cp">#include &lt;ext/hash_map&gt;</span>
+<span class="cp">#include &lt;unordered_map&gt;</span>
 
-<span class="cp">#include &lt;elemental.hpp&gt;</span>
+<span class="cp">#include &lt;El.hpp&gt;</span>
 <span class="cp">#include &lt;boost/mpi.hpp&gt;</span>
+
+<span class="cp">#define SKYLARK_NO_ANY</span>
 <span class="cp">#include &lt;skylark.hpp&gt;</span>
 
 <span class="cp">#include &quot;utilities.hpp&quot;</span>
@@ -437,12 +645,12 @@ sketching. Below, three types of sketches are illustrated in the highlighted lin
 <span class="cm">/** Typedef DistMatrix and Matrix */</span>
 <span class="k">typedef</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">IntContainer</span><span class="p">;</span>
 <span class="k">typedef</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="n">DblContainer</span><span class="p">;</span>
-<span class="k">typedef</span> <span class="n">elem</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">CIRC</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">CIRC</span><span class="o">&gt;</span> <span class="n">MatrixType</span><span class="p">;</span>
-<span class="k">typedef</span> <span class="n">elem</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">VC</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="n">DistMatrixType</span><span class="p">;</span>
+<span class="k">typedef</span> <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">CIRC</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">CIRC</span><span class="o">&gt;</span> <span class="n">MatrixType</span><span class="p">;</span>
+<span class="k">typedef</span> <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">VC</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="n">DistMatrixType</span><span class="p">;</span>
 
 <span class="kt">int</span> <span class="nf">main</span> <span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">**</span> <span class="n">argv</span><span class="p">)</span> <span class="p">{</span>
     <span class="cm">/* Initialize Elemental */</span>
-    <span class="n">elem</span><span class="o">::</span><span class="n">Initialize</span> <span class="p">(</span><span class="n">argc</span><span class="p">,</span> <span class="n">argv</span><span class="p">);</span>
+    <span class="n">El</span><span class="o">::</span><span class="n">Initialize</span> <span class="p">(</span><span class="n">argc</span><span class="p">,</span> <span class="n">argv</span><span class="p">);</span>
 
     <span class="cm">/* MPI sends argc and argv everywhere --- parse everywhere */</span>
     <span class="n">parse_parameters</span> <span class="p">(</span><span class="n">argc</span><span class="p">,</span><span class="n">argv</span><span class="p">);</span>
@@ -453,17 +661,17 @@ sketching. Below, three types of sketches are illustrated in the highlighted lin
     <span class="cm">/* Create matrices A and B */</span>
     <span class="n">bmpi</span><span class="o">::</span><span class="n">communicator</span> <span class="n">world</span><span class="p">;</span>
     <span class="n">MPI_Comm</span> <span class="n">mpi_world</span><span class="p">(</span><span class="n">world</span><span class="p">);</span>
-    <span class="n">elem</span><span class="o">::</span><span class="n">Grid</span> <span class="n">grid</span> <span class="p">(</span><span class="n">mpi_world</span><span class="p">);</span>
-    <span class="n">elem</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">VR</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="n">A</span><span class="p">(</span><span class="n">grid</span><span class="p">);</span>
-    <span class="n">elem</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">VR</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="n">B</span><span class="p">(</span><span class="n">grid</span><span class="p">);</span>
+    <span class="n">El</span><span class="o">::</span><span class="n">Grid</span> <span class="n">grid</span> <span class="p">(</span><span class="n">mpi_world</span><span class="p">);</span>
+    <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">VR</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="n">A</span><span class="p">(</span><span class="n">grid</span><span class="p">);</span>
+    <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">VR</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="n">B</span><span class="p">(</span><span class="n">grid</span><span class="p">);</span>
 
     <span class="cm">/** Only randomization is supported for now */</span>
     <span class="k">if</span> <span class="p">(</span><span class="mi">0</span><span class="o">==</span><span class="n">int_params</span><span class="p">[</span><span class="n">USE_RANDOM_INDEX</span><span class="p">])</span> <span class="p">{</span>
         <span class="cm">/** TODO: Read the entries! */</span>
         <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;We don&#39;t support reading --- yet --&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
     <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-        <span class="n">elem</span><span class="o">::</span><span class="n">Uniform</span> <span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">int_params</span><span class="p">[</span><span class="n">M_INDEX</span><span class="p">],</span> <span class="n">int_params</span><span class="p">[</span><span class="n">N_INDEX</span><span class="p">]);</span>
-        <span class="n">elem</span><span class="o">::</span><span class="n">Uniform</span> <span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">int_params</span><span class="p">[</span><span class="n">M_INDEX</span><span class="p">],</span> <span class="n">int_params</span><span class="p">[</span><span class="n">N_RHS_INDEX</span><span class="p">]);</span>
+        <span class="n">El</span><span class="o">::</span><span class="n">Uniform</span> <span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">int_params</span><span class="p">[</span><span class="n">M_INDEX</span><span class="p">],</span> <span class="n">int_params</span><span class="p">[</span><span class="n">N_INDEX</span><span class="p">]);</span>
+        <span class="n">El</span><span class="o">::</span><span class="n">Uniform</span> <span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="n">int_params</span><span class="p">[</span><span class="n">M_INDEX</span><span class="p">],</span> <span class="n">int_params</span><span class="p">[</span><span class="n">N_RHS_INDEX</span><span class="p">]);</span>
     <span class="p">}</span>
 
     <span class="cm">/**</span>
@@ -472,18 +680,18 @@ sketching. Below, three types of sketches are illustrated in the highlighted lin
     <span class="k">if</span> <span class="p">(</span><span class="mi">0</span><span class="o">==</span><span class="n">strcmp</span><span class="p">(</span><span class="s">&quot;JLT&quot;</span><span class="p">,</span> <span class="n">chr_params</span><span class="p">[</span><span class="n">TRANSFORM_INDEX</span><span class="p">])</span> <span class="p">)</span> <span class="p">{</span>
 
         <span class="k">if</span> <span class="p">(</span><span class="n">SKETCH_LEFT</span> <span class="o">==</span> <span class="n">int_params</span><span class="p">[</span><span class="n">SKETCH_DIRECTION_INDEX</span><span class="p">])</span> <span class="p">{</span>
+<span class="hll">
+</span><span class="hll">            <span class="cm">/* 1. Create the sketching matrix */</span>
+</span>            <span class="n">skys</span><span class="o">::</span><span class="n">JLT_t</span><span class="o">&lt;</span><span class="n">DistMatrixType</span><span class="p">,</span> <span class="n">MatrixType</span><span class="o">&gt;</span> <span class="n">JLT</span> <span class="p">(</span><span class="n">int_params</span><span class="p">[</span><span class="n">M_INDEX</span><span class="p">],</span>
+                <span class="n">int_params</span><span class="p">[</span><span class="n">S_INDEX</span><span class="p">],</span> <span class="n">context</span><span class="p">);</span>
+<span class="hll">
+</span>            <span class="cm">/* 2. Create space for the sketched matrix */</span>
+            <span class="n">MatrixType</span> <span class="n">sketch_A</span><span class="p">(</span><span class="n">int_params</span><span class="p">[</span><span class="n">S_INDEX</span><span class="p">],</span> <span class="n">int_params</span><span class="p">[</span><span class="n">N_INDEX</span><span class="p">]);</span>
 
-            <span class="cm">/* 1. Create the sketching matrix */</span>
-<span class="hll">            <span class="n">skys</span><span class="o">::</span><span class="n">JLT_t</span><span class="o">&lt;</span><span class="n">DistMatrixType</span><span class="p">,</span> <span class="n">MatrixType</span><span class="o">&gt;</span> <span class="n">JLT</span> <span class="p">(</span><span class="n">int_params</span><span class="p">[</span><span class="n">M_INDEX</span><span class="p">],</span>
-</span><span class="hll">                <span class="n">int_params</span><span class="p">[</span><span class="n">S_INDEX</span><span class="p">],</span> <span class="n">context</span><span class="p">);</span>
-</span>
-            <span class="cm">/* 2. Create space for the sketched matrix */</span>
-<span class="hll">            <span class="n">MatrixType</span> <span class="n">sketch_A</span><span class="p">(</span><span class="n">int_params</span><span class="p">[</span><span class="n">S_INDEX</span><span class="p">],</span> <span class="n">int_params</span><span class="p">[</span><span class="n">N_INDEX</span><span class="p">]);</span>
-</span>
-            <span class="cm">/* 3. Apply the transform */</span>
-            <span class="n">try</span> <span class="p">{</span>
-<span class="hll">                <span class="n">JLT</span><span class="p">.</span><span class="n">apply</span> <span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">sketch_A</span><span class="p">,</span> <span class="n">skys</span><span class="o">::</span><span class="n">columnwise_tag</span><span class="p">());</span>
-</span>            <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">skylark_exception</span> <span class="n">ex</span><span class="p">)</span> <span class="p">{</span>
+<span class="hll">            <span class="cm">/* 3. Apply the transform */</span>
+</span>            <span class="n">try</span> <span class="p">{</span>
+                <span class="n">JLT</span><span class="p">.</span><span class="n">apply</span> <span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">sketch_A</span><span class="p">,</span> <span class="n">skys</span><span class="o">::</span><span class="n">columnwise_tag</span><span class="p">());</span>
+            <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">skylark_exception</span> <span class="n">ex</span><span class="p">)</span> <span class="p">{</span>
                 <span class="n">SKYLARK_PRINT_EXCEPTION_DETAILS</span><span class="p">(</span><span class="n">ex</span><span class="p">);</span>
                 <span class="n">SKYLARK_PRINT_EXCEPTION_TRACE</span><span class="p">(</span><span class="n">ex</span><span class="p">);</span>
                 <span class="n">errno</span> <span class="o">=</span> <span class="o">*</span><span class="p">(</span><span class="n">boost</span><span class="o">::</span><span class="n">get_error_info</span><span class="o">&lt;</span><span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">error_code</span><span class="o">&gt;</span><span class="p">(</span><span class="n">ex</span><span class="p">));</span>
@@ -495,7 +703,7 @@ sketching. Below, three types of sketches are illustrated in the highlighted lin
             <span class="cm">/* 4. Print and see the result (if small enough) */</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">int_params</span><span class="p">[</span><span class="n">S_INDEX</span><span class="p">]</span> <span class="o">*</span> <span class="n">int_params</span><span class="p">[</span><span class="n">N_INDEX</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">100</span> <span class="o">&amp;&amp;</span>
                 <span class="n">world</span><span class="p">.</span><span class="n">rank</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
-                <span class="n">elem</span><span class="o">::</span><span class="n">Display</span><span class="p">(</span><span class="n">sketch_A</span><span class="p">);</span>
+                <span class="n">El</span><span class="o">::</span><span class="n">Display</span><span class="p">(</span><span class="n">sketch_A</span><span class="p">);</span>
 
             <span class="cm">/** TODO: Do that same to B, and solve the system! */</span>
 
@@ -503,21 +711,21 @@ sketching. Below, three types of sketches are illustrated in the highlighted lin
             <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;We only have left sketching. Please retry&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
         <span class="p">}</span>
     <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="mi">0</span><span class="o">==</span><span class="n">strcmp</span><span class="p">(</span><span class="s">&quot;FJLT&quot;</span><span class="p">,</span> <span class="n">chr_params</span><span class="p">[</span><span class="n">TRANSFORM_INDEX</span><span class="p">])</span> <span class="p">)</span> <span class="p">{</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">SKETCH_LEFT</span> <span class="o">==</span> <span class="n">int_params</span><span class="p">[</span><span class="n">SKETCH_DIRECTION_INDEX</span><span class="p">])</span> <span class="p">{</span>
-            <span class="cm">/* 1. Create the sketching matrix */</span>
-<span class="hll">            <span class="n">skys</span><span class="o">::</span><span class="n">FJLT_t</span><span class="o">&lt;</span><span class="n">DistMatrixType</span><span class="p">,</span> <span class="n">MatrixType</span><span class="o">&gt;</span> <span class="n">FJLT</span> <span class="p">(</span><span class="n">int_params</span><span class="p">[</span><span class="n">M_INDEX</span><span class="p">],</span>
-</span><span class="hll">                <span class="n">int_params</span><span class="p">[</span><span class="n">S_INDEX</span><span class="p">],</span> <span class="n">context</span><span class="p">);</span>
-</span>
-            <span class="cm">/* 2. Create space for the sketched matrix */</span>
-<span class="hll">            <span class="n">MatrixType</span> <span class="n">sketch_A</span><span class="p">(</span><span class="n">int_params</span><span class="p">[</span><span class="n">S_INDEX</span><span class="p">],</span> <span class="n">int_params</span><span class="p">[</span><span class="n">N_INDEX</span><span class="p">]);</span>
-</span>
-            <span class="cm">/* 3. Apply the transform */</span>
-<span class="hll">            <span class="n">FJLT</span><span class="p">.</span><span class="n">apply</span> <span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">sketch_A</span><span class="p">,</span> <span class="n">skys</span><span class="o">::</span><span class="n">columnwise_tag</span><span class="p">());</span>
-</span>
+<span class="hll">        <span class="k">if</span> <span class="p">(</span><span class="n">SKETCH_LEFT</span> <span class="o">==</span> <span class="n">int_params</span><span class="p">[</span><span class="n">SKETCH_DIRECTION_INDEX</span><span class="p">])</span> <span class="p">{</span>
+</span><span class="hll">            <span class="cm">/* 1. Create the sketching matrix */</span>
+</span>            <span class="n">skys</span><span class="o">::</span><span class="n">FJLT_t</span><span class="o">&lt;</span><span class="n">DistMatrixType</span><span class="p">,</span> <span class="n">MatrixType</span><span class="o">&gt;</span> <span class="n">FJLT</span> <span class="p">(</span><span class="n">int_params</span><span class="p">[</span><span class="n">M_INDEX</span><span class="p">],</span>
+                <span class="n">int_params</span><span class="p">[</span><span class="n">S_INDEX</span><span class="p">],</span> <span class="n">context</span><span class="p">);</span>
+<span class="hll">
+</span>            <span class="cm">/* 2. Create space for the sketched matrix */</span>
+            <span class="n">MatrixType</span> <span class="n">sketch_A</span><span class="p">(</span><span class="n">int_params</span><span class="p">[</span><span class="n">S_INDEX</span><span class="p">],</span> <span class="n">int_params</span><span class="p">[</span><span class="n">N_INDEX</span><span class="p">]);</span>
+<span class="hll">
+</span>            <span class="cm">/* 3. Apply the transform */</span>
+            <span class="n">FJLT</span><span class="p">.</span><span class="n">apply</span> <span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">sketch_A</span><span class="p">,</span> <span class="n">skys</span><span class="o">::</span><span class="n">columnwise_tag</span><span class="p">());</span>
+
             <span class="cm">/* 4. Print and see the result */</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">int_params</span><span class="p">[</span><span class="n">S_INDEX</span><span class="p">]</span> <span class="o">*</span> <span class="n">int_params</span><span class="p">[</span><span class="n">M_INDEX</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">100</span> <span class="o">&amp;&amp;</span>
                 <span class="n">world</span><span class="p">.</span><span class="n">rank</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
-                <span class="n">elem</span><span class="o">::</span><span class="n">Display</span><span class="p">(</span><span class="n">sketch_A</span><span class="p">);</span>
+                <span class="n">El</span><span class="o">::</span><span class="n">Display</span><span class="p">(</span><span class="n">sketch_A</span><span class="p">);</span>
 
             <span class="cm">/** TODO: Do that same to B, and solve the system! */</span>
 
@@ -525,24 +733,24 @@ sketching. Below, three types of sketches are illustrated in the highlighted lin
         <span class="p">}</span>
     <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="mi">0</span><span class="o">==</span><span class="n">strcmp</span><span class="p">(</span><span class="s">&quot;CWT&quot;</span><span class="p">,</span> <span class="n">chr_params</span><span class="p">[</span><span class="n">TRANSFORM_INDEX</span><span class="p">])</span> <span class="p">)</span> <span class="p">{</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">SKETCH_LEFT</span> <span class="o">==</span> <span class="n">int_params</span><span class="p">[</span><span class="n">SKETCH_DIRECTION_INDEX</span><span class="p">])</span> <span class="p">{</span>
+<span class="hll">
+</span><span class="hll">            <span class="cm">/* 1. Create the sketching matrix */</span>
+</span>            <span class="n">skys</span><span class="o">::</span><span class="n">CWT_t</span><span class="o">&lt;</span><span class="n">DistMatrixType</span><span class="p">,</span> <span class="n">MatrixType</span><span class="o">&gt;</span>
+                <span class="n">Sparse</span> <span class="p">(</span><span class="n">int_params</span><span class="p">[</span><span class="n">M_INDEX</span><span class="p">],</span> <span class="n">int_params</span><span class="p">[</span><span class="n">S_INDEX</span><span class="p">],</span> <span class="n">context</span><span class="p">);</span>
+<span class="hll">
+</span>            <span class="cm">/* 2. Create space for the sketched matrix */</span>
+            <span class="n">MatrixType</span> <span class="n">sketch_A</span><span class="p">(</span><span class="n">int_params</span><span class="p">[</span><span class="n">S_INDEX</span><span class="p">],</span> <span class="n">int_params</span><span class="p">[</span><span class="n">N_INDEX</span><span class="p">]);</span>
 
-            <span class="cm">/* 1. Create the sketching matrix */</span>
-<span class="hll">            <span class="n">skys</span><span class="o">::</span><span class="n">CWT_t</span><span class="o">&lt;</span><span class="n">DistMatrixType</span><span class="p">,</span> <span class="n">MatrixType</span><span class="o">&gt;</span>
-</span><span class="hll">                <span class="n">Sparse</span> <span class="p">(</span><span class="n">int_params</span><span class="p">[</span><span class="n">M_INDEX</span><span class="p">],</span> <span class="n">int_params</span><span class="p">[</span><span class="n">S_INDEX</span><span class="p">],</span> <span class="n">context</span><span class="p">);</span>
-</span>
-            <span class="cm">/* 2. Create space for the sketched matrix */</span>
-<span class="hll">            <span class="n">MatrixType</span> <span class="n">sketch_A</span><span class="p">(</span><span class="n">int_params</span><span class="p">[</span><span class="n">S_INDEX</span><span class="p">],</span> <span class="n">int_params</span><span class="p">[</span><span class="n">N_INDEX</span><span class="p">]);</span>
-</span>
-            <span class="cm">/* 3. Apply the transform */</span>
-            <span class="n">SKYLARK_BEGIN_TRY</span><span class="p">()</span>
-<span class="hll">                <span class="n">Sparse</span><span class="p">.</span><span class="n">apply</span> <span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">sketch_A</span><span class="p">,</span> <span class="n">skys</span><span class="o">::</span><span class="n">columnwise_tag</span><span class="p">());</span>
-</span>            <span class="n">SKYLARK_END_TRY</span><span class="p">()</span>
+<span class="hll">            <span class="cm">/* 3. Apply the transform */</span>
+</span>            <span class="n">SKYLARK_BEGIN_TRY</span><span class="p">()</span>
+                <span class="n">Sparse</span><span class="p">.</span><span class="n">apply</span> <span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">sketch_A</span><span class="p">,</span> <span class="n">skys</span><span class="o">::</span><span class="n">columnwise_tag</span><span class="p">());</span>
+            <span class="n">SKYLARK_END_TRY</span><span class="p">()</span>
             <span class="n">SKYLARK_CATCH_AND_RETURN_ERROR_CODE</span><span class="p">();</span>
 
             <span class="cm">/* 4. Print and see the result */</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">int_params</span><span class="p">[</span><span class="n">S_INDEX</span><span class="p">]</span> <span class="o">*</span> <span class="n">int_params</span><span class="p">[</span><span class="n">M_INDEX</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">100</span> <span class="o">&amp;&amp;</span>
                 <span class="n">world</span><span class="p">.</span><span class="n">rank</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
-                <span class="n">elem</span><span class="o">::</span><span class="n">Display</span><span class="p">(</span><span class="n">sketch_A</span><span class="p">);</span>
+                <span class="n">El</span><span class="o">::</span><span class="n">Display</span><span class="p">(</span><span class="n">sketch_A</span><span class="p">);</span>
 
             <span class="cm">/** TODO: Do that same to B, and solve the system! */</span>
 
@@ -553,7 +761,7 @@ sketching. Below, three types of sketches are illustrated in the highlighted lin
             <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
     <span class="p">}</span>
 
-    <span class="n">elem</span><span class="o">::</span><span class="n">Finalize</span><span class="p">();</span>
+    <span class="n">El</span><span class="o">::</span><span class="n">Finalize</span><span class="p">();</span>
 
     <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
 
@@ -691,67 +899,69 @@ preconditioner to obtain high-precision solutions faster.</p>
 112
 113
 114
-115</pre></div></td><td class="code"><div class="highlight"><pre><span class="cp">#include &lt;iostream&gt;</span>
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127</pre></div></td><td class="code"><div class="highlight"><pre><span class="cp">#include &lt;iostream&gt;</span>
 
-<span class="cp">#include &lt;elemental.hpp&gt;</span>
+<span class="cp">#include &lt;El.hpp&gt;</span>
 <span class="cp">#include &lt;boost/mpi.hpp&gt;</span>
 <span class="cp">#include &lt;boost/format.hpp&gt;</span>
-<span class="cp">#include &lt;skylark.hpp&gt;</span>
 
-<span class="cm">/*******************************************/</span>
-<span class="k">namespace</span> <span class="n">bmpi</span> <span class="o">=</span>  <span class="n">boost</span><span class="o">::</span><span class="n">mpi</span><span class="p">;</span>
-<span class="k">namespace</span> <span class="n">skybase</span> <span class="o">=</span> <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="p">;</span>
-<span class="k">namespace</span> <span class="n">skysk</span> <span class="o">=</span>  <span class="n">skylark</span><span class="o">::</span><span class="n">sketch</span><span class="p">;</span>
-<span class="k">namespace</span> <span class="n">skynla</span> <span class="o">=</span> <span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="p">;</span>
-<span class="k">namespace</span> <span class="n">skyalg</span> <span class="o">=</span> <span class="n">skylark</span><span class="o">::</span><span class="n">algorithms</span><span class="p">;</span>
-<span class="k">namespace</span> <span class="n">skyutil</span> <span class="o">=</span> <span class="n">skylark</span><span class="o">::</span><span class="n">utility</span><span class="p">;</span>
-<span class="cm">/*******************************************/</span>
+<span class="cp">#define SKYLARK_NO_ANY</span>
+<span class="cp">#include &lt;skylark.hpp&gt;</span>
 
 <span class="k">const</span> <span class="kt">int</span> <span class="n">m</span> <span class="o">=</span> <span class="mi">50000</span><span class="p">;</span>
 <span class="k">const</span> <span class="kt">int</span> <span class="n">n</span> <span class="o">=</span> <span class="mi">500</span><span class="p">;</span>
 
-<span class="k">typedef</span> <span class="n">elem</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">VC</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="n">matrix_type</span><span class="p">;</span>
-<span class="k">typedef</span> <span class="n">elem</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">VC</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="n">rhs_type</span><span class="p">;</span>
-<span class="k">typedef</span> <span class="n">elem</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">STAR</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="n">sol_type</span><span class="p">;</span>
 
 <span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">MatrixType</span><span class="p">,</span> <span class="k">typename</span> <span class="n">RhsType</span><span class="p">,</span> <span class="k">typename</span> <span class="n">SolType</span><span class="o">&gt;</span>
 <span class="kt">void</span> <span class="n">check_solution</span><span class="p">(</span><span class="k">const</span> <span class="n">MatrixType</span> <span class="o">&amp;</span><span class="n">A</span><span class="p">,</span> <span class="k">const</span> <span class="n">RhsType</span> <span class="o">&amp;</span><span class="n">b</span><span class="p">,</span> <span class="k">const</span> <span class="n">SolType</span> <span class="o">&amp;</span><span class="n">x</span><span class="p">,</span> 
     <span class="k">const</span> <span class="n">RhsType</span> <span class="o">&amp;</span><span class="n">r0</span><span class="p">,</span>
     <span class="kt">double</span> <span class="o">&amp;</span><span class="n">res</span><span class="p">,</span> <span class="kt">double</span> <span class="o">&amp;</span><span class="n">resAtr</span><span class="p">,</span> <span class="kt">double</span> <span class="o">&amp;</span><span class="n">resFac</span><span class="p">)</span> <span class="p">{</span>
     <span class="n">RhsType</span> <span class="n">r</span><span class="p">(</span><span class="n">b</span><span class="p">);</span>
-    <span class="n">skybase</span><span class="o">::</span><span class="n">Gemv</span><span class="p">(</span><span class="n">elem</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">r</span><span class="p">);</span>
-    <span class="n">res</span> <span class="o">=</span> <span class="n">skybase</span><span class="o">::</span><span class="n">Nrm2</span><span class="p">(</span><span class="n">r</span><span class="p">);</span>
+    <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">Gemv</span><span class="p">(</span><span class="n">El</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">r</span><span class="p">);</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">Nrm2</span><span class="p">(</span><span class="n">r</span><span class="p">);</span>
 
     <span class="n">SolType</span> <span class="nf">Atr</span><span class="p">(</span><span class="n">x</span><span class="p">.</span><span class="n">Height</span><span class="p">(),</span> <span class="n">x</span><span class="p">.</span><span class="n">Width</span><span class="p">(),</span> <span class="n">x</span><span class="p">.</span><span class="n">Grid</span><span class="p">());</span>
-    <span class="n">skybase</span><span class="o">::</span><span class="n">Gemv</span><span class="p">(</span><span class="n">elem</span><span class="o">::</span><span class="n">TRANSPOSE</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">Atr</span><span class="p">);</span>
-    <span class="n">resAtr</span> <span class="o">=</span> <span class="n">skybase</span><span class="o">::</span><span class="n">Nrm2</span><span class="p">(</span><span class="n">Atr</span><span class="p">);</span>
+    <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">Gemv</span><span class="p">(</span><span class="n">El</span><span class="o">::</span><span class="n">TRANSPOSE</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">Atr</span><span class="p">);</span>
+    <span class="n">resAtr</span> <span class="o">=</span> <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">Nrm2</span><span class="p">(</span><span class="n">Atr</span><span class="p">);</span>
 
-    <span class="n">skybase</span><span class="o">::</span><span class="n">Axpy</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">r0</span><span class="p">,</span> <span class="n">r</span><span class="p">);</span>
+    <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">Axpy</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">r0</span><span class="p">,</span> <span class="n">r</span><span class="p">);</span>
     <span class="n">RhsType</span> <span class="nf">dr</span><span class="p">(</span><span class="n">b</span><span class="p">);</span>
-    <span class="n">skybase</span><span class="o">::</span><span class="n">Axpy</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">r0</span><span class="p">,</span> <span class="n">dr</span><span class="p">);</span>
-    <span class="n">resFac</span> <span class="o">=</span> <span class="n">skybase</span><span class="o">::</span><span class="n">Nrm2</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">/</span> <span class="n">skybase</span><span class="o">::</span><span class="n">Nrm2</span><span class="p">(</span><span class="n">dr</span><span class="p">);</span>
+    <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">Axpy</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">r0</span><span class="p">,</span> <span class="n">dr</span><span class="p">);</span>
+    <span class="n">resFac</span> <span class="o">=</span> <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">Nrm2</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">/</span> <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">Nrm2</span><span class="p">(</span><span class="n">dr</span><span class="p">);</span>
 <span class="p">}</span>
 
-<span class="kt">int</span> <span class="n">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">**</span> <span class="n">argv</span><span class="p">)</span> <span class="p">{</span>
+<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">MatrixType</span><span class="p">,</span> <span class="k">typename</span> <span class="n">RhsType</span><span class="p">,</span> <span class="k">typename</span> <span class="n">SolType</span><span class="o">&gt;</span>
+<span class="kt">void</span> <span class="n">experiment</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">typedef</span> <span class="n">MatrixType</span> <span class="n">matrix_type</span><span class="p">;</span>
+    <span class="k">typedef</span> <span class="n">RhsType</span> <span class="n">rhs_type</span><span class="p">;</span>
+    <span class="k">typedef</span> <span class="n">SolType</span> <span class="n">sol_type</span><span class="p">;</span>
+
     <span class="kt">double</span> <span class="n">res</span><span class="p">,</span> <span class="n">resAtr</span><span class="p">,</span> <span class="n">resFac</span><span class="p">;</span>
 
-    <span class="n">elem</span><span class="o">::</span><span class="n">Initialize</span><span class="p">(</span><span class="n">argc</span><span class="p">,</span> <span class="n">argv</span><span class="p">);</span>
-
-    <span class="n">bmpi</span><span class="o">::</span><span class="n">communicator</span> <span class="n">world</span><span class="p">;</span>
+    <span class="n">boost</span><span class="o">::</span><span class="n">mpi</span><span class="o">::</span><span class="n">communicator</span> <span class="n">world</span><span class="p">;</span>
     <span class="kt">int</span> <span class="n">rank</span> <span class="o">=</span> <span class="n">world</span><span class="p">.</span><span class="n">rank</span><span class="p">();</span>
 
-    <span class="n">skybase</span><span class="o">::</span><span class="kt">context_t</span> <span class="n">context</span><span class="p">(</span><span class="mi">23234</span><span class="p">);</span>
+    <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="kt">context_t</span> <span class="n">context</span><span class="p">(</span><span class="mi">23234</span><span class="p">);</span>
 
     <span class="c1">// Setup problem and righthand side</span>
     <span class="c1">// Using Skylark&#39;s uniform generator (as opposed to Elemental&#39;s)</span>
     <span class="c1">// will insure the same A and b are generated regardless of the number</span>
     <span class="c1">// of processors.</span>
-    <span class="n">matrix_type</span> <span class="n">A</span> <span class="o">=</span>
-        <span class="n">skyutil</span><span class="o">::</span><span class="kt">uniform_matrix_t</span><span class="o">&lt;</span><span class="n">matrix_type</span><span class="o">&gt;::</span><span class="n">generate</span><span class="p">(</span><span class="n">m</span><span class="p">,</span>
-            <span class="n">n</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">DefaultGrid</span><span class="p">(),</span> <span class="n">context</span><span class="p">);</span>
-    <span class="n">matrix_type</span> <span class="n">b</span> <span class="o">=</span>
-        <span class="n">skyutil</span><span class="o">::</span><span class="kt">uniform_matrix_t</span><span class="o">&lt;</span><span class="n">matrix_type</span><span class="o">&gt;::</span><span class="n">generate</span><span class="p">(</span><span class="n">m</span><span class="p">,</span>
-            <span class="mi">1</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">DefaultGrid</span><span class="p">(),</span> <span class="n">context</span><span class="p">);</span>
+    <span class="n">matrix_type</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">;</span>
+    <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">UniformMatrix</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+    <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">UniformMatrix</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
 
     <span class="n">sol_type</span> <span class="nf">x</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="mi">1</span><span class="p">);</span>
     <span class="n">rhs_type</span> <span class="nf">r</span><span class="p">(</span><span class="n">b</span><span class="p">);</span>
@@ -760,9 +970,9 @@ preconditioner to obtain high-precision solutions faster.</p>
     <span class="kt">double</span> <span class="n">telp</span><span class="p">;</span>
 
     <span class="c1">// Solve using Elemental. Note: Elemental only supports [MC,MR]...</span>
-    <span class="n">elem</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="n">A1</span> <span class="o">=</span> <span class="n">A</span><span class="p">,</span> <span class="n">b1</span> <span class="o">=</span> <span class="n">b</span><span class="p">,</span> <span class="n">x1</span><span class="p">;</span>
+    <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="n">A1</span> <span class="o">=</span> <span class="n">A</span><span class="p">,</span> <span class="n">b1</span> <span class="o">=</span> <span class="n">b</span><span class="p">,</span> <span class="n">x1</span><span class="p">;</span>
     <span class="n">timer</span><span class="p">.</span><span class="n">restart</span><span class="p">();</span>
-    <span class="n">elem</span><span class="o">::</span><span class="n">LeastSquares</span><span class="p">(</span><span class="n">elem</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">A1</span><span class="p">,</span> <span class="n">b1</span><span class="p">,</span> <span class="n">x1</span><span class="p">);</span>
+    <span class="n">El</span><span class="o">::</span><span class="n">LeastSquares</span><span class="p">(</span><span class="n">El</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">A1</span><span class="p">,</span> <span class="n">b1</span><span class="p">,</span> <span class="n">x1</span><span class="p">);</span>
     <span class="n">telp</span> <span class="o">=</span> <span class="n">timer</span><span class="p">.</span><span class="n">elapsed</span><span class="p">();</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">x1</span><span class="p">;</span>
     <span class="n">check_solution</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">resAtr</span><span class="p">,</span> <span class="n">resFac</span><span class="p">);</span>
@@ -774,12 +984,13 @@ preconditioner to obtain high-precision solutions faster.</p>
                   <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
     <span class="kt">double</span> <span class="n">res_opt</span> <span class="o">=</span> <span class="n">res</span><span class="p">;</span>
 
-    <span class="n">skybase</span><span class="o">::</span><span class="n">Gemv</span><span class="p">(</span><span class="n">elem</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">r</span><span class="p">);</span>
+    <span class="c1">// The following computes the optimal residual (r^\star in the logs)</span>
+    <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">Gemv</span><span class="p">(</span><span class="n">El</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">r</span><span class="p">);</span>
 
     <span class="c1">// Solve using Sylark</span>
     <span class="n">timer</span><span class="p">.</span><span class="n">restart</span><span class="p">();</span>
-<span class="hll">    <span class="n">skynla</span><span class="o">::</span><span class="n">FastLeastSquares</span><span class="p">(</span><span class="n">elem</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
-</span>    <span class="n">telp</span> <span class="o">=</span> <span class="n">timer</span><span class="p">.</span><span class="n">elapsed</span><span class="p">();</span>
+    <span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="n">FastLeastSquares</span><span class="p">(</span><span class="n">El</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+    <span class="n">telp</span> <span class="o">=</span> <span class="n">timer</span><span class="p">.</span><span class="n">elapsed</span><span class="p">();</span>
     <span class="n">check_solution</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">resAtr</span><span class="p">,</span> <span class="n">resFac</span><span class="p">);</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
         <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Skylark:</span><span class="se">\t\t\t</span><span class="s">||r||_2 =  &quot;</span>
@@ -787,13 +998,12 @@ preconditioner to obtain high-precision solutions faster.</p>
                   <span class="o">&lt;&lt;</span> <span class="s">&quot; (x &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">boost</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;%.5f&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span><span class="n">res</span> <span class="o">/</span> <span class="n">res_opt</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;)&quot;</span>
                   <span class="o">&lt;&lt;</span> <span class="s">&quot;</span><span class="se">\t</span><span class="s">||r - r*||_2 / ||b - r*||_2 = &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">boost</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;%.2e&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">resFac</span>
                   <span class="o">&lt;&lt;</span> <span class="s">&quot;</span><span class="se">\t</span><span class="s">||A&#39; * r||_2 = &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">boost</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;%.2e&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">resAtr</span>
-                  <span class="o">&lt;&lt;</span> <span class="s">&quot;</span><span class="se">\t\t</span><span class="s">Time: &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">boost</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;%.2e&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">telp</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; sec&quot;</span>
-                  <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
-
+<span class="hll">                  <span class="o">&lt;&lt;</span> <span class="s">&quot;</span><span class="se">\t\t</span><span class="s">Time: &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">boost</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;%.2e&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">telp</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; sec&quot;</span>
+</span>                  <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
     <span class="c1">// Approximately solve using Sylark</span>
     <span class="n">timer</span><span class="p">.</span><span class="n">restart</span><span class="p">();</span>
-<span class="hll">    <span class="n">skynla</span><span class="o">::</span><span class="n">ApproximateLeastSquares</span><span class="p">(</span><span class="n">elem</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
-</span>    <span class="n">telp</span> <span class="o">=</span> <span class="n">timer</span><span class="p">.</span><span class="n">elapsed</span><span class="p">();</span>
+    <span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="n">ApproximateLeastSquares</span><span class="p">(</span><span class="n">El</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+    <span class="n">telp</span> <span class="o">=</span> <span class="n">timer</span><span class="p">.</span><span class="n">elapsed</span><span class="p">();</span>
     <span class="n">check_solution</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">resAtr</span><span class="p">,</span> <span class="n">resFac</span><span class="p">);</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
         <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Skylark (approximate):</span><span class="se">\t\t</span><span class="s">||r||_2 =  &quot;</span>
@@ -802,7 +1012,29 @@ preconditioner to obtain high-precision solutions faster.</p>
                   <span class="o">&lt;&lt;</span> <span class="s">&quot;</span><span class="se">\t</span><span class="s">||r - r*||_2 / ||b - r*||_2 = &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">boost</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;%.2e&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">resFac</span>
                   <span class="o">&lt;&lt;</span> <span class="s">&quot;</span><span class="se">\t</span><span class="s">||A&#39; * r||_2 = &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">boost</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;%.2e&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">resAtr</span>
                   <span class="o">&lt;&lt;</span> <span class="s">&quot;</span><span class="se">\t\t</span><span class="s">Time: &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">boost</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;%.2e&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">telp</span> <span class="o">&lt;&lt;</span> <span class="s">&quot; sec&quot;</span>
-                  <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="hll">                  <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span>
+<span class="p">}</span>
+
+
+
+<span class="kt">int</span> <span class="n">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">**</span> <span class="n">argv</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="n">El</span><span class="o">::</span><span class="n">Initialize</span><span class="p">(</span><span class="n">argc</span><span class="p">,</span> <span class="n">argv</span><span class="p">);</span>
+
+    <span class="n">boost</span><span class="o">::</span><span class="n">mpi</span><span class="o">::</span><span class="n">communicator</span> <span class="n">world</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">rank</span> <span class="o">=</span> <span class="n">world</span><span class="p">.</span><span class="n">rank</span><span class="p">();</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Matrix: [VC,STAR], Rhs: [VC,STAR], Sol: [STAR,STAR]</span><span class="se">\n\n</span><span class="s">&quot;</span><span class="p">;</span>
+    <span class="n">experiment</span><span class="o">&lt;</span><span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">VC</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span><span class="p">,</span>
+               <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">VC</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span><span class="p">,</span>
+               <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">STAR</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="o">&gt;</span> <span class="p">();</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">Matrix: [MC,MR], Rhs: [MC,MR], Sol: [MC,MR]</span><span class="se">\n\n</span><span class="s">&quot;</span><span class="p">;</span>
+    <span class="n">experiment</span><span class="o">&lt;</span><span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">,</span>
+               <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">();</span>
 
     <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
 <span class="p">}</span>
@@ -817,217 +1049,892 @@ mpiexec -np 4 python <span class="nv">$SKYLARK_SRC_DIR</span>/python-skylark/sky
 </div>
 <div class="section" id="svd">
 <h3>SVD<a class="headerlink" href="#svd" title="Permalink to this headline">¶</a></h3>
-<p>In <tt class="file docutils literal"><span class="pre">$</span><em><span class="pre">SKYLARK_SRC_DIR</span></em><span class="pre">/examples/rand_svd.cpp</span></tt> an example is provided that illustrates randomized singular value decompositions.</p>
-<div class="highlight-cpp"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
- 2
- 3
- 4
- 5
- 6
- 7
- 8
- 9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28
-29
-30
-31
-32
-33
-34
-35
-36
-37
-38
-39
-40
-41
-42
-43
-44
-45
-46
-47
-48
-49
-50
-51
-52
-53
-54
-55
-56
-57
-58
-59
-60
-61
-62
-63
-64
-65
-66
-67
-68
-69
-70
-71
-72
-73
-74
-75
-76
-77
-78
-79
-80
-81
-82
-83
-84
-85
-86
-87
-88</pre></div></td><td class="code"><div class="highlight"><pre><span class="cp">#include &lt;skylark.hpp&gt;</span>
+<p>In <tt class="file docutils literal"><span class="pre">$</span><em><span class="pre">SKYLARK_SRC_DIR</span></em><span class="pre">/nla/skylark_svd.cpp</span></tt> an example is provided that illustrates randomized singular value decompositions.</p>
+<div class="highlight-cpp"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+ 10
+ 11
+ 12
+ 13
+ 14
+ 15
+ 16
+ 17
+ 18
+ 19
+ 20
+ 21
+ 22
+ 23
+ 24
+ 25
+ 26
+ 27
+ 28
+ 29
+ 30
+ 31
+ 32
+ 33
+ 34
+ 35
+ 36
+ 37
+ 38
+ 39
+ 40
+ 41
+ 42
+ 43
+ 44
+ 45
+ 46
+ 47
+ 48
+ 49
+ 50
+ 51
+ 52
+ 53
+ 54
+ 55
+ 56
+ 57
+ 58
+ 59
+ 60
+ 61
+ 62
+ 63
+ 64
+ 65
+ 66
+ 67
+ 68
+ 69
+ 70
+ 71
+ 72
+ 73
+ 74
+ 75
+ 76
+ 77
+ 78
+ 79
+ 80
+ 81
+ 82
+ 83
+ 84
+ 85
+ 86
+ 87
+ 88
+ 89
+ 90
+ 91
+ 92
+ 93
+ 94
+ 95
+ 96
+ 97
+ 98
+ 99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298
+299
+300
+301
+302
+303
+304
+305
+306
+307
+308
+309
+310
+311
+312
+313
+314
+315
+316
+317
+318
+319
+320
+321
+322
+323
+324
+325
+326
+327
+328
+329
+330
+331
+332
+333
+334
+335
+336
+337
+338
+339
+340
+341
+342
+343
+344
+345
+346
+347
+348
+349
+350
+351
+352
+353
+354
+355
+356
+357
+358
+359
+360
+361
+362
+363
+364
+365
+366
+367
+368
+369
+370
+371
+372
+373
+374
+375
+376
+377
+378
+379
+380
+381
+382
+383
+384
+385
+386
+387
+388
+389
+390
+391
+392
+393
+394
+395
+396
+397
+398
+399
+400
+401
+402
+403
+404
+405
+406
+407
+408
+409
+410
+411
+412
+413
+414
+415
+416
+417
+418
+419
+420
+421
+422
+423
+424
+425
+426
+427
+428
+429
+430
+431
+432
+433
+434
+435
+436
+437
+438
+439
+440
+441
+442</pre></div></td><td class="code"><div class="highlight"><pre><span class="cp">#include &lt;El.hpp&gt;</span>
+
+<span class="cp">#include &lt;boost/program_options.hpp&gt;</span>
 <span class="cp">#include &lt;boost/mpi.hpp&gt;</span>
-<span class="cp">#include &lt;elemental.hpp&gt;</span>
+<span class="cp">#include &lt;boost/format.hpp&gt;</span>
+
+<span class="cp">#define SKYLARK_NO_ANY</span>
+<span class="cp">#include &lt;skylark.hpp&gt;</span>
+
 <span class="cp">#include &lt;iostream&gt;</span>
-<span class="cp">#include &quot;../base/QR.hpp&quot;</span>
-<span class="cp">#include &lt;cfloat&gt;</span>
-<span class="cp">#include &lt;vector&gt;</span>
 
+<span class="k">namespace</span> <span class="n">bpo</span> <span class="o">=</span> <span class="n">boost</span><span class="o">::</span><span class="n">program_options</span><span class="p">;</span>
 
-<span class="cm">/** Aliases for matrix types */</span>
-<span class="k">typedef</span> <span class="n">elem</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="kt">dist_matrix_t</span><span class="p">;</span>
-<span class="k">typedef</span> <span class="n">elem</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="kt">matrix_t</span><span class="p">;</span>
-<span class="k">typedef</span> <span class="n">elem</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">VR</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="kt">vr_star_dist_matrix_t</span><span class="p">;</span>
-<span class="k">typedef</span> <span class="n">elem</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">STAR</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="kt">star_star_matrix_t</span><span class="p">;</span>
-<span class="k">typedef</span> <span class="n">skylark</span><span class="o">::</span><span class="n">sketch</span><span class="o">::</span><span class="n">JLT_t</span><span class="o">&lt;</span><span class="kt">dist_matrix_t</span><span class="p">,</span> <span class="kt">dist_matrix_t</span><span class="o">&gt;</span> <span class="kt">sketch_transform_t</span><span class="p">;</span>
+<span class="k">enum</span> <span class="n">file_types</span> <span class="p">{</span>
+    <span class="n">LIBSVM</span><span class="p">,</span>
+    <span class="n">ARC_LIST</span>
+<span class="p">};</span>
 
-<span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">InputType</span><span class="p">,</span> <span class="k">typename</span> <span class="n">FactorType</span><span class="p">,</span> <span class="k">typename</span> <span class="n">UType</span> <span class="o">=</span> <span class="n">FactorType</span><span class="p">,</span>
+         <span class="k">typename</span> <span class="n">YType</span> <span class="o">=</span> <span class="n">FactorType</span><span class="o">&gt;</span>
+<span class="kt">void</span> <span class="n">execute</span><span class="p">(</span><span class="kt">bool</span> <span class="n">directory</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">fname</span><span class="p">,</span>
+    <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">hdfs</span><span class="p">,</span> <span class="kt">int</span> <span class="n">port</span><span class="p">,</span> <span class="kt">int</span> <span class="n">k</span><span class="p">,</span>
+    <span class="k">const</span> <span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="kt">approximate_svd_params_t</span> <span class="o">&amp;</span><span class="n">params</span><span class="p">,</span>
+    <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">prefix</span><span class="p">,</span>
+    <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="kt">context_t</span> <span class="o">&amp;</span><span class="n">context</span><span class="p">)</span> <span class="p">{</span>
 
-<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">*</span> <span class="n">argv</span><span class="p">[])</span> <span class="p">{</span>
-
-   <span class="cm">/** Initialize MPI  */</span>
-<span class="cp">#ifdef SKYLARK_HAVE_OPENMP</span>
-    <span class="kt">int</span> <span class="n">provided</span><span class="p">;</span>
-    <span class="n">MPI_Init_thread</span><span class="p">(</span><span class="o">&amp;</span><span class="n">argc</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">argv</span><span class="p">,</span> <span class="n">MPI_THREAD_MULTIPLE</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">provided</span><span class="p">);</span>
-<span class="cp">#endif</span>
-    <span class="n">boost</span><span class="o">::</span><span class="n">mpi</span><span class="o">::</span><span class="n">environment</span> <span class="n">env</span><span class="p">(</span><span class="n">argc</span><span class="p">,</span> <span class="n">argv</span><span class="p">);</span>
     <span class="n">boost</span><span class="o">::</span><span class="n">mpi</span><span class="o">::</span><span class="n">communicator</span> <span class="n">world</span><span class="p">;</span>
-    <span class="n">MPI_Comm</span> <span class="n">mpi_world</span><span class="p">(</span><span class="n">world</span><span class="p">);</span>
-    <span class="n">elem</span><span class="o">::</span><span class="n">Grid</span> <span class="n">grid</span><span class="p">(</span><span class="n">mpi_world</span><span class="p">);</span>
+    <span class="kt">int</span> <span class="n">rank</span> <span class="o">=</span> <span class="n">world</span><span class="p">.</span><span class="n">rank</span><span class="p">();</span>
 
-    <span class="cm">/** Initialize Elemental */</span>
-    <span class="n">elem</span><span class="o">::</span><span class="n">Initialize</span> <span class="p">(</span><span class="n">argc</span><span class="p">,</span> <span class="n">argv</span><span class="p">);</span>
+    <span class="n">InputType</span> <span class="n">A</span><span class="p">;</span>
+    <span class="n">FactorType</span> <span class="n">S</span><span class="p">,</span> <span class="n">V</span><span class="p">;</span>
+    <span class="n">UType</span> <span class="n">U</span><span class="p">;</span>
+    <span class="n">YType</span> <span class="n">Y</span><span class="p">;</span>
 
-    <span class="cm">/** Initialize context */</span>
-    <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="kt">context_t</span> <span class="n">context</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+    <span class="n">boost</span><span class="o">::</span><span class="n">mpi</span><span class="o">::</span><span class="n">timer</span> <span class="n">timer</span><span class="p">;</span>
 
-    <span class="cm">/** Declare matrices */</span>
-    <span class="kt">dist_matrix_t</span> <span class="n">A</span><span class="p">(</span><span class="n">grid</span><span class="p">),</span> <span class="n">B</span><span class="p">(</span><span class="n">grid</span><span class="p">),</span> <span class="n">C</span><span class="p">(</span><span class="n">grid</span><span class="p">);</span>
-    <span class="n">elem</span><span class="o">::</span><span class="n">Uniform</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="mi">5000</span><span class="p">,</span> <span class="mi">100</span><span class="p">);</span>
-    <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">qr</span><span class="o">::</span><span class="n">Explicit</span><span class="p">(</span><span class="n">B</span><span class="p">);</span>
-
-    <span class="n">elem</span><span class="o">::</span><span class="n">Uniform</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">);</span>
-    <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">qr</span><span class="o">::</span><span class="n">Explicit</span><span class="p">(</span><span class="n">C</span><span class="p">);</span>
-
-    <span class="c1">//star_star_matrix_t S(100,100);</span>
-    <span class="kt">dist_matrix_t</span> <span class="n">S</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span><span class="mi">100</span><span class="p">);</span>
-    <span class="n">elem</span><span class="o">::</span><span class="n">Zero</span><span class="p">(</span><span class="n">S</span><span class="p">);</span>
-	
-    <span class="n">vector</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="n">diag</span><span class="p">(</span><span class="mi">100</span><span class="p">);</span>
-
-    <span class="k">for</span><span class="p">(</span> <span class="kt">int</span> <span class="n">j</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="n">j</span><span class="o">&lt;</span><span class="mi">100</span><span class="p">;</span> <span class="o">++</span><span class="n">j</span> <span class="p">)</span>
-    <span class="p">{</span>
-	<span class="n">diag</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">j</span><span class="p">)</span><span class="o">*</span><span class="mi">100</span><span class="p">;</span>
-        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">j</span><span class="p">)</span> <span class="o">*</span><span class="mi">100</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">;</span>
+    <span class="c1">// Load A and Y (Y is thrown away)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Reading the matrix... &quot;</span><span class="p">;</span>
+<span class="hll">        <span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="p">.</span><span class="n">flush</span><span class="p">();</span>
+</span>        <span class="n">timer</span><span class="p">.</span><span class="n">restart</span><span class="p">();</span>
     <span class="p">}</span>
 
-    <span class="n">elem</span><span class="o">::</span><span class="n">Diagonal</span><span class="p">(</span><span class="n">S</span><span class="p">,</span> <span class="n">diag</span><span class="p">);</span>
-    <span class="kt">dist_matrix_t</span> <span class="n">tmp</span><span class="p">(</span><span class="n">grid</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">hdfs</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span> <span class="p">{</span>
+<span class="cp">#       if SKYLARK_HAVE_LIBHDFS</span>
 
-    <span class="n">elem</span><span class="o">::</span><span class="n">Gemm</span><span class="p">(</span><span class="n">elem</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="kt">double</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">B</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">tmp</span><span class="p">);</span>
-    <span class="n">elem</span><span class="o">::</span><span class="n">Gemm</span><span class="p">(</span><span class="n">elem</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">elem</span><span class="o">::</span><span class="n">ADJOINT</span><span class="p">,</span> <span class="kt">double</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">tmp</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">A</span><span class="p">);</span>
+        <span class="n">hdfsFS</span> <span class="n">fs</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">fs</span> <span class="o">=</span> <span class="n">hdfsConnect</span><span class="p">(</span><span class="n">hdfs</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span> <span class="n">port</span><span class="p">);</span>
 
-    <span class="kt">dist_matrix_t</span> <span class="n">U</span><span class="p">(</span><span class="n">grid</span><span class="p">),</span> <span class="n">V</span><span class="p">(</span><span class="n">grid</span><span class="p">);</span>
-    <span class="kt">vr_star_dist_matrix_t</span> <span class="n">S1</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+            <span class="n">SKYLARK_THROW_EXCEPTION</span><span class="p">(</span><span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">io_exception</span><span class="p">()</span> <span class="o">&lt;&lt;</span>
+                <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">error_msg</span><span class="p">(</span>
+                    <span class="s">&quot;HDFS directory reading not yet supported.&quot;</span><span class="p">))</span>
+        <span class="k">else</span>
+            <span class="n">skylark</span><span class="o">::</span><span class="n">utility</span><span class="o">::</span><span class="n">io</span><span class="o">::</span><span class="n">ReadLIBSVM</span><span class="p">(</span>
+                <span class="n">fs</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">ROWS</span><span class="p">);</span>
 
-    <span class="kt">dist_matrix_t</span> <span class="n">A1</span><span class="p">(</span><span class="n">A</span><span class="p">);</span>
-    <span class="n">elem</span><span class="o">::</span><span class="n">SVD</span><span class="p">(</span><span class="n">A1</span><span class="p">,</span><span class="n">S1</span><span class="p">,</span><span class="n">V</span><span class="p">);</span>
+<span class="cp">#       else</span>
 
-    <span class="n">elem</span><span class="o">::</span><span class="n">Print</span><span class="p">(</span><span class="n">S1</span><span class="p">,</span> <span class="s">&quot;S1&quot;</span><span class="p">);</span>
+        <span class="n">SKYLARK_THROW_EXCEPTION</span><span class="p">(</span><span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">io_exception</span><span class="p">()</span> <span class="o">&lt;&lt;</span>
+            <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">error_msg</span><span class="p">(</span><span class="s">&quot;Install libhdfs for HDFS support!&quot;</span><span class="p">));</span>
 
-    <span class="cm">/** Declare matrices */</span>
-    <span class="kt">dist_matrix_t</span> <span class="n">A2</span><span class="p">(</span><span class="n">A</span><span class="p">);</span>
-    <span class="kt">dist_matrix_t</span> <span class="n">U1</span><span class="p">(</span><span class="n">grid</span><span class="p">),</span> <span class="n">V1</span><span class="p">(</span><span class="n">grid</span><span class="p">);</span>
-    <span class="kt">vr_star_dist_matrix_t</span> <span class="n">S2</span><span class="p">;</span>
+<span class="cp">#       endif</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+            <span class="n">skylark</span><span class="o">::</span><span class="n">utility</span><span class="o">::</span><span class="n">io</span><span class="o">::</span><span class="n">ReadDirLIBSVM</span><span class="p">(</span>
+                <span class="n">fname</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">ROWS</span><span class="p">);</span>
+        <span class="k">else</span>
+            <span class="n">skylark</span><span class="o">::</span><span class="n">utility</span><span class="o">::</span><span class="n">io</span><span class="o">::</span><span class="n">ReadLIBSVM</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">ROWS</span><span class="p">);</span>
+    <span class="p">}</span>
 
-    <span class="kt">int</span> <span class="n">sketch_size</span>	<span class="o">=</span>	<span class="mi">50</span><span class="p">;</span>
-    <span class="kt">int</span> <span class="n">target_rank</span>	<span class="o">=</span>	<span class="mi">10</span><span class="p">;</span>
+    <span class="n">Y</span><span class="p">.</span><span class="n">Empty</span><span class="p">();</span>
 
-<span class="hll">    <span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="kt">rand_svd_params_t</span> <span class="n">params</span><span class="p">(</span><span class="n">sketch_size</span><span class="o">-</span><span class="n">target_rank</span><span class="p">);</span>
-</span>
-<span class="hll">    <span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="kt">randsvd_t</span><span class="o">&lt;</span><span class="n">skylark</span><span class="o">::</span><span class="n">sketch</span><span class="o">::</span><span class="n">JLT_t</span><span class="o">&gt;</span> <span class="n">rand_svd</span><span class="p">;</span>
-</span><span class="hll">    <span class="n">rand_svd</span><span class="p">(</span><span class="n">A2</span><span class="p">,</span> <span class="n">target_rank</span><span class="p">,</span> <span class="n">U1</span><span class="p">,</span> <span class="n">S2</span><span class="p">,</span> <span class="n">V1</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
-</span>
-    <span class="n">elem</span><span class="o">::</span><span class="n">Print</span><span class="p">(</span><span class="n">S2</span><span class="p">,</span> <span class="s">&quot;S2&quot;</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span><span class="s">&quot;took &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">boost</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;%.2e&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">timer</span><span class="p">.</span><span class="n">elapsed</span><span class="p">()</span>
+                  <span class="o">&lt;&lt;</span> <span class="s">&quot; sec</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">;</span>
 
-    <span class="n">elem</span><span class="o">::</span><span class="n">Finalize</span><span class="p">();</span>
+    <span class="cm">/* Compute approximate SVD */</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Computing approximate SVD...&quot;</span><span class="p">;</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="p">.</span><span class="n">flush</span><span class="p">();</span>
+        <span class="n">timer</span><span class="p">.</span><span class="n">restart</span><span class="p">();</span>
+    <span class="p">}</span>
+
+    <span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="n">ApproximateSVD</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">U</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">params</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span><span class="s">&quot;Took &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">boost</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;%.2e&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">timer</span><span class="p">.</span><span class="n">elapsed</span><span class="p">()</span>
+                  <span class="o">&lt;&lt;</span> <span class="s">&quot; sec</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">;</span>
+
+    <span class="cm">/* Write results */</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Writing results...&quot;</span><span class="p">;</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="p">.</span><span class="n">flush</span><span class="p">();</span>
+        <span class="n">timer</span><span class="p">.</span><span class="n">restart</span><span class="p">();</span>
+    <span class="p">}</span>
+
+    <span class="n">El</span><span class="o">::</span><span class="n">Write</span><span class="p">(</span><span class="n">U</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s">&quot;.U&quot;</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">ASCII</span><span class="p">);</span>
+    <span class="n">El</span><span class="o">::</span><span class="n">Write</span><span class="p">(</span><span class="n">S</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s">&quot;.S&quot;</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">ASCII</span><span class="p">);</span>
+    <span class="n">El</span><span class="o">::</span><span class="n">Write</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s">&quot;.V&quot;</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">ASCII</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span><span class="s">&quot;took &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">boost</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;%.2e&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">timer</span><span class="p">.</span><span class="n">elapsed</span><span class="p">()</span>
+                  <span class="o">&lt;&lt;</span> <span class="s">&quot; sec</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">InputType</span><span class="p">,</span> <span class="k">typename</span> <span class="n">FactorType</span><span class="p">,</span> <span class="k">typename</span> <span class="n">UType</span> <span class="o">=</span> <span class="n">FactorType</span><span class="p">,</span>
+         <span class="k">typename</span> <span class="n">YType</span> <span class="o">=</span> <span class="n">FactorType</span><span class="o">&gt;</span>
+<span class="kt">void</span> <span class="n">execute_sym</span><span class="p">(</span><span class="kt">bool</span> <span class="n">directory</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">fname</span><span class="p">,</span>
+    <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">ftype</span><span class="p">,</span>
+    <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">hdfs</span><span class="p">,</span> <span class="kt">int</span> <span class="n">port</span><span class="p">,</span>
+    <span class="kt">bool</span> <span class="n">lower</span><span class="p">,</span> <span class="kt">int</span> <span class="n">k</span><span class="p">,</span>
+    <span class="k">const</span> <span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="kt">approximate_svd_params_t</span> <span class="o">&amp;</span><span class="n">params</span><span class="p">,</span>
+    <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">prefix</span><span class="p">,</span>
+    <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="kt">context_t</span> <span class="o">&amp;</span><span class="n">context</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="n">boost</span><span class="o">::</span><span class="n">mpi</span><span class="o">::</span><span class="n">communicator</span> <span class="n">world</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">rank</span> <span class="o">=</span> <span class="n">world</span><span class="p">.</span><span class="n">rank</span><span class="p">();</span>
+
+    <span class="n">InputType</span> <span class="n">A</span><span class="p">;</span>
+    <span class="n">FactorType</span> <span class="n">S</span><span class="p">,</span> <span class="n">V</span><span class="p">;</span>
+    <span class="n">YType</span> <span class="n">Y</span><span class="p">;</span>
+
+    <span class="n">boost</span><span class="o">::</span><span class="n">mpi</span><span class="o">::</span><span class="n">timer</span> <span class="n">timer</span><span class="p">;</span>
+
+    <span class="c1">// Load A and Y (Y is thrown away)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Reading the matrix... &quot;</span><span class="p">;</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="p">.</span><span class="n">flush</span><span class="p">();</span>
+        <span class="n">timer</span><span class="p">.</span><span class="n">restart</span><span class="p">();</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">hdfs</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span> <span class="p">{</span>
+<span class="cp">#       if SKYLARK_HAVE_LIBHDFS</span>
+
+        <span class="n">hdfsFS</span> <span class="n">fs</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">fs</span> <span class="o">=</span> <span class="n">hdfsConnect</span><span class="p">(</span><span class="n">hdfs</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span> <span class="n">port</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+            <span class="n">SKYLARK_THROW_EXCEPTION</span><span class="p">(</span><span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">io_exception</span><span class="p">()</span> <span class="o">&lt;&lt;</span>
+                <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">error_msg</span><span class="p">(</span>
+                    <span class="s">&quot;HDFS directory reading not yet supported.&quot;</span><span class="p">))</span>
+        <span class="k">else</span>
+            <span class="n">skylark</span><span class="o">::</span><span class="n">utility</span><span class="o">::</span><span class="n">io</span><span class="o">::</span><span class="n">ReadLIBSVM</span><span class="p">(</span>
+                <span class="n">fs</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">ROWS</span><span class="p">);</span>
+
+<span class="cp">#       else</span>
+
+        <span class="n">SKYLARK_THROW_EXCEPTION</span><span class="p">(</span><span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">io_exception</span><span class="p">()</span> <span class="o">&lt;&lt;</span>
+            <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">error_msg</span><span class="p">(</span><span class="s">&quot;Install libhdfs for HDFS support!&quot;</span><span class="p">));</span>
+
+<span class="cp">#       endif</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="c1">// FIXME: ugly, fix options</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">ftype</span><span class="p">.</span><span class="n">compare</span><span class="p">(</span><span class="s">&quot;ARC_LIST&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">skylark</span><span class="o">::</span><span class="n">utility</span><span class="o">::</span><span class="n">io</span><span class="o">::</span><span class="n">ReadArcList</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">world</span><span class="p">,</span> <span class="nb">true</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">directory</span><span class="p">)</span>
+                <span class="n">skylark</span><span class="o">::</span><span class="n">utility</span><span class="o">::</span><span class="n">io</span><span class="o">::</span><span class="n">ReadDirLIBSVM</span><span class="p">(</span>
+                    <span class="n">fname</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">ROWS</span><span class="p">);</span>
+            <span class="k">else</span>
+                <span class="n">skylark</span><span class="o">::</span><span class="n">utility</span><span class="o">::</span><span class="n">io</span><span class="o">::</span><span class="n">ReadLIBSVM</span><span class="p">(</span>
+                    <span class="n">fname</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="n">ROWS</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="n">Y</span><span class="p">.</span><span class="n">Empty</span><span class="p">();</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;took &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">boost</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;%.2e&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">timer</span><span class="p">.</span><span class="n">elapsed</span><span class="p">()</span>
+                  <span class="o">&lt;&lt;</span> <span class="s">&quot; sec</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">;</span>
+
+    <span class="cm">/* Compute approximate SVD */</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Computing approximate SVD...&quot;</span><span class="p">;</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="p">.</span><span class="n">flush</span><span class="p">();</span>
+        <span class="n">timer</span><span class="p">.</span><span class="n">restart</span><span class="p">();</span>
+    <span class="p">}</span>
+
+    <span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="n">ApproximateSymmetricSVD</span><span class="p">(</span><span class="n">lower</span> <span class="o">?</span> <span class="n">El</span><span class="o">::</span><span class="n">LOWER</span> <span class="o">:</span> <span class="n">El</span><span class="o">::</span><span class="n">UPPER</span><span class="p">,</span>
+        <span class="n">A</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">params</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span><span class="s">&quot;Took &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">boost</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;%.2e&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">timer</span><span class="p">.</span><span class="n">elapsed</span><span class="p">()</span>
+                  <span class="o">&lt;&lt;</span> <span class="s">&quot; sec</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">;</span>
+
+    <span class="cm">/* Write results */</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Writing results...&quot;</span><span class="p">;</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="p">.</span><span class="n">flush</span><span class="p">();</span>
+        <span class="n">timer</span><span class="p">.</span><span class="n">restart</span><span class="p">();</span>
+    <span class="p">}</span>
+
+    <span class="n">El</span><span class="o">::</span><span class="n">Write</span><span class="p">(</span><span class="n">S</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s">&quot;.S&quot;</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">ASCII</span><span class="p">);</span>
+    <span class="n">El</span><span class="o">::</span><span class="n">Write</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s">&quot;.V&quot;</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">ASCII</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span><span class="s">&quot;took &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">boost</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&quot;%.2e&quot;</span><span class="p">)</span> <span class="o">%</span> <span class="n">timer</span><span class="p">.</span><span class="n">elapsed</span><span class="p">()</span>
+                  <span class="o">&lt;&lt;</span> <span class="s">&quot; sec</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">;</span>
+
+    <span class="n">world</span><span class="p">.</span><span class="n">barrier</span><span class="p">();</span>
+<span class="p">}</span>
+
+
+<span class="kt">int</span> <span class="n">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">*</span> <span class="n">argv</span><span class="p">[])</span> <span class="p">{</span>
+
+    <span class="n">El</span><span class="o">::</span><span class="n">Initialize</span><span class="p">(</span><span class="n">argc</span><span class="p">,</span> <span class="n">argv</span><span class="p">);</span>
+
+    <span class="n">boost</span><span class="o">::</span><span class="n">mpi</span><span class="o">::</span><span class="n">communicator</span> <span class="n">world</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">rank</span> <span class="o">=</span> <span class="n">world</span><span class="p">.</span><span class="n">rank</span><span class="p">();</span>
+    <span class="kt">int</span> <span class="n">size</span> <span class="o">=</span> <span class="n">world</span><span class="p">.</span><span class="n">size</span><span class="p">();</span>
+
+    <span class="kt">int</span> <span class="n">seed</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">powerits</span><span class="p">,</span> <span class="n">port</span><span class="p">;</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">fname</span><span class="p">,</span> <span class="n">ftype</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">hdfs</span><span class="p">;</span>
+    <span class="kt">bool</span> <span class="n">as_symmetric</span><span class="p">,</span> <span class="n">as_sparse</span><span class="p">,</span> <span class="n">skipqr</span><span class="p">,</span> <span class="n">use_single</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">directory</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">oversampling_ratio</span><span class="p">,</span> <span class="n">oversampling_additive</span><span class="p">;</span>
+
+    <span class="c1">// Parse options</span>
+    <span class="n">bpo</span><span class="o">::</span><span class="n">options_description</span> <span class="n">desc</span><span class="p">(</span><span class="s">&quot;Options&quot;</span><span class="p">);</span>
+    <span class="n">desc</span><span class="p">.</span><span class="n">add_options</span><span class="p">()</span>
+        <span class="p">(</span><span class="s">&quot;help,h&quot;</span><span class="p">,</span> <span class="s">&quot;produce a help message&quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="s">&quot;inputfile&quot;</span><span class="p">,</span>
+            <span class="n">bpo</span><span class="o">::</span><span class="n">value</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">fname</span><span class="p">),</span>
+            <span class="s">&quot;Input file to run approximate SVD on (default libsvm format).&quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="s">&quot;filetype&quot;</span><span class="p">,</span>
+            <span class="n">bpo</span><span class="o">::</span><span class="n">value</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ftype</span><span class="p">),</span>
+            <span class="s">&quot;Input file type (LIBSVM or ARC_LIST).&quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="s">&quot;directory,d&quot;</span><span class="p">,</span> <span class="s">&quot;Whether inputfile is a directory of files whose&quot;</span>
+            <span class="s">&quot; concatination is the input.&quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="s">&quot;seed,s&quot;</span><span class="p">,</span>
+            <span class="n">bpo</span><span class="o">::</span><span class="n">value</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">seed</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">default_value</span><span class="p">(</span><span class="mi">38734</span><span class="p">),</span>
+            <span class="s">&quot;Seed for random number generation. OPTIONAL.&quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="s">&quot;hdfs&quot;</span><span class="p">,</span>
+            <span class="n">bpo</span><span class="o">::</span><span class="n">value</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">hdfs</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">default_value</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">),</span>
+            <span class="s">&quot;If not empty, will assume file is in an HDFS. &quot;</span>
+            <span class="s">&quot;Parameter is filesystem name.&quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="s">&quot;port&quot;</span><span class="p">,</span>
+            <span class="n">bpo</span><span class="o">::</span><span class="n">value</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">port</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">default_value</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+            <span class="s">&quot;For HDFS: port to use.&quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="s">&quot;rank,k&quot;</span><span class="p">,</span>
+            <span class="n">bpo</span><span class="o">::</span><span class="n">value</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">k</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">default_value</span><span class="p">(</span><span class="mi">6</span><span class="p">),</span>
+            <span class="s">&quot;Target rank. OPTIONAL.&quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="s">&quot;powerits,i&quot;</span><span class="p">,</span>
+            <span class="n">bpo</span><span class="o">::</span><span class="n">value</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">powerits</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">default_value</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>
+            <span class="s">&quot;Number of power iterations. OPTIONAL.&quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="s">&quot;skipqr&quot;</span><span class="p">,</span> <span class="s">&quot;Whether to skip QR in each iteration. Higher than one power&quot;</span>
+            <span class="s">&quot; iterations is not recommended in this mode.&quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="s">&quot;ratio,r&quot;</span><span class="p">,</span>
+            <span class="n">bpo</span><span class="o">::</span><span class="n">value</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">oversampling_ratio</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">default_value</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>
+            <span class="s">&quot;Ratio of oversampling of rank. OPTIONAL.&quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="s">&quot;additive,a&quot;</span><span class="p">,</span>
+            <span class="n">bpo</span><span class="o">::</span><span class="n">value</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">oversampling_additive</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">default_value</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+            <span class="s">&quot;Additive factor for oversampling of rank. OPTIONAL.&quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="s">&quot;symmetric&quot;</span><span class="p">,</span> <span class="s">&quot;Whether to treat the matrix as symmetric. &quot;</span>
+         <span class="s">&quot;Only upper part will be accessed, unless --lower is used.&quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="s">&quot;lower&quot;</span><span class="p">,</span> <span class="s">&quot;For symmetric matrix, access only lower part (upper is default).&quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="s">&quot;sparse&quot;</span><span class="p">,</span> <span class="s">&quot;Whether to load the matrix as a sparse one.&quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="s">&quot;single&quot;</span><span class="p">,</span> <span class="s">&quot;Whether to use single precision instead of double.&quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="s">&quot;prefix&quot;</span><span class="p">,</span>
+            <span class="n">bpo</span><span class="o">::</span><span class="n">value</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">prefix</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">default_value</span><span class="p">(</span><span class="s">&quot;out&quot;</span><span class="p">),</span>
+            <span class="s">&quot;Prefix for output files (prefix.U.txt, prefix.S.txt&quot;</span>
+            <span class="s">&quot; and prefix.V.txt. OPTIONAL.&quot;</span><span class="p">);</span>
+
+    <span class="n">bpo</span><span class="o">::</span><span class="n">positional_options_description</span> <span class="n">positional</span><span class="p">;</span>
+    <span class="n">positional</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="s">&quot;inputfile&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+
+    <span class="n">bpo</span><span class="o">::</span><span class="n">variables_map</span> <span class="n">vm</span><span class="p">;</span>
+    <span class="n">try</span> <span class="p">{</span>
+        <span class="n">bpo</span><span class="o">::</span><span class="n">store</span><span class="p">(</span><span class="n">bpo</span><span class="o">::</span><span class="n">command_line_parser</span><span class="p">(</span><span class="n">argc</span><span class="p">,</span> <span class="n">argv</span><span class="p">)</span>
+            <span class="p">.</span><span class="n">options</span><span class="p">(</span><span class="n">desc</span><span class="p">).</span><span class="n">positional</span><span class="p">(</span><span class="n">positional</span><span class="p">).</span><span class="n">run</span><span class="p">(),</span> <span class="n">vm</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">vm</span><span class="p">.</span><span class="n">count</span><span class="p">(</span><span class="s">&quot;help&quot;</span><span class="p">))</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Usage: &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                          <span class="o">&lt;&lt;</span> <span class="s">&quot; [options] input-file-name&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+                <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">desc</span><span class="p">;</span>
+            <span class="p">}</span>
+            <span class="n">world</span><span class="p">.</span><span class="n">barrier</span><span class="p">();</span>
+            <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">vm</span><span class="p">.</span><span class="n">count</span><span class="p">(</span><span class="s">&quot;inputfile&quot;</span><span class="p">))</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+                <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Input file is required.&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+            <span class="n">world</span><span class="p">.</span><span class="n">barrier</span><span class="p">();</span>
+            <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="n">bpo</span><span class="o">::</span><span class="n">notify</span><span class="p">(</span><span class="n">vm</span><span class="p">);</span>
+
+        <span class="n">as_symmetric</span> <span class="o">=</span> <span class="n">vm</span><span class="p">.</span><span class="n">count</span><span class="p">(</span><span class="s">&quot;symmetric&quot;</span><span class="p">);</span>
+        <span class="n">as_sparse</span> <span class="o">=</span> <span class="n">vm</span><span class="p">.</span><span class="n">count</span><span class="p">(</span><span class="s">&quot;sparse&quot;</span><span class="p">);</span>
+        <span class="n">skipqr</span> <span class="o">=</span> <span class="n">vm</span><span class="p">.</span><span class="n">count</span><span class="p">(</span><span class="s">&quot;skipqr&quot;</span><span class="p">);</span>
+        <span class="n">use_single</span> <span class="o">=</span> <span class="n">vm</span><span class="p">.</span><span class="n">count</span><span class="p">(</span><span class="s">&quot;single&quot;</span><span class="p">);</span>
+        <span class="n">directory</span> <span class="o">=</span> <span class="n">vm</span><span class="p">.</span><span class="n">count</span><span class="p">(</span><span class="s">&quot;directory&quot;</span><span class="p">);</span>
+        <span class="n">lower</span> <span class="o">=</span> <span class="n">vm</span><span class="p">.</span><span class="n">count</span><span class="p">(</span><span class="s">&quot;lower&quot;</span><span class="p">);</span>
+
+    <span class="p">}</span> <span class="k">catch</span><span class="p">(</span><span class="n">bpo</span><span class="o">::</span><span class="n">error</span><span class="o">&amp;</span> <span class="n">e</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">std</span><span class="o">::</span><span class="n">cerr</span> <span class="o">&lt;&lt;</span> <span class="n">e</span><span class="p">.</span><span class="n">what</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+            <span class="n">std</span><span class="o">::</span><span class="n">cerr</span> <span class="o">&lt;&lt;</span> <span class="n">desc</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="n">world</span><span class="p">.</span><span class="n">barrier</span><span class="p">();</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="kt">context_t</span> <span class="n">context</span><span class="p">(</span><span class="n">seed</span><span class="p">);</span>
+
+    <span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="kt">approximate_svd_params_t</span> <span class="n">params</span><span class="p">;</span>
+    <span class="n">params</span><span class="p">.</span><span class="n">skip_qr</span> <span class="o">=</span> <span class="n">skipqr</span><span class="p">;</span>
+    <span class="n">params</span><span class="p">.</span><span class="n">num_iterations</span> <span class="o">=</span> <span class="n">powerits</span><span class="p">;</span>
+    <span class="n">params</span><span class="p">.</span><span class="n">oversampling_ratio</span> <span class="o">=</span> <span class="n">oversampling_ratio</span><span class="p">;</span>
+    <span class="n">params</span><span class="p">.</span><span class="n">oversampling_additive</span> <span class="o">=</span> <span class="n">oversampling_additive</span><span class="p">;</span>
+
+    <span class="n">SKYLARK_BEGIN_TRY</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">as_symmetric</span><span class="p">)</span> <span class="p">{</span>
+
+                <span class="k">if</span> <span class="p">(</span><span class="n">use_single</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">as_sparse</span><span class="p">)</span>
+                        <span class="n">execute</span><span class="o">&lt;</span><span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="kt">sparse_matrix_t</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">,</span>
+                                <span class="n">El</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span>
+                                    <span class="n">directory</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">hdfs</span><span class="p">,</span>
+                                    <span class="n">port</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+                    <span class="k">else</span>
+                        <span class="n">execute</span><span class="o">&lt;</span><span class="n">El</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">,</span>
+                                <span class="n">El</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">hdfs</span><span class="p">,</span>
+                                    <span class="n">port</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+
+                <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">as_sparse</span><span class="p">)</span>
+                        <span class="n">execute</span><span class="o">&lt;</span><span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="kt">sparse_matrix_t</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">,</span>
+                                <span class="n">El</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span>
+                                    <span class="n">directory</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">hdfs</span><span class="p">,</span>
+                                    <span class="n">port</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+                    <span class="k">else</span>
+                        <span class="n">execute</span><span class="o">&lt;</span><span class="n">El</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">,</span>
+                                <span class="n">El</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">hdfs</span><span class="p">,</span>
+                                    <span class="n">port</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+                <span class="p">}</span>
+
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+
+                <span class="k">if</span> <span class="p">(</span><span class="n">use_single</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">as_sparse</span><span class="p">)</span>
+                        <span class="n">execute_sym</span><span class="o">&lt;</span><span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="kt">sparse_matrix_t</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">,</span>
+                                    <span class="n">El</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span>
+                                        <span class="n">directory</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">ftype</span><span class="p">,</span>
+                                        <span class="n">hdfs</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span>
+                                        <span class="n">context</span><span class="p">);</span>
+                    <span class="k">else</span>
+                        <span class="n">execute_sym</span><span class="o">&lt;</span><span class="n">El</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">,</span>
+                                    <span class="n">El</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">ftype</span><span class="p">,</span>
+                                        <span class="n">hdfs</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span>
+                                        <span class="n">context</span><span class="p">);</span>
+
+                <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">as_sparse</span><span class="p">)</span>
+                        <span class="n">execute_sym</span><span class="o">&lt;</span><span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="kt">sparse_matrix_t</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">,</span>
+                                    <span class="n">El</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">,</span>
+                                    <span class="n">El</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span>
+                                        <span class="n">directory</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">ftype</span><span class="p">,</span> <span class="n">hdfs</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span>
+                                        <span class="n">lower</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+                    <span class="k">else</span>
+                        <span class="n">execute_sym</span><span class="o">&lt;</span><span class="n">El</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">,</span>
+                                    <span class="n">El</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span>
+                                        <span class="n">ftype</span><span class="p">,</span> <span class="n">hdfs</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span>
+                                        <span class="n">prefix</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">as_symmetric</span><span class="p">)</span> <span class="p">{</span>
+
+                <span class="k">if</span> <span class="p">(</span><span class="n">use_single</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">as_sparse</span><span class="p">)</span>
+                        <span class="n">execute</span><span class="o">&lt;</span><span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="kt">sparse_vc_star_matrix_t</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">,</span>
+                                <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">float</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">STAR</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span><span class="p">,</span>
+                                <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">float</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">VC</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span><span class="p">,</span>
+                                <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">float</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">VC</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span>
+                                    <span class="n">directory</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">hdfs</span><span class="p">,</span>
+                                    <span class="n">port</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+                    <span class="k">else</span>
+                        <span class="n">execute</span><span class="o">&lt;</span><span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">,</span>
+                                <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">hdfs</span><span class="p">,</span>
+                                    <span class="n">port</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+
+                <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">as_sparse</span><span class="p">)</span>
+                        <span class="n">execute</span><span class="o">&lt;</span><span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="kt">sparse_vc_star_matrix_t</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">,</span>
+                                <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">STAR</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span><span class="p">,</span>
+                                <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">VC</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span><span class="p">,</span>
+                                <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">VC</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span>
+                                    <span class="n">directory</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">hdfs</span><span class="p">,</span>
+                                    <span class="n">port</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+                    <span class="k">else</span>
+                        <span class="n">execute</span><span class="o">&lt;</span><span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">,</span>
+                                <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">hdfs</span><span class="p">,</span>
+                                    <span class="n">port</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+                <span class="p">}</span>
+
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+
+                <span class="k">if</span> <span class="p">(</span><span class="n">use_single</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">as_sparse</span><span class="p">)</span>
+                        <span class="n">execute_sym</span><span class="o">&lt;</span><span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="kt">sparse_vc_star_matrix_t</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">,</span>
+                                    <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">float</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">VC</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span><span class="p">,</span>
+                                    <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">float</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">VC</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span>
+                                        <span class="n">directory</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">ftype</span><span class="p">,</span>
+                                        <span class="n">hdfs</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span>
+                                        <span class="n">context</span><span class="p">);</span>
+                    <span class="k">else</span>
+                        <span class="n">execute_sym</span><span class="o">&lt;</span><span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">,</span>
+                                    <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">ftype</span><span class="p">,</span>
+                                        <span class="n">hdfs</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span>
+                                        <span class="n">context</span><span class="p">);</span>
+
+                <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="n">as_sparse</span><span class="p">)</span>
+                        <span class="n">execute_sym</span><span class="o">&lt;</span><span class="n">skylark</span><span class="o">::</span><span class="n">base</span><span class="o">::</span><span class="kt">sparse_vc_star_matrix_t</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">,</span>
+                                    <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">VC</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span><span class="p">,</span>
+                                    <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">VC</span><span class="p">,</span> <span class="n">El</span><span class="o">::</span><span class="n">STAR</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span>
+                                        <span class="n">directory</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">ftype</span><span class="p">,</span> <span class="n">hdfs</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span>
+                                        <span class="n">k</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+                    <span class="k">else</span>
+                        <span class="n">execute_sym</span><span class="o">&lt;</span><span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">,</span>
+                                    <span class="n">El</span><span class="o">::</span><span class="n">DistMatrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span>
+                                        <span class="n">ftype</span><span class="p">,</span> <span class="n">hdfs</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">lower</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span>
+                                        <span class="n">prefix</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+
+
+    <span class="n">SKYLARK_END_TRY</span><span class="p">()</span> <span class="n">SKYLARK_CATCH_AND_PRINT</span><span class="p">((</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">))</span>
+
+    <span class="n">El</span><span class="o">::</span><span class="n">Finalize</span><span class="p">();</span>
     <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
 <span class="p">}</span>
 </pre></div>
 </td></tr></table></div>
-</div>
-<div class="section" id="ml">
-<span id="ml-example"></span><h3>ML<a class="headerlink" href="#ml" title="Permalink to this headline">¶</a></h3>
-<p>In <tt class="file docutils literal"><span class="pre">$</span><em><span class="pre">SKYLARK_SRC_DIR</span></em><span class="pre">/ml/train.cpp</span></tt> and <tt class="file docutils literal"><span class="pre">$</span><em><span class="pre">SKYLARK_SRC_DIR</span></em><span class="pre">/ml/run.hpp</span></tt>, an ADMM-based solver is
-setup to train and predict with a randomized kernel based model for
-nonlinear classification and regression problems.</p>
-<p>Building libSkylark creates an executable called <tt class="docutils literal"><span class="pre">skylark_ml</span></tt> in
-<tt class="docutils literal"><span class="pre">$SKYLARK_INSTALL_DIR/bin/ml</span></tt> under the libSkylark installation folder.
-This executable can be used in standalone mode as follows.</p>
-<ol class="arabic simple">
-<li>Download USPS digit recognition dataset (in various supported formats).</li>
-</ol>
-<div class="highlight-sh"><div class="highlight"><pre>wget http://vikas.sindhwani.org/data.tar.gz
-tar -xvzf data.tar.gz
-</pre></div>
-</div>
-<p>The supported fileformats are described in <a class="reference internal" href="ml.html#ml-io"><em>Input Data Format</em></a>.</p>
-<ol class="arabic simple" start="2">
-<li>Train an SVM with Randomized Gaussian Kernel</li>
-</ol>
-<div class="highlight-sh"><div class="highlight"><pre>mpiexec -np 4 ./skylark_ml -g 10 -k 1 -l 2 -i 20 --trainfile data/usps.train --valfile data/usps.test --modelfile model
-</pre></div>
-</div>
-<ol class="arabic simple" start="3">
-<li>Test accuracy of the generated model</li>
-</ol>
-<div class="highlight-sh"><div class="highlight"><pre>mpiexec -np 4 ./skylark_ml --testfile data/usps.test --modelfile model
-</pre></div>
-</div>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">In testing mode, the entire test data is currently loaded in memory while ideally the model should be applied in a streaming fashion. A separate file containing predictions is currently not generated. These restrictions will be relaxed.</p>
-</div>
 </div>
 </div>
 </div>
@@ -1048,7 +1955,7 @@ tar -xvzf data.tar.gz
 
     <div class="footer">
         &copy; Copyright IBM Corporation 2012-2014.  All Rights Reserved.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

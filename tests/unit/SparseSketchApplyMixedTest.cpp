@@ -190,7 +190,6 @@ int test_main(int argc, char *argv[]) {
     //[> 4. Build structure to compare <]
     // easier to check if all processors own result
     result = sketch_A;
-    El::Display(result);
 
     compute_sketch_matrix(Sparse, A, pi_sketch);
     expected_A = Mult_AnXBn_Synch<PTDD, double, col_t>(

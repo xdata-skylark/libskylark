@@ -45,9 +45,10 @@ for Python dependencies.
 
 .. note::
 
-    On a fresh 64-bit Ubuntu-based (release 12.04 LTS, aka precise) you can
-    use the provided bootstrap script ``vagrant/precise64/boostrap.sh`` to
-    install libSkylark dependencies.
+    On a fresh 64-bit Ubuntu-based (release 14.04 LTS, aka Trusty Tahr) you can
+    use the provided bootstrap script ``vagrant/trusty64/boostrap.sh`` to
+    install libSkylark dependencies. Before executing the script, be sure to
+    set the user name in the UNAME variable at the start of the script.
 
 
 python-setuptools
@@ -249,7 +250,7 @@ library, and file format for storing and managing data.
 	sudo apt-get install libhdf5-serial-dev
 	sudo easy_install h5py
 
-Boost C++ 1.53.0
+Boost C++ 1.55.0
 -----------------
 
 
@@ -262,9 +263,9 @@ and unit testing.
 
 ::
 
-	wget http://sourceforge.net/projects/boost/files/boost/1.53.0/boost_1_53_0.tar.gz
-	tar xvfz boost_1_53_0.tar.gz
-	cd boost_1_53_0
+	wget http://sourceforge.net/projects/boost/files/boost/1.55.0/boost_1_55_0.tar.gz
+	tar xvfz boost_1_55_0.tar.gz
+	cd boost_1_55_0
 	./bootstrap.sh --with-libraries=mpi,serialization,program_options,system,filesystem
 	echo "using mpi ;" >> project-config.jam
 	./b2 link=static,shared
@@ -1158,7 +1159,7 @@ Download http://www.fftw.org/fftw-3.3.3.tar.gz.
 Boost
 -----
 
-Download Boost 1.53.0, untar, change directory and then execute:
+Download Boost 1.55.0, untar, change directory and then execute:
 
 .. code-block:: sh
 
@@ -1238,7 +1239,7 @@ exported
     export ELEMENTAL_ROOT=$HOME/local
     export COMBBLAS_ROOT=$HOME/src/CombBLAS
     export RANDOM123_ROOT=$HOME/local/Random123-1.08
-    export BOOST_ROOT=$HOME/local/boost_1_53_0
+    export BOOST_ROOT=$HOME/local/boost_1_55_0
 
 and compile with:
 

@@ -82,9 +82,10 @@ for Python dependencies.</p>
 <a class="reference internal image-reference" href="_images/skylark-dependencies.png"><img alt="_images/skylark-dependencies.png" class="align-center" src="_images/skylark-dependencies.png" style="width: 650px;" /></a>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">On a fresh 64-bit Ubuntu-based (release 12.04 LTS, aka precise) you can
-use the provided bootstrap script <tt class="docutils literal"><span class="pre">vagrant/precise64/boostrap.sh</span></tt> to
-install libSkylark dependencies.</p>
+<p class="last">On a fresh 64-bit Ubuntu-based (release 14.04 LTS, aka Trusty Tahr) you can
+use the provided bootstrap script <tt class="docutils literal"><span class="pre">vagrant/trusty64/boostrap.sh</span></tt> to
+install libSkylark dependencies. Before executing the script, be sure to
+set the user name in the UNAME variable at the start of the script.</p>
 </div>
 <div class="section" id="python-setuptools">
 <h3>python-setuptools<a class="headerlink" href="#python-setuptools" title="Permalink to this headline">¶</a></h3>
@@ -241,16 +242,16 @@ sudo easy_install h5py
 </pre></div>
 </div>
 </div>
-<div class="section" id="boost-c-1-53-0">
-<h3>Boost C++ 1.53.0<a class="headerlink" href="#boost-c-1-53-0" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="boost-c-1-55-0">
+<h3>Boost C++ 1.55.0<a class="headerlink" href="#boost-c-1-55-0" title="Permalink to this headline">¶</a></h3>
 <p>Boost is a set of libraries for the C++ programming language that provide
 support for tasks and structures such as linear algebra, pseudorandom
 number generation, multithreading, image processing, regular expressions,
 and unit testing.</p>
 <p><em>Installation:</em></p>
-<div class="highlight-rst"><div class="highlight"><pre>wget http://sourceforge.net/projects/boost/files/boost/1.53.0/boost_1_53_0.tar.gz
-tar xvfz boost_1_53_0.tar.gz
-cd boost_1_53_0
+<div class="highlight-rst"><div class="highlight"><pre>wget http://sourceforge.net/projects/boost/files/boost/1.55.0/boost_1_55_0.tar.gz
+tar xvfz boost_1_55_0.tar.gz
+cd boost_1_55_0
 ./bootstrap.sh --with-libraries=mpi,serialization,program_options,system,filesystem
 echo &quot;using mpi ;&quot; &gt;&gt; project-config.jam
 ./b2 link=static,shared
@@ -1130,7 +1131,7 @@ make
 </div>
 <div class="section" id="boost">
 <h3>Boost<a class="headerlink" href="#boost" title="Permalink to this headline">¶</a></h3>
-<p>Download Boost 1.53.0, untar, change directory and then execute:</p>
+<p>Download Boost 1.55.0, untar, change directory and then execute:</p>
 <div class="highlight-sh"><div class="highlight"><pre>./bootstrap.sh --with-libraries<span class="o">=</span>mpi,serialization,program_options
 <span class="nb">echo</span> <span class="s2">&quot;using mpi : $HOME/bgclang/mpi/bgclang/bin/mpiclang++11 ;&quot;</span> &gt;&gt; project-config.jam
 ./b2 <span class="nv">toolset</span><span class="o">=</span>clang
@@ -1202,7 +1203,7 @@ exported</p>
 <span class="nb">export </span><span class="nv">ELEMENTAL_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/local
 <span class="nb">export </span><span class="nv">COMBBLAS_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/src/CombBLAS
 <span class="nb">export </span><span class="nv">RANDOM123_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/local/Random123-1.08
-<span class="nb">export </span><span class="nv">BOOST_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/local/boost_1_53_0
+<span class="nb">export </span><span class="nv">BOOST_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/local/boost_1_55_0
 </pre></div>
 </div>
 <p>and compile with:</p>

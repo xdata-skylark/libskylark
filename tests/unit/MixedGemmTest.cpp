@@ -13,7 +13,7 @@
 #include <skylark.hpp>
 
 #include "../../base/Gemm.hpp"
-#include "../../base/Gemm_detail.hpp"
+#include "../../base/detail/combblas_mixed_gemm.hpp"
 
 /** Typedef DistMatrix and Matrix */
 typedef El::Matrix<double> MatrixType;
@@ -52,11 +52,12 @@ int test_main(int argc, char *argv[]) {
 
     namespace mpi = boost::mpi;
 
+    El::Initialize (argc, argv);
+
     mpi::environment env (argc, argv);
     mpi::communicator world;
 
     MPI_Comm mpi_world(world);
-    El::Initialize (argc, argv);
     El::Grid grid (mpi_world);
 
     // compute local expected value
@@ -162,6 +163,7 @@ int test_main(int argc, char *argv[]) {
     if(world.rank() == 0)
         std::cout << "inner panel: OK" << std::endl;
 
+    world.barrier();
     //El::Finalize();
     return 0;
 }

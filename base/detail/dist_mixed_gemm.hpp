@@ -280,10 +280,11 @@ void Gemm(El::Orientation oA, El::Orientation oB, value_type alpha,
     if (oA == El::NORMAL && oB == El::NORMAL) {
 
         // FIXME: El::Scale(beta, C);
+        C.resize(A.height(), n);
 
-#if SKYLARK_HAVE_OPENMP
-        #pragma omp parallel for
-#endif
+//#if SKYLARK_HAVE_OPENMP
+        //#pragma omp parallel for
+//#endif
         for (int i = 0; i < n; i++)
             for (int col = 0; col < k; col++) {
                 int g_col = A.global_col(col);

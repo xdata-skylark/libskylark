@@ -44,7 +44,6 @@ MatrixType operator-(MatrixType& A, MatrixType& B) {
     return C;
 }
 
-
 template<typename MatrixType>
 bool equal(MatrixType& A, MatrixType& B,  double threshold=1.e-4) {
     MatrixType C = A - B;
@@ -54,7 +53,6 @@ bool equal(MatrixType& A, MatrixType& B,  double threshold=1.e-4) {
     }
     return false;
 }
-
 
 template<typename InputMatrixType,
          typename LeftSingularVectorsMatrixType,
@@ -93,6 +91,23 @@ bool equal_svd_product(InputMatrixType& A,
 
 
 #if SKYLARK_HAVE_BOOST
+
+template <typename dense_matrix_t>
+void check_equal(const dense_matrix_t& A, const dense_matrix_t& B) {
+    double threshold = 1e-7;
+    for (int col = 0; col < A.LocalWidth(); col++) {
+        for (int row = 0; row < A.LocalHeight(); row++) {
+            double diff = fabs(A.GetLocal(row, col) - B.GetLocal(row, col));
+            if (diff > threshold) {
+                std::cerr << "(" << row << ", " << col << ") diff = "
+                          << A.GetLocal(row, col) << " - "
+                          << B.GetLocal(row, col) << " = " << diff
+                          << std::endl;
+                BOOST_FAIL("Matrices differ");
+            }
+        }
+    }
+}
 
 void check(El::DistMatrix<double>& A,
     double threshold=1e-4) {
@@ -137,7 +152,6 @@ void check(El::DistMatrix<double, El::STAR, RowDist>& A,
     }
 
 }
-
 
 #endif // SKYLARK_HAVE_BOOST
 

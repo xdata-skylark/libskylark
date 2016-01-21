@@ -6,7 +6,9 @@
 
 #include "../base/sparse_vc_star_matrix.hpp"
 
+#if SKYLARK_HAVE_COMBBLAS
 #include "../utility/external/combblas_comm_grid.hpp"
+#endif
 #include "../utility/external/elemental_comm_grid.hpp"
 
 namespace skylark { namespace sketch {
@@ -172,7 +174,7 @@ private:
 
                 assert(ar_idx < values.size());
                 values[ar_idx]  += A_values[j] *
-                    data_type::getValue(A_indices[j], i, dist);
+                    data_type::getValue(A.global_row(A_indices[j]), i, dist);
             }
         }
 

@@ -96,6 +96,7 @@ include (${CMAKE_SOURCE_DIR}/CMake/cmake_hdfs.cmake)
 
 #FIXME that should be optional packages and not options
 include (${CMAKE_SOURCE_DIR}/CMake/cmake_fftw_option.cmake)
+include (${CMAKE_SOURCE_DIR}/CMake/cmake_spiralwht_option.cmake)
 include (${CMAKE_SOURCE_DIR}/CMake/cmake_combblas_option.cmake)
 
 include (${CMAKE_SOURCE_DIR}/CMake/cmake_hybrid_option.cmake)

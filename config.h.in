@@ -49,5 +49,8 @@
 /* Do we have want to build with single precision fftw */
 #cmakedefine SKYLARK_HAVE_FFTWF 1
 
+/* Do we have want to build with spiralwht */
+#cmakedefine SKYLARK_HAVE_SPIRALWHT 1
+
 /* Do we have want to build with CombBLAS */
 #cmakedefine SKYLARK_HAVE_COMBBLAS 1

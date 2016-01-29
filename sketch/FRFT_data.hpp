@@ -9,8 +9,6 @@
 
 namespace skylark { namespace sketch {
 
-#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT
-
 namespace bstrand = boost::random;
 
 /**
@@ -129,6 +127,7 @@ protected:
 #elif SKYLARK_HAVE_SPIRALWHT
         return (int)std::pow(2, std::ceil(std::log(N)/std::log(2)));
 #endif
+        return -1;
     }
 
 };
@@ -231,7 +230,7 @@ struct FastMaternRFT_data_t :
 
     FastMaternRFT_data_t(int N, int S, const params_t& params,
         skylark::base::context_t& context)
-        : base_t(N, S, context, "FastMaternRFT"), 
+        : base_t(N, S, context, "FastMaternRFT"),
           _nu(params.nu), _l(params.l) {
 
         context = build();
@@ -289,5 +288,4 @@ private:
 
 } } /** namespace skylark::sketch */
 
-#endif  // SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT
 #endif

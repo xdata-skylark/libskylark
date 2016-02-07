@@ -1,8 +1,8 @@
 #include "boost/property_tree/ptree.hpp"
 
 #include "sketchc.hpp"
-#include "../../base/exception.hpp"
-#include "../../base/sparse_matrix.hpp"
+#include "../base/exception.hpp"
+#include "../base/sparse_matrix.hpp"
 
 #ifdef SKYLARK_HAVE_COMBBLAS
 #include "CombBLAS.h"

@@ -110,6 +110,7 @@ include (${CMAKE_SOURCE_DIR}/CMake/cmake_optional_libs.cmake)
 #-----------------------------------------------------------------------------
 # Toggle different build options
 
+include (${CMAKE_SOURCE_DIR}/CMake/cmake_build_capi.cmake)
 include (${CMAKE_SOURCE_DIR}/CMake/cmake_build_python_interface.cmake)
 include (${CMAKE_SOURCE_DIR}/CMake/cmake_build_nla.cmake)
 include (${CMAKE_SOURCE_DIR}/CMake/cmake_build_ml.cmake)

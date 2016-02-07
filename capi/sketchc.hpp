@@ -3,12 +3,12 @@
 
 #include "mpi.h"
 #include "config.h"
-#include "../../utility/distributions.hpp"
+#include "../utility/distributions.hpp"
 
 // TODO for now... but we can use the any,any to implement c-api
 #define SKYLARK_NO_ANY
-#include "../sketch.hpp"
-#include "../../base/context.hpp"
+#include "../sketch/sketch.hpp"
+#include "../base/context.hpp"
 
 
 // Some tools require special API declaration. Customizing the

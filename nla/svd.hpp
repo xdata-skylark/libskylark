@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <string>
 
+#include "boost/property_tree/ptree.hpp"
+
 #include "../sketch/sketch.hpp"
 
 namespace skylark { namespace nla {
@@ -37,6 +39,17 @@ struct approximate_svd_params_t : public base::params_t {
         oversampling_ratio(oversampling_ratio),
         oversampling_additive(oversampling_additive),
         num_iterations(num_iterations), skip_qr(skip_qr) {}
+
+    approximate_svd_params_t(const boost::property_tree::ptree& json) {
+        oversampling_ratio = json.get<int>("oversampling_ratio");
+        oversampling_additive = json.get<int>("oversampling_additive");
+        num_iterations = json.get<int>("num_iterations");
+        skip_qr = json.get<bool>("skip_qr");
+        am_i_printing = json.get<bool>("am_i_printing");
+        log_level = json.get<int>("log_level");
+        prefix = json.get<std::string>("prefix");
+        debug_level = json.get<int>("debug_level");
+    }
 };
 
 /**

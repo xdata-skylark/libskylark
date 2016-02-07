@@ -19,7 +19,7 @@ enum file_types {
 template<typename InputType, typename FactorType, typename UType = FactorType,
          typename YType = FactorType>
 void execute(bool directory, const std::string &fname,
-    const std::string &hdfs, int port, int k,
+    const std::string &hdfs, int port, const std::vector<int> &profile, int k,
     const skylark::nla::approximate_svd_params_t &params,
     const std::string &prefix,
     skylark::base::context_t &context) {
@@ -34,43 +34,54 @@ void execute(bool directory, const std::string &fname,
 
     boost::mpi::timer timer;
 
-    // Load A and Y (Y is thrown away)
-    if (rank == 0) {
-        std::cout << "Reading the matrix... ";
-        std::cout.flush();
-        timer.restart();
-    }
+    if (profile.empty()) {
+        // Load A and Y (Y is thrown away)
+        if (rank == 0) {
+            std::cout << "Reading the matrix... ";
+            std::cout.flush();
+            timer.restart();
+        }
 
-    if (!hdfs.empty()) {
+        if (!hdfs.empty()) {
 #       if SKYLARK_HAVE_LIBHDFS
 
-        hdfsFS fs;
-        if (rank == 0)
-            fs = hdfsConnect(hdfs.c_str(), port);
+            hdfsFS fs;
+            if (rank == 0)
+                fs = hdfsConnect(hdfs.c_str(), port);
 
-        if (directory)
-            SKYLARK_THROW_EXCEPTION(skylark::base::io_exception() <<
-                skylark::base::error_msg(
-                    "HDFS directory reading not yet supported."))
-        else
-            skylark::utility::io::ReadLIBSVM(
-                fs, fname, A, Y, skylark::base::ROWS);
+            if (directory)
+                SKYLARK_THROW_EXCEPTION(skylark::base::io_exception() <<
+                    skylark::base::error_msg(
+                                             "HDFS directory reading not yet supported."))
+                else
+                    skylark::utility::io::ReadLIBSVM(
+                                                     fs, fname, A, Y, skylark::base::ROWS);
 
 #       else
 
-        SKYLARK_THROW_EXCEPTION(skylark::base::io_exception() <<
-            skylark::base::error_msg("Install libhdfs for HDFS support!"));
+            SKYLARK_THROW_EXCEPTION(skylark::base::io_exception() <<
+                skylark::base::error_msg("Install libhdfs for HDFS support!"));
 
 #       endif
-    } else {
-        if (directory)
-            skylark::utility::io::ReadDirLIBSVM(
-                fname, A, Y, skylark::base::ROWS);
-        else
-            skylark::utility::io::ReadLIBSVM(fname, A, Y, skylark::base::ROWS);
-    }
+        } else {
+            if (directory)
+                skylark::utility::io::ReadDirLIBSVM(
+                                                    fname, A, Y, skylark::base::ROWS);
+            else
+                skylark::utility::io::ReadLIBSVM(fname, A, Y, skylark::base::ROWS);
+        }
 
-    Y.Empty();
+        Y.Empty();
+    } else {
+
+        if (rank == 0) {
+            std::cout << "Generating random matrix... ";
+            std::cout.flush();
+            timer.restart();
+        }
+
+        skylark::base::UniformMatrix(A, profile[0], profile[1], context);
+    }
 
     if (rank == 0)
         std::cout <<"took " << boost::format("%.2e") % timer.elapsed()
@@ -110,7 +121,7 @@ template<typename InputType, typename FactorType, typename UType = FactorType,
 void execute_sym(bool directory, const std::string &fname,
     const std::string& ftype,
     const std::string &hdfs, int port,
-    bool lower, int k,
+    const std::vector<int> &profile, bool lower, int k,
     const skylark::nla::approximate_svd_params_t &params,
     const std::string &prefix,
     skylark::base::context_t &context) {
@@ -124,49 +135,56 @@ void execute_sym(bool directory, const std::string &fname,
 
     boost::mpi::timer timer;
 
-    // Load A and Y (Y is thrown away)
-    if (rank == 0) {
-        std::cout << "Reading the matrix... ";
-        std::cout.flush();
-        timer.restart();
-    }
+    if (profile.empty()) {
+        // Load A and Y (Y is thrown away)
+        if (rank == 0) {
+            std::cout << "Reading the matrix... ";
+            std::cout.flush();
+            timer.restart();
+        }
 
-    if (!hdfs.empty()) {
+        if (!hdfs.empty()) {
 #       if SKYLARK_HAVE_LIBHDFS
 
-        hdfsFS fs;
-        if (rank == 0)
-            fs = hdfsConnect(hdfs.c_str(), port);
+            hdfsFS fs;
+            if (rank == 0)
+                fs = hdfsConnect(hdfs.c_str(), port);
 
-        if (directory)
-            SKYLARK_THROW_EXCEPTION(skylark::base::io_exception() <<
-                skylark::base::error_msg(
-                    "HDFS directory reading not yet supported."))
-        else
-            skylark::utility::io::ReadLIBSVM(
-                fs, fname, A, Y, skylark::base::ROWS);
+            if (directory)
+                SKYLARK_THROW_EXCEPTION(skylark::base::io_exception() <<
+                    skylark::base::error_msg(
+                                             "HDFS directory reading not yet supported."))
+                else
+                    skylark::utility::io::ReadLIBSVM(
+                                                     fs, fname, A, Y, skylark::base::ROWS);
 
 #       else
 
-        SKYLARK_THROW_EXCEPTION(skylark::base::io_exception() <<
-            skylark::base::error_msg("Install libhdfs for HDFS support!"));
+            SKYLARK_THROW_EXCEPTION(skylark::base::io_exception() <<
+                skylark::base::error_msg("Install libhdfs for HDFS support!"));
 
 #       endif
-    } else {
-        // FIXME: ugly, fix options
-        if (ftype.compare("ARC_LIST") == 0) {
-            skylark::utility::io::ReadArcList(fname, A, world, true);
         } else {
-            if (directory)
-                skylark::utility::io::ReadDirLIBSVM(
-                    fname, A, Y, skylark::base::ROWS);
-            else
-                skylark::utility::io::ReadLIBSVM(
-                    fname, A, Y, skylark::base::ROWS);
+            // FIXME: ugly, fix options
+            if (ftype.compare("ARC_LIST") == 0) {
+                skylark::utility::io::ReadArcList(fname, A, world, true);
+            } else {
+                if (directory)
+                    skylark::utility::io::ReadDirLIBSVM(
+                                                        fname, A, Y, skylark::base::ROWS);
+                else
+                    skylark::utility::io::ReadLIBSVM(
+                                                     fname, A, Y, skylark::base::ROWS);
+            }
         }
-    }
 
-    Y.Empty();
+        Y.Empty();
+        
+    } else {
+
+        SKYLARK_THROW_EXCEPTION(skylark::base::unsupported_base_operation() <<
+            skylark::base::error_msg("Uniform symmetric matrix generating not supported yet."));
+    }
 
     if (rank == 0)
         std::cout << "took " << boost::format("%.2e") % timer.elapsed()
@@ -216,7 +234,8 @@ int main(int argc, char* argv[]) {
     std::string fname, ftype, prefix, hdfs;
     bool as_symmetric, as_sparse, skipqr, use_single, lower, directory;
     int oversampling_ratio, oversampling_additive;
-
+    std::vector<int> profile;
+    
     // Parse options
     bpo::options_description desc("Options");
     desc.add_options()
@@ -258,6 +277,10 @@ int main(int argc, char* argv[]) {
         ("lower", "For symmetric matrix, access only lower part (upper is default).")
         ("sparse", "Whether to load the matrix as a sparse one.")
         ("single", "Whether to use single precision instead of double.")
+        ("profile",
+            bpo::value<std::vector<int> >()->multitoken(),
+            "Generate random matrix and run on it (for profiling)."
+            "Requires specification of height and width. OPTIONAL.")
         ("prefix",
             bpo::value<std::string>(&prefix)->default_value("out"),
             "Prefix for output files (prefix.U.txt, prefix.S.txt"
@@ -281,13 +304,24 @@ int main(int argc, char* argv[]) {
             return 0;
         }
 
-        if (!vm.count("inputfile")) {
+        if (vm["profile"].empty() && !vm.count("inputfile")) {
             if (rank == 0)
                 std::cout << "Input file is required." << std::endl;
             world.barrier();
             return -1;
         }
 
+        if (!vm["profile"].empty()) {
+            if (vm["profile"].as<std::vector<int> >().size() < 2) {
+                if (rank == 0)
+                    std::cout << "Please specify height and width for --profile."
+                              << std::endl;
+                world.barrier();
+                return -1;
+            } else
+                profile = vm["profile"].as<std::vector<int> >();
+        }
+        
         bpo::notify(vm);
 
         as_symmetric = vm.count("symmetric");
@@ -324,22 +358,22 @@ int main(int argc, char* argv[]) {
                         execute<skylark::base::sparse_matrix_t<float>,
                                 El::Matrix<float> >(
                                     directory, fname, hdfs,
-                                    port, k, params, prefix, context);
+                                    port, profile, k, params, prefix, context);
                     else
                         execute<El::Matrix<float>,
                                 El::Matrix<float> >(directory, fname, hdfs,
-                                    port, k, params, prefix, context);
+                                    port, profile, k, params, prefix, context);
 
                 } else {
                     if (as_sparse)
                         execute<skylark::base::sparse_matrix_t<double>,
                                 El::Matrix<double> >(
-                                    directory, fname, hdfs,
-                                    port, k, params, prefix, context);
+                                     directory, fname, hdfs,
+                                     port, profile, k, params, prefix, context);
                     else
                         execute<El::Matrix<double>,
                                 El::Matrix<double> >(directory, fname, hdfs,
-                                    port, k, params, prefix, context);
+                                    port, profile, k, params, prefix, context);
                 }
 
             } else {
@@ -348,13 +382,13 @@ int main(int argc, char* argv[]) {
                     if (as_sparse)
                         execute_sym<skylark::base::sparse_matrix_t<float>,
                                     El::Matrix<float> >(
-                                        directory, fname, ftype,
-                                        hdfs, port, lower, k, params, prefix,
+                                       directory, fname, ftype,
+                                       hdfs, port, profile, lower, k, params, prefix,
                                         context);
                     else
                         execute_sym<El::Matrix<float>,
                                     El::Matrix<float> >(directory, fname, ftype,
-                                        hdfs, port, lower, k, params, prefix,
+                                        hdfs, port, profile, lower, k, params, prefix,
                                         context);
 
                 } else {
@@ -363,11 +397,11 @@ int main(int argc, char* argv[]) {
                                     El::Matrix<double>,
                                     El::Matrix<double> >(
                                         directory, fname, ftype, hdfs, port,
-                                        lower, k, params, prefix, context);
+                                        profile, lower, k, params, prefix, context);
                     else
                         execute_sym<El::Matrix<double>,
                                     El::Matrix<double> >(directory, fname,
-                                        ftype, hdfs, port, lower, k, params,
+                                        ftype, hdfs, port, profile, lower, k, params,
                                         prefix, context);
                 }
             }
@@ -382,11 +416,11 @@ int main(int argc, char* argv[]) {
                                 El::DistMatrix<float, El::VC, El::STAR>,
                                 El::DistMatrix<float, El::VC, El::STAR> >(
                                     directory, fname, hdfs,
-                                    port, k, params, prefix, context);
+                                    port, profile, k, params, prefix, context);
                     else
                         execute<El::DistMatrix<float>,
                                 El::DistMatrix<float> >(directory, fname, hdfs,
-                                    port, k, params, prefix, context);
+                                    port, profile, k, params, prefix, context);
 
                 } else {
                     if (as_sparse)
@@ -395,11 +429,11 @@ int main(int argc, char* argv[]) {
                                 El::DistMatrix<double, El::VC, El::STAR>,
                                 El::DistMatrix<double, El::VC, El::STAR> >(
                                     directory, fname, hdfs,
-                                    port, k, params, prefix, context);
+                                    port, profile, k, params, prefix, context);
                     else
                         execute<El::DistMatrix<double>,
                                 El::DistMatrix<double> >(directory, fname, hdfs,
-                                    port, k, params, prefix, context);
+                                    port, profile, k, params, prefix, context);
                 }
 
             } else {
@@ -410,12 +444,12 @@ int main(int argc, char* argv[]) {
                                     El::DistMatrix<float, El::VC, El::STAR>,
                                     El::DistMatrix<float, El::VC, El::STAR> >(
                                         directory, fname, ftype,
-                                        hdfs, port, lower, k, params, prefix,
+                                        hdfs, port, profile, lower, k, params, prefix,
                                         context);
                     else
                         execute_sym<El::DistMatrix<float>,
                                     El::DistMatrix<float> >(directory, fname, ftype,
-                                        hdfs, port, lower, k, params, prefix,
+                                        hdfs, port, profile, lower, k, params, prefix,
                                         context);
 
                 } else {
@@ -423,12 +457,13 @@ int main(int argc, char* argv[]) {
                         execute_sym<skylark::base::sparse_vc_star_matrix_t<double>,
                                     El::DistMatrix<double, El::VC, El::STAR>,
                                     El::DistMatrix<double, El::VC, El::STAR> >(
-                                        directory, fname, ftype, hdfs, port, lower,
+                                        directory, fname, ftype, hdfs, port,
+                                        profile, lower,
                                         k, params, prefix, context);
                     else
                         execute_sym<El::DistMatrix<double>,
                                     El::DistMatrix<double> >(directory, fname,
-                                        ftype, hdfs, port, lower, k, params,
+                                        ftype, hdfs, port, profile, lower, k, params,
                                         prefix, context);
                 }
             }

@@ -149,9 +149,28 @@ void UniformMatrix(MatrixType &A, El::Int m, El::Int n,
     context_t &context) {
     typedef typename utility::typer_t<MatrixType>::value_type value_type;
 
-    boost::random::uniform_01<value_type> dist;
+    boost::random::uniform_01<value_type, value_type> dist;
     RandomMatrix(A, m, n, dist, context);
 }
+
+template<typename T>
+void UniformMatrix(sparse_matrix_t<T> &A, El::Int m, El::Int n,
+    context_t &context) {
+
+    SKYLARK_THROW_EXCEPTION(unsupported_base_operation() <<
+       error_msg("Uniform sparse matrix not supported "
+           "and does not make sense."));
+}
+
+template<typename T>
+void UniformMatrix(sparse_vc_star_matrix_t<T> &A, El::Int m, El::Int n,
+    context_t &context) {
+
+    SKYLARK_THROW_EXCEPTION(unsupported_base_operation() <<
+        error_msg("Uniform sparse matrix not supported "
+           "and does not make sense."));
+}
+
 
 } } // namespace skylark::base
 

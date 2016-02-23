@@ -163,7 +163,7 @@ if [ ! -d "Elemental" ]; then
     git checkout 0ffa9fc29ab740a7a96eccc45c180463723f465d
     mkdir build
     cd build
-    cmake -DEL_USE_64BIT_INTS=ON -DEL_HAVE_QUADMATH=OFF -DCMAKE_BUILD_TYPE=Release -DEL_HYBRID=ON -DBUILD_SHARED_LIBS=ON -DMATH_LIBS="-L/usr/lib -llapack -lopenblas -lm" ../
+    cmake -DEL_USE_64BIT_INTS=ON -DEL_HAVE_QUADMATH=OFF -DCMAKE_BUILD_TYPE=Release -DEL_HYBRID=ON -DBUILD_SHARED_LIBS=ON -DMATH_LIBS="-L/usr/lib -llapack -lopenblas -lm" -DINSTALL_PYTHON_PACKAGE=ON ../
     make -j $NPROC
     make install
 fi
@@ -268,4 +268,3 @@ chown -R ${UNAME} /home/${UNAME}
 # Finalize
 cd $HOME
 chown -R ${UNAME} /home/${UNAME}
-

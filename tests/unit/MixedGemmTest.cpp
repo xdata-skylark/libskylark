@@ -167,4 +167,3 @@ int test_main(int argc, char *argv[]) {
     //El::Finalize();
     return 0;
 }
-

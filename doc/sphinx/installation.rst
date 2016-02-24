@@ -229,13 +229,13 @@ managing data.
 
 ::
 
-	wget http://www.hdfgroup.org/ftp/HDF5/current/src/hdf5-1.8.12.tar
-	tar -xvf hdf5-1.8.12.tar
-	cd hdf5-1.8.12
-	./configure --enable-cxx --prefix=<location for HDF5 software>
-	make >& make.out
-	make check >& check.out
-	make install
+    wget http://www.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8.12/src/hdf5-1.8.12.tar
+    tar -xvf hdf5-1.8.12.tar
+    cd hdf5-1.8.12
+    ./configure --enable-cxx --prefix=<location for HDF5 software>
+    make >& make.out
+    make check >& check.out
+    make install
 
 h5py
 -----

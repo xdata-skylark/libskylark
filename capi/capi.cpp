@@ -1,8 +1,8 @@
 #include "boost/property_tree/ptree.hpp"
 
+#include "matrix_types.hpp"
 #include "sketchc.hpp"
-#include "../../base/exception.hpp"
-#include "../../base/sparse_matrix.hpp"
+#include "../base/exception.hpp"
 
 #ifdef SKYLARK_HAVE_COMBBLAS
 #include "CombBLAS.h"
@@ -11,26 +11,7 @@
 #include "DenseParVec.h"
 #endif
 
-# define STRCMP_TYPE(STR, TYPE) \
-    if (std::strcmp(str, #STR) == 0) \
-        return TYPE;
-
 namespace skybase = skylark::base;
-
-static sketchc::matrix_type_t str2matrix_type(const char *str) {
-    STRCMP_TYPE(Matrix,     sketchc::MATRIX);
-    STRCMP_TYPE(SharedMatrix,  sketchc::SHARED_MATRIX);
-    STRCMP_TYPE(RootMatrix, sketchc::ROOT_MATRIX);
-    STRCMP_TYPE(DistMatrix, sketchc::DIST_MATRIX);
-    STRCMP_TYPE(DistMatrix_VC_STAR, sketchc::DIST_MATRIX_VC_STAR);
-    STRCMP_TYPE(DistMatrix_VR_STAR, sketchc::DIST_MATRIX_VR_STAR);
-    STRCMP_TYPE(DistMatrix_STAR_VC, sketchc::DIST_MATRIX_VC_STAR);
-    STRCMP_TYPE(DistMatrix_STAR_VR, sketchc::DIST_MATRIX_VR_STAR);
-    STRCMP_TYPE(SparseMatrix,       sketchc::SPARSE_MATRIX);
-    STRCMP_TYPE(DistSparseMatrix,   sketchc::DIST_SPARSE_MATRIX);
-
-    return sketchc::MATRIX_TYPE_ERROR;
-}
 
 static sketchc::transform_type_t str2transform_type(const char *str) {
     STRCMP_TYPE(JLT, sketchc::JLT);
@@ -52,21 +33,6 @@ static sketchc::transform_type_t str2transform_type(const char *str) {
 
     return sketchc::TRANSFORM_TYPE_ERROR;
 }
-
-// Just for shorter notation
-typedef El::Matrix<double> Matrix;
-typedef El::DistMatrix<double, El::STAR, El::STAR> SharedMatrix;
-typedef El::DistMatrix<double, El::CIRC, El::CIRC> RootMatrix;
-typedef El::DistMatrix<double> DistMatrix;
-typedef El::DistMatrix<double, El::VR, El::STAR> DistMatrix_VR_STAR;
-typedef El::DistMatrix<double, El::VC, El::STAR> DistMatrix_VC_STAR;
-typedef El::DistMatrix<double, El::STAR, El::VR> DistMatrix_STAR_VR;
-typedef El::DistMatrix<double, El::STAR, El::VC> DistMatrix_STAR_VC;
-typedef base::sparse_matrix_t<double> SparseMatrix;
-#ifdef SKYLARK_HAVE_COMBBLAS
-typedef SpDCCols< size_t, double > col_t;
-typedef SpParMat< size_t, double, col_t > DistSparseMatrix;
-#endif
 
 
 extern "C" {

@@ -9,7 +9,7 @@
 # CombBLAS_beta_13_0/FullyDistVec.cpp:466:8: error: comparison of unsigned
 # expression < 0 is always false [-Werror=type-limits]
 #
-set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/capi.cpp 
+set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/capi.cpp
                              PROPERTIES COMPILE_FLAGS "-Wno-error")
 
 include_directories (
@@ -17,7 +17,9 @@ include_directories (
 )
 
 set(SKYLARK_CAPI_SRCS
+    matrix_types.cpp
     capi.cpp
+    cnla.cpp
 )
 
 add_library(cskylark
@@ -31,6 +33,9 @@ target_link_libraries(cskylark
                       ${Boost_LIBRARIES}
 )
 set_target_properties(cskylark PROPERTIES SUFFIX ".so")
+# FIXME: this is really ugly! We should find a way to compile w/o multiple
+# defs..
+set (CMAKE_SHARED_LINKER_FLAGS "-Wl,--allow-multiple-definition")
 
 install (
     TARGETS cskylark

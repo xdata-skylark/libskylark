@@ -3,12 +3,13 @@
 
 #include "mpi.h"
 #include "config.h"
-#include "../../utility/distributions.hpp"
+#include "../utility/distributions.hpp"
 
 // TODO for now... but we can use the any,any to implement c-api
 #define SKYLARK_NO_ANY
-#include "../sketch.hpp"
-#include "../../base/context.hpp"
+#include "matrix_types.hpp"
+#include "../sketch/sketch.hpp"
+#include "../base/context.hpp"
 
 
 // Some tools require special API declaration. Customizing the
@@ -39,20 +40,6 @@ enum transform_type_t {
     FastMaternRFT,
     ExpSemigroupRLT,
     ExpSemigroupQRLT
-};
-
-enum matrix_type_t {
-    MATRIX_TYPE_ERROR,
-    MATRIX,                     /**< Dense Elemental matrix */
-    SHARED_MATRIX,              /**< Same matrix on all processors: STAR-STAR */
-    ROOT_MATRIX,                /**< One rank holds the matrix: CIRC-CIRC */
-    DIST_MATRIX,                /**< Distributed Elemental matrix (MC-MR) */
-    DIST_MATRIX_VC_STAR,
-    DIST_MATRIX_VR_STAR,
-    DIST_MATRIX_STAR_VC,
-    DIST_MATRIX_STAR_VR,
-    DIST_SPARSE_MATRIX,          /**< Sparse matrix (CombBLAS) */
-    SPARSE_MATRIX                /**< Sparse local matrix */
 };
 
 struct sketch_transform_t {

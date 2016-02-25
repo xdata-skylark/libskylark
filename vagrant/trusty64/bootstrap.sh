@@ -309,7 +309,9 @@ cd /home/${UNAME}
 dtach -n /tmp/ipython_notebook -Ez ipython notebook --profile=nbserver
 
 #FIXME: dir to /home/vagrant, run as vagrant user?
-echo "LD_LIBRARY_PATH=/home/${UNAME}/install/lib:/usr/local/lib:$LD_LIBRARY_PATH LD_PRELOAD=/usr/lib/libmpi.so dtach -n /tmp/ipython_notebook -Ez ipython notebook --profile=nbserver" > /etc/rc.local
+echo "export LD_LIBRARY_PATH=/home/${UNAME}/install/lib:/usr/local/lib:$LD_LIBRARY_PATH" > /etc/rc.local
+echo "export LD_PRELOAD=/usr/lib/libmpi.so" > /etc/rc.local
+echo "dtach -n /tmp/ipython_notebook -Ez ipython notebook --profile=nbserver" > /etc/rc.local
 echo "exit 0" >> /etc/rc.local
 
 echo "Started IPython notebook. Point your browser to http://127.0.0.1:6868"

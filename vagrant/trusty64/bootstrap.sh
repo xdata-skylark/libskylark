@@ -69,7 +69,8 @@ apt-get install -y libboost1.55-all-dev
 
 # Numpy and Scipy stack installation as recommended at scipy.org
 apt-get install -y python-numpy python-scipy python-matplotlib ipython \
-                   ipython-notebook python-pandas python-sympy python-nose
+                   ipython-notebook python-pandas python-sympy python-nose \
+                   python-networkx
 
 
 # mpi4py

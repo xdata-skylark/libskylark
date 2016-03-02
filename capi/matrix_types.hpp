@@ -1,6 +1,8 @@
 #ifndef SKYLARK_MATRIX_TYPES_HPP
 #define SKYLARK_MATRIX_TYPES_HPP
 
+#include <config.h>
+
 #include <El.hpp>
 #ifdef SKYLARK_HAVE_COMBBLAS
 #include <CombBLAS.h>

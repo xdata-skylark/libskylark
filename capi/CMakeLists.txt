@@ -18,7 +18,7 @@ include_directories (
 
 set(SKYLARK_CAPI_SRCS
     matrix_types.cpp
-    capi.cpp
+    csketch.cpp
     cnla.cpp
 )
 
@@ -44,6 +44,7 @@ install (
 
 install (
     FILES "sketchc.hpp"
+    FILES "nlac.hpp"
     DESTINATION include/skylark/
 )
 

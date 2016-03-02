@@ -3,7 +3,6 @@
 
 #include "mpi.h"
 #include "config.h"
-#include "../utility/distributions.hpp"
 
 #include "matrix_types.hpp"
 

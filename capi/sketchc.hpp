@@ -5,12 +5,7 @@
 #include "config.h"
 #include "../utility/distributions.hpp"
 
-// TODO for now... but we can use the any,any to implement c-api
-#define SKYLARK_NO_ANY
 #include "matrix_types.hpp"
-#include "../sketch/sketch.hpp"
-#include "../base/context.hpp"
-
 
 // Some tools require special API declaration. Customizing the
 // SKYLARK_EXTERN_API allows this. The default is simply nothing.
@@ -19,7 +14,17 @@
 #endif
 
 namespace skylark {
+
+namespace base {
+
+class context_t;
+
+}
+
 namespace sketch {
+
+class sketch_transform_data_t;
+
 namespace c {
 
 enum transform_type_t {
@@ -52,8 +57,10 @@ struct sketch_transform_t {
 };
 
 } // namespace c
-} // namespace sketch
+} // namespace sketchc
+
 } // namespace skylark
+
 
 namespace base    = skylark::base;
 namespace sketch  = skylark::sketch;

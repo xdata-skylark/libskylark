@@ -4,21 +4,18 @@
 #include "mpi.h"
 #include "config.h"
 
-// TODO for now... but we can use the any,any to implement c-api
-#define SKYLARK_NO_ANY
-
-//FIXME: svd.hpp includes sketch.hpp again
-#include "../nla/svd.hpp"
-
-
 // Some tools require special API declaration. Customizing the
 // SKYLARK_EXTERN_API allows this. The default is simply nothing.
 #ifndef SKYLARK_EXTERN_API
 #define SKYLARK_EXTERN_API
 #endif
 
-namespace base = skylark::base;
-namespace nla  = skylark::nla;
+namespace skylark {
+namespace base {
+
+class context_t;
+
+} }
 
 extern "C" {
 
@@ -37,7 +34,7 @@ extern "C" {
  */
 SKYLARK_EXTERN_API int sl_approximate_symmetric_svd(
     char *A_type, void *A_, char *S_type, void *S_, char *V_type, void *V_,
-    uint16_t k, char *params_json, base::context_t *ctxt);
+    uint16_t k, char *params_json, skylark::base::context_t *ctxt);
 
 /**
  * Approximate SVD (A = U S V^T).
@@ -57,7 +54,7 @@ SKYLARK_EXTERN_API int sl_approximate_symmetric_svd(
 SKYLARK_EXTERN_API int sl_approximate_svd(
     char *A_type, void *A_, char *U_type, void *U_,
     char *S_type, void *S_, char* V_type, void *V_,
-    uint16_t k, char *params_json, base::context_t *ctxt);
+    uint16_t k, char *params_json, skylark::base::context_t *ctxt);
 
 } // extern "C"
 

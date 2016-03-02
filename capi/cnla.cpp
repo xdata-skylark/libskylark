@@ -3,10 +3,15 @@
 #include "boost/property_tree/ptree.hpp"
 #include "boost/property_tree/json_parser.hpp"
 
+// TODO for now... but we can use the any,any to implement c-api
+#define SKYLARK_NO_ANY
 #include "matrix_types.hpp"
 #include "sketchc.hpp"
+#include "../nla/nla.hpp"
 
 namespace sketchc = skylark::sketch::c;
+namespace base = skylark::base;
+namespace nla = skylark::nla;
 
 extern "C" {
 

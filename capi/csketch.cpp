@@ -2,6 +2,7 @@
 
 // TODO for now... but we can use the any,any to implement c-api
 #define SKYLARK_NO_ANY
+
 #include "matrix_types.hpp"
 #include "sketchc.hpp"
 #include "../base/context.hpp"
@@ -15,7 +16,9 @@
 #include "DenseParVec.h"
 #endif
 
-namespace skybase = skylark::base;
+namespace base = skylark::base;
+namespace sketch = skylark::sketch;
+namespace sketchc = skylark::sketch::c;
 
 static sketchc::transform_type_t str2transform_type(const char *str) {
     STRCMP_TYPE(JLT, sketchc::JLT);
@@ -37,7 +40,6 @@ static sketchc::transform_type_t str2transform_type(const char *str) {
 
     return sketchc::TRANSFORM_TYPE_ERROR;
 }
-
 
 extern "C" {
 
@@ -346,49 +348,6 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
         "";
 }
 
-SKYLARK_EXTERN_API const char* sl_strerror(const int error_code) {
-    return skylark_strerror(error_code);
-}
-
-SKYLARK_EXTERN_API bool sl_has_elemental() {
-    return true;
-}
-
-SKYLARK_EXTERN_API bool sl_has_combblas() {
-#if SKYLARK_HAVE_COMBBLAS
-    return true;
-#else
-    return false;
-#endif
-}
-
-/* Support for skylark::base::context_t. */
-SKYLARK_EXTERN_API int sl_create_default_context(int seed,
-        base::context_t **ctxt) {
-    SKYLARK_BEGIN_TRY()
-        *ctxt = new base::context_t(seed);
-    SKYLARK_END_TRY()
-    SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
-    return 0;
-}
-
-SKYLARK_EXTERN_API int sl_create_context(int seed,
-        MPI_Comm comm, base::context_t **ctxt) {
-    SKYLARK_BEGIN_TRY()
-        *ctxt = new base::context_t(seed);
-    SKYLARK_END_TRY()
-    SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
-    return 0;
-}
-
-SKYLARK_EXTERN_API int sl_free_context(base::context_t *ctxt) {
-    SKYLARK_BEGIN_TRY()
-        delete ctxt;
-    SKYLARK_END_TRY()
-    SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
-    return 0;
-}
-
 /* Transforms */
 SKYLARK_EXTERN_API int sl_create_sketch_transform(base::context_t *ctxt,
     char *type_, int n, int s,
@@ -452,13 +411,13 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(base::context_t *ctxt,
             int skip = va_arg(argp, int);
             int seqdim =
                 sketch::
-                GaussianQRFT_data_t<skybase::leaped_halton_sequence_t>::
+                GaussianQRFT_data_t<base::leaped_halton_sequence_t>::
                 qmc_sequence_dim(n);
-            skybase::leaped_halton_sequence_t<double> sequence(seqdim);
+            base::leaped_halton_sequence_t<double> sequence(seqdim);
             sketchc::sketch_transform_t *r =
                 new sketchc::sketch_transform_t(sketchc::GaussianQRFT,
                     new sketch::
-                    GaussianQRFT_data_t<skybase::
+                    GaussianQRFT_data_t<base::
                     leaped_halton_sequence_t>(n, s, sigma, sequence, skip, *ctxt));
             va_end(argp);
             *sketch = r;
@@ -474,13 +433,13 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(base::context_t *ctxt,
             int skip = va_arg(argp, int);
             int seqdim =
                 sketch::
-                GaussianQRFT_data_t<skybase::leaped_halton_sequence_t>::
+                GaussianQRFT_data_t<base::leaped_halton_sequence_t>::
                 qmc_sequence_dim(n);
-            skybase::leaped_halton_sequence_t<double> sequence(seqdim);
+            base::leaped_halton_sequence_t<double> sequence(seqdim);
             sketchc::sketch_transform_t *r =
                 new sketchc::sketch_transform_t(sketchc::GaussianQRFT,
                     new sketch::
-                    LaplacianQRFT_data_t<skybase::
+                    LaplacianQRFT_data_t<base::
                     leaped_halton_sequence_t>(n, s, sigma, sequence, skip, *ctxt));
             va_end(argp);
             *sketch = r;
@@ -499,13 +458,13 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(base::context_t *ctxt,
             int skip = va_arg(argp, int);
             int seqdim =
                 sketch::
-                ExpSemigroupQRLT_data_t<skybase::leaped_halton_sequence_t>::
+                ExpSemigroupQRLT_data_t<base::leaped_halton_sequence_t>::
                 qmc_sequence_dim(n);
-            skybase::leaped_halton_sequence_t<double> sequence(seqdim);
+            base::leaped_halton_sequence_t<double> sequence(seqdim);
             sketchc::sketch_transform_t *r =
                 new sketchc::sketch_transform_t(sketchc::ExpSemigroupQRLT,
                     new sketch::
-                    ExpSemigroupQRLT_data_t<skybase::
+                    ExpSemigroupQRLT_data_t<base::
                     leaped_halton_sequence_t>(n, s, beta, sequence, skip, *ctxt));
             va_end(argp);
             *sketch = r;
@@ -601,13 +560,13 @@ SKYLARK_EXTERN_API
     AUTO_DELETE_DISPATCH(sketchc::LaplacianRFT, sketch::LaplacianRFT_data_t);
     AUTO_DELETE_DISPATCH(sketchc::MaternRFT, sketch::MaternRFT_data_t);
     AUTO_DELETE_DISPATCH(sketchc::GaussianQRFT,
-        sketch::GaussianQRFT_data_t<skybase::leaped_halton_sequence_t>);
+        sketch::GaussianQRFT_data_t<base::leaped_halton_sequence_t>);
     AUTO_DELETE_DISPATCH(sketchc::LaplacianQRFT,
-        sketch::LaplacianQRFT_data_t<skybase::leaped_halton_sequence_t>);
+        sketch::LaplacianQRFT_data_t<base::leaped_halton_sequence_t>);
     AUTO_DELETE_DISPATCH(sketchc::ExpSemigroupRLT,
         sketch::ExpSemigroupRLT_data_t);
     AUTO_DELETE_DISPATCH(sketchc::ExpSemigroupQRLT,
-        sketch::ExpSemigroupQRLT_data_t<skybase::leaped_halton_sequence_t>);
+        sketch::ExpSemigroupQRLT_data_t<base::leaped_halton_sequence_t>);
     AUTO_DELETE_DISPATCH(sketchc::FastGaussianRFT,
         sketch::FastGaussianRFT_data_t);
     AUTO_DELETE_DISPATCH(sketchc::FastMaternRFT, sketch::FastMaternRFT_data_t);
@@ -1324,8 +1283,8 @@ SKYLARK_EXTERN_API int
 
 # define AUTO_APPLY_DISPATCH_QUASI(T, I, O, C, IT, OT, CD)               \
     if (type == T && input == I && output == O) {                        \
-        C<IT, OT, skybase::leaped_halton_sequence_t>            \
-            S(*static_cast<CD<skybase::leaped_halton_sequence_t>*>(S_->transform_obj)); \
+        C<IT, OT, base::leaped_halton_sequence_t>            \
+            S(*static_cast<CD<base::leaped_halton_sequence_t>*>(S_->transform_obj)); \
         IT &A = * static_cast<IT*>(A_);                                  \
         OT &SA = * static_cast<OT*>(SA_);                                \
                                                                          \
@@ -1963,54 +1922,6 @@ SKYLARK_EXTERN_API int
     return 0;
 }
 
-SKYLARK_EXTERN_API int sl_wrap_raw_matrix(double *data, int m, int n, void **A)
-{
-    Matrix *tmp = new Matrix();
-    tmp->Attach(m, n, data, m);
-    *A = tmp;
-    return 0;
-}
 
-SKYLARK_EXTERN_API int sl_free_raw_matrix_wrap(void *A_) {
-    delete static_cast<Matrix *>(A_);
-    return 0;
-}
-
-
-SKYLARK_EXTERN_API int sl_wrap_raw_sp_matrix(int *indptr, int *ind, double *data,
-    int nnz, int n_rows, int n_cols, void **A)
-{
-    SparseMatrix *tmp = new SparseMatrix();
-    tmp->attach(indptr, ind, data, nnz, n_rows, n_cols);
-    *A = tmp;
-    return 0;
-}
-
-SKYLARK_EXTERN_API int sl_free_raw_sp_matrix_wrap(void *A_) {
-    delete static_cast<SparseMatrix *>(A_);
-    return 0;
-}
-
-SKYLARK_EXTERN_API int sl_raw_sp_matrix_struct_updated(void *A_,
-        bool *struct_updated) {
-    *struct_updated = static_cast<SparseMatrix *>(A_)->struct_updated();
-    return 0;
-}
-
-SKYLARK_EXTERN_API int sl_raw_sp_matrix_reset_update_flag(void *A_) {
-    static_cast<SparseMatrix *>(A_)->reset_update_flag();
-    return 0;
-}
-
-SKYLARK_EXTERN_API int sl_raw_sp_matrix_nnz(void *A_, int *nnz) {
-    *nnz = static_cast<SparseMatrix *>(A_)->nonzeros();
-    return 0;
-}
-
-SKYLARK_EXTERN_API int sl_raw_sp_matrix_data(void *A_, int32_t *indptr,
-        int32_t *indices, double *values) {
-    static_cast<SparseMatrix *>(A_)->detach(indptr, indices, values);
-    return 0;
-}
 
 } // extern "C"

@@ -20,6 +20,7 @@ set(SKYLARK_CAPI_SRCS
     matrix_types.cpp
     csketch.cpp
     cnla.cpp
+    cbase.cpp
 )
 
 add_library(cskylark
@@ -43,6 +44,7 @@ install (
 )
 
 install (
+    FILES "basec.hpp"
     FILES "sketchc.hpp"
     FILES "nlac.hpp"
     DESTINATION include/skylark/

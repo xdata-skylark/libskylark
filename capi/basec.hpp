@@ -7,8 +7,6 @@
 #define SKYLARK_EXTERN_API
 #endif
 
-#include "matrix_types.hpp"
-
 namespace skylark {
 namespace base {
 

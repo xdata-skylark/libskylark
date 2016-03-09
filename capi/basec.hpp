@@ -7,12 +7,7 @@
 #define SKYLARK_EXTERN_API
 #endif
 
-namespace skylark {
-namespace base {
-
-class context_t;
-
-} }
+struct sl_context_t;
 
 #define SL_COLUMNWISE 1
 #define SL_ROWWISE    2
@@ -35,7 +30,7 @@ SKYLARK_EXTERN_API const char* sl_strerror(const int errorcode);
 SKYLARK_EXTERN_API bool sl_has_elemental();
 SKYLARK_EXTERN_API bool sl_has_combblas();
 
-// Support for skylark::base::context_t.
+// Support for sl_context_t.
 
 /** Creating a default Skylark context required for applying sketches.
  *  @param seed for the rng generator
@@ -43,7 +38,7 @@ SKYLARK_EXTERN_API bool sl_has_combblas();
  *  @return a Skylark context
  */
 SKYLARK_EXTERN_API int sl_create_default_context(int seed,
-    skylark::base::context_t **ctxt);
+    sl_context_t **ctxt);
 
 /** Creating a Skylark context required for applying sketches.
  *  @param seed for the rng generator
@@ -52,12 +47,12 @@ SKYLARK_EXTERN_API int sl_create_default_context(int seed,
  *  @return a Skylark context
  */
 SKYLARK_EXTERN_API int sl_create_context(int seed, MPI_Comm cm,
-    skylark::base::context_t **ctxt);
+    sl_context_t **ctxt);
 
 /** Free resources hold by a Skylark context.
  *  @param ctxt Skylark context
  */
-SKYLARK_EXTERN_API int sl_free_context(skylark::base::context_t *ctxt);
+SKYLARK_EXTERN_API int sl_free_context(sl_context_t *ctxt);
 
 // Helper functions to allow wrapping of object
 

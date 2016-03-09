@@ -69,6 +69,8 @@ static transform_type_t str2transform_type(const char *str) {
     return TRANSFORM_TYPE_ERROR;
 }
 
+skylark::base::context_t &dref_context(sl_context_t *ctxt);
+
 extern "C" {
 
 /** Return string defining what is supported */
@@ -377,7 +379,7 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
 }
 
 /* Transforms */
-SKYLARK_EXTERN_API int sl_create_sketch_transform(base::context_t *ctxt,
+SKYLARK_EXTERN_API int sl_create_sketch_transform(sl_context_t *ctxt,
     char *type_, int n, int s,
     sl_sketch_transform_t **sketch, ...) {
 
@@ -386,8 +388,8 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(base::context_t *ctxt,
 # define AUTO_NEW_DISPATCH(T, C)                                    \
     SKYLARK_BEGIN_TRY()                                             \
         if (type == T)                                              \
-            *sketch = new sl_sketch_transform_t(type,         \
-                          new C(n, s, *ctxt));                      \
+            *sketch = new sl_sketch_transform_t(type,               \
+                new C(n, s, dref_context(ctxt)));                   \
     SKYLARK_END_TRY()                                               \
     SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
 
@@ -397,9 +399,9 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(base::context_t *ctxt,
             va_list argp;                                            \
             va_start(argp, sketch);                                  \
             double p1 = va_arg(argp, double);                        \
-            sl_sketch_transform_t *r =                         \
-                new sl_sketch_transform_t(type,                \
-                    new C(n, s, p1, *ctxt));                         \
+            sl_sketch_transform_t *r =                               \
+                new sl_sketch_transform_t(type,                      \
+                    new C(n, s, p1, dref_context(ctxt)));            \
             va_end(argp);                                            \
             *sketch = r;                                             \
         }                                                            \
@@ -424,7 +426,7 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(base::context_t *ctxt,
             sl_sketch_transform_t *r =
                 new sl_sketch_transform_t(MaternRFT,
                     new sketch::
-                    MaternRFT_data_t(n, s, nu, l, *ctxt));
+                    MaternRFT_data_t(n, s, nu, l, dref_context(ctxt)));
             va_end(argp);
             *sketch = r;
         }
@@ -446,7 +448,8 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(base::context_t *ctxt,
                 new sl_sketch_transform_t(GaussianQRFT,
                     new sketch::
                     GaussianQRFT_data_t<base::
-                    leaped_halton_sequence_t>(n, s, sigma, sequence, skip, *ctxt));
+                    leaped_halton_sequence_t>(n, s, sigma, sequence, skip,
+                        dref_context(ctxt)));
             va_end(argp);
             *sketch = r;
         }
@@ -468,7 +471,8 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(base::context_t *ctxt,
                 new sl_sketch_transform_t(GaussianQRFT,
                     new sketch::
                     LaplacianQRFT_data_t<base::
-                    leaped_halton_sequence_t>(n, s, sigma, sequence, skip, *ctxt));
+                    leaped_halton_sequence_t>(n, s, sigma, sequence, skip,
+                        dref_context(ctxt)));
             va_end(argp);
             *sketch = r;
         }
@@ -493,7 +497,8 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(base::context_t *ctxt,
                 new sl_sketch_transform_t(ExpSemigroupQRLT,
                     new sketch::
                     ExpSemigroupQRLT_data_t<base::
-                    leaped_halton_sequence_t>(n, s, beta, sequence, skip, *ctxt));
+                    leaped_halton_sequence_t>(n, s, beta, sequence, skip,
+                        dref_context(ctxt)));
             va_end(argp);
             *sketch = r;
         }
@@ -511,7 +516,8 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(base::context_t *ctxt,
             double l = va_arg(argp, double);
             sl_sketch_transform_t *r =
                 new sl_sketch_transform_t(FastMaternRFT,
-                    new sketch::FastMaternRFT_data_t(n, s, nu, l, *ctxt));
+                    new sketch::FastMaternRFT_data_t(n, s, nu, l,
+                        dref_context(ctxt)));
             va_end(argp);
             *sketch = r;
         }
@@ -527,7 +533,8 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(base::context_t *ctxt,
             double g = va_arg(argp, double);
             sl_sketch_transform_t *r =
                 new sl_sketch_transform_t(PPT,
-                    new sketch::PPT_data_t(n, s, q, c, g, *ctxt));
+                    new sketch::PPT_data_t(n, s, q, c, g,
+                        dref_context(ctxt)));
             va_end(argp);
             *sketch = r;
         }

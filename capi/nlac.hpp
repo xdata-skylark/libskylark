@@ -23,7 +23,7 @@ extern "C" {
  */
 SKYLARK_EXTERN_API int sl_approximate_symmetric_svd(
     char *A_type, void *A_, char *S_type, void *S_, char *V_type, void *V_,
-    uint16_t k, char *params_json, skylark::base::context_t *ctxt);
+    uint16_t k, char *params_json, sl_context_t *ctxt);
 
 /**
  * Approximate SVD (A = U S V^T).
@@ -43,7 +43,7 @@ SKYLARK_EXTERN_API int sl_approximate_symmetric_svd(
 SKYLARK_EXTERN_API int sl_approximate_svd(
     char *A_type, void *A_, char *U_type, void *U_,
     char *S_type, void *S_, char* V_type, void *V_,
-    uint16_t k, char *params_json, skylark::base::context_t *ctxt);
+    uint16_t k, char *params_json, sl_context_t *ctxt);
 
 } // extern "C"
 

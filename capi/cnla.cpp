@@ -9,14 +9,15 @@
 #include "sketchc.hpp"
 #include "../nla/nla.hpp"
 
-namespace base = skylark::base;
 namespace nla = skylark::nla;
+
+skylark::base::context_t &dref_context(sl_context_t *ctxt);
 
 extern "C" {
 
 SKYLARK_EXTERN_API int sl_approximate_symmetric_svd(
     char *A_type, void *A_, char *S_type, void *S_, char *V_type, void *V_,
-    uint16_t k, char *params, base::context_t *ctxt) {
+    uint16_t k, char *params, sl_context_t *ctxt) {
 
     //lower ? El::LOWER : El:UPPER
     boost::property_tree::ptree json_tree;
@@ -36,7 +37,8 @@ SKYLARK_EXTERN_API int sl_approximate_symmetric_svd(
         VT &V = * static_cast<VT*>(V_);                                  \
                                                                          \
         SKYLARK_BEGIN_TRY()                                              \
-            skylark::nla::ApproximateSymmetricSVD(El::LOWER, A, V, S, k, *ctxt, parms);  \
+            skylark::nla::ApproximateSymmetricSVD(El::LOWER, A, V, S, k, \
+                dref_context(ctxt), parms);                              \
         SKYLARK_END_TRY()                                                \
         SKYLARK_CATCH_AND_RETURN_ERROR_CODE();                           \
     }
@@ -55,7 +57,7 @@ SKYLARK_EXTERN_API int sl_approximate_symmetric_svd(
 SKYLARK_EXTERN_API int sl_approximate_svd(
     char *A_type, void *A_, char *U_type, void *U_,
     char *S_type, void *S_, char *V_type, void *V_,
-    uint16_t k, char *params, base::context_t *ctxt) {
+    uint16_t k, char *params, sl_context_t *ctxt) {
 
     boost::property_tree::ptree json_tree;
     std::stringstream data;
@@ -76,7 +78,8 @@ SKYLARK_EXTERN_API int sl_approximate_svd(
         VT &V = * static_cast<VT*>(V_);                                  \
                                                                          \
         SKYLARK_BEGIN_TRY()                                              \
-            skylark::nla::ApproximateSVD(A, U, S, V, k, *ctxt, parms);   \
+            skylark::nla::ApproximateSVD(A, U, S, V, k,                  \
+                dref_context(ctxt), parms);                              \
         SKYLARK_END_TRY()                                                \
         SKYLARK_CATCH_AND_RETURN_ERROR_CODE();                           \
     }

@@ -6,7 +6,15 @@
 #include "../base/context.hpp"
 #include "../base/exception.hpp"
 
-namespace skybase = skylark::base;
+struct sl_context_t : public skylark::base::context_t {
+    sl_context_t(int seed) : skylark::base::context_t(seed) {
+
+    }
+};
+
+skylark::base::context_t &dref_context(sl_context_t *ctxt) {
+    return *ctxt;
+}
 
 extern "C" {
 
@@ -26,26 +34,26 @@ SKYLARK_EXTERN_API bool sl_has_combblas() {
 #endif
 }
 
-/* Support for skylark::skybase::context_t. */
+/* Support for skylark::sl_context_t. */
 SKYLARK_EXTERN_API int sl_create_default_context(int seed,
-        skybase::context_t **ctxt) {
+        sl_context_t **ctxt) {
     SKYLARK_BEGIN_TRY()
-        *ctxt = new skybase::context_t(seed);
+        *ctxt = new sl_context_t(seed);
     SKYLARK_END_TRY()
     SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
     return 0;
 }
 
 SKYLARK_EXTERN_API int sl_create_context(int seed,
-        MPI_Comm comm, skybase::context_t **ctxt) {
+        MPI_Comm comm, sl_context_t **ctxt) {
     SKYLARK_BEGIN_TRY()
-        *ctxt = new skybase::context_t(seed);
+        *ctxt = new sl_context_t(seed);
     SKYLARK_END_TRY()
     SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
     return 0;
 }
 
-SKYLARK_EXTERN_API int sl_free_context(skybase::context_t *ctxt) {
+SKYLARK_EXTERN_API int sl_free_context(sl_context_t *ctxt) {
     SKYLARK_BEGIN_TRY()
         delete ctxt;
     SKYLARK_END_TRY()

@@ -19,7 +19,7 @@ extern "C" {
  *  @return sketch transformation
  */
 SKYLARK_EXTERN_API int sl_create_sketch_transform(
-        skylark::base::context_t *ctxt, char *type,
+        sl_context_t *ctxt, char *type,
        int n, int s, sl_sketch_transform_t **sketch, ...);
 
 /** Deserialize a sketch transformation.

@@ -4,18 +4,7 @@
 #include "mpi.h"
 #include "config.h"
 
-// Some tools require special API declaration. Customizing the
-// SKYLARK_EXTERN_API allows this. The default is simply nothing.
-#ifndef SKYLARK_EXTERN_API
-#define SKYLARK_EXTERN_API
-#endif
-
-namespace skylark {
-namespace base {
-
-class context_t;
-
-} }
+#include "basec.hpp"
 
 extern "C" {
 

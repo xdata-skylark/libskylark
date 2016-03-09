@@ -299,8 +299,8 @@ compiles the selected boost libraries (you might need to adapt the path to
     see http://www-01.ibm.com/support/docview.wss?uid=swg1LI77249.
 
 
-Elemental 0.86
----------------
+Elemental
+---------
 
 Elemental is a framework for distributed-memory dense linear algebra that
 strives to be both fast and convenient. It combines ideas including:
@@ -308,32 +308,27 @@ element-wise matrix distributions (Hendrickson et al.), object-oriented
 submatrix tracking (FLAME, van de Geijn et al.), and first-class matrix
 distributions (PLAPACK, van de Geijn et al.).
 
-We support version 0.86. Elemental's API is a moving target, so newer versions
-might not work as-is.
+Elemental's API is a moving target, so newer versions might not work as-is.
+Currently we only support `0ffa9fc29ab740a7a96eccc45c180463723f465d` (see
+https://github.com/elemental/Elemental/commit/0ffa9fc29ab740a7a96eccc45c180463723f465d).
 
-.. note:: Currently version 0.86 is not officially released yet. Please,
-    use the release candidate, e.g.
-    https://github.com/elemental/Elemental/releases/tag/0.86-rc1.
+.. note:: There is no offical supported release yet. Please, use
+    https://github.com/elemental/Elemental/commit/0ffa9fc29ab740a7a96eccc45c180463723f465d.
 
 *Installation: (make sure to use a compiler with c++11 support)*
 
 ::
 
-        wget https://github.com/elemental/Elemental/releases/tag/0.86-rc1
-        unzip 0.86-rc1.zip
-        cd Elemental-0.86-rc1/
-        rmdir external/metis
-        git clone https://github.com/poulson/metis.git external/metis
+        git clone https://github.com/elemental/Elemental.git
+        cd Elemental
+        git checkout 0ffa9fc29ab740a7a96eccc45c180463723f465d
         mkdir build
         cd build
-        cmake -DEL_USE_64BIT_INTS=ON -DCMAKE_BUILD_TYPE=HybridRelease ../
+        cmake -DEL_USE_64BIT_INTS=ON -DEL_HAVE_QUADMATH=OFF -DCMAKE_BUILD_TYPE=Release -DEL_HYBRID=ON -DBUILD_SHARED_LIBS=ON -DMATH_LIBS="-L/usr/lib -llapack -lopenblas -lm" -DINSTALL_PYTHON_PACKAGE=ON ../
         make
         sudo make install
 
 The installation prefix can be set using the ``CMAKE_INSTALL_PREFIX``.
-
-Note that instead of pulling Metis into the Elemental directory you can set
-the Metis path by setting the `METIS_ROOT` environment variable.
 
 If you want to use non-default math libraries specify the ``MATH_LIBS``
 variable.

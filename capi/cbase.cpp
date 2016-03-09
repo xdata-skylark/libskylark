@@ -9,7 +9,7 @@
 struct sl_context_t : public skylark::base::context_t {
     sl_context_t(int seed) : skylark::base::context_t(seed) {
 
-    }
+   }
 };
 
 skylark::base::context_t &dref_context(sl_context_t *ctxt) {

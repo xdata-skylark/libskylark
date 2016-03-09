@@ -17,10 +17,7 @@ include_directories (
 )
 
 set(SKYLARK_CAPI_SRCS
-    matrix_types.cpp
-    csketch.cpp
-    cnla.cpp
-    cbase.cpp
+    capi.cpp
 )
 
 add_library(cskylark
@@ -34,9 +31,6 @@ target_link_libraries(cskylark
                       ${Boost_LIBRARIES}
 )
 set_target_properties(cskylark PROPERTIES SUFFIX ".so")
-# FIXME: this is really ugly! We should find a way to compile w/o multiple
-# defs..
-set (CMAKE_SHARED_LINKER_FLAGS "-Wl,--allow-multiple-definition")
 
 install (
     TARGETS cskylark

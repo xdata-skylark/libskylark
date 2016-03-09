@@ -42,6 +42,10 @@ SKYLARK_EXTERN_API int sl_approximate_symmetric_svd(
         Matrix, Matrix, Matrix);
 
     AUTO_SYM_SVD_DISPATCH(
+        sketchc::SPARSE_MATRIX, sketchc::MATRIX, sketchc::MATRIX,
+        SparseMatrix, Matrix, Matrix);
+
+    AUTO_SYM_SVD_DISPATCH(
         sketchc::DIST_MATRIX, sketchc::DIST_MATRIX, sketchc::DIST_MATRIX,
         DistMatrix, DistMatrix, DistMatrix);
 
@@ -80,6 +84,11 @@ SKYLARK_EXTERN_API int sl_approximate_svd(
     AUTO_SVD_DISPATCH(
         sketchc::MATRIX, sketchc::MATRIX, sketchc::MATRIX, sketchc::MATRIX,
         Matrix, Matrix, Matrix, Matrix);
+
+    AUTO_SVD_DISPATCH(
+        sketchc::SPARSE_MATRIX, sketchc::MATRIX,
+        sketchc::MATRIX, sketchc::MATRIX,
+        SparseMatrix, Matrix, Matrix, Matrix);
 
     AUTO_SVD_DISPATCH(
         sketchc::DIST_MATRIX, sketchc::DIST_MATRIX,

@@ -6,51 +6,6 @@
 
 #include "basec.hpp"
 
-#if 0
-
-namespace skylark {
-namespace sketch {
-
-class sketch_transform_data_t;
-
-namespace c {
-
-enum transform_type_t {
-    TRANSFORM_TYPE_ERROR,
-    JLT,
-    CT,
-    FJLT,
-    CWT,
-    MMT,
-    WZT,
-    PPT,
-    GaussianRFT,
-    LaplacianRFT,
-    MaternRFT,
-    GaussianQRFT,
-    LaplacianQRFT,
-    FastGaussianRFT,
-    FastMaternRFT,
-    ExpSemigroupRLT,
-    ExpSemigroupQRLT
-};
-
-struct sketch_transform_t {
-    const transform_type_t type;
-    sketch_transform_data_t * const transform_obj;
-
-    sketch_transform_t(transform_type_t type,
-        sketch_transform_data_t *transform_obj)
-        : type(type), transform_obj(transform_obj) {}
-};
-
-} // namespace c
-} // namespace sketchc
-
-} // namespace skylark
-
-#endif
-
 struct sl_sketch_transform_t;
 
 extern "C" {

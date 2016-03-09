@@ -27,9 +27,6 @@ typedef SpDCCols< size_t, double > col_t;
 typedef SpParMat< size_t, double, col_t > DistSparseMatrix;
 #endif
 
-namespace skylark {
-namespace sketch {
-namespace c {
 
 enum matrix_type_t {
     MATRIX_TYPE_ERROR,
@@ -45,10 +42,6 @@ enum matrix_type_t {
     SPARSE_MATRIX                /**< Sparse local matrix */
 };
 
-} // namespace c
-} // namespace sketch
-} // namespace skylark
-
-skylark::sketch::c::matrix_type_t str2matrix_type(const char *str);
+matrix_type_t str2matrix_type(const char *str);
 
 #endif // SKYLARK_MATRIX_TYPES_HPP

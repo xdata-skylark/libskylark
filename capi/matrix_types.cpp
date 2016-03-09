@@ -1,18 +1,16 @@
 #include "matrix_types.hpp"
 
-namespace sketchc = skylark::sketch::c;
+matrix_type_t str2matrix_type(const char *str) {
+    STRCMP_TYPE(Matrix,             MATRIX);
+    STRCMP_TYPE(SharedMatrix,       SHARED_MATRIX);
+    STRCMP_TYPE(RootMatrix,         ROOT_MATRIX);
+    STRCMP_TYPE(DistMatrix,         DIST_MATRIX);
+    STRCMP_TYPE(DistMatrix_VC_STAR, DIST_MATRIX_VC_STAR);
+    STRCMP_TYPE(DistMatrix_VR_STAR, DIST_MATRIX_VR_STAR);
+    STRCMP_TYPE(DistMatrix_STAR_VC, DIST_MATRIX_VC_STAR);
+    STRCMP_TYPE(DistMatrix_STAR_VR, DIST_MATRIX_VR_STAR);
+    STRCMP_TYPE(SparseMatrix,       SPARSE_MATRIX);
+    STRCMP_TYPE(DistSparseMatrix,   DIST_SPARSE_MATRIX);
 
-sketchc::matrix_type_t str2matrix_type(const char *str) {
-    STRCMP_TYPE(Matrix,             sketchc::MATRIX);
-    STRCMP_TYPE(SharedMatrix,       sketchc::SHARED_MATRIX);
-    STRCMP_TYPE(RootMatrix,         sketchc::ROOT_MATRIX);
-    STRCMP_TYPE(DistMatrix,         sketchc::DIST_MATRIX);
-    STRCMP_TYPE(DistMatrix_VC_STAR, sketchc::DIST_MATRIX_VC_STAR);
-    STRCMP_TYPE(DistMatrix_VR_STAR, sketchc::DIST_MATRIX_VR_STAR);
-    STRCMP_TYPE(DistMatrix_STAR_VC, sketchc::DIST_MATRIX_VC_STAR);
-    STRCMP_TYPE(DistMatrix_STAR_VR, sketchc::DIST_MATRIX_VR_STAR);
-    STRCMP_TYPE(SparseMatrix,       sketchc::SPARSE_MATRIX);
-    STRCMP_TYPE(DistSparseMatrix,   sketchc::DIST_SPARSE_MATRIX);
-
-    return sketchc::MATRIX_TYPE_ERROR;
+    return MATRIX_TYPE_ERROR;
 }

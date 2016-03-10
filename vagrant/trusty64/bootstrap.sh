@@ -307,6 +307,8 @@ echo "c.NotebookApp.open_browser = False" >> $HOME/.ipython/profile_nbserver/ipy
 echo "c.NotebookManager.notebook_dir = u'/home/${UNAME}/notebooks'" >> $HOME/.ipython/profile_nbserver/ipython_notebook_config.py
 
 cd /home/${UNAME}
+export LD_LIBRARY_PATH=/home/${UNAME}/install/lib:/usr/local/lib:$LD_LIBRARY_PATH
+export LD_PRELOAD=/usr/lib/libmpi.so
 dtach -n /tmp/ipython_notebook -Ez ipython notebook --profile=nbserver
 
 #FIXME: dir to /home/vagrant, run as vagrant user?

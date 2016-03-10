@@ -282,37 +282,33 @@ segfault in the compiler for some packages (e.g. <strong class="command">program
 see <a class="reference external" href="http://www-01.ibm.com/support/docview.wss?uid=swg1LI77249">http://www-01.ibm.com/support/docview.wss?uid=swg1LI77249</a>.</p>
 </div>
 </div>
-<div class="section" id="elemental-0-86">
-<h3>Elemental 0.86<a class="headerlink" href="#elemental-0-86" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="elemental">
+<h3>Elemental<a class="headerlink" href="#elemental" title="Permalink to this headline">¶</a></h3>
 <p>Elemental is a framework for distributed-memory dense linear algebra that
 strives to be both fast and convenient. It combines ideas including:
 element-wise matrix distributions (Hendrickson et al.), object-oriented
 submatrix tracking (FLAME, van de Geijn et al.), and first-class matrix
 distributions (PLAPACK, van de Geijn et al.).</p>
-<p>We support version 0.86. Elemental&#8217;s API is a moving target, so newer versions
-might not work as-is.</p>
+<p>Elemental&#8217;s API is a moving target, so newer versions might not work as-is.
+Currently we only support <cite>0ffa9fc29ab740a7a96eccc45c180463723f465d</cite> (see
+<a class="reference external" href="https://github.com/elemental/Elemental/commit/0ffa9fc29ab740a7a96eccc45c180463723f465d">https://github.com/elemental/Elemental/commit/0ffa9fc29ab740a7a96eccc45c180463723f465d</a>).</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">Currently version 0.86 is not officially released yet. Please,
-use the release candidate, e.g.
-<a class="reference external" href="https://github.com/elemental/Elemental/releases/tag/0.86-rc1">https://github.com/elemental/Elemental/releases/tag/0.86-rc1</a>.</p>
+<p class="last">There is no offical supported release yet. Please, use
+<a class="reference external" href="https://github.com/elemental/Elemental/commit/0ffa9fc29ab740a7a96eccc45c180463723f465d">https://github.com/elemental/Elemental/commit/0ffa9fc29ab740a7a96eccc45c180463723f465d</a>.</p>
 </div>
 <p><em>Installation: (make sure to use a compiler with c++11 support)</em></p>
-<div class="highlight-rst"><div class="highlight"><pre>wget https://github.com/elemental/Elemental/releases/tag/0.86-rc1
-unzip 0.86-rc1.zip
-cd Elemental-0.86-rc1/
-rmdir external/metis
-git clone https://github.com/poulson/metis.git external/metis
+<div class="highlight-rst"><div class="highlight"><pre>git clone https://github.com/elemental/Elemental.git
+cd Elemental
+git checkout 0ffa9fc29ab740a7a96eccc45c180463723f465d
 mkdir build
 cd build
-cmake -DEL_USE_64BIT_INTS=ON -DCMAKE_BUILD_TYPE=HybridRelease ../
+cmake -DEL_USE_64BIT_INTS=ON -DEL_HAVE_QUADMATH=OFF -DCMAKE_BUILD_TYPE=Release -DEL_HYBRID=ON -DBUILD_SHARED_LIBS=ON -DMATH_LIBS=&quot;-L/usr/lib -llapack -lopenblas -lm&quot; -DINSTALL_PYTHON_PACKAGE=ON ../
 make
 sudo make install
 </pre></div>
 </div>
 <p>The installation prefix can be set using the <tt class="docutils literal"><span class="pre">CMAKE_INSTALL_PREFIX</span></tt>.</p>
-<p>Note that instead of pulling Metis into the Elemental directory you can set
-the Metis path by setting the <cite>METIS_ROOT</cite> environment variable.</p>
 <p>If you want to use non-default math libraries specify the <tt class="docutils literal"><span class="pre">MATH_LIBS</span></tt>
 variable.
 For example for OpenBLAS, run cmake along the following lines:</p>
@@ -1004,8 +1000,8 @@ instructions as stated on <a class="reference external" href="https://trac.alcf.
 installation scripts <a class="reference external" href="https://github.com/sloede/install-bgq">https://github.com/sloede/install-bgq</a>.</p>
 <p>After this step we assume you have installed LLVM/CLANG under <cite>$HOME/bgclang/</cite>.</p>
 </div>
-<div class="section" id="elemental">
-<h3>Elemental<a class="headerlink" href="#elemental" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id1">
+<h3>Elemental<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <p>Download elemental 0.83 (<a class="reference external" href="http://libelemental.org/pub/releases/elemental-0.83.tgz">http://libelemental.org/pub/releases/elemental-0.83.tgz</a>).
 Then use the following toolchain file (e.g. save to <cite>BGQ-toolchain.cmake</cite>)</p>
 <div class="highlight-cmake"><div class="highlight"><pre>set(GCC_ROOT  &quot;/bgsys/drivers/ppcfloor/gnu-linux&quot;)
@@ -1142,8 +1138,8 @@ make
 <p class="last">for this to work make sure that <tt class="docutils literal"><span class="pre">clang++</span></tt> is in your PATH.</p>
 </div>
 </div>
-<div class="section" id="id1">
-<h3>HDF5<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id2">
+<h3>HDF5<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <p>Make sure you have a compiled libz around then run:</p>
 <div class="highlight-bash"><div class="highlight"><pre><span class="nv">CC</span><span class="o">=</span><span class="nv">$HOME</span>/bgclang/mpi/bgclang/bin/mpiclang <span class="se">\</span>
 <span class="nv">CXX</span><span class="o">=</span><span class="nv">$HOME</span>/bgclang/mpi/bgclang/bin/mpiclang++11 <span class="se">\</span>

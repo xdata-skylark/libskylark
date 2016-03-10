@@ -24,21 +24,27 @@ class Params():
                 sort_keys=True)
 
 
-def approximate_svd(A, k=10, parms=None):
+def approximate_svd(A, k=10, parms=None, resultType=None):
     """
     Compute the SVD of **A** such that **SVD(A) = U S V^T**.
 
     :param A: Input matrix.
     :param k: Dimension to apply along.
+    :param parms: Parmaters for the SVD.
+    :param resultType: Type of U, S, V matrices.
     :returns: (U, S, V)
     """
 
     A = sk._adapt(A)
-    ctor = A.getctor()
+    if resultType == None:
+        resultType = A
+    else:
+        resultType = sk._adapt(resultType)
+    ctor = resultType.getctor()
 
-    U = ctor(0, 0, A)
-    S = ctor(0, 0, A)
-    V = ctor(0, 0, A)
+    U = ctor(0, 0, resultType)
+    S = ctor(0, 0, resultType)
+    V = ctor(0, 0, resultType)
 
     U = sk._adapt(U)
     S = sk._adapt(S)

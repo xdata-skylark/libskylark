@@ -14,3 +14,29 @@ matrix_type_t str2matrix_type(const char *str) {
 
     return MATRIX_TYPE_ERROR;
 }
+
+# define STRCMP_CONVERT(STR) \
+    if (std::strcmp(type, #STR) == 0) \
+        anyobj = static_cast<STR*>(obj);
+
+boost::any skylark_void2any(const char *type, void *obj) {
+
+    boost::any anyobj;
+
+    STRCMP_CONVERT(Matrix);
+    STRCMP_CONVERT(SharedMatrix);
+    STRCMP_CONVERT(RootMatrix);
+    STRCMP_CONVERT(DistMatrix);
+    STRCMP_CONVERT(DistMatrix_VC_STAR);
+    STRCMP_CONVERT(DistMatrix_VR_STAR);
+    STRCMP_CONVERT(DistMatrix_STAR_VC);
+    STRCMP_CONVERT(DistMatrix_STAR_VR);
+    STRCMP_CONVERT(SparseMatrix);
+
+#ifdef SKYLARK_HAVE_COMBBLAS
+    STRCMP_CONVERT(DistSparseMatrix);
+#endif 
+    return anyobj;
+}
+
+#undef STRCMP_CONVERT

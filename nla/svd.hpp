@@ -393,6 +393,107 @@ void ApproximateSymmetricSVD(El::UpperOrLower uplo,
     El::Copy(U, V);
 }
 
+
+/*******  ANY variants ********/
+void ApproximateSymmetricSVD(El::UpperOrLower uplo,
+    const boost::any &A, const boost::any &V, const boost::any &S, int rank,
+    base::context_t& context,
+    approximate_svd_params_t params = approximate_svd_params_t()) {
+
+#define SKYLARK_SVD_ANY_APPLY_DISPATCH(AT, VT, ST)                      \
+    if (V.type() == typeid(VT*) && S.type() == typeid(ST*))  {          \
+        if (A.type() == typeid(AT*)) {                                  \
+            ApproximateSymmetricSVD(uplo, *boost::any_cast<AT*>(A),     \
+                *boost::any_cast<VT*>(V), *boost::any_cast<ST*>(S),     \
+                rank, context, params);                                 \
+        }                                                               \
+        if (A.type() == typeid(const AT*)) {                            \
+            ApproximateSymmetricSVD(uplo, *boost::any_cast<const AT*>(A), \
+                *boost::any_cast<VT*>(V), *boost::any_cast<ST*>(S),     \
+                rank, context, params);                                 \
+        }                                                               \
+     }
+
+#if !(defined SKYLARK_NO_ANY)
+
+    SKYLARK_SVD_ANY_APPLY_DISPATCH(mdtypes::matrix_t,
+        mdtypes::matrix_t, mdtypes::matrix_t);
+    SKYLARK_SVD_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
+        mdtypes::dist_matrix_t, mdtypes::dist_matrix_t);
+    SKYLARK_SVD_ANY_APPLY_DISPATCH(mdtypes::shared_matrix_t,
+        mdtypes::shared_matrix_t, mdtypes::shared_matrix_t);
+    SKYLARK_SVD_ANY_APPLY_DISPATCH(mdtypes::root_matrix_t,
+        mdtypes::root_matrix_t, mdtypes::root_matrix_t);
+    SKYLARK_SVD_ANY_APPLY_DISPATCH(mdtypes::sparse_matrix_t,
+        mdtypes::matrix_t, mdtypes::matrix_t);
+
+    SKYLARK_SVD_ANY_APPLY_DISPATCH(mftypes::matrix_t,
+        mftypes::matrix_t, mftypes::matrix_t);
+    SKYLARK_SVD_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t,
+        mftypes::dist_matrix_t, mftypes::dist_matrix_t);
+    SKYLARK_SVD_ANY_APPLY_DISPATCH(mftypes::shared_matrix_t,
+        mftypes::shared_matrix_t, mftypes::shared_matrix_t);
+    SKYLARK_SVD_ANY_APPLY_DISPATCH(mftypes::root_matrix_t,
+        mftypes::root_matrix_t, mftypes::root_matrix_t);
+    SKYLARK_SVD_ANY_APPLY_DISPATCH(mftypes::sparse_matrix_t,
+        mftypes::matrix_t, mftypes::matrix_t);
+
+#endif
+
+#undef SKYLARK_SVD_ANY_APPLY_DISPATCH
+
+}
+
+void ApproximateSVD(const boost::any &A,
+    const boost::any &U, const boost::any &S,
+    const boost::any &V, int rank, base::context_t& context,
+    approximate_svd_params_t params = approximate_svd_params_t()) {
+
+#define SKYLARK_SVD_ANY_APPLY_DISPATCH(AT, UT, VT, ST)                  \
+    if (V.type() == typeid(VT*) && S.type() == typeid(ST*))  {          \
+        if (A.type() == typeid(AT*)) {                                  \
+            ApproximateSVD(*boost::any_cast<AT*>(A),              \
+                *boost::any_cast<UT*>(U), *boost::any_cast<ST*>(S),     \
+                *boost::any_cast<VT*>(V), rank, context, params);       \
+        }                                                               \
+        if (A.type() == typeid(const AT*)) {                            \
+            ApproximateSVD(*boost::any_cast<const AT*>(A),        \
+                *boost::any_cast<UT*>(U), *boost::any_cast<ST*>(S),     \
+                *boost::any_cast<VT*>(V), rank, context, params);       \
+        }                                                               \
+     }
+
+#if !(defined SKYLARK_NO_ANY)
+
+    SKYLARK_SVD_ANY_APPLY_DISPATCH(mdtypes::matrix_t,
+        mdtypes::matrix_t, mdtypes::matrix_t, mdtypes::matrix_t);
+    SKYLARK_SVD_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
+        mdtypes::dist_matrix_t, mdtypes::dist_matrix_t, mdtypes::dist_matrix_t);
+    SKYLARK_SVD_ANY_APPLY_DISPATCH(mdtypes::shared_matrix_t,
+        mdtypes::shared_matrix_t, mdtypes::shared_matrix_t, mdtypes::shared_matrix_t);
+    SKYLARK_SVD_ANY_APPLY_DISPATCH(mdtypes::root_matrix_t,
+        mdtypes::root_matrix_t, mdtypes::root_matrix_t, mdtypes::root_matrix_t);
+    SKYLARK_SVD_ANY_APPLY_DISPATCH(mdtypes::sparse_matrix_t,
+        mdtypes::matrix_t, mdtypes::matrix_t, mdtypes::matrix_t);
+
+    SKYLARK_SVD_ANY_APPLY_DISPATCH(mftypes::matrix_t,
+        mftypes::matrix_t, mftypes::matrix_t, mftypes::matrix_t);
+    SKYLARK_SVD_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t,
+        mftypes::dist_matrix_t, mftypes::dist_matrix_t, mftypes::dist_matrix_t);
+    SKYLARK_SVD_ANY_APPLY_DISPATCH(mftypes::shared_matrix_t,
+        mftypes::shared_matrix_t, mftypes::shared_matrix_t, mftypes::shared_matrix_t);
+    SKYLARK_SVD_ANY_APPLY_DISPATCH(mftypes::root_matrix_t,
+        mftypes::root_matrix_t, mftypes::root_matrix_t,  mftypes::root_matrix_t);
+    SKYLARK_SVD_ANY_APPLY_DISPATCH(mftypes::sparse_matrix_t,
+        mftypes::matrix_t, mftypes::matrix_t, mftypes::matrix_t);
+
+#endif
+
+#undef SKYLARK_SVD_ANY_APPLY_DISPATCH
+
+}
+
+
 }  // namespace nla
 }  // namespace skylark
 

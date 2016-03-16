@@ -1,8 +1,5 @@
 #include "boost/property_tree/ptree.hpp"
 
-// TODO for now... but we can use the any,any to implement c-api
-#define SKYLARK_NO_ANY
-
 #include "matrix_types.hpp"
 #include "sketchc.hpp"
 #include "../base/context.hpp"

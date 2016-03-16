@@ -2,6 +2,7 @@
 #define SKYLARK_MATRIX_TYPES_HPP
 
 #include <config.h>
+#include <boost/any.hpp>
 
 #include <El.hpp>
 #ifdef SKYLARK_HAVE_COMBBLAS
@@ -45,5 +46,6 @@ enum matrix_type_t {
 };
 
 matrix_type_t str2matrix_type(const char *str);
+boost::any skylark_void2any(const char *type, void *obj);
 
 #endif // SKYLARK_MATRIX_TYPES_HPP

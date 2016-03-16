@@ -1,6 +1,8 @@
 #ifndef SKYLARK_SPECTRAL_HPP
 #define SKYLARK_SPECTRAL_HPP
 
+#include <boost/math/constants/constants.hpp>
+
 #include <El.hpp>
 
 namespace skylark { namespace nla {

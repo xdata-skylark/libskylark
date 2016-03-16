@@ -7,6 +7,7 @@
 #include "../../utility/external/print.hpp"
 #include "internal.hpp"
 #include "precond.hpp"
+#include "krylov_iter_params.hpp"
 
 namespace skylark {
 namespace algorithms {

@@ -76,7 +76,7 @@ void experiment() {
 
     // Solve using Sylark
     timer.restart();
-    skylark::nla::FastLeastSquares(El::NORMAL, A, b, x, context);
+    skylark::nla::FasterLeastSquares(El::NORMAL, A, b, x, context);
     telp = timer.elapsed();
     check_solution(A, b, x, r, res, resAtr, resFac);
     if (rank == 0)

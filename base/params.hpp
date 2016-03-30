@@ -1,6 +1,7 @@
 #ifndef SKYLARK_PARAMS_HPP
 #define SKYLARK_PARAMS_HPP
 
+#include "boost/property_tree/ptree.hpp"
 #include <ostream>
 
 namespace skylark { namespace base {
@@ -27,6 +28,14 @@ struct params_t {
                                debug_level(debug_level) {
 
   }
+
+    params_t(const boost::property_tree::ptree& json) :
+        log_stream(std::cout) {
+        am_i_printing = json.get<bool>("am_i_printing");
+        log_level = json.get<int>("log_level");
+        prefix = json.get<std::string>("prefix");
+        debug_level = json.get<int>("debug_level");
+    }
 
 };
 

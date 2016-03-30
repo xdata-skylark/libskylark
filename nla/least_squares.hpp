@@ -183,6 +183,26 @@ void ApproximateLeastSquares(El::Orientation orientation,
 }
 
 /**
+ * Parameter structure for Fast Least Squares
+ *
+ * Currently empty, but will add more (TODO).
+ */
+struct fast_ls_params_t : public base::params_t {
+
+    fast_ls_params_t(bool am_i_printing = false,
+        int log_level = 0,
+        std::ostream &log_stream = std::cout,
+        std::string prefix = "",
+        int debug_level = 0) :
+        base::params_t(am_i_printing, log_level, log_stream, prefix, debug_level) {}
+
+    fast_ls_params_t(const boost::property_tree::ptree& json)
+        : params_t(json) {
+
+    }
+};
+
+/**
  * Solve the linear least-squares problem
  *
  *   argmin_X ||A * X - B||_F
@@ -214,7 +234,8 @@ void ApproximateLeastSquares(El::Orientation orientation,
  */
 template<typename AT, typename BT, typename XT>
 void FastLeastSquares(El::Orientation orientation, const AT& A, const BT& B,
-    XT& X, base::context_t& context) {
+    XT& X, base::context_t& context,
+    fast_ls_params_t params = fast_ls_params_t()) {
 
     if (orientation != El::NORMAL)
         SKYLARK_THROW_EXCEPTION (
@@ -240,19 +261,20 @@ void FastLeastSquares(El::Orientation orientation, const AT& A, const BT& B,
  */
 
 void FastLeastSquares(El::Orientation orientation, const boost::any& A,
-    const boost::any& B, const boost::any& X, base::context_t& context) {
+    const boost::any& B, const boost::any& X, base::context_t& context,
+    fast_ls_params_t params = fast_ls_params_t()) {
 
 #define SKYLARK_FLS_ANY_APPLY_DISPATCH(AT, BT, XT)                      \
     if (B.type() == typeid(BT*) && X.type() == typeid(XT*))  {          \
         if (A.type() == typeid(AT*)) {                                  \
             FastLeastSquares(orientation, *boost::any_cast<AT*>(A),     \
                 *boost::any_cast<BT*>(B), *boost::any_cast<XT*>(X),     \
-                context);                                 \
+                context, params);                                       \
         }                                                               \
         if (A.type() == typeid(const AT*)) {                            \
             FastLeastSquares(orientation, *boost::any_cast<const AT*>(A), \
                 *boost::any_cast<BT*>(B), *boost::any_cast<XT*>(X),     \
-                context);                                               \
+                context, params);                                       \
         }                                                               \
      }
 

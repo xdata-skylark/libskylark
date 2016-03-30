@@ -440,6 +440,11 @@ void ApproximateSymmetricSVD(El::UpperOrLower uplo,
 
 #endif
 
+    SKYLARK_THROW_EXCEPTION (
+        base::sketch_exception()
+          << base::error_msg(
+           "This combination has not yet been implemented for ApproximateSymmetricSVD"));
+
 #undef SKYLARK_SVD_ANY_APPLY_DISPATCH
 
 }
@@ -488,6 +493,11 @@ void ApproximateSVD(const boost::any &A,
         mftypes::matrix_t, mftypes::matrix_t, mftypes::matrix_t);
 
 #endif
+
+    SKYLARK_THROW_EXCEPTION (
+        base::nla_exception()
+          << base::error_msg(
+           "This combination has not yet been implemented for ApproximateSVD"));
 
 #undef SKYLARK_SVD_ANY_APPLY_DISPATCH
 

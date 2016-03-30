@@ -6,6 +6,84 @@
 namespace skylark { namespace sketch {
 
 /**
+ * Specialization for local
+ */
+template < typename ValueType,
+           typename FUT,
+           typename ValueDistributionType>
+struct RFUT_t<
+    El::Matrix<ValueType>,
+    FUT,
+    ValueDistributionType> :
+        public RFUT_data_t<ValueDistributionType> {
+    // Typedef value, matrix, distribution and transform data types
+    // so that we can use them regularly and consistently.
+    typedef ValueType value_type;
+    typedef El::Matrix<ValueType> matrix_type;
+    typedef El::Matrix<ValueType> output_matrix_type;
+    typedef ValueDistributionType value_distribution_type;
+    typedef RFUT_data_t<ValueDistributionType> data_type;
+
+    /**
+     * Regular constructor
+     */
+    RFUT_t(int N, base::context_t& context)
+        : data_type (N, context) {
+
+    }
+
+    /**
+     * Copy constructor
+     */
+    RFUT_t (RFUT_t<matrix_type,
+                   FUT,
+                   value_distribution_type>& other) :
+        data_type(other) {}
+
+    /**
+     * Constructor from data
+     */
+    RFUT_t(const data_type& other_data) :
+        data_type(other_data) {}
+
+    /**
+     * Apply the transform that is described in by the mixed_A.
+     * mixed_A can be the same as A.
+     */
+    template <typename Dimension>
+    void apply (const matrix_type& A,
+        output_matrix_type& mixed_A,
+        Dimension dimension) const {
+
+        apply_impl(A, mixed_A, dimension);
+    }
+
+private:
+    /**
+     * Apply the transform to compute mixed_A.
+     * Implementation for the application on the columns.
+     */
+    void apply_impl (const matrix_type& A,
+        output_matrix_type& mixed_A,
+        columnwise_tag tag) const {
+        // TODO verify that A has the correct size
+
+        // TODO no need to create FUT everytime...
+        FUT T(data_type::_N);
+
+        // Scale
+        value_type scale = T.scale();
+        for (El::Int j = 0; j < A.Width(); j++)
+            for (El::Int i = 0; i < data_type::_N; i++)
+                mixed_A.Set(i, j,
+                    scale * data_type::D[i] * A.Get(i, j));
+
+        // Apply underlying transform
+        T.apply(mixed_A, tag);
+    }
+};
+
+/**
  * Specialization for [*, SOMETHING]
  */
 template < typename ValueType,

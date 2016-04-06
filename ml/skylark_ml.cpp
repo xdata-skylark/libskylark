@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
             read(comm, options.fileformat, options.testfile, X, Y,
                 model.get_input_size());
 
-            boost::mpi::reduce(comm, Y.Height(), n, std::plus<El::Int>(), 0);
+            boost::mpi::all_reduce(comm, Y.Height(), n, std::plus<El::Int>());
             PredictedLabels.Resize(n, 1);
             DecisionValues.Resize(n, model.get_output_size());
 
@@ -76,7 +76,7 @@ int main(int argc, char* argv[]) {
             read(comm, options.fileformat, options.testfile, X, Y,
                 model.get_input_size());
 
-            boost::mpi::reduce(comm, Y.Height(), n, std::plus<El::Int>(), 0);
+            boost::mpi::all_reduce(comm, Y.Height(), n, std::plus<El::Int>());
             PredictedLabels.Resize(n, 1);
             DecisionValues.Resize(n, model.get_output_size());
 

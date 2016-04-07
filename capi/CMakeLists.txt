@@ -9,7 +9,7 @@
 # CombBLAS_beta_13_0/FullyDistVec.cpp:466:8: error: comparison of unsigned
 # expression < 0 is always false [-Werror=type-limits]
 #
-set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/capi.cpp 
+set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/capi.cpp
                              PROPERTIES COMPILE_FLAGS "-Wno-error")
 
 include_directories (
@@ -38,7 +38,9 @@ install (
 )
 
 install (
+    FILES "basec.hpp"
     FILES "sketchc.hpp"
+    FILES "nlac.hpp"
     DESTINATION include/skylark/
 )
 

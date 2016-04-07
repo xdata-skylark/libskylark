@@ -3,7 +3,7 @@ export SPHINXEXT=$HOME/.sphinx_ext
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PWD/install/lib/:/usr/local/lib
 
 mkdir build && cd build && cmake -DCMAKE_INSTALL_PREFIX=../install \
-        -DUSE_COMBBLAS=ON -DBUILD_TESTS=ON ../ && \
+        -DUSE_FFTW=ON -DUSE_COMBBLAS=ON -DBUILD_TESTS=ON ../ && \
         CC=mpicc CXX=mpicxx make -j 4
 make install &> /dev/null
 

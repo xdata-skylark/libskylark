@@ -69,7 +69,8 @@ apt-get install -y libboost1.55-all-dev
 
 # Numpy and Scipy stack installation as recommended at scipy.org
 apt-get install -y python-numpy python-scipy python-matplotlib ipython \
-                   ipython-notebook python-pandas python-sympy python-nose
+                   ipython-notebook python-pandas python-sympy python-nose \
+                   python-networkx
 
 
 # mpi4py
@@ -176,7 +177,7 @@ if [ ! -d "Elemental" ]; then
     git checkout 0ffa9fc29ab740a7a96eccc45c180463723f465d
     mkdir build
     cd build
-    cmake -DEL_USE_64BIT_INTS=ON -DEL_HAVE_QUADMATH=OFF -DCMAKE_BUILD_TYPE=Release -DEL_HYBRID=ON -DBUILD_SHARED_LIBS=ON -DMATH_LIBS="-L/usr/lib -llapack -lopenblas -lm" ../
+    cmake -DEL_USE_64BIT_INTS=ON -DEL_HAVE_QUADMATH=OFF -DCMAKE_BUILD_TYPE=Release -DEL_HYBRID=ON -DBUILD_SHARED_LIBS=ON -DMATH_LIBS="-L/usr/lib -llapack -lopenblas -lm" -DINSTALL_PYTHON_PACKAGE=ON ../
     make -j $NPROC 1> /dev/null
     make install 1> /dev/null
 fi
@@ -306,10 +307,14 @@ echo "c.NotebookApp.open_browser = False" >> $HOME/.ipython/profile_nbserver/ipy
 echo "c.NotebookManager.notebook_dir = u'/home/${UNAME}/notebooks'" >> $HOME/.ipython/profile_nbserver/ipython_notebook_config.py
 
 cd /home/${UNAME}
+export LD_LIBRARY_PATH=/home/${UNAME}/install/lib:/usr/local/lib:$LD_LIBRARY_PATH
+export LD_PRELOAD=/usr/lib/libmpi.so
 dtach -n /tmp/ipython_notebook -Ez ipython notebook --profile=nbserver
 
 #FIXME: dir to /home/vagrant, run as vagrant user?
-echo "LD_LIBRARY_PATH=/home/${UNAME}/install/lib:/usr/local/lib:$LD_LIBRARY_PATH LD_PRELOAD=/usr/lib/libmpi.so dtach -n /tmp/ipython_notebook -Ez ipython notebook --profile=nbserver" > /etc/rc.local
+echo "export LD_LIBRARY_PATH=/home/${UNAME}/install/lib:/usr/local/lib:$LD_LIBRARY_PATH" > /etc/rc.local
+echo "export LD_PRELOAD=/usr/lib/libmpi.so" >> /etc/rc.local
+echo "dtach -n /tmp/ipython_notebook -Ez ipython notebook --profile=nbserver" >> /etc/rc.local
 echo "exit 0" >> /etc/rc.local
 
 echo "Started IPython notebook. Point your browser to http://127.0.0.1:6868"

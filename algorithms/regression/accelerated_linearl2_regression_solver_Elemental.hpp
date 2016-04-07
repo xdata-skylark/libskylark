@@ -210,6 +210,7 @@ public:
         _R(_n, _n, problem.input_matrix.Grid()) {
         // TODO n < m ???
 
+#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_FFTWF
         int t = 4 * _n;    // TODO parameter.
         double scale = std::sqrt((double)_m / (double)t);
 
@@ -251,6 +252,13 @@ public:
             delete _precond_R;
             _precond_R = nullptr;
         }
+#else
+        //TODO: how to handle?
+        SKYLARK_THROW_EXCEPTION (
+          base::sketch_exception()
+              << base::error_msg(
+                 "Requires FFT support!"));
+#endif
     }
 
     ~accelerated_regression_solver_t() {
@@ -323,6 +331,7 @@ public:
         _R(_n, _n, problem.input_matrix.Grid()) {
         // TODO n < m ???
 
+#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_FFTWF
         int t = 4 * _n;    // TODO parameter.
         double scale = std::sqrt((double)_m / (double)t);
 
@@ -366,6 +375,13 @@ public:
             std::cout << "FAILED to create!" << std::endl;
             _precond_R = nullptr;
         }
+#else
+        //TODO: how to handle?
+        SKYLARK_THROW_EXCEPTION (
+          base::sketch_exception()
+              << base::error_msg(
+                 "Requires FFT support!"));
+#endif
     }
 
     ~accelerated_regression_solver_t() {

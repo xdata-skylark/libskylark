@@ -78,7 +78,9 @@ struct FJLT_t :
 } } /** namespace skylark::sketch */
 
 /**** Now the implementations */
+#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_FFTWF
 # include "FJLT_Elemental.hpp"
+#endif
 
 
 /**** Now the any,any implementations */
@@ -185,7 +187,7 @@ public:
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
             mftypes::shared_matrix_t, FJLT_t);
 
-#endif 
+#endif
 
 #endif
 

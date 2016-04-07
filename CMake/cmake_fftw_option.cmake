@@ -1,4 +1,4 @@
-option (USE_FFTW "Build with FFTW support" ON)
+option (USE_FFTW "Build with FFTW support" OFF)
 if (USE_FFTW)
   set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules")
   find_package(FFTW)

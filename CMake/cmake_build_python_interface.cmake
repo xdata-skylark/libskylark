@@ -20,6 +20,5 @@ if (BUILD_PYTHON)
   endif (DEFINED ENV{PYTHON_SITE_PACKAGES})
   message (STATUS "Installing python modules in: ${PYTHON_SITE_PACKAGES}")
 
-  add_subdirectory(sketch/capi)
   add_subdirectory(python-skylark)
 endif (BUILD_PYTHON)

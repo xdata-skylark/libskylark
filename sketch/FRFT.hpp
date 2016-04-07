@@ -323,7 +323,7 @@ public:
 
 #endif
 
-#endif 
+#endif
 
         SKYLARK_THROW_EXCEPTION (
           base::sketch_exception()
@@ -557,7 +557,7 @@ public:
 
 #endif
 
-#endif 
+#endif
 
     }
 

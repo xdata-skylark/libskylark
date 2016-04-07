@@ -44,7 +44,26 @@ inline void Symm(El::LeftOrRight side, El::UpperOrLower uplo,
     T alpha, const El::DistMatrix<T, El::STAR, El::STAR>& A,
     const El::DistMatrix<T, El::STAR, El::STAR>& B,
     El::DistMatrix<T, El::STAR, El::STAR>& C) {
-    El::Symm(side, uplo, alpha, A.LockedMatrix(), B.LockedMatrix(), C.Matrix());
+    El::Symm(side, uplo, alpha, A.LockedMatrix(), B.LockedMatrix(),
+        static_cast<T>(0.0), C.Matrix());
+}
+
+template<typename T>
+inline void Symm(El::LeftOrRight side, El::UpperOrLower uplo,
+    T alpha, const El::DistMatrix<T, El::CIRC, El::CIRC>& A,
+    const El::DistMatrix<T, El::CIRC, El::CIRC>& B,
+    T beta, El::DistMatrix<T, El::CIRC, El::CIRC>& C) {
+    El::Symm(side, uplo,  alpha, A.LockedMatrix(), B.LockedMatrix(),
+        beta, C.Matrix());
+}
+
+template<typename T>
+inline void Symm(El::LeftOrRight side, El::UpperOrLower uplo,
+    T alpha, const El::DistMatrix<T, El::CIRC, El::CIRC>& A,
+    const El::DistMatrix<T, El::CIRC, El::CIRC>& B,
+    El::DistMatrix<T, El::CIRC, El::CIRC>& C) {
+    El::Symm(side, uplo, alpha, A.LockedMatrix(), B.LockedMatrix(),
+        static_cast<T>(0.0), C.Matrix());
 }
 
 template<typename T>

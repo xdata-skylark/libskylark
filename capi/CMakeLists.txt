@@ -37,10 +37,3 @@ install (
     DESTINATION lib/
 )
 
-install (
-    FILES "basec.hpp"
-    FILES "sketchc.hpp"
-    FILES "nlac.hpp"
-    DESTINATION include/skylark/
-)
-

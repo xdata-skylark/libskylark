@@ -82,7 +82,7 @@ double build_precond(SketchType& SA,
     int n = SA.Width();
     PrecondType s(SA); // TODO should s be PrecondType or STAR,STAR ?
     s.Resize(n, 1);
-    El::SVD(SA, s, V);
+    El::SVD(SA, SA, s, V);
     for(int i = 0; i < n; i++)
         s.Set(i, 0, 1 / s.Get(i, 0));
     El::DiagonalScale(El::RIGHT, El::NORMAL, s, V);

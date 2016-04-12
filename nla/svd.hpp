@@ -283,7 +283,7 @@ void ApproximateSVD(const InputType &A, UType &U, SType &S, VType &V,
 
         /** Compute factorization & truncate to rank */
         VType B;
-        El::SVD(V, S, B);
+        El::SVD(V, V, S, B);
         S.Resize(rank, 1); V.Resize(n, rank);
         VType B1 = base::ColumnView(B, 0, rank);
         base::Gemm(El::NORMAL, El::NORMAL,
@@ -315,7 +315,7 @@ void ApproximateSVD(const InputType &A, UType &U, SType &S, VType &V,
 
         /** Compute factorization & truncate to rank */
         UType B;
-        El::SVD(U, S, B);
+        El::SVD(U, U, S, B);
         S.Resize(rank, 1); U.Resize(m, rank);
         VType B1 = base::ColumnView(B, 0, rank);
         base::Gemm(El::ADJOINT, El::NORMAL, static_cast<value_type>(1.0), Q, B1, V);

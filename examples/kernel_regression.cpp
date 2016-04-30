@@ -281,7 +281,7 @@ int execute_classification(skylark::base::context_t &context) {
         *log_stream << "# Number of ranks is " << world.size() << std::endl;
     }
 
-    // Load X and Y
+    // Load X and L
     if (rank == 0) {
         *log_stream << "Reading the matrix... ";
         log_stream->flush();
@@ -319,7 +319,7 @@ int execute_classification(skylark::base::context_t &context) {
         El::View(L, L0);
 
     } else {
-        // Sample X and Y
+        // Sample X and L
         if (rank == 0) {
             *log_stream << "Sampling the data... ";
             log_stream->flush();
@@ -564,8 +564,7 @@ int execute_regression(skylark::base::context_t &context) {
         ((std::ofstream *)log_stream)->open(logfile);
     }
 
-    El::DistMatrix<T> X0, X;
-    El::DistMatrix<El::Int> L0, L;
+    El::DistMatrix<T> X0, X, Y0, Y;
 
     boost::mpi::timer timer;
 
@@ -585,7 +584,7 @@ int execute_regression(skylark::base::context_t &context) {
 
     switch (fileformat) {
     case FORMAT_LIBSVM:
-        skylark::utility::io::ReadLIBSVM(fname, X0, L0, skylark::base::COLUMNS,
+        skylark::utility::io::ReadLIBSVM(fname, X0, Y0, skylark::base::COLUMNS,
             0, partial);
         break;
 
@@ -593,7 +592,7 @@ int execute_regression(skylark::base::context_t &context) {
     case FORMAT_HDF5: {
         H5::H5File in(fname, H5F_ACC_RDONLY);
         skylark::utility::io::ReadHDF5(in, "X", X0, -1, partial);
-        skylark::utility::io::ReadHDF5(in, "Y", L0, -1, partial);
+        skylark::utility::io::ReadHDF5(in, "Y", Y0, -1, partial);
         in.close();
     }
         break;
@@ -611,7 +610,7 @@ int execute_regression(skylark::base::context_t &context) {
     if (sample == -1) {
 
         El::View(X, X0);
-        El::View(L, L0);
+        El::View(Y, Y0);
 
     } else {
         // Sample X and Y
@@ -628,9 +627,9 @@ int execute_regression(skylark::base::context_t &context) {
         skylark::sketch::UST_t<El::DistMatrix<T> > (S).apply(X0,
             X, skylark::sketch::rowwise_tag());
 
-        L.Resize(1, sample);
-        skylark::sketch::UST_t<El::DistMatrix<El::Int> >(S).apply(L0,
-            L, skylark::sketch::rowwise_tag());
+        Y.Resize(1, sample);
+        skylark::sketch::UST_t<El::DistMatrix<T> > (S).apply(Y0,
+            Y, skylark::sketch::rowwise_tag());
 
         if (rank == 0)
             *log_stream <<"took " << boost::format("%.2e") % timer.elapsed()
@@ -666,7 +665,6 @@ int execute_regression(skylark::base::context_t &context) {
     skylark::ml::kernel_container_t k(k_ptr);
 
     El::DistMatrix<T> A, W;
-    std::vector<El::Int> rcoding;
 
     skylark::sketch::sketch_transform_container_t<El::DistMatrix<T>,
                                                   El::DistMatrix<T> >  S;
@@ -675,79 +673,78 @@ int execute_regression(skylark::base::context_t &context) {
         skylark::sketch::sketch_transform_container_t<El::DistMatrix<T>,
                                                       El::DistMatrix<T> > > transforms;
 
-    skylark::ml::rlsc_params_t rlsc_params(rank == 0, 4, *log_stream, "\t");
-    rlsc_params.use_fast = use_fast;
+    skylark::ml::krr_params_t krr_params(rank == 0, 4, *log_stream, "\t");
+    krr_params.use_fast = use_fast;
 
-    skylark::ml::model_t<El::Int, T> *model;
+    skylark::ml::model_t<T, T> *model;
 
     switch(algorithm) {
     case CLASSIC_KRR:
-        skylark::ml::KernelRLSC(skylark::base::COLUMNS, k, X, L,
-            T(lambda), A, rcoding, rlsc_params);
+        skylark::ml::KernelRidge(skylark::base::COLUMNS, k, X, Y,
+            T(lambda), A, krr_params);
         model =
             new skylark::ml::kernel_model_t<skylark::ml::kernel_container_t,
-                  El::Int, T>(k, skylark::base::COLUMNS, X, fname, fileformat,
-                      A, rcoding);
+                  T, T>(k, skylark::base::COLUMNS, X, fname, fileformat,
+                      A);
         break;
 
     case FASTER_KRR:
-        rlsc_params.iter_lim = (maxit == 0) ? 1000 : maxit;
-        rlsc_params.tolerance = (tolerance == 0) ? 1e-3 : tolerance;
-        skylark::ml::FasterKernelRLSC(skylark::base::COLUMNS, k, X, L,
-            T(lambda), A, rcoding, s, context, rlsc_params);
+        krr_params.iter_lim = (maxit == 0) ? 1000 : maxit;
+        krr_params.tolerance = (tolerance == 0) ? 1e-3 : tolerance;
+        skylark::ml::FasterKernelRidge(skylark::base::COLUMNS, k, X, Y,
+            T(lambda), A, s, context, krr_params);
         model =
             new skylark::ml::kernel_model_t<skylark::ml::kernel_container_t,
-                  El::Int, T>(k, skylark::base::COLUMNS, X, fname, fileformat,
-                      A, rcoding);
+                  T, T>(k, skylark::base::COLUMNS, X, fname, fileformat, A);
         break;
 
     case APPROXIMATE_KRR:
-        skylark::ml::ApproximateKernelRLSC(skylark::base::COLUMNS, k, X, L,
-            T(lambda), S, W, rcoding, s, context, rlsc_params);
+        skylark::ml::ApproximateKernelRidge(skylark::base::COLUMNS, k, X, Y,
+            T(lambda), S, W, s, context, krr_params);
         model =
             new skylark::ml::feature_expansion_model_t<
-                skylark::sketch::sketch_transform_container_t, El::Int, T>
-            (S, W, rcoding);
+                skylark::sketch::sketch_transform_container_t, T, T>
+            (S, W);
         break;
 
     case SKETCHED_APPROXIMATE_KRR:
     case FAST_SKETCHED_APPROXIMATE_KRR:
-        rlsc_params.sketched_rls = true;
-        rlsc_params.sketch_size = sketch_size;
-        rlsc_params.fast_sketch = algorithm == FAST_SKETCHED_APPROXIMATE_KRR;
-        rlsc_params.max_split = maxsplit;
-        skylark::ml::SketchedApproximateKernelRLSC(skylark::base::COLUMNS, k, X, L,
-            T(lambda), scale_maps, transforms, W, rcoding, s, sketch_size,
-            context, rlsc_params);
+        krr_params.sketched_rr = true;
+        krr_params.sketch_size = sketch_size;
+        krr_params.fast_sketch = algorithm == FAST_SKETCHED_APPROXIMATE_KRR;
+        krr_params.max_split = maxsplit;
+        skylark::ml::SketchedApproximateKernelRidge(skylark::base::COLUMNS, k, X, Y,
+            T(lambda), scale_maps, transforms, W, s, sketch_size,
+            context, krr_params);
         model =
             new skylark::ml::feature_expansion_model_t<
-                skylark::sketch::sketch_transform_container_t, El::Int, T>
-            (scale_maps, transforms, W, rcoding);
+                skylark::sketch::sketch_transform_container_t, T, T>
+            (scale_maps, transforms, W);
         break;
 
     case LARGE_SCALE_KRR:
-        rlsc_params.iter_lim = (maxit == 0) ? 20 : maxit;
-        rlsc_params.tolerance = (tolerance == 0) ? 1e-1 : tolerance;
-        rlsc_params.max_split = maxsplit;
-        skylark::ml::LargeScaleKernelRLSC(skylark::base::COLUMNS, k, X, L,
-            T(lambda), scale_maps, transforms, W, rcoding, s,
-            context, rlsc_params);
+        krr_params.iter_lim = (maxit == 0) ? 20 : maxit;
+        krr_params.tolerance = (tolerance == 0) ? 1e-1 : tolerance;
+        krr_params.max_split = maxsplit;
+        skylark::ml::LargeScaleKernelRidge(skylark::base::COLUMNS, k, X, Y,
+            T(lambda), scale_maps, transforms, W, s,
+            context, krr_params);
         model =
             new skylark::ml::feature_expansion_model_t<
-                skylark::sketch::sketch_transform_container_t, El::Int, T>
-            (scale_maps, transforms, W, rcoding);
+                skylark::sketch::sketch_transform_container_t, T, T>
+            (scale_maps, transforms, W);
         break;
 
     case EXPERIMENTAL_1:
     case EXPERIMENTAL_2:
-        rlsc_params.sketched_rls = true;
-        rlsc_params.fast_sketch = algorithm == EXPERIMENTAL_2;
-        skylark::ml::ApproximateKernelRLSC(skylark::base::COLUMNS, k, X, L,
-            T(lambda), S, W, rcoding, s, context, rlsc_params);
+        krr_params.sketched_rr = true;
+        krr_params.fast_sketch = algorithm == EXPERIMENTAL_2;
+        skylark::ml::ApproximateKernelRidge(skylark::base::COLUMNS, k, X, Y,
+            T(lambda), S, W, s, context, krr_params);
         model =
             new skylark::ml::feature_expansion_model_t<
-                skylark::sketch::sketch_transform_container_t, El::Int, T>
-            (S, W, rcoding);
+                skylark::sketch::sketch_transform_container_t, T, T>
+            (S, W);
         break;
 
     default:
@@ -793,11 +790,11 @@ int execute_regression(skylark::base::context_t &context) {
         }
 
         El::DistMatrix<T> XT;
-        El::DistMatrix<El::Int> LT;
+        El::DistMatrix<T> YT;
 
         switch (fileformat) {
         case FORMAT_LIBSVM:
-            skylark::utility::io::ReadLIBSVM(testname, XT, LT,
+            skylark::utility::io::ReadLIBSVM(testname, XT, YT,
                 skylark::base::COLUMNS, X.Height());
             break;
 
@@ -805,7 +802,7 @@ int execute_regression(skylark::base::context_t &context) {
         case FORMAT_HDF5: {
             H5::H5File in(testname, H5F_ACC_RDONLY);
             skylark::utility::io::ReadHDF5(in, "X", XT);
-            skylark::utility::io::ReadHDF5(in, "Y", LT);
+            skylark::utility::io::ReadHDF5(in, "Y", YT);
             in.close();
         }
             break;
@@ -816,13 +813,14 @@ int execute_regression(skylark::base::context_t &context) {
             return -1;
         }
 
-        El::DistMatrix<El::Int> LP;
-        model->predict(skylark::base::COLUMNS, XT, LP);
+        El::DistMatrix<T> YP;
+        model->predict(skylark::base::COLUMNS, XT, YP);
 
         if (rank == 0)
             *log_stream << "took " << boost::format("%.2e") % timer.elapsed()
                       << " sec\n";
 
+        /*
         int errs = 0;
         if (LT.LocalHeight() > 0)
             for(int i = 0; i < LT.LocalWidth(); i++)
@@ -835,6 +833,7 @@ int execute_regression(skylark::base::context_t &context) {
             *log_stream << "Error rate: "
                       << boost::format("%.2f") % ((errs * 100.0) / LT.Width())
                       << "%" << std::endl;
+        */
     }
 
     if (rank == 0 && logfile != "") {

@@ -329,6 +329,7 @@ public model_t<OutType, ComputeType>
 
         El::DistMatrix<compute_type> KT;
         Gram(_direction, direction_XT, _k, _X, XT, KT);
+        YP.Resize(_A.Height(), KT.Width()); 
         El::Gemm(El::ADJOINT, El::NORMAL, out_type(1.0), _A, KT, YP);
     }
 

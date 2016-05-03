@@ -678,9 +678,13 @@ int execute_regression(skylark::base::context_t &context) {
 
     skylark::ml::model_t<T, T> *model;
 
+    // Transpose Y since KernelRidge expects it to be a column vector (TODO ?)
+    El::DistMatrix<T> Ytransp;
+    El::Transpose(Y, Ytransp, true);
+    
     switch(algorithm) {
     case CLASSIC_KRR:
-        skylark::ml::KernelRidge(skylark::base::COLUMNS, k, X, Y,
+        skylark::ml::KernelRidge(skylark::base::COLUMNS, k, X, Ytransp,
             T(lambda), A, krr_params);
         model =
             new skylark::ml::kernel_model_t<skylark::ml::kernel_container_t,
@@ -691,7 +695,7 @@ int execute_regression(skylark::base::context_t &context) {
     case FASTER_KRR:
         krr_params.iter_lim = (maxit == 0) ? 1000 : maxit;
         krr_params.tolerance = (tolerance == 0) ? 1e-3 : tolerance;
-        skylark::ml::FasterKernelRidge(skylark::base::COLUMNS, k, X, Y,
+        skylark::ml::FasterKernelRidge(skylark::base::COLUMNS, k, X, Ytransp,
             T(lambda), A, s, context, krr_params);
         model =
             new skylark::ml::kernel_model_t<skylark::ml::kernel_container_t,
@@ -699,7 +703,7 @@ int execute_regression(skylark::base::context_t &context) {
         break;
 
     case APPROXIMATE_KRR:
-        skylark::ml::ApproximateKernelRidge(skylark::base::COLUMNS, k, X, Y,
+        skylark::ml::ApproximateKernelRidge(skylark::base::COLUMNS, k, X, Ytransp,
             T(lambda), S, W, s, context, krr_params);
         model =
             new skylark::ml::feature_expansion_model_t<
@@ -713,7 +717,8 @@ int execute_regression(skylark::base::context_t &context) {
         krr_params.sketch_size = sketch_size;
         krr_params.fast_sketch = algorithm == FAST_SKETCHED_APPROXIMATE_KRR;
         krr_params.max_split = maxsplit;
-        skylark::ml::SketchedApproximateKernelRidge(skylark::base::COLUMNS, k, X, Y,
+        skylark::ml::SketchedApproximateKernelRidge(skylark::base::COLUMNS, k,
+            X, Ytransp,
             T(lambda), scale_maps, transforms, W, s, sketch_size,
             context, krr_params);
         model =
@@ -726,7 +731,7 @@ int execute_regression(skylark::base::context_t &context) {
         krr_params.iter_lim = (maxit == 0) ? 20 : maxit;
         krr_params.tolerance = (tolerance == 0) ? 1e-1 : tolerance;
         krr_params.max_split = maxsplit;
-        skylark::ml::LargeScaleKernelRidge(skylark::base::COLUMNS, k, X, Y,
+        skylark::ml::LargeScaleKernelRidge(skylark::base::COLUMNS, k, X, Ytransp,
             T(lambda), scale_maps, transforms, W, s,
             context, krr_params);
         model =
@@ -739,7 +744,7 @@ int execute_regression(skylark::base::context_t &context) {
     case EXPERIMENTAL_2:
         krr_params.sketched_rr = true;
         krr_params.fast_sketch = algorithm == EXPERIMENTAL_2;
-        skylark::ml::ApproximateKernelRidge(skylark::base::COLUMNS, k, X, Y,
+        skylark::ml::ApproximateKernelRidge(skylark::base::COLUMNS, k, X, Ytransp,
             T(lambda), S, W, s, context, krr_params);
         model =
             new skylark::ml::feature_expansion_model_t<
@@ -820,20 +825,15 @@ int execute_regression(skylark::base::context_t &context) {
             *log_stream << "took " << boost::format("%.2e") % timer.elapsed()
                       << " sec\n";
 
-        /*
-        int errs = 0;
-        if (LT.LocalHeight() > 0)
-            for(int i = 0; i < LT.LocalWidth(); i++)
-                if (LT.GetLocal(0, i) != LP.GetLocal(0, i))
-                    errs++;
-
-        errs = El::mpi::AllReduce(errs, MPI_SUM, LT.DistComm());
+        T nrm_Yt = El::Nrm2(YT);
+        El::Axpy(T(-1.0), YP, YT);
+        T nrm_E = El::Nrm2(YT);
 
         if (rank == 0)
             *log_stream << "Error rate: "
-                      << boost::format("%.2f") % ((errs * 100.0) / LT.Width())
-                      << "%" << std::endl;
-        */
+                        << boost::format("%.4e") % (nrm_E / nrm_Yt)
+                        << std::endl;
+        world.barrier();
     }
 
     if (rank == 0 && logfile != "") {

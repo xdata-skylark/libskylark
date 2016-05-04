@@ -321,6 +321,12 @@ public:
     feature_map_precond_t(const KernelType &k, value_type lambda,
         const InputType &X, El::Int s, base::context_t &context,
         const krr_params_t &params) {
+
+        SKYLARK_TIMER_DINIT(KRR_PRECOND_GEMM1_PROFILE);
+        SKYLARK_TIMER_DINIT(KRR_PRECOND_GEMM2_PROFILE);
+        SKYLARK_TIMER_DINIT(KRR_PRECOND_SOLVE_PROFILE);
+        SKYLARK_TIMER_DINIT(KRR_PRECOND_COPY_PROFILE);
+
         _lambda = lambda;
         _s = s;
 
@@ -382,15 +388,34 @@ public:
                               << " sec\n";
     }
 
+    virtual ~feature_map_precond_t() {
+        auto comm = utility::get_communicator(C);
+        SKYLARK_TIMER_PRINT(KRR_PRECOND_GEMM1_PROFILE, comm);
+        SKYLARK_TIMER_PRINT(KRR_PRECOND_GEMM2_PROFILE, comm);
+        SKYLARK_TIMER_PRINT(KRR_PRECOND_SOLVE_PROFILE, comm);
+        SKYLARK_TIMER_PRINT(KRR_PRECOND_COPY_PROFILE, comm);
+    }
+
     virtual void apply(const matrix_type& B, matrix_type& X) const {
 
         matrix_type CUB(_s, B.Width());
-        El::Gemm(El::NORMAL, El::NORMAL, value_type(1.0), U, B, CUB);
-        El::cholesky::SolveAfter(El::LOWER, El::NORMAL, C, CUB);
 
+        SKYLARK_TIMER_RESTART(KRR_PRECOND_GEMM1_PROFILE);
+        El::Gemm(El::NORMAL, El::NORMAL, value_type(1.0), U, B, CUB);
+        SKYLARK_TIMER_ACCUMULATE(KRR_PRECOND_GEMM1_PROFILE);
+
+        SKYLARK_TIMER_RESTART(KRR_PRECOND_SOLVE_PROFILE);
+        El::cholesky::SolveAfter(El::LOWER, El::NORMAL, C, CUB);
+        SKYLARK_TIMER_ACCUMULATE(KRR_PRECOND_SOLVE_PROFILE);
+
+        SKYLARK_TIMER_RESTART(KRR_PRECOND_COPY_PROFILE);
         X = B;
+        SKYLARK_TIMER_ACCUMULATE(KRR_PRECOND_COPY_PROFILE);
+
+        SKYLARK_TIMER_RESTART(KRR_PRECOND_GEMM2_PROFILE);
         El::Gemm(El::ADJOINT, El::NORMAL, value_type(-1.0) / (_lambda * _lambda), 
             U, CUB, value_type(1.0)/_lambda, X);
+        SKYLARK_TIMER_ACCUMULATE(KRR_PRECOND_GEMM2_PROFILE);
     }
 
     virtual void apply_adjoint(const matrix_type& B, matrix_type& X) const {
@@ -401,6 +426,11 @@ private:
     value_type _lambda;
     El::Int _s;
     matrix_type U, C;
+
+    SKYLARK_TIMER_DECLARE(KRR_PRECOND_GEMM1_PROFILE);
+    SKYLARK_TIMER_DECLARE(KRR_PRECOND_GEMM2_PROFILE);
+    SKYLARK_TIMER_DECLARE(KRR_PRECOND_SOLVE_PROFILE);
+    SKYLARK_TIMER_DECLARE(KRR_PRECOND_COPY_PROFILE);
 };
 
 template<typename T, typename KernelType>

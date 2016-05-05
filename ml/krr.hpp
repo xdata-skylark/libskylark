@@ -324,7 +324,6 @@ public:
 
         SKYLARK_TIMER_DINIT(KRR_PRECOND_GEMM1_PROFILE);
         SKYLARK_TIMER_DINIT(KRR_PRECOND_GEMM2_PROFILE);
-        SKYLARK_TIMER_DINIT(KRR_PRECOND_SOLVE_PROFILE);
         SKYLARK_TIMER_DINIT(KRR_PRECOND_COPY_PROFILE);
 
         _lambda = lambda;
@@ -365,6 +364,7 @@ public:
             timer.restart();
         }
 
+        matrix_type C;
         El::Identity(C, s, s);
         El::Herk(El::LOWER, El::NORMAL, value_type(1.0)/_lambda, U,
             value_type(1.0), C);
@@ -388,7 +388,7 @@ public:
 
         if (log_lev2) {
             params.log_stream << params.prefix << "\t"
-                              << "Solve after... ";
+                              << "Prepare factor... ";
             params.log_stream.flush();
             timer.restart();
         }
@@ -403,10 +403,9 @@ public:
     }
 
     virtual ~feature_map_precond_t() {
-        auto comm = utility::get_communicator(C);
+        auto comm = utility::get_communicator(U);
         SKYLARK_TIMER_PRINT(KRR_PRECOND_GEMM1_PROFILE, comm);
         SKYLARK_TIMER_PRINT(KRR_PRECOND_GEMM2_PROFILE, comm);
-        SKYLARK_TIMER_PRINT(KRR_PRECOND_SOLVE_PROFILE, comm);
         SKYLARK_TIMER_PRINT(KRR_PRECOND_COPY_PROFILE, comm);
     }
 
@@ -417,7 +416,6 @@ public:
         SKYLARK_TIMER_RESTART(KRR_PRECOND_GEMM1_PROFILE);
         El::Gemm(El::NORMAL, El::NORMAL, value_type(1.0), U, B, CUB);
         SKYLARK_TIMER_ACCUMULATE(KRR_PRECOND_GEMM1_PROFILE);
-
 
         SKYLARK_TIMER_RESTART(KRR_PRECOND_COPY_PROFILE);
         X = B;
@@ -436,11 +434,10 @@ public:
 private:
     value_type _lambda;
     El::Int _s;
-    matrix_type U, C;
+    matrix_type U;
 
     SKYLARK_TIMER_DECLARE(KRR_PRECOND_GEMM1_PROFILE);
     SKYLARK_TIMER_DECLARE(KRR_PRECOND_GEMM2_PROFILE);
-    SKYLARK_TIMER_DECLARE(KRR_PRECOND_SOLVE_PROFILE);
     SKYLARK_TIMER_DECLARE(KRR_PRECOND_COPY_PROFILE);
 };
 

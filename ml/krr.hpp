@@ -413,8 +413,13 @@ public:
 
         matrix_type CUB(_s, B.Width());
 
+        // Really makes sense to keep U not communicated...
+        // Bypass Elemental defaults since they seem to be generating bad
+        // choices for larger matrices.
+
         SKYLARK_TIMER_RESTART(KRR_PRECOND_GEMM1_PROFILE);
-        El::Gemm(El::NORMAL, El::NORMAL, value_type(1.0), U, B, CUB);
+        El::Gemm(El::NORMAL, El::NORMAL, value_type(1.0), U, B, CUB,
+            El::GEMM_SUMMA_A);
         SKYLARK_TIMER_ACCUMULATE(KRR_PRECOND_GEMM1_PROFILE);
 
         SKYLARK_TIMER_RESTART(KRR_PRECOND_COPY_PROFILE);

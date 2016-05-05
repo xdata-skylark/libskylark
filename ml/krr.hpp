@@ -324,7 +324,6 @@ public:
 
         SKYLARK_TIMER_DINIT(KRR_PRECOND_GEMM1_PROFILE);
         SKYLARK_TIMER_DINIT(KRR_PRECOND_GEMM2_PROFILE);
-        SKYLARK_TIMER_DINIT(KRR_PRECOND_SOLVE_PROFILE);
         SKYLARK_TIMER_DINIT(KRR_PRECOND_COPY_PROFILE);
 
         _lambda = lambda;
@@ -341,7 +340,7 @@ public:
             timer.restart();
         }
 
-        U.Resize(s, X.Width());
+        matrix_type V(s, X.Width());
         sketch::sketch_transform_t<InputType, matrix_type> *S =
             params.use_fast ? 
             k.template create_rft<InputType, matrix_type>(s,
@@ -351,7 +350,7 @@ public:
             k.template create_rft<InputType, matrix_type>(s,
                 ml::regular_feature_transform_tag(),
                 context);
-        S->apply(X, U, sketch::columnwise_tag());
+        S->apply(X, V, sketch::columnwise_tag());
         delete S;
 
         if (log_lev2)
@@ -360,14 +359,13 @@ public:
 
         if (log_lev2) {
             params.log_stream << params.prefix << "\t"
-                              << "Computing covariance matrix... ";
+                              << "Computing SVD... ";
             params.log_stream.flush();
             timer.restart();
         }
 
-        El::Identity(C, s, s);
-        El::Herk(El::LOWER, El::NORMAL, value_type(1.0)/_lambda, U,
-            value_type(1.0), C);
+        matrix_type sigma(s, 1);
+        El::SVD(V, sigma, U);
 
         if (log_lev2)
             params.log_stream << "took " << boost::format("%.2e") % timer.elapsed()
@@ -375,13 +373,18 @@ public:
 
         if (log_lev2) {
             params.log_stream << params.prefix << "\t"
-                              << "Factorizing... ";
+                              << "Rescaling factor... ";
             params.log_stream.flush();
             timer.restart();
         }
 
+        auto sigmabuf = sigma.Buffer();
+        for(El::Int i = 0; i < sigma.LocalHeight() * sigma.LocalWidth(); i++) {
+            double e = sigmabuf[i] * sigmabuf[i];
+            sigmabuf[i] = std::sqrt(e / (e + lambda));
+        }
 
-        El::Cholesky(El::LOWER, C);
+        El::DiagonalScale(El::RIGHT, El::NORMAL, sigma, U);
 
         if (log_lev2)
             params.log_stream << "took " << boost::format("%.2e") % timer.elapsed()
@@ -389,32 +392,27 @@ public:
     }
 
     virtual ~feature_map_precond_t() {
-        auto comm = utility::get_communicator(C);
+        auto comm = utility::get_communicator(U);
         SKYLARK_TIMER_PRINT(KRR_PRECOND_GEMM1_PROFILE, comm);
         SKYLARK_TIMER_PRINT(KRR_PRECOND_GEMM2_PROFILE, comm);
-        SKYLARK_TIMER_PRINT(KRR_PRECOND_SOLVE_PROFILE, comm);
         SKYLARK_TIMER_PRINT(KRR_PRECOND_COPY_PROFILE, comm);
     }
 
     virtual void apply(const matrix_type& B, matrix_type& X) const {
 
-        matrix_type CUB(_s, B.Width());
+        matrix_type UB(_s, B.Width());
 
         SKYLARK_TIMER_RESTART(KRR_PRECOND_GEMM1_PROFILE);
-        El::Gemm(El::NORMAL, El::NORMAL, value_type(1.0), U, B, CUB);
+        El::Gemm(El::ADJOINT, El::NORMAL, value_type(1.0) / _lambda, U, B, UB);
         SKYLARK_TIMER_ACCUMULATE(KRR_PRECOND_GEMM1_PROFILE);
-
-        SKYLARK_TIMER_RESTART(KRR_PRECOND_SOLVE_PROFILE);
-        El::cholesky::SolveAfter(El::LOWER, El::NORMAL, C, CUB);
-        SKYLARK_TIMER_ACCUMULATE(KRR_PRECOND_SOLVE_PROFILE);
 
         SKYLARK_TIMER_RESTART(KRR_PRECOND_COPY_PROFILE);
         X = B;
         SKYLARK_TIMER_ACCUMULATE(KRR_PRECOND_COPY_PROFILE);
 
         SKYLARK_TIMER_RESTART(KRR_PRECOND_GEMM2_PROFILE);
-        El::Gemm(El::ADJOINT, El::NORMAL, value_type(-1.0) / (_lambda * _lambda), 
-            U, CUB, value_type(1.0)/_lambda, X);
+        El::Gemm(El::NORMAL, El::NORMAL, value_type(-1.0), 
+            U, UB, value_type(1.0)/_lambda, X);
         SKYLARK_TIMER_ACCUMULATE(KRR_PRECOND_GEMM2_PROFILE);
     }
 
@@ -425,11 +423,10 @@ public:
 private:
     value_type _lambda;
     El::Int _s;
-    matrix_type U, C;
+    matrix_type U;
 
     SKYLARK_TIMER_DECLARE(KRR_PRECOND_GEMM1_PROFILE);
     SKYLARK_TIMER_DECLARE(KRR_PRECOND_GEMM2_PROFILE);
-    SKYLARK_TIMER_DECLARE(KRR_PRECOND_SOLVE_PROFILE);
     SKYLARK_TIMER_DECLARE(KRR_PRECOND_COPY_PROFILE);
 };
 

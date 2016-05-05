@@ -380,12 +380,26 @@ public:
             timer.restart();
         }
 
-
         El::Cholesky(El::LOWER, C);
 
         if (log_lev2)
             params.log_stream << "took " << boost::format("%.2e") % timer.elapsed()
                               << " sec\n";
+
+        if (log_lev2) {
+            params.log_stream << params.prefix << "\t"
+                              << "Solve after... ";
+            params.log_stream.flush();
+            timer.restart();
+        }
+
+        El::Trsm(El::LEFT, El::LOWER, El::NORMAL, El::NON_UNIT,
+            value_type(1.0)/_lambda, C, U);
+
+        if (log_lev2)
+            params.log_stream << "took " << boost::format("%.2e") % timer.elapsed()
+                              << " sec\n";
+
     }
 
     virtual ~feature_map_precond_t() {
@@ -404,16 +418,13 @@ public:
         El::Gemm(El::NORMAL, El::NORMAL, value_type(1.0), U, B, CUB);
         SKYLARK_TIMER_ACCUMULATE(KRR_PRECOND_GEMM1_PROFILE);
 
-        SKYLARK_TIMER_RESTART(KRR_PRECOND_SOLVE_PROFILE);
-        El::cholesky::SolveAfter(El::LOWER, El::NORMAL, C, CUB);
-        SKYLARK_TIMER_ACCUMULATE(KRR_PRECOND_SOLVE_PROFILE);
 
         SKYLARK_TIMER_RESTART(KRR_PRECOND_COPY_PROFILE);
         X = B;
         SKYLARK_TIMER_ACCUMULATE(KRR_PRECOND_COPY_PROFILE);
 
         SKYLARK_TIMER_RESTART(KRR_PRECOND_GEMM2_PROFILE);
-        El::Gemm(El::ADJOINT, El::NORMAL, value_type(-1.0) / (_lambda * _lambda), 
+        El::Gemm(El::ADJOINT, El::NORMAL, value_type(-1.0),
             U, CUB, value_type(1.0)/_lambda, X);
         SKYLARK_TIMER_ACCUMULATE(KRR_PRECOND_GEMM2_PROFILE);
     }

@@ -4,16 +4,11 @@ from ctypes import byref, c_void_p
 
 import json
 
-class Params():
+class Params(object):
     """
-    Helper object capturing parameters for the randomized SVD implementation.
+    Base parameter object
     """
-
     def __init__(self):
-        self.oversampling_ratio = 2
-        self.oversampling_additive = 0
-        self.num_iterations = 0
-        self.skip_qr = False
         self.am_i_printing = False
         self.log_level = 0
         self.prefix = ""
@@ -22,30 +17,34 @@ class Params():
     def str(self):
         return json.dumps(self, default=lambda obj: obj.__dict__,
                 sort_keys=True)
+    
+class SVDParams(Params):
+    """
+    Parameter object for SVD.
+    """
 
+    def __init__(self):
+        super(SVDParams, self).__init__()
+        self.oversampling_ratio = 2
+        self.oversampling_additive = 0
+        self.num_iterations = 2
+        self.skip_qr = False
 
-def approximate_svd(A, k=10, parms=None, resultType=None):
+def approximate_svd(A, U, S, V, k=10, params=None):
     """
     Compute the SVD of **A** such that **SVD(A) = U S V^T**.
 
     :param A: Input matrix.
+    :param U: Output U (left singular vectors).
+    :param S: Output S (singular values).
+    :param V: Output V (right singular vectors).
     :param k: Dimension to apply along.
-    :param parms: Parmaters for the SVD.
-    :param resultType: Type of U, S, V matrices.
+    :param params: Parmaters for the SVD.
     :returns: (U, S, V)
     """
 
+    
     A = sk._adapt(A)
-    if resultType == None:
-        resultType = A
-    else:
-        resultType = sk._adapt(resultType)
-    ctor = resultType.getctor()
-
-    U = ctor(0, 0, resultType)
-    S = ctor(0, 0, resultType)
-    V = ctor(0, 0, resultType)
-
     U = sk._adapt(U)
     S = sk._adapt(S)
     V = sk._adapt(V)
@@ -59,17 +58,16 @@ def approximate_svd(A, k=10, parms=None, resultType=None):
         raise errors.InvalidObjectError("Invalid/unsupported object passed as A, U, S or V ")
 
     # use default params in case none are provided
-    if parms == None:
-        parms = Params()
-        parms.num_iterations = 2
-    parms_json = parms.str() + '\0'
+    if params == None:
+        params = SVDParams()
+    params_json = params.str() + '\0'
 
     sk._callsl(sk._lib.sl_approximate_svd, \
             A.ctype(), Aobj, \
             U.ctype(), Uobj, \
             S.ctype(), Sobj, \
             V.ctype(), Vobj, \
-            k, parms_json, sk._ctxt_obj)
+            k, params_json, sk._ctxt_obj)
 
     A.ptrcleaner()
     U.ptrcleaner()

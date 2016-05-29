@@ -403,6 +403,129 @@ public:
 };
 
 /**
+ * Specialization: Blendenpik, local input, local output
+ */
+template <typename ValueType, typename PrecondTag>
+class accelerated_regression_solver_t<
+    regression_problem_t<El::Matrix<ValueType>,
+                         linear_tag, l2_tag, no_reg_tag>,
+    El::Matrix<ValueType>,
+    El::Matrix<ValueType>,
+    blendenpik_tag<PrecondTag> > {
+
+public:
+
+    typedef ValueType value_type;
+
+    typedef El::Matrix<ValueType> matrix_type;
+    typedef El::Matrix<ValueType> rhs_type;
+    typedef El::Matrix<ValueType> sol_type;
+
+    typedef regression_problem_t<matrix_type,
+                                 linear_tag, l2_tag, no_reg_tag> problem_type;
+
+private:
+
+    typedef El::Matrix<ValueType> precond_type;
+    typedef precond_type sketch_type;
+    // The assumption is that the sketch is not much bigger than the
+    // preconditioner, so we should use the same matrix distribution.
+
+    const int _m;
+    const int _n;
+    const matrix_type &_A;
+    precond_type _R;
+    algorithms::inplace_precond_t<sol_type> *_precond_R;
+
+    regression_solver_t<problem_type, rhs_type, sol_type, svd_l2_solver_tag>
+    *_alt_solver;
+
+public:
+    /**
+     * Prepares the regressor to quickly solve given a right-hand side.
+     *
+     * @param problem Problem to solve given right-hand side.
+     * @param context Skylark context.
+     */
+    accelerated_regression_solver_t(const problem_type& problem,
+            base::context_t& context) :
+        _m(problem.m), _n(problem.n), _A(problem.input_matrix),
+        _R(_n, _n) {
+        // TODO n < m ???
+
+#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_FFTWF
+        int t = 4 * _n;    // TODO parameter.
+        double scale = std::sqrt((double)_m / (double)t);
+
+        El::Matrix<ValueType> Ar;
+        sketch_type SA(t, _n);
+        boost::random::uniform_int_distribution<int> distribution(0, _m- 1);
+
+        Ar = _A;
+        double condest = 0;
+        int attempts = 0;
+        do {
+            // TODO parameter of how many rounds
+            sketch::RFUT_t<El::Matrix<value_type>,
+                           typename sketch::fft_futs<value_type>::DCT_t,
+                           utility::rademacher_distribution_t<double> >
+                F(_m, context);
+            F.apply(Ar, Ar, sketch::columnwise_tag());
+
+            // TODO use sampling matrix!
+            std::vector<int> samples =
+                context.generate_random_samples_array(t, distribution);
+            for (int j = 0; j < Ar.Width(); j++)
+                for (int i = 0; i < t; i++) {
+                    int row = samples[i];
+                    SA.Set(i, j, scale * Ar.Get(row, j));
+                }
+
+            condest = flinl2_internal::build_precond(SA, _R, _precond_R,
+                PrecondTag());
+            attempts++;
+        } while (condest > 1e14 && attempts < 3); // TODO parameters
+
+        if (condest <= 1e14)
+            _alt_solver = nullptr;
+        else {
+            _alt_solver =
+                new regression_solver_t<problem_type,
+                                      rhs_type,
+                                      sol_type, svd_l2_solver_tag>(problem);
+            delete _precond_R;
+            std::cout << "FAILED to create!" << std::endl;
+            _precond_R = nullptr;
+        }
+#else
+        //TODO: how to handle?
+        SKYLARK_THROW_EXCEPTION (
+          base::sketch_exception()
+              << base::error_msg(
+                 "Requires FFT support!"));
+#endif
+    }
+
+    ~accelerated_regression_solver_t() {
+        if (_precond_R != nullptr)
+            delete _precond_R;
+        if (_alt_solver != nullptr)
+            delete _alt_solver;
+    }
+
+    int solve(const rhs_type& b, sol_type& x) {
+        if (_precond_R != nullptr)
+            return LSQR(_A, b, x, algorithms::krylov_iter_params_t(),
+                *_precond_R);
+        else {
+            _alt_solver->solve(b, x);
+            return 0;
+        }
+    }
+};
+
+
+/**
  * Specialization: LSRN, [VC/VR,STAR] input, [STAR, STAR] solution.
  */
 template <typename ValueType, El::Distribution VD,

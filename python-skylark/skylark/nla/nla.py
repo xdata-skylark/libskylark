@@ -1,3 +1,5 @@
+__all__ = ['SVDParams', 'approximate_svd']
+
 from skylark import errors
 from skylark import sketch as sk
 from ctypes import byref, c_void_p

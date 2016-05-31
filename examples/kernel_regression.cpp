@@ -38,7 +38,7 @@ int fileformat = FORMAT_LIBSVM;
 int s = 2000, partial = -1, sketch_size = -1, sample = -1, maxit = 0, maxsplit = 0;
 std::string fname, testname, modelname = "model.dat", logfile = "";
 double kp1 = 10.0, kp2 = 0.0, kp3 = 1.0, lambda = 0.01, tolerance=0;
-bool use_single, use_fast;
+bool use_single, use_fast, regression;
 
 #ifndef SKYLARK_AVOID_BOOST_PO
 
@@ -108,6 +108,8 @@ int parse_program_options(int argc, char* argv[]) {
             "Sample the input data. Will use all if -1. ")
         ("single", "Whether to use single precision instead of double.")
         ("fast", "Try using a fast feature transform.")
+        ("regression", "Build a regression model"
+            "(default is classification).")
         ("numfeatures,f",
             bpo::value<int>(&s),
             "Number of random features (if relevant).")
@@ -145,6 +147,7 @@ int parse_program_options(int argc, char* argv[]) {
 
         use_single = vm.count("single");
         use_fast = vm.count("fast");
+        regression = vm.count("regression");
 
     } catch(bpo::error& e) {
         std::cerr << e.what() << std::endl;
@@ -215,6 +218,11 @@ int parse_program_options(int argc, char* argv[]) {
             i--;
         }
 
+        if (flag == "--regression") {
+            regression = true;
+            i--;
+        }
+
         if (flag == "--fast") {
             use_fast = true;
             i--;
@@ -250,7 +258,7 @@ int parse_program_options(int argc, char* argv[]) {
 #endif
 
 template<typename T>
-int execute(skylark::base::context_t &context) {
+int execute_classification(skylark::base::context_t &context) {
 
     boost::mpi::communicator world;
     int rank = world.rank();
@@ -273,7 +281,7 @@ int execute(skylark::base::context_t &context) {
         *log_stream << "# Number of ranks is " << world.size() << std::endl;
     }
 
-    // Load X and Y
+    // Load X and L
     if (rank == 0) {
         *log_stream << "Reading the matrix... ";
         log_stream->flush();
@@ -311,7 +319,7 @@ int execute(skylark::base::context_t &context) {
         El::View(L, L0);
 
     } else {
-        // Sample X and Y
+        // Sample X and L
         if (rank == 0) {
             *log_stream << "Sampling the data... ";
             log_stream->flush();
@@ -544,6 +552,300 @@ int execute(skylark::base::context_t &context) {
     return 0;
 }
 
+template<typename T>
+int execute_regression(skylark::base::context_t &context) {
+
+    boost::mpi::communicator world;
+    int rank = world.rank();
+
+    std::ostream *log_stream = &std::cout;
+    if (rank == 0 && logfile != "") {
+        log_stream = new std::ofstream();
+        ((std::ofstream *)log_stream)->open(logfile);
+    }
+
+    El::DistMatrix<T> X0, X, Y0, Y;
+
+    boost::mpi::timer timer;
+
+    if (rank == 0) {
+        *log_stream << "# Generated using kernel_regression ";
+        *log_stream << "using the following command-line: " << std::endl;
+        *log_stream << "#\t" << cmdline << std::endl;
+        *log_stream << "# Number of ranks is " << world.size() << std::endl;
+    }
+
+    // Load X and Y
+    if (rank == 0) {
+        *log_stream << "Reading the matrix... ";
+        log_stream->flush();
+        timer.restart();
+    }
+
+    switch (fileformat) {
+    case FORMAT_LIBSVM:
+        skylark::utility::io::ReadLIBSVM(fname, X0, Y0, skylark::base::COLUMNS,
+            0, partial);
+        break;
+
+#ifdef SKYLARK_HAVE_HDF5
+    case FORMAT_HDF5: {
+        H5::H5File in(fname, H5F_ACC_RDONLY);
+        skylark::utility::io::ReadHDF5(in, "X", X0, -1, partial);
+        skylark::utility::io::ReadHDF5(in, "Y", Y0, -1, partial);
+        in.close();
+    }
+        break;
+#endif
+
+    default:
+        *log_stream << "Invalid file format specified." << std::endl;
+        return -1;
+    }
+
+    if (rank == 0)
+        *log_stream <<"took " << boost::format("%.2e") % timer.elapsed()
+                  << " sec\n";
+
+    if (sample == -1) {
+
+        El::View(X, X0);
+        El::View(Y, Y0);
+
+    } else {
+        // Sample X and Y
+        if (rank == 0) {
+            *log_stream << "Sampling the data... ";
+            log_stream->flush();
+            timer.restart();
+        }
+
+
+        skylark::sketch::UST_data_t S(X0.Width(), sample, false, context);
+
+        X.Resize(X0.Height(), sample);
+        skylark::sketch::UST_t<El::DistMatrix<T> > (S).apply(X0,
+            X, skylark::sketch::rowwise_tag());
+
+        Y.Resize(1, sample);
+        skylark::sketch::UST_t<El::DistMatrix<T> > (S).apply(Y0,
+            Y, skylark::sketch::rowwise_tag());
+
+        if (rank == 0)
+            *log_stream <<"took " << boost::format("%.2e") % timer.elapsed()
+                        << " sec\n";
+    }
+
+    // Training
+    if (rank == 0) {
+        *log_stream << "Training... " << std::endl;
+        timer.restart();
+    }
+
+    std::shared_ptr<skylark::ml::kernel_t> k_ptr;
+
+    switch (kernel_type) {
+    case GAUSSIAN_KERNEL:
+        k_ptr.reset(new skylark::ml::gaussian_t(X.Height(), kp1));
+        break;
+
+    case LAPLACIAN_KERNEL:
+        k_ptr.reset(new skylark::ml::laplacian_t(X.Height(), kp1));
+        break;
+
+    case POLYNOMIAL_KERNEL:
+        k_ptr.reset(new skylark::ml::polynomial_t(X.Height(), kp1, kp2, kp3));
+        break;
+
+    default:
+        *log_stream << "Invalid kernel specified." << std::endl;
+        return -1;
+    }
+
+    skylark::ml::kernel_container_t k(k_ptr);
+
+    El::DistMatrix<T> A, W;
+
+    skylark::sketch::sketch_transform_container_t<El::DistMatrix<T>,
+                                                  El::DistMatrix<T> >  S;
+    bool scale_maps = true;
+    std::vector<
+        skylark::sketch::sketch_transform_container_t<El::DistMatrix<T>,
+                                                      El::DistMatrix<T> > > transforms;
+
+    skylark::ml::krr_params_t krr_params(rank == 0, 4, *log_stream, "\t");
+    krr_params.use_fast = use_fast;
+
+    skylark::ml::model_t<T, T> *model;
+
+    // Transpose Y since KernelRidge expects it to be a column vector (TODO ?)
+    El::DistMatrix<T> Ytransp;
+    El::Transpose(Y, Ytransp, true);
+    
+    switch(algorithm) {
+    case CLASSIC_KRR:
+        skylark::ml::KernelRidge(skylark::base::COLUMNS, k, X, Ytransp,
+            T(lambda), A, krr_params);
+        model =
+            new skylark::ml::kernel_model_t<skylark::ml::kernel_container_t,
+                  T, T>(k, skylark::base::COLUMNS, X, fname, fileformat,
+                      A);
+        break;
+
+    case FASTER_KRR:
+        krr_params.iter_lim = (maxit == 0) ? 1000 : maxit;
+        krr_params.tolerance = (tolerance == 0) ? 1e-3 : tolerance;
+        skylark::ml::FasterKernelRidge(skylark::base::COLUMNS, k, X, Ytransp,
+            T(lambda), A, s, context, krr_params);
+        model =
+            new skylark::ml::kernel_model_t<skylark::ml::kernel_container_t,
+                  T, T>(k, skylark::base::COLUMNS, X, fname, fileformat, A);
+        break;
+
+    case APPROXIMATE_KRR:
+        skylark::ml::ApproximateKernelRidge(skylark::base::COLUMNS, k, X, Ytransp,
+            T(lambda), S, W, s, context, krr_params);
+        model =
+            new skylark::ml::feature_expansion_model_t<
+                skylark::sketch::sketch_transform_container_t, T, T>
+            (S, W);
+        break;
+
+    case SKETCHED_APPROXIMATE_KRR:
+    case FAST_SKETCHED_APPROXIMATE_KRR:
+        krr_params.sketched_rr = true;
+        krr_params.sketch_size = sketch_size;
+        krr_params.fast_sketch = algorithm == FAST_SKETCHED_APPROXIMATE_KRR;
+        krr_params.max_split = maxsplit;
+        skylark::ml::SketchedApproximateKernelRidge(skylark::base::COLUMNS, k,
+            X, Ytransp,
+            T(lambda), scale_maps, transforms, W, s, sketch_size,
+            context, krr_params);
+        model =
+            new skylark::ml::feature_expansion_model_t<
+                skylark::sketch::sketch_transform_container_t, T, T>
+            (scale_maps, transforms, W);
+        break;
+
+    case LARGE_SCALE_KRR:
+        krr_params.iter_lim = (maxit == 0) ? 20 : maxit;
+        krr_params.tolerance = (tolerance == 0) ? 1e-1 : tolerance;
+        krr_params.max_split = maxsplit;
+        skylark::ml::LargeScaleKernelRidge(skylark::base::COLUMNS, k, X, Ytransp,
+            T(lambda), scale_maps, transforms, W, s,
+            context, krr_params);
+        model =
+            new skylark::ml::feature_expansion_model_t<
+                skylark::sketch::sketch_transform_container_t, T, T>
+            (scale_maps, transforms, W);
+        break;
+
+    case EXPERIMENTAL_1:
+    case EXPERIMENTAL_2:
+        krr_params.sketched_rr = true;
+        krr_params.fast_sketch = algorithm == EXPERIMENTAL_2;
+        skylark::ml::ApproximateKernelRidge(skylark::base::COLUMNS, k, X, Ytransp,
+            T(lambda), S, W, s, context, krr_params);
+        model =
+            new skylark::ml::feature_expansion_model_t<
+                skylark::sketch::sketch_transform_container_t, T, T>
+            (S, W);
+        break;
+
+    default:
+        *log_stream << "Invalid algorithm value specified." << std::endl;
+        return -1;
+    }
+
+    if (rank == 0)
+        *log_stream << "Training took " << boost::format("%.2e") % timer.elapsed()
+                  << " sec\n";
+
+    if (modelname != "NOSAVE") {
+        // Save model
+        if (rank == 0) {
+            *log_stream << "Saving model... ";
+            log_stream->flush();
+            timer.restart();
+        }
+
+        boost::property_tree::ptree pt = model->to_ptree();
+
+        if (rank == 0) {
+            std::ofstream of(modelname);
+            of << "# Generated using kernel_regression ";
+            of << "using the following command-line: " << std::endl;
+            of << "#\t" << cmdline << std::endl;
+            of << "# Number of ranks is " << world.size() << std::endl;
+            boost::property_tree::write_json(of, pt);
+            of.close();
+        }
+
+        if (rank == 0)
+            *log_stream <<"took " << boost::format("%.2e") % timer.elapsed()
+                        << " sec\n";
+    }
+
+    // Test
+    if (!testname.empty()) {
+        if (rank == 0) {
+            *log_stream << "Predicting... ";
+            log_stream->flush();
+            timer.restart();
+        }
+
+        El::DistMatrix<T> XT;
+        El::DistMatrix<T> YT;
+
+        switch (fileformat) {
+        case FORMAT_LIBSVM:
+            skylark::utility::io::ReadLIBSVM(testname, XT, YT,
+                skylark::base::COLUMNS, X.Height());
+            break;
+
+#ifdef SKYLARK_HAVE_HDF5
+        case FORMAT_HDF5: {
+            H5::H5File in(testname, H5F_ACC_RDONLY);
+            skylark::utility::io::ReadHDF5(in, "X", XT);
+            skylark::utility::io::ReadHDF5(in, "Y", YT);
+            in.close();
+        }
+            break;
+#endif
+
+        default:
+            *log_stream << "Invalid file format specified." << std::endl;
+            return -1;
+        }
+
+        El::DistMatrix<T> YP;
+        model->predict(skylark::base::COLUMNS, XT, YP);
+
+        if (rank == 0)
+            *log_stream << "took " << boost::format("%.2e") % timer.elapsed()
+                      << " sec\n";
+
+        T nrm_Yt = El::Nrm2(YT);
+        El::Axpy(T(-1.0), YP, YT);
+        T nrm_E = El::Nrm2(YT);
+
+        if (rank == 0)
+            *log_stream << "Error rate: "
+                        << boost::format("%.4e") % (nrm_E / nrm_Yt)
+                        << std::endl;
+        world.barrier();
+    }
+
+    if (rank == 0 && logfile != "") {
+        ((std::ofstream *)log_stream)->close();
+        delete log_stream;
+    }
+
+    delete model;
+
+    return 0;
+}
+
 int main(int argc, char* argv[]) {
 
     for(int i = 0; i < argc; i++) {
@@ -568,11 +870,17 @@ int main(int argc, char* argv[]) {
 
     SKYLARK_BEGIN_TRY()
 
-        if (use_single)
-            ret = execute<float>(context);
-        else
-            ret = execute<double>(context);
-
+        if (regression) {
+            if (use_single)
+                ret = execute_regression<float>(context);
+            else
+                ret = execute_regression<double>(context);
+        } else {
+            if (use_single)
+                ret = execute_classification<float>(context);
+            else
+                ret = execute_classification<double>(context);
+        }
     SKYLARK_END_TRY() SKYLARK_CATCH_AND_PRINT((rank == 0))
 
         catch (const std::exception& ex) {

@@ -19,9 +19,16 @@ for compile and installation instructions.
 Instructions for contributing to libSkylark can be found in `CONTRIBUTING.md`.
 
 
-## Licence
+## License
 
 (c) IBM Corporation, 2016
 This program and the accompanying materials are made available
 under the terms of the Apache License, Version 2.0 which is available at
 http://www.apache.org/licenses/LICENSE-2.0.
+
+
+## Acknowledgment
+
+This project is supported from the XDATA program of the Defense
+Advanced Research Projects Agency (DARPA), administered through Air Force
+Research Laboratory.

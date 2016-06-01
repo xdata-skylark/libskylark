@@ -1,8 +1,9 @@
-__all__ = ['SVDParams', 'approximate_svd']
+__all__ = ['SVDParams', 'FasterLeastSquaresParams', 'approximate_svd', 'faster_least_squares']
 
 from skylark import errors
 from skylark import sketch as sk
 from ctypes import byref, c_void_p
+import El
 
 import json
 
@@ -32,6 +33,14 @@ class SVDParams(Params):
         self.num_iterations = 2
         self.skip_qr = False
 
+class FasterLeastSquaresParams(Params):
+    """ 
+    Parameter object for faster least squares.
+    """
+
+    def __init__(self):
+        super(FasterLeastSquaresParams, self).__init__()
+        
 def approximate_svd(A, U, S, V, k=10, params=None):
     """
     Compute the SVD of **A** such that **SVD(A) = U S V^T**.
@@ -78,3 +87,47 @@ def approximate_svd(A, U, S, V, k=10, params=None):
 
     return (U.getobj(), S.getobj(), V.getobj())
 
+def faster_least_squares(A, B, X, orientation=El.NORMAL, params=None):
+    """
+    Compute a solution to the least squares problem:
+
+    If orientation == El.NORMAL: argmin_X ||A * X - B||_F
+    If orientation == El.ADJOINT: argmin_X ||A^H * X - B||_F
+
+    * ADJOINT not yet supported! *
+
+    :param A: Input matrix.
+    :param B: Right hand side.
+    :param X: Solution
+    :param params: Parmaters.
+    :returns: X
+    """
+    
+    A = sk._adapt(A)
+    B = sk._adapt(B)
+    X = sk._adapt(X)
+
+    Aobj = A.ptr()
+    Bobj = B.ptr()
+    Xobj = X.ptr()
+
+    if (Aobj == -1 or Bobj == -1 or Xobj == -1):
+        raise errors.InvalidObjectError("Invalid/unsupported object passed as A, B, X ")
+
+    # use default params in case none are provided
+    if params == None:
+        params = FasterLeastSquaresParams()
+    params_json = params.str() + '\0'
+
+    sk._callsl(sk._lib.sl_faster_least_squares, \
+               orientation, \
+               A.ctype(), Aobj, \
+               B.ctype(), Bobj, \
+               X.ctype(), Xobj, \
+               params_json, sk._ctxt_obj)
+
+    A.ptrcleaner()
+    B.ptrcleaner()
+    X.ptrcleaner()
+  
+    return X.getobj()

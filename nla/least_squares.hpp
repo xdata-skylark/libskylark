@@ -270,11 +270,13 @@ void FasterLeastSquares(El::Orientation orientation, const boost::any& A,
             FasterLeastSquares(orientation, *boost::any_cast<AT*>(A),   \
                 *boost::any_cast<BT*>(B), *boost::any_cast<XT*>(X),     \
                 context, params);                                       \
+            return;                                                     \
         }                                                               \
         if (A.type() == typeid(const AT*)) {                            \
             FasterLeastSquares(orientation, *boost::any_cast<const AT*>(A), \
                 *boost::any_cast<BT*>(B), *boost::any_cast<XT*>(X),     \
                 context, params);                                       \
+            return;                                                     \
         }                                                               \
      }
 

@@ -401,11 +401,13 @@ void ApproximateSymmetricSVD(El::UpperOrLower uplo,
             ApproximateSymmetricSVD(uplo, *boost::any_cast<AT*>(A),     \
                 *boost::any_cast<VT*>(V), *boost::any_cast<ST*>(S),     \
                 rank, context, params);                                 \
+            return;                                                     \
         }                                                               \
         if (A.type() == typeid(const AT*)) {                            \
             ApproximateSymmetricSVD(uplo, *boost::any_cast<const AT*>(A), \
                 *boost::any_cast<VT*>(V), *boost::any_cast<ST*>(S),     \
                 rank, context, params);                                 \
+            return;                                                     \
         }                                                               \
      }
 
@@ -436,7 +438,7 @@ void ApproximateSymmetricSVD(El::UpperOrLower uplo,
 #endif
 
     SKYLARK_THROW_EXCEPTION (
-        base::sketch_exception()
+        base::nla_exception()
           << base::error_msg(
            "This combination has not yet been implemented for ApproximateSymmetricSVD"));
 
@@ -455,11 +457,13 @@ void ApproximateSVD(const boost::any &A,
             ApproximateSVD(*boost::any_cast<AT*>(A),              \
                 *boost::any_cast<UT*>(U), *boost::any_cast<ST*>(S),     \
                 *boost::any_cast<VT*>(V), rank, context, params);       \
+            return;                                                     \
         }                                                               \
         if (A.type() == typeid(const AT*)) {                            \
             ApproximateSVD(*boost::any_cast<const AT*>(A),        \
                 *boost::any_cast<UT*>(U), *boost::any_cast<ST*>(S),     \
                 *boost::any_cast<VT*>(V), rank, context, params);       \
+            return;                                                     \
         }                                                               \
      }
 
@@ -489,6 +493,8 @@ void ApproximateSVD(const boost::any &A,
 
 #endif
 
+    std::cout << "HEY 1!\n";
+    
     SKYLARK_THROW_EXCEPTION (
         base::nla_exception()
           << base::error_msg(

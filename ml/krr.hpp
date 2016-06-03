@@ -466,12 +466,30 @@ void FasterKernelRidge(base::direction_t direction, const KernelType &k,
     }
 
     El::DistMatrix<T> K, D;
+    El::Int nnz, ldim;
+    T *buf;
 
     // Hack for experiments!
     if (params.iter_lim == -1)
         goto skip_kernel_creation;
 
-    SymmetricGram(El::LOWER, direction, k, X, K);
+    // Just to count NNZ correctly use ful kernel
+    Gram(direction, direction, k, X, X, K);
+
+    nnz = 0, ldim = K.LDim();
+    buf = K.Buffer();
+    for (El::Int j = 0; j < K.LocalWidth(); j++)
+        for (El::Int i = 0; i < K.LocalHeight(); i++)
+            if (buf[j * ldim + i] != 0)
+                nnz++;
+
+    nnz = El::mpi::AllReduce(nnz, MPI_SUM, K.DistComm());
+
+    if (log_lev1)
+        params.log_stream << std::endl << params.prefix
+                          << "Number of non-zeros = "
+                          << boost::format("%.1f") % (nnz / (1000000.0)) << "M"
+                          << std::endl;
 
     // Add regularizer
     El::Ones(D, X.Width(), 1);

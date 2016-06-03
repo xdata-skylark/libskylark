@@ -410,6 +410,186 @@ private:
     const double _sigma;
 };
 
+/**
+ * Gaussian kernel.
+ */
+struct truncated_gaussian_t : public kernel_t {
+
+    truncated_gaussian_t(El::Int N, double sigma, double tau) :
+        _N(N), _sigma(sigma), _tau(tau) {
+
+    }
+
+    boost::property_tree::ptree to_ptree() const {
+        boost::property_tree::ptree pt;
+        pt.put("skylark_object_type", "kernel");
+        pt.put("skylark_version", VERSION);
+
+        pt.put("kernel_type", "truncated_gaussian");
+        pt.put("sigma", _sigma);
+        pt.put("tau", _tau);
+        pt.put("N", _N);
+
+        return pt;
+    }
+
+    sketch::sketch_transform_t<boost::any, boost::any> *create_rft(El::Int S,
+    regular_feature_transform_tag tag, base::context_t& context) const {
+
+        return create_rft<boost::any, boost::any>(S, tag, context);
+    }
+
+    sketch::sketch_transform_t<boost::any, boost::any> *create_rft(El::Int S,
+    fast_feature_transform_tag tag, base::context_t& context) const {
+
+        return create_rft<boost::any, boost::any>(S, tag, context);
+    }
+
+    template<typename IT, typename OT>
+    sketch::sketch_transform_t<IT, OT> *create_rft(El::Int S,
+        regular_feature_transform_tag, base::context_t& context) const {
+        return
+            new sketch::GaussianRFT_t<IT, OT>(_N, S, _sigma, context);
+    }
+
+    template<typename IT, typename OT>
+    sketch::sketch_transform_t<IT, OT> *create_rft(El::Int S,
+        fast_feature_transform_tag, base::context_t& context) const {
+        return
+            new sketch::FastGaussianRFT_t<IT, OT>(_N, S, _sigma, context);
+    }
+
+    template<typename IT, typename OT, 
+             template <typename> class QMCSequenceType>
+    sketch::sketch_transform_t<IT, OT> *create_qrft(El::Int S,
+        const QMCSequenceType<double>& sequence, int skip,
+        base::context_t& context) const {
+        return
+            new sketch::GaussianQRFT_t<IT, OT, QMCSequenceType>(_N,
+                S, _sigma, sequence, skip, context);
+    }
+
+    El::Int get_dim() const {
+        return _N;
+    }
+
+    El::Int qrft_sequence_dim() const {
+        return sketch::GaussianQRFT_data_t<base::qmc_sequence_container_t>::
+            qmc_sequence_dim(_N);
+    }
+
+    template<typename XT, typename YT, typename KT>
+    void gram(base::direction_t dirX, base::direction_t dirY,
+        const XT &X, const YT &Y, KT &K) const {
+
+        typedef typename utility::typer_t<KT>::value_type value_type;
+
+        El::Int m = dirX == base::COLUMNS ? base::Width(X) : base::Height(X);
+        El::Int n = dirY == base::COLUMNS ? base::Width(Y) : base::Height(Y);
+
+        K.Resize(m, n);
+        base::EuclideanDistanceMatrix(dirX, dirY, value_type(1.0), X, Y,
+            value_type(0.0), K);
+        El::EntrywiseMap(K, std::function<value_type(value_type)> (
+            [this] (value_type x) {
+                double v = std::exp(-x / (2 * _sigma * _sigma));
+                v = (v < _tau) ? 0 : v;
+                return v;
+            }));
+    }
+
+    template<typename XT, typename KT>
+    void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
+        const XT &X, KT &K) const {
+
+        typedef typename utility::typer_t<KT>::value_type value_type;
+
+        El::Int n = dir == base::COLUMNS ? base::Width(X) : base::Height(X);
+
+        K.Resize(n, n);
+        base::SymmetricEuclideanDistanceMatrix(uplo, dir, value_type(1.0), X,
+            value_type(0.0), K);
+        base::SymmetricEntrywiseMap(uplo, K, std::function<value_type(value_type)> (
+              [this] (value_type x) {
+                  double v = std::exp(-x / (2 * _sigma * _sigma));
+                  v = (v < _tau) ? 0 : v;
+                  return v;
+              }));
+    }
+
+    /* Instantion of virtual functions in base */
+
+    void gram(base::direction_t dirX, base::direction_t dirY,
+        const El::Matrix<double> &X, const El::Matrix<double> &Y,
+        El::Matrix<double> &K) const {
+
+        typedef El::Matrix<double> matrix_type;
+        gram<matrix_type, matrix_type, matrix_type>(dirX, dirY, X, Y, K);
+    }
+
+    void gram(base::direction_t dirX, base::direction_t dirY,
+        const El::Matrix<float> &X, const El::Matrix<float> &Y,
+        El::Matrix<float> &K) const {
+
+        typedef El::Matrix<float> matrix_type;
+        gram<matrix_type, matrix_type, matrix_type>(dirX, dirY, X, Y, K);
+    }
+
+    void gram(base::direction_t dirX, base::direction_t dirY,
+        const El::ElementalMatrix<double> &X,
+        const El::ElementalMatrix<double> &Y,
+        El::ElementalMatrix<double> &K) const {
+
+        typedef El::ElementalMatrix<double> matrix_type;
+        gram<matrix_type, matrix_type, matrix_type>(dirX, dirY, X, Y, K);
+    }
+
+    void gram(base::direction_t dirX, base::direction_t dirY,
+        const El::ElementalMatrix<float> &X,
+        const El::ElementalMatrix<float> &Y,
+        El::ElementalMatrix<float> &K) const {
+
+        typedef El::ElementalMatrix<float> matrix_type;
+        gram<matrix_type, matrix_type, matrix_type>(dirX, dirY, X, Y, K);
+    }
+
+    virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir, 
+        const El::Matrix<double> &X, El::Matrix<double> &K) const {
+
+        typedef El::Matrix<double> matrix_type;
+        symmetric_gram<matrix_type, matrix_type>(uplo, dir, X, K);
+
+    }
+
+    virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
+        const El::Matrix<float> &X, El::Matrix<float> &K) const {
+
+        typedef El::Matrix<float> matrix_type;
+        symmetric_gram<matrix_type, matrix_type>(uplo, dir, X, K);
+    }
+
+    virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
+        const El::ElementalMatrix<double> &X,
+        El::ElementalMatrix<double> &K) const {
+
+        typedef El::ElementalMatrix<double> matrix_type;
+        symmetric_gram<matrix_type, matrix_type>(uplo, dir, X, K);
+    }
+
+    virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
+        const El::ElementalMatrix<float> &X,
+        El::ElementalMatrix<float> &K) const {
+
+        typedef El::ElementalMatrix<float> matrix_type;
+        symmetric_gram<matrix_type, matrix_type>(uplo, dir, X, K);
+    }
+
+private:
+    const El::Int _N;
+    const double _sigma;
+    const double _tau;
+};
+
 struct polynomial_t : public kernel_t {
 
     polynomial_t(El::Int N, int q = 2, double c = 1.0, double gamma = 1.0)

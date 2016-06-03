@@ -32,6 +32,8 @@
 #define LAPLACIAN_KERNEL  1
 #define POLYNOMIAL_KERNEL 2
 
+#define TRUNCATED_GAUSSIAN_KERNEL   10
+
 std::string cmdline;
 int seed = 38734, algorithm = FASTER_KRR, kernel_type = GAUSSIAN_KERNEL;
 int fileformat = FORMAT_LIBSVM;
@@ -363,6 +365,10 @@ int execute_classification(skylark::base::context_t &context) {
         k_ptr.reset(new skylark::ml::polynomial_t(X.Height(), kp1, kp2, kp3));
         break;
 
+    case TRUNCATED_GAUSSIAN_KERNEL:
+        k_ptr.reset(new skylark::ml::truncated_gaussian_t(X.Height(), kp1, kp2));
+        break;
+
     default:
         *log_stream << "Invalid kernel specified." << std::endl;
         return -1;
@@ -655,6 +661,10 @@ int execute_regression(skylark::base::context_t &context) {
 
     case POLYNOMIAL_KERNEL:
         k_ptr.reset(new skylark::ml::polynomial_t(X.Height(), kp1, kp2, kp3));
+        break;
+
+    case TRUNCATED_GAUSSIAN_KERNEL:
+        k_ptr.reset(new skylark::ml::truncated_gaussian_t(X.Height(), kp1, kp2));
         break;
 
     default:

@@ -1,27 +1,12 @@
 __all__ = ['SVDParams', 'FasterLeastSquaresParams', 'approximate_svd', 'faster_least_squares']
 
+from skylark import base
 from skylark import errors
 from skylark import sketch as sk
 from ctypes import byref, c_void_p
 import El
-
-import json
-
-class Params(object):
-    """
-    Base parameter object
-    """
-    def __init__(self):
-        self.am_i_printing = False
-        self.log_level = 0
-        self.prefix = ""
-        self.debug_level = 0
-
-    def str(self):
-        return json.dumps(self, default=lambda obj: obj.__dict__,
-                sort_keys=True)
     
-class SVDParams(Params):
+class SVDParams(base.Params):
     """
     Parameter object for SVD.
     """
@@ -33,7 +18,7 @@ class SVDParams(Params):
         self.num_iterations = 2
         self.skip_qr = False
 
-class FasterLeastSquaresParams(Params):
+class FasterLeastSquaresParams(base.Params):
     """ 
     Parameter object for faster least squares.
     """

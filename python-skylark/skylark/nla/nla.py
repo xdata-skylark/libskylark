@@ -1,27 +1,12 @@
 __all__ = ['SVDParams', 'FasterLeastSquaresParams', 'approximate_svd', 'faster_least_squares']
 
+from skylark import base
 from skylark import errors
-from skylark import sketch as sk
+from skylark import lib
 from ctypes import byref, c_void_p
 import El
-
-import json
-
-class Params(object):
-    """
-    Base parameter object
-    """
-    def __init__(self):
-        self.am_i_printing = False
-        self.log_level = 0
-        self.prefix = ""
-        self.debug_level = 0
-
-    def str(self):
-        return json.dumps(self, default=lambda obj: obj.__dict__,
-                sort_keys=True)
     
-class SVDParams(Params):
+class SVDParams(base.Params):
     """
     Parameter object for SVD.
     """
@@ -33,7 +18,7 @@ class SVDParams(Params):
         self.num_iterations = 2
         self.skip_qr = False
 
-class FasterLeastSquaresParams(Params):
+class FasterLeastSquaresParams(base.Params):
     """ 
     Parameter object for faster least squares.
     """
@@ -55,10 +40,10 @@ def approximate_svd(A, U, S, V, k=10, params=None):
     """
 
     
-    A = sk._adapt(A)
-    U = sk._adapt(U)
-    S = sk._adapt(S)
-    V = sk._adapt(V)
+    A = lib.adapt(A)
+    U = lib.adapt(U)
+    S = lib.adapt(S)
+    V = lib.adapt(V)
 
     Aobj = A.ptr()
     Uobj = U.ptr()
@@ -73,12 +58,12 @@ def approximate_svd(A, U, S, V, k=10, params=None):
         params = SVDParams()
     params_json = params.str() + '\0'
 
-    sk._callsl(sk._lib.sl_approximate_svd, \
+    lib.callsl("sl_approximate_svd", \
             A.ctype(), Aobj, \
             U.ctype(), Uobj, \
             S.ctype(), Sobj, \
             V.ctype(), Vobj, \
-            k, params_json, sk._ctxt_obj)
+            k, params_json, lib.ctxt_obj)
 
     A.ptrcleaner()
     U.ptrcleaner()
@@ -103,9 +88,9 @@ def faster_least_squares(A, B, X, orientation=El.NORMAL, params=None):
     :returns: X
     """
     
-    A = sk._adapt(A)
-    B = sk._adapt(B)
-    X = sk._adapt(X)
+    A = lib.adapt(A)
+    B = lib.adapt(B)
+    X = lib.adapt(X)
 
     Aobj = A.ptr()
     Bobj = B.ptr()
@@ -119,12 +104,12 @@ def faster_least_squares(A, B, X, orientation=El.NORMAL, params=None):
         params = FasterLeastSquaresParams()
     params_json = params.str() + '\0'
 
-    sk._callsl(sk._lib.sl_faster_least_squares, \
+    lib.callsl("sl_faster_least_squares", \
                orientation, \
                A.ctype(), Aobj, \
                B.ctype(), Bobj, \
                X.ctype(), Xobj, \
-               params_json, sk._ctxt_obj)
+               params_json, lib.ctxt_obj)
 
     A.ptrcleaner()
     B.ptrcleaner()

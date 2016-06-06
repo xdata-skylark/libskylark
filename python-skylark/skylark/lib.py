@@ -2,6 +2,7 @@ import ctypes
 from ctypes import byref, cdll, c_double, c_void_p, c_int, c_char_p, pointer, POINTER, c_bool
 import ctypes.util
 
+import errors
 import numpy, scipy
 import atexit
 import time

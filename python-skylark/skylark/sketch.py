@@ -3,7 +3,6 @@ import errors
 import ctypes
 from ctypes import byref, cdll, c_double, c_void_p, c_int, c_char_p, pointer, POINTER, c_bool
 import ctypes.util
-import sprand
 import math
 from math import sqrt, pi
 import numpy, scipy
@@ -324,7 +323,8 @@ class SJLT(_SketchTransform):
     self._ppy = True
     nz_values = [-sqrt(1.0/density), +sqrt(1.0/density)]
     nz_prob_dist = [0.5, 0.5]
-    self._S = sprand.sample(s, n, density, nz_values, nz_prob_dist) / sqrt(s)
+    self._S = scipy.sparse.rand(m, n, density, format = 'csr')
+    self._S.data = scipy.stats.rv_discrete(values=(nz_values, nz_prob_dist), name = 'dist').rvs(size=S.nnz)
     # QUESTION do we need to mulitply by sqrt(1/density) ???
 
   def _ppyapply(self, A, SA, dim):
@@ -427,7 +427,7 @@ class CWT(_SketchTransform):
       # it will do
       distribution = scipy.stats.rv_discrete(values=([-1.0, +1.0], [0.5, 0.5]),
                                              name = 'dist')
-      self._S = sprand.hashmap(s, n, distribution, dimension = 0)
+      self._S = _hashmap(s, n, distribution, dimension = 0)
 
   def _ppyapply(self, A, SA, dim):
     if dim == 0:
@@ -458,7 +458,7 @@ class MMT(_SketchTransform):
       # The following is not memory efficient, but for a pure Python impl
       # it will do
       distribution = scipy.stats.cauchy()
-      self._S = sprand.hashmap(s, n, distribution, dimension = 0)
+      self._S = _hashmap(s, n, distribution, dimension = 0)
 
   def _ppyapply(self, A, SA, dim):
     if dim == 0:
@@ -505,7 +505,7 @@ class WZT(_SketchTransform):
       # The following is not memory efficient, but for a pure Python impl
       # it will do
       distribution = WZT._WZTDistribution(p)
-      self._S = sprand.hashmap(s, n, distribution, dimension = 0)
+      self._S = _hashmap(s, n, distribution, dimension = 0)
     else:
       if sketch_transform is None:
         sketch_transform = c_void_p()
@@ -929,6 +929,32 @@ class NURST(_SketchTransform):
       SA[:, :] = A[self._idxs, :]
     if dim == 1:
       SA[:, :] = A[:, self._idxs]
+
+#
+# Helper functions
+#
+def _hashmap(t, n, distribution, dimension=0): 
+  """
+  Sparse matrix representation of a random hash map h:[n] -> [t] so that 
+  for each i in [n], h(i) = j for j drawn from distribution
+  
+  :param t: number of bins
+  :param n: number of items hashed
+  :param distribution: distribution object. Needs to implement the 
+                       rvs(size=n) as returns an array of n samples. 
+  :param dimension: 0 returns t x n matrix, 1 returns n x t matrix 
+                   (for efficiency later)
+  """
+    
+  data = distribution.rvs(size=n)
+  col = scipy.arange(n)
+  row = scipy.stats.randint(0,t).rvs(n)
+  if dimension==0:
+    S = scipy.sparse.csr_matrix( (data, (row, col)), shape = (t,n))
+  else:
+    S = scipy.sparse.csr_matrix( (data, (col, row)), shape = (n,t))
+        
+  return S
 
 #
 # Additional names for various transforms.

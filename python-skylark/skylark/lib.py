@@ -8,6 +8,9 @@ import atexit
 import time
 import sys
 
+_libc = cdll.LoadLibrary(ctypes.util.find_library('c'))
+_libc.free.argtypes = (ctypes.c_void_p,)
+
 # Function for initialization and reinitilialization
 def initialize(seed=-1):
     """
@@ -39,7 +42,9 @@ def initialize(seed=-1):
     lib.sl_supported_sketch_transforms.restype = c_char_p
     lib.sl_has_elemental.restype               = c_bool
     lib.sl_has_combblas.restype                = c_bool
-  
+    lib.sl_get_exception_info.restype          = None
+    lib.sl_print_exception_trace               = None
+    
     ELEM_INSTALLED = lib.sl_has_elemental()
     KDT_INSTALLED  = lib.sl_has_combblas()
 
@@ -79,7 +84,11 @@ def callsl(fname, *args):
     f = getattr(lib, fname)
     errno = f(*args)
     if errno != 0:
-        raise errors.UnexpectedLowerLayerError(lib.sl_strerror(errno))
+        c_errinfo = c_char_p()
+        lib.sl_get_exception_info(byref(c_errinfo))
+        errinfo = c_errinfo.value
+        _libc.free(c_errinfo)
+        raise errors.LowerLayerError(errinfo)
 
 #
 # Matrix type adapters: specifies how to interact with the underlying (perhaps in C/C++)

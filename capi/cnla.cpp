@@ -33,7 +33,7 @@ SKYLARK_EXTERN_API int sl_approximate_symmetric_svd(
             skylark_void2any(S_type, S_),
             k, dref_context(ctxt), parms);
     SKYLARK_END_TRY()
-        SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
+        SKYLARK_CATCH_COPY_AND_RETURN_ERROR_CODE(lastexception);
 
     return 0;
 
@@ -57,7 +57,7 @@ SKYLARK_EXTERN_API int sl_approximate_svd(
             skylark_void2any(V_type, V_),
             k, dref_context(ctxt), parms);
     SKYLARK_END_TRY()
-        SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
+        SKYLARK_CATCH_COPY_AND_RETURN_ERROR_CODE(lastexception);
 
     return 0;
 }
@@ -79,7 +79,7 @@ SKYLARK_EXTERN_API int sl_faster_least_squares(ElOrientation orientation,
             skylark_void2any(X_type, X_),
             dref_context(ctxt), parms);
     SKYLARK_END_TRY()
-        SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
+        SKYLARK_CATCH_COPY_AND_RETURN_ERROR_CODE(lastexception);
 
     return 0;
 }

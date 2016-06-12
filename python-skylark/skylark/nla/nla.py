@@ -3,7 +3,6 @@ __all__ = ['SVDParams', 'FasterLeastSquaresParams', 'approximate_svd', 'faster_l
 from skylark import base
 from skylark import errors
 from skylark import lib
-from ctypes import byref, c_void_p
 import El
     
 class SVDParams(base.Params):

@@ -6,10 +6,7 @@
 #include "boost/property_tree/json_parser.hpp"
 
 #include "matrix_types.hpp"
-#include "sketchc.hpp"
 #include "../nla/nla.hpp"
-
-namespace nla = skylark::nla;
 
 skylark::base::context_t &dref_context(sl_context_t *ctxt);
 
@@ -24,7 +21,7 @@ SKYLARK_EXTERN_API int sl_approximate_symmetric_svd(
     std::stringstream data;
     data << params;
     boost::property_tree::read_json(data, json_tree);
-    nla::approximate_svd_params_t parms(json_tree);
+    skylark::nla::approximate_svd_params_t parms(json_tree);
 
     SKYLARK_BEGIN_TRY()
         skylark::nla::ApproximateSymmetricSVD(El::LOWER,
@@ -48,7 +45,7 @@ SKYLARK_EXTERN_API int sl_approximate_svd(
     std::stringstream data;
     data << params;
     boost::property_tree::read_json(data, json_tree);
-    nla::approximate_svd_params_t parms(json_tree);
+    skylark::nla::approximate_svd_params_t parms(json_tree);
 
     SKYLARK_BEGIN_TRY()
         skylark::nla::ApproximateSVD(skylark_void2any(A_type, A_),
@@ -70,7 +67,7 @@ SKYLARK_EXTERN_API int sl_faster_least_squares(ElOrientation orientation,
     std::stringstream data;
     data << params;
     boost::property_tree::read_json(data, json_tree);
-    nla::faster_ls_params_t parms(json_tree);
+    skylark::nla::faster_ls_params_t parms(json_tree);
 
     SKYLARK_BEGIN_TRY()
         skylark::nla::FasterLeastSquares(El::CReflect(orientation),

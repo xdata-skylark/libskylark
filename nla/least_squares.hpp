@@ -4,6 +4,7 @@
 #include <El.hpp>
 #include "../algorithms/regression/regression.hpp"
 #include "../base/exception.hpp"
+#include "../utility/types.hpp"
 
 namespace skylark { namespace nla {
 

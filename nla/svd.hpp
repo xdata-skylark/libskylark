@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <string>
 
-#include "../sketch/sketch.hpp"
+#include "../utility/types.hpp"
 
 namespace skylark { namespace nla {
 
@@ -493,8 +493,6 @@ void ApproximateSVD(const boost::any &A,
 
 #endif
 
-    std::cout << "HEY 1!\n";
-    
     SKYLARK_THROW_EXCEPTION (
         base::nla_exception()
           << base::error_msg(

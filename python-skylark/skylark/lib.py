@@ -35,6 +35,8 @@ def initialize(seed=-1):
     lib.sl_wrap_raw_sp_matrix.restype          = c_int
     lib.sl_free_raw_sp_matrix_wrap.restype     = c_int
     lib.sl_raw_sp_matrix_nnz.restype           = c_int
+    lib.sl_raw_sp_matrix_height.restype           = c_int
+    lib.sl_raw_sp_matrix_width.restype           = c_int
     lib.sl_raw_sp_matrix_struct_updated.restype = c_int
     lib.sl_raw_sp_matrix_reset_update_flag.restype = c_int
     lib.sl_raw_sp_matrix_data.restype          = c_int
@@ -203,13 +205,16 @@ class ScipyAdapter:
 
     if(update_csc.value):
       # first we check the required size of the new structure
-      nnz = c_int()
+      nnz, m, n = (c_int(), c_int(), c_int())
       callsl("sl_raw_sp_matrix_nnz", self._ptr, byref(nnz))
-
+      callsl("sl_raw_sp_matrix_height", self._ptr, byref(m))
+      callsl("sl_raw_sp_matrix_width", self._ptr, byref(n))
 
       if isinstance(self._A, scipy.sparse.csc_matrix):
+        self._A._shape = (m.value, n.value)
         indptrdim = self._A.shape[1] + 1 if self._A.ndim > 1 else 2
       else:
+        self._A._shape = (n.value, m.value)
         indptrdim = self._A.shape[0] + 1 if self._A.ndim > 1 else 2
 
       indptr  = numpy.zeros(indptrdim, dtype='int32')

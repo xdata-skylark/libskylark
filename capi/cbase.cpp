@@ -104,6 +104,16 @@ SKYLARK_EXTERN_API int sl_raw_sp_matrix_nnz(void *A_, int *nnz) {
     return 0;
 }
 
+SKYLARK_EXTERN_API int sl_raw_sp_matrix_height(void *A_, int *height) {
+    *height = static_cast<SparseMatrix *>(A_)->height();
+    return 0;
+}
+
+SKYLARK_EXTERN_API int sl_raw_sp_matrix_width(void *A_, int *width) {
+    *width = static_cast<SparseMatrix *>(A_)->width();
+    return 0;
+}
+
 SKYLARK_EXTERN_API int sl_raw_sp_matrix_data(void *A_, int32_t *indptr,
         int32_t *indices, double *values) {
     static_cast<SparseMatrix *>(A_)->detach(indptr, indices, values);

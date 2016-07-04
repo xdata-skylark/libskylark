@@ -324,7 +324,6 @@ public:
 
         SKYLARK_TIMER_DINIT(KRR_PRECOND_GEMM1_PROFILE);
         SKYLARK_TIMER_DINIT(KRR_PRECOND_GEMM2_PROFILE);
-        SKYLARK_TIMER_DINIT(KRR_PRECOND_SOLVE_PROFILE);
         SKYLARK_TIMER_DINIT(KRR_PRECOND_COPY_PROFILE);
 
         _lambda = lambda;
@@ -365,6 +364,7 @@ public:
             timer.restart();
         }
 
+        matrix_type C;
         El::Identity(C, s, s);
         El::Herk(El::LOWER, El::NORMAL, value_type(1.0)/_lambda, U,
             value_type(1.0), C);
@@ -380,19 +380,32 @@ public:
             timer.restart();
         }
 
-
         El::Cholesky(El::LOWER, C);
 
         if (log_lev2)
             params.log_stream << "took " << boost::format("%.2e") % timer.elapsed()
                               << " sec\n";
+
+        if (log_lev2) {
+            params.log_stream << params.prefix << "\t"
+                              << "Prepare factor... ";
+            params.log_stream.flush();
+            timer.restart();
+        }
+
+        El::Trsm(El::LEFT, El::LOWER, El::NORMAL, El::NON_UNIT,
+            value_type(1.0)/_lambda, C, U);
+
+        if (log_lev2)
+            params.log_stream << "took " << boost::format("%.2e") % timer.elapsed()
+                              << " sec\n";
+
     }
 
     virtual ~feature_map_precond_t() {
-        auto comm = utility::get_communicator(C);
+        auto comm = utility::get_communicator(U);
         SKYLARK_TIMER_PRINT(KRR_PRECOND_GEMM1_PROFILE, comm);
         SKYLARK_TIMER_PRINT(KRR_PRECOND_GEMM2_PROFILE, comm);
-        SKYLARK_TIMER_PRINT(KRR_PRECOND_SOLVE_PROFILE, comm);
         SKYLARK_TIMER_PRINT(KRR_PRECOND_COPY_PROFILE, comm);
     }
 
@@ -400,20 +413,21 @@ public:
 
         matrix_type CUB(_s, B.Width());
 
-        SKYLARK_TIMER_RESTART(KRR_PRECOND_GEMM1_PROFILE);
-        El::Gemm(El::NORMAL, El::NORMAL, value_type(1.0), U, B, CUB);
-        SKYLARK_TIMER_ACCUMULATE(KRR_PRECOND_GEMM1_PROFILE);
+        // Really makes sense to keep U not communicated...
+        // Bypass Elemental defaults since they seem to be generating bad
+        // choices for larger matrices.
 
-        SKYLARK_TIMER_RESTART(KRR_PRECOND_SOLVE_PROFILE);
-        El::cholesky::SolveAfter(El::LOWER, El::NORMAL, C, CUB);
-        SKYLARK_TIMER_ACCUMULATE(KRR_PRECOND_SOLVE_PROFILE);
+        SKYLARK_TIMER_RESTART(KRR_PRECOND_GEMM1_PROFILE);
+        El::Gemm(El::NORMAL, El::NORMAL, value_type(1.0), U, B, CUB,
+            El::GEMM_SUMMA_A);
+        SKYLARK_TIMER_ACCUMULATE(KRR_PRECOND_GEMM1_PROFILE);
 
         SKYLARK_TIMER_RESTART(KRR_PRECOND_COPY_PROFILE);
         X = B;
         SKYLARK_TIMER_ACCUMULATE(KRR_PRECOND_COPY_PROFILE);
 
         SKYLARK_TIMER_RESTART(KRR_PRECOND_GEMM2_PROFILE);
-        El::Gemm(El::ADJOINT, El::NORMAL, value_type(-1.0) / (_lambda * _lambda), 
+        El::Gemm(El::ADJOINT, El::NORMAL, value_type(-1.0),
             U, CUB, value_type(1.0)/_lambda, X);
         SKYLARK_TIMER_ACCUMULATE(KRR_PRECOND_GEMM2_PROFILE);
     }
@@ -425,11 +439,10 @@ public:
 private:
     value_type _lambda;
     El::Int _s;
-    matrix_type U, C;
+    matrix_type U;
 
     SKYLARK_TIMER_DECLARE(KRR_PRECOND_GEMM1_PROFILE);
     SKYLARK_TIMER_DECLARE(KRR_PRECOND_GEMM2_PROFILE);
-    SKYLARK_TIMER_DECLARE(KRR_PRECOND_SOLVE_PROFILE);
     SKYLARK_TIMER_DECLARE(KRR_PRECOND_COPY_PROFILE);
 };
 

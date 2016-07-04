@@ -76,7 +76,7 @@ int LSQR(const MatrixType& A, const RhsType& B, SolType& X,
     sol_print_t::apply(V, "V Init", params.am_i_printing, params.debug_level);
 
     /* Create W=Z and X=0 */
-    El::Zero(X);
+    El::Zeros(X, n, k);
     sol_type W(Z);
     scalar_cont_type phibar(beta), rhobar(alpha), nrm_r(beta);
         // /!\ Actually copied for init

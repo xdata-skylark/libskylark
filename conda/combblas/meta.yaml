@@ -1,0 +1,23 @@
+package:
+  name: combblas
+  version: "1.4.0"
+
+source:
+  fn: CombBLAS_beta_14_0.tgz
+  url: http://gauss.cs.ucsb.edu/~aydin/CombBLAS_FILES/CombBLAS_beta_14_0.tgz
+  md5: 57aed213d7e794153ea29465559e7cfa
+
+requirements:
+  build:
+    - gcc
+    - mpich2
+
+  run:
+    - libgcc
+    - mpich2
+
+
+about:
+  home: http://gauss.cs.ucsb.edu/~aydin/CombBLAS/html/
+  license: MIT Licence
+  summary: 'C++ library for large graph analysis'

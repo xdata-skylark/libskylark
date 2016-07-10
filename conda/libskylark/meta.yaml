@@ -1,0 +1,39 @@
+package:
+  name: libskylark
+  version: "0.11"
+
+source:
+  git_url: https://github.com/xdata-skylark/libskylark.git
+  
+requirements:
+  build:
+    - gcc	
+    - python
+    - cmake
+    - git
+    - boost
+    - openblas
+    - mpich2
+    - random123
+    - libelemental    
+    - metis    
+
+  run:
+    - libgcc
+    - python
+    - boost
+    - openblas
+    - mpich2
+    - random123
+    - libelemental
+    - metis    
+    - numpy
+    - matplotlib
+    - mpi4py
+    - networkx
+
+
+about:
+  home: http://xdata-skylark.github.io/libskylark
+  license: Apache License, Version 2.0
+  summary: 'Library for sketching-based matrix computations for Machine Learning'

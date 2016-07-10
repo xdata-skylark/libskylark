@@ -1,0 +1,25 @@
+package:
+  name: boost
+  version: "1.60.0"
+
+
+source:
+  fn: boost_1_60_0.tar.gz 
+  url: https://sourceforge.net/projects/boost/files/boost/1.60.0/boost_1_60_0.tar.gz
+  md5: 28f58b9a33469388302110562bdf6188
+
+
+requirements:
+  build:
+    - gcc
+    - mpich2
+
+  run:
+    - libgcc
+    - mpich2
+
+
+about:
+  home: http://www.boost.org/
+  license: Boost-1.0 
+  summary: Boost library with a collection of compiled libraries needed by libskylark

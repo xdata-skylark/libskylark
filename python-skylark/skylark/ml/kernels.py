@@ -1,10 +1,13 @@
 import numpy 
 import skylark
+from ctypes import byref, c_void_p, c_double
 from skylark import sketch, errors
 from distances import euclidean
 import scipy.special
 import scipy
 import sys, math
+import skylark.lib as lib
+
 
 def gram(kfun, X, Xt=None):
     """
@@ -119,33 +122,56 @@ class Gaussian(object):
   def __init__(self, d, sigma):
     self._d = d
     self._sigma = sigma
+    self._kernel_obj = c_void_p()
+    lib.callsl("sl_create_kernel", "gaussian", d, byref(self._kernel_obj), c_double(sigma))
     
-  def gram(self, X, Xt=None):
+  def gram(self, X, K, dirX="rows", dirY="rows", Y=None):
     """
     Returns the dense Gram matrix evaluated over the datapoints.
   
-    :param X:  n-by-d data matrix
-    :param Xt: optional t-by-d test matrix
-
-    Returns: 
-    -------
-    n-by-n Gram matrix over X (if Xt is not provided)
-    t-by-n Gram matrix between Xt and X if X is provided
+    :param X: n-by-d data matrix
+    :param Y: another data matrix. If Y is None, then X is used.
+    :param K: placeholder for output Gram matrix.
     """
-  
-    # TODO the test, and this function, should work for all matrix types.
-    if X.shape[1] != self._d:
-      raise ValueError("X must have vectors of dimension d")
 
-    sigma = self._sigma
-    if Xt is None:
-      K = numpy.exp(-euclidean(X, X)/(2*sigma**2))
-    else:
-      if Xt.shape[1] != self._d:
-        raise ValueError("Xt must have vectors of dimension d")
-      K = numpy.exp(-euclidean(X, Xt)/(2*sigma**2))
-      
-    return K
+    cdirX = None
+    if dirX == 0 or dirX == "columns":
+        cdirX = 1
+    if dirX == 1 or dirX == "rows":
+        cdirX = 2
+    if cdirX is None:
+        raise ValueError("Direction (for X) must be either columns/rows or 0/1")
+
+    cdirY = None
+    if dirY == 0 or dirY == "columns":
+        cdirY = 1
+    if dirY == 1 or dirY == "rows":
+        cdirY = 2
+    if cdirY is None:
+        raise ValueError("Direction (for Y) must be either columns/rows or 0/1")
+
+    if Y is None:
+        Y = X
+        dirY = dirX
+        
+    X = lib.adapt(X)
+    Y = lib.adapt(Y)
+    K = lib.adapt(K)
+
+    Xobj = X.ptr()
+    Yobj = Y.ptr()
+    Kobj = K.ptr()
+
+    lib.callsl("sl_kernel_gram", cdirX, cdirY, self._kernel_obj, \
+               X.ctype(), Xobj, \
+               Y.ctype(), Yobj, \
+               K.ctype(), Kobj)
+               
+    X.ptrcleaner()
+    Y.ptrcleaner()
+    K.ptrcleaner()
+    
+    return K.getobj()
   
   def rft(self, s, subtype=None, defouttype=None, **args):
     """

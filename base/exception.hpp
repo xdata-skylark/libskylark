@@ -20,6 +20,7 @@ const char* const skylark_errmsg[] = {
     , "Skylark failed in I/O calls"
     , "Skylark failed because invalid parameter was passed"
     , "Skylark failed because base classes were used incorrectly"
+    , "Skylark failed in ml operation"
 };
 
 /// resolves an error_code to a human readable failure message
@@ -154,6 +155,16 @@ struct nla_exception : virtual skylark_exception {
 
     nla_exception() {
         *this << error_code(106);
+    }
+};
+
+/// exceptions in the ml layer
+struct ml_exception : virtual skylark_exception {
+ public:
+    using skylark_exception::operator<<;
+
+    ml_exception() {
+        *this << error_code(113);
     }
 };
 

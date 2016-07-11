@@ -382,6 +382,9 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(sl_context_t *ctxt,
 
     transform_type_t type = str2transform_type(type_);
 
+    if (type == TRANSFORM_TYPE_ERROR)
+        return 111;
+    
 # define AUTO_NEW_DISPATCH(T, C)                                    \
     SKYLARK_BEGIN_TRY()                                             \
         if (type == T)                                              \

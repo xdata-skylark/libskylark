@@ -1,6 +1,8 @@
 #ifndef SKYLARK_KRR_HPP
 #define SKYLARK_KRR_HPP
 
+#include "../utility/timer.hpp"
+
 namespace skylark { namespace ml {
 
 struct krr_params_t : public base::params_t {

@@ -8,6 +8,7 @@ namespace skylark {
 namespace mdtypes {
 
 typedef El::Matrix<double> matrix_t;
+typedef El::ElementalMatrix<double> el_matrix_t;
 typedef base::sparse_matrix_t<double> sparse_matrix_t;
 typedef El::DistMatrix<double> dist_matrix_t;
 typedef El::DistMatrix<double, El::STAR, El::STAR> shared_matrix_t;
@@ -28,6 +29,7 @@ typedef El::DistMatrix<double, El::STAR, El::VR> dist_matrix_star_vr_t;
 namespace mftypes {
 
 typedef El::Matrix<float> matrix_t;
+typedef El::ElementalMatrix<float> el_matrix_t;
 typedef base::sparse_matrix_t<float> sparse_matrix_t;
 typedef El::DistMatrix<float> dist_matrix_t;
 typedef El::DistMatrix<float, El::STAR, El::STAR> shared_matrix_t;

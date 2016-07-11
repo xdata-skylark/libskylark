@@ -34,7 +34,7 @@ requirements:
     - h5py
     - matplotlib
     - networkx
-    - sklearn
+    - scikit-learn
     - pandas
     - sympy
 

@@ -8,6 +8,7 @@
 #include "elem_extender.hpp"
 #include "hdfs.hpp"
 #include "io/io.hpp"
+#include "PrettyPrinter.hpp"
 
 /**
  * This file contains all the functions that we wrote to support external 

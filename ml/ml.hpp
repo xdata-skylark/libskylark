@@ -7,6 +7,7 @@
 #include "krr.hpp"
 #include "rlsc.hpp"
 #include "model.hpp"
+#include "kmeans.hpp"
 
 // TODO add includes to hilbert
 

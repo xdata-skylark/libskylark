@@ -379,7 +379,9 @@ void ApproximateSymmetricSVD(El::UpperOrLower uplo,
     El::qr::ExplicitUnitary(V);
     base::Symm(El::LEFT, uplo, static_cast<value_type>(1.0), A, V, U);
     base::Gemm(El::ADJOINT, El::NORMAL, static_cast<value_type>(1.0), U, V, B);
-    El::HermitianEig(uplo, B, S, W, El::DESCENDING);
+    El::HermitianEigCtrl<value_type> ctrl;
+    ctrl.tridiagEigCtrl.sort = El::DESCENDING;
+    El::HermitianEig(uplo, B, S, W, ctrl);
     S.Resize(rank, 1);
     U.Resize(U.Height(), rank);
     VType W1 = base::ColumnView(W, 0, rank);

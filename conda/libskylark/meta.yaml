@@ -26,11 +26,17 @@ requirements:
     - mpich2
     - random123
     - libelemental
-    - metis    
+    - metis
+    - ipython    
     - numpy
-    - matplotlib
+    - scipy
     - mpi4py
+    - h5py
+    - matplotlib
     - networkx
+    - scikit-learn
+    - pandas
+    - sympy
 
 
 about:

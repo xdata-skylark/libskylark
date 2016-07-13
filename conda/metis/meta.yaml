@@ -19,6 +19,6 @@ requirements:
 
 about:
   home: http://glaros.dtc.umn.edu/gkhome/metis/metis/overview
-  license_file: LICENSE
+  license_file: LICENSE.txt
   summary: 'Serial programs for partitioning graphs, partitioning finite element meshes, and producing fill reducing orderings for sparse matrices'
 

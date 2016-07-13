@@ -5,7 +5,14 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PWD/install/lib/:/usr/local/lib
 mkdir build && cd build && cmake -DCMAKE_INSTALL_PREFIX=../install \
         -DUSE_FFTW=ON -DUSE_COMBBLAS=ON -DBUILD_TESTS=ON ../ && \
         CC=mpicc CXX=mpicxx make -j 4
+if [ $? -ne 0 ]; then
+    exit 1
+fi
+
 make install &> /dev/null
+if [ $? -ne 0 ]; then
+    exit 1
+fi
 
 make doc &> /dev/null
 

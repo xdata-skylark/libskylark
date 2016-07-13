@@ -114,7 +114,7 @@ void check(El::DistMatrix<double>& A,
     El::DistMatrix<double> U, V;
     El::DistMatrix<double, El::VR, El::STAR> S_VR_STAR;
     U = A;
-    El::SVD(U, S_VR_STAR, V);
+    El::SVD(U, U, S_VR_STAR, V);
     bool passed = equal_svd_product(A, U, S_VR_STAR, V, threshold);
     if (!passed) {
         BOOST_FAIL("Failure in [MC, MR] case");
@@ -130,7 +130,7 @@ void check(El::DistMatrix<double, ColDist, El::STAR>& A,
     El::DistMatrix<double, El::STAR, El::STAR> S_STAR_STAR, V_STAR_STAR;
     A_CD_STAR = A;
     U_CD_STAR = A_CD_STAR;
-    El::SVD(U_CD_STAR, S_STAR_STAR, V_STAR_STAR);
+    El::SVD(U_CD_STAR, U_CD_STAR, S_STAR_STAR, V_STAR_STAR);
     bool passed = equal_svd_product(A_CD_STAR,
         U_CD_STAR, S_STAR_STAR, V_STAR_STAR, threshold);
     if (!passed) {
@@ -144,7 +144,7 @@ void check(El::DistMatrix<double, El::STAR, RowDist>& A,
     El::DistMatrix<double, RowDist, El::STAR> V_RD_STAR;
     El::DistMatrix<double, El::STAR, El::STAR> S_STAR_STAR, U_STAR_STAR;
     U_STAR_STAR = A;
-    El::SVD(U_STAR_STAR, S_STAR_STAR, V_RD_STAR);
+    El::SVD(U_STAR_STAR, U_STAR_STAR, S_STAR_STAR, V_RD_STAR);
     bool passed = equal_svd_product(A,
         U_STAR_STAR, S_STAR_STAR, V_RD_STAR, threshold);
     if (!passed) {

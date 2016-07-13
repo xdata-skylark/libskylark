@@ -514,10 +514,10 @@ public model_t<OutType, ComputeType>
     void predict(base::direction_t direction_XT,
         const El::DistMatrix<compute_type> &XT, El::DistMatrix<out_type> &YP) const {
 
-        El::Zeros(YP, XT.Height(), _output_size);
+
 
         if (direction_XT == base::COLUMNS) {
-
+	    El::Zeros(YP, _output_size, XT.Width());
             El::DistMatrix<compute_type> ZT, VW;
             El::Int starts = 0;
             for(int i = 0; i < _feature_transforms.size(); i++) {
@@ -534,7 +534,7 @@ public model_t<OutType, ComputeType>
             }
 
         } else {
-
+	    El::Zeros(YP, XT.Height(), _output_size);
             El::DistMatrix<compute_type> ZT, VW;
             El::Int starts = 0;
             for(int i = 0; i < _feature_transforms.size(); i++) {

@@ -6,6 +6,7 @@
 
 #include "../utility/typer.hpp"
 
+
 #define SKYLARK_NO_ANY
 #include <skylark.hpp>
 
@@ -347,6 +348,7 @@ int main(int argc, char** argv) {
                   << "\t\tTime: " << boost::format("%.2e") % telp << " sec"
                   << std::endl;
 
+#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_FFTWF
     timer.restart();
     sketched_solver_type<skysk::FJLT_t>(problem, t, context).solve(b, x);
     telp = timer.elapsed();
@@ -359,6 +361,7 @@ int main(int argc, char** argv) {
                   << "\t||A' * r||_2 = " << boost::format("%.2e") % resAtr
                   << "\t\tTime: " << boost::format("%.2e") % telp << " sec"
                   << std::endl;
+#endif
 
     // Accelerate-using-sketching
 #if 0
@@ -375,7 +378,8 @@ int main(int argc, char** argv) {
                   << "\t\tTime: " << boost::format("%.2e") % telp << " sec"
                   << std::endl;
 #endif
-
+    
+#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_FFTWF
     timer.restart();
     accelerated_exact_solver_type_sb<skysk::FJLT_t>(problem, context).solve(b, x);
     telp = timer.elapsed();
@@ -388,6 +392,7 @@ int main(int argc, char** argv) {
                   << "\t||A' * r||_2 = " << boost::format("%.2e") % resAtr
                   << "\t\tTime: " << boost::format("%.2e") % telp << " sec"
                   << std::endl;
+#endif
 
     timer.restart();
     accelerated_exact_solver_type_sb<skysk::CWT_t>(problem, context).solve(b, x);
@@ -402,6 +407,7 @@ int main(int argc, char** argv) {
                   << "\t\tTime: " << boost::format("%.2e") % telp << " sec"
                   << std::endl;
 
+#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_FFTWF
     timer.restart();
     accelerated_exact_solver_type_blendenpik(problem, context).solve(b, x);
     telp = timer.elapsed();
@@ -414,6 +420,7 @@ int main(int argc, char** argv) {
                   << "\t||A' * r||_2 = " << boost::format("%.2e") % resAtr
                   << "\t\tTime: " << boost::format("%.2e") % telp << " sec"
                   << std::endl;
+#endif
 
     timer.restart();
     accelerated_exact_solver_type_lsrn(problem, context).solve(b, x);

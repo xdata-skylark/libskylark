@@ -20,7 +20,7 @@ struct sparse_vc_star_matrix_t : public sparse_dist_matrix_t<ValueType> {
 
     typedef sparse_dist_matrix_t<ValueType> base_t;
 
-    sparse_vc_star_matrix_t(const El::Grid& grid = El::DefaultGrid())
+    sparse_vc_star_matrix_t(const El::Grid& grid = El::Grid())
         : base_t(0, 0, grid) {
 
         _setup_grid();

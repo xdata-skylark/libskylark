@@ -5,12 +5,10 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
         m
     )
 
+    set (CXX11_COMPILER_FLAGS "-std=c++11")
     set (COMPILER_SPEC_FLAGS
         "-W -Wall -Wno-write-strings -Wno-unused-variable -Wno-unused-parameter -Wno-sign-compare -Wno-unused-local-typedef"
     )
-
-    #set (LINK_FLAGS
-    #)
 
     set (CMAKE_LIB_LINKER_FLAGS  "${CMAKE_LIB_LINKER_FLAGS} -fPIC")
 
@@ -20,12 +18,10 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         m
     )
 
+    set (CXX11_COMPILER_FLAGS "-std=c++11")
     set (COMPILER_SPEC_FLAGS
         "-W -Wall -Wno-write-strings -Wno-strict-aliasing -Wno-format -Wno-deprecated -Wno-unused-variable -Wno-unused-parameter -Wno-sign-compare -Wno-unused-local-typedefs"
     )
-
-    #set (LINK_FLAGS
-    #)
 
     set (CMAKE_LIB_LINKER_FLAGS  "${CMAKE_LIB_LINKER_FLAGS} -fPIC")
 
@@ -38,7 +34,6 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "XL")
     set (COMPILER_SPEC_FLAGS
         "-qtune=qp -qarch=qp -qmaxmem=-1 -qcpluscmt -qstrict"
     )
-    # -qlanglvl=extended0x
 
     include_directories (
     )
@@ -64,3 +59,6 @@ else()
     message (FATAL "Unsupported compiler!")
 
 endif()
+
+message (STATUS "CXX11_COMPILER_FLAGS=${CXX11_COMPILER_FLAGS}")
+set (CMAKE_CXX_FLAGS "${CXX11_COMPILER_FLAGS} ${CMAKE_CXX_FLAGS}")

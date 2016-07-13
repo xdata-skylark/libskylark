@@ -537,7 +537,7 @@ following table summarizes all currently available build options:
 ================ =========== ==========================================================================================
 Name             Default     Description
 ================ =========== ==========================================================================================
-USE_FFTW          ON          Build with fftw support
+USE_FFTW          OFF         Build with fftw support
 USE_COMBBLAS      OFF         Build with CombBLAS sparse matrix support
 USE_PROFILER      OFF         Build with internal profiler
 USE_HYBRID        OFF         Build in hybrid mode OpenMP and MPI (if Elemental was compiled in hybrid mode, activate)

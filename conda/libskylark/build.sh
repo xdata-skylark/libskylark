@@ -6,6 +6,7 @@ NPROC=`nproc`
 git checkout elem-update
 
 export BLAS_LIBRARIES="-L${PREFIX} -lopenblas -lm"
+export LAPACK_LIBRARIES="-L${PREFIX} -lopenblas -lm"
 export BOOST_ROOT="${PREFIX}"
 export RANDOM123_ROOT="${PREFIX}"
 export ELEMENTAL_ROOT="${PREFIX}"

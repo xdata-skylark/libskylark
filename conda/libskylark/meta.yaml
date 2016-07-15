@@ -16,7 +16,8 @@ requirements:
     - mpich2
     - random123
     - libelemental    
-    - metis    
+    - metis
+    - fftw
 
   run:
     - libgcc
@@ -27,6 +28,7 @@ requirements:
     - random123
     - libelemental
     - metis
+    - fftw
     - ipython    
     - numpy
     - scipy

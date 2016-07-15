@@ -10,6 +10,7 @@
 
 FIND_PATH(CombBLAS_INCLUDE_DIR CombBLAS.h SpParMat.h SpParVec.h DenseParVec.h
   $ENV{COMBBLAS_ROOT}
+  $ENV{COMBBLAS_ROOT}/include/CombBLAS
   $ENV{HOME}/.local/include
   $ENV{HOME}/local/include
   $ENV{HOME}/Software/include
@@ -21,6 +22,7 @@ FIND_PATH(CombBLAS_INCLUDE_DIR CombBLAS.h SpParMat.h SpParVec.h DenseParVec.h
 
 find_library(MPITypelib_LIBRARY MPITypelib
   $ENV{COMBBLAS_ROOT}
+  $ENV{COMBBLAS_ROOT}/lib
   $ENV{HOME}/.local/lib
   $ENV{HOME}/local/lib
   $ENV{HOME}/Software/lib
@@ -31,6 +33,7 @@ find_library(MPITypelib_LIBRARY MPITypelib
 
 find_library(CommGridlib_LIBRARY CommGridlib
   $ENV{COMBBLAS_ROOT}
+  $ENV{COMBBLAS_ROOT}/lib
   $ENV{HOME}/.local/lib
   $ENV{HOME}/local/lib
   $ENV{HOME}/Software/lib
@@ -41,6 +44,7 @@ find_library(CommGridlib_LIBRARY CommGridlib
 
 find_library(MemoryPoollib_LIBRARY MemoryPoollib
   $ENV{COMBBLAS_ROOT}
+  $ENV{COMBBLAS_ROOT}/lib
   $ENV{HOME}/.local/lib
   $ENV{HOME}/local/lib
   $ENV{HOME}/Software/lib

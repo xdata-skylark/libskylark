@@ -18,6 +18,8 @@ requirements:
     - libelemental    
     - metis
     - fftw
+    - kdt
+    - combblas
 
   run:
     - libgcc
@@ -29,6 +31,8 @@ requirements:
     - libelemental
     - metis
     - fftw
+    - kdt
+    - combblas
     - ipython    
     - numpy
     - scipy

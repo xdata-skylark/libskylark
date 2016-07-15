@@ -3,7 +3,7 @@
 NPROC=`nproc`
 
 # skylark branch
-git checkout argfix
+git checkout development
 
 export BLAS_LIBRARIES="-L${PREFIX} -lopenblas -lm"
 export LAPACK_LIBRARIES="-L${PREFIX} -lopenblas -lm"

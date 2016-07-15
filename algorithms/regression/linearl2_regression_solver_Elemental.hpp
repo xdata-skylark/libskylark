@@ -325,7 +325,7 @@ public:
         _U(), _S(), _V() {
         // TODO n < m ???
         _U = problem.input_matrix;
-        El::SVD(_U, _S, _V);
+        El::SVD(_U, _U, _S, _V);
         for(int i = 0; i < _S.Height(); i++)
             _S.Set(i, 0, 1 / _S.Get(i, 0));   // TODO handle rank deficiency
     }

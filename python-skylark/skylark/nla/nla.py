@@ -1,5 +1,4 @@
-__all__ = ['SVDParams', 'FasterLeastSquaresParams', 'approximate_svd', 'faster_least_squares']
-
+__all__ = ['SVDParams', 'FasterLeastSquaresParams', 'approximate_svd', 'approximate_symmetric_svd', 'faster_least_squares']
 from skylark import base
 from skylark import errors
 from skylark import lib
@@ -70,6 +69,47 @@ def approximate_svd(A, U, S, V, k=10, params=None):
     V.ptrcleaner()
 
     return (U.getobj(), S.getobj(), V.getobj())
+
+def approximate_symmetric_svd(A, S, V, k=10, params=None):
+    """
+    Compute the SVD of symmetric **A** such that **SVD(A) = V S V^T**.
+
+    :param A: Input matrix.
+    :param S: Output S (singular values).
+    :param V: Output V (right singular vectors).
+    :param k: Dimension to apply along.
+    :param params: Parmaters for the SVD.
+    :returns: (S, V)
+    """
+
+    
+    A = lib.adapt(A)
+    S = lib.adapt(S)
+    V = lib.adapt(V)
+
+    Aobj = A.ptr()
+    Sobj = S.ptr()
+    Vobj = V.ptr()
+
+    if (Aobj == -1 or Sobj == -1 or Vobj == -1):
+        raise errors.InvalidObjectError("Invalid/unsupported object passed as A, S or V ")
+
+    # use default params in case none are provided
+    if params == None:
+        params = SVDParams()
+    params_json = params.str() + '\0'
+
+    lib.callsl("sl_approximate_symmetric_svd", \
+            A.ctype(), Aobj, \
+            S.ctype(), Sobj, \
+            V.ctype(), Vobj, \
+            k, params_json, lib.ctxt_obj)
+
+    A.ptrcleaner()
+    S.ptrcleaner()
+    V.ptrcleaner()
+
+    return (S.getobj(), V.getobj())
 
 def faster_least_squares(A, B, X, orientation=El.NORMAL, params=None):
     """

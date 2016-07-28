@@ -6,6 +6,7 @@ import El
 
 import skylark.nla as slnla
 from ctypes import cdll, c_bool
+from .. import utils
 
 skylarklib = cdll.LoadLibrary('libcskylark.so')
 skylarklib.sl_has_elemental.restype = c_bool

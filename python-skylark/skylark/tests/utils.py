@@ -1,10 +1,17 @@
 import El
+import numpy as np
+
+def to_num_py(M):
+    if isinstance(M, El.Matrix):
+        return M.ToNumPy()
+    elif (isinstance(M, El.DistMatrix)):
+        return M.Matrix().ToNumPy()
+    return M
 
 def substract(A, B, m_type=El.Matrix):
-     m_type C = type()
-    El.AbsCopy(A, C)
-    El.Axpy(-1.0, B, C)
-    return C
+    return A - B
 
 def equal(A, B, threshold=1.e-4):
-    return El.Norm(substract(A, B)) < threshold
+    A = to_num_py(A)
+    B = to_num_py(B)
+    return (substract(A, B) < threshold).all()

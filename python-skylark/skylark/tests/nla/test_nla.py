@@ -4,7 +4,7 @@ from scipy.sparse import rand as rand_matrix
 from scipy import linalg
 import El
 
-import skylark.nla as slnla
+import skylark.nla as sl_nla
 from ctypes import cdll, c_bool
 from .. import utils
 
@@ -18,35 +18,63 @@ class NLATestCase(unittest.TestCase):
     def test_approximate_svd(self):
         """Compute the SVD of **A** such that **SVD(A) = U S V^T**."""
 
+        n = 100
+
         # Generate random matrix
-        A = rand_matrix(200, 200, density=0.01, format='csc', dtype=np.float64, \
-                        random_state=None)
+        A = El.DistMatrix()
+        El.Uniform(A, n, n)
+        A = A.Matrix()
 
         # Dimension to apply along.
-        k = 50
+        k = n
 
         U = El.Matrix()
         S = El.Matrix()
         V = El.Matrix()
 
-        slnla.approximate_svd(A, U, S, V, k = k)
-        S = S.ToNumPy()
+        sl_nla.approximate_svd(A, U, S, V, k = k)
 
-        # Calculate using scipy        
-        Us, Ss, Vs = linalg.svd(A.todense())
+        # Check result
+        RESULT = El.Matrix()
+        El.Zeros(RESULT, n, n)
 
-        # Checking ${precison} decimals
-        precision = 4
-        for i in xrange(5):
-            # S is a Column matrix, Ss a vector
-            diff = round(S[i][0] - Ss[i], precision)
-            self.assertEqual(diff, 0)
+        El.DiagonalScale( El.RIGHT, El.NORMAL, S, U );
+        El.Gemm( El.NORMAL, El.ADJOINT, 1, U, V, 1, RESULT );
+
+        self.assertTrue(utils.equal(A, RESULT))
 
 
     
     def test_approximate_symmetric_svd(self):
         """Compute the SVD of symmetric **A** such that **SVD(A) = V S V^T**"""
-        pass
+        n = 100
+        A = El.DistMatrix()
+        El.Uniform(A, n, n)
+        A = A.Matrix()
+
+        # Make A symmetric
+        for i in xrange(0, A.Height()):
+            for j in xrange(0, i+1):
+                A.Set(j,i, A.Get(i,j))
+
+        # Usign symmetric SVD
+        SA = El.Matrix()
+        VA = El.Matrix()
+        
+        sl_nla.approximate_symmetric_svd(A, SA, VA, k = n)
+
+        # Check result
+        VAT = El.Matrix()
+        El.Copy(VA, VAT)
+
+        RESULT = El.Matrix()
+        El.Zeros(RESULT, n, n)
+
+        El.DiagonalScale( El.RIGHT, El.NORMAL, SA, VAT );
+        El.Gemm( El.NORMAL, El.ADJOINT, 1, VAT, VA, 1, RESULT );
+
+        self.assertTrue(utils.equal(A, RESULT))
+
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(NLATestCase)

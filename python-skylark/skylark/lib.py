@@ -3,7 +3,7 @@ from ctypes import byref, cdll, c_double, c_void_p, c_int, c_char_p, pointer, PO
 import ctypes.util
 
 import errors
-import numpy, scipy
+import numpy, scipy.sparse
 import atexit
 import time
 import sys

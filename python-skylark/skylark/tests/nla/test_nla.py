@@ -78,7 +78,9 @@ class NLATestCase(unittest.TestCase):
 
     def test_faster_least_squares_NORMAL(self):
         """Solution to argmin_X ||A * X - B||_F"""
-        
+        # TODO: Check faster least squares
+
+      
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(NLATestCase)
     unittest.TextTestRunner(verbosity=1).run(suite)

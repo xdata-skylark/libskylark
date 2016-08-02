@@ -79,7 +79,26 @@ class NLATestCase(unittest.TestCase):
     def test_faster_least_squares_NORMAL(self):
         """Solution to argmin_X ||A * X - B||_F"""
         # TODO: Check faster least squares
+        m = 500
+        n = 100
+        k = 10
 
+        # Generate problem
+        A, B, X, X_opt= (El.Matrix(), El.Matrix(), El.Matrix(), El.Matrix())
+        El.Gaussian(A, m, n)
+        El.Gaussian(X_opt, n, 1)
+        El.Zeros(B, m, 1)
+        El.Gemm( El.NORMAL, El.NORMAL, 1, A, X_opt, 0, B);
+
+        # Solve it using faster least squares
+        sl_nla.faster_least_squares(A, B, X)
+
+        # Check the norm of our solution
+        El.Gemm( El.NORMAL, El.NORMAL, 1, A, X, -1, B);
+        self.assertAlmostEqual(El.Norm(B), 0)
+
+        # Checking the solution
+        self.assertTrue(utils.equal(X_opt, X))
       
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(NLATestCase)

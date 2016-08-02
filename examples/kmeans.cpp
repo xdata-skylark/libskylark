@@ -50,7 +50,7 @@ int main(int argc, char* argv[]) {
         }
 
         if (rank == root) El::Output("Starting k-means ...");
-        skyml::run_kmeans(data, centroids, k, ncol,
+        skyml::run_kmeans<double>(data, centroids, k,
                 tol, init, seed, max_iters, rank);
     }
     catch(std::exception& e) { El::ReportException(e); }

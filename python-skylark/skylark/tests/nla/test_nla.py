@@ -1,16 +1,10 @@
 import unittest
 import numpy as np
-from scipy.sparse import rand as rand_matrix
-from scipy import linalg
 import El
 
 import skylark.nla as sl_nla
-from ctypes import cdll, c_bool
 from .. import utils
 
-skylarklib = cdll.LoadLibrary('libcskylark.so')
-skylarklib.sl_has_elemental.restype = c_bool
-skylarklib.sl_has_combblas.restype  = c_bool
 
 
 class NLATestCase(unittest.TestCase):
@@ -78,10 +72,8 @@ class NLATestCase(unittest.TestCase):
 
     def test_faster_least_squares_NORMAL(self):
         """Solution to argmin_X ||A * X - B||_F"""
-        # TODO: Check faster least squares
         m = 500
         n = 100
-        k = 10
 
         # Generate problem
         A, B, X, X_opt= (El.Matrix(), El.Matrix(), El.Matrix(), El.Matrix())

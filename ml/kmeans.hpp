@@ -397,44 +397,63 @@ namespace skylark { namespace ml {
       * Type used to return items from the computation of
       *     kmeans.
       */
+template <typename T>
 class kmeans_t {
     public:
         std::vector<El::Unsigned> gl_centroid_assignments;
         std::vector<El::Int> assignment_count;
         El::Unsigned iters;
+        std::vector<T> centroids;
 
         kmeans_t(std::vector<El::Unsigned>& gl_centroid_assignments,
                 El::Int* assignment_count_buf, const size_t k,
-                const El::Unsigned iters) {
+                const El::Unsigned iters, El::Matrix<T>& centroids) {
             this->gl_centroid_assignments = gl_centroid_assignments;
             this->iters = iters;
             this->assignment_count.resize(k);
             std::copy(assignment_count_buf, assignment_count_buf + k,
                     assignment_count.begin());
+
+            // Get centroids row major
+                for(El::Unsigned col = 0; col < centroids.Width();
+                        col++) {
+                    for (El::Unsigned row = 0; row < centroids.Height();
+                            row++) {
+                        this->centroids.push_back(centroids.Get(row, col));
+                    }
+                }
+        }
+
+        void print() {
+            El::Output("Iterations: ", iters);
+            El::Output("Cluster count: ");
+            skyutil::PrettyPrinter<El::Int>::print(assignment_count);
         }
 };
 
 /**
   * Driver function for kmeans.
   */
-kmeans_t run_kmeans(El::DistMatrix<double, El::VC, El::STAR>& data,
-        El::Matrix<double>& centroids, const El::Unsigned k,
-        const size_t ncol, const double tol, const std::string init,
+template<typename T>
+kmeans_t<T> run_kmeans(El::DistMatrix<T, El::VC, El::STAR>& data,
+        El::Matrix<T>& centroids, const El::Unsigned k,
+        const double tol, const std::string init,
         const El::Int seed, const El::Unsigned max_iters,
         const El::Unsigned rank) {
     El::Unsigned nchanged = 0;
+    El::Unsigned ncol = data.Width();
 
     // Count # points in a each centroid per proc
     El::Matrix<El::Int> assignment_count(1, k);
     El::Zero(assignment_count);
 
-    El::Matrix<double> local_centroids(k, ncol);
+    El::Matrix<T> local_centroids(k, ncol);
     El::Zero(local_centroids);
 
     std::vector<El::Unsigned> centroid_assignment;
     centroid_assignment.assign(data.LocalHeight(), INVALID_ID);
 
-    init_centroids<double>(centroids, data, get_init_type(init),
+    init_centroids<T>(centroids, data, get_init_type(init),
             k, data.Height(), ncol, seed, centroid_assignment,
             assignment_count, rank);
 
@@ -449,7 +468,7 @@ kmeans_t run_kmeans(El::DistMatrix<double, El::VC, El::STAR>& data,
         if (rank == root)
             El::Output("Running  iteration ", iters, " ...\n");
 
-        naive_kmeans<double>(data.LockedMatrix(), centroids, local_centroids,
+        naive_kmeans<T>(data.LockedMatrix(), centroids, local_centroids,
                 assignment_count, centroid_assignment, nchanged);
         iters++;
 
@@ -510,8 +529,8 @@ kmeans_t run_kmeans(El::DistMatrix<double, El::VC, El::STAR>& data,
                 iters, " iterations\n");
 #endif
 
-    return kmeans_t(gl_centroid_assignments,
-            assignment_count.Buffer(), k, iters);
+    return kmeans_t<T>(gl_centroid_assignments,
+            assignment_count.Buffer(), k, iters, centroids);
 }
 
 } } // namespace skylark::ml

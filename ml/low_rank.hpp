@@ -1,6 +1,7 @@
-#ifndef SKYLARK_LRPSD_HPP
-#define SKYLARK_LRPSD_HPP
+#ifndef SKYLARK_LOWRANK_HPP
+#define SKYLARK_LOWRANK_HPP
 
+#include <exception>
 #include <skylark.hpp>
 
 /*******************************************/
@@ -77,16 +78,18 @@ class low_rank_t {
             symmetrize(A_hat);
 
             // Add eig decomp of top-k
-            El::DistMatrix<T> D(_k, _k);
-            //El::DistMatrix<T> U(_m, _k);
+            El::DistMatrix<T> D; // (_k, _k);
             El::DistMatrix<T> U;
+
             El::HermitianEigSubset<T> subset;
             subset.indexSubset = true;
             subset.lowerIndex = 0;
-            subset.upperIndex = _k;
-
+            subset.upperIndex = _k-1; // Inclusive index
             El::HermitianEig(El::UPPER, A_hat, U, El::DESCENDING, subset);
             El::GetSubmatrix(A_hat, El::IR(0, _k), El::IR(0, _k), D);
+
+            if (U.Height() != _k)
+                throw std::runtime_error("Incorrect # eigs");
 
             // Make U a diagonal matrix
             El::DistMatrix<T> diagU;
@@ -94,7 +97,7 @@ class low_rank_t {
             El::SetDiagonal(diagU, U);
 
             // Get Z_k
-            El::DistMatrix<T> Zk(Z.Height(), _k);
+            El::DistMatrix<T> Zk;
             El::GetSubmatrix(Z, El::IR(0, Z.Height()), El::IR(0, _k), Zk);
 
             return low_rank_sym_t<T>(Zk, diagU, D);
@@ -148,6 +151,7 @@ class low_rank_t {
             // Form ZtSrinv
             skysketch::JLT_t<El::DistMatrix<T>, El::DistMatrix<T> >
                 Sr(n, _mr, context);
+
             El::DistMatrix<T> ZtSrinv(_m, _mr);
             // Tranpose Z
             El::DistMatrix<T> Zt(Z.Width(), Z.Height());
@@ -186,4 +190,4 @@ class low_rank_t {
 };
 
 }} // namespace skylark::ml
-#endif // SKYLARK_LRPSD_HPP
+#endif // SKYLARK_LOWRANK_HPP

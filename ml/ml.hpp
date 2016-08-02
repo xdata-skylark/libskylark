@@ -8,6 +8,7 @@
 #include "rlsc.hpp"
 #include "model.hpp"
 #include "kmeans.hpp"
+#include "low_rank.hpp"
 
 // TODO add includes to hilbert
 

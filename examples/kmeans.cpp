@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
         const size_t ncol =
             El::Input("--n","number of matrix cols (width)",4);
         std::string init = El::Input<std::string>("--I",
-                "initialization method","forgy");
+                "initialization method [forgy | random | plusplus]","forgy");
         const El::Unsigned max_iters =
             El::Input("--i","number of iterations",10);
         const El::Int seed = El::Input("--s","seeding for random init",2);

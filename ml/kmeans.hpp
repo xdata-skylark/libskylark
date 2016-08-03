@@ -427,7 +427,7 @@ class kmeans_t {
         void print() {
             El::Output("Iterations: ", iters);
             El::Output("Cluster count: ");
-            skyutil::PrettyPrinter<El::Int>::print(assignment_count);
+            skyutil::pretty_printer<El::Int>::print_vector(assignment_count);
         }
 };
 
@@ -521,7 +521,8 @@ kmeans_t<T> run_kmeans(El::DistMatrix<T, El::VC, El::STAR>& data,
 #if 1
     if (rank == root) {
         El::Output("Centroid assignment:");
-        skyutil::PrettyPrinter<El::Unsigned>::print(gl_centroid_assignments);
+        skyutil::pretty_printer<El::Unsigned>::
+            print_vector(gl_centroid_assignments);
     }
 
     if (!converged && rank == root)

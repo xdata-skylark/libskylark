@@ -118,7 +118,7 @@ void kmeanspp_init(const El::DistMatrix<T, El::VC, El::STAR>& data,
     if (data.IsLocalRow(gl_selected_rid)) {
         El::Unsigned local_selected_rid = data.LocalRow(gl_selected_rid);
 #if KM_DEBUG
-        El::Output("Proc: ", rank, " assigning global r:",
+        El::Output("Proc: ", data.DistRank(), " assigning global r:",
                 gl_selected_rid, ", local r: ", local_selected_rid,
                 " as centroid: 0");
 #endif
@@ -165,7 +165,7 @@ void kmeanspp_init(const El::DistMatrix<T, El::VC, El::STAR>& data,
             if (cuml_dist <= 0) {
                 if (data.IsLocalRow(row)) {
 #if KM_DEBUG
-                    El::Output("Proc: ", rank, " assigning r: ", row,
+                    El::Output("Proc: ", data.DistRank(), " assigning r: ", row,
                             " local r: ", data.LocalRow(row),
                             " as centroid: ", clust_idx);
 #endif
@@ -231,18 +231,29 @@ void init_centroids(El::Matrix<T>& centroids, const El::DistMatrix<T, El::VC,
         }
         break;
         case init_t::FORGY: {
+            El::Zeros(centroids, k, ncol);
+            El::Matrix<T> local_data = data.LockedMatrix();
+
             mpi_random_generator<El::Unsigned>
-                gen(0, nrow-1, rank, 1, seed);
+                gen(0, nrow-1, 0, 1, seed);
 
             for (El::Unsigned cl = 0; cl < k; cl++) {
-                El::Unsigned chosen = gen.next();
+                El::Unsigned chosen = gen.next(); // Globel index
+
+                if (data.IsLocalRow(chosen)) {
+                    El::Unsigned local_chosen = data.LocalRow(chosen);
 #if KM_DEBUG
-                if (rank == root)
-                    printf("Selecting point %u as centroid\n", chosen);
+                    printf("Adding r: %llu as c: %llu in proc: %llu ...\n",
+                            chosen, cl, rank);
 #endif
-                for (El::Unsigned col = 0; col < ncol; col++)
-                    centroids.Set(cl, col, data.Get(chosen, col));
+                    centroids(El::IR(cl, cl+1), El::IR(0, ncol)) =
+                        local_data(El::IR(local_chosen, local_chosen+1),
+                                El::IR(0, ncol));
+                }
             }
+
+            // Make sure all procs have the same centroids
+            El::AllReduce(centroids, El::mpi::COMM_WORLD, El::mpi::SUM);
         }
         break;
         case init_t::NONE:
@@ -305,7 +316,7 @@ void naive_kmeans(const El::Matrix<T>& data, El::Matrix<T>& centroids,
     const size_t nrow = data.Height();
 
 #if KM_DEBUG
-    if (rank == 0) {
+    if (El::mpi::Rank(El::mpi::COMM_WORLD) == 0) {
         El::Output("Process 0 has ", nrow, " rows");
     }
 #endif
@@ -427,7 +438,7 @@ class kmeans_t {
         void print() {
             El::Output("Iterations: ", iters);
             El::Output("Cluster count: ");
-            skyutil::PrettyPrinter<El::Int>::print(assignment_count);
+            skyutil::pretty_printer<El::Int>::print_vector(assignment_count);
         }
 };
 
@@ -521,7 +532,8 @@ kmeans_t<T> run_kmeans(El::DistMatrix<T, El::VC, El::STAR>& data,
 #if 1
     if (rank == root) {
         El::Output("Centroid assignment:");
-        skyutil::PrettyPrinter<El::Unsigned>::print(gl_centroid_assignments);
+        skyutil::pretty_printer<El::Unsigned>::
+            print_vector(gl_centroid_assignments);
     }
 
     if (!converged && rank == root)

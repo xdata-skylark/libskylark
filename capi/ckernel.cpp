@@ -92,7 +92,7 @@ SKYLARK_EXTERN_API int sl_kernel_gram(int dirX_, int dirY_,
 
     SKYLARK_BEGIN_TRY()
         skylark::ml::Gram(dirX, dirY,
-            k->kernel_obj, skylark_void2any(X_type, X_),
+            k->kernel_obj, skylark_void2any_root(X_type, X_),
             skylark_void2any_root(Y_type, Y_),
             skylark_void2any_root(K_type, K_));
     SKYLARK_END_TRY()

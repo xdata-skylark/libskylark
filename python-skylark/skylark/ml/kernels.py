@@ -1,6 +1,6 @@
 import numpy 
 import skylark
-from ctypes import byref, c_void_p, c_double
+from ctypes import byref, c_void_p, c_double, c_int
 from skylark import sketch, errors
 from distances import euclidean
 import scipy.special
@@ -260,6 +260,8 @@ class Polynomial(object):
   :param c: kernel parameter, must be >= 0.
   """
 
+#  El::Int N, int q = 2, double c = 1.0, double gamma = 1.0
+
   def __init__(self, d, q=3, c=0, gamma=1):
     if c < 0:
       raise ValueError("kernel paramter must be >= 0")
@@ -270,35 +272,58 @@ class Polynomial(object):
     self._q = q
     self._c = c
     self._gamma = gamma
+
+    self._kernel_obj = c_void_p()
+    lib.callsl("sl_create_kernel", "polynomial", self._d, byref(self._kernel_obj), \
+    c_int(self._q), c_double(self._gamma), c_double(self._c))
     
-  def gram(self, X, Xt=None):
+  def gram(self, X, K, dirX="rows", dirY="rows", Y=None):
     """
     Returns the dense Gram matrix evaluated over the datapoints.
   
-    :param X:  n-by-d data matrix
-    :param Xt: optional t-by-d test matrix
-
-    Returns: 
-    -------
-    n-by-n Gram matrix over X (if Xt is not provided)
-    t-by-n Gram matrix between Xt and X if X is provided
+    :param X: n-by-d data matrix
+    :param Y: another data matrix. If Y is None, then X is used.
+    :param K: placeholder for output Gram matrix.
     """
-  
-    # TODO the test, and this function, should work for all matrix types.
-    if X.shape[1] != self._d:
-      raise ValueError("X must have vectors of dimension d")
 
-    if Xt is None:
-      n = X.shape[0]
-      K = numpy.power(numpy.dot(X, X.T) + self._c * numpy.ones((n,n)), self._q)
-    else:
-      if Xt.shape[1] != self._d:
-        raise ValueError("Xt must have vectors of dimension d")
-      n = X.shape[0]
-      t = Xt.shape[0]
-      K = numpy.power(numpy.dot(Xt, X.T) + self._c * numpy.ones((t,n)), self._q)
-      
-    return K
+    cdirX = None
+    if dirX == 0 or dirX == "columns":
+        cdirX = 1
+    if dirX == 1 or dirX == "rows":
+        cdirX = 2
+    if cdirX is None:
+        raise ValueError("Direction (for X) must be either columns/rows or 0/1")
+
+    cdirY = None
+    if dirY == 0 or dirY == "columns":
+        cdirY = 1
+    if dirY == 1 or dirY == "rows":
+        cdirY = 2
+    if cdirY is None:
+        raise ValueError("Direction (for Y) must be either columns/rows or 0/1")
+
+    if Y is None:
+        Y = X
+        dirY = dirX
+        
+    X = lib.adapt(X)
+    Y = lib.adapt(Y)
+    K = lib.adapt(K)
+
+    Xobj = X.ptr()
+    Yobj = Y.ptr()
+    Kobj = K.ptr()
+
+    lib.callsl("sl_kernel_gram", cdirX, cdirY, self._kernel_obj, \
+               X.ctype(), Xobj, \
+               Y.ctype(), Yobj, \
+               K.ctype(), Kobj)
+               
+    X.ptrcleaner()
+    Y.ptrcleaner()
+    K.ptrcleaner()
+    
+    return K.getobj()
   
   def rft(self, s, subtype=None, defouttype=None, **args):
     """

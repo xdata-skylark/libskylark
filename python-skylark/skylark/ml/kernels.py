@@ -362,3 +362,84 @@ class ExpSemigroup(object):
     """
 
     return sketch.ExpSemigroupRLT(self._d, s, self._beta, defouttype, **args)
+
+
+
+class Laplacian(object):
+  """
+  A object representing the Laplacian kernel over d dimensional vectors, with
+  bandwidth sigma.
+
+  :param d: dimension of vectors on which kernel operates.
+  :param sigma: bandwidth of the kernel.
+  """
+
+  def __init__(self, d, sigma):
+    self._d = d
+    self._sigma = sigma
+    self._kernel_obj = c_void_p()
+    lib.callsl("sl_create_kernel", "laplacian", d, byref(self._kernel_obj), c_double(sigma))
+    
+  def gram(self, X, K, dirX="rows", dirY="rows", Y=None):
+    """
+    Returns the dense Gram matrix evaluated over the datapoints.
+  
+    :param X: n-by-d data matrix
+    :param Y: another data matrix. If Y is None, then X is used.
+    :param K: placeholder for output Gram matrix.
+    """
+
+    cdirX = None
+    if dirX == 0 or dirX == "columns":
+        cdirX = 1
+    if dirX == 1 or dirX == "rows":
+        cdirX = 2
+    if cdirX is None:
+        raise ValueError("Direction (for X) must be either columns/rows or 0/1")
+
+    cdirY = None
+    if dirY == 0 or dirY == "columns":
+        cdirY = 1
+    if dirY == 1 or dirY == "rows":
+        cdirY = 2
+    if cdirY is None:
+        raise ValueError("Direction (for Y) must be either columns/rows or 0/1")
+
+    if Y is None:
+        Y = X
+        dirY = dirX
+        
+    X = lib.adapt(X)
+    Y = lib.adapt(Y)
+    K = lib.adapt(K)
+
+    Xobj = X.ptr()
+    Yobj = Y.ptr()
+    Kobj = K.ptr()
+
+    lib.callsl("sl_kernel_gram", cdirX, cdirY, self._kernel_obj, \
+               X.ctype(), Xobj, \
+               Y.ctype(), Yobj, \
+               K.ctype(), Kobj)
+               
+    X.ptrcleaner()
+    Y.ptrcleaner()
+    K.ptrcleaner()
+    
+    return K.getobj()
+  
+  def rft(self, s, subtype=None, defouttype=None, **args):
+    """
+    Create a random features transform for the kernel.
+    This function uses random Fourier features (Rahimi-Recht).
+    
+    :param s: number of random features.
+    :param subtype: subtype of rft to use (e.g. sparse, fast).
+           Currently we support regular (None) and quasirandom.
+    :param defouttype: default output type for the transform.
+    :returns: random features sketching transform object.
+    """
+    if subtype is 'quasirandom':
+      return sketch.LaplacianQRFT(self._d, s, self._sigma, defouttype, **args)
+    else:
+      return sketch.LaplacianRFT(self._d, s, self._sigma, defouttype, **args)

@@ -57,6 +57,7 @@ class GaussianTestCase(unittest.TestCase):
     
     def test_Gaussian_rft(self):
         """Create random features transform for the kernel."""
+        # TODO: How should we check that?
         pass
       
 if __name__ == '__main__':

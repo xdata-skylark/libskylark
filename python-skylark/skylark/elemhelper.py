@@ -37,21 +37,3 @@ def local2distributed(A, type=El.DistMatrix):
 
     return Adist
 
-
-    Adist = type()
-    Adist.Resize(A.shape[0], A.shape[1])
-    localHeight = Adist.LocalHeight()
-    localWidth = Adist.LocalWidth()
-    colShift = Adist.ColShift()
-    rowShift = Adist.RowShift()
-    colStride = Adist.ColStride()
-    rowStride = Adist.RowStride()
-    data = Adist.Matrix()
-    ldim = Adist.LDim()
-    for jLocal in xrange(0,localWidth):
-        j = rowShift + jLocal*rowStride
-        for iLocal in xrange(0,localHeight):
-            i = colShift + iLocal*colStride
-            Adist.SetLocal(iLocal, jLocal, f(i, j))
-
-    return Adist

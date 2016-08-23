@@ -7,6 +7,8 @@ machine learning and statistical data analysis.
 Note that this software stack is currently under development, its features are
 still experimental.
 
+Join the [slack](https://libskylark.slack.com/) channel for questions and
+feedback.
 
 ## Getting Started
 

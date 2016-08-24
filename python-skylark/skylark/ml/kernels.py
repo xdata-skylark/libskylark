@@ -9,28 +9,17 @@ import sys, math
 import skylark.lib as lib
 
 def __get_direction(dir):
+  """
+    Returns the direction of dir (1 or 2)
+  
+    :param dir: 0/1 or "rows"/"cols"
+    """
   if dirX == 0 or dirX == "columns":
     return 1
   elif dirX == 1 or dirX == "rows":
     return 2
   else:
     raise ValueError("Direction must be either columns/rows or 0/1")
-
-def kernel(kerneltype, d, **params):
-  """
-  Returns a kernel based on the input parameters.
-
-  :param kerneltype: string identifying the kernel requested.
-  :param d: dimension of the kernel.
-  :param params: dictonary of kernel parameters, kernel dependent.
-  :returns: kernel object
-  """
-  if not isinstance(kerneltype, str):
-    raise ValueError("kerneltype must be a string")
-  elif kerneltype.lower() == "linear":
-    return Linear(d, **params)
-  else:
-    raise ValueError("kerneltype not recognized")
 
 def __gram(self, X, K, kernel_ptr, dirX="rows", dirY="rows", Y=None):
     """
@@ -63,4 +52,20 @@ def __gram(self, X, K, kernel_ptr, dirX="rows", dirY="rows", Y=None):
     K.ptrcleaner()
 
     return K.getobj()
- 
+
+# Factory of kernels
+def kernel(kerneltype, d, **params):
+  """
+  Returns a kernel based on the input parameters.
+
+  :param kerneltype: string identifying the kernel requested.
+  :param d: dimension of the kernel.
+  :param params: dictonary of kernel parameters, kernel dependent.
+  :returns: kernel object
+  """
+  if not isinstance(kerneltype, str):
+    raise ValueError("kerneltype must be a string")
+  elif kerneltype.lower() == "linear":
+    return Linear(d, **params)
+  else:
+    raise ValueError("kerneltype not recognized")

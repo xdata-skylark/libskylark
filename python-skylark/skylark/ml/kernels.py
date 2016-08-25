@@ -9,7 +9,7 @@ import sys, math
 import skylark.lib as lib
 
 # Kernel factory
-def kernels(kerneltype, *args):
+def kernel(kerneltype, *args):
   """
   Returns a kernel based on the input parameters.
 
@@ -28,6 +28,8 @@ def kernels(kerneltype, *args):
     return Gaussian(*args)
   elif kerneltype.lower() == "polynomial":
     return Polynomial(*args)
+  elif kerneltype.lower() == "laplacian":
+    return Laplacian(*args)
   else:
     raise ValueError("kerneltype not recognized")
 
@@ -283,4 +285,35 @@ class Polynomial(Kernel):
     """
 
     return sketch.PPT(self._d, s, self._q, self._c, self._gamma, defouttype, **kargs)
-        
+
+
+class Laplacian(Kernel):
+  """
+  A object representing the Laplacian kernel over d dimensional vectors, with
+  bandwidth sigma.
+
+  :param d: dimension of vectors on which kernel operates.
+  :param sigma: bandwidth of the kernel.
+  """
+
+  def __init__(self, d, sigma):
+    self._d = d
+    self._sigma = sigma
+    self._kernel_obj = c_void_p()
+    lib.callsl("sl_create_kernel", "laplacian", d, byref(self._kernel_obj), c_double(sigma))
+  
+  def rft(self, s, subtype=None, defouttype=None, **kwargs):
+    """
+    Create a random features transform for the kernel.
+    This function uses random Fourier features (Rahimi-Recht).
+    
+    :param s: number of random features.
+    :param subtype: subtype of rft to use (e.g. sparse, fast).
+           Currently we support regular (None) and quasirandom.
+    :param defouttype: default output type for the transform.
+    :returns: random features sketching transform object.
+    """
+    if subtype is 'quasirandom':
+      return sketch.LaplacianQRFT(self._d, s, self._sigma, defouttype, **kwargs)
+    else:
+      return sketch.LaplacianRFT(self._d, s, self._sigma, defouttype, **kwargs)

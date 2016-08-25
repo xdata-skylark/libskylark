@@ -24,6 +24,8 @@ def kernel(kerneltype, *args):
     return Linear(d, *args)
   elif kerneltype.lower() == "matern":
     return Matern(*args)
+  elif kerneltype.lower() == "expsemigroup":
+    return ExpSemigroup(*args)
   elif kerneltype.lower() == "gaussian":
     return Gaussian(*args)
   elif kerneltype.lower() == "polynomial":
@@ -208,6 +210,53 @@ class Matern(object):
     """
     return sketch.MaternRFT(self._d, s, self._nu, self._l, defouttype, **kargs)
 
+class ExpSemigroup(object):
+  """
+  A object representing the Exponential Semigroup kernel over d dimensional vectors, with
+  parameter beta.
+
+  :param d: dimension of vectors on which kernel operates.
+  :param beta: kernel parameter
+  """
+
+  def __init__(self, d, beta):
+    self._d = d
+    self._beta = beta
+    self._k = lambda x, y: math.exp(-beta * numpy.sum(numpy.sqrt(x + y)))
+    
+  def gram(self, X, Xt=None):
+    """
+    Returns the dense Gram matrix evaluated over the datapoints.
+  
+    :param X:  n-by-d data matrix
+    :param Xt: optional t-by-d test matrix
+
+    Returns: 
+    -------
+    n-by-n Gram matrix over X (if Xt is not provided)
+    t-by-n Gram matrix between Xt and X if X is provided
+    """
+  
+    # TODO the test, and this function, should work for all matrix types.
+    if X.shape[1] != self._d:
+      raise ValueError("X must have vectors of dimension d")
+
+    return gram(self._k, X, Xt)
+  
+  def rft(self, s, subtype=None, defouttype=None, **args):
+    """
+    Create a random features transform for the kernel.
+    This function uses random Laplace features.
+    
+    :param s: number of random features.
+    :param subtype: subtype of rlt to use (e.g. sparse, fast).
+           Currently we support only regular (None), but we keep
+           this argument to have a unifying interface.
+    :param defouttype: default output type for the transform.
+    :returns: random features sketching transform object.
+    """
+
+    return sketch.ExpSemigroupRLT(self._d, s, self._beta, defouttype, **args)
 
 # Kernel bindings
 

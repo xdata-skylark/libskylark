@@ -20,6 +20,8 @@ def kernel(kerneltype, **kwargs):
   """
   if not isinstance(kerneltype, str):
     raise ValueError("kerneltype must be a string")
+  elif kerneltype.lower() == "linear":
+    return Linear(d, **kwargs)
   elif kerneltype.lower() == "gaussian":
     return Gaussian(**kwargs)
   else:
@@ -80,7 +82,68 @@ class Kernel(object):
 
 
 
-# Kernel implementations/bindings
+# Kernel implementations
+
+class Linear(Kernel):
+  """
+  A object representing the Linear kernel over d dimensional vectors.
+
+  :param d: dimension of vectors on which kernel operates.
+  """
+
+  def __init__(self, d):
+    self._d = d
+    
+  def gram(self, X, Xt=None):
+    """
+    Returns the dense Gram matrix evaluated over the datapoints.
+  
+    :param X:  n-by-d data matrix
+    :param Xt: optional t-by-d test matrix
+
+    Returns: 
+    -------
+    n-by-n Gram matrix over X (if Xt is not provided)
+    t-by-n Gram matrix between Xt and X if X is provided
+    """
+  
+    # TODO the test, and this function, should work for all matrix types.
+    if X.shape[1] != self._d:
+      raise ValueError("X must have vectors of dimension d")
+
+    if Xt is None:
+      K = numpy.dot(X, X.T)
+    else:
+      if Xt.shape[1] != self._d:
+        raise ValueError("Xt must have vectors of dimension d")
+      K = numpydot(Xt, X.T)
+      
+    return K
+  
+  def rft(self, s, subtype=None, defouttype=None, **args):
+    """
+    Create a random features transform for the kernel.
+    This function uses random Fourier features (Rahimi-Recht).
+    
+    :param s: number of random features.
+    :param subtype: subtype of rft to use. Accepted values:
+           None - will default to JLT.
+           fast - will use FJLT
+           hash - will use CWT
+    :param defouttype: default output type for the transform.
+    :returns: random features sketching transform object.
+    """
+    if subtype is None:
+      return sketch.JLT(self._d, s, defouttype, **args)
+    elif subtype is 'fast':
+      return sketch.FJLT(self._d, s, defouttype, **args)
+    elif subtype is 'hash':
+      return skethc.CWT(self._d, s, defouttype, **args)
+    else:
+      raise ValueError("invalide subtype supplied")
+
+
+# Kernel bindings
 
 class Gaussian(Kernel):
   """

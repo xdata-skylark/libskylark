@@ -22,6 +22,8 @@ def kernel(kerneltype, **kwargs):
     raise ValueError("kerneltype must be a string")
   elif kerneltype.lower() == "linear":
     return Linear(d, **kwargs)
+  elif kerneltype.lower() == "matern":
+    return Matern(**kwargs)
   elif kerneltype.lower() == "gaussian":
     return Gaussian(**kwargs)
   else:
@@ -120,7 +122,7 @@ class Linear(Kernel):
       
     return K
   
-  def rft(self, s, subtype=None, defouttype=None, **args):
+  def rft(self, s, subtype=None, defouttype=None, **kwargs):
     """
     Create a random features transform for the kernel.
     This function uses random Fourier features (Rahimi-Recht).
@@ -134,13 +136,73 @@ class Linear(Kernel):
     :returns: random features sketching transform object.
     """
     if subtype is None:
-      return sketch.JLT(self._d, s, defouttype, **args)
+      return sketch.JLT(self._d, s, defouttype, **kwargs)
     elif subtype is 'fast':
-      return sketch.FJLT(self._d, s, defouttype, **args)
+      return sketch.FJLT(self._d, s, defouttype, **kwargs)
     elif subtype is 'hash':
-      return skethc.CWT(self._d, s, defouttype, **args)
+      return skethc.CWT(self._d, s, defouttype, **kwargs)
     else:
       raise ValueError("invalide subtype supplied")
+
+
+class Matern(object):
+  """
+  A object representing the Matern kernel over d dimensional vectors, with
+  nu and l
+
+  :param d: dimension of vectors on which kernel operates.
+  :param nu: nu parameter
+  :param l: l parameter
+  """
+
+  def __init__(self, d, nu, l):
+    self._d = d
+    self._nu = nu
+    self._l = l
+    
+  def gram(self, X, Xt=None):
+    """
+    Returns the dense Gram matrix evaluated over the datapoints.
+  
+    :param X:  n-by-d data matrix
+    :param Xt: optional t-by-d test matrix
+
+    Returns: 
+    -------
+    n-by-n Gram matrix over X (if Xt is not provided)
+    t-by-n Gram matrix between Xt and X if X is provided
+    """
+  
+    # TODO the test, and this function, should work for all matrix types.
+    if X.shape[1] != self._d:
+      raise ValueError("X must have vectors of dimension d")
+
+    nu = self._nu
+    l = self._l
+    if Xt is None:
+        D = euclidean(X, X)
+    else:
+        if Xt.shape[1] != self._d:
+            raise ValueError("Xt must have vectors of dimension d")
+        D = euclidean(X, Xt);
+
+    Y = scipy.sqrt(2.0 * nu * D) / l
+    K = 2.0 ** (1 - nu) / scipy.special.gamma(nu) * Y ** nu * scipy.special.kv(nu, Y)
+
+    return scipy.real(K)
+  
+  def rft(self, s, subtype=None, defouttype=None, **kargs):
+    """
+    Create a random features transform for the kernel.
+    This function uses random Fourier features (Rahimi-Recht).
+    
+    :param s: number of random features.
+    :param subtype: subtype of rft to use (e.g. sparse, fast).
+           Currently we support regular (None) and fast.
+    :param defouttype: default output type for the transform.
+    :returns: random features sketching transform object.
+    """
+    return sketch.MaternRFT(self._d, s, self._nu, self._l, defouttype, **kargs)
 
 
 # Kernel bindings

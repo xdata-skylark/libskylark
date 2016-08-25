@@ -9,7 +9,7 @@ import sys, math
 import skylark.lib as lib
 
 # Kernel factory
-def kernel(kerneltype, **kwargs):
+def kernels(kerneltype, *args):
   """
   Returns a kernel based on the input parameters.
 
@@ -21,11 +21,13 @@ def kernel(kerneltype, **kwargs):
   if not isinstance(kerneltype, str):
     raise ValueError("kerneltype must be a string")
   elif kerneltype.lower() == "linear":
-    return Linear(d, **kwargs)
+    return Linear(d, *args)
   elif kerneltype.lower() == "matern":
-    return Matern(**kwargs)
+    return Matern(*args)
   elif kerneltype.lower() == "gaussian":
-    return Gaussian(**kwargs)
+    return Gaussian(*args)
+  elif kerneltype.lower() == "polynomial":
+    return Polynomial(*args)
   else:
     raise ValueError("kerneltype not recognized")
 
@@ -222,7 +224,7 @@ class Gaussian(Kernel):
     self._kernel_obj = c_void_p()
     lib.callsl("sl_create_kernel", "gaussian", d, byref(self._kernel_obj), c_double(sigma))
 
-  def rft(self, s, subtype=None, defouttype=None, **args):
+  def rft(self, s, subtype=None, defouttype=None, **kargs):
     """
     Create a random features transform for the kernel.
     This function uses random Fourier features (Rahimi-Recht).
@@ -233,8 +235,52 @@ class Gaussian(Kernel):
     :param defouttype: default output type for the transform.
     :returns: random features sketching transform object.
     """
+
     if subtype is 'fast':
-      return sketch.FastGaussianRFT(self._d, s, self._sigma, defouttype, **args)
+      return sketch.FastGaussianRFT(self._d, s, self._sigma, defouttype, **kargs)
     else:
-      return sketch.GaussianRFT(self._d, s, self._sigma, defouttype, **args)
+      return sketch.GaussianRFT(self._d, s, self._sigma, defouttype, **kargs)
+
+
+class Polynomial(Kernel):
+  """
+  A object representing the polynomial kernel over d dimensional vectors, with
+  bandwidth exponent q and parameter c.
+
+  Kernel function is :math:`k(x,y)=(\\gamma x^T y + c)^q`.
+
+  :param d: dimension of vectors on which kernel operates.
+  :param q: exponent of the kernel.
+  :param c: kernel parameter, must be >= 0.
+  """
+
+  def __init__(self, d, q=3, c=0, gamma=1):
+    if c < 0:
+      raise ValueError("kernel paramter must be >= 0")
+    if type(q) is not int:
+      raise errors.InvalidParamterError("exponent must be integer")
+
+    self._d = d
+    self._q = q
+    self._c = c
+    self._gamma = gamma
+
+    self._kernel_obj = c_void_p()
+    lib.callsl("sl_create_kernel", "polynomial", self._d, byref(self._kernel_obj), \
+                c_int(self._q), c_double(self._gamma), c_double(self._c))
     
+  def rft(self, s, subtype=None, defouttype=None, **kargs):
+    """
+    Create a random features transform for the kernel.
+    This function uses TensorSketch (Pahm-Pagh Transform)
+    
+    :param s: number of random features.
+    :param subtype: subtype of rft to use (e.g. sparse, fast).
+           Currently we support only regular (None), but we keep
+           this argument to have a unifying interface.
+    :param defouttype: default output type for the transform.
+    :returns: random features sketching transform object.
+    """
+
+    return sketch.PPT(self._d, s, self._q, self._c, self._gamma, defouttype, **kargs)
+        

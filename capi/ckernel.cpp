@@ -41,6 +41,13 @@ SKYLARK_EXTERN_API int sl_create_kernel(
 
     std::shared_ptr<skylark::ml::kernel_t> k_ptr;
 
+    if (type == LINEAR) {
+        va_list argp;
+        va_start(argp, kernel);
+        k_ptr.reset(new skylark::ml::linear_t(N));
+        va_end(argp);
+    }
+    
     if (type == GAUSSIAN) {
         va_list argp;
         va_start(argp, kernel);

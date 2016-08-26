@@ -55,11 +55,11 @@ int test_main(int argc, char* argv[]) {
     Transpose(A, A_STAR_VR);
 
     // Call tester for each case
-    check(A);
-    check(A_VC_STAR);
-    check(A_STAR_VC);
-    check(A_VR_STAR);
-    check(A_STAR_VR);
+    test::util::check(A);
+    test::util::check(A_VC_STAR);
+    test::util::check(A_STAR_VC);
+    test::util::check(A_VR_STAR);
+    test::util::check(A_STAR_VR);
 
     El::Finalize();
     return 0;

@@ -38,7 +38,7 @@ if [ ! -d "deps/Elemental" ]; then
         exit 1
     fi
 
-    make &> /dev/null
+    make
     if [ $? -ne 0 ]; then
         echo "Unable to compile Elemental"
         popd

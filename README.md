@@ -1,5 +1,7 @@
 # libSkylark
 
+[![Build Status](https://travis-ci.org/xdata-skylark/libskylark.svg?branch=development)](https://travis-ci.org/xdata-skylark/libskylark)
+
 This is a distribution of libSkylark: an open source software library for
 distributed randomized numerical linear algebra with applications to
 machine learning and statistical data analysis.

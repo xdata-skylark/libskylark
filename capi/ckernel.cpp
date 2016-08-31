@@ -82,6 +82,15 @@ SKYLARK_EXTERN_API int sl_create_kernel(
         va_end(argp);
     }
 
+    if (type == MATERN) {
+        va_list argp;
+        va_start(argp, kernel);
+        double nu = va_arg(argp, double);
+        double l = va_arg(argp, double);
+        k_ptr.reset(new skylark::ml::matern_t(N, nu, l));
+        va_end(argp);
+    }
+
     *kernel = new sl_kernel_t(type, k_ptr);
 
     return 0;

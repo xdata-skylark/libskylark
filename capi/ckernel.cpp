@@ -74,6 +74,14 @@ SKYLARK_EXTERN_API int sl_create_kernel(
         va_end(argp);
     }
 
+    if (type == EXPSEMIGROUP) {
+        va_list argp;
+        va_start(argp, kernel);
+        double beta = va_arg(argp, double);
+        k_ptr.reset(new skylark::ml::expsemigroup_t(N, beta));
+        va_end(argp);
+    }
+
     *kernel = new sl_kernel_t(type, k_ptr);
 
     return 0;

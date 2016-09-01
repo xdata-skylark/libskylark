@@ -33,6 +33,10 @@ void EuclideanDistanceMatrix(direction_t dirA, direction_t dirB, T alpha,
     }
 
     // TODO the rest of the cases.
+    SKYLARK_THROW_EXCEPTION (
+        base::ml_exception()
+          << base::error_msg(
+           "EuclideanDistanceMatrix has not yet been implemented for that kind of matrices"));
 }
 
 template<typename T>
@@ -63,6 +67,10 @@ void EuclideanDistanceMatrix(direction_t dirA, direction_t dirB, T alpha,
     }
 
     // TODO the rest of the cases.
+        SKYLARK_THROW_EXCEPTION (
+        base::ml_exception()
+          << base::error_msg(
+           "EuclideanDistanceMatrix has not yet been implemented for that kind of matrices"));
 }
 
 /**
@@ -94,6 +102,10 @@ void SymmetricEuclideanDistanceMatrix(El::UpperOrLower uplo, direction_t dir,
     }
 
     // TODO the rest of the cases.
+    SKYLARK_THROW_EXCEPTION (
+    base::ml_exception()
+        << base::error_msg(
+        "SymmetricEuclideanDistanceMatrix has not yet been implemented for that kind of matrices"));
 }
 
 template<typename T>
@@ -127,6 +139,10 @@ void SymmetricEuclideanDistanceMatrix(El::UpperOrLower uplo, direction_t dir,
     }
 
     // TODO the rest of the cases.
+    SKYLARK_THROW_EXCEPTION (
+    base::ml_exception()
+        << base::error_msg(
+        "SymmetricEuclideanDistanceMatrix has not yet been implemented for that kind of matrices"));
 }
 
 /**
@@ -163,6 +179,11 @@ void L1DistanceMatrix(direction_t dirA, direction_t dirB, T alpha,
     }
 
     // TODO the rest of the cases.
+    SKYLARK_THROW_EXCEPTION (
+    base::ml_exception()
+        << base::error_msg(
+        "L1DistanceMatrix has not yet been implemented for that kind of matrices"));
+    
 }
 
 template<typename T>
@@ -209,6 +230,10 @@ void L1DistanceMatrix(direction_t dirA, direction_t dirB, T alpha,
     }
 
     // TODO the rest of the cases.
+    SKYLARK_THROW_EXCEPTION (
+    base::ml_exception()
+        << base::error_msg(
+        "L1DistanceMatrix has not yet been implemented for that kind of matrices"));
 }
 
 /**
@@ -243,6 +268,10 @@ void SymmetricL1DistanceMatrix(El::UpperOrLower uplo, direction_t dir, T alpha,
     }
 
     // TODO the rest of the cases.
+    SKYLARK_THROW_EXCEPTION (
+    base::ml_exception()
+        << base::error_msg(
+        "SymmetricL1DistanceMatrix has not yet been implemented for that kind of matrices"));
 }
 
 namespace internal {
@@ -289,6 +318,10 @@ void L1DistanceMatrixTU(El::UpperOrLower uplo,
     }
 
     // TODO the rest of the cases.
+    SKYLARK_THROW_EXCEPTION (
+    base::ml_exception()
+        << base::error_msg(
+        "L1DistanceMatrixTU has not yet been implemented for that kind of matrices"));
 }
 
 }
@@ -330,6 +363,10 @@ void SymmetricL1DistanceMatrix(El::UpperOrLower uplo, direction_t dir, T alpha,
     }
 
     // TODO the rest of the cases.
+    SKYLARK_THROW_EXCEPTION (
+    base::ml_exception()
+        << base::error_msg(
+        "SymmetricL1DistanceMatrix has not yet been implemented for that kind of matrices"));
 }
 
 
@@ -340,8 +377,6 @@ template<typename T>
 void ExpsemigroupDistanceMatrix(direction_t dirA, direction_t dirB, T alpha,
     const El::Matrix<T> &A, const El::Matrix<T> &B,
     T beta, El::Matrix<T> &C) {
-
-    // TODO verify ExpSemiGroup esta
 
     const T *a = A.LockedBuffer();
     El::Int ldA = A.LDim();
@@ -367,6 +402,10 @@ void ExpsemigroupDistanceMatrix(direction_t dirA, direction_t dirB, T alpha,
     }
 
     // TODO the rest of the cases.
+    SKYLARK_THROW_EXCEPTION (
+    base::ml_exception()
+        << base::error_msg(
+        "ExpsemigroupDistanceMatrix has not yet been implemented for that kind of matrices"));
 }
 
 template<typename T>
@@ -413,6 +452,10 @@ void ExpsemigroupDistanceMatrix(direction_t dirA, direction_t dirB, T alpha,
     }
 
     // TODO the rest of the cases.
+    SKYLARK_THROW_EXCEPTION (
+    base::ml_exception()
+        << base::error_msg(
+        "ExpsemigroupDistanceMatrix has not yet been implemented for that kind of matrices"));
 }
 
 /**
@@ -424,6 +467,10 @@ void SymmetricExpsemigroupDistanceMatrix(El::UpperOrLower uplo, direction_t dir,
     T alpha, const El::Matrix<T> &A, T beta, El::Matrix<T> &C) {
 
     // TODO the rest of the cases.
+    SKYLARK_THROW_EXCEPTION (
+    base::ml_exception()
+        << base::error_msg(
+        "SymmetricExpsemigroupDistanceMatrix has not yet been implemented for that kind of matrices"));
 }
 
 template<typename T>
@@ -433,6 +480,10 @@ void SymmetricExpsemigroupDistanceMatrix(El::UpperOrLower uplo, direction_t dir,
 
 
     // TODO the rest of the cases.
+    SKYLARK_THROW_EXCEPTION (
+    base::ml_exception()
+        << base::error_msg(
+        "SymmetricExpsemigroupDistanceMatrix has not yet been implemented for that kind of matrices"));
 }
 
 } } // namespace skylark::base

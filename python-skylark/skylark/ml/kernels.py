@@ -89,73 +89,6 @@ class Kernel(object):
 
 
 
-
-# Kernel implementations
-
-
-
-class Matern(object):
-  """
-  A object representing the Matern kernel over d dimensional vectors, with
-  nu and l
-
-  :param d: dimension of vectors on which kernel operates.
-  :param nu: nu parameter
-  :param l: l parameter
-  """
-
-  def __init__(self, d, nu, l):
-    self._d = d
-    self._nu = nu
-    self._l = l
-    
-  def gram(self, X, Xt=None):
-    """
-    Returns the dense Gram matrix evaluated over the datapoints.
-  
-    :param X:  n-by-d data matrix
-    :param Xt: optional t-by-d test matrix
-
-    Returns: 
-    -------
-    n-by-n Gram matrix over X (if Xt is not provided)
-    t-by-n Gram matrix between Xt and X if X is provided
-    """
-  
-    # TODO the test, and this function, should work for all matrix types.
-    if X.shape[1] != self._d:
-      raise ValueError("X must have vectors of dimension d")
-
-    nu = self._nu
-    l = self._l
-    if Xt is None:
-        D = euclidean(X, X)
-    else:
-        if Xt.shape[1] != self._d:
-            raise ValueError("Xt must have vectors of dimension d")
-        D = euclidean(X, Xt);
-
-    Y = scipy.sqrt(2.0 * nu * D) / l
-    K = 2.0 ** (1 - nu) / scipy.special.gamma(nu) * Y ** nu * scipy.special.kv(nu, Y)
-
-    return scipy.real(K)
-  
-  def rft(self, s, subtype=None, defouttype=None, **kargs):
-    """
-    Create a random features transform for the kernel.
-    This function uses random Fourier features (Rahimi-Recht).
-    
-    :param s: number of random features.
-    :param subtype: subtype of rft to use (e.g. sparse, fast).
-           Currently we support regular (None) and fast.
-    :param defouttype: default output type for the transform.
-    :returns: random features sketching transform object.
-    """
-    return sketch.MaternRFT(self._d, s, self._nu, self._l, defouttype, **kargs)
-
-
-
-
 # Kernel bindings
 
 class Linear(Kernel):
@@ -315,7 +248,6 @@ class ExpSemiGroup(Kernel):
     self._beta = beta
     self._kernel_obj = c_void_p()
     lib.callsl("sl_create_kernel", "expsemigroup", d, byref(self._kernel_obj))
-    
   
   def rft(self, s, subtype=None, defouttype=None, **args):
     """
@@ -331,3 +263,35 @@ class ExpSemiGroup(Kernel):
     """
 
     return sketch.ExpSemigroupRLT(self._d, s, self._beta, defouttype, **args)
+
+
+class Matern(Kernel):
+  """
+  A object representing the Matern kernel over d dimensional vectors, with
+  nu and l
+
+  :param d: dimension of vectors on which kernel operates.
+  :param nu: nu parameter
+  :param l: l parameter
+  """
+
+  def __init__(self, d, nu, l):
+    self._d = d
+    self._nu = nu
+    self._l = l
+    self._kernel_obj = c_void_p()
+    lib.callsl("sl_create_kernel", "matern", d, byref(self._kernel_obj), \
+              c_double(self_nu), c_double(self._l))
+
+  def rft(self, s, subtype=None, defouttype=None, **kargs):
+    """
+    Create a random features transform for the kernel.
+    This function uses random Fourier features (Rahimi-Recht).
+    
+    :param s: number of random features.
+    :param subtype: subtype of rft to use (e.g. sparse, fast).
+           Currently we support regular (None) and fast.
+    :param defouttype: default output type for the transform.
+    :returns: random features sketching transform object.
+    """
+    return sketch.MaternRFT(self._d, s, self._nu, self._l, defouttype, **kargs)

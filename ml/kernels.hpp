@@ -144,6 +144,10 @@ void SymmetricGram(El::UpperOrLower uplo, base::direction_t dir,
     const kernel_t& k, const boost::any &X, const boost::any &K) {
 
     // TODO
+    SKYLARK_THROW_EXCEPTION (
+        base::ml_exception()
+          << base::error_msg(
+           "SymmetricGram has not yet been implemented for boost::any params"));
 }
 
 /**
@@ -779,7 +783,10 @@ struct laplacian_t : public kernel_t {
     fast_feature_transform_tag tag, base::context_t& context) const {
 
         // TODO
-        return nullptr;
+        SKYLARK_THROW_EXCEPTION (
+        base::ml_exception()
+          << base::error_msg(
+           "fast_feature_transform has not yet been implemented for laplacian kernel"));
     }
 
     template<typename IT, typename OT>
@@ -943,7 +950,10 @@ struct expsemigroup_t : public kernel_t {
     sketch::sketch_transform_t<boost::any, boost::any> *create_rft(El::Int S,
     fast_feature_transform_tag tag, base::context_t& context) const {
         // TODO
-        return nullptr;
+        SKYLARK_THROW_EXCEPTION (
+        base::ml_exception()
+          << base::error_msg(
+           "fast_feature_transform has not yet been implemented for expsemigroup kernel"));
     }
 
     template<typename IT, typename OT>
@@ -995,6 +1005,10 @@ struct expsemigroup_t : public kernel_t {
         const XT &X, KT &K) const {
 
         // TODO: Implement the kernel for symmetric matrices
+        SKYLARK_THROW_EXCEPTION (
+        base::ml_exception()
+          << base::error_msg(
+           "symmetric_gram has not yet been implemented for expsemigroup kernel"));
        
     }
 
@@ -1128,6 +1142,10 @@ struct matern_t : kernel_t {
         const XT &X, const YT &Y, KT &K) const {
 
         // TODO: Implement the kernel
+        SKYLARK_THROW_EXCEPTION (
+        base::ml_exception()
+          << base::error_msg(
+           "gram has not yet been implemented for matern kernel"));
         
     }
 
@@ -1136,6 +1154,10 @@ struct matern_t : kernel_t {
         const XT &X, KT &K) const {
 
         // TODO: Implement the kernel for symmetric matrices
+        SKYLARK_THROW_EXCEPTION (
+        base::ml_exception()
+          << base::error_msg(
+           "symmetric_gram has not yet been implemented for matern kernel"));
        
     }
 

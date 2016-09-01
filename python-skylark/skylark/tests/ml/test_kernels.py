@@ -1,95 +1,70 @@
 import unittest
 import numpy as np
 
-import skylark.io as sl_io
 import skylark.ml.kernels as sl_kernels
+import skylark.tests.utils as sl_test_utils
 import El
 
-from skylark.tests.utils import *
+
 
 # We will test our kernels using the data from a testfile.
 # Make sure that the file is accessible! 
-fname = "../../datasets/usps.t"
+fpath = "usps.t"
 
+class KernelTestCase(unittest.TestCase):
+    """ Generic tests for kernels over d dimensional vectors.
+        For each kernel we load the usps.t file and run the gram function.
+    """
 
-class LinearTestCase(unittest.TestCase):
-    """Tests linear kernel over d dimensional vectors."""
-
-    def test_Linear_gram(self):
-        """Tests the dense Gram matrix evaluated over the datapoints."""
-        pass
-    
-    def test_Linear_rft(self):
-        """Create random features transform for the kernel."""
-        pass
-
-
-class GaussianTestCase(unittest.TestCase):
-    """Tests Gaussian kernel over d dimensional vectors."""
-
-    def test_Gaussian_gram(self):
-        """Tests the dense Gram matrix evaluated over the datapoints."""
-        
-        # Read the data
-        X = El.DistMatrix()
-        L = El.DistMatrix()
-        sl_io.readlibsvm('data/usps.t', X, L, 0)
-
-        
-        # Execute the kernel
+    def test_Linear_kernel(self):
+        """Test Linear kernel."""
+        X, Y = sl_test_utils.load_libsvm_file(fpath, 0)
         K = El.DistMatrix()
-        sigma = np.random.randint(9) + 1 # Sigma between 1 and 10
-        Gaussian_kernel = sl_kernels.Gaussian(X.Height(), sigma)
+        Linear_kernel = sl_kernels.Linear(X.Height())
+        Linear_kernel.gram(X, K, 0, 0)
+
+        self.assertTrue(sl_test_utils.is_kernel(K))
+    
+    def test_Gaussian_kernel(self):
+        """Test Gaussian kernel."""
+        X, Y = sl_test_utils.load_libsvm_file(fpath, 0)
+        K = El.DistMatrix()
+        Gaussian_kernel = sl_kernels.Gaussian(X.Height(), 10.0)
         Gaussian_kernel.gram(X, K, 0, 0)
 
-        # Check that K is a square matrix with dim  X.Height and X.Width
-        self.assertTrue(K.Height() == K.Width())
-        self.assertTrue(X.Height() == K.Height())
-        self.assertTrue(X.Width() == K.Width())
+        self.assertTrue(sl_test_utils.is_kernel(K))
 
-        # Check that the diagonal contains 1
-        for i in xrange(K.Height()):
-            self.assertTrue(K.Get(i,i) == 1)
-
-    def test_Gaussian_rft(self):
-        """Create random features transform for the kernel."""
-        # TODO: How should we check that?
-        pass
-
-
-class LaplacianTestCase(unittest.TestCase):
-    """Tests Laplacian kernel over d dimensional vectors."""
-
-    def test_Laplacian_gram(self):
-        """Tests the dense Gram matrix evaluated over the datapoints."""
-        
-        # Read the data
-        X = El.DistMatrix()
-        L = El.DistMatrix()
-        sl_io.readlibsvm('data/usps.t', X, L, 0)
-
-        
-        # Execute the kernel
+    def test_Laplacian_kernel(self):
+        """Test Laplacian kernel."""
+        X, Y = sl_test_utils.load_libsvm_file(fpath, 0)
         K = El.DistMatrix()
-        sigma = np.random.randint(9) + 1 # Sigma between 1 and 10
-        Laplacian_kernel = sl_kernels.Laplacian(X.Height(), sigma)
+        Laplacian_kernel = sl_kernels.Laplacian(X.Height(), 2.0)
         Laplacian_kernel.gram(X, K, 0, 0)
 
-        # Check that K is a square matrix with dim  X.Height and X.Width
-        self.assertTrue(K.Height() == K.Width())
-        self.assertTrue(X.Height() == K.Height())
-        self.assertTrue(X.Width() == K.Width())
+        self.assertTrue(sl_test_utils.is_kernel(K))
+    
+    def test_Polynomial_kernel(self):
+        """Test Polynomial kernel."""
+        X, Y = sl_test_utils.load_libsvm_file(fpath, 0)
+        K = El.DistMatrix()
+        Polynomial_kernel = sl_kernels.Polynomial(X.Height(), 1, 1, 1)
+        Polynomial_kernel.gram(X, K, 0, 0)
 
-        # Check that the diagonal contains 1
-        for i in xrange(K.Height()):
-            self.assertTrue(K.Get(i,i) == 1)
+        self.assertTrue(sl_test_utils.is_kernel(K, positive=False))
+        
+    def test_ExpSemiGroup_kernel(self):
+        """Test ExpSemiGroup kernel."""
+        X, Y = sl_test_utils.load_libsvm_file(fpath, 0)
+        K = El.DistMatrix()
+        ExpSemiGroup_kernel = sl_kernels.ExpSemiGroup(X.Height(), 0.1)
+        ExpSemiGroup_kernel.gram(X, K, 0, 0)
 
+        self.assertTrue(sl_test_utils.is_kernel(K))
+    
+    # TODO: Test the Matern Kenrel (after implement it in C++)
+    
+    # TODO: Test all RFT
 
-    def test_Laplacian_rft(self):
-        """Create random features transform for the kernel."""
-        # TODO: How should we check that?
-        pass
-      
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(DistancesTestCase)
     unittest.TextTestRunner(verbosity=1).run(suite)

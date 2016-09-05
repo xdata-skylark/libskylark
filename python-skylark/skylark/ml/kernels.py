@@ -8,51 +8,90 @@ import scipy
 import sys, math
 import skylark.lib as lib
 
-
-def gram(kfun, X, Xt=None):
-    """
-    Returns the dense Gram matrix evaluated over the datapoints with kernel kfun.
-    A generic implementation that will work for every kernel, but most likely
-    not the most efficient.
-
-    :param kfun: kernel function that recieves two input vectors
-    :param X:  n-by-d data matrix
-    :param Xt: optional t-by-d test matrix
-
-    Returns: 
-    -------
-    n-by-n Gram matrix over X (if Xt is not provided)
-    t-by-n Gram matrix between Xt and X if X is provided
-    """
-    # TODO check sizes etc.
-    if Xt is None:
-      Xt = X
-
-    return numpy.array(map(lambda x : map(lambda y: kfun(x,y), X), Xt))
-    
-def kernel(kerneltype, d, **params):
+# Kernel factory
+def kernel(kerneltype, *args):
   """
   Returns a kernel based on the input parameters.
 
   :param kerneltype: string identifying the kernel requested.
   :param d: dimension of the kernel.
-  :param params: dictonary of kernel parameters, kernel dependent.
+  :param **kwargs: dictonary of kernel parameters, kernel dependent.
   :returns: kernel object
   """
   if not isinstance(kerneltype, str):
     raise ValueError("kerneltype must be a string")
   elif kerneltype.lower() == "linear":
-    return Linear(d, **params)
-  elif kerneltype.lower() == "gaussian":
-    return Gaussian(d, **params)
-  elif kerneltype.lower() == "polynomial":
-    return Polynomial(d, **params)
+    return Linear(d, *args)
+  elif kerneltype.lower() == "matern":
+    return Matern(*args)
   elif kerneltype.lower() == "expsemigroup":
-    return ExpSemigroup(d, **params)
+    return ExpSemiGroup(*args)
+  elif kerneltype.lower() == "gaussian":
+    return Gaussian(*args)
+  elif kerneltype.lower() == "polynomial":
+    return Polynomial(*args)
+  elif kerneltype.lower() == "laplacian":
+    return Laplacian(*args)
   else:
     raise ValueError("kerneltype not recognized")
 
-class Linear(object):
+
+# Kernel base
+class Kernel(object):
+  """
+  TODO: Base kernel
+  """
+
+  def __get_direction(self, dir):
+    """
+    Returns the direction of dir (1 or 2)
+
+    :param dir: 0/1 or "rows"/"cols"
+    """
+    if dir == 0 or dir == "columns":
+      return 1
+    elif dir == 1 or dir == "rows":
+      return 2
+    else:
+      raise ValueError("Direction must be either columns/rows or 0/1")
+
+
+  def gram(self, X, K, dirX="rows", dirY="rows", Y=None):
+    """
+    Returns the dense Gram matrix evaluated over the datapoints.
+  
+    :param X: n-by-d data matrix
+    :param Y: another data matrix. If Y is None, then X is used.
+    :param K: placeholder for output Gram matrix.
+    """
+
+    if Y is None:
+      Y = X
+      dirY = dirX
+
+    cdirX = self.__get_direction(dirX)
+    cdirY = self.__get_direction(dirY)
+
+    X = lib.adapt(X)
+    Y = lib.adapt(Y)
+    K = lib.adapt(K)
+
+    lib.callsl("sl_kernel_gram", cdirX, cdirY, self._kernel_obj, \
+                X.ctype(), X.ptr(), \
+                Y.ctype(), Y.ptr(), \
+                K.ctype(), K.ptr())
+
+    X.ptrcleaner()
+    Y.ptrcleaner()
+    K.ptrcleaner()
+
+    return K.getobj()
+
+
+
+# Kernel bindings
+
+class Linear(Kernel):
   """
   A object representing the Linear kernel over d dimensional vectors.
 
@@ -61,34 +100,10 @@ class Linear(object):
 
   def __init__(self, d):
     self._d = d
+    self._kernel_obj = c_void_p()
+    lib.callsl("sl_create_kernel", "linear", d, byref(self._kernel_obj))
     
-  def gram(self, X, Xt=None):
-    """
-    Returns the dense Gram matrix evaluated over the datapoints.
-  
-    :param X:  n-by-d data matrix
-    :param Xt: optional t-by-d test matrix
-
-    Returns: 
-    -------
-    n-by-n Gram matrix over X (if Xt is not provided)
-    t-by-n Gram matrix between Xt and X if X is provided
-    """
-  
-    # TODO the test, and this function, should work for all matrix types.
-    if X.shape[1] != self._d:
-      raise ValueError("X must have vectors of dimension d")
-
-    if Xt is None:
-      K = numpy.dot(X, X.T)
-    else:
-      if Xt.shape[1] != self._d:
-        raise ValueError("Xt must have vectors of dimension d")
-      K = numpydot(Xt, X.T)
-      
-    return K
-  
-  def rft(self, s, subtype=None, defouttype=None, **args):
+  def rft(self, s, subtype=None, defouttype=None, **kwargs):
     """
     Create a random features transform for the kernel.
     This function uses random Fourier features (Rahimi-Recht).
@@ -102,15 +117,16 @@ class Linear(object):
     :returns: random features sketching transform object.
     """
     if subtype is None:
-      return sketch.JLT(self._d, s, defouttype, **args)
+      return sketch.JLT(self._d, s, defouttype, **kwargs)
     elif subtype is 'fast':
-      return sketch.FJLT(self._d, s, defouttype, **args)
+      return sketch.FJLT(self._d, s, defouttype, **kwargs)
     elif subtype is 'hash':
-      return skethc.CWT(self._d, s, defouttype, **args)
+      return skethc.CWT(self._d, s, defouttype, **kwargs)
     else:
       raise ValueError("invalide subtype supplied")
 
-class Gaussian(object):
+
+class Gaussian(Kernel):
   """
   A object representing the Gaussian kernel over d dimensional vectors, with
   bandwidth sigma.
@@ -124,56 +140,8 @@ class Gaussian(object):
     self._sigma = sigma
     self._kernel_obj = c_void_p()
     lib.callsl("sl_create_kernel", "gaussian", d, byref(self._kernel_obj), c_double(sigma))
-    
-  def gram(self, X, K, dirX="rows", dirY="rows", Y=None):
-    """
-    Returns the dense Gram matrix evaluated over the datapoints.
-  
-    :param X: n-by-d data matrix
-    :param Y: another data matrix. If Y is None, then X is used.
-    :param K: placeholder for output Gram matrix.
-    """
 
-    cdirX = None
-    if dirX == 0 or dirX == "columns":
-        cdirX = 1
-    if dirX == 1 or dirX == "rows":
-        cdirX = 2
-    if cdirX is None:
-        raise ValueError("Direction (for X) must be either columns/rows or 0/1")
-
-    cdirY = None
-    if dirY == 0 or dirY == "columns":
-        cdirY = 1
-    if dirY == 1 or dirY == "rows":
-        cdirY = 2
-    if cdirY is None:
-        raise ValueError("Direction (for Y) must be either columns/rows or 0/1")
-
-    if Y is None:
-        Y = X
-        dirY = dirX
-        
-    X = lib.adapt(X)
-    Y = lib.adapt(Y)
-    K = lib.adapt(K)
-
-    Xobj = X.ptr()
-    Yobj = Y.ptr()
-    Kobj = K.ptr()
-
-    lib.callsl("sl_kernel_gram", cdirX, cdirY, self._kernel_obj, \
-               X.ctype(), Xobj, \
-               Y.ctype(), Yobj, \
-               K.ctype(), Kobj)
-               
-    X.ptrcleaner()
-    Y.ptrcleaner()
-    K.ptrcleaner()
-    
-    return K.getobj()
-  
-  def rft(self, s, subtype=None, defouttype=None, **args):
+  def rft(self, s, subtype=None, defouttype=None, **kargs):
     """
     Create a random features transform for the kernel.
     This function uses random Fourier features (Rahimi-Recht).
@@ -184,71 +152,14 @@ class Gaussian(object):
     :param defouttype: default output type for the transform.
     :returns: random features sketching transform object.
     """
+
     if subtype is 'fast':
-      return sketch.FastGaussianRFT(self._d, s, self._sigma, defouttype, **args)
+      return sketch.FastGaussianRFT(self._d, s, self._sigma, defouttype, **kargs)
     else:
-      return sketch.GaussianRFT(self._d, s, self._sigma, defouttype, **args)
+      return sketch.GaussianRFT(self._d, s, self._sigma, defouttype, **kargs)
 
-class Matern(object):
-  """
-  A object representing the Matern kernel over d dimensional vectors, with
-  nu and l
 
-  :param d: dimension of vectors on which kernel operates.
-  :param nu: nu parameter
-  :param l: l parameter
-  """
-
-  def __init__(self, d, nu, l):
-    self._d = d
-    self._nu = nu
-    self._l = l
-    
-  def gram(self, X, Xt=None):
-    """
-    Returns the dense Gram matrix evaluated over the datapoints.
-  
-    :param X:  n-by-d data matrix
-    :param Xt: optional t-by-d test matrix
-
-    Returns: 
-    -------
-    n-by-n Gram matrix over X (if Xt is not provided)
-    t-by-n Gram matrix between Xt and X if X is provided
-    """
-  
-    # TODO the test, and this function, should work for all matrix types.
-    if X.shape[1] != self._d:
-      raise ValueError("X must have vectors of dimension d")
-
-    nu = self._nu
-    l = self._l
-    if Xt is None:
-        D = euclidean(X, X)
-    else:
-        if Xt.shape[1] != self._d:
-            raise ValueError("Xt must have vectors of dimension d")
-        D = euclidean(X, Xt);
-
-    Y = scipy.sqrt(2.0 * nu * D) / l
-    K = 2.0 ** (1 - nu) / scipy.special.gamma(nu) * Y ** nu * scipy.special.kv(nu, Y)
-
-    return scipy.real(K)
-  
-  def rft(self, s, subtype=None, defouttype=None, **args):
-    """
-    Create a random features transform for the kernel.
-    This function uses random Fourier features (Rahimi-Recht).
-    
-    :param s: number of random features.
-    :param subtype: subtype of rft to use (e.g. sparse, fast).
-           Currently we support regular (None) and fast.
-    :param defouttype: default output type for the transform.
-    :returns: random features sketching transform object.
-    """
-    return sketch.MaternRFT(self._d, s, self._nu, self._l, defouttype, **args)
-
-class Polynomial(object):
+class Polynomial(Kernel):
   """
   A object representing the polynomial kernel over d dimensional vectors, with
   bandwidth exponent q and parameter c.
@@ -259,8 +170,6 @@ class Polynomial(object):
   :param q: exponent of the kernel.
   :param c: kernel parameter, must be >= 0.
   """
-
-#  El::Int N, int q = 2, double c = 1.0, double gamma = 1.0
 
   def __init__(self, d, q=3, c=0, gamma=1):
     if c < 0:
@@ -275,57 +184,9 @@ class Polynomial(object):
 
     self._kernel_obj = c_void_p()
     lib.callsl("sl_create_kernel", "polynomial", self._d, byref(self._kernel_obj), \
-    c_int(self._q), c_double(self._gamma), c_double(self._c))
+                c_int(self._q), c_double(self._gamma), c_double(self._c))
     
-  def gram(self, X, K, dirX="rows", dirY="rows", Y=None):
-    """
-    Returns the dense Gram matrix evaluated over the datapoints.
-  
-    :param X: n-by-d data matrix
-    :param Y: another data matrix. If Y is None, then X is used.
-    :param K: placeholder for output Gram matrix.
-    """
-
-    cdirX = None
-    if dirX == 0 or dirX == "columns":
-        cdirX = 1
-    if dirX == 1 or dirX == "rows":
-        cdirX = 2
-    if cdirX is None:
-        raise ValueError("Direction (for X) must be either columns/rows or 0/1")
-
-    cdirY = None
-    if dirY == 0 or dirY == "columns":
-        cdirY = 1
-    if dirY == 1 or dirY == "rows":
-        cdirY = 2
-    if cdirY is None:
-        raise ValueError("Direction (for Y) must be either columns/rows or 0/1")
-
-    if Y is None:
-        Y = X
-        dirY = dirX
-        
-    X = lib.adapt(X)
-    Y = lib.adapt(Y)
-    K = lib.adapt(K)
-
-    Xobj = X.ptr()
-    Yobj = Y.ptr()
-    Kobj = K.ptr()
-
-    lib.callsl("sl_kernel_gram", cdirX, cdirY, self._kernel_obj, \
-               X.ctype(), Xobj, \
-               Y.ctype(), Yobj, \
-               K.ctype(), Kobj)
-               
-    X.ptrcleaner()
-    Y.ptrcleaner()
-    K.ptrcleaner()
-    
-    return K.getobj()
-  
-  def rft(self, s, subtype=None, defouttype=None, **args):
+  def rft(self, s, subtype=None, defouttype=None, **kargs):
     """
     Create a random features transform for the kernel.
     This function uses TensorSketch (Pahm-Pagh Transform)
@@ -337,10 +198,43 @@ class Polynomial(object):
     :param defouttype: default output type for the transform.
     :returns: random features sketching transform object.
     """
+
+    return sketch.PPT(self._d, s, self._q, self._c, self._gamma, defouttype, **kargs)
+
+
+class Laplacian(Kernel):
+  """
+  A object representing the Laplacian kernel over d dimensional vectors, with
+  bandwidth sigma.
+
+  :param d: dimension of vectors on which kernel operates.
+  :param sigma: bandwidth of the kernel.
+  """
+
+  def __init__(self, d, sigma):
+    self._d = d
+    self._sigma = sigma
+    self._kernel_obj = c_void_p()
+    lib.callsl("sl_create_kernel", "laplacian", d, byref(self._kernel_obj), c_double(sigma))
+  
+  def rft(self, s, subtype=None, defouttype=None, **kwargs):
+    """
+    Create a random features transform for the kernel.
+    This function uses random Fourier features (Rahimi-Recht).
     
-    return sketch.PPT(self._d, s, self._q, self._c, self._gamma, defouttype, **args)
-        
-class ExpSemigroup(object):
+    :param s: number of random features.
+    :param subtype: subtype of rft to use (e.g. sparse, fast).
+           Currently we support regular (None) and quasirandom.
+    :param defouttype: default output type for the transform.
+    :returns: random features sketching transform object.
+    """
+    if subtype is 'quasirandom':
+      return sketch.LaplacianQRFT(self._d, s, self._sigma, defouttype, **kwargs)
+    else:
+      return sketch.LaplacianRFT(self._d, s, self._sigma, defouttype, **kwargs)
+
+
+class ExpSemiGroup(Kernel):
   """
   A object representing the Exponential Semigroup kernel over d dimensional vectors, with
   parameter beta.
@@ -352,26 +246,8 @@ class ExpSemigroup(object):
   def __init__(self, d, beta):
     self._d = d
     self._beta = beta
-    self._k = lambda x, y: math.exp(-beta * numpy.sum(numpy.sqrt(x + y)))
-    
-  def gram(self, X, Xt=None):
-    """
-    Returns the dense Gram matrix evaluated over the datapoints.
-  
-    :param X:  n-by-d data matrix
-    :param Xt: optional t-by-d test matrix
-
-    Returns: 
-    -------
-    n-by-n Gram matrix over X (if Xt is not provided)
-    t-by-n Gram matrix between Xt and X if X is provided
-    """
-  
-    # TODO the test, and this function, should work for all matrix types.
-    if X.shape[1] != self._d:
-      raise ValueError("X must have vectors of dimension d")
-
-    return gram(self._k, X, Xt)
+    self._kernel_obj = c_void_p()
+    lib.callsl("sl_create_kernel", "expsemigroup", d, byref(self._kernel_obj))
   
   def rft(self, s, subtype=None, defouttype=None, **args):
     """
@@ -389,82 +265,33 @@ class ExpSemigroup(object):
     return sketch.ExpSemigroupRLT(self._d, s, self._beta, defouttype, **args)
 
 
-
-class Laplacian(object):
+class Matern(Kernel):
   """
-  A object representing the Laplacian kernel over d dimensional vectors, with
-  bandwidth sigma.
+  A object representing the Matern kernel over d dimensional vectors, with
+  nu and l
 
   :param d: dimension of vectors on which kernel operates.
-  :param sigma: bandwidth of the kernel.
+  :param nu: nu parameter
+  :param l: l parameter
   """
 
-  def __init__(self, d, sigma):
+  def __init__(self, d, nu, l):
     self._d = d
-    self._sigma = sigma
+    self._nu = nu
+    self._l = l
     self._kernel_obj = c_void_p()
-    lib.callsl("sl_create_kernel", "laplacian", d, byref(self._kernel_obj), c_double(sigma))
-    
-  def gram(self, X, K, dirX="rows", dirY="rows", Y=None):
-    """
-    Returns the dense Gram matrix evaluated over the datapoints.
-  
-    :param X: n-by-d data matrix
-    :param Y: another data matrix. If Y is None, then X is used.
-    :param K: placeholder for output Gram matrix.
-    """
+    lib.callsl("sl_create_kernel", "matern", d, byref(self._kernel_obj), \
+              c_double(self_nu), c_double(self._l))
 
-    cdirX = None
-    if dirX == 0 or dirX == "columns":
-        cdirX = 1
-    if dirX == 1 or dirX == "rows":
-        cdirX = 2
-    if cdirX is None:
-        raise ValueError("Direction (for X) must be either columns/rows or 0/1")
-
-    cdirY = None
-    if dirY == 0 or dirY == "columns":
-        cdirY = 1
-    if dirY == 1 or dirY == "rows":
-        cdirY = 2
-    if cdirY is None:
-        raise ValueError("Direction (for Y) must be either columns/rows or 0/1")
-
-    if Y is None:
-        Y = X
-        dirY = dirX
-        
-    X = lib.adapt(X)
-    Y = lib.adapt(Y)
-    K = lib.adapt(K)
-
-    Xobj = X.ptr()
-    Yobj = Y.ptr()
-    Kobj = K.ptr()
-
-    lib.callsl("sl_kernel_gram", cdirX, cdirY, self._kernel_obj, \
-               X.ctype(), Xobj, \
-               Y.ctype(), Yobj, \
-               K.ctype(), Kobj)
-               
-    X.ptrcleaner()
-    Y.ptrcleaner()
-    K.ptrcleaner()
-    
-    return K.getobj()
-  
-  def rft(self, s, subtype=None, defouttype=None, **args):
+  def rft(self, s, subtype=None, defouttype=None, **kargs):
     """
     Create a random features transform for the kernel.
     This function uses random Fourier features (Rahimi-Recht).
     
     :param s: number of random features.
     :param subtype: subtype of rft to use (e.g. sparse, fast).
-           Currently we support regular (None) and quasirandom.
+           Currently we support regular (None) and fast.
     :param defouttype: default output type for the transform.
     :returns: random features sketching transform object.
     """
-    if subtype is 'quasirandom':
-      return sketch.LaplacianQRFT(self._d, s, self._sigma, defouttype, **args)
-    else:
-      return sketch.LaplacianRFT(self._d, s, self._sigma, defouttype, **args)
+    return sketch.MaternRFT(self._d, s, self._nu, self._l, defouttype, **kargs)

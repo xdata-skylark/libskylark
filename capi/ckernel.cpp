@@ -41,6 +41,13 @@ SKYLARK_EXTERN_API int sl_create_kernel(
 
     std::shared_ptr<skylark::ml::kernel_t> k_ptr;
 
+    if (type == LINEAR) {
+        va_list argp;
+        va_start(argp, kernel);
+        k_ptr.reset(new skylark::ml::linear_t(N));
+        va_end(argp);
+    }
+    
     if (type == GAUSSIAN) {
         va_list argp;
         va_start(argp, kernel);
@@ -64,6 +71,23 @@ SKYLARK_EXTERN_API int sl_create_kernel(
         double c = va_arg(argp, double);
         double g = va_arg(argp, double);
         k_ptr.reset(new skylark::ml::polynomial_t(N, q, c, g));
+        va_end(argp);
+    }
+
+    if (type == EXPSEMIGROUP) {
+        va_list argp;
+        va_start(argp, kernel);
+        double beta = va_arg(argp, double);
+        k_ptr.reset(new skylark::ml::expsemigroup_t(N, beta));
+        va_end(argp);
+    }
+
+    if (type == MATERN) {
+        va_list argp;
+        va_start(argp, kernel);
+        double nu = va_arg(argp, double);
+        double l = va_arg(argp, double);
+        k_ptr.reset(new skylark::ml::matern_t(N, nu, l));
         va_end(argp);
     }
 

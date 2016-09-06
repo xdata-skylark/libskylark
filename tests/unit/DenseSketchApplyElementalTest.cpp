@@ -70,7 +70,7 @@ int test_main(int argc, char* argv[]) {
         sketch_transform_rw_local.apply(A_rw_local, sketched_A_rw_local,
             skylark::sketch::rowwise_tag());
 
-        if (!equal(sketched_A_rw_gathered, sketched_A_rw_local))
+        if (!test::util::equal(sketched_A_rw_gathered, sketched_A_rw_local))
             BOOST_FAIL("Rowwise sketching resuts are not equal");
     }
 
@@ -96,7 +96,7 @@ int test_main(int argc, char* argv[]) {
         sketch_transform_cw_local.apply(A_cw_local, sketched_A_cw_local,
             skylark::sketch::columnwise_tag());
 
-        if (!equal(sketched_A_cw_gathered, sketched_A_cw_local))
+        if (!test::util::equal(sketched_A_cw_gathered, sketched_A_cw_local))
             BOOST_FAIL("Columnwise sketching resuts are not equal");
     }
 

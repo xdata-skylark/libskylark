@@ -34,8 +34,6 @@ struct hash_transform_test_t : public skylark::sketch::hash_transform_t<
     std::vector<double> getRowValues() { return hash_t::row_value; }
 };
 
-} }
-
 template<typename MatrixType>
 MatrixType operator-(MatrixType& A, MatrixType& B) {
     MatrixType C;
@@ -154,5 +152,7 @@ void check(El::DistMatrix<double, El::STAR, RowDist>& A,
 }
 
 #endif // SKYLARK_HAVE_BOOST
+
+} }
 
 #endif // TEST_UTILS_HPP

@@ -120,7 +120,7 @@ while true; do
     fi
 
     if [ ! -f hadoop-2.7.0.tar.gz ]; then
-        wget http://mirror.sdunix.com/apache/hadoop/common/hadoop-2.7.0/hadoop-2.7.0.tar.gz &> /dev/null
+        wget https://archive.apache.org/dist/hadoop/common/hadoop-2.7.0/hadoop-2.7.0.tar.gz &> /dev/null
     fi
 
     randOk=false

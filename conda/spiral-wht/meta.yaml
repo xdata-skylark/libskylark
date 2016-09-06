@@ -1,0 +1,23 @@
+package:
+  name: spiral-wht
+  version: "1.8.0"
+
+
+source:
+  fn: spiral-wht-1.8.tgz
+  url: http://www.ece.cmu.edu/~spiral/software/spiral-wht-1.8.tgz
+  md5: 28b4d854025b42df4af9616097809726
+
+
+requirements:
+  build:
+    - gcc
+
+  run:
+    - libgcc	
+
+
+about:
+  home: http://www.spiral.net/software/wht.html
+  license: GNU General Public License
+  summary: 'Automatic generation of platform-tuned implementations of Walsh-Hadamard transform (WHT)'

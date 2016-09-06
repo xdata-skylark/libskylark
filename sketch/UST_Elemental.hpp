@@ -401,7 +401,7 @@ private:
         output_matrix_type sketch_of_A_t(sketch_of_A.Width(),
             sketch_of_A.Height(), sketch_of_A.Grid());
         apply_impl_vdist(A_t, sketch_of_A_t,
-            skylark::sketch::rowwise_tag());
+            skylark::sketch::columnwise_tag());
         El::Transpose(sketch_of_A_t, sketch_of_A);
     }
 

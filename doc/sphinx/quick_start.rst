@@ -3,6 +3,34 @@
 Quick Start Guide
 ******************
 
+.. _installer-label:
+
+Installer
+==========
+
+1. Download the installer:
+
+.. code-block:: ssh
+
+        wget http://www.math.tau.ac.il/~haimav/libskylark-dist-0.11-Linux-x86_64.sh
+
+2. Execute it in your terminal, and follow the instructions:
+
+.. code-block:: ssh
+
+        bash ./libskylark-dist-0.11-Linux-x86_64.sh
+
+
+.. note:: This should work with all fairly recent `x86_64` Linux systems; please look for the string `x86_64` in the output of the `uname -a` command.
+
+
+
+.. _vagrant-label:
+
+
+Vagrant
+========
+
 Setting up a libSkylark environment is facilitated using
 `Vagrant <http://www.vagrantup.com/>`_ and
 `VirtualBox <https://www.virtualbox.org/>`_.
@@ -70,11 +98,6 @@ Finally, some examples are provided in the :ref:`examples-label` section.
     `https://www.virtualbox.org/ticket/11347`).
 
 
-
-.. _vagrant-label:
-
-Vagrant
-========
 
 Under ``vagrant/trusty64`` we provide an easy way to materialize an
 64-bit Ubuntu-based virtual machine (release 14.04 LTS, aka Trusty Tahr) with all
@@ -157,7 +180,7 @@ in advance (it downloads and extracts some demo data):
 
 .. code-block:: sh
 
-        wget http://vikas.sindhwani.org/data.tar.gz
+        wget  https://www.dropbox.com/s/0ilbyeem2ihmvzw/data.tar.gz
         tar -xvzf data.tar.gz
 
 

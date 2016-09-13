@@ -38,7 +38,8 @@ int fileformat = FORMAT_LIBSVM;
 int s = 2000, partial = -1, sketch_size = -1, sample = -1, maxit = 0, maxsplit = 0;
 std::string fname, testname, modelname = "model.dat", logfile = "";
 double kp1 = 10.0, kp2 = 0.0, kp3 = 1.0, lambda = 0.01, tolerance=0;
-bool use_single, use_fast, regression;
+bool use_single, use_fast, regression, predict;
+boost::property_tree::ptree pt;
 
 #ifndef SKYLARK_AVOID_BOOST_PO
 
@@ -51,11 +52,12 @@ int parse_program_options(int argc, char* argv[]) {
     desc.add_options()
         ("help,h", "produce a help message")
         ("trainfile",
-            bpo::value<std::string>(&fname),
+            bpo::value<std::string>(&fname)->default_value(""),
             "Data to train on (libsvm format).")
         ("testfile",
             bpo::value<std::string>(&testname)->default_value(""),
             "Test data (libsvm format).")
+        ("predict", "Predict mode -- load model file and use it.")
         ("model",
             bpo::value<std::string>(&modelname)->default_value("model.dat"),
             "Name of model file.")
@@ -138,16 +140,23 @@ int parse_program_options(int argc, char* argv[]) {
             return 0;
         }
 
-        if (!vm.count("trainfile")) {
-            std::cout << "Input file is required." << std::endl;
-            return -1;
-        }
-
         bpo::notify(vm);
 
         use_single = vm.count("single");
         use_fast = vm.count("fast");
         regression = vm.count("regression");
+        predict = vm.count("predict");
+
+        if (!predict && !vm.count("trainfile")) {
+            std::cout << "Input trainfile file is required if not predicting."
+                      << std::endl;
+            return -1;
+        }
+
+        if (predict && vm.count("trainfile")) {
+            std::cout << "Warning: Input trainfile is ignored in predict mode."
+                      << std::endl;
+        }
 
     } catch(bpo::error& e) {
         std::cerr << e.what() << std::endl;
@@ -222,6 +231,12 @@ int parse_program_options(int argc, char* argv[]) {
             regression = true;
             i--;
         }
+
+        if (flag == "--predict") {
+            predict = true;
+            i--;
+        }
+
 
         if (flag == "--fast") {
             use_fast = true;
@@ -472,7 +487,7 @@ int execute_classification(skylark::base::context_t &context) {
             timer.restart();
         }
 
-        boost::property_tree::ptree pt = model->to_ptree();
+        pt = model->to_ptree();
 
         if (rank == 0) {
             std::ofstream of(modelname);
@@ -676,12 +691,12 @@ int execute_regression(skylark::base::context_t &context) {
     skylark::ml::krr_params_t krr_params(rank == 0, 4, *log_stream, "\t");
     krr_params.use_fast = use_fast;
 
-    skylark::ml::model_t<T, T> *model;
-
     // Transpose Y since KernelRidge expects it to be a column vector (TODO ?)
     El::DistMatrix<T> Ytransp;
     El::Transpose(Y, Ytransp, true);
-    
+
+    skylark::ml::model_t<T, T> *model;
+
     switch(algorithm) {
     case CLASSIC_KRR:
         skylark::ml::KernelRidge(skylark::base::COLUMNS, k, X, Ytransp,
@@ -769,7 +784,7 @@ int execute_regression(skylark::base::context_t &context) {
             timer.restart();
         }
 
-        boost::property_tree::ptree pt = model->to_ptree();
+        pt = model->to_ptree();
 
         if (rank == 0) {
             std::ofstream of(modelname);
@@ -785,6 +800,7 @@ int execute_regression(skylark::base::context_t &context) {
             *log_stream <<"took " << boost::format("%.2e") % timer.elapsed()
                         << " sec\n";
     }
+
 
     // Test
     if (!testname.empty()) {
@@ -846,6 +862,21 @@ int execute_regression(skylark::base::context_t &context) {
     return 0;
 }
 
+
+template<typename T>
+int predict_regression(skylark::base::context_t &context) {
+    std::cout << "PREDICT REGRESSION!" << std::endl;
+
+    return 0;
+}
+
+template<typename T>
+int predict_classification(skylark::base::context_t &context) {
+    std::cout << "PREDICT CLASSIFICATION!" << std::endl;
+
+    return 0;
+}
+
 int main(int argc, char* argv[]) {
 
     for(int i = 0; i < argc; i++) {
@@ -870,16 +901,44 @@ int main(int argc, char* argv[]) {
 
     SKYLARK_BEGIN_TRY()
 
-        if (regression) {
-            if (use_single)
-                ret = execute_regression<float>(context);
-            else
-                ret = execute_regression<double>(context);
+        // If in predict mode, we need to read the model to see if regression
+        // or classification mode.
+        if (predict) {
+            std::ifstream is(modelname);
+
+            // Skip all lines begining with "#"
+            while(is.peek() == '#')
+                is.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+            boost::property_tree::read_json(is, pt);
+            is.close();
+
+            regression = pt.get<bool>("regression");
+
+            if (regression) {
+                if (use_single)
+                    ret = predict_regression<float>(context);
+                else
+                    ret = predict_regression<double>(context);
+            } else {
+                if (use_single)
+                    ret = predict_classification<float>(context);
+                else
+                    ret = predict_classification<double>(context);
+            }
         } else {
-            if (use_single)
-                ret = execute_classification<float>(context);
-            else
-                ret = execute_classification<double>(context);
+
+            if (regression) {
+                if (use_single)
+                    ret = execute_regression<float>(context);
+                else
+                    ret = execute_regression<double>(context);
+            } else {
+                if (use_single)
+                    ret = execute_classification<float>(context);
+                else
+                    ret = execute_classification<double>(context);
+            }
         }
     SKYLARK_END_TRY() SKYLARK_CATCH_AND_PRINT((rank == 0))
 

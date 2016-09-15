@@ -464,8 +464,8 @@ void read_hdf5(const boost::mpi::communicator &comm, std::string fName,
     El::Zeros(Xlocal, X.LocalHeight(), X.LocalWidth());
     El::Zeros(Ylocal, Y.LocalHeight(), 1);
 
-    X.Attach(d,n,El::Grid(), 0,0,Xlocal);
-    Y.Attach(n,1,El::Grid(), 0,0,Ylocal);
+    X.Attach(d,n,X.Grid(), 0,0,Xlocal);
+    Y.Attach(n,1,Y.Grid(), 0,0,Ylocal);
 
     for(int i=0; i<numblocks+1; i++) {
 
@@ -530,10 +530,8 @@ void read_libsvm(const boost::mpi::communicator &comm, std::string fName,
     El::Matrix<T>& Xlocal, El::Matrix<T>& Ylocal,
     int min_d = 0, int blocksize = 10000) {
 
-    MPI_Comm mpi_comm(comm);
-    El::Grid grid(mpi_comm);
-    El::DistMatrix<T, El::STAR, El::VC> X(grid);
-    El::DistMatrix<T, El::VC, El::STAR> Y(grid);
+    El::DistMatrix<T, El::STAR, El::VC> X;
+    El::DistMatrix<T, El::VC, El::STAR> Y;
 
     int rank = comm.rank();
     if (rank==0)
@@ -595,8 +593,8 @@ void read_libsvm(const boost::mpi::communicator &comm, std::string fName,
     El::Zeros(Xlocal, X.LocalHeight(), X.LocalWidth());
     El::Zeros(Ylocal, Y.LocalHeight(), 1);
 
-    X.Attach(d,n,El::Grid(),0,0,Xlocal);
-    Y.Attach(n,1,El::Grid(),0,0,Ylocal);
+    X.Attach(d,n,X.Grid(),0,0,Xlocal);
+    Y.Attach(n,1,Y.Grid(),0,0,Ylocal);
 
 
     for(int i=0; i<numblocks+1; i++) {

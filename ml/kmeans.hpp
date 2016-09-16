@@ -51,36 +51,36 @@ void row_mean(const El::Matrix<T>& from_mat,
 **/
 template <typename T>
 class mpi_random_generator {
-    public:
-        // End range (end_range) is inclusive i.e random numbers will be
-        //      in the inclusive interval (begin_range, end_range)
-        mpi_random_generator(const size_t begin_range,
-                const size_t end_range, const El::Unsigned rank,
-                const size_t nprocs, const size_t seed) {
-            this->_nprocs = nprocs;
-            this->_gen = std::default_random_engine(seed);
-            this->_rank = rank;
-            this->_dist = std::uniform_int_distribution<T>(begin_range, end_range);
-            init();
-        }
+public:
+    // End range (end_range) is inclusive i.e random numbers will be
+    //      in the inclusive interval (begin_range, end_range)
+    mpi_random_generator(const size_t begin_range,
+            const size_t end_range, const El::Unsigned rank,
+            const size_t nprocs, const size_t seed) {
+        this->_nprocs = nprocs;
+        this->_gen = std::default_random_engine(seed);
+        this->_rank = rank;
+        this->_dist = std::uniform_int_distribution<T>(begin_range, end_range);
+        init();
+    }
 
-        void init() {
-            for (size_t i = 0; i < _rank; i++)
-                _dist(_gen);
-        }
+    void init() {
+        for (size_t i = 0; i < _rank; i++)
+            _dist(_gen);
+    }
 
-        T next() {
-            T ret = _dist(_gen);
-            for (size_t i = 0; i < _nprocs-1; i++)
-                _dist(_gen);
-            return ret;
-        }
+    T next() {
+        T ret = _dist(_gen);
+        for (size_t i = 0; i < _nprocs-1; i++)
+            _dist(_gen);
+        return ret;
+    }
 
-    private:
-        std::uniform_int_distribution<T> _dist;
-        std::default_random_engine _gen;
-        size_t _nprocs;
-        El::Unsigned _rank;
+private:
+    std::uniform_int_distribution<T> _dist;
+    std::default_random_engine _gen;
+    size_t _nprocs;
+    El::Unsigned _rank;
 };
 
 /* arg0 and arg1 are data buffers stored in column major format
@@ -198,7 +198,6 @@ void init_centroids(El::Matrix<T>& centroids, const El::DistMatrix<T, El::VC,
             // Get the local data first
             El::Matrix<double> local_data = data.LockedMatrix();
             mpi_random_generator<El::Unsigned> gen(0, k-1, rank, nprocs, seed);
-
             for (El::Unsigned row = 0; row < local_data.Height(); row++) {
                 El::Unsigned chosen_centroid_id = gen.next();
 
@@ -410,40 +409,50 @@ namespace skylark { namespace ml {
       */
 template <typename T>
 class kmeans_t {
-    public:
-        std::vector<El::Unsigned> gl_centroid_assignments;
-        std::vector<El::Int> assignment_count;
-        El::Unsigned iters;
-        std::vector<T> centroids;
+public:
+    std::vector<El::Unsigned> gl_centroid_assignments;
+    std::vector<El::Int> assignment_count;
+    El::Unsigned iters;
+    std::vector<T> centroids;
 
-        kmeans_t(std::vector<El::Unsigned>& gl_centroid_assignments,
-                El::Int* assignment_count_buf, const size_t k,
-                const El::Unsigned iters, El::Matrix<T>& centroids) {
-            this->gl_centroid_assignments = gl_centroid_assignments;
-            this->iters = iters;
-            this->assignment_count.resize(k);
-            std::copy(assignment_count_buf, assignment_count_buf + k,
-                    assignment_count.begin());
+    kmeans_t(std::vector<El::Unsigned>& gl_centroid_assignments,
+            El::Int* assignment_count_buf, const size_t k,
+            const El::Unsigned iters, El::Matrix<T>& centroids) {
+        this->gl_centroid_assignments = gl_centroid_assignments;
+        this->iters = iters;
+        this->assignment_count.resize(k);
+        std::copy(assignment_count_buf, assignment_count_buf + k,
+                assignment_count.begin());
 
-            // Get centroids row major
-                for(El::Unsigned col = 0; col < centroids.Width();
-                        col++) {
-                    for (El::Unsigned row = 0; row < centroids.Height();
-                            row++) {
-                        this->centroids.push_back(centroids.Get(row, col));
-                    }
+        // Get centroids row major
+            for(El::Unsigned col = 0; col < centroids.Width();
+                    col++) {
+                for (El::Unsigned row = 0; row < centroids.Height();
+                        row++) {
+                    this->centroids.push_back(centroids.Get(row, col));
                 }
-        }
+            }
+    }
 
-        void print() {
-            El::Output("Iterations: ", iters);
-            El::Output("Cluster count: ");
-            skyutil::pretty_printer<El::Int>::print_vector(assignment_count);
-        }
+    void print() {
+        El::Output("Iterations: ", iters);
+        El::Output("Cluster count: ");
+        skyutil::pretty_printer<El::Int>::print_vector(assignment_count);
+    }
 };
 
 /**
-  * Driver function for kmeans.
+  * Driver for the kmeans algorithm.
+  *
+  * @param data: A distributed matrix
+  * @param centroids: The cluster centroids or centers.
+  * @param k: The number of clusters.
+  * @param tol: The tolerance is the minimum percent change of membership
+        from iteration i to i+1 such that we consider kmeans to have converged.
+  * @param init: The type of initialization to use [forgy | random | plusplus]
+  * @param seed: A seed to the pseudorandom number generator used.
+  * @param max_iters: The maximum number of iterations kmeans can perform.
+  * @param rank: The number of parallel processes running.
   */
 template<typename T>
 kmeans_t<T> run_kmeans(El::DistMatrix<T, El::VC, El::STAR>& data,

@@ -151,115 +151,16 @@ void SymmetricGram(El::UpperOrLower uplo, base::direction_t dir,
 }
 
 /**
- * Container of a kernel that supports the interface.
- * Useful for keeping copies of the kernel inside objects.
- */
-struct kernel_container_t : public kernel_t {
-
-    kernel_container_t(const std::shared_ptr<kernel_t> k) :
-        _k(k) {
-
-    }
-
-    virtual ~kernel_container_t() {
-
-    }
-
-    virtual El::Int get_dim() const { return _k->get_dim(); }
-
-    virtual void gram(base::direction_t dirX, base::direction_t dirY,
-        const El::Matrix<double> &X, const El::Matrix<double> &Y,
-        El::Matrix<double> &K) const {
-
-        _k->gram(dirX, dirY, X, Y, K);
-    }
-
-    virtual void gram(base::direction_t dirX, base::direction_t dirY,
-        const El::Matrix<float> &X, const El::Matrix<float> &Y,
-        El::Matrix<float> &K) const {
-
-        _k->gram(dirX, dirY, X, Y, K);
-    }
-
-    virtual void gram(base::direction_t dirX, base::direction_t dirY,
-        const El::ElementalMatrix<double> &X,
-        const El::ElementalMatrix<double> &Y,
-        El::ElementalMatrix<double> &K) const {
-
-        _k->gram(dirX, dirY, X, Y, K);
-    }
-
-    virtual void gram(base::direction_t dirX, base::direction_t dirY,
-        const El::ElementalMatrix<float> &X,
-        const El::ElementalMatrix<float> &Y,
-        El::ElementalMatrix<float> &K) const {
-
-        _k->gram(dirX, dirY, X, Y, K);
-    }
-
-    virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
-        const El::Matrix<double> &X, El::Matrix<double> &K) const {
-
-        _k->symmetric_gram(uplo, dir, X, K);
-    }
-
-    virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
-        const El::Matrix<float> &X, El::Matrix<float> &K) const {
-
-        _k->symmetric_gram(uplo, dir, X, K);
-    }
-
-    virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
-        const El::ElementalMatrix<double> &X,
-        El::ElementalMatrix<double> &K) const {
-
-        _k->symmetric_gram(uplo, dir, X, K);
-    }
-
-    virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
-        const El::ElementalMatrix<float> &X,
-        El::ElementalMatrix<float> &K) const {
-
-        _k->symmetric_gram(uplo, dir, X, K);
-    }
-
-    virtual
-    sketch::sketch_transform_t<boost::any, boost::any> *create_rft(El::Int S,
-        regular_feature_transform_tag tag, base::context_t& context) const {
-
-        return _k->create_rft(S, tag, context);
-    }
-
-    virtual
-    sketch::sketch_transform_t<boost::any, boost::any> *create_rft(El::Int S,
-        fast_feature_transform_tag tag, base::context_t& context) const {
-
-        return _k->create_rft(S, tag, context);
-    }
-
-    template<typename IT, typename OT, typename TT>
-    sketch::sketch_transform_t<IT, OT> *create_rft(El::Int S,
-        TT tag, base::context_t& context) const {
-
-        sketch::generic_sketch_transform_ptr_t p(create_rft(S, tag, context));
-        return new sketch::sketch_transform_container_t<IT, OT>(p);
-    }
-
-    virtual boost::property_tree::ptree to_ptree() const {
-
-        return _k->to_ptree();
-    }
-
-private:
-    std::shared_ptr<kernel_t> _k;
-};
-
-/**
  * Linear kernel: simple linear product.
  */
 struct linear_t : public kernel_t {
 
     linear_t(El::Int N) : _N(N) {
+
+    }
+
+    linear_t(const boost::property_tree::ptree &pt) :
+        _N(pt.get<El::Int>("N")) {
 
     }
 
@@ -418,6 +319,11 @@ private:
 struct gaussian_t : public kernel_t {
 
     gaussian_t(El::Int N, double sigma) : _N(N), _sigma(sigma) {
+
+    }
+
+    gaussian_t(const boost::property_tree::ptree &pt) :
+        _N(pt.get<El::Int>("N")), _sigma(pt.get<double>("sigma")) {
 
     }
 
@@ -592,6 +498,12 @@ struct polynomial_t : public kernel_t {
 
     }
 
+    polynomial_t(const boost::property_tree::ptree &pt) :
+        _N(pt.get<El::Int>("N")), _q(pt.get<int>("q")), _c(pt.get<double>("c")),
+        _gamma(pt.get<double>("gamma")) {
+
+    }
+
     boost::property_tree::ptree to_ptree() const {
         boost::property_tree::ptree pt;
         pt.put("skylark_object_type", "kernel");
@@ -758,6 +670,11 @@ private:
 struct laplacian_t : public kernel_t {
 
     laplacian_t(El::Int N, double sigma) : _N(N), _sigma(sigma) {
+
+    }
+
+    laplacian_t(const boost::property_tree::ptree &pt) :
+        _N(pt.get<El::Int>("N")), _sigma(pt.get<double>("sigma")) {
 
     }
 
@@ -929,6 +846,11 @@ struct expsemigroup_t : public kernel_t {
 
     }
 
+    expsemigroup_t(const boost::property_tree::ptree &pt) :
+        _N(pt.get<El::Int>("N")), _beta(pt.get<double>("beta")) {
+
+    }
+
     boost::property_tree::ptree to_ptree() const {
         boost::property_tree::ptree pt;
         pt.put("skylark_object_type", "kernel");
@@ -1091,6 +1013,12 @@ struct matern_t : kernel_t {
 
     }
 
+    matern_t(const boost::property_tree::ptree &pt) :
+        _N(pt.get<El::Int>("N")), _nu(pt.get<double>("nu")),
+        _l(pt.get<double>("l")) {
+
+    }
+
     boost::property_tree::ptree to_ptree() const {
         boost::property_tree::ptree pt;
         pt.put("skylark_object_type", "kernel");
@@ -1108,7 +1036,6 @@ struct matern_t : kernel_t {
     regular_feature_transform_tag tag, base::context_t& context) const {
 
         return create_rft<boost::any, boost::any>(S, tag, context);
-    
     }
 
     sketch::sketch_transform_t<boost::any, boost::any> *create_rft(El::Int S,
@@ -1146,7 +1073,6 @@ struct matern_t : kernel_t {
         base::ml_exception()
           << base::error_msg(
            "gram has not yet been implemented for matern kernel"));
-        
     }
 
     template<typename XT, typename KT>
@@ -1158,7 +1084,6 @@ struct matern_t : kernel_t {
         base::ml_exception()
           << base::error_msg(
            "symmetric_gram has not yet been implemented for matern kernel"));
-       
     }
 
     /* Instantion of virtual functions in base */
@@ -1233,6 +1158,127 @@ private:
     const El::Int _N;
     const double _nu;
     const double _l;
+};
+
+/**
+ * Container of a kernel that supports the interface.
+ * Useful for keeping copies of the kernel inside objects.
+ */
+struct kernel_container_t : public kernel_t {
+
+    kernel_container_t(const std::shared_ptr<kernel_t> k) :
+        _k(k) {
+
+    }
+
+    kernel_container_t(const boost::property_tree::ptree &pt) {
+        std::string type = pt.get<std::string>("kernel_type");
+
+        if (type == "linear")
+            _k.reset(new linear_t(pt));
+        else if (type == "gaussian")
+            _k.reset(new gaussian_t(pt));
+        else if (type == "laplacian")
+            _k.reset(new laplacian_t(pt));
+        else if (type == "polynomial")
+            _k.reset(new polynomial_t(pt));
+        else if (type == "expsemigroup")
+            _k.reset(new expsemigroup_t(pt));
+        else if (type == "matern")
+            _k.reset(new matern_t(pt));
+    }
+
+    virtual ~kernel_container_t() {
+
+    }
+
+    virtual El::Int get_dim() const { return _k->get_dim(); }
+
+    virtual void gram(base::direction_t dirX, base::direction_t dirY,
+        const El::Matrix<double> &X, const El::Matrix<double> &Y,
+        El::Matrix<double> &K) const {
+
+        _k->gram(dirX, dirY, X, Y, K);
+    }
+
+    virtual void gram(base::direction_t dirX, base::direction_t dirY,
+        const El::Matrix<float> &X, const El::Matrix<float> &Y,
+        El::Matrix<float> &K) const {
+
+        _k->gram(dirX, dirY, X, Y, K);
+    }
+
+    virtual void gram(base::direction_t dirX, base::direction_t dirY,
+        const El::ElementalMatrix<double> &X,
+        const El::ElementalMatrix<double> &Y,
+        El::ElementalMatrix<double> &K) const {
+
+        _k->gram(dirX, dirY, X, Y, K);
+    }
+
+    virtual void gram(base::direction_t dirX, base::direction_t dirY,
+        const El::ElementalMatrix<float> &X,
+        const El::ElementalMatrix<float> &Y,
+        El::ElementalMatrix<float> &K) const {
+
+        _k->gram(dirX, dirY, X, Y, K);
+    }
+
+    virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
+        const El::Matrix<double> &X, El::Matrix<double> &K) const {
+
+        _k->symmetric_gram(uplo, dir, X, K);
+    }
+
+    virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
+        const El::Matrix<float> &X, El::Matrix<float> &K) const {
+
+        _k->symmetric_gram(uplo, dir, X, K);
+    }
+
+    virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
+        const El::ElementalMatrix<double> &X,
+        El::ElementalMatrix<double> &K) const {
+
+        _k->symmetric_gram(uplo, dir, X, K);
+    }
+
+    virtual void symmetric_gram(El::UpperOrLower uplo, base::direction_t dir,
+        const El::ElementalMatrix<float> &X,
+        El::ElementalMatrix<float> &K) const {
+
+        _k->symmetric_gram(uplo, dir, X, K);
+    }
+
+    virtual
+    sketch::sketch_transform_t<boost::any, boost::any> *create_rft(El::Int S,
+        regular_feature_transform_tag tag, base::context_t& context) const {
+
+        return _k->create_rft(S, tag, context);
+    }
+
+    virtual
+    sketch::sketch_transform_t<boost::any, boost::any> *create_rft(El::Int S,
+        fast_feature_transform_tag tag, base::context_t& context) const {
+
+        return _k->create_rft(S, tag, context);
+    }
+
+    template<typename IT, typename OT, typename TT>
+    sketch::sketch_transform_t<IT, OT> *create_rft(El::Int S,
+        TT tag, base::context_t& context) const {
+
+        sketch::generic_sketch_transform_ptr_t p(create_rft(S, tag, context));
+        return new sketch::sketch_transform_container_t<IT, OT>(p);
+    }
+
+    virtual boost::property_tree::ptree to_ptree() const {
+
+        return _k->to_ptree();
+    }
+
+private:
+    std::shared_ptr<kernel_t> _k;
 };
 
 } } 

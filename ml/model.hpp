@@ -287,6 +287,8 @@ struct model_t {
     virtual void save(const std::string& fname, const std::string& header)
         const = 0;
 
+    virtual El::Int get_input_size() const = 0;
+
     virtual ~model_t() {
 
     }
@@ -314,7 +316,7 @@ public model_t<OutType, ComputeType>
 
     kernel_model_t(const kernel_type &k,
         base::direction_t direction, const El::DistMatrix<compute_type> &X,
-        const std::string &dataloc, const int fileformat,
+        const std::string &dataloc, const utility::io::fileformat_t fileformat,
         const El::DistMatrix<compute_type> &A) :
         _X(), _direction(direction),
         _A(), _dataloc(dataloc), _fileformat(fileformat), _k(k),
@@ -366,12 +368,16 @@ public model_t<OutType, ComputeType>
 
     }
 
+    El::Int get_input_size() const {
+        return _input_size;
+    }
+    
 private:
     El::DistMatrix<compute_type> _X;
     const base::direction_t _direction;
     El::DistMatrix<compute_type> _A;
     const std::string _dataloc;
-    const int _fileformat;
+    const utility::io::fileformat_t _fileformat;
     const kernel_type _k;
     const El::Int _input_size, _output_size;
 };
@@ -390,7 +396,7 @@ public model_t<OutType, ComputeType> {
 
     kernel_model_t(const kernel_type &k,
         base::direction_t direction, const El::DistMatrix<compute_type> &X,
-        const std::string &dataloc, const int fileformat,
+        const std::string &dataloc, const utility::io::fileformat_t fileformat,
         const El::DistMatrix<compute_type> &A,
         const std::vector<OutType> &rcoding) :
         _X(), _direction(direction),
@@ -399,6 +405,12 @@ public model_t<OutType, ComputeType> {
 
         El::LockedView(_X, X);
         El::LockedView(_A, A);
+    }
+
+    kernel_model_t(const boost::property_tree::ptree &pt) :
+        // TODO move to build_from_ptree
+        _k(pt.get_child("kernel")) {
+        build_from_ptree(pt);
     }
 
     void predict(base::direction_t direction_XT,
@@ -448,15 +460,74 @@ public model_t<OutType, ComputeType> {
 
     }
 
+    El::Int get_input_size() const {
+        return _input_size;
+    }
+
+protected:
+
+    void build_from_ptree(const boost::property_tree::ptree &pt) {
+
+        _input_size = pt.get<El::Int>("input_size");
+        _output_size = pt.get<El::Int>("num_outputs");
+        _rcoding.resize(_output_size);
+        const boost::property_tree::ptree &ptrcoding =
+            pt.get_child("rcoding");
+        for(El::Int i = 0; i < _output_size; i++)
+            _rcoding[i] = ptrcoding.get<OutType>(std::to_string(i));
+
+        _dataloc = pt.get<std::string>("data_location");
+        _fileformat = (utility::io::fileformat_t)pt.get<int>("fileformat");
+
+        // TODO handle "partial" and "sampling"
+        El::DistMatrix<OutType> dummyL;
+
+        switch (_fileformat) {
+        case utility::io::FORMAT_LIBSVM:
+            utility::io::ReadLIBSVM(_dataloc, _X, dummyL, base::COLUMNS,
+                _input_size);
+            break;
+
+#ifdef SKYLARK_HAVE_HDF5
+        case utility::io::FORMAT_HDF5: {
+            H5::H5File in(_dataloc, H5F_ACC_RDONLY);
+            utility::io::ReadHDF5(in, "X", _X, -1, -1);
+            in.close();
+        }
+            break;
+#endif
+
+        default:
+            // TODO
+            return;
+        }
+        _direction = base::COLUMNS;
+
+        _A.Resize(_X.Width(), _output_size);
+        std::istringstream A_str(pt.get<std::string>("alpha"));
+        compute_type *buffer = _A.Buffer();
+        int ldim = _A.LDim();
+        for(int i = 0; i < _X.Width(); i++) {
+            std::string line;
+            std::getline(A_str, line);
+            std::istringstream Astream(line);
+            for(int j = 0; j < _output_size; j++) {
+                std::string token;
+                Astream >> token;
+                buffer[i + j * ldim] = atof(token.c_str());
+            }
+        }
+    }
+
 private:
     El::DistMatrix<compute_type> _X;
-    const base::direction_t _direction;
+    base::direction_t _direction;
     El::DistMatrix<compute_type> _A;
     std::vector<OutType> _rcoding;
-    const std::string _dataloc;
-    const int _fileformat;
-    const kernel_type _k;
-    const El::Int _input_size, _output_size;
+    std::string _dataloc;
+    utility::io::fileformat_t _fileformat;
+    kernel_type _k;
+    El::Int _input_size, _output_size;
 };
 
 /******************************************************************************/
@@ -590,6 +661,10 @@ public model_t<OutType, ComputeType>
 
     virtual ~feature_expansion_model_t() {
 
+    }
+
+    El::Int get_input_size() const {
+        return _input_size;
     }
 
 private:
@@ -730,6 +805,10 @@ public model_t<OutType, ComputeType> {
 
     }
 
+    El::Int get_input_size() const {
+        return _input_size;
+    }
+    
 private:
     El::DistMatrix<compute_type> _W;
     std::vector<OutType> _rcoding;

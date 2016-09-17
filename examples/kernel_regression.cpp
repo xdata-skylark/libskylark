@@ -34,7 +34,8 @@ int seed = 38734, algorithm = FASTER_KRR, kernel_type = GAUSSIAN_KERNEL;
 skylark::utility::io::fileformat_t fileformat =
     skylark::utility::io::FORMAT_LIBSVM;
 int s = 2000, partial = -1, sketch_size = -1, sample = -1, maxit = 0, maxsplit = 0;
-std::string fname, testname, modelname = "model.dat", logfile = "";
+std::string fname, testname, modelname = "model.dat", logfile = "",
+    outputfile = "";
 double kp1 = 10.0, kp2 = 0.0, kp3 = 1.0, lambda = 0.01, tolerance=0;
 bool use_single, use_fast, regression, predict;
 boost::property_tree::ptree pt;
@@ -55,6 +56,9 @@ int parse_program_options(int argc, char* argv[]) {
         ("testfile",
             bpo::value<std::string>(&testname)->default_value(""),
             "Test data (libsvm format).")
+        ("outputfile",
+            bpo::value<std::string>(&outputfile)->default_value(""),
+            "Output file (for predicition). Will not output if empty.")
         ("predict", "Predict mode -- load model file and use it.")
         ("model",
             bpo::value<std::string>(&modelname)->default_value("model.dat"),
@@ -249,6 +253,9 @@ int parse_program_options(int argc, char* argv[]) {
 
         if (flag == "--testfile")
             testname = value;
+
+        if (flag == "--outputfile")
+            outputfile = value;
 
         if (flag[0] != '-' && poscount != 0)
             testname = flag;
@@ -943,6 +950,23 @@ int predict_classification(skylark::base::context_t &context) {
         *log_stream << "Error rate: "
                     << boost::format("%.2f") % ((errs * 100.0) / LT.Width())
                     << "%" << std::endl;
+
+    if (!outputfile.empty()) {
+        if (rank == 0) {
+            *log_stream << "Writing output... ";
+            log_stream->flush();
+            timer.restart();
+        }
+
+        El::DistMatrix<El::Int> LPT;
+        El::Transpose(LP, LPT);
+
+        El::Write(LPT, outputfile, El::ASCII);
+
+        if (rank == 0)
+            *log_stream << "took " << boost::format("%.2e") % timer.elapsed()
+                    << " sec\n";
+    }
 
     if (rank == 0 && logfile != "") {
         ((std::ofstream *)log_stream)->close();

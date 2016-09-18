@@ -37,7 +37,8 @@ int s = 2000, partial = -1, sketch_size = -1, sample = -1, maxit = 0, maxsplit =
 std::string fname, testname, modelname = "model.dat", logfile = "",
     outputfile = "";
 double kp1 = 10.0, kp2 = 0.0, kp3 = 1.0, lambda = 0.01, tolerance=0;
-bool use_single, use_fast, regression, predict;
+bool use_single = false, use_fast = false, regression = false;
+bool predict = false, decisionvals = false;
 boost::property_tree::ptree pt;
 
 #ifndef SKYLARK_AVOID_BOOST_PO
@@ -110,6 +111,9 @@ int parse_program_options(int argc, char* argv[]) {
         ("sample,z",
             bpo::value<int>(&sample)->default_value(-1),
             "Sample the input data. Will use all if -1. ")
+        ("decisionvals",
+            "In predict mode, for classification, output the "
+            "decision values instead of class.")
         ("single", "Whether to use single precision instead of double.")
         ("fast", "Try using a fast feature transform.")
         ("regression", "Build a regression model"
@@ -149,6 +153,7 @@ int parse_program_options(int argc, char* argv[]) {
         use_fast = vm.count("fast");
         regression = vm.count("regression");
         predict = vm.count("predict");
+        decisionvals = vm.count("decisionvals");
 
         if (!vm.count("trainfile")) {
             std::cout << "Input trainfile file is required! "
@@ -223,6 +228,11 @@ int parse_program_options(int argc, char* argv[]) {
 
         if (flag == "--single") {
             use_single = true;
+            i--;
+        }
+
+        if (flag == "--decisionvals") {
+            decisionvals = true;
             i--;
         }
 
@@ -1053,11 +1063,15 @@ int predict_classification(skylark::base::context_t &context) {
             timer.restart();
         }
 
-        El::DistMatrix<El::Int> LPT;
-        El::Transpose(LP, LPT);
-
-        El::Write(LPT, outputfile, El::ASCII);
-
+        if (!decisionvals) {
+            El::DistMatrix<El::Int> LPT;
+            El::Transpose(LP, LPT);
+            El::Write(LPT, outputfile, El::ASCII);
+        } else {
+            El::DistMatrix<T> DVT;
+            El::Transpose(DV, DVT);
+            El::Write(DVT, outputfile, El::ASCII);
+        }
         if (rank == 0)
             *log_stream << "took " << boost::format("%.2e") % timer.elapsed()
                     << " sec\n";

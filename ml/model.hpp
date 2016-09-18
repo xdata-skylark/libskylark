@@ -272,11 +272,18 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
+
+
+template<typename OutType, typename ComputeType, typename dummy = OutType>
+struct model_t;
+
 /**
- * Generic (abstract) model
+ * Generic (abstract) model for continous output - regression
  */
 template<typename OutType, typename ComputeType>
-struct model_t {
+struct model_t<OutType, ComputeType,
+ typename std::enable_if<std::is_floating_point<OutType>::value, OutType>::type>
+{
 
     virtual void predict(base::direction_t direction_XT,
         const El::DistMatrix<ComputeType> &XT, El::DistMatrix<OutType> &YP)
@@ -294,6 +301,30 @@ struct model_t {
     }
 };
 
+/**
+ * Generic (abstract) model for discrete (all other) output - classification
+ */
+template<typename OutType, typename ComputeType>
+struct model_t<OutType, ComputeType,
+ typename std::enable_if<!std::is_floating_point<OutType>::value, OutType>::type>
+{
+
+    virtual void predict(base::direction_t direction_XT,
+        const El::DistMatrix<ComputeType> &XT, El::DistMatrix<OutType> &LP,
+        El::DistMatrix<ComputeType> &DV)
+        const = 0;
+
+    virtual boost::property_tree::ptree to_ptree() const = 0;
+
+    virtual void save(const std::string& fname, const std::string& header)
+        const = 0;
+
+    virtual El::Int get_input_size() const = 0;
+
+    virtual ~model_t() {
+
+    }
+};
 
 /****************** Kernel model *****************************************/
 
@@ -324,6 +355,12 @@ public model_t<OutType, ComputeType>
 
         El::LockedView(_X, X);
         El::LockedView(_A, A);
+    }
+
+    kernel_model_t(const boost::property_tree::ptree &pt) :
+        // TODO move to build_from_ptree
+        _k(pt.get_child("kernel")) {
+        build_from_ptree(pt);
     }
 
     void predict(base::direction_t direction_XT,
@@ -371,15 +408,64 @@ public model_t<OutType, ComputeType>
     El::Int get_input_size() const {
         return _input_size;
     }
-    
+
+protected:
+        void build_from_ptree(const boost::property_tree::ptree &pt) {
+
+        _input_size = pt.get<El::Int>("input_size");
+        _output_size = pt.get<El::Int>("num_outputs");
+
+        _dataloc = pt.get<std::string>("data_location");
+        _fileformat = (utility::io::fileformat_t)pt.get<int>("fileformat");
+
+        // TODO handle "partial" and "sampling"
+        El::DistMatrix<OutType> dummyY;
+
+        switch (_fileformat) {
+        case utility::io::FORMAT_LIBSVM:
+            utility::io::ReadLIBSVM(_dataloc, _X, dummyY, base::COLUMNS,
+                _input_size);
+            break;
+
+#ifdef SKYLARK_HAVE_HDF5
+        case utility::io::FORMAT_HDF5: {
+            H5::H5File in(_dataloc, H5F_ACC_RDONLY);
+            utility::io::ReadHDF5(in, "X", _X, -1, -1);
+            in.close();
+        }
+            break;
+#endif
+
+        default:
+            // TODO
+            return;
+        }
+        _direction = base::COLUMNS;
+
+        _A.Resize(_X.Width(), _output_size);
+        std::istringstream A_str(pt.get<std::string>("alpha"));
+        compute_type *buffer = _A.Buffer();
+        int ldim = _A.LDim();
+        for(int i = 0; i < _X.Width(); i++) {
+            std::string line;
+            std::getline(A_str, line);
+            std::istringstream Astream(line);
+            for(int j = 0; j < _output_size; j++) {
+                std::string token;
+                Astream >> token;
+                buffer[i + j * ldim] = atof(token.c_str());
+            }
+        }
+    }
+
 private:
     El::DistMatrix<compute_type> _X;
-    const base::direction_t _direction;
+    base::direction_t _direction;
     El::DistMatrix<compute_type> _A;
-    const std::string _dataloc;
-    const utility::io::fileformat_t _fileformat;
-    const kernel_type _k;
-    const El::Int _input_size, _output_size;
+    std::string _dataloc;
+    utility::io::fileformat_t _fileformat;
+    kernel_type _k;
+    El::Int _input_size, _output_size;
 };
 
 /**
@@ -414,12 +500,13 @@ public model_t<OutType, ComputeType> {
     }
 
     void predict(base::direction_t direction_XT,
-        const El::DistMatrix<compute_type> &XT, El::DistMatrix<out_type> &YP) const {
+        const El::DistMatrix<compute_type> &XT, El::DistMatrix<out_type> &LP,
+        El::DistMatrix<compute_type> &DV) const {
 
-        El::DistMatrix<compute_type> KT, YP0;
+        El::DistMatrix<compute_type> KT;
         Gram(_direction, direction_XT, _k, _X, XT, KT);
-        El::Gemm(El::ADJOINT, El::NORMAL, compute_type(1.0), _A, KT, YP0);
-        DummyDecode(El::ADJOINT, YP0, YP, _rcoding);
+        El::Gemm(El::ADJOINT, El::NORMAL, compute_type(1.0), _A, KT, DV);
+        DummyDecode(El::ADJOINT, DV, LP, _rcoding);
     }
 
     boost::property_tree::ptree to_ptree() const {
@@ -568,7 +655,7 @@ public model_t<OutType, ComputeType>
         El::LockedView(_W, W);
     }
 
-        feature_expansion_model_t(bool scale_maps,
+    feature_expansion_model_t(bool scale_maps,
         const std::vector<sketch_type> &transforms,
         const El::DistMatrix<compute_type> &W) :
         _W(), _scale_maps(scale_maps),
@@ -585,10 +672,8 @@ public model_t<OutType, ComputeType>
     void predict(base::direction_t direction_XT,
         const El::DistMatrix<compute_type> &XT, El::DistMatrix<out_type> &YP) const {
 
-
-
         if (direction_XT == base::COLUMNS) {
-	    El::Zeros(YP, _output_size, XT.Width());
+            El::Zeros(YP, _output_size, XT.Width());
             El::DistMatrix<compute_type> ZT, VW;
             El::Int starts = 0;
             for(int i = 0; i < _feature_transforms.size(); i++) {
@@ -605,7 +690,7 @@ public model_t<OutType, ComputeType>
             }
 
         } else {
-	    El::Zeros(YP, XT.Height(), _output_size);
+            El::Zeros(YP, XT.Height(), _output_size);
             El::DistMatrix<compute_type> ZT, VW;
             El::Int starts = 0;
             for(int i = 0; i < _feature_transforms.size(); i++) {
@@ -717,12 +802,13 @@ public model_t<OutType, ComputeType> {
     }
 
     void predict(base::direction_t direction_XT,
-        const El::DistMatrix<compute_type> &XT, El::DistMatrix<out_type> &YP) const {
+        const El::DistMatrix<compute_type> &XT, El::DistMatrix<out_type> &LP,
+        El::DistMatrix<compute_type> &DV) const {
 
         if (direction_XT == base::COLUMNS) {
 
-            El::DistMatrix<compute_type> YP0(_output_size, XT.Width()), ZT, VW;
-            El::Zero(YP0);
+            El::DistMatrix<compute_type> ZT, VW;
+            El::Zeros(DV, _output_size, XT.Width());
             El::Int starts = 0;
             for(int i = 0; i < _feature_transforms.size(); i++) {
                 const sketch_type &S = _feature_transforms[i];
@@ -734,14 +820,14 @@ public model_t<OutType, ComputeType> {
                 base::RowView(VW, _W, starts, S.get_S());
                 starts += S.get_S();
                 El::Gemm(El::ADJOINT, El::NORMAL, compute_type(1.0), VW, ZT,
-                    compute_type(1.0), YP0);
+                    compute_type(1.0), DV);
             }
-            DummyDecode(El::ADJOINT, YP0, YP, _rcoding);
+            DummyDecode(El::ADJOINT, DV, LP, _rcoding);
 
         } else {
 
-            El::DistMatrix<compute_type> YP0(XT.Height(), _output_size), ZT, VW;
-            El::Zero(YP0);
+            El::DistMatrix<compute_type> ZT, VW;
+            El::Zeros(DV, XT.Height(), _output_size);
             El::Int starts = 0;
             for(int i = 0; i < _feature_transforms.size(); i++) {
                 const sketch_type &S = _feature_transforms[i];
@@ -752,9 +838,9 @@ public model_t<OutType, ComputeType> {
                 base::RowView(VW, _W, starts, S.get_S());
                 starts += S.get_S();
                 El::Gemm(El::NORMAL, El::NORMAL, compute_type(1.0), ZT, VW,
-                    compute_type(1.0), YP0);
+                    compute_type(1.0), DV);
             }
-            DummyDecode(El::NORMAL, YP0, YP, _rcoding);
+            DummyDecode(El::NORMAL, DV, LP, _rcoding);
 
         }
     }
@@ -808,7 +894,7 @@ public model_t<OutType, ComputeType> {
     El::Int get_input_size() const {
         return _input_size;
     }
-    
+
 private:
     El::DistMatrix<compute_type> _W;
     std::vector<OutType> _rcoding;

@@ -1070,7 +1070,14 @@ int predict_classification(skylark::base::context_t &context) {
         } else {
             El::DistMatrix<T> DVT;
             El::Transpose(DV, DVT);
-            El::Write(DVT, outputfile, El::ASCII);
+            std::stringstream stream;
+            stream << "# Column order for decision values:" << std::endl
+                   << "# ";
+            std::vector<El::Int> colcoding;
+            model->get_column_coding(colcoding);
+            for(int i = 0; i < colcoding.size(); i++)
+                stream << colcoding[i] << " ";
+            El::Write(DVT, outputfile, El::ASCII, stream.str());
         }
         if (rank == 0)
             *log_stream << "took " << boost::format("%.2e") % timer.elapsed()

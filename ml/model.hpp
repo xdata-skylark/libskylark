@@ -321,6 +321,8 @@ struct model_t<OutType, ComputeType,
 
     virtual El::Int get_input_size() const = 0;
 
+    virtual void get_column_coding(std::vector<OutType> &rcoding) const = 0;
+
     virtual ~model_t() {
 
     }
@@ -549,6 +551,12 @@ public model_t<OutType, ComputeType> {
 
     El::Int get_input_size() const {
         return _input_size;
+    }
+
+    void get_column_coding(std::vector<OutType> &rcoding) const {
+        rcoding.resize(_rcoding.size());
+        for(int i = 0; i < _rcoding.size(); i++)
+            rcoding[i] = _rcoding[i];
     }
 
 protected:
@@ -893,6 +901,12 @@ public model_t<OutType, ComputeType> {
 
     El::Int get_input_size() const {
         return _input_size;
+    }
+
+    void get_column_coding(std::vector<OutType> &rcoding) const {
+        rcoding.resize(_rcoding.size());
+        for(int i = 0; i < _rcoding.size(); i++)
+            rcoding[i] = _rcoding[i];
     }
 
 private:

@@ -359,9 +359,7 @@ public model_t<OutType, ComputeType>
         El::LockedView(_A, A);
     }
 
-    kernel_model_t(const boost::property_tree::ptree &pt) :
-        // TODO move to build_from_ptree
-        _k(pt.get_child("kernel")) {
+    kernel_model_t(const boost::property_tree::ptree &pt) {
         build_from_ptree(pt);
     }
 
@@ -370,7 +368,7 @@ public model_t<OutType, ComputeType>
 
         El::DistMatrix<compute_type> KT;
         Gram(_direction, direction_XT, _k, _X, XT, KT);
-        YP.Resize(_A.Height(), KT.Width()); 
+        YP.Resize(_A.Height(), KT.Width());
         El::Gemm(El::ADJOINT, El::NORMAL, out_type(1.0), _A, KT, YP);
     }
 
@@ -412,11 +410,12 @@ public model_t<OutType, ComputeType>
     }
 
 protected:
-        void build_from_ptree(const boost::property_tree::ptree &pt) {
+    void build_from_ptree(const boost::property_tree::ptree &pt) {
 
         _input_size = pt.get<El::Int>("input_size");
         _output_size = pt.get<El::Int>("num_outputs");
 
+        _k = kernel_container_t(pt.get_child("kernel"));
         _dataloc = pt.get<std::string>("data_location");
         _fileformat = (utility::io::fileformat_t)pt.get<int>("fileformat");
 
@@ -495,9 +494,7 @@ public model_t<OutType, ComputeType> {
         El::LockedView(_A, A);
     }
 
-    kernel_model_t(const boost::property_tree::ptree &pt) :
-        // TODO move to build_from_ptree
-        _k(pt.get_child("kernel")) {
+    kernel_model_t(const boost::property_tree::ptree &pt) {
         build_from_ptree(pt);
     }
 
@@ -570,7 +567,8 @@ protected:
             pt.get_child("rcoding");
         for(El::Int i = 0; i < _output_size; i++)
             _rcoding[i] = ptrcoding.get<OutType>(std::to_string(i));
-
+        _k = kernel_container_t(pt.get_child("kernel"));
+        
         _dataloc = pt.get<std::string>("data_location");
         _fileformat = (utility::io::fileformat_t)pt.get<int>("fileformat");
 

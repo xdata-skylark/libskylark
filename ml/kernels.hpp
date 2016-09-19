@@ -1168,7 +1168,6 @@ struct kernel_container_t : public kernel_t {
 
     kernel_container_t(const std::shared_ptr<kernel_t> k) :
         _k(k) {
-
     }
 
     kernel_container_t(const boost::property_tree::ptree &pt) {
@@ -1186,6 +1185,10 @@ struct kernel_container_t : public kernel_t {
             _k.reset(new expsemigroup_t(pt));
         else if (type == "matern")
             _k.reset(new matern_t(pt));
+    }
+
+    kernel_container_t() {
+
     }
 
     virtual ~kernel_container_t() {

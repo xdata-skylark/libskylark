@@ -894,10 +894,7 @@ int predict_regression(skylark::base::context_t &context) {
         timer.restart();
     }
 
-    skylark::ml::model_t<T, T> *model;
-    model =
-        new skylark::ml::kernel_model_t<skylark::ml::kernel_container_t,
-                                        T, T>(pt);
+    skylark::ml::model_container_t<T, T> model(pt);
 
     if (rank == 0)
         *log_stream <<"took " << boost::format("%.2e") % timer.elapsed()
@@ -914,7 +911,7 @@ int predict_regression(skylark::base::context_t &context) {
     switch (fileformat) {
     case skylark::utility::io::FORMAT_LIBSVM:
         skylark::utility::io::ReadLIBSVM(fname, XT, YT,
-            skylark::base::COLUMNS, model->get_input_size());
+            skylark::base::COLUMNS, model.get_input_size());
         break;
 
 #ifdef SKYLARK_HAVE_HDF5
@@ -933,7 +930,7 @@ int predict_regression(skylark::base::context_t &context) {
     }
 
     El::DistMatrix<T> YP;
-    model->predict(skylark::base::COLUMNS, XT, YP);
+    model.predict(skylark::base::COLUMNS, XT, YP);
 
     if (rank == 0)
         *log_stream << "took " << boost::format("%.2e") % timer.elapsed()
@@ -971,8 +968,6 @@ int predict_regression(skylark::base::context_t &context) {
         delete log_stream;
     }
 
-    delete model;
-
     return 0;
 }
 
@@ -996,10 +991,7 @@ int predict_classification(skylark::base::context_t &context) {
         timer.restart();
     }
 
-    skylark::ml::model_t<El::Int, T> *model;
-    model =
-        new skylark::ml::kernel_model_t<skylark::ml::kernel_container_t,
-                                        El::Int, T>(pt);
+    skylark::ml::model_container_t<El::Int, T> model(pt);
 
     if (rank == 0)
         *log_stream <<"took " << boost::format("%.2e") % timer.elapsed()
@@ -1017,7 +1009,7 @@ int predict_classification(skylark::base::context_t &context) {
     switch (fileformat) {
     case skylark::utility::io::FORMAT_LIBSVM:
         skylark::utility::io::ReadLIBSVM(fname, XT, LT,
-            skylark::base::COLUMNS, model->get_input_size());
+            skylark::base::COLUMNS, model.get_input_size());
         break;
 
 #ifdef SKYLARK_HAVE_HDF5
@@ -1037,7 +1029,7 @@ int predict_classification(skylark::base::context_t &context) {
 
     El::DistMatrix<T> DV;
     El::DistMatrix<El::Int> LP;
-    model->predict(skylark::base::COLUMNS, XT, LP, DV);
+    model.predict(skylark::base::COLUMNS, XT, LP, DV);
 
     if (rank == 0)
         *log_stream << "took " << boost::format("%.2e") % timer.elapsed()
@@ -1074,7 +1066,7 @@ int predict_classification(skylark::base::context_t &context) {
             stream << "# Column order for decision values:" << std::endl
                    << "# ";
             std::vector<El::Int> colcoding;
-            model->get_column_coding(colcoding);
+            model.get_column_coding(colcoding);
             for(int i = 0; i < colcoding.size(); i++)
                 stream << colcoding[i] << " ";
             El::Write(DVT, outputfile, El::ASCII, stream.str());
@@ -1088,8 +1080,6 @@ int predict_classification(skylark::base::context_t &context) {
         ((std::ofstream *)log_stream)->close();
         delete log_stream;
     }
-
-    delete model;
 
     return 0;
 }

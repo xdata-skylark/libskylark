@@ -931,7 +931,6 @@ struct expsemigroup_t : public kernel_t {
         base::ml_exception()
           << base::error_msg(
            "symmetric_gram has not yet been implemented for expsemigroup kernel"));
-       
     }
 
     /* Instantion of virtual functions in base */

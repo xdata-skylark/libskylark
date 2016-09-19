@@ -328,8 +328,11 @@ struct model_t<OutType, ComputeType,
     }
 };
 
-/****************** Kernel model *****************************************/
+/******************************************************************************/
 
+/**
+ * Kernel model.
+ */
 template<typename KernelType, typename OutType, typename ComputeType = OutType,
          typename dummy = OutType>
 struct kernel_model_t;
@@ -568,7 +571,7 @@ protected:
         for(El::Int i = 0; i < _output_size; i++)
             _rcoding[i] = ptrcoding.get<OutType>(std::to_string(i));
         _k = kernel_container_t(pt.get_child("kernel"));
-        
+
         _dataloc = pt.get<std::string>("data_location");
         _fileformat = (utility::io::fileformat_t)pt.get<int>("fileformat");
 
@@ -914,6 +917,119 @@ private:
     std::vector<sketch_type> _feature_transforms;
     const El::Int _input_size, _output_size;
     El::Int _feature_size;
+};
+
+/******************************************************************************/
+
+/**
+ * Container -
+ * Generic (abstract) model.
+ */
+template<typename OutType, typename ComputeType = OutType,
+         typename dummy = OutType>
+struct model_container_t;
+
+/**
+ * Container -
+ * Generic (abstract) model for continious output - regression
+ */
+template<typename OutType, typename ComputeType>
+struct model_container_t<OutType, ComputeType,
+  typename std::enable_if<std::is_floating_point<OutType>::value, OutType>::type> :
+public model_t<OutType, ComputeType>
+{
+    typedef model_t<OutType, ComputeType> model_type;
+
+    model_container_t(const std::shared_ptr<model_type> m) :
+        _m(m) {
+    }
+
+    model_container_t(const boost::property_tree::ptree &pt) {
+        std::string type = pt.get<std::string>("skylark_object_type");
+
+        if (type == "model:kernel")
+            _m.reset(new kernel_model_t<skylark::ml::kernel_container_t,
+                OutType, ComputeType>(pt));
+    }
+
+    virtual void predict(base::direction_t direction_XT,
+        const El::DistMatrix<ComputeType> &XT, El::DistMatrix<OutType> &YP) const {
+        _m->predict(direction_XT, XT, YP);
+    }
+
+    virtual boost::property_tree::ptree to_ptree() const {
+        return _m->to_ptree();
+    }
+
+    virtual void save(const std::string& fname, const std::string& header)
+        const {
+        _m->save(fname, header);
+    }
+
+    virtual El::Int get_input_size() const {
+        return _m->get_input_size();
+    }
+
+    virtual ~model_container_t() {
+
+    }
+
+private:
+    std::shared_ptr<model_type> _m;
+};
+
+/**
+ * Container -
+ * Generic (abstract) model for discrete (all other) output - classification
+ */
+template<typename OutType, typename ComputeType>
+struct model_container_t<OutType, ComputeType,
+  typename std::enable_if<!std::is_floating_point<OutType>::value, OutType>::type> :
+public model_t<OutType, ComputeType>
+{
+    typedef model_t<OutType, ComputeType> model_type;
+
+    model_container_t(const std::shared_ptr<model_type> m) :
+        _m(m) {
+    }
+
+    model_container_t(const boost::property_tree::ptree &pt) {
+        std::string type = pt.get<std::string>("skylark_object_type");
+
+        if (type == "model:kernel")
+            _m.reset(new kernel_model_t<skylark::ml::kernel_container_t,
+                OutType, ComputeType>(pt));
+    }
+    
+    virtual void predict(base::direction_t direction_XT,
+        const El::DistMatrix<ComputeType> &XT, El::DistMatrix<OutType> &LP,
+        El::DistMatrix<ComputeType> &DV) const {
+        _m->predict(direction_XT, XT, LP, DV);
+    }
+
+    virtual boost::property_tree::ptree to_ptree() const {
+        return _m->to_ptree();
+    }
+
+    virtual void save(const std::string& fname, const std::string& header)
+        const {
+        _m->save(fname, header);
+    }
+
+    virtual El::Int get_input_size() const {
+        return _m->get_input_size();
+    }
+
+    virtual void get_column_coding(std::vector<OutType> &rcoding) const {
+        return _m->get_column_coding(rcoding);
+    }
+
+    virtual ~model_container_t() {
+
+    }
+
+private:
+    std::shared_ptr<model_type> _m;
 };
 
 } }

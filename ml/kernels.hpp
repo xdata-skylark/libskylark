@@ -320,9 +320,11 @@ struct linear_t : public kernel_t {
         El::Int m = dirX == base::COLUMNS ? base::Width(X) : base::Height(X);
         El::Int n = dirY == base::COLUMNS ? base::Width(Y) : base::Height(Y);
 
+        El::Orientation xo = dirX == base::COLUMNS ? El::ADJOINT : El::NORMAL;
+        El::Orientation yo = dirY == base::COLUMNS ? El::NORMAL : El::ADJOINT;
+
         K.Resize(m, n);
-        base::EuclideanDistanceMatrix(dirX, dirY, value_type(1.0), X, Y,
-            value_type(0.0), K);
+        El::Gemm(xo, yo, value_type(1.0), X, Y, value_type(0.0), K);
     }
 
     template<typename XT, typename KT>
@@ -332,11 +334,10 @@ struct linear_t : public kernel_t {
         typedef typename utility::typer_t<KT>::value_type value_type;
 
         El::Int n = dir == base::COLUMNS ? base::Width(X) : base::Height(X);
+        El::Orientation o = dir == base::COLUMNS ? El::ADJOINT : El::NORMAL;
 
         K.Resize(n, n);
-
-        base::SymmetricEuclideanDistanceMatrix(uplo, dir, value_type(1.0), X,
-            value_type(0.0), K);
+        El::Herk(uplo, o, value_type(1.0), X, K);
     }
 
 
@@ -646,10 +647,10 @@ struct polynomial_t : public kernel_t {
         El::Int m = dirX == base::COLUMNS ? base::Width(X) : base::Height(X);
         El::Int n = dirY == base::COLUMNS ? base::Width(Y) : base::Height(Y);
 
-        K.Resize(m, n);
         El::Orientation xo = dirX == base::COLUMNS ? El::ADJOINT : El::NORMAL;
         El::Orientation yo = dirY == base::COLUMNS ? El::NORMAL : El::ADJOINT;
 
+        K.Resize(m, n);
         // TODO should be base::Gemm, not El::Gemm
         El::Gemm(xo, yo, value_type(1.0), X, Y, value_type(0.0), K);
         El::EntrywiseMap(K, std::function<value_type(value_type)> (

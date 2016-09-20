@@ -27,12 +27,12 @@
     <link rel="next" title="Contributing" href="contributing.html" />
     <link rel="prev" title="Machine Learning" href="ml.html" /> 
   </head>
-  <body>
-      <div class="header"><h1 class="heading"><a href="index.html">
+  <body role="document">
+      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
           <span>libSkylark  documentation</span></a></h1>
         <h2 class="heading"><span>IO in libSkylark</span></h2>
       </div>
-      <div class="topnav">
+      <div class="topnav" role="navigation" aria-label="top navigation">
       
         <p>
         «&#160;&#160;<a href="ml.html">Machine Learning</a>
@@ -54,8 +54,8 @@
 <div class="section" id="reading">
 <h3>Reading<a class="headerlink" href="#reading" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
-<dt id="read__boost::mpi::communicatorCR.i.ss.InputTypeR.LabelTypeR.i">
-void <tt class="descname">read</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, int <em>fileformat</em>, std::string <em>filename</em>, InputType&amp; <em>X</em>, LabelType&amp; <em>Y</em>, int <em>d</em><em>=0</em><big>)</big><a class="headerlink" href="#read__boost::mpi::communicatorCR.i.ss.InputTypeR.LabelTypeR.i" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPPv24readRKN5boost3mpi12communicatorEiNSt6stringER9InputTypeR9LabelTypei">
+<span id="read__boost::mpi::communicatorCR.i.ss.InputTypeR.LabelTypeR.i"></span>void <code class="descclassname"></code><code class="descname">read</code><span class="sig-paren">(</span><em class="property">const</em> boost::mpi::communicator &amp;<em>comm</em>, int <em>fileformat</em>, std::string <em>filename</em>, InputType &amp;<em>X</em>, LabelType &amp;<em>Y</em>, int <em>d</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv24readRKN5boost3mpi12communicatorEiNSt6stringER9InputTypeR9LabelTypei" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads data from <cite>filename</cite> as a pair of matrices <cite>X</cite> and <cite>Y</cite>. Data are in the form of instances each carrying a label; an instance in turn consists of a series of feature/value pairs. Feature/value pairs are the column indices/entries for matrix <cite>X</cite> with its row indices coming from a running index of the instances (the minimum number of features is <cite>d</cite>). Matrix <cite>Y</cite> carries the vector of successive labels corresponding to this running index. <cite>fileformat</cite> can have any of the following values of <cite>FileFormatType</cite> enum (as defined in libskylark/ml/options.hpp):</p>
 <ul class="simple">
 <li>HDF5_DENSE</li>
@@ -69,50 +69,50 @@ void <tt class="descname">read</tt><big>(</big>const boost::mpi::communicator&am
 <cite>HDF5_*</cite> are for <a class="reference external" href="http://www.hdfgroup.org/HDF5/">Hierarchical Data Format, version 5 (HDF5)</a> files  while <cite>LIBSVM_*</cite> are for <a class="reference external" href="http://www.csie.ntu.edu.tw/~cjlin/libsvm/">Library for Support Vector Machines (LIBSVM)</a> ones.</p>
 <p><strong>HDF5-specific routines</strong></p>
 <dl class="function">
-<dt id="read_hdf5__boost::mpi::communicatorCR.ss.El::Matrix:double:R.El::Matrix:double:R.i">
-void <tt class="descname">read_hdf5</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>filename</em>, El::Matrix&lt;double&gt;&amp; <em>X</em>, El::Matrix&lt;double&gt;&amp; <em>Y</em>, int <em>blocksize</em><em>=10000</em><big>)</big><a class="headerlink" href="#read_hdf5__boost::mpi::communicatorCR.ss.El::Matrix:double:R.El::Matrix:double:R.i" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPPv29read_hdf5RKN5boost3mpi12communicatorENSt6stringERN2El6MatrixIdEERN2El6MatrixIdEEi">
+<span id="read_hdf5__boost::mpi::communicatorCR.ss.El::Matrix:double:R.El::Matrix:double:R.i"></span>void <code class="descclassname"></code><code class="descname">read_hdf5</code><span class="sig-paren">(</span><em class="property">const</em> boost::mpi::communicator &amp;<em>comm</em>, std::string <em>filename</em>, El::Matrix&lt;double&gt; &amp;<em>X</em>, El::Matrix&lt;double&gt; &amp;<em>Y</em>, int <em>blocksize</em> = 10000<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv29read_hdf5RKN5boost3mpi12communicatorENSt6stringERN2El6MatrixIdEERN2El6MatrixIdEEi" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="read_hdf5__boost::mpi::communicatorCR.ss.skylark::base::sparse_matrix_t:double:R.El::Matrix:double:R.i">
-void <tt class="descname">read_hdf5</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>filename</em>, skylark::base::sparse_matrix_t&lt;double&gt;&amp; <em>X</em>, El::Matrix&lt;double&gt;&amp; <em>Y</em>, int <em>min_d</em><em>=0</em><big>)</big><a class="headerlink" href="#read_hdf5__boost::mpi::communicatorCR.ss.skylark::base::sparse_matrix_t:double:R.El::Matrix:double:R.i" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPPv29read_hdf5RKN5boost3mpi12communicatorENSt6stringERN7skylark4base15sparse_matrix_tIdEERN2El6MatrixIdEEi">
+<span id="read_hdf5__boost::mpi::communicatorCR.ss.skylark::base::sparse_matrix_t:double:R.El::Matrix:double:R.i"></span>void <code class="descclassname"></code><code class="descname">read_hdf5</code><span class="sig-paren">(</span><em class="property">const</em> boost::mpi::communicator &amp;<em>comm</em>, std::string <em>filename</em>, skylark::base::sparse_matrix_t&lt;double&gt; &amp;<em>X</em>, El::Matrix&lt;double&gt; &amp;<em>Y</em>, int <em>min_d</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv29read_hdf5RKN5boost3mpi12communicatorENSt6stringERN7skylark4base15sparse_matrix_tIdEERN2El6MatrixIdEEi" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads datasets <cite>X</cite> and <cite>Y</cite> from HDF5 <cite>filename</cite> as a pair of matrices <cite>X</cite>, <cite>Y</cite>. Instances are read in bunches of <cite>blocksize</cite> each; <cite>min_d</cite> is the minimum number of features.</p>
 </dd></dl>
 
 <p><strong>LIBSVM-specific routines</strong></p>
 <dl class="function">
-<dt id="read_libsvm__boost::mpi::communicatorCR.ss.El::Matrix:T:R.El::Matrix:T:R.i.i">
-void <tt class="descname">read_libsvm</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>filename</em>, El::Matrix&lt;T&gt;&amp; <em>X</em>, El::Matrix&lt;T&gt;&amp; <em>Y</em>, int <em>min_d</em><em>=0</em>, int <em>blocksize</em><em>=10000</em><big>)</big><a class="headerlink" href="#read_libsvm__boost::mpi::communicatorCR.ss.El::Matrix:T:R.El::Matrix:T:R.i.i" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPPv211read_libsvmRKN5boost3mpi12communicatorENSt6stringERN2El6MatrixI1TEERN2El6MatrixI1TEEii">
+<span id="read_libsvm__boost::mpi::communicatorCR.ss.El::Matrix:T:R.El::Matrix:T:R.i.i"></span>void <code class="descclassname"></code><code class="descname">read_libsvm</code><span class="sig-paren">(</span><em class="property">const</em> boost::mpi::communicator &amp;<em>comm</em>, std::string <em>filename</em>, El::Matrix&lt;T&gt; &amp;<em>X</em>, El::Matrix&lt;T&gt; &amp;<em>Y</em>, int <em>min_d</em> = 0, int <em>blocksize</em> = 10000<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv211read_libsvmRKN5boost3mpi12communicatorENSt6stringERN2El6MatrixI1TEERN2El6MatrixI1TEEii" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="read_libsvm__boost::mpi::communicatorCR.ss.skylark::base::sparse_matrix_t:T:R.El::Matrix:T:R.i">
-void <tt class="descname">read_libsvm</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>filename</em>, skylark::base::sparse_matrix_t&lt;T&gt;&amp; <em>X</em>, El::Matrix&lt;T&gt;&amp; <em>Y</em>, int <em>min_d</em><em>=0</em><big>)</big><a class="headerlink" href="#read_libsvm__boost::mpi::communicatorCR.ss.skylark::base::sparse_matrix_t:T:R.El::Matrix:T:R.i" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPPv211read_libsvmRKN5boost3mpi12communicatorENSt6stringERN7skylark4base15sparse_matrix_tI1TEERN2El6MatrixI1TEEi">
+<span id="read_libsvm__boost::mpi::communicatorCR.ss.skylark::base::sparse_matrix_t:T:R.El::Matrix:T:R.i"></span>void <code class="descclassname"></code><code class="descname">read_libsvm</code><span class="sig-paren">(</span><em class="property">const</em> boost::mpi::communicator &amp;<em>comm</em>, std::string <em>filename</em>, skylark::base::sparse_matrix_t&lt;T&gt; &amp;<em>X</em>, El::Matrix&lt;T&gt; &amp;<em>Y</em>, int <em>min_d</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv211read_libsvmRKN5boost3mpi12communicatorENSt6stringERN7skylark4base15sparse_matrix_tI1TEERN2El6MatrixI1TEEi" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads data from LIBSVM <cite>filename</cite> as a pair of matrices <cite>X</cite>, <cite>Y</cite>. Instances are read in bunches of <cite>blocksize</cite> each; <cite>min_d</cite> is the minimum number of features.</p>
 </dd></dl>
 
 <p><strong>Utility routines</strong></p>
 <dl class="function">
-<dt id="read_hdf5_dataset__H5::H5FileR.ss.iP.i.i">
-void <tt class="descname">read_hdf5_dataset</tt><big>(</big>H5::H5File&amp; <em>file</em>, std::string <em>name</em>, int* <em>buffer</em>, int <em>offset</em>, int <em>count</em><big>)</big><a class="headerlink" href="#read_hdf5_dataset__H5::H5FileR.ss.iP.i.i" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPPv217read_hdf5_datasetRN2H56H5FileENSt6stringEPiii">
+<span id="read_hdf5_dataset__H5::H5FileR.ss.iP.i.i"></span>void <code class="descclassname"></code><code class="descname">read_hdf5_dataset</code><span class="sig-paren">(</span>H5::H5File &amp;<em>file</em>, std::string <em>name</em>, int *<em>buffer</em>, int <em>offset</em>, int <em>count</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv217read_hdf5_datasetRN2H56H5FileENSt6stringEPiii" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="read_hdf5_dataset__H5::H5FileR.ss.doubleP.i.i">
-void <tt class="descname">read_hdf5_dataset</tt><big>(</big>H5::H5File&amp; <em>file</em>, std::string <em>name</em>, double* <em>buffer</em>, int <em>offset</em>, int <em>count</em><big>)</big><a class="headerlink" href="#read_hdf5_dataset__H5::H5FileR.ss.doubleP.i.i" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPPv217read_hdf5_datasetRN2H56H5FileENSt6stringEPdii">
+<span id="read_hdf5_dataset__H5::H5FileR.ss.doubleP.i.i"></span>void <code class="descclassname"></code><code class="descname">read_hdf5_dataset</code><span class="sig-paren">(</span>H5::H5File &amp;<em>file</em>, std::string <em>name</em>, double *<em>buffer</em>, int <em>offset</em>, int <em>count</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv217read_hdf5_datasetRN2H56H5FileENSt6stringEPdii" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads <cite>count</cite> entries from the <cite>name</cite> dataset in HDF5 <cite>file</cite> starting at <cite>offset</cite> and collects them into <cite>buffer</cite>.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="read_model_file__ss.El::Matrix:double:R">
-void <tt class="descname">read_model_file</tt><big>(</big>std::string <em>filename</em>, El::Matrix&lt;double&gt;&amp; <em>W</em><big>)</big><a class="headerlink" href="#read_model_file__ss.El::Matrix:double:R" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPPv215read_model_fileNSt6stringERN2El6MatrixIdEE">
+<span id="read_model_file__ss.El::Matrix:double:R"></span>void <code class="descclassname"></code><code class="descname">read_model_file</code><span class="sig-paren">(</span>std::string <em>filename</em>, El::Matrix&lt;double&gt; &amp;<em>W</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv215read_model_fileNSt6stringERN2El6MatrixIdEE" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads the values from model file <cite>filename</cite> into matrix <cite>W</cite>; model file is expected to start with a line of the form:
 <cite># Dimensions m n</cite> for an <cite>m x n</cite> matrix <cite>W</cite> followed by lines containing the values of successive rows of the matrix.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="read_header__boost::mpi::communicatorCR.ss">
-std::string <tt class="descname">read_header</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>filename</em><big>)</big><a class="headerlink" href="#read_header__boost::mpi::communicatorCR.ss" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPPv211read_headerRKN5boost3mpi12communicatorENSt6stringE">
+<span id="read_header__boost::mpi::communicatorCR.ss"></span>std::string <code class="descclassname"></code><code class="descname">read_header</code><span class="sig-paren">(</span><em class="property">const</em> boost::mpi::communicator &amp;<em>comm</em>, std::string <em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv211read_headerRKN5boost3mpi12communicatorENSt6stringE" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the first line of <cite>filename</cite>.</p>
 </dd></dl>
 
@@ -120,13 +120,13 @@ std::string <tt class="descname">read_header</tt><big>(</big>const boost::mpi::c
 <div class="section" id="writing">
 <h3>Writing<a class="headerlink" href="#writing" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
-<dt id="write_hdf5__boost::mpi::communicatorCR.ss.El::Matrix:double:R.El::Matrix:double:R">
-int <tt class="descname">write_hdf5</tt><big>(</big>const boost::mpi::communicator&amp; <em>comm</em>, std::string <em>filename</em>, El::Matrix&lt;double&gt;&amp; <em>X</em>, El::Matrix&lt;double&gt;&amp; <em>Y</em><big>)</big><a class="headerlink" href="#write_hdf5__boost::mpi::communicatorCR.ss.El::Matrix:double:R.El::Matrix:double:R" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPPv210write_hdf5RKN5boost3mpi12communicatorENSt6stringERN2El6MatrixIdEERN2El6MatrixIdEE">
+<span id="write_hdf5__boost::mpi::communicatorCR.ss.El::Matrix:double:R.El::Matrix:double:R"></span>int <code class="descclassname"></code><code class="descname">write_hdf5</code><span class="sig-paren">(</span><em class="property">const</em> boost::mpi::communicator &amp;<em>comm</em>, std::string <em>filename</em>, El::Matrix&lt;double&gt; &amp;<em>X</em>, El::Matrix&lt;double&gt; &amp;<em>Y</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv210write_hdf5RKN5boost3mpi12communicatorENSt6stringERN2El6MatrixIdEERN2El6MatrixIdEE" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="write_hdf5__ss.skylark::base::sparse_matrix_t:double:R.El::Matrix:double:R">
-int <tt class="descname">write_hdf5</tt><big>(</big>std::string <em>filename</em>, skylark::base::sparse_matrix_t&lt;double&gt;&amp; <em>X</em>, El::Matrix&lt;double&gt;&amp; <em>Y</em><big>)</big><a class="headerlink" href="#write_hdf5__ss.skylark::base::sparse_matrix_t:double:R.El::Matrix:double:R" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPPv210write_hdf5NSt6stringERN7skylark4base15sparse_matrix_tIdEERN2El6MatrixIdEE">
+<span id="write_hdf5__ss.skylark::base::sparse_matrix_t:double:R.El::Matrix:double:R"></span>int <code class="descclassname"></code><code class="descname">write_hdf5</code><span class="sig-paren">(</span>std::string <em>filename</em>, skylark::base::sparse_matrix_t&lt;double&gt; &amp;<em>X</em>, El::Matrix&lt;double&gt; &amp;<em>Y</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv210write_hdf5NSt6stringERN7skylark4base15sparse_matrix_tIdEERN2El6MatrixIdEE" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes feature/value pairs (in matrix <cite>X</cite>) and labels (in matrix <cite>Y</cite>) to the HDF5 <cite>filename</cite> and returns 0 to signal successfully completed operation.</p>
 <blockquote>
 <div><ul class="simple">
@@ -146,70 +146,70 @@ int <tt class="descname">write_hdf5</tt><big>(</big>std::string <em>filename</em
 <h2>IO from Python<a class="headerlink" href="#io-from-python" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="example">
 <h3>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#!/usr/bin/env python</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
 
-<span class="c"># prevent mpi4py from calling MPI_Finalize()</span>
+<span class="c1"># prevent mpi4py from calling MPI_Finalize()</span>
 <span class="kn">import</span> <span class="nn">mpi4py.rc</span>
-<span class="n">mpi4py</span><span class="o">.</span><span class="n">rc</span><span class="o">.</span><span class="n">finalize</span>   <span class="o">=</span> <span class="bp">False</span>
+<span class="n">mpi4py</span><span class="o">.</span><span class="n">rc</span><span class="o">.</span><span class="n">finalize</span>   <span class="o">=</span> <span class="kc">False</span>
 
 <span class="kn">import</span> <span class="nn">h5py</span>
 <span class="kn">import</span> <span class="nn">elem</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
 <span class="kn">import</span> <span class="nn">numpy.linalg</span>
-<span class="kn">from</span> <span class="nn">mpi4py</span> <span class="kn">import</span> <span class="n">MPI</span>
+<span class="kn">from</span> <span class="nn">mpi4py</span> <span class="k">import</span> <span class="n">MPI</span>
 <span class="kn">import</span> <span class="nn">skylark</span><span class="o">,</span> <span class="nn">skylark.io</span>
 
 <span class="n">comm</span> <span class="o">=</span> <span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span>
 
-<span class="c"># Create a HDF5 file and encapsulate this and its metadata in store</span>
-<span class="n">filename</span> <span class="o">=</span> <span class="s">&#39;mydataset.hdf5&#39;</span> 
-<span class="n">store</span> <span class="o">=</span> <span class="n">skylark</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">hdf5</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="s">&#39;MyDataset&#39;</span><span class="p">)</span>
+<span class="c1"># Create a HDF5 file and encapsulate this and its metadata in store</span>
+<span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;mydataset.hdf5&#39;</span> 
+<span class="n">store</span> <span class="o">=</span> <span class="n">skylark</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">hdf5</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="s1">&#39;MyDataset&#39;</span><span class="p">)</span>
 
-<span class="c"># Create a 5 x 10 dat matrix and populate its store</span>
+<span class="c1"># Create a 5 x 10 dat matrix and populate its store</span>
 <span class="k">if</span> <span class="n">comm</span><span class="o">.</span><span class="n">Get_rank</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
   <span class="n">m</span> <span class="o">=</span> <span class="mi">8</span>
   <span class="n">n</span> <span class="o">=</span> <span class="mi">10</span>
   <span class="n">matrix</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">81</span><span class="p">))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="n">n</span><span class="p">)</span>
   <span class="n">store</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span>
       
-<span class="c"># Let all processes wait till the file is created.</span>
+<span class="c1"># Let all processes wait till the file is created.</span>
 <span class="n">comm</span><span class="o">.</span><span class="n">barrier</span><span class="p">()</span>
     
-<span class="c"># All processes read into the file</span>
-<span class="n">A</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s">&#39;elemental-dense&#39;</span><span class="p">,</span> <span class="n">distribution</span><span class="o">=</span><span class="s">&#39;VC_STAR&#39;</span><span class="p">)</span>
+<span class="c1"># All processes read into the file</span>
+<span class="n">A</span> <span class="o">=</span> <span class="n">store</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;elemental-dense&#39;</span><span class="p">,</span> <span class="n">distribution</span><span class="o">=</span><span class="s1">&#39;VC_STAR&#39;</span><span class="p">)</span>
 
-<span class="c"># Check the Frobenius norm of the difference of generated/written and read-back matrices</span>
-<span class="c"># Gather at root</span>
+<span class="c1"># Check the Frobenius norm of the difference of generated/written and read-back matrices</span>
+<span class="c1"># Gather at root</span>
 <span class="n">A_CIRC_CIRC</span> <span class="o">=</span> <span class="n">elem</span><span class="o">.</span><span class="n">DistMatrix_d_CIRC_CIRC</span><span class="p">()</span>
 <span class="n">elem</span><span class="o">.</span><span class="n">Copy</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">A_CIRC_CIRC</span><span class="p">)</span>
 
-<span class="c"># Compute the norm at root and output</span>
+<span class="c1"># Compute the norm at root and output</span>
 <span class="k">if</span> <span class="n">comm</span><span class="o">.</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-  <span class="n">diff_fro_norm</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">A_CIRC_CIRC</span><span class="o">.</span><span class="n">Matrix</span><span class="p">[:]</span> <span class="o">-</span> <span class="n">matrix</span><span class="p">,</span> <span class="nb">ord</span><span class="o">=</span><span class="s">&#39;fro&#39;</span><span class="p">)</span>
-  <span class="k">print</span> <span class="s">&#39;||generated_matrix - read_matrix||_F = </span><span class="si">%f</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">diff_fro_norm</span> 
+  <span class="n">diff_fro_norm</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">A_CIRC_CIRC</span><span class="o">.</span><span class="n">Matrix</span><span class="p">[:]</span> <span class="o">-</span> <span class="n">matrix</span><span class="p">,</span> <span class="nb">ord</span><span class="o">=</span><span class="s1">&#39;fro&#39;</span><span class="p">)</span>
+  <span class="nb">print</span> <span class="s1">&#39;||generated_matrix - read_matrix||_F = </span><span class="si">%f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">diff_fro_norm</span> 
 </pre></div>
 </div>
 </div>
 </div>
 <div class="section" id="sketch-serialization">
 <h2>Sketch Serialization<a class="headerlink" href="#sketch-serialization" title="Permalink to this headline">¶</a></h2>
-<p>As mentioned in Section <a class="reference internal" href="sketching.html#sketching-transforms-label"><em>Sketching Transforms</em></a> sketches can be
+<p>As mentioned in Section <a class="reference internal" href="sketching.html#sketching-transforms-label"><span class="std std-ref">Sketching Transforms</span></a> sketches can be
 serialized using the following API:</p>
 <dl class="function">
-<dt id="to_ptreeC">
-boost::property_tree::ptree <tt class="descname">to_ptree</tt><big>(</big><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#to_ptreeC" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPPv2NK8to_ptreeEv">
+<span id="to_ptreeC"></span>boost::property_tree::ptree <code class="descclassname"></code><code class="descname">to_ptree</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK8to_ptreeEv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Serialize the sketch transform to a ptree structure.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="from_ptree__boost::property_tree::ptreeCR">
-<em class="property">static</em> sketch_transform_t* <tt class="descname">from_ptree</tt><big>(</big>const boost::property_tree::ptree&amp; <em>pt</em><big>)</big><a class="headerlink" href="#from_ptree__boost::property_tree::ptreeCR" title="Permalink to this definition">¶</a></dt>
+<dt id="_CPPv210from_ptreeRKN5boost13property_tree5ptreeE">
+<span id="from_ptree__boost::property_tree::ptreeCR"></span><em class="property">static</em> sketch_transform_t *<code class="descclassname"></code><code class="descname">from_ptree</code><span class="sig-paren">(</span><em class="property">const</em> boost::property_tree::ptree &amp;<em>pt</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv210from_ptreeRKN5boost13property_tree5ptreeE" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load a sketch transform from a ptree structure.</p>
 </dd></dl>
 
 <p>The following small snippet shows how a sketch can be serialized and loaded in
 C++.</p>
-<div class="highlight-cpp"><div class="highlight"><pre><span class="c1">//[&gt; 1. Create the sketching matrix and dump JSON &lt;]</span>
+<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="c1">//[&gt; 1. Create the sketching matrix and dump JSON &lt;]</span>
 <span class="n">skylark</span><span class="o">::</span><span class="n">sketch</span><span class="o">::</span><span class="n">CWT_t</span><span class="o">&lt;</span><span class="n">DistMatrixType</span><span class="p">,</span> <span class="n">DistMatrixType</span><span class="o">&gt;</span>
     <span class="n">Sparse</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">n_s</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
 
@@ -236,7 +236,7 @@ C++.</p>
 The first, is straightforward serialize method of sketch objects, and a
 corresponding deserialize_sketch on the module level. The following is a
 short example.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">S</span> <span class="o">=</span> <span class="n">sketch</span><span class="o">.</span><span class="n">CWT</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">S</span> <span class="o">=</span> <span class="n">sketch</span><span class="o">.</span><span class="n">CWT</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
 <span class="n">sketch_dict</span> <span class="o">=</span> <span class="n">S</span><span class="o">.</span><span class="n">serialize</span><span class="p">()</span>
 
 <span class="n">S_clone</span> <span class="o">=</span> <span class="n">sketch</span><span class="o">.</span><span class="n">deserialize_sketch</span><span class="p">(</span><span class="n">sketch_dict</span><span class="p">)</span>
@@ -249,7 +249,7 @@ This allows them to be easily used by external libraries or software like Spark.
 
 
       </div>
-      <div class="bottomnav">
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
       
         <p>
         «&#160;&#160;<a href="ml.html">Machine Learning</a>
@@ -261,9 +261,9 @@ This allows them to be easily used by external libraries or software like Spark.
 
       </div>
 
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright IBM Corporation 2012-2014.  All Rights Reserved.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>

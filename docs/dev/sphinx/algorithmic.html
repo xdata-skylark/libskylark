@@ -25,12 +25,12 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="libSkylark  documentation" href="index.html" /> 
   </head>
-  <body>
-      <div class="header"><h1 class="heading"><a href="index.html">
+  <body role="document">
+      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
           <span>libSkylark  documentation</span></a></h1>
         <h2 class="heading"><span>Algorithmic Layer</span></h2>
       </div>
-      <div class="topnav">
+      <div class="topnav" role="navigation" aria-label="top navigation">
       
         <p>
         <a class="uplink" href="index.html">Contents</a>
@@ -48,34 +48,34 @@
 <p>Located under <em>algorithms/regression</em> aims at providing a general framework for handling regression problems
 of the following form:</p>
 <div class="math">
-<p><img src="_images/math/1e222a022a85777be43a87afb889016208aeba92.png" alt="f^\star = \arg \min_{f \in {\cal H}} \frac{1}{n}\sum^n_{i=1} V(y_i, f(x_i)) + r(f)"/></p>
-</div><p>where <img class="math" src="_images/math/1ba561efe3f4402079a2104a10df5a00e15caf49.png" alt="\{ (x_i, y_i) \}^n_{i=1} \subset {\mathbb R}^d \times {\mathbb R}^t"/> is a training set of inputs
-and their associated outputs, <img class="math" src="_images/math/857e8f32cdd1aa699223d72ab9b74554d78d7ee0.png" alt="{\cal H}"/> is an hypothesis space of functions, <img class="math" src="_images/math/74c2c6f3b066277aa129503edab176c13ec0c3ee.png" alt="V(\cdot, \cdot)"/>
-is a loss function, <img class="math" src="_images/math/93b4bbe22eb93fa9c3192144a042900200f53f14.png" alt="r(\cdot)"/> is a regularizer.</p>
+<p><span class="math">f^\star = \arg \min_{f \in {\cal H}} \frac{1}{n}\sum^n_{i=1} V(y_i, f(x_i)) + r(f)</span></p>
+</div><p>where <span class="math">\{ (x_i, y_i) \}^n_{i=1} \subset {\mathbb R}^d \times {\mathbb R}^t</span> is a training set of inputs
+and their associated outputs, <span class="math">{\cal H}</span> is an hypothesis space of functions, <span class="math">V(\cdot, \cdot)</span>
+is a loss function, <span class="math">r(\cdot)</span> is a regularizer.</p>
 <p><strong>At this point, the c
 ode only supports a linear hypothesis space and a least-square loss function without regularization.</strong>
 That is, solving problems of the form</p>
 <div class="math">
-<p><img src="_images/math/78fe473d4736c4b97480403b9527bf5a86a599d8.png" alt="\arg\min_X \|A * X - B\|_F"/></p>
+<p><span class="math">\arg\min_X \|A * X - B\|_F</span></p>
 </div><p>However, the framework defines the API for defining problems of the form above, and the API for solvers for those
 problems. Implementation of additional solver is slated for future development.</p>
 <p>The framework is general, but complex: it relies on generic programming to supply a unified powerful interface.
-A much simpler functional interface is supplied in the NLA primitives layer. See <a class="reference internal" href="nla.html#simple-linearls"><em>Randomized Linear Least-Squares</em></a>.
+A much simpler functional interface is supplied in the NLA primitives layer. See <a class="reference internal" href="nla.html#simple-linearls"><span class="std std-ref">Randomized Linear Least-Squares</span></a>.
 Note that not all the features supplied by the regression framework are exposed in the simplified interface.</p>
 <p>A running example is provided in <em>libskylark/examples/regression.cpp</em>.</p>
 <div class="section" id="basic-components">
 <h3>Basic Components<a class="headerlink" href="#basic-components" title="Permalink to this headline">¶</a></h3>
 <dl class="type">
-<dt id="struct-skylark::algorithms::regression_problem_t:InputMatrixType.RegressionType.PenaltyType.RegularizationType:">
-<em class="property">type </em><tt class="descname">struct skylark::algorithms::regression_problem_t&lt;InputMatrixType, RegressionType, PenaltyType, RegularizationType&gt;</tt><a class="headerlink" href="#struct-skylark::algorithms::regression_problem_t:InputMatrixType.RegressionType.PenaltyType.RegularizationType:" title="Permalink to this definition">¶</a></dt>
+<dt>
+<code class="descname">struct skylark::algorithms::regression_problem_t&lt;InputMatrixType, RegressionType, PenaltyType, RegularizationType&gt;</code></dt>
 <dd></dd></dl>
 
 <p>Describes a regression problem on a data matrix. The target values are supplied when the solver is invoked).
 Except for the InputMatrixType template parameter, other template parameter accept tags that describe
 various choices in the general regression problem formulation from the start of this page.</p>
 <dl class="type">
-<dt id="skylark::algorithms::regression_solver_t:RegressionProblemType.RhsType.SolType.AlgTag:__class">
-<em class="property">type </em>class <tt class="descclassname">skylark::algorithms::</tt><tt class="descname">regression_solver_t&lt;RegressionProblemType, RhsType, SolType, AlgTag&gt;</tt><a class="headerlink" href="#skylark::algorithms::regression_solver_t:RegressionProblemType.RhsType.SolType.AlgTag:__class" title="Permalink to this definition">¶</a></dt>
+<dt>
+<code class="descname">class skylark::algorithms::regression_solver_t&lt;RegressionProblemType, RhsType, SolType, AlgTag&gt;</code></dt>
 <dd></dd></dl>
 
 <p>A solver for the regression problem (aka <em>regression_problem_t</em>) supplied in the contructor. A solver can
@@ -84,16 +84,16 @@ i.e. solvers that do not use sketching to accelerate the solution.</p>
 <p>The <em>RegressionProblemType</em> should be a specialization of <em>regression_problem_t</em>.</p>
 <p>The <em>AlgTag</em> template parameter allows flexability in defining more than one algorithm given a RegressionProblemType.</p>
 <dl class="type">
-<dt id="skylark::algorithms::accelerated_regression_solver_t:RegressionProblemType.RhsType.SolType.AlgTag:__class">
-<em class="property">type </em>class <tt class="descclassname">skylark::algorithms::</tt><tt class="descname">accelerated_regression_solver_t&lt;RegressionProblemType, RhsType, SolType, AlgTag&gt;</tt><a class="headerlink" href="#skylark::algorithms::accelerated_regression_solver_t:RegressionProblemType.RhsType.SolType.AlgTag:__class" title="Permalink to this definition">¶</a></dt>
+<dt>
+<code class="descname">class skylark::algorithms::accelerated_regression_solver_t&lt;RegressionProblemType, RhsType, SolType, AlgTag&gt;</code></dt>
 <dd></dd></dl>
 
 <p>Like <em>regression_solver_t</em>, defines a solver for the regression problem supplied in the constructor. Here, one uses
 algorithms that are accelerated using sketching. Note, that the solver is accelerated, and not approximated. That is,
 the original, and not an approximation, of the regression problem is solved.</p>
 <dl class="type">
-<dt id="skylark::algorithms::sketched_regression_solver_t:RegressionProblemType.RhsType.SolType.SketchedRegressionType.SketchType.SketchRhsType.SketchTransformType.ExactAlgTag:__class">
-<em class="property">type </em>class <tt class="descclassname">skylark::algorithms::</tt><tt class="descname">sketched_regression_solver_t&lt;RegressionProblemType, RhsType, SolType, SketchedRegressionType, SketchType, SketchRhsType, SketchTransformType, ExactAlgTag&gt;</tt><a class="headerlink" href="#skylark::algorithms::sketched_regression_solver_t:RegressionProblemType.RhsType.SolType.SketchedRegressionType.SketchType.SketchRhsType.SketchTransformType.ExactAlgTag:__class" title="Permalink to this definition">¶</a></dt>
+<dt>
+<code class="descname">class skylark::algorithms::sketched_regression_solver_t&lt;RegressionProblemType, RhsType, SolType, SketchedRegressionType, SketchType, SketchRhsType, SketchTransformType, ExactAlgTag&gt;</code></dt>
 <dd></dd></dl>
 
 <p>Approximate regression solver using sketching (sketch-and-solve). The basic idea is that a regression problem is sketched, and then the new
@@ -111,7 +111,7 @@ problem is solved exactly.</p>
 
 
       </div>
-      <div class="bottomnav">
+      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
       
         <p>
         <a class="uplink" href="index.html">Contents</a>
@@ -119,9 +119,9 @@ problem is solved exactly.</p>
 
       </div>
 
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright IBM Corporation 2012-2014.  All Rights Reserved.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
     </div>
   </body>
 </html>

@@ -36,6 +36,9 @@ add_executable(read_arc_list_test ReadArcList.cpp)
 target_link_libraries(read_arc_list_test ${COMMON_TEST_LIBRARIES})
 # add_test( read_arc_list_test mpirun -np 7 read_arc_list_test TEST_GRAPH )
 
+add_executable(get_elbows_test get_elbows_test.cpp)
+target_link_libraries( get_elbows_test ${COMMON_TEST_LIBRARIES})
+add_test(get_elbows_test mpirun -np 1 get_elbows_test)
 
 #-----------------------------------------------------------------------------
 # Tests depending on CombBLAS

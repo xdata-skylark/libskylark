@@ -108,6 +108,18 @@ struct sketch_transform_container_t
 
     }
 
+    sketch_transform_container_t(const sketch_transform_container_t &other)
+        : _transform(other._transform) {
+
+    }
+
+    sketch_transform_container_t operator=(const sketch_transform_container_t &other) {
+        if (this != &other)
+            _transform = other._transform;
+
+        return *this;
+    }
+
     virtual void apply (const InputMatrixType& A,
         OutputMatrixType& sketch_of_A, columnwise_tag dimension) const {
         _transform->apply(&A, &sketch_of_A, dimension);
@@ -133,6 +145,13 @@ struct sketch_transform_container_t
 
     virtual ~sketch_transform_container_t() {
 
+    }
+
+    static
+    sketch_transform_container_t from_ptree(const boost::property_tree::ptree& pt) {
+        generic_sketch_transform_ptr_t 
+            s_ptr(generic_sketch_transform_t::from_ptree(pt));
+        return sketch_transform_container_t(s_ptr);
     }
 
 private:

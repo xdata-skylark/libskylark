@@ -653,7 +653,6 @@ public model_t<OutType, ComputeType>
     typedef SketchType<El::DistMatrix<compute_type>,
                        El::DistMatrix<compute_type> > sketch_type;
 
-
     feature_expansion_model_t(const sketch_type &S,
         const El::DistMatrix<compute_type> &W) :
         _W(),  _scale_maps(false), _feature_transforms(1),
@@ -676,6 +675,10 @@ public model_t<OutType, ComputeType>
             it != _feature_transforms.end(); it++)
             _feature_size += it->get_S();
         El::LockedView(_W, W);
+    }
+
+    feature_expansion_model_t(const boost::property_tree::ptree &pt) {
+        build_from_ptree(pt);
     }
 
     void predict(base::direction_t direction_XT,
@@ -736,7 +739,7 @@ public model_t<OutType, ComputeType>
                     _feature_transforms[i].to_ptree()));
         ptfmap.add_child("transforms", ptmaps);
 
-        pt.add_child("expansion_transforms", ptfmap);
+        pt.add_child("feature_mapping", ptfmap);
 
         std::stringstream sW;
         El::Print(_W, "", sW);
@@ -761,11 +764,46 @@ public model_t<OutType, ComputeType>
         return _input_size;
     }
 
+protected:
+    void build_from_ptree(const boost::property_tree::ptree &pt) {
+
+        _input_size = pt.get<El::Int>("input_size");
+        _output_size = pt.get<El::Int>("num_outputs");
+
+        int num_transforms = pt.get<int>("feature_mapping.number_transforms");
+        _scale_maps = pt.get<bool>("feature_mapping.scale_maps");
+
+        El::Int s = 0;
+        _feature_transforms.resize(num_transforms);
+        const boost::property_tree::ptree &ptmaps =
+            pt.get_child("feature_mapping.transforms");
+        for(int i = 0; i < num_transforms; i++) {
+            _feature_transforms[i] =
+                sketch_type(sketch_type::from_ptree(ptmaps.get_child(std::to_string(i))));
+            s += _feature_transforms[i].get_S();
+        }
+
+        _W.Resize(s, _output_size);
+        std::istringstream W_str(pt.get<std::string>("weights"));
+        compute_type *buffer = _W.Buffer();
+        int ldim = _W.LDim();
+        for(int i = 0; i < s; i++) {
+            std::string line;
+            std::getline(W_str, line);
+            std::istringstream Wstream(line);
+            for(int j = 0; j < _output_size; j++) {
+                std::string token;
+                Wstream >> token;
+                buffer[i + j * ldim] = atof(token.c_str());
+            }
+        }
+    }
+
 private:
     El::DistMatrix<compute_type> _W;
-    const bool _scale_maps;
+    bool _scale_maps;
     std::vector<sketch_type> _feature_transforms;
-    const El::Int _input_size, _output_size;
+    El::Int _input_size, _output_size;
     El::Int _feature_size;
 };
 
@@ -808,6 +846,10 @@ public model_t<OutType, ComputeType> {
             it != _feature_transforms.end(); it++)
             _feature_size += it->get_S();
         El::LockedView(_W, W);
+    }
+
+    feature_expansion_model_t(const boost::property_tree::ptree &pt) {
+        build_from_ptree(pt);
     }
 
     void predict(base::direction_t direction_XT,
@@ -861,6 +903,7 @@ public model_t<OutType, ComputeType> {
         pt.put("skylark_version", VERSION);
 
         pt.put("input_size", _input_size);
+        pt.put("num_outputs", _output_size);
         pt.put("regression", false);
 
         boost::property_tree::ptree rcoding;
@@ -878,8 +921,6 @@ public model_t<OutType, ComputeType> {
                     _feature_transforms[i].to_ptree()));
         ptfmap.add_child("transforms", ptmaps);
         pt.add_child("feature_mapping", ptfmap);
-
-        pt.add_child("expansion_transforms", ptfmap);
 
         std::stringstream sW;
         El::Print(_W, "", sW);
@@ -910,12 +951,52 @@ public model_t<OutType, ComputeType> {
             rcoding[i] = _rcoding[i];
     }
 
+protected:
+    void build_from_ptree(const boost::property_tree::ptree &pt) {
+
+        _input_size = pt.get<El::Int>("input_size");
+        _output_size = pt.get<El::Int>("num_outputs");
+        _rcoding.resize(_output_size);
+        const boost::property_tree::ptree &ptrcoding =
+            pt.get_child("rcoding");
+        for(El::Int i = 0; i < _output_size; i++)
+            _rcoding[i] = ptrcoding.get<OutType>(std::to_string(i));
+
+        int num_transforms = pt.get<int>("feature_mapping.number_transforms");
+        _scale_maps = pt.get<bool>("feature_mapping.scale_maps");
+
+        El::Int s = 0;
+        _feature_transforms.resize(num_transforms);
+        const boost::property_tree::ptree &ptmaps =
+            pt.get_child("feature_mapping.transforms");
+        for(int i = 0; i < num_transforms; i++) {
+            _feature_transforms[i] =
+                sketch_type(sketch_type::from_ptree(ptmaps.get_child(std::to_string(i))));
+            s += _feature_transforms[i].get_S();
+        }
+
+        _W.Resize(s, _output_size);
+        std::istringstream W_str(pt.get<std::string>("weights"));
+        compute_type *buffer = _W.Buffer();
+        int ldim = _W.LDim();
+        for(int i = 0; i < s; i++) {
+            std::string line;
+            std::getline(W_str, line);
+            std::istringstream Wstream(line);
+            for(int j = 0; j < _output_size; j++) {
+                std::string token;
+                Wstream >> token;
+                buffer[i + j * ldim] = atof(token.c_str());
+            }
+        }
+    }
+
 private:
     El::DistMatrix<compute_type> _W;
     std::vector<OutType> _rcoding;
-    const bool _scale_maps;
+    bool _scale_maps;
     std::vector<sketch_type> _feature_transforms;
-    const El::Int _input_size, _output_size;
+    El::Int _input_size, _output_size;
     El::Int _feature_size;
 };
 
@@ -949,6 +1030,11 @@ public model_t<OutType, ComputeType>
 
         if (type == "model:kernel")
             _m.reset(new kernel_model_t<skylark::ml::kernel_container_t,
+                OutType, ComputeType>(pt));
+
+        if (type == "model:feature_expansion")
+            _m.reset(new feature_expansion_model_t<
+                sketch::sketch_transform_container_t,
                 OutType, ComputeType>(pt));
     }
 
@@ -999,8 +1085,13 @@ public model_t<OutType, ComputeType>
         if (type == "model:kernel")
             _m.reset(new kernel_model_t<skylark::ml::kernel_container_t,
                 OutType, ComputeType>(pt));
+
+        if (type == "model:feature_expansion")
+            _m.reset(new feature_expansion_model_t<
+                sketch::sketch_transform_container_t,
+                OutType, ComputeType>(pt));
     }
-    
+
     virtual void predict(base::direction_t direction_XT,
         const El::DistMatrix<ComputeType> &XT, El::DistMatrix<OutType> &LP,
         El::DistMatrix<ComputeType> &DV) const {

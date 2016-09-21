@@ -417,8 +417,8 @@ int execute_classification(skylark::base::context_t &context) {
             T(lambda), A, rcoding, rlsc_params);
         model =
             new skylark::ml::kernel_model_t<skylark::ml::kernel_container_t,
-                  El::Int, T>(k, skylark::base::COLUMNS, X, fname, fileformat,
-                      A, rcoding);
+              El::Int, T>(k, skylark::base::COLUMNS, X, fname, partial, fileformat,
+                  A, rcoding);
         break;
 
     case FASTER_KRR:
@@ -428,8 +428,8 @@ int execute_classification(skylark::base::context_t &context) {
             T(lambda), A, rcoding, s, context, rlsc_params);
         model =
             new skylark::ml::kernel_model_t<skylark::ml::kernel_container_t,
-                  El::Int, T>(k, skylark::base::COLUMNS, X, fname, fileformat,
-                      A, rcoding);
+              El::Int, T>(k, skylark::base::COLUMNS, X, fname, partial,  
+                  fileformat, A, rcoding);
         break;
 
     case APPROXIMATE_KRR:
@@ -715,7 +715,7 @@ int execute_regression(skylark::base::context_t &context) {
             T(lambda), A, krr_params);
         model =
             new skylark::ml::kernel_model_t<skylark::ml::kernel_container_t,
-                  T, T>(k, skylark::base::COLUMNS, X, fname, fileformat,
+                T, T>(k, skylark::base::COLUMNS, X, fname, partial, fileformat,
                       A);
         break;
 
@@ -726,7 +726,7 @@ int execute_regression(skylark::base::context_t &context) {
             T(lambda), A, s, context, krr_params);
         model =
             new skylark::ml::kernel_model_t<skylark::ml::kernel_container_t,
-                  T, T>(k, skylark::base::COLUMNS, X, fname, fileformat, A);
+             T, T>(k, skylark::base::COLUMNS, X, fname, partial, fileformat, A);
         break;
 
     case APPROXIMATE_KRR:

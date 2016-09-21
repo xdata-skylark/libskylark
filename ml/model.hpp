@@ -352,10 +352,12 @@ public model_t<OutType, ComputeType>
 
     kernel_model_t(const kernel_type &k,
         base::direction_t direction, const El::DistMatrix<compute_type> &X,
-        const std::string &dataloc, const utility::io::fileformat_t fileformat,
+        const std::string &dataloc, El::Int partial, 
+        const utility::io::fileformat_t fileformat,
         const El::DistMatrix<compute_type> &A) :
         _X(), _direction(direction),
-        _A(), _dataloc(dataloc), _fileformat(fileformat), _k(k),
+        _A(), _dataloc(dataloc), _partial(partial),
+        _fileformat(fileformat), _k(k),
         _input_size(k.get_dim()), _output_size(A.Width()) {
 
         El::LockedView(_X, X);
@@ -382,6 +384,7 @@ public model_t<OutType, ComputeType>
         pt.put("skylark_version", VERSION);
 
         pt.put("data_location", _dataloc);
+        pt.put("partial", _partial);
         pt.put("fileformat", _fileformat);
         pt.put("num_outputs", _output_size);
         pt.put("input_size", _input_size);
@@ -420,6 +423,7 @@ protected:
 
         _k = kernel_container_t(pt.get_child("kernel"));
         _dataloc = pt.get<std::string>("data_location");
+        _partial = pt.get<El::Int>("partial");
         _fileformat = (utility::io::fileformat_t)pt.get<int>("fileformat");
 
         // TODO handle "partial" and "sampling"
@@ -428,13 +432,13 @@ protected:
         switch (_fileformat) {
         case utility::io::FORMAT_LIBSVM:
             utility::io::ReadLIBSVM(_dataloc, _X, dummyY, base::COLUMNS,
-                _input_size);
+                _input_size, _partial);
             break;
 
 #ifdef SKYLARK_HAVE_HDF5
         case utility::io::FORMAT_HDF5: {
             H5::H5File in(_dataloc, H5F_ACC_RDONLY);
-            utility::io::ReadHDF5(in, "X", _X, -1, -1);
+            utility::io::ReadHDF5(in, "X", _X, -1, _partial);
             in.close();
         }
             break;
@@ -467,6 +471,7 @@ private:
     base::direction_t _direction;
     El::DistMatrix<compute_type> _A;
     std::string _dataloc;
+    El::Int _partial;
     utility::io::fileformat_t _fileformat;
     kernel_type _k;
     El::Int _input_size, _output_size;
@@ -486,11 +491,13 @@ public model_t<OutType, ComputeType> {
 
     kernel_model_t(const kernel_type &k,
         base::direction_t direction, const El::DistMatrix<compute_type> &X,
-        const std::string &dataloc, const utility::io::fileformat_t fileformat,
+        const std::string &dataloc, El::Int partial,
+        const utility::io::fileformat_t fileformat,
         const El::DistMatrix<compute_type> &A,
         const std::vector<OutType> &rcoding) :
         _X(), _direction(direction),
-        _A(), _rcoding(rcoding), _dataloc(dataloc), _fileformat(fileformat),
+        _A(), _rcoding(rcoding), _dataloc(dataloc), _partial(partial),
+        _fileformat(fileformat),
         _k(k), _input_size(k.get_dim()), _output_size(A.Width()) {
 
         El::LockedView(_X, X);
@@ -518,6 +525,7 @@ public model_t<OutType, ComputeType> {
         pt.put("skylark_version", VERSION);
 
         pt.put("data_location", _dataloc);
+        pt.put("partial", _partial);
         pt.put("fileformat", _fileformat);
         pt.put("num_outputs", _output_size);
         pt.put("input_size", _input_size);
@@ -574,6 +582,7 @@ protected:
 
         _dataloc = pt.get<std::string>("data_location");
         _fileformat = (utility::io::fileformat_t)pt.get<int>("fileformat");
+        _partial = pt.get<int>("partial");
 
         // TODO handle "partial" and "sampling"
         El::DistMatrix<OutType> dummyL;
@@ -581,13 +590,13 @@ protected:
         switch (_fileformat) {
         case utility::io::FORMAT_LIBSVM:
             utility::io::ReadLIBSVM(_dataloc, _X, dummyL, base::COLUMNS,
-                _input_size);
+                _input_size, _partial);
             break;
 
 #ifdef SKYLARK_HAVE_HDF5
         case utility::io::FORMAT_HDF5: {
             H5::H5File in(_dataloc, H5F_ACC_RDONLY);
-            utility::io::ReadHDF5(in, "X", _X, -1, -1);
+            utility::io::ReadHDF5(in, "X", _X, -1, _partial);
             in.close();
         }
             break;
@@ -621,6 +630,7 @@ private:
     El::DistMatrix<compute_type> _A;
     std::vector<OutType> _rcoding;
     std::string _dataloc;
+    El::Int _partial;
     utility::io::fileformat_t _fileformat;
     kernel_type _k;
     El::Int _input_size, _output_size;

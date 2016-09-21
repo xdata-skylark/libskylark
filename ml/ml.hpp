@@ -9,6 +9,7 @@
 #include "model.hpp"
 #include "kmeans.hpp"
 #include "low_rank.hpp"
+#include "sbm.hpp"
 
 // TODO add includes to hilbert
 

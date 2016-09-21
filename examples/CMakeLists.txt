@@ -79,6 +79,16 @@ target_link_libraries(low_rank
   ${Boost_LIBRARIES})
 install_targets(/bin/skylark_examples low_rank)
 
+add_executable(sbm sbm.cpp)
+target_link_libraries(sbm
+  ${Elemental_LIBRARY}
+  ${OPTIONAL_LIBS}
+  ${Pmrrr_LIBRARY}
+  ${Metis_LIBRARY}
+  ${SKYLARK_LIBS}
+  ${Boost_LIBRARIES})
+install_targets(/bin/skylark_examples sbm)
+
 if (SKYLARK_HAVE_HDF5)
   add_executable(condest condest.cpp)
   target_link_libraries(condest

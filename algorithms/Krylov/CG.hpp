@@ -5,7 +5,6 @@
 #include "../../utility/elem_extender.hpp"
 #include "../../utility/typer.hpp"
 #include "../../utility/external/print.hpp"
-#include "../../utility/timer.hpp"
 #include "internal.hpp"
 #include "precond.hpp"
 
@@ -25,13 +24,6 @@ int CG(El::UpperOrLower uplo, const MatrixType& A, const RhsType& B, SolType& X,
     krylov_iter_params_t params = krylov_iter_params_t(),
     const outplace_precond_t<RhsType, SolType>& M =
     outplace_id_precond_t<RhsType, SolType>()) {
-
-#   if SKYLARK_HAVE_PROFILER
-    boost::mpi::communicator comm = utility::get_communicator(A);
-#   endif
-
-    SKYLARK_TIMER_INITIALIZE(CG_SYMM_PROFILE);
-    SKYLARK_TIMER_INITIALIZE(CG_PRECOND_APPLY_PROFILE);
 
     int ret;
 
@@ -68,9 +60,7 @@ int CG(El::UpperOrLower uplo, const MatrixType& A, const RhsType& B, SolType& X,
     sol_type &Z =  !isprecond ? R : *(new sol_type(X));
 
     // TODO should be Hemm
-    SKYLARK_TIMER_RESTART(CG_SYMM_PROFILE);
     base::Symm(El::LEFT, uplo, value_type(-1.0), A, X, value_type(1.0), R);
-    SKYLARK_TIMER_ACCUMULATE(CG_SYMM_PROFILE);
 
     scalar_cont_type
         nrmb(internal::scalar_cont_typer_t<rhs_type>::build_compatible(k, 1, B));
@@ -85,10 +75,7 @@ int CG(El::UpperOrLower uplo, const MatrixType& A, const RhsType& B, SolType& X,
 
     for (index_type itn=0; itn<params.iter_lim; ++itn) {
         if (isprecond) {
-            SKYLARK_TIMER_RESTART(CG_PRECOND_APPLY_PROFILE);
             M.apply(R, Z);
-            SKYLARK_TIMER_ACCUMULATE(CG_PRECOND_APPLY_PROFILE);
-
             base::ColumnDot(R, Z, rho);
         } else
             rho = ressqr;
@@ -103,9 +90,7 @@ int CG(El::UpperOrLower uplo, const MatrixType& A, const RhsType& B, SolType& X,
         base::Axpy(value_type(1.0), Z, P);
 
         // TODO should be Hemm
-        SKYLARK_TIMER_RESTART(CG_SYMM_PROFILE);
         base::Symm(El::LEFT, uplo, value_type(1.0), A, P, value_type(0.0), Q);
-        SKYLARK_TIMER_ACCUMULATE(CG_SYMM_PROFILE);
 
         base::ColumnDot(P, Q, rhotmp);
         for(index_type i = 0; i < k; i++) {
@@ -156,8 +141,6 @@ int CG(El::UpperOrLower uplo, const MatrixType& A, const RhsType& B, SolType& X,
     if (isprecond)
         delete &Z;
 
-    SKYLARK_TIMER_PRINT(CG_SYMM_PROFILE, comm);
-    SKYLARK_TIMER_PRINT(CG_PRECOND_APPLY_PROFILE, comm);
 
     return ret;
 }

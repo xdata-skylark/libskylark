@@ -3,22 +3,14 @@ export SPHINXEXT=$HOME/.sphinx_ext
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PWD/install/lib/:/usr/local/lib
 
 mkdir build && cd build && cmake -DCMAKE_INSTALL_PREFIX=../install \
-        -DUSE_FFTW=ON -DUSE_COMBBLAS=OFF -DBUILD_TESTS=ON ../ && \
-        CC=mpicc CXX=mpicxx make -j 2
-if [ $? -ne 0 ]; then
-    exit 1
-fi
-
+        -DUSE_FFTW=ON -DUSE_COMBBLAS=ON -DBUILD_TESTS=ON ../ && \
+        CC=mpicc CXX=mpicxx make -j 4
 make install &> /dev/null
-if [ $? -ne 0 ]; then
-    exit 1
-fi
 
 make doc &> /dev/null
 
 export PYTHONPATH=$PYTHON_SITE_PACKAGES/lib/python2.7/site-packages:$PYTHON_SITE_PACKAGES
-#LD_PRELOAD=/usr/lib/libmpi.so make sphinx-doc
-make sphinx-doc
+LD_PRELOAD=/usr/lib/libmpi.so make sphinx-doc
 cp -R Documentation /tmp/
 
 ctest --output-on-failure

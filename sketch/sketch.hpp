@@ -2,7 +2,6 @@
 #define SKYLARK_SKETCH_HPP
 
 #include "../base/base.hpp"
-#include "../utility/types.hpp"
 #include "transforms.hpp"
 #include "sketch_transform_data.hpp"
 #include "sketch_transform.hpp"

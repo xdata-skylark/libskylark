@@ -3,23 +3,15 @@
 
 #ifdef SKYLARK_HAVE_PROFILER
 
-#define SKYLARK_TIMER_DECLARE(X) \
-    boost::mpi::timer X##_timer; \
-    double X##_time; 
-
-#define SKYLARK_TIMER_INITIALIZE(X)             \
+#define SKYLARK_TIMER_INITIALIZE(X) \
     boost::mpi::timer X##_timer; \
     double X##_time = 0.0; \
 
-#define SKYLARK_TIMER_DINIT(X)   \
-    X##_time = 0.0; \
-
-#define SKYLARK_TIMER_RESTART(X)                \
-    const_cast<boost::mpi::timer *>(&X##_timer)->restart();     \
+#define SKYLARK_TIMER_RESTART(X) \
+    X##_timer.restart(); \
 
 #define SKYLARK_TIMER_ACCUMULATE(X) \
-    *const_cast<double*>(&X##_time) += X##_timer.elapsed();        \
-
+    X##_time += X##_timer.elapsed(); \
 
 #define SKYLARK_TIMER_PRINT(X, BOOST_COMM)     \
     if (BOOST_COMM.rank() == 0) {                                  \
@@ -62,8 +54,6 @@
 
 #else //SKYLARK_HAVE_PROFILER
 
-#define SKYLARK_TIMER_DECLARE(X)
-#define SKYLARK_TIMER_DINIT(X)
 #define SKYLARK_TIMER_INITIALIZE(X)
 #define SKYLARK_TIMER_RESTART(X)
 #define SKYLARK_TIMER_ACCUMULATE(X)

@@ -3,8 +3,6 @@
 #include "../base/context.hpp"
 #include "../base/exception.hpp"
 
-static boost::exception_ptr lastexception;
-
 struct sl_context_t : public skylark::base::context_t {
     sl_context_t(int seed) : skylark::base::context_t(seed) {
 
@@ -39,7 +37,7 @@ SKYLARK_EXTERN_API int sl_create_default_context(int seed,
     SKYLARK_BEGIN_TRY()
         *ctxt = new sl_context_t(seed);
     SKYLARK_END_TRY()
-    SKYLARK_CATCH_COPY_AND_RETURN_ERROR_CODE(lastexception);
+    SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
     return 0;
 }
 
@@ -48,7 +46,7 @@ SKYLARK_EXTERN_API int sl_create_context(int seed,
     SKYLARK_BEGIN_TRY()
         *ctxt = new sl_context_t(seed);
     SKYLARK_END_TRY()
-    SKYLARK_CATCH_COPY_AND_RETURN_ERROR_CODE(lastexception);
+    SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
     return 0;
 }
 
@@ -56,7 +54,7 @@ SKYLARK_EXTERN_API int sl_free_context(sl_context_t *ctxt) {
     SKYLARK_BEGIN_TRY()
         delete ctxt;
     SKYLARK_END_TRY()
-    SKYLARK_CATCH_COPY_AND_RETURN_ERROR_CODE(lastexception);
+    SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
     return 0;
 }
 
@@ -104,34 +102,10 @@ SKYLARK_EXTERN_API int sl_raw_sp_matrix_nnz(void *A_, int *nnz) {
     return 0;
 }
 
-SKYLARK_EXTERN_API int sl_raw_sp_matrix_height(void *A_, int *height) {
-    *height = static_cast<SparseMatrix *>(A_)->height();
-    return 0;
-}
-
-SKYLARK_EXTERN_API int sl_raw_sp_matrix_width(void *A_, int *width) {
-    *width = static_cast<SparseMatrix *>(A_)->width();
-    return 0;
-}
-
 SKYLARK_EXTERN_API int sl_raw_sp_matrix_data(void *A_, int32_t *indptr,
         int32_t *indices, double *values) {
     static_cast<SparseMatrix *>(A_)->detach(indptr, indices, values);
     return 0;
-}
-
-SKYLARK_EXTERN_API void sl_get_exception_info(char **info) {
-    std::string infos = boost::diagnostic_information(lastexception);
-    *info = new char[infos.length() + 1];
-    std::strcpy(*info, infos.c_str());
-}
-
-SKYLARK_EXTERN_API void sl_print_exception_trace() {
-    try {
-        boost::rethrow_exception(lastexception);
-    } catch (const skylark::base::skylark_exception &ex) {
-        SKYLARK_PRINT_EXCEPTION_TRACE(ex);
-    }
 }
 
 } // extern "C"

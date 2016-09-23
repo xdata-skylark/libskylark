@@ -179,7 +179,7 @@ void test_gemm_vc(El::Orientation oA, El::Orientation oB, double alpha,
     El::Matrix<double> A_vc_result_gathered = C.Matrix();
     El::Matrix<double> A_sparse_vc_result_gathered = A_sparse_vc_result.Matrix();
 
-    if (!test::util::equal(A_vc_result_gathered, A_sparse_vc_result_gathered))
+    if (!equal(A_vc_result_gathered, A_sparse_vc_result_gathered))
         BOOST_FAIL("Gemm VC/STAR application not equal");
 }
 
@@ -219,7 +219,7 @@ void test_gemm_vr(El::Orientation oA, El::Orientation oB, double alpha,
     BOOST_REQUIRE(A_vr_result.LocalWidth() == A_sparse_vr_result.LocalWidth());
     BOOST_REQUIRE(A_vr_result.LocalHeight() == A_sparse_vr_result.LocalHeight());
 
-    if (!test::util::equal(A_vr_result, A_vr_result))
+    if (!equal(A_vr_result, A_vr_result))
         BOOST_FAIL("Gemm STAR/VR application not equal");
 }
 
@@ -272,7 +272,7 @@ void test_symm(El::LeftOrRight side, El::UpperOrLower uplo, double alpha,
     El::Matrix<double> A_vc_result_gathered = A_vc_result.Matrix();
     El::Matrix<double> A_sparse_vc_result_gathered = A_sparse_vc_result.Matrix();
 
-    if (!test::util::equal(A_vc_result_gathered, A_sparse_vc_result_gathered))
+    if (!equal(A_vc_result_gathered, A_sparse_vc_result_gathered))
         BOOST_FAIL("Symm VC/STAR application not equal");
 
     world.barrier();

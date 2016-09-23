@@ -44,7 +44,6 @@ FIND_LIBRARY(Metis_LIBRARY metis
    $ENV{HOME}/.local/lib
    $ENV{HOME}/local/lib
    $ENV{HOME}/Software/lib
-   /usr/lib/x86_64-linux-gnu
    /usr/local/lib
    /usr/lib
    NO_DEFAULT_PATH

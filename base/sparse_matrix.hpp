@@ -1,8 +1,6 @@
 #ifndef SKYLARK_SPARSE_MATRIX_HPP
 #define SKYLARK_SPARSE_MATRIX_HPP
 
-#include <signal.h>
-
 #include <boost/unordered_map.hpp>
 
 #include <set>
@@ -48,28 +46,8 @@ struct sparse_matrix_t {
         A._ownvalues = false;
     }
 
-    sparse_matrix_t(const sparse_matrix_t<ValueType> &A)
-        : _ownindptr(false), _ownindices(false), _ownvalues(false),
-          _readonly(false), _dirty_struct(false), _height(0), _width(0), _nnz(0),
-          _indptr(nullptr), _indices(nullptr), _values(nullptr) {
-        if (&A != this)
-            *this = A;
-        else
-            SKYLARK_THROW_EXCEPTION (
-              invalid_parameters()
-                  << base::error_msg(
-                     "Cannot construct a sparse matrix with itself!"));
-    }
-
     ~sparse_matrix_t() {
         _free_data();
-    }
-
-
-    const sparse_matrix_t<ValueType> &operator=(const
-        sparse_matrix_t<ValueType> &A) {
-        Copy(A, *this);
-        return *this;
     }
 
     bool struct_updated() const { return _dirty_struct; }
@@ -300,6 +278,10 @@ private:
     const index_type* _indices;
     value_type* _values;
 
+    // TODO add the following
+    sparse_matrix_t(const sparse_matrix_t&);
+    void operator=(const sparse_matrix_t&);
+
     void _free_data() {
         if (_ownindptr)
             delete[] _indptr;
@@ -361,24 +343,6 @@ void Transpose(const sparse_matrix_t<T>& A, sparse_matrix_t<T>& B) {
     delete[] nzrow;
 
     B.attach(indptr, indices, values, nnz, m, n, true);
-}
-
-template<typename T>
-void Copy(const sparse_matrix_t<T>& A, sparse_matrix_t<T>& B) {
-
-    typedef typename sparse_matrix_t<T>::index_type index_type;
-    typedef typename sparse_matrix_t<T>::value_type value_type;
-
-    index_type *indptr = new index_type[A.width() + 1];
-    index_type *indices = new index_type[A.nonzeros()];
-    value_type *values = new value_type[A.nonzeros()];
-
-    std::copy(A.indptr(), A.indptr() + A.width() + 1, indptr);
-    std::copy(A.indices(), A.indices() + A.nonzeros(), indices);
-    std::copy(A.values(), A.values() + A.nonzeros(), values);
-
-    B.attach(indptr, indices, values, A.nonzeros(), A.height(), A.width(), true);
-
 }
 
 } }

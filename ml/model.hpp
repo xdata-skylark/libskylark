@@ -465,19 +465,41 @@ protected:
 
         _direction = base::COLUMNS;
 
-        _A.Resize(_X.Width(), _output_size);
         std::istringstream A_str(pt.get<std::string>("alpha"));
-        compute_type *buffer = _A.Buffer();
-        int ldim = _A.LDim();
-        for(int i = 0; i < _X.Width(); i++) {
-            std::string line;
-            std::getline(A_str, line);
-            std::istringstream Astream(line);
-            for(int j = 0; j < _output_size; j++) {
-                std::string token;
-                Astream >> token;
-                buffer[i + j * ldim] = atof(token.c_str());
+        if (_A.Grid().Size() == 1) {
+            _A.Resize(_X.Width(), _output_size);
+            compute_type *buffer = _A.Buffer();
+            int ldim = _A.LDim();
+            for(int i = 0; i < _X.Width(); i++) {
+                std::string line;
+                std::getline(A_str, line);
+                std::istringstream Astream(line);
+                for(int j = 0; j < _output_size; j++) {
+                    std::string token;
+                    Astream >> token;
+                    buffer[i + j * ldim] = atof(token.c_str());
+                }
             }
+        } else {
+            // TODO: can do more memory efficient
+            El::DistMatrix<compute_type, El::CIRC, El::CIRC> A0(_X.Width(),
+                _output_size);
+            if (A0.Grid().Rank() == 0) {
+                compute_type *buffer = A0.Buffer();
+                int ldim = A0.LDim();
+                for(int i = 0; i < _X.Width(); i++) {
+                    std::string line;
+                    std::getline(A_str, line);
+                    std::istringstream Astream(line);
+                    for(int j = 0; j < _output_size; j++) {
+                        std::string token;
+                        Astream >> token;
+                        buffer[i + j * ldim] = atof(token.c_str());
+                    }
+                }
+            }
+
+            _A = A0;
         }
     }
 
@@ -638,19 +660,41 @@ protected:
 
         _direction = base::COLUMNS;
 
-        _A.Resize(_X.Width(), _output_size);
         std::istringstream A_str(pt.get<std::string>("alpha"));
-        compute_type *buffer = _A.Buffer();
-        int ldim = _A.LDim();
-        for(int i = 0; i < _X.Width(); i++) {
-            std::string line;
-            std::getline(A_str, line);
-            std::istringstream Astream(line);
-            for(int j = 0; j < _output_size; j++) {
-                std::string token;
-                Astream >> token;
-                buffer[i + j * ldim] = atof(token.c_str());
+        if (_A.Grid().Size() == 1) {
+            _A.Resize(_X.Width(), _output_size);
+            compute_type *buffer = _A.Buffer();
+            int ldim = _A.LDim();
+            for(int i = 0; i < _X.Width(); i++) {
+                std::string line;
+                std::getline(A_str, line);
+                std::istringstream Astream(line);
+                for(int j = 0; j < _output_size; j++) {
+                    std::string token;
+                    Astream >> token;
+                    buffer[i + j * ldim] = atof(token.c_str());
+                }
             }
+        } else {
+            // TODO: can do more memory efficient
+            El::DistMatrix<compute_type, El::CIRC, El::CIRC> A0(_X.Width(),
+                _output_size);
+            if (A0.Grid().Rank() == 0) {
+                compute_type *buffer = A0.Buffer();
+                int ldim = A0.LDim();
+                for(int i = 0; i < _X.Width(); i++) {
+                    std::string line;
+                    std::getline(A_str, line);
+                    std::istringstream Astream(line);
+                    for(int j = 0; j < _output_size; j++) {
+                        std::string token;
+                        Astream >> token;
+                        buffer[i + j * ldim] = atof(token.c_str());
+                    }
+                }
+            }
+
+            _A = A0;
         }
     }
 
@@ -824,19 +868,40 @@ protected:
             s += _feature_transforms[i].get_S();
         }
 
-        _W.Resize(s, _output_size);
         std::istringstream W_str(pt.get<std::string>("weights"));
-        compute_type *buffer = _W.Buffer();
-        int ldim = _W.LDim();
-        for(int i = 0; i < s; i++) {
-            std::string line;
-            std::getline(W_str, line);
-            std::istringstream Wstream(line);
-            for(int j = 0; j < _output_size; j++) {
-                std::string token;
-                Wstream >> token;
-                buffer[i + j * ldim] = atof(token.c_str());
+        if (_W.Grid().Size() == 1) {
+            _W.Resize(s, _output_size);
+            compute_type *buffer = _W.Buffer();
+            int ldim = _W.LDim();
+            for(int i = 0; i < s; i++) {
+                std::string line;
+                std::getline(W_str, line);
+                std::istringstream Wstream(line);
+                for(int j = 0; j < _output_size; j++) {
+                    std::string token;
+                    Wstream >> token;
+                    buffer[i + j * ldim] = atof(token.c_str());
+                }
             }
+        } else {
+            // TODO: can do more memory efficient
+            El::DistMatrix<compute_type, El::CIRC, El::CIRC> W0(s, _output_size);
+            if (W0.Grid().Rank() == 0) {
+                compute_type *buffer = W0.Buffer();
+                int ldim = W0.LDim();
+                for(int i = 0; i < s; i++) {
+                    std::string line;
+                    std::getline(W_str, line);
+                    std::istringstream Wstream(line);
+                    for(int j = 0; j < _output_size; j++) {
+                        std::string token;
+                        Wstream >> token;
+                        buffer[i + j * ldim] = atof(token.c_str());
+                    }
+                }
+            }
+
+            _W = W0;
         }
     }
 
@@ -1016,19 +1081,40 @@ protected:
             s += _feature_transforms[i].get_S();
         }
 
-        _W.Resize(s, _output_size);
         std::istringstream W_str(pt.get<std::string>("weights"));
-        compute_type *buffer = _W.Buffer();
-        int ldim = _W.LDim();
-        for(int i = 0; i < s; i++) {
-            std::string line;
-            std::getline(W_str, line);
-            std::istringstream Wstream(line);
-            for(int j = 0; j < _output_size; j++) {
-                std::string token;
-                Wstream >> token;
-                buffer[i + j * ldim] = atof(token.c_str());
+        if (_W.Grid().Size() == 1) {
+            _W.Resize(s, _output_size);
+            compute_type *buffer = _W.Buffer();
+            int ldim = _W.LDim();
+            for(int i = 0; i < s; i++) {
+                std::string line;
+                std::getline(W_str, line);
+                std::istringstream Wstream(line);
+                for(int j = 0; j < _output_size; j++) {
+                    std::string token;
+                    Wstream >> token;
+                    buffer[i + j * ldim] = atof(token.c_str());
+                }
             }
+        } else {
+            // TODO: can do more memory efficient
+            El::DistMatrix<compute_type, El::CIRC, El::CIRC> W0(s, _output_size);
+            if (W0.Grid().Rank() == 0) {
+                compute_type *buffer = W0.Buffer();
+                int ldim = W0.LDim();
+                for(int i = 0; i < s; i++) {
+                    std::string line;
+                    std::getline(W_str, line);
+                    std::istringstream Wstream(line);
+                    for(int j = 0; j < _output_size; j++) {
+                        std::string token;
+                        Wstream >> token;
+                        buffer[i + j * ldim] = atof(token.c_str());
+                    }
+                }
+            }
+
+            _W = W0;
         }
     }
 

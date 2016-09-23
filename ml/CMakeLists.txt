@@ -11,6 +11,18 @@ target_link_libraries(skylark_ml
 
 install_targets(/bin skylark_ml)
 
+add_executable(skylark_krr skylark_krr.cpp)
+
+target_link_libraries(skylark_krr
+  ${Elemental_LIBRARY}
+  ${OPTIONAL_LIBS}
+  ${Pmrrr_LIBRARY}
+  ${Metis_LIBRARY}
+  ${SKYLARK_LIBS}
+  ${Boost_LIBRARIES})
+
+install_targets(/bin skylark_krr)
+
 add_executable(skylark_graph_se skylark_graph_se.cpp)
 
 target_link_libraries(skylark_graph_se

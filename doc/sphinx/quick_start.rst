@@ -201,6 +201,33 @@ The file cpu.sol.txt contains the computed approximate solution.
 Learning Non-Linear Models
 --------------------------
 
+libSkylark offers two mechanisms to learn non-linear models: ADMM-based solver
+and kernel ridge regression solver.
+
+Kernel Ridge Regression solver
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+In :file:`${SKYLARK_SRC_DIR}/ml/skylark_krr.cpp`, kernel ridge regression is
+setup to train and predict with a  kernel based model for
+nonlinear classification and regression problems. The code incorporates various
+algorithms, with varying trade-offs in speed, memory and accuracy.
+
+Building libSkylark creates an executable called ``skylark_krrl`` in
+``$SKYLARK_INSTALL_DIR/bin``. This executable can be used in standalone mode as follows. 
+
+1. Train a classifier using the Gaussian Kernel
+
+.. code-block:: sh
+
+        mpiexec -np 4 ./skylark_krr -a 1 -k 0 -g 10 -f 1000 --model model data/usps.train 
+
+2. Test accuracy of the generated model and generate predictions
+
+.. code-block:: sh
+
+        mpiexec -np 4 ./skylark_krr --outputfile output --model model usps.test 
+
+ADMM-based solver
+^^^^^^^^^^^^^^^^^
 In :file:`${SKYLARK_SRC_DIR}/ml/skylark_ml.cpp`, an ADMM-based solver is
 setup to train and predict with a randomized kernel based model for
 nonlinear classification and regression problems.
@@ -212,13 +239,13 @@ Building libSkylark creates an executable called ``skylark_ml`` in
 
 .. code-block:: sh
 
-        mpiexec -np 4 skylark_ml -g 10 -k 1 -l 2 -i 30 -f 1000 --trainfile data/usps.train --valfile data/usps.test --modelfile model
+        mpiexec -np 4 ./skylark_ml -g 10 -k 1 -l 2 -i 30 -f 1000 --trainfile data/usps.train --valfile data/usps.test --modelfile model
 
 2. Test accuracy of the generated model and generate predictions
 
 .. code-block:: sh
 
-        mpiexec -np 4 skylark_ml --outputfile output --testfile data/usps.test --modelfile model
+        mpiexec -np 4 ./skylark_ml --outputfile output --testfile data/usps.test --modelfile model
 
 An output file named output.txt with the predicted labels is created.
 

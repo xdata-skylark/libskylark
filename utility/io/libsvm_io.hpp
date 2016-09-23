@@ -12,9 +12,6 @@ namespace boostfs = boost::filesystem;
 #include <unordered_map>
 #include <boost/serialization/list.hpp>
 
-#include "../types.hpp"
-#include "../get_communicator.hpp"
-
 namespace skylark { namespace utility { namespace io {
 
 /**
@@ -27,13 +24,11 @@ namespace skylark { namespace utility { namespace io {
  * @param direction whether the examples are to be put in rows or columns
  * @param min_d minimum number of rows in the matrix.
  * @param max_n maximum number of columns in the matrix.
- * @param blocksize blocksize for reading for distributed outputs.
  */
 template<typename T, typename R>
 void ReadLIBSVM(const std::string& fname,
     El::Matrix<T>& X, El::Matrix<R>& Y,
-    base::direction_t direction, int min_d = 0, int max_n = -1,
-    int blocksize=10000) {
+    base::direction_t direction, int min_d = 0, int max_n = -1) {
 
     std::string line;
     std::string token, val, ind;
@@ -46,12 +41,6 @@ void ReadLIBSVM(const std::string& fname,
     char c;
 
     std::ifstream in(fname);
-
-    if ((in.rdstate() & std::ifstream::failbit) != 0)
-        SKYLARK_THROW_EXCEPTION (
-           base::io_exception()
-               << base::error_msg(
-                "Failed to open file " + fname));
 
     // make one pass over the data to figure out dimensions -
     // will pay in terms of preallocated storage.
@@ -320,13 +309,11 @@ void ReadLIBSVM(const std::string& fname,
  * @param direction whether the examples are to be put in rows or columns
  * @param min_d minimum number of rows in the matrix.
  * @param max_n maximum number of cols in the matrix.
- * @param blocksize blocksize for reading for distributed outputs.
  */
 template<typename T, typename R>
 void ReadLIBSVM(const std::string& fname,
     base::sparse_matrix_t<T>& X, El::Matrix<R>& Y,
-    base::direction_t direction, int min_d = 0, int max_n = -1,
-    int blocksize = 10000) {
+    base::direction_t direction, int min_d = 0, int max_n = -1) {
 
     std::string line;
     std::string token;
@@ -495,8 +482,7 @@ template<typename T,
          typename R, El::Distribution UY, El::Distribution VY>
 void ReadLIBSVM(const std::string& fname,
     base::sparse_vc_star_matrix_t<T>& X, El::DistMatrix<R, UY, VY>& Y,
-    base::direction_t direction, int min_d = 0, int max_n = -1,
-    int blocksize = 10000) {
+    base::direction_t direction, int min_d = 0, int blocksize = 10000) {
 
 
     std::string line;
@@ -522,7 +508,7 @@ void ReadLIBSVM(const std::string& fname,
     // make one pass over the data to figure out dimensions -
     // will pay in terms of preallocated storage.
     if (rank==0) {
-        while(!in.eof() && n != max_n) {
+        while(!in.eof()) {
             getline(in, line);
             if(line.length()==0)
                 break;
@@ -682,106 +668,6 @@ void ReadLIBSVM(const std::string& fname,
     X.finalize();
 }
 
-void ReadLIBSVM(const std::string& fname,
-    boost::any X, boost::any Y,
-    base::direction_t direction, int min_d = 0, int max_n = -1,
-    int blocksize = 10000) {
-
-#define SKYLARK_READLIBSVM_APPLY_DISPATCH(XT, YT)                   \
-    if (X.type() == typeid(XT*) && Y.type() == typeid(YT*))  {      \
-        ReadLIBSVM(fname, *boost::any_cast<XT*>(X),                 \
-            *boost::any_cast<YT*>(Y), direction,                    \
-            min_d, max_n, blocksize);                               \
-            return;                                                 \
-    }                                       \
-
-#if !(defined SKYLARK_NO_ANY)
-    SKYLARK_READLIBSVM_APPLY_DISPATCH(mdtypes::matrix_t, mdtypes::matrix_t);
-    SKYLARK_READLIBSVM_APPLY_DISPATCH(mdtypes::matrix_t, mftypes::matrix_t);
-    SKYLARK_READLIBSVM_APPLY_DISPATCH(mftypes::matrix_t, mdtypes::matrix_t);
-    SKYLARK_READLIBSVM_APPLY_DISPATCH(mftypes::matrix_t, mftypes::matrix_t);
-
-    SKYLARK_READLIBSVM_APPLY_DISPATCH(mdtypes::shared_matrix_t,
-        mdtypes::shared_matrix_t);
-    SKYLARK_READLIBSVM_APPLY_DISPATCH(mdtypes::shared_matrix_t,
-        mftypes::shared_matrix_t);
-    SKYLARK_READLIBSVM_APPLY_DISPATCH(mftypes::shared_matrix_t,
-        mdtypes::shared_matrix_t);
-    SKYLARK_READLIBSVM_APPLY_DISPATCH(mftypes::shared_matrix_t,
-        mftypes::shared_matrix_t);
-
-    SKYLARK_READLIBSVM_APPLY_DISPATCH(mdtypes::root_matrix_t,
-        mdtypes::root_matrix_t);
-    SKYLARK_READLIBSVM_APPLY_DISPATCH(mdtypes::root_matrix_t,
-        mftypes::root_matrix_t);
-    SKYLARK_READLIBSVM_APPLY_DISPATCH(mftypes::root_matrix_t,
-        mdtypes::root_matrix_t);
-    SKYLARK_READLIBSVM_APPLY_DISPATCH(mftypes::root_matrix_t,
-        mftypes::root_matrix_t);
-
-    SKYLARK_READLIBSVM_APPLY_DISPATCH(mdtypes::sparse_matrix_t,
-        mdtypes::matrix_t);
-    SKYLARK_READLIBSVM_APPLY_DISPATCH(mdtypes::sparse_matrix_t,
-        mftypes::matrix_t);
-    SKYLARK_READLIBSVM_APPLY_DISPATCH(mftypes::sparse_matrix_t,
-        mdtypes::matrix_t);
-    SKYLARK_READLIBSVM_APPLY_DISPATCH(mftypes::sparse_matrix_t,
-        mftypes::matrix_t);
-
-    SKYLARK_READLIBSVM_APPLY_DISPATCH(mdtypes::dist_matrix_t,
-        mdtypes::dist_matrix_t);
-    SKYLARK_READLIBSVM_APPLY_DISPATCH(mdtypes::dist_matrix_t,
-        mftypes::dist_matrix_t);
-    SKYLARK_READLIBSVM_APPLY_DISPATCH(mftypes::dist_matrix_t,
-        mdtypes::dist_matrix_t);
-    SKYLARK_READLIBSVM_APPLY_DISPATCH(mftypes::dist_matrix_t,
-        mftypes::dist_matrix_t);
-
-    SKYLARK_READLIBSVM_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
-        mdtypes::dist_matrix_vc_star_t);
-    SKYLARK_READLIBSVM_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t,
-        mftypes::dist_matrix_vc_star_t);
-    SKYLARK_READLIBSVM_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
-        mdtypes::dist_matrix_vc_star_t);
-    SKYLARK_READLIBSVM_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t,
-        mftypes::dist_matrix_vc_star_t);
-
-    SKYLARK_READLIBSVM_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
-        mdtypes::dist_matrix_vr_star_t);
-    SKYLARK_READLIBSVM_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t,
-        mftypes::dist_matrix_vr_star_t);
-    SKYLARK_READLIBSVM_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
-        mdtypes::dist_matrix_vr_star_t);
-    SKYLARK_READLIBSVM_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t,
-        mftypes::dist_matrix_vr_star_t);
-
-    SKYLARK_READLIBSVM_APPLY_DISPATCH(mdtypes::dist_matrix_star_vc_t,
-        mdtypes::dist_matrix_star_vc_t);
-    SKYLARK_READLIBSVM_APPLY_DISPATCH(mdtypes::dist_matrix_star_vc_t,
-        mftypes::dist_matrix_star_vc_t);
-    SKYLARK_READLIBSVM_APPLY_DISPATCH(mftypes::dist_matrix_star_vc_t,
-        mdtypes::dist_matrix_star_vc_t);
-    SKYLARK_READLIBSVM_APPLY_DISPATCH(mftypes::dist_matrix_star_vc_t,
-        mftypes::dist_matrix_star_vc_t);
-
-    SKYLARK_READLIBSVM_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t,
-        mdtypes::dist_matrix_star_vr_t);
-    SKYLARK_READLIBSVM_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t,
-        mftypes::dist_matrix_star_vr_t);
-    SKYLARK_READLIBSVM_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
-        mdtypes::dist_matrix_star_vr_t);
-    SKYLARK_READLIBSVM_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
-        mftypes::dist_matrix_star_vr_t);
-
-#endif
-
-    SKYLARK_THROW_EXCEPTION (
-        base::io_exception()
-          << base::error_msg(
-           "This combination has not yet been implemented for ReadLIBSVM"));
-
-#undef SKYLARK_READLIBSVM_APPLY_DISPATCH
-}
 
 /**
  * Write X and Y from a file in libsvm format.

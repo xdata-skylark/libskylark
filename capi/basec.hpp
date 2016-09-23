@@ -12,9 +12,6 @@ struct sl_context_t;
 #define SL_COLUMNWISE 1
 #define SL_ROWWISE    2
 
-#define SL_COLUMNS 1
-#define SL_ROWS    2
-
 extern "C" {
 
 /** Returns a string describing the sketch transforms that are supported.
@@ -75,16 +72,8 @@ SKYLARK_EXTERN_API int sl_raw_sp_matrix_reset_update_flag(void *A_);
 
 SKYLARK_EXTERN_API int sl_raw_sp_matrix_nnz(void *A_, int *nnz);
 
-SKYLARK_EXTERN_API int sl_raw_sp_matrix_height(void *A_, int *height);
-
-SKYLARK_EXTERN_API int sl_raw_sp_matrix_width(void *A_, int *width);
-
 SKYLARK_EXTERN_API int sl_raw_sp_matrix_data(void *A_, int32_t *indptr,
         int32_t *indices, double *values);
-
-SKYLARK_EXTERN_API void sl_get_exception_info(char **info);
-
-SKYLARK_EXTERN_API void sl_print_exception_trace();
 
 } // extern "C"
 

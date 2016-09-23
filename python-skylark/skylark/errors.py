@@ -4,7 +4,7 @@ class SkylarkError(Exception):
 class DimensionMistmatchError(SkylarkError):
   pass
 
-class LowerLayerError(SkylarkError):
+class UnexpectedLowerLayerError(SkylarkError):
   pass
 
 class UnsupportedError(SkylarkError):

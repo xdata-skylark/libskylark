@@ -51,7 +51,7 @@ BlockADMMSolver<InputType>* GetSolver(skylark::base::context_t& context,
     BlockADMMSolver<InputType> *Solver = NULL;
     int features = 0;
     switch(options.kernel) {
-    case K_LINEAR:
+    case LINEAR:
         features =
             (options.randomfeatures == 0 ? dimensions : options.randomfeatures);
         if (options.randomfeatures == 0)
@@ -73,7 +73,7 @@ BlockADMMSolver<InputType>* GetSolver(skylark::base::context_t& context,
                     options.numfeaturepartitions);
         break;
 
-    case K_GAUSSIAN:
+    case GAUSSIAN:
         features = options.randomfeatures;
         if (!options.usefast)
             if (options.seqtype == LEAPED_HALTON)
@@ -111,7 +111,7 @@ BlockADMMSolver<InputType>* GetSolver(skylark::base::context_t& context,
                     options.numfeaturepartitions);
         break;
 
-    case K_POLYNOMIAL:
+    case POLYNOMIAL:
         features = options.randomfeatures;
         Solver = 
             new BlockADMMSolver<InputType>(context,
@@ -125,7 +125,7 @@ BlockADMMSolver<InputType>* GetSolver(skylark::base::context_t& context,
                 options.numfeaturepartitions);
         break;
 
-    case K_MATERN:
+    case MATERN:
         features = options.randomfeatures;
         if (!options.usefast)
             Solver =
@@ -151,7 +151,7 @@ BlockADMMSolver<InputType>* GetSolver(skylark::base::context_t& context,
                     options.numfeaturepartitions);
         break;
 
-    case K_LAPLACIAN:
+    case LAPLACIAN:
         features = options.randomfeatures;
         if (options.seqtype == LEAPED_HALTON)
             new BlockADMMSolver<InputType>(context,
@@ -177,7 +177,7 @@ BlockADMMSolver<InputType>* GetSolver(skylark::base::context_t& context,
 
         break;
 
-    case K_EXPSEMIGROUP:
+    case EXPSEMIGROUP:
         features = options.randomfeatures;
         if (options.seqtype == LEAPED_HALTON)
             new BlockADMMSolver<InputType>(context,

@@ -97,7 +97,7 @@ Note: it is assume that a :math:`4 n^2` matrix can fit in the memory of a single
 
 *****
 
-.. cpp:function:: void FasterLeastSquares(El::Orientation orientation, const El::DistMatrix<T, El::VC, El::STAR>& A, const El::DistMatrix<T, El::VC, El::STAR>& B, El::DistMatrix<T, El::STAR, El::STAR>& X, base::context_t& context)
+.. cpp:function:: void FastLeastSquares(El::Orientation orientation, const El::DistMatrix<T, El::VC, El::STAR>& A, const El::DistMatrix<T, El::VC, El::STAR>& B, El::DistMatrix<T, El::STAR, El::STAR>& X, base::context_t& context)
 
 If `orientation` is set to ``NORMAL``, then approximate :math:`\arg\min_X \|A * X - B\|_F`, otherwise
 `orientation` must be equal to ``ADJOINT`` and :math:`\arg\min_X \|A^H * X - B\|_F` is approximated.

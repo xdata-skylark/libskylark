@@ -6,7 +6,9 @@
 #include <algorithm>
 #include <string>
 
-#include "../utility/types.hpp"
+#include "boost/property_tree/ptree.hpp"
+
+#include "../sketch/sketch.hpp"
 
 namespace skylark { namespace nla {
 
@@ -38,12 +40,15 @@ struct approximate_svd_params_t : public base::params_t {
         oversampling_additive(oversampling_additive),
         num_iterations(num_iterations), skip_qr(skip_qr) {}
 
-    approximate_svd_params_t(const boost::property_tree::ptree& json)
-        : params_t(json) {
+    approximate_svd_params_t(const boost::property_tree::ptree& json) {
         oversampling_ratio = json.get<int>("oversampling_ratio");
         oversampling_additive = json.get<int>("oversampling_additive");
         num_iterations = json.get<int>("num_iterations");
         skip_qr = json.get<bool>("skip_qr");
+        am_i_printing = json.get<bool>("am_i_printing");
+        log_level = json.get<int>("log_level");
+        prefix = json.get<std::string>("prefix");
+        debug_level = json.get<int>("debug_level");
     }
 };
 
@@ -278,7 +283,7 @@ void ApproximateSVD(const InputType &A, UType &U, SType &S, VType &V,
 
         /** Compute factorization & truncate to rank */
         VType B;
-        El::SVD(V, V, S, B);
+        El::SVD(V, S, B);
         S.Resize(rank, 1); V.Resize(n, rank);
         VType B1 = base::ColumnView(B, 0, rank);
         base::Gemm(El::NORMAL, El::NORMAL,
@@ -310,7 +315,7 @@ void ApproximateSVD(const InputType &A, UType &U, SType &S, VType &V,
 
         /** Compute factorization & truncate to rank */
         UType B;
-        El::SVD(U, U, S, B);
+        El::SVD(U, S, B);
         S.Resize(rank, 1); U.Resize(m, rank);
         VType B1 = base::ColumnView(B, 0, rank);
         base::Gemm(El::ADJOINT, El::NORMAL, static_cast<value_type>(1.0), Q, B1, V);
@@ -401,13 +406,11 @@ void ApproximateSymmetricSVD(El::UpperOrLower uplo,
             ApproximateSymmetricSVD(uplo, *boost::any_cast<AT*>(A),     \
                 *boost::any_cast<VT*>(V), *boost::any_cast<ST*>(S),     \
                 rank, context, params);                                 \
-            return;                                                     \
         }                                                               \
         if (A.type() == typeid(const AT*)) {                            \
             ApproximateSymmetricSVD(uplo, *boost::any_cast<const AT*>(A), \
                 *boost::any_cast<VT*>(V), *boost::any_cast<ST*>(S),     \
                 rank, context, params);                                 \
-            return;                                                     \
         }                                                               \
      }
 
@@ -437,11 +440,6 @@ void ApproximateSymmetricSVD(El::UpperOrLower uplo,
 
 #endif
 
-    SKYLARK_THROW_EXCEPTION (
-        base::nla_exception()
-          << base::error_msg(
-           "This combination has not yet been implemented for ApproximateSymmetricSVD"));
-
 #undef SKYLARK_SVD_ANY_APPLY_DISPATCH
 
 }
@@ -457,13 +455,11 @@ void ApproximateSVD(const boost::any &A,
             ApproximateSVD(*boost::any_cast<AT*>(A),              \
                 *boost::any_cast<UT*>(U), *boost::any_cast<ST*>(S),     \
                 *boost::any_cast<VT*>(V), rank, context, params);       \
-            return;                                                     \
         }                                                               \
         if (A.type() == typeid(const AT*)) {                            \
             ApproximateSVD(*boost::any_cast<const AT*>(A),        \
                 *boost::any_cast<UT*>(U), *boost::any_cast<ST*>(S),     \
                 *boost::any_cast<VT*>(V), rank, context, params);       \
-            return;                                                     \
         }                                                               \
      }
 
@@ -492,11 +488,6 @@ void ApproximateSVD(const boost::any &A,
         mftypes::matrix_t, mftypes::matrix_t, mftypes::matrix_t);
 
 #endif
-
-    SKYLARK_THROW_EXCEPTION (
-        base::nla_exception()
-          << base::error_msg(
-           "This combination has not yet been implemented for ApproximateSVD"));
 
 #undef SKYLARK_SVD_ANY_APPLY_DISPATCH
 

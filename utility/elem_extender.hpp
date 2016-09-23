@@ -20,7 +20,7 @@ struct elem_extender_t : public ET {
     // will be added as neccessary.
     elem_extender_t(const ET& other) : ET(other) {  }
     elem_extender_t(const ET&& other) : ET(other) {  }
-    elem_extender_t(int m, int n, const El::Grid& grid=El::Grid(),
+    elem_extender_t(int m, int n, const El::Grid& grid=El::DefaultGrid(),
         int root=0) : ET(m, n, grid, root) { }
 
 private:

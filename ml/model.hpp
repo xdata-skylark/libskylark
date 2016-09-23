@@ -329,7 +329,6 @@ public model_t<OutType, ComputeType>
 
         El::DistMatrix<compute_type> KT;
         Gram(_direction, direction_XT, _k, _X, XT, KT);
-        YP.Resize(_A.Height(), KT.Width()); 
         El::Gemm(El::ADJOINT, El::NORMAL, out_type(1.0), _A, KT, YP);
     }
 
@@ -367,9 +366,9 @@ public model_t<OutType, ComputeType>
     }
 
 private:
-    El::DistMatrix<compute_type> _X;
+    const El::DistMatrix<compute_type> _X;
     const base::direction_t _direction;
-    El::DistMatrix<compute_type> _A;
+    const El::DistMatrix<compute_type> _A;
     const std::string _dataloc;
     const int _fileformat;
     const kernel_type _k;
@@ -497,27 +496,13 @@ public model_t<OutType, ComputeType>
         El::LockedView(_W, W);
     }
 
-        feature_expansion_model_t(bool scale_maps,
-        const std::vector<sketch_type> &transforms,
-        const El::DistMatrix<compute_type> &W) :
-        _W(), _scale_maps(scale_maps),
-        _feature_transforms(transforms),
-        _input_size(_feature_transforms[0].get_N()), _output_size(W.Width()),
-        _feature_size(0) {
-
-        for(auto it = _feature_transforms.begin();
-            it != _feature_transforms.end(); it++)
-            _feature_size += it->get_S();
-        El::LockedView(_W, W);
-    }
-
     void predict(base::direction_t direction_XT,
         const El::DistMatrix<compute_type> &XT, El::DistMatrix<out_type> &YP) const {
 
-
+        El::Zeros(YP, XT.Height(), _output_size);
 
         if (direction_XT == base::COLUMNS) {
-	    El::Zeros(YP, _output_size, XT.Width());
+
             El::DistMatrix<compute_type> ZT, VW;
             El::Int starts = 0;
             for(int i = 0; i < _feature_transforms.size(); i++) {
@@ -534,7 +519,7 @@ public model_t<OutType, ComputeType>
             }
 
         } else {
-	    El::Zeros(YP, XT.Height(), _output_size);
+
             El::DistMatrix<compute_type> ZT, VW;
             El::Int starts = 0;
             for(int i = 0; i < _feature_transforms.size(); i++) {

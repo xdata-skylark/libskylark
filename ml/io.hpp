@@ -464,8 +464,8 @@ void read_hdf5(const boost::mpi::communicator &comm, std::string fName,
     El::Zeros(Xlocal, X.LocalHeight(), X.LocalWidth());
     El::Zeros(Ylocal, Y.LocalHeight(), 1);
 
-    X.Attach(d,n,El::Grid(), 0,0,Xlocal);
-    Y.Attach(n,1,El::Grid(), 0,0,Ylocal);
+    X.Attach(d,n,El::DefaultGrid(), 0,0,Xlocal);
+    Y.Attach(n,1,El::DefaultGrid(), 0,0,Ylocal);
 
     for(int i=0; i<numblocks+1; i++) {
 
@@ -595,8 +595,8 @@ void read_libsvm(const boost::mpi::communicator &comm, std::string fName,
     El::Zeros(Xlocal, X.LocalHeight(), X.LocalWidth());
     El::Zeros(Ylocal, Y.LocalHeight(), 1);
 
-    X.Attach(d,n,El::Grid(),0,0,Xlocal);
-    Y.Attach(n,1,El::Grid(),0,0,Ylocal);
+    X.Attach(d,n,El::DefaultGrid(),0,0,Xlocal);
+    Y.Attach(n,1,El::DefaultGrid(),0,0,Ylocal);
 
 
     for(int i=0; i<numblocks+1; i++) {

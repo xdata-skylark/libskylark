@@ -72,7 +72,7 @@ void execute(skylark::base::context_t &context) {
 
     SolType x(n, k);
     if (high)
-        skylark::nla::FasterLeastSquares(El::NORMAL, A, b, x, context);
+        skylark::nla::FastLeastSquares(El::NORMAL, A, b, x, context);
     else
         skylark::nla::ApproximateLeastSquares(El::NORMAL, A, b, x, context);
 

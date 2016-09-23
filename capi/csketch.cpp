@@ -382,16 +382,13 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(sl_context_t *ctxt,
 
     transform_type_t type = str2transform_type(type_);
 
-    if (type == TRANSFORM_TYPE_ERROR)
-        return 111;
-    
 # define AUTO_NEW_DISPATCH(T, C)                                    \
     SKYLARK_BEGIN_TRY()                                             \
         if (type == T)                                              \
             *sketch = new sl_sketch_transform_t(type,               \
                 new C(n, s, dref_context(ctxt)));                   \
     SKYLARK_END_TRY()                                               \
-    SKYLARK_CATCH_COPY_AND_RETURN_ERROR_CODE(lastexception);
+    SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
 
 # define AUTO_NEW_DISPATCH_1P(T, C)                                  \
     SKYLARK_BEGIN_TRY()                                              \
@@ -406,7 +403,7 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(sl_context_t *ctxt,
             *sketch = r;                                             \
         }                                                            \
     SKYLARK_END_TRY()                                                \
-    SKYLARK_CATCH_COPY_AND_RETURN_ERROR_CODE(lastexception);
+    SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
 
     AUTO_NEW_DISPATCH(JLT, sketch::JLT_data_t);
     AUTO_NEW_DISPATCH(FJLT, sketch::FJLT_data_t);
@@ -431,7 +428,7 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(sl_context_t *ctxt,
             *sketch = r;
         }
     SKYLARK_END_TRY()
-    SKYLARK_CATCH_COPY_AND_RETURN_ERROR_CODE(lastexception);
+    SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
 
     SKYLARK_BEGIN_TRY()
         if (type == GaussianQRFT)  {
@@ -454,7 +451,7 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(sl_context_t *ctxt,
             *sketch = r;
         }
     SKYLARK_END_TRY()
-    SKYLARK_CATCH_COPY_AND_RETURN_ERROR_CODE(lastexception);
+    SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
 
     SKYLARK_BEGIN_TRY()
         if (type == LaplacianQRFT)  {
@@ -477,7 +474,7 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(sl_context_t *ctxt,
             *sketch = r;
         }
     SKYLARK_END_TRY()
-    SKYLARK_CATCH_COPY_AND_RETURN_ERROR_CODE(lastexception);
+    SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
 
     AUTO_NEW_DISPATCH_1P(ExpSemigroupRLT,
         sketch::ExpSemigroupRLT_data_t);
@@ -503,7 +500,7 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(sl_context_t *ctxt,
             *sketch = r;
         }
     SKYLARK_END_TRY()
-    SKYLARK_CATCH_COPY_AND_RETURN_ERROR_CODE(lastexception);
+    SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
 
     AUTO_NEW_DISPATCH_1P(FastGaussianRFT,
         sketch::FastGaussianRFT_data_t);
@@ -522,7 +519,7 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(sl_context_t *ctxt,
             *sketch = r;
         }
     SKYLARK_END_TRY()
-    SKYLARK_CATCH_COPY_AND_RETURN_ERROR_CODE(lastexception);
+    SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
 
     SKYLARK_BEGIN_TRY()
         if (type == PPT)  {
@@ -539,7 +536,7 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(sl_context_t *ctxt,
             *sketch = r;
         }
     SKYLARK_END_TRY()
-    SKYLARK_CATCH_COPY_AND_RETURN_ERROR_CODE(lastexception);
+    SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
 
     return 0;
 }
@@ -582,7 +579,7 @@ SKYLARK_EXTERN_API
         if (type == T)                                          \
             delete static_cast<C *>(S->transform_obj);          \
     SKYLARK_END_TRY()                                           \
-    SKYLARK_CATCH_COPY_AND_RETURN_ERROR_CODE(lastexception);
+    SKYLARK_CATCH_AND_RETURN_ERROR_CODE();
 
     AUTO_DELETE_DISPATCH(JLT, sketch::JLT_data_t);
     AUTO_DELETE_DISPATCH(FJLT, sketch::FJLT_data_t);
@@ -632,7 +629,7 @@ SKYLARK_EXTERN_API int
             if (dim == SL_ROWWISE)                                       \
             S.apply(A, SA, sketch::rowwise_tag());                       \
         SKYLARK_END_TRY()                                                \
-        SKYLARK_CATCH_COPY_AND_RETURN_ERROR_CODE(lastexception);         \
+        SKYLARK_CATCH_AND_RETURN_ERROR_CODE();                           \
     }
 
     AUTO_APPLY_DISPATCH(JLT,
@@ -1329,7 +1326,7 @@ SKYLARK_EXTERN_API int
             if (dim == SL_ROWWISE)                                       \
             S.apply(A, SA, sketch::rowwise_tag());                       \
         SKYLARK_END_TRY()                                                \
-        SKYLARK_CATCH_COPY_AND_RETURN_ERROR_CODE(lastexception);         \
+        SKYLARK_CATCH_AND_RETURN_ERROR_CODE();                           \
     }
 
    AUTO_APPLY_DISPATCH_QUASI(GaussianQRFT,

@@ -5,9 +5,20 @@ if (Elemental_FOUND)
   include_directories (${Elemental_INCLUDE_DIR})
   link_directories (${Elemental_LIBRARY_DIR})
 
+  #FIXME: only enable C++11 if elem >= 0.83?
+  #FIXME: properly identify and check flags
+  #include(FindCXXFeatures)
+  if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "XL")
+    set(CXX11_COMPILER_FLAGS "-qlanglvl=extended0x")
+  else ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "XL")
+    set(CXX11_COMPILER_FLAGS "-std=c++11")
+  endif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "XL")
+  message(STATUS "CXX11_COMPILER_FLAGS=${CXX11_COMPILER_FLAGS}")
+  set (CMAKE_CXX_FLAGS "${CXX11_COMPILER_FLAGS} ${CMAKE_CXX_FLAGS}")
+
   # check if elemental build type is Hybrid
   file(STRINGS "${Elemental_INCLUDE_DIR}/El/config.h"
-    ELEMENTAL_HYBRID_BUILD_TYPE REGEX "^[ \t]*#define[ \t]+EL_HYBRID")
+    ELEMENTAL_HYBRID_BUILD_TYPE REGEX "^[ \t]*#define[ \t]+CMAKE_BUILD_TYPE[ \t]+\"HybridRelease\"")
 
   if(ELEMENTAL_HYBRID_BUILD_TYPE)
     message(STATUS "Elemental was built in hybrid mode. Enabling hybrid support as well.")

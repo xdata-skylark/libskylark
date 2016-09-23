@@ -6,6 +6,7 @@
 
 // Some tricks to make compilation faster
 #define SKYLARK_NO_ANY
+#define SKYLARK_WITH_JLT_ANY
 #define SKYLARK_WITH_GAUSSIAN_RFT_ANY
 #define SKYLARK_WITH_LAPLACIAN_RFT_ANY
 #define SKYLARK_WITH_PPT_ANY

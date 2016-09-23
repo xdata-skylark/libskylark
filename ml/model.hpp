@@ -426,22 +426,22 @@ protected:
 
         _k = kernel_container_t(pt.get_child("kernel"));
         _dataloc = pt.get<std::string>("data_location");
-        _partial = pt.get<El::Int>("partial");
         _fileformat = (utility::io::fileformat_t)pt.get<int>("fileformat");
+        _partial = pt.get<El::Int>("partial");
 
         // TODO handle "partial" and "sampling"
         El::DistMatrix<OutType> dummyY;
 
         switch (_fileformat) {
         case utility::io::FORMAT_LIBSVM:
-            utility::io::ReadLIBSVM(_dataloc, _X, dummyY, base::COLUMNS,
+            utility::io::ReadLIBSVM(_dataloc, _X0, dummyY, base::COLUMNS,
                 _input_size, _partial);
             break;
 
 #ifdef SKYLARK_HAVE_HDF5
         case utility::io::FORMAT_HDF5: {
             H5::H5File in(_dataloc, H5F_ACC_RDONLY);
-            utility::io::ReadHDF5(in, "X", _X, -1, _partial);
+            utility::io::ReadHDF5(in, "X", _X0, -1, _partial);
             in.close();
         }
             break;
@@ -451,6 +451,18 @@ protected:
             // TODO
             return;
         }
+
+       if (pt.count("pre_transform") > 0) {
+            _pretransform =
+                sketch::generic_sketch_container_t::from_ptree(pt.
+                    get_child("pre_transform"));
+
+            _X.Resize(_X0.Height(), _pretransform.get_S());
+            _pretransform.apply(&_X0, &_X, sketch::rowwise_tag());
+            _X0.Empty();
+        } else
+            El::View(_X, _X0);
+
         _direction = base::COLUMNS;
 
         _A.Resize(_X.Width(), _output_size);
@@ -470,7 +482,7 @@ protected:
     }
 
 private:
-    El::DistMatrix<compute_type> _X;
+    El::DistMatrix<compute_type> _X, _X0;  // X0 is only for load.
     base::direction_t _direction;
     El::DistMatrix<compute_type> _A;
     std::string _dataloc;
@@ -590,24 +602,19 @@ protected:
         _dataloc = pt.get<std::string>("data_location");
         _fileformat = (utility::io::fileformat_t)pt.get<int>("fileformat");
         _partial = pt.get<int>("partial");
-        if (pt.count("pre_transform") > 0)
-            _pretransform = 
-                sketch::generic_sketch_container_t::from_ptree(pt.
-                    get_child("pre_transform"));
 
-        // TODO handle "partial" and "sampling"
         El::DistMatrix<OutType> dummyL;
 
         switch (_fileformat) {
         case utility::io::FORMAT_LIBSVM:
-            utility::io::ReadLIBSVM(_dataloc, _X, dummyL, base::COLUMNS,
+            utility::io::ReadLIBSVM(_dataloc, _X0, dummyL, base::COLUMNS,
                 _input_size, _partial);
             break;
 
 #ifdef SKYLARK_HAVE_HDF5
         case utility::io::FORMAT_HDF5: {
             H5::H5File in(_dataloc, H5F_ACC_RDONLY);
-            utility::io::ReadHDF5(in, "X", _X, -1, _partial);
+            utility::io::ReadHDF5(in, "X", _X0, -1, _partial);
             in.close();
         }
             break;
@@ -617,6 +624,18 @@ protected:
             // TODO
             return;
         }
+
+        if (pt.count("pre_transform") > 0) {
+            _pretransform =
+                sketch::generic_sketch_container_t::from_ptree(pt.
+                    get_child("pre_transform"));
+
+            _X.Resize(_X0.Height(), _pretransform.get_S());
+            _pretransform.apply(&_X0, &_X, sketch::rowwise_tag());
+            _X0.Empty();
+        } else
+            El::View(_X, _X0);
+
         _direction = base::COLUMNS;
 
         _A.Resize(_X.Width(), _output_size);
@@ -636,7 +655,7 @@ protected:
     }
 
 private:
-    El::DistMatrix<compute_type> _X;
+    El::DistMatrix<compute_type> _X, _X0; // X0 is only for model load.
     base::direction_t _direction;
     El::DistMatrix<compute_type> _A;
     std::vector<OutType> _rcoding;

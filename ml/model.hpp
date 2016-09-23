@@ -352,12 +352,13 @@ public model_t<OutType, ComputeType>
 
     kernel_model_t(const kernel_type &k,
         base::direction_t direction, const El::DistMatrix<compute_type> &X,
-        const std::string &dataloc, El::Int partial, 
+        const std::string &dataloc, El::Int partial,
         const utility::io::fileformat_t fileformat,
+        sketch::generic_sketch_container_t pretransform,
         const El::DistMatrix<compute_type> &A) :
         _X(), _direction(direction),
         _A(), _dataloc(dataloc), _partial(partial),
-        _fileformat(fileformat), _k(k),
+        _fileformat(fileformat), _pretransform(pretransform), _k(k),
         _input_size(k.get_dim()), _output_size(A.Width()) {
 
         El::LockedView(_X, X);
@@ -386,6 +387,8 @@ public model_t<OutType, ComputeType>
         pt.put("data_location", _dataloc);
         pt.put("partial", _partial);
         pt.put("fileformat", _fileformat);
+        if (!_pretransform.empty())
+            pt.add_child("pre_transform", _pretransform.to_ptree());
         pt.put("num_outputs", _output_size);
         pt.put("input_size", _input_size);
         pt.put("regression", true);
@@ -473,6 +476,7 @@ private:
     std::string _dataloc;
     El::Int _partial;
     utility::io::fileformat_t _fileformat;
+    sketch::generic_sketch_container_t _pretransform;
     kernel_type _k;
     El::Int _input_size, _output_size;
 };
@@ -493,11 +497,12 @@ public model_t<OutType, ComputeType> {
         base::direction_t direction, const El::DistMatrix<compute_type> &X,
         const std::string &dataloc, El::Int partial,
         const utility::io::fileformat_t fileformat,
+        const skylark::sketch::generic_sketch_container_t pretransform,
         const El::DistMatrix<compute_type> &A,
         const std::vector<OutType> &rcoding) :
         _X(), _direction(direction),
         _A(), _rcoding(rcoding), _dataloc(dataloc), _partial(partial),
-        _fileformat(fileformat),
+        _fileformat(fileformat), _pretransform(pretransform),
         _k(k), _input_size(k.get_dim()), _output_size(A.Width()) {
 
         El::LockedView(_X, X);
@@ -527,6 +532,8 @@ public model_t<OutType, ComputeType> {
         pt.put("data_location", _dataloc);
         pt.put("partial", _partial);
         pt.put("fileformat", _fileformat);
+        if (!_pretransform.empty())
+            pt.add_child("pre_transform", _pretransform.to_ptree());
         pt.put("num_outputs", _output_size);
         pt.put("input_size", _input_size);
         pt.put("regression", false);
@@ -583,6 +590,10 @@ protected:
         _dataloc = pt.get<std::string>("data_location");
         _fileformat = (utility::io::fileformat_t)pt.get<int>("fileformat");
         _partial = pt.get<int>("partial");
+        if (pt.count("pre_transform") > 0)
+            _pretransform = 
+                sketch::generic_sketch_container_t::from_ptree(pt.
+                    get_child("pre_transform"));
 
         // TODO handle "partial" and "sampling"
         El::DistMatrix<OutType> dummyL;
@@ -632,6 +643,7 @@ private:
     std::string _dataloc;
     El::Int _partial;
     utility::io::fileformat_t _fileformat;
+    sketch::generic_sketch_container_t _pretransform;
     kernel_type _k;
     El::Int _input_size, _output_size;
 };

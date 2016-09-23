@@ -28,7 +28,7 @@ struct UST_data_t : public sketch_transform_data_t {
 
         }
 
-        const double replace;
+        const bool replace;
     };
 
     UST_data_t (int N, int S, bool replace, base::context_t& context)

@@ -6,6 +6,7 @@
 
 // Some tricks to make compilation faster
 #define SKYLARK_NO_ANY
+#define SKYLARK_WITH_UST_ANY
 #define SKYLARK_WITH_GAUSSIAN_RFT_ANY
 #define SKYLARK_WITH_LAPLACIAN_RFT_ANY
 #define SKYLARK_WITH_PPT_ANY
@@ -339,6 +340,7 @@ int execute_classification(skylark::base::context_t &context) {
         *log_stream <<"took " << boost::format("%.2e") % timer.elapsed()
                   << " sec\n";
 
+    skylark::sketch::generic_sketch_container_t SampT;
     if (sample == -1) {
 
         El::View(X, X0);
@@ -352,16 +354,15 @@ int execute_classification(skylark::base::context_t &context) {
             timer.restart();
         }
 
-
-        skylark::sketch::UST_data_t S(X0.Width(), sample, false, context);
+        SampT =
+            skylark::sketch::create_sketch<skylark::sketch::UST_t>(X0.Width(),
+                sample, skylark::sketch::UST_data_t::params_t(false), context);
 
         X.Resize(X0.Height(), sample);
-        skylark::sketch::UST_t<El::DistMatrix<T> > (S).apply(X0,
-            X, skylark::sketch::rowwise_tag());
+        SampT.apply(&X0, &X, skylark::sketch::rowwise_tag());
 
         L.Resize(1, sample);
-        skylark::sketch::UST_t<El::DistMatrix<El::Int> >(S).apply(L0,
-            L, skylark::sketch::rowwise_tag());
+        SampT.apply(&L0, &L, skylark::sketch::rowwise_tag());
 
         if (rank == 0)
             *log_stream <<"took " << boost::format("%.2e") % timer.elapsed()
@@ -418,7 +419,7 @@ int execute_classification(skylark::base::context_t &context) {
         model =
             new skylark::ml::kernel_model_t<skylark::ml::kernel_container_t,
               El::Int, T>(k, skylark::base::COLUMNS, X, fname, partial, fileformat,
-                  A, rcoding);
+                  SampT, A, rcoding);
         break;
 
     case FASTER_KRR:
@@ -429,7 +430,7 @@ int execute_classification(skylark::base::context_t &context) {
         model =
             new skylark::ml::kernel_model_t<skylark::ml::kernel_container_t,
               El::Int, T>(k, skylark::base::COLUMNS, X, fname, partial,  
-                  fileformat, A, rcoding);
+                  fileformat, SampT, A, rcoding);
         break;
 
     case APPROXIMATE_KRR:
@@ -634,6 +635,7 @@ int execute_regression(skylark::base::context_t &context) {
         *log_stream <<"took " << boost::format("%.2e") % timer.elapsed()
                   << " sec\n";
 
+    skylark::sketch::generic_sketch_container_t SampT;
     if (sample == -1) {
 
         El::View(X, X0);
@@ -647,16 +649,15 @@ int execute_regression(skylark::base::context_t &context) {
             timer.restart();
         }
 
-
-        skylark::sketch::UST_data_t S(X0.Width(), sample, false, context);
+        SampT =
+            skylark::sketch::create_sketch<skylark::sketch::UST_t>(X0.Width(),
+                sample, skylark::sketch::UST_data_t::params_t(false), context);
 
         X.Resize(X0.Height(), sample);
-        skylark::sketch::UST_t<El::DistMatrix<T> > (S).apply(X0,
-            X, skylark::sketch::rowwise_tag());
+        SampT.apply(&X0, &X, skylark::sketch::rowwise_tag());
 
         Y.Resize(1, sample);
-        skylark::sketch::UST_t<El::DistMatrix<T> > (S).apply(Y0,
-            Y, skylark::sketch::rowwise_tag());
+        SampT.apply(&Y0, &Y, skylark::sketch::rowwise_tag());
 
         if (rank == 0)
             *log_stream <<"took " << boost::format("%.2e") % timer.elapsed()
@@ -716,7 +717,7 @@ int execute_regression(skylark::base::context_t &context) {
         model =
             new skylark::ml::kernel_model_t<skylark::ml::kernel_container_t,
                 T, T>(k, skylark::base::COLUMNS, X, fname, partial, fileformat,
-                      A);
+                    SampT, A);
         break;
 
     case FASTER_KRR:
@@ -726,7 +727,8 @@ int execute_regression(skylark::base::context_t &context) {
             T(lambda), A, s, context, krr_params);
         model =
             new skylark::ml::kernel_model_t<skylark::ml::kernel_container_t,
-             T, T>(k, skylark::base::COLUMNS, X, fname, partial, fileformat, A);
+             T, T>(k, skylark::base::COLUMNS, X, fname, partial, fileformat, 
+                 SampT, A);
         break;
 
     case APPROXIMATE_KRR:

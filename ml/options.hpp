@@ -38,8 +38,8 @@ std::string Regularizers[] = {"No Regularizer", "L2", "L1"};
 enum SequenceType { MONTECARLO = 0, LEAPED_HALTON = 1};
 std::string Sequences[] = {"Monte Carlo", "Leaped Halton"};
 
-enum KernelType {LINEAR = 0, GAUSSIAN = 1, POLYNOMIAL = 2,
-                 LAPLACIAN = 3, EXPSEMIGROUP = 4, MATERN = 5};
+enum KernelType {K_LINEAR = 0, K_GAUSSIAN = 1, K_POLYNOMIAL = 2,
+                 K_LAPLACIAN = 3, K_EXPSEMIGROUP = 4, K_MATERN = 5};
 std::string Kernels[] = {"Linear", "Gaussian",
                          "Polynomial", "Laplacian", "ExpSemigroup", "Matern"};
 
@@ -122,7 +122,7 @@ struct hilbert_options_t {
                 po::value<int>((int*) &regularizer)->default_value(NOREG),
                 "Regularizer (0:None, 1:L2, 2:L1)")
             ("kernel,k",
-                po::value<int>((int*) &kernel)->default_value(LINEAR),
+                po::value<int>((int*) &kernel)->default_value(K_LINEAR),
                 "Kernel (0:LINEAR, 1:GAUSSIAN, 2:POLYNOMIAL, "
                 "3:LAPLACIAN, 4:EXPSEMIGROUP, 5:MATERN)")
             ("kernelparam,g",

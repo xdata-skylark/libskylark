@@ -12,7 +12,7 @@ const char* const skylark_errmsg[] = {
     , "Skylark failed in a call to Elemental"
     , "Skylark failed due to a unsupported matrix distribution"
     , "Skylark failed in a call to CombBLAS"
-    , "Skylark failed in sketching a matrix"
+    , "Skylark failed in sketching layer"
     , "Skylark failed in nla operation"
     , "Skylark failed when allocating memory in a sketch"
     , "Skylark failed in a call into the Random123 layer"
@@ -20,6 +20,7 @@ const char* const skylark_errmsg[] = {
     , "Skylark failed in I/O calls"
     , "Skylark failed because invalid parameter was passed"
     , "Skylark failed because base classes were used incorrectly"
+    , "Skylark failed in ml operation"
 };
 
 /// resolves an error_code to a human readable failure message
@@ -55,9 +56,19 @@ const char* skylark_strerror(int error_code) {
         if (p == true) SKYLARK_PRINT_EXCEPTION_DETAILS(ex); \
     } \
 
-/// catch a Skylark exceptions and returns an error code
+/// catch a Skylark exception and returns an error code
 #define SKYLARK_CATCH_AND_RETURN_ERROR_CODE() \
     catch (const skylark::base::skylark_exception& ex) { \
+        if (int const *c = \
+                boost::get_error_info<skylark::base::error_code>(ex)) { \
+            return *c; \
+        } \
+    }
+
+/// catch a Skylark exception, keep a pointer to it, and returns an error code
+#define SKYLARK_CATCH_COPY_AND_RETURN_ERROR_CODE(ptr) \
+    catch (const skylark::base::skylark_exception& ex) { \
+        ptr = boost::current_exception();                \
         if (int const *c = \
                 boost::get_error_info<skylark::base::error_code>(ex)) { \
             return *c; \
@@ -144,6 +155,16 @@ struct nla_exception : virtual skylark_exception {
 
     nla_exception() {
         *this << error_code(106);
+    }
+};
+
+/// exceptions in the ml layer
+struct ml_exception : virtual skylark_exception {
+ public:
+    using skylark_exception::operator<<;
+
+    ml_exception() {
+        *this << error_code(113);
     }
 };
 

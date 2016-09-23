@@ -280,6 +280,73 @@ public:
 
 /**
  * Regression solver for L2 linear regrssion
+ * on a dense sequential matrices. This implementation uses
+ * an SVD-based approach.
+ *
+ * A regression solver accepts a right-hand side and output a solution
+ * the the regression problem.
+ *
+ * The regression problem is fixed, so it is a parameter of the function
+ * constructing the regressoion.
+ */
+template <typename ValueType>
+class regression_solver_t<
+    regression_problem_t<El::Matrix<ValueType>,
+                         linear_tag, l2_tag, no_reg_tag>,
+    El::Matrix<ValueType>,
+    El::Matrix<ValueType>,
+    svd_l2_solver_tag> {
+
+public:
+
+    typedef ValueType value_type;
+
+    typedef El::Matrix<ValueType> matrix_type;
+    typedef El::Matrix<ValueType> rhs_type;
+    typedef El::Matrix<ValueType> sol_type;
+
+    typedef regression_problem_t<matrix_type,
+                                 linear_tag, l2_tag, no_reg_tag> problem_type;
+
+private:
+    const int _m;
+    const int _n;
+    matrix_type _U;
+    sol_type _S, _V;
+
+public:
+    /**
+     * Prepares the solver to quickly solve given a right-hand side.
+     *
+     * @param problem Problem to solve given right-hand side.
+     */
+    regression_solver_t(const problem_type& problem) :
+        _m(problem.m), _n(problem.n),
+        _U(), _S(), _V() {
+        // TODO n < m ???
+        El::SVD(problem.input_matrix, _U, _S, _V);
+        for(int i = 0; i < _S.Height(); i++)
+            _S.Set(i, 0, 1 / _S.Get(i, 0));   // TODO handle rank deficiency
+    }
+
+    /**
+     * Solves the regression problem given a multiple right-hand sides.
+     *
+     * @param B Right-hand sides.
+     * @param X Output (overwritten).
+     */
+    void solve (const rhs_type& B, sol_type& X) const {
+        // TODO error checking
+        sol_type UB(X); // Not copying -- just taking grid and size.
+        base::Gemm(El::ADJOINT, El::NORMAL, value_type(1.0), _U, B, UB);
+        El::DiagonalScale(El::LEFT, El::NORMAL, _S, UB);
+        base::Gemm(El::NORMAL, El::NORMAL, value_type(1.0), _V, UB, X);
+    }
+
+};
+
+/**
+ * Regression solver for L2 linear regrssion
  * on a dense distributed [VC/VR, STAR] matrix. This implementation uses
  * an SVD-based approach.
  *
@@ -325,8 +392,7 @@ public:
         _U(problem.input_matrix.Grid()), _S(problem.input_matrix.Grid()),
         _V(problem.input_matrix.Grid()) {
         // TODO n < m ???
-        _U = problem.input_matrix;
-        El::SVD(_U, _S, _V);
+        El::SVD(problem.input_matrix, _U, _S, _V);
         for(int i = 0; i < _S.Height(); i++)
             _S.Set(i, 0, 1 / _S.Get(i, 0));   // TODO handle rank deficiency
     }
@@ -394,8 +460,7 @@ public:
         _U(problem.input_matrix.Grid()), _S(problem.input_matrix.Grid()),
         _V(problem.input_matrix.Grid()) {
         // TODO n < m ???
-        _U = problem.input_matrix;
-        El::SVD(_U, _S, _V);
+        El::SVD(problem.input_matrix, _U, _S, _V);
         for(int i = 0; i < _S.Height(); i++)
             _S.Set(i, 0, 1 / _S.Get(i, 0));   // TODO handle rank deficiency
     }

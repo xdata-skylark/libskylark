@@ -74,9 +74,10 @@ void experiment() {
     // The following computes the optimal residual (r^\star in the logs)
     skylark::base::Gemv(El::NORMAL, -1.0, A, x, 1.0, r);
 
+#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_FFTWF
     // Solve using Sylark
     timer.restart();
-    skylark::nla::FastLeastSquares(El::NORMAL, A, b, x, context);
+    skylark::nla::FasterLeastSquares(El::NORMAL, A, b, x, context);
     telp = timer.elapsed();
     check_solution(A, b, x, r, res, resAtr, resFac);
     if (rank == 0)
@@ -87,6 +88,7 @@ void experiment() {
                   << "\t||A' * r||_2 = " << boost::format("%.2e") % resAtr
                   << "\t\tTime: " << boost::format("%.2e") % telp << " sec"
                   << std::endl;
+
     // Approximately solve using Sylark
     timer.restart();
     skylark::nla::ApproximateLeastSquares(El::NORMAL, A, b, x, context);
@@ -100,7 +102,11 @@ void experiment() {
                   << "\t||A' * r||_2 = " << boost::format("%.2e") % resAtr
                   << "\t\tTime: " << boost::format("%.2e") % telp << " sec"
                   << std::endl;
-
+#else
+    std::cout << "You need to have Skylark supporting FFTW or FFTWF " 
+              << "to solve with skylark least_squares.cpp"
+              << std::endl;
+#endif
 }
 
 

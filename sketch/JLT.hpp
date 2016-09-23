@@ -147,7 +147,7 @@ public:
     void apply(const boost::any &A, const boost::any &sketch_of_A,
                 columnwise_tag dimension) const {
 
-#if     !(defined SKYLARK_NO_ANY)
+#if     !(defined SKYLARK_NO_ANY) || (defined SKYLARK_WITH_JLT_ANY)
 
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::matrix_t, mdtypes::matrix_t,
             JLT_t);
@@ -251,7 +251,7 @@ public:
     void apply (const boost::any &A, const boost::any &sketch_of_A,
         rowwise_tag dimension) const {
 
-#if     !(defined SKYLARK_NO_ANY)
+#if     !(defined SKYLARK_NO_ANY) || (defined SKYLARK_WITH_JLT_ANY)
 
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::matrix_t, mdtypes::matrix_t,
             JLT_t);

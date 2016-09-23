@@ -15,14 +15,14 @@ matrix_type_t str2matrix_type(const char *str) {
     return MATRIX_TYPE_ERROR;
 }
 
-# define STRCMP_CONVERT(STR) \
-    if (std::strcmp(type, #STR) == 0) \
-        anyobj = static_cast<STR*>(obj);
-
 boost::any skylark_void2any(const char *type, void *obj) {
 
     boost::any anyobj;
 
+    # define STRCMP_CONVERT(STR) \
+    if (std::strcmp(type, #STR) == 0) \
+        anyobj = static_cast<STR*>(obj);
+    
     STRCMP_CONVERT(Matrix);
     STRCMP_CONVERT(SharedMatrix);
     STRCMP_CONVERT(RootMatrix);
@@ -35,7 +35,37 @@ boost::any skylark_void2any(const char *type, void *obj) {
 
 #ifdef SKYLARK_HAVE_COMBBLAS
     STRCMP_CONVERT(DistSparseMatrix);
-#endif 
+#endif
+
+    #undef STRCMP_CONVERT
+    
+    return anyobj;
+}
+
+boost::any skylark_void2any_root(const char *type, void *obj) {
+
+    boost::any anyobj;
+
+# define STRCMP_CONVERT(STR, TYP)         \
+    if (std::strcmp(type, #STR) == 0) \
+        anyobj = static_cast<TYP*>(obj);
+    
+    STRCMP_CONVERT(Matrix, Matrix);
+    STRCMP_CONVERT(SharedMatrix, ElementalMatrix);
+    STRCMP_CONVERT(RootMatrix, ElementalMatrix);
+    STRCMP_CONVERT(DistMatrix, ElementalMatrix);
+    STRCMP_CONVERT(DistMatrix_VC_STAR, ElementalMatrix);
+    STRCMP_CONVERT(DistMatrix_VR_STAR, ElementalMatrix);
+    STRCMP_CONVERT(DistMatrix_STAR_VC, ElementalMatrix);
+    STRCMP_CONVERT(DistMatrix_STAR_VR, ElementalMatrix);
+    STRCMP_CONVERT(SparseMatrix, SparseMatrix);
+
+#ifdef SKYLARK_HAVE_COMBBLAS
+    STRCMP_CONVERT(DistSparseMatrix, DistSparseMatrix);
+#endif
+
+    #undef STRCMP_CONVERT
+
     return anyobj;
 }
 

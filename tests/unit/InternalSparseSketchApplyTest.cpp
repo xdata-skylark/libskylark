@@ -115,7 +115,7 @@ int test_main(int argc, char *argv[]) {
     expected_A = C;
     El::DistMatrix<double, El::STAR, El::STAR> sketched_A(n_s, m, grid);
     sketched_A = sketch_A_vcs;
-    check_equal(expected_A, sketched_A);
+    test::util::check_equal(expected_A, sketched_A);
 
 #if 0
     //////////////////////////////////////////////////////////////////////////

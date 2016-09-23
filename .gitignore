@@ -10,3 +10,4 @@
 build*/
 config.h
 mnist.scale*
+.vscode

@@ -6,6 +6,7 @@
 
 // Some tricks to make compilation faster
 #define SKYLARK_NO_ANY
+#define SKYLARK_WITH_JLT_ANY
 #define SKYLARK_WITH_GAUSSIAN_RFT_ANY
 #define SKYLARK_WITH_LAPLACIAN_RFT_ANY
 #define SKYLARK_WITH_PPT_ANY
@@ -31,6 +32,7 @@
 #define GAUSSIAN_KERNEL   0
 #define LAPLACIAN_KERNEL  1
 #define POLYNOMIAL_KERNEL 2
+#define LINEAR_KERNEL   100
 
 std::string cmdline;
 int seed = 38734, algorithm = FASTER_KRR, kernel_type = GAUSSIAN_KERNEL;
@@ -361,6 +363,10 @@ int execute_classification(skylark::base::context_t &context) {
 
     case POLYNOMIAL_KERNEL:
         k_ptr.reset(new skylark::ml::polynomial_t(X.Height(), kp1, kp2, kp3));
+        break;
+
+    case LINEAR_KERNEL:
+        k_ptr.reset(new skylark::ml::linear_t(X.Height()));
         break;
 
     default:

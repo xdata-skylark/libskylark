@@ -9,9 +9,6 @@
 
 struct sl_context_t;
 
-#define SL_COLUMNS 1
-#define SL_ROWS    2
-
 extern "C" {
 
 SKYLARK_EXTERN_API int sl_readlibsvm(char *fname,

@@ -324,8 +324,7 @@ public:
         _m(problem.m), _n(problem.n),
         _U(), _S(), _V() {
         // TODO n < m ???
-        _U = problem.input_matrix;
-        El::SVD(_U, _U, _S, _V);
+        El::SVD(problem.input_matrix, _U, _S, _V);
         for(int i = 0; i < _S.Height(); i++)
             _S.Set(i, 0, 1 / _S.Get(i, 0));   // TODO handle rank deficiency
     }
@@ -393,8 +392,7 @@ public:
         _U(problem.input_matrix.Grid()), _S(problem.input_matrix.Grid()),
         _V(problem.input_matrix.Grid()) {
         // TODO n < m ???
-        _U = problem.input_matrix;
-        El::SVD(_U, _U, _S, _V);
+        El::SVD(problem.input_matrix, _U, _S, _V);
         for(int i = 0; i < _S.Height(); i++)
             _S.Set(i, 0, 1 / _S.Get(i, 0));   // TODO handle rank deficiency
     }
@@ -462,8 +460,7 @@ public:
         _U(problem.input_matrix.Grid()), _S(problem.input_matrix.Grid()),
         _V(problem.input_matrix.Grid()) {
         // TODO n < m ???
-        _U = problem.input_matrix;
-        El::SVD(_U, _U, _S, _V);
+        El::SVD(problem.input_matrix, _U, _S, _V);
         for(int i = 0; i < _S.Height(); i++)
             _S.Set(i, 0, 1 / _S.Get(i, 0));   // TODO handle rank deficiency
     }

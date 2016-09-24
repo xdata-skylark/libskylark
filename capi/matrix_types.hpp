@@ -17,6 +17,7 @@
 
 // Just for shorter notation
 typedef El::Matrix<double> Matrix;
+typedef El::ElementalMatrix<double> ElementalMatrix;
 typedef El::DistMatrix<double, El::STAR, El::STAR> SharedMatrix;
 typedef El::DistMatrix<double, El::CIRC, El::CIRC> RootMatrix;
 typedef El::DistMatrix<double> DistMatrix;

@@ -7,6 +7,7 @@
 // Some tricks to make compilation faster
 #define SKYLARK_NO_ANY
 #define SKYLARK_WITH_JLT_ANY
+#define SKYLARK_WITH_UST_ANY
 #define SKYLARK_WITH_GAUSSIAN_RFT_ANY
 #define SKYLARK_WITH_LAPLACIAN_RFT_ANY
 #define SKYLARK_WITH_PPT_ANY
@@ -14,9 +15,6 @@
 
 #include <skylark.hpp>
 
-// File formats
-#define FORMAT_LIBSVM  0
-#define FORMAT_HDF5    1
 
 // Algorithms constants
 #define CLASSIC_KRR                      0
@@ -36,11 +34,15 @@
 
 std::string cmdline;
 int seed = 38734, algorithm = FASTER_KRR, kernel_type = GAUSSIAN_KERNEL;
-int fileformat = FORMAT_LIBSVM;
+skylark::utility::io::fileformat_t fileformat =
+    skylark::utility::io::FORMAT_LIBSVM;
 int s = 2000, partial = -1, sketch_size = -1, sample = -1, maxit = 0, maxsplit = 0;
-std::string fname, testname, modelname = "model.dat", logfile = "";
+std::string fname, testname, modelname = "model.dat", logfile = "",
+    outputfile = "";
 double kp1 = 10.0, kp2 = 0.0, kp3 = 1.0, lambda = 0.01, tolerance=0;
-bool use_single, use_fast, regression;
+bool use_single = false, use_fast = false, regression = false;
+bool predict = false, decisionvals = false;
+boost::property_tree::ptree pt;
 
 #ifndef SKYLARK_AVOID_BOOST_PO
 
@@ -53,11 +55,15 @@ int parse_program_options(int argc, char* argv[]) {
     desc.add_options()
         ("help,h", "produce a help message")
         ("trainfile",
-            bpo::value<std::string>(&fname),
-            "Data to train on (libsvm format).")
+            bpo::value<std::string>(&fname)->default_value(""),
+            "Data to train on. For predict - data to predict on. ")
         ("testfile",
             bpo::value<std::string>(&testname)->default_value(""),
             "Test data (libsvm format).")
+        ("outputfile",
+            bpo::value<std::string>(&outputfile)->default_value(""),
+            "Output file (for predicition). Will not output if empty.")
+        ("predict", "Predict mode -- load model file and use it.")
         ("model",
             bpo::value<std::string>(&modelname)->default_value("model.dat"),
             "Name of model file.")
@@ -108,6 +114,9 @@ int parse_program_options(int argc, char* argv[]) {
         ("sample,z",
             bpo::value<int>(&sample)->default_value(-1),
             "Sample the input data. Will use all if -1. ")
+        ("decisionvals",
+            "In predict mode, for classification, output the "
+            "decision values instead of class.")
         ("single", "Whether to use single precision instead of double.")
         ("fast", "Try using a fast feature transform.")
         ("regression", "Build a regression model"
@@ -120,7 +129,8 @@ int parse_program_options(int argc, char* argv[]) {
             "Sketch size (for regression problem; if relevant (i.e., -a 3). "
             "-1 - will be determined by software. ")
         ("fileformat",
-            po::value<int>(&fileformat)->default_value(FORMAT_LIBSVM),
+            po::value<char>((char *)&fileformat)->
+            default_value(skylark::utility::io::FORMAT_LIBSVM),
             "Fileformat (default: 0 (libsvm), 1 (hdf5)");
 
     bpo::positional_options_description positional;
@@ -140,16 +150,20 @@ int parse_program_options(int argc, char* argv[]) {
             return 0;
         }
 
-        if (!vm.count("trainfile")) {
-            std::cout << "Input file is required." << std::endl;
-            return -1;
-        }
-
         bpo::notify(vm);
 
         use_single = vm.count("single");
         use_fast = vm.count("fast");
         regression = vm.count("regression");
+        predict = vm.count("predict");
+        decisionvals = vm.count("decisionvals");
+
+        if (!vm.count("trainfile")) {
+            std::cout << "Input trainfile file is required! "
+                      << "(In predict mode, it is the test data.)"
+                      << std::endl;
+            return -1;
+        }
 
     } catch(bpo::error& e) {
         std::cerr << e.what() << std::endl;
@@ -220,8 +234,18 @@ int parse_program_options(int argc, char* argv[]) {
             i--;
         }
 
+        if (flag == "--decisionvals") {
+            decisionvals = true;
+            i--;
+        }
+
         if (flag == "--regression") {
             regression = true;
+            i--;
+        }
+
+        if (flag == "--predict") {
+            predict = true;
             i--;
         }
 
@@ -241,6 +265,9 @@ int parse_program_options(int argc, char* argv[]) {
 
         if (flag == "--testfile")
             testname = value;
+
+        if (flag == "--outputfile")
+            outputfile = value;
 
         if (flag[0] != '-' && poscount != 0)
             testname = flag;
@@ -291,13 +318,13 @@ int execute_classification(skylark::base::context_t &context) {
     }
 
     switch (fileformat) {
-    case FORMAT_LIBSVM:
+    case skylark::utility::io::FORMAT_LIBSVM:
         skylark::utility::io::ReadLIBSVM(fname, X0, L0, skylark::base::COLUMNS,
             0, partial);
         break;
 
 #ifdef SKYLARK_HAVE_HDF5
-    case FORMAT_HDF5: {
+    case skylark::utility::io::FORMAT_HDF5: {
         H5::H5File in(fname, H5F_ACC_RDONLY);
         skylark::utility::io::ReadHDF5(in, "X", X0, -1, partial);
         skylark::utility::io::ReadHDF5(in, "Y", L0, -1, partial);
@@ -315,6 +342,7 @@ int execute_classification(skylark::base::context_t &context) {
         *log_stream <<"took " << boost::format("%.2e") % timer.elapsed()
                   << " sec\n";
 
+    skylark::sketch::generic_sketch_container_t SampT;
     if (sample == -1) {
 
         El::View(X, X0);
@@ -328,16 +356,15 @@ int execute_classification(skylark::base::context_t &context) {
             timer.restart();
         }
 
-
-        skylark::sketch::UST_data_t S(X0.Width(), sample, false, context);
+        SampT =
+            skylark::sketch::create_sketch<skylark::sketch::UST_t>(X0.Width(),
+                sample, skylark::sketch::UST_data_t::params_t(false), context);
 
         X.Resize(X0.Height(), sample);
-        skylark::sketch::UST_t<El::DistMatrix<T> > (S).apply(X0,
-            X, skylark::sketch::rowwise_tag());
+        SampT.apply(&X0, &X, skylark::sketch::rowwise_tag());
 
         L.Resize(1, sample);
-        skylark::sketch::UST_t<El::DistMatrix<El::Int> >(S).apply(L0,
-            L, skylark::sketch::rowwise_tag());
+        SampT.apply(&L0, &L, skylark::sketch::rowwise_tag());
 
         if (rank == 0)
             *log_stream <<"took " << boost::format("%.2e") % timer.elapsed()
@@ -397,8 +424,8 @@ int execute_classification(skylark::base::context_t &context) {
             T(lambda), A, rcoding, rlsc_params);
         model =
             new skylark::ml::kernel_model_t<skylark::ml::kernel_container_t,
-                  El::Int, T>(k, skylark::base::COLUMNS, X, fname, fileformat,
-                      A, rcoding);
+              El::Int, T>(k, skylark::base::COLUMNS, X, fname, partial, fileformat,
+                  SampT, A, rcoding);
         break;
 
     case FASTER_KRR:
@@ -408,8 +435,8 @@ int execute_classification(skylark::base::context_t &context) {
             T(lambda), A, rcoding, s, context, rlsc_params);
         model =
             new skylark::ml::kernel_model_t<skylark::ml::kernel_container_t,
-                  El::Int, T>(k, skylark::base::COLUMNS, X, fname, fileformat,
-                      A, rcoding);
+              El::Int, T>(k, skylark::base::COLUMNS, X, fname, partial,  
+                  fileformat, SampT, A, rcoding);
         break;
 
     case APPROXIMATE_KRR:
@@ -478,7 +505,7 @@ int execute_classification(skylark::base::context_t &context) {
             timer.restart();
         }
 
-        boost::property_tree::ptree pt = model->to_ptree();
+        pt = model->to_ptree();
 
         if (rank == 0) {
             std::ofstream of(modelname);
@@ -507,13 +534,13 @@ int execute_classification(skylark::base::context_t &context) {
         El::DistMatrix<El::Int> LT;
 
         switch (fileformat) {
-        case FORMAT_LIBSVM:
+        case skylark::utility::io::FORMAT_LIBSVM:
             skylark::utility::io::ReadLIBSVM(testname, XT, LT,
                 skylark::base::COLUMNS, X.Height());
             break;
 
 #ifdef SKYLARK_HAVE_HDF5
-        case FORMAT_HDF5: {
+        case skylark::utility::io::FORMAT_HDF5: {
             H5::H5File in(testname, H5F_ACC_RDONLY);
             skylark::utility::io::ReadHDF5(in, "X", XT);
             skylark::utility::io::ReadHDF5(in, "Y", LT);
@@ -527,8 +554,9 @@ int execute_classification(skylark::base::context_t &context) {
             return -1;
         }
 
+        El::DistMatrix<T> DV;
         El::DistMatrix<El::Int> LP;
-        model->predict(skylark::base::COLUMNS, XT, LP);
+        model->predict(skylark::base::COLUMNS, XT, LP, DV);
 
         if (rank == 0)
             *log_stream << "took " << boost::format("%.2e") % timer.elapsed()
@@ -589,13 +617,13 @@ int execute_regression(skylark::base::context_t &context) {
     }
 
     switch (fileformat) {
-    case FORMAT_LIBSVM:
+    case skylark::utility::io::FORMAT_LIBSVM:
         skylark::utility::io::ReadLIBSVM(fname, X0, Y0, skylark::base::COLUMNS,
             0, partial);
         break;
 
 #ifdef SKYLARK_HAVE_HDF5
-    case FORMAT_HDF5: {
+    case skylark::utility::io::FORMAT_HDF5: {
         H5::H5File in(fname, H5F_ACC_RDONLY);
         skylark::utility::io::ReadHDF5(in, "X", X0, -1, partial);
         skylark::utility::io::ReadHDF5(in, "Y", Y0, -1, partial);
@@ -613,6 +641,7 @@ int execute_regression(skylark::base::context_t &context) {
         *log_stream <<"took " << boost::format("%.2e") % timer.elapsed()
                   << " sec\n";
 
+    skylark::sketch::generic_sketch_container_t SampT;
     if (sample == -1) {
 
         El::View(X, X0);
@@ -626,16 +655,15 @@ int execute_regression(skylark::base::context_t &context) {
             timer.restart();
         }
 
-
-        skylark::sketch::UST_data_t S(X0.Width(), sample, false, context);
+        SampT =
+            skylark::sketch::create_sketch<skylark::sketch::UST_t>(X0.Width(),
+                sample, skylark::sketch::UST_data_t::params_t(false), context);
 
         X.Resize(X0.Height(), sample);
-        skylark::sketch::UST_t<El::DistMatrix<T> > (S).apply(X0,
-            X, skylark::sketch::rowwise_tag());
+        SampT.apply(&X0, &X, skylark::sketch::rowwise_tag());
 
         Y.Resize(1, sample);
-        skylark::sketch::UST_t<El::DistMatrix<T> > (S).apply(Y0,
-            Y, skylark::sketch::rowwise_tag());
+        SampT.apply(&Y0, &Y, skylark::sketch::rowwise_tag());
 
         if (rank == 0)
             *log_stream <<"took " << boost::format("%.2e") % timer.elapsed()
@@ -682,20 +710,20 @@ int execute_regression(skylark::base::context_t &context) {
     skylark::ml::krr_params_t krr_params(rank == 0, 4, *log_stream, "\t");
     krr_params.use_fast = use_fast;
 
-    skylark::ml::model_t<T, T> *model;
-
     // Transpose Y since KernelRidge expects it to be a column vector (TODO ?)
     El::DistMatrix<T> Ytransp;
     El::Transpose(Y, Ytransp, true);
-    
+
+    skylark::ml::model_t<T, T> *model;
+
     switch(algorithm) {
     case CLASSIC_KRR:
         skylark::ml::KernelRidge(skylark::base::COLUMNS, k, X, Ytransp,
             T(lambda), A, krr_params);
         model =
             new skylark::ml::kernel_model_t<skylark::ml::kernel_container_t,
-                  T, T>(k, skylark::base::COLUMNS, X, fname, fileformat,
-                      A);
+                T, T>(k, skylark::base::COLUMNS, X, fname, partial, fileformat,
+                    SampT, A);
         break;
 
     case FASTER_KRR:
@@ -705,7 +733,8 @@ int execute_regression(skylark::base::context_t &context) {
             T(lambda), A, s, context, krr_params);
         model =
             new skylark::ml::kernel_model_t<skylark::ml::kernel_container_t,
-                  T, T>(k, skylark::base::COLUMNS, X, fname, fileformat, A);
+             T, T>(k, skylark::base::COLUMNS, X, fname, partial, fileformat, 
+                 SampT, A);
         break;
 
     case APPROXIMATE_KRR:
@@ -775,7 +804,7 @@ int execute_regression(skylark::base::context_t &context) {
             timer.restart();
         }
 
-        boost::property_tree::ptree pt = model->to_ptree();
+        pt = model->to_ptree();
 
         if (rank == 0) {
             std::ofstream of(modelname);
@@ -792,6 +821,7 @@ int execute_regression(skylark::base::context_t &context) {
                         << " sec\n";
     }
 
+
     // Test
     if (!testname.empty()) {
         if (rank == 0) {
@@ -804,13 +834,13 @@ int execute_regression(skylark::base::context_t &context) {
         El::DistMatrix<T> YT;
 
         switch (fileformat) {
-        case FORMAT_LIBSVM:
+        case skylark::utility::io::FORMAT_LIBSVM:
             skylark::utility::io::ReadLIBSVM(testname, XT, YT,
                 skylark::base::COLUMNS, X.Height());
             break;
 
 #ifdef SKYLARK_HAVE_HDF5
-        case FORMAT_HDF5: {
+        case skylark::utility::io::FORMAT_HDF5: {
             H5::H5File in(testname, H5F_ACC_RDONLY);
             skylark::utility::io::ReadHDF5(in, "X", XT);
             skylark::utility::io::ReadHDF5(in, "Y", YT);
@@ -852,6 +882,216 @@ int execute_regression(skylark::base::context_t &context) {
     return 0;
 }
 
+
+template<typename T>
+int predict_regression(skylark::base::context_t &context) {
+    boost::mpi::timer timer;
+
+    boost::mpi::communicator world;
+    int rank = world.rank();
+
+    std::ostream *log_stream = &std::cout;
+    if (rank == 0 && logfile != "") {
+        log_stream = new std::ofstream();
+        ((std::ofstream *)log_stream)->open(logfile);
+    }
+
+    if (rank == 0) {
+        *log_stream << "Reading model... ";
+        log_stream->flush();
+        timer.restart();
+    }
+
+    skylark::ml::model_container_t<T, T> model(pt);
+
+    if (rank == 0)
+        *log_stream <<"took " << boost::format("%.2e") % timer.elapsed()
+                    << " sec\n";
+
+    if (rank == 0) {
+        *log_stream << "Predicting... ";
+        log_stream->flush();
+        timer.restart();
+    }
+
+    El::DistMatrix<T> XT, YT;
+
+    switch (fileformat) {
+    case skylark::utility::io::FORMAT_LIBSVM:
+        skylark::utility::io::ReadLIBSVM(fname, XT, YT,
+            skylark::base::COLUMNS, model.get_input_size());
+        break;
+
+#ifdef SKYLARK_HAVE_HDF5
+    case skylark::utility::io::FORMAT_HDF5: {
+        H5::H5File in(fname, H5F_ACC_RDONLY);
+        skylark::utility::io::ReadHDF5(in, "X", XT);
+        skylark::utility::io::ReadHDF5(in, "Y", YT);
+        in.close();
+    }
+        break;
+#endif
+
+    default:
+        *log_stream << "Invalid file format specified." << std::endl;
+        return -1;
+    }
+
+    El::DistMatrix<T> YP;
+    model.predict(skylark::base::COLUMNS, XT, YP);
+
+    if (rank == 0)
+        *log_stream << "took " << boost::format("%.2e") % timer.elapsed()
+                    << " sec\n";
+
+    T nrm_Yt = El::Nrm2(YT);
+    El::Axpy(T(-1.0), YP, YT);
+    T nrm_E = El::Nrm2(YT);
+
+    if (rank == 0)
+        *log_stream << "Error rate: "
+                    << boost::format("%.4e") % (nrm_E / nrm_Yt)
+                    << std::endl;
+    world.barrier();
+
+    if (!outputfile.empty()) {
+        if (rank == 0) {
+            *log_stream << "Writing output... ";
+            log_stream->flush();
+            timer.restart();
+        }
+
+        El::DistMatrix<T> YPT;
+        El::Transpose(YP, YPT);
+
+        El::Write(YPT, outputfile, El::ASCII);
+
+        if (rank == 0)
+            *log_stream << "took " << boost::format("%.2e") % timer.elapsed()
+                    << " sec\n";
+    }
+
+    if (rank == 0 && logfile != "") {
+        ((std::ofstream *)log_stream)->close();
+        delete log_stream;
+    }
+
+    return 0;
+}
+
+template<typename T>
+int predict_classification(skylark::base::context_t &context) {
+
+    boost::mpi::timer timer;
+
+    boost::mpi::communicator world;
+    int rank = world.rank();
+
+    std::ostream *log_stream = &std::cout;
+    if (rank == 0 && logfile != "") {
+        log_stream = new std::ofstream();
+        ((std::ofstream *)log_stream)->open(logfile);
+    }
+
+    if (rank == 0) {
+        *log_stream << "Reading model... ";
+        log_stream->flush();
+        timer.restart();
+    }
+
+    skylark::ml::model_container_t<El::Int, T> model(pt);
+
+    if (rank == 0)
+        *log_stream <<"took " << boost::format("%.2e") % timer.elapsed()
+                    << " sec\n";
+
+    if (rank == 0) {
+        *log_stream << "Predicting... ";
+        log_stream->flush();
+        timer.restart();
+    }
+
+    El::DistMatrix<T> XT;
+    El::DistMatrix<El::Int> LT;
+
+    switch (fileformat) {
+    case skylark::utility::io::FORMAT_LIBSVM:
+        skylark::utility::io::ReadLIBSVM(fname, XT, LT,
+            skylark::base::COLUMNS, model.get_input_size());
+        break;
+
+#ifdef SKYLARK_HAVE_HDF5
+    case skylark::utility::io::FORMAT_HDF5: {
+        H5::H5File in(fname, H5F_ACC_RDONLY);
+        skylark::utility::io::ReadHDF5(in, "X", XT);
+        skylark::utility::io::ReadHDF5(in, "Y", LT);
+        in.close();
+    }
+        break;
+#endif
+
+    default:
+        *log_stream << "Invalid file format specified." << std::endl;
+        return -1;
+    }
+
+    El::DistMatrix<T> DV;
+    El::DistMatrix<El::Int> LP;
+    model.predict(skylark::base::COLUMNS, XT, LP, DV);
+
+    if (rank == 0)
+        *log_stream << "took " << boost::format("%.2e") % timer.elapsed()
+                    << " sec\n";
+
+    int errs = 0;
+    if (LT.LocalHeight() > 0)
+        for(int i = 0; i < LT.LocalWidth(); i++)
+            if (LT.GetLocal(0, i) != LP.GetLocal(0, i))
+                errs++;
+
+    errs = El::mpi::AllReduce(errs, MPI_SUM, LT.DistComm());
+
+    if (rank == 0)
+        *log_stream << "Error rate: "
+                    << boost::format("%.2f") % ((errs * 100.0) / LT.Width())
+                    << "%" << std::endl;
+
+    if (!outputfile.empty()) {
+        if (rank == 0) {
+            *log_stream << "Writing output... ";
+            log_stream->flush();
+            timer.restart();
+        }
+
+        if (!decisionvals) {
+            El::DistMatrix<El::Int> LPT;
+            El::Transpose(LP, LPT);
+            El::Write(LPT, outputfile, El::ASCII);
+        } else {
+            El::DistMatrix<T> DVT;
+            El::Transpose(DV, DVT);
+            std::stringstream stream;
+            stream << "# Column order for decision values:" << std::endl
+                   << "# ";
+            std::vector<El::Int> colcoding;
+            model.get_column_coding(colcoding);
+            for(int i = 0; i < colcoding.size(); i++)
+                stream << colcoding[i] << " ";
+            El::Write(DVT, outputfile, El::ASCII, stream.str());
+        }
+        if (rank == 0)
+            *log_stream << "took " << boost::format("%.2e") % timer.elapsed()
+                    << " sec\n";
+    }
+
+    if (rank == 0 && logfile != "") {
+        ((std::ofstream *)log_stream)->close();
+        delete log_stream;
+    }
+
+    return 0;
+}
+
 int main(int argc, char* argv[]) {
 
     for(int i = 0; i < argc; i++) {
@@ -876,16 +1116,44 @@ int main(int argc, char* argv[]) {
 
     SKYLARK_BEGIN_TRY()
 
-        if (regression) {
-            if (use_single)
-                ret = execute_regression<float>(context);
-            else
-                ret = execute_regression<double>(context);
+        // If in predict mode, we need to read the model to see if regression
+        // or classification mode.
+        if (predict) {
+            std::ifstream is(modelname);
+
+            // Skip all lines begining with "#"
+            while(is.peek() == '#')
+                is.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+            boost::property_tree::read_json(is, pt);
+            is.close();
+
+            regression = pt.get<bool>("regression");
+
+            if (regression) {
+                if (use_single)
+                    ret = predict_regression<float>(context);
+                else
+                    ret = predict_regression<double>(context);
+            } else {
+                if (use_single)
+                    ret = predict_classification<float>(context);
+                else
+                    ret = predict_classification<double>(context);
+            }
         } else {
-            if (use_single)
-                ret = execute_classification<float>(context);
-            else
-                ret = execute_classification<double>(context);
+
+            if (regression) {
+                if (use_single)
+                    ret = execute_regression<float>(context);
+                else
+                    ret = execute_regression<double>(context);
+            } else {
+                if (use_single)
+                    ret = execute_classification<float>(context);
+                else
+                    ret = execute_classification<double>(context);
+            }
         }
     SKYLARK_END_TRY() SKYLARK_CATCH_AND_PRINT((rank == 0))
 

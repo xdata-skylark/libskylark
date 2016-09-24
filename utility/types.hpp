@@ -47,6 +47,28 @@ typedef El::DistMatrix<float, El::STAR, El::VR> dist_matrix_star_vr_t;
 
 }
 
+namespace mitypes {
+
+typedef El::Matrix<El::Int> matrix_t;
+typedef El::ElementalMatrix<El::Int> el_matrix_t;
+typedef base::sparse_matrix_t<El::Int> sparse_matrix_t;
+typedef El::DistMatrix<El::Int> dist_matrix_t;
+typedef El::DistMatrix<El::Int, El::STAR, El::STAR> shared_matrix_t;
+typedef El::DistMatrix<El::Int, El::CIRC, El::CIRC> root_matrix_t;
+typedef El::DistMatrix<El::Int, El::VC, El::STAR> dist_matrix_vc_star_t;
+typedef El::DistMatrix<El::Int, El::VR, El::STAR> dist_matrix_vr_star_t;
+typedef El::DistMatrix<El::Int, El::STAR, El::VC> dist_matrix_star_vc_t;
+typedef El::DistMatrix<El::Int, El::STAR, El::VR> dist_matrix_star_vr_t;
+
+// TODO
+//#ifdef SKYLARK_HAVE_COMBBLAS
+//typedef SpParMat<size_t, float, SpDCCols<size_t, float> >
+//cb_dist_sparse_matrix_t;
+//#endif
+
+}
+
+
 }
 
 #endif // SKYLARK_UTILITY_TYPES_HPP

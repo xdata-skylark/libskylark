@@ -8,9 +8,10 @@
 #include "elem_extender.hpp"
 #include "hdfs.hpp"
 #include "io/io.hpp"
+#include "pretty_printer.hpp"
 
 /**
- * This file contains all the functions that we wrote to support external 
+ * This file contains all the functions that we wrote to support external
  * software such as Elemental and CombBLAS. These should technically be in
  * the respective softwares.
  */

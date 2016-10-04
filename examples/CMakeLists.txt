@@ -59,6 +59,16 @@ target_link_libraries(kernel_regression
 
 install_targets(/bin/skylark_examples kernel_regression)
 
+add_executable(kmeans kmeans.cpp)
+target_link_libraries(kmeans
+  ${Elemental_LIBRARY}
+  ${OPTIONAL_LIBS}
+  ${Pmrrr_LIBRARY}
+  ${Metis_LIBRARY}
+  ${SKYLARK_LIBS}
+  ${Boost_LIBRARIES})
+install_targets(/bin/skylark_examples kmeans)
+
 if (SKYLARK_HAVE_HDF5)
   add_executable(condest condest.cpp)
   target_link_libraries(condest

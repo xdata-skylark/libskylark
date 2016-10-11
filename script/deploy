@@ -1,0 +1,59 @@
+#!/bin/bash
+set -ex
+
+TARGET_BRANCH="gh-pages"
+SOURCE_BRANCH=$TRAVIS_BRANCH
+if [ "$SOURCE_BRANCH" != "master" -a "$SOURCE_BRANCH" != "development" -a "$SOURCE_BRANCH" != "travis-doc-deploy" ]; then
+    echo "Only building docs for master and development."
+    exit 0
+fi
+
+# PR and commits to other branches shouldn't try to deploy, just build to verify
+if [ "$TRAVIS_PULL_REQUEST" != "false" -o "$TRAVIS_BRANCH" != "$SOURCE_BRANCH" ]; then
+    echo "Skipping deploy."
+    exit 0
+fi
+
+# Save some useful information
+REPO=`git config remote.origin.url`
+SSH_REPO=${REPO/https:\/\/github.com\//git@github.com:}
+SHA=`git rev-parse --verify HEAD`
+
+# Clone the existing gh-pages for this repo into update-docs/
+TMP_DOC_DIR=update-docs
+git clone $REPO $TMP_DOC_DIR
+cd $TMP_DOC_DIR
+git checkout $TARGET_BRANCH || git checkout --orphan $TARGET_BRANCH
+
+# Copy the doc generated in the build step
+if [ "$SOURCE_BRANCH" == "travis-doc-deploy" ]; then #development
+    rsync -a --delete ../build/Documentation/sphinx docs/dev
+    #FIXME we should have a doxygen dir for both stable and dev
+fi
+
+if [ "$SOURCE_BRANCH" == "master" ]; then
+    rsync -a --delete ../build/Documentation/sphinx docs/stable
+    rsync -a --delete ../build/Documentation/html docs/doxygen
+fi
+
+# Now let's go have some fun with the cloned repo
+git config user.name "travis-ci"
+git config user.email "travis@libskylark"
+
+if git diff-index --quiet HEAD --; then
+    echo "Nothing to push."
+    exit 0
+fi
+
+git add . -A
+git commit -m "Updating docs to GitHub Pages: ${SHA}"
+
+ENCRYPTED_KEY_VAR="encrypted_${ENCRYPTION_LABEL}_key"
+ENCRYPTED_IV_VAR="encrypted_${ENCRYPTION_LABEL}_iv"
+ENCRYPTED_KEY=${!ENCRYPTED_KEY_VAR}
+ENCRYPTED_IV=${!ENCRYPTED_IV_VAR}
+openssl aes-256-cbc -K $ENCRYPTED_KEY -iv $ENCRYPTED_IV -in ../script/travis-deploy.enc -out deploy_key -d
+chmod 600 deploy_key
+eval `ssh-agent -s`
+ssh-add deploy_key
+git push $SSH_REPO $TARGET_BRANCH

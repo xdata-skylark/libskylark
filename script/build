@@ -19,6 +19,5 @@ make doc &> /dev/null
 export PYTHONPATH=$PYTHON_SITE_PACKAGES/lib/python2.7/site-packages:$PYTHON_SITE_PACKAGES
 #LD_PRELOAD=/usr/lib/libmpi.so make sphinx-doc
 make sphinx-doc
-cp -R Documentation /tmp/
 
 ctest --output-on-failure

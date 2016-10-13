@@ -27,12 +27,12 @@
     <link rel="next" title="Base Layer" href="base.html" />
     <link rel="prev" title="Quick Start Guide" href="quick_start.html" /> 
   </head>
-  <body role="document">
-      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
+  <body>
+      <div class="header"><h1 class="heading"><a href="index.html">
           <span>libSkylark  documentation</span></a></h1>
         <h2 class="heading"><span>Building from Source</span></h2>
       </div>
-      <div class="topnav" role="navigation" aria-label="top navigation">
+      <div class="topnav">
       
         <p>
         «&#160;&#160;<a href="quick_start.html">Quick Start Guide</a>
@@ -52,7 +52,7 @@
 <h2>Getting the Source Code<a class="headerlink" href="#getting-the-source-code" title="Permalink to this headline">¶</a></h2>
 <p>The source code is hosted on github. The libSkylark git repository can be
 cloned using the following command.</p>
-<div class="highlight-sh"><div class="highlight"><pre><span></span>git clone https://github.com/xdata-skylark/libskylark.git
+<div class="highlight-sh"><div class="highlight"><pre>git clone https://github.com/xdata-skylark/libskylark.git
 </pre></div>
 </div>
 </div>
@@ -83,7 +83,7 @@ for Python dependencies.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">On a fresh 64-bit Ubuntu-based (release 14.04 LTS, aka Trusty Tahr) you can
-use the provided bootstrap script <code class="docutils literal"><span class="pre">vagrant/trusty64/boostrap.sh</span></code> to
+use the provided bootstrap script <tt class="docutils literal"><span class="pre">vagrant/trusty64/boostrap.sh</span></tt> to
 install libSkylark dependencies. Before executing the script, be sure to
 set the user name in the UNAME variable at the start of the script.</p>
 </div>
@@ -91,7 +91,7 @@ set the user name in the UNAME variable at the start of the script.</p>
 <h3>python-setuptools<a class="headerlink" href="#python-setuptools" title="Permalink to this headline">¶</a></h3>
 <p>To get easy_install and others.</p>
 <p><em>Installation</em></p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>sudo apt-get install python-setuptools
+<div class="highlight-rst"><div class="highlight"><pre>sudo apt-get install python-setuptools
 </pre></div>
 </div>
 </div>
@@ -99,17 +99,17 @@ set the user name in the UNAME variable at the start of the script.</p>
 <h3>g++ (&gt;=4.7.1 for Elemental support)<a class="headerlink" href="#g-4-7-1-for-elemental-support" title="Permalink to this headline">¶</a></h3>
 <p>The C++ compiler in the GNU Compiler Collection (GCC).</p>
 <p><em>Installation:</em></p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>sudo apt-get install g++
+<div class="highlight-rst"><div class="highlight"><pre>sudo apt-get install g++
 </pre></div>
 </div>
 <p>In case your ubuntu repository does not contain a GCC/G++ version 4.7 use the following:</p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+<div class="highlight-rst"><div class="highlight"><pre>sudo add-apt-repository ppa:ubuntu-toolchain-r/test
 sudo apt-get update
 sudo apt-get install gcc-4.7 g++-4.7
 </pre></div>
 </div>
 <p>and (optionally) use 4.7 as default compiler:</p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>sudo update-alternatives --remove gcc /usr/bin/gcc-4.6
+<div class="highlight-rst"><div class="highlight"><pre>sudo update-alternatives --remove gcc /usr/bin/gcc-4.6
 sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.7 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.7
 sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.6 40 --slave /usr/bin/g++ g++ /usr/bin/g++-4.6
 </pre></div>
@@ -119,7 +119,7 @@ sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.6 40 --slave 
 <h3>gfortran compiler<a class="headerlink" href="#gfortran-compiler" title="Permalink to this headline">¶</a></h3>
 <p>gfortran is the name of the  GNU  Fortran  compiler, which is part of the  GNU Compiler Collection (GCC).</p>
 <p><em>Installation:</em></p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>sudo apt-get install gfortran
+<div class="highlight-rst"><div class="highlight"><pre>sudo apt-get install gfortran
 </pre></div>
 </div>
 </div>
@@ -130,20 +130,20 @@ software using a compiler-independent method. It is designed to support
 directory hierarchies and applications that depend on multiple libraries, and
 for use in conjunction with native build environments such as make.</p>
 <p><em>Installation:</em></p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>sudo apt-get install cmake
+<div class="highlight-rst"><div class="highlight"><pre>sudo apt-get install cmake
 </pre></div>
 </div>
 <p>If the available version is too old, compile CMake by hand.
 Head to <a class="reference external" href="http://www.cmake.org/cmake/resources/software.html">http://www.cmake.org/cmake/resources/software.html</a> and download the
 latest version.</p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>./bootstrap --prefix=$CMAKE_INSTALL_DIR
+<div class="highlight-rst"><div class="highlight"><pre>./bootstrap --prefix=$CMAKE_INSTALL_DIR
 make
 make install
 </pre></div>
 </div>
-<p>By specifying a <span class="target" id="index-0"></span><code class="xref std std-envvar docutils literal"><span class="pre">CMAKE_INSTALL_DIR</span></code> the install target for CMake can be
-set. If no <code class="docutils literal"><span class="pre">--prefix</span></code> is set, CMake will be installed in <code class="file docutils literal"><span class="pre">/usr/local</span></code>.
-Make sure to add the install path to your <span class="target" id="index-1"></span><code class="xref std std-envvar docutils literal"><span class="pre">PATH</span></code> environment variable.</p>
+<p>By specifying a <span class="target" id="index-0"></span><tt class="xref std std-envvar docutils literal"><span class="pre">CMAKE_INSTALL_DIR</span></tt> the install target for CMake can be
+set. If no <tt class="docutils literal"><span class="pre">--prefix</span></tt> is set, CMake will be installed in <tt class="file docutils literal"><span class="pre">/usr/local</span></tt>.
+Make sure to add the install path to your <span class="target" id="index-1"></span><tt class="xref std std-envvar docutils literal"><span class="pre">PATH</span></tt> environment variable.</p>
 </div>
 <div class="section" id="blas-and-lapack">
 <h3>BLAS and LAPACK<a class="headerlink" href="#blas-and-lapack" title="Permalink to this headline">¶</a></h3>
@@ -157,15 +157,15 @@ includes routines to implement the associated QR, Cholesky and Schur
 decomposition.</p>
 <p>We provide instructions for using Ubuntu&#8217;s repository and using OpenBLAS.</p>
 <p><em>Installation:</em></p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>sudo apt-get install libblas-dev libblas-doc libblas3gf liblapack-dev liblapack-doc liblapack3gf
+<div class="highlight-rst"><div class="highlight"><pre>sudo apt-get install libblas-dev libblas-doc libblas3gf liblapack-dev liblapack-doc liblapack3gf
 </pre></div>
 </div>
 <p>Experiments show good speedups with using OpenBLAS.</p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>wget http://github.com/xianyi/OpenBLAS/tarball/v0.2.8
+<div class="highlight-rst"><div class="highlight"><pre>wget http://github.com/xianyi/OpenBLAS/tarball/v0.2.8
 </pre></div>
 </div>
 <p><em>Installation (to enable OpenMP support in OpenBLAS):</em></p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>make USE_OPENMP=1 FC=gfortran; make install PREFIX=/path/to/install-directory
+<div class="highlight-rst"><div class="highlight"><pre>make USE_OPENMP=1 FC=gfortran; make install PREFIX=/path/to/install-directory
 </pre></div>
 </div>
 </div>
@@ -176,7 +176,7 @@ message-passing for distributed-memory applications used in parallel
 computing. MPICH is free software and is available for most flavors of
 Unix-like OS (including Linux).</p>
 <p><em>Installation:</em></p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>sudo apt-get install libcr-dev mpich2 mpich2-doc
+<div class="highlight-rst"><div class="highlight"><pre>sudo apt-get install libcr-dev mpich2 mpich2-doc
 </pre></div>
 </div>
 </div>
@@ -191,18 +191,18 @@ collection of extension modules for Python which he released in 1999 under
 the name Multipack (named for the netlib packages that it brought together
 such as ODEPACK, QUADPACK, and MINPACK).</p>
 <p><em>Installation:</em></p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>sudo apt-get install python-numpy python-scipy
+<div class="highlight-rst"><div class="highlight"><pre>sudo apt-get install python-numpy python-scipy
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p>Elemental-0.86 requires a NumPy version &gt;= 1.7. On Ubuntu Precise the deb sources only contain version 1.6.x. To upgrade use either:</p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>wget https://launchpad.net/~tukss/+archive/ppa/+build/4055943/+files/python-numpy_1.7.0~b2-1~precise1_amd64.deb
+<div class="highlight-rst"><div class="highlight"><pre>wget https://launchpad.net/~tukss/+archive/ppa/+build/4055943/+files/python-numpy_1.7.0~b2-1~precise1_amd64.deb
 sudo dpkg -i python-numpy_1.7.0~b2-1~precise1_amd64.deb
 </pre></div>
 </div>
 <p>or</p>
-<div class="last highlight-rst"><div class="highlight"><pre><span></span>sudo easy_install -U scipy
+<div class="last highlight-rst"><div class="highlight"><pre>sudo easy_install -U scipy
 </pre></div>
 </div>
 </div>
@@ -213,7 +213,7 @@ sudo dpkg -i python-numpy_1.7.0~b2-1~precise1_amd64.deb
 (MPI) standard for the Python programming language, allowing any Python
 program to exploit multiple processors.</p>
 <p><em>Installation:</em></p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>sudo easy_install mpi4py
+<div class="highlight-rst"><div class="highlight"><pre>sudo easy_install mpi4py
 </pre></div>
 </div>
 </div>
@@ -222,7 +222,7 @@ program to exploit multiple processors.</p>
 <p>hdf5 is a portable data model, library and file format for storing and
 managing data.</p>
 <p><em>Installation:</em></p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>wget http://www.hdfgroup.org/ftp/HDF5/current/src/hdf5-1.8.12.tar
+<div class="highlight-rst"><div class="highlight"><pre>wget http://www.hdfgroup.org/ftp/HDF5/current/src/hdf5-1.8.12.tar
 tar -xvf hdf5-1.8.12.tar
 cd hdf5-1.8.12
 ./configure --enable-cxx --prefix=&lt;location for HDF5 software&gt;
@@ -237,7 +237,7 @@ make install
 <p>h5py (h5py) provides Python bindings to hdf5, which is a data model,
 library, and file format for storing and managing data.</p>
 <p><em>Installation:</em></p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>sudo apt-get install libhdf5-serial-dev
+<div class="highlight-rst"><div class="highlight"><pre>sudo apt-get install libhdf5-serial-dev
 sudo easy_install h5py
 </pre></div>
 </div>
@@ -249,7 +249,7 @@ support for tasks and structures such as linear algebra, pseudorandom
 number generation, multithreading, image processing, regular expressions,
 and unit testing.</p>
 <p><em>Installation:</em></p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>wget http://sourceforge.net/projects/boost/files/boost/1.55.0/boost_1_55_0.tar.gz
+<div class="highlight-rst"><div class="highlight"><pre>wget http://sourceforge.net/projects/boost/files/boost/1.55.0/boost_1_55_0.tar.gz
 tar xvfz boost_1_55_0.tar.gz
 cd boost_1_55_0
 ./bootstrap.sh --with-libraries=mpi,serialization,program_options,system,filesystem
@@ -261,20 +261,20 @@ sudo ./b2 install
 <p><em>Compiling with the XL compiler</em></p>
 <p>This section is inspired by the Argonne Boost configuration. First, as usual
 we call bootstrap.</p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>./bootstrap.sh --with-libraries=mpi,serialization,program_options,system,filesystem
+<div class="highlight-rst"><div class="highlight"><pre>./bootstrap.sh --with-libraries=mpi,serialization,program_options,system,filesystem
 </pre></div>
 </div>
-<p>In a next step, download <a class="reference download internal" href="_downloads/bgq.jam" download=""><code class="xref download docutils literal"><span class="pre">jam</span> <span class="pre">file</span></code></a> and
-copy the Boost jam file to <code class="docutils literal"><span class="pre">tools/build/v2/tools/</span></code>.
+<p>In a next step, download <a class="reference download internal" href="_downloads/bgq.jam"><tt class="xref download docutils literal"><span class="pre">jam</span> <span class="pre">file</span></tt></a> and
+copy the Boost jam file to <tt class="docutils literal"><span class="pre">tools/build/v2/tools/</span></tt>.
 Subsequently, executing</p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>echo &quot;using bgq ;&quot; &gt;&gt; project-config.jam
+<div class="highlight-rst"><div class="highlight"><pre>echo &quot;using bgq ;&quot; &gt;&gt; project-config.jam
 echo &quot;using mpi : /bgsys/drivers/ppcfloor/comm/bin/xl/mpixlcxx ;&quot; &gt;&gt; project-config.jam
 ./b2 link=static,shared toolset=bgq
 </pre></div>
 </div>
 <p>compiles the selected boost libraries (you might need to adapt the path to
-<code class="docutils literal"><span class="pre">mpixlcxx</span></code>). In case all versions (debug, mt) are required, use
-<code class="docutils literal"><span class="pre">--build-type=complete</span></code>.</p>
+<tt class="docutils literal"><span class="pre">mpixlcxx</span></tt>). In case all versions (debug, mt) are required, use
+<tt class="docutils literal"><span class="pre">--build-type=complete</span></tt>.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">Make sure to only use -O2 because -O3 and higher will result in a
@@ -298,7 +298,7 @@ Currently we only support <cite>0ffa9fc29ab740a7a96eccc45c180463723f465d</cite> 
 <a class="reference external" href="https://github.com/elemental/Elemental/commit/0ffa9fc29ab740a7a96eccc45c180463723f465d">https://github.com/elemental/Elemental/commit/0ffa9fc29ab740a7a96eccc45c180463723f465d</a>.</p>
 </div>
 <p><em>Installation: (make sure to use a compiler with c++11 support)</em></p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>git clone https://github.com/elemental/Elemental.git
+<div class="highlight-rst"><div class="highlight"><pre>git clone https://github.com/elemental/Elemental.git
 cd Elemental
 git checkout 0ffa9fc29ab740a7a96eccc45c180463723f465d
 mkdir build
@@ -308,18 +308,18 @@ make
 sudo make install
 </pre></div>
 </div>
-<p>The installation prefix can be set using the <code class="docutils literal"><span class="pre">CMAKE_INSTALL_PREFIX</span></code>.</p>
-<p>If you want to use non-default math libraries specify the <code class="docutils literal"><span class="pre">MATH_LIBS</span></code>
+<p>The installation prefix can be set using the <tt class="docutils literal"><span class="pre">CMAKE_INSTALL_PREFIX</span></tt>.</p>
+<p>If you want to use non-default math libraries specify the <tt class="docutils literal"><span class="pre">MATH_LIBS</span></tt>
 variable.
 For example for OpenBLAS, run cmake along the following lines:</p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>cmake -D MATH_LIBS=&quot;-L/usr/local/lib -llapack -lopenblas -lm&quot; ..
+<div class="highlight-rst"><div class="highlight"><pre>cmake -D MATH_LIBS=&quot;-L/usr/local/lib -llapack -lopenblas -lm&quot; ..
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">Note that the cmake comamnd above may require additional options for
 non-standard Python installations, e.g. Anaconda,
-<code class="docutils literal"><span class="pre">-D</span>&nbsp; <span class="pre">PYTHON_LIBRARY=/path/to/libpython2.7.so</span>&nbsp; <span class="pre">-D</span> <span class="pre">PYTHON_INCLUDE_DIR=/path/to/include/python2.7</span></code></p>
+<tt class="docutils literal"><span class="pre">-D</span>&nbsp; <span class="pre">PYTHON_LIBRARY=/path/to/libpython2.7.so</span>&nbsp; <span class="pre">-D</span> <span class="pre">PYTHON_INCLUDE_DIR=/path/to/include/python2.7</span></tt></p>
 </div>
 </div>
 <div class="section" id="combinatorial-blas-combblas-1-4">
@@ -329,7 +329,7 @@ library offering a small but powerful set of linear algebra primitives
 specifically targeting graph analytics. We use it in libSkylark to represent
 sparse matrices.</p>
 <p><em>Installation:</em></p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>wget http://gauss.cs.ucsb.edu/~aydin/CombBLAS_FILES/CombBLAS_beta_14_0.tgz
+<div class="highlight-rst"><div class="highlight"><pre>wget http://gauss.cs.ucsb.edu/~aydin/CombBLAS_FILES/CombBLAS_beta_14_0.tgz
 tar xvfz CombBLAS_beta_14_0.tgz
 cd CombBLAS/
 cmake .
@@ -338,8 +338,8 @@ make
 </div>
 <p><em>Shared Libs</em></p>
 <p>In order to use libSkylark through Python, make sure to compile and append the
-directory containing the <code class="docutils literal"><span class="pre">*.so</span></code> files to your <span class="target" id="index-2"></span><code class="xref std std-envvar docutils literal"><span class="pre">LD_LIBRARY_PATH</span></code>.</p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>cd CombBLAS/
+directory containing the <tt class="docutils literal"><span class="pre">*.so</span></tt> files to your <span class="target" id="index-2"></span><tt class="xref std std-envvar docutils literal"><span class="pre">LD_LIBRARY_PATH</span></tt>.</p>
+<div class="highlight-rst"><div class="highlight"><pre>cd CombBLAS/
 rm CMakeCache.txt
 cmake -DBUILD_SHARED_LIBS:BOOL=ON .
 make
@@ -352,13 +352,13 @@ make
 other things) to CombBLAS. libSkylark requires this package to handle sparse
 matrices through the Python interface.</p>
 <p>To install kdt you need python and python-dev libs:</p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>sudo apt-get install python
+<div class="highlight-rst"><div class="highlight"><pre>sudo apt-get install python
 sudo apt-get install python-dev
 </pre></div>
 </div>
 <p>Head over to <a class="reference external" href="http://kdt.sourceforge.net/wiki/index.php/Download">http://kdt.sourceforge.net/wiki/index.php/Download</a> and
 download kdt-0.3.tar.gz. Then execute:</p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>tar xzf kdt-0.3.tar.gz
+<div class="highlight-rst"><div class="highlight"><pre>tar xzf kdt-0.3.tar.gz
 cd kdt-0.3
 export CC=mpicxx
 export CXX=mpicxx
@@ -376,7 +376,7 @@ information.</p>
 complex data (as well as of even/odd data, i.e. the discrete cosine/sine
 transforms or DCT/DST).</p>
 <p><em>Installation:</em></p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>wget http://www.fftw.org/fftw-3.3.3.tar.gz
+<div class="highlight-rst"><div class="highlight"><pre>wget http://www.fftw.org/fftw-3.3.3.tar.gz
 tar xvfz fftw-3.3.3.tar.gz
 cd fftw-3.3.3/
 ./configure --enable-shared
@@ -391,7 +391,7 @@ sudo make install
 (CBRNGs). We use them in libSkylark to generate independent random number
 streams.</p>
 <p><em>Installation:</em></p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>wget http://www.thesalmons.org/john/random123/releases/1.08/Random123-1.08.tar.gz
+<div class="highlight-rst"><div class="highlight"><pre>wget http://www.thesalmons.org/john/random123/releases/1.08/Random123-1.08.tar.gz
 tar xvfz Random123-1.08.tar.gz
 sudo cp -r Random123-1.08/include/Random123 /usr/local/include
 </pre></div>
@@ -405,7 +405,7 @@ relatively easy to keep up to date. Doxygen can cross reference
 documentation and code, so that the reader of a document can easily refer
 to the actual code.</p>
 <p><em>Installation:</em></p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>sudo apt-get install doxygen
+<div class="highlight-rst"><div class="highlight"><pre>sudo apt-get install doxygen
 </pre></div>
 </div>
 </div>
@@ -415,7 +415,7 @@ to the actual code.</p>
 open-source tools initiated by AT&amp;T Labs Research for drawing graphs
 specified in DOT language scripts.</p>
 <p><em>Installation:</em></p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>sudo apt-get install graphviz
+<div class="highlight-rst"><div class="highlight"><pre>sudo apt-get install graphviz
 </pre></div>
 </div>
 </div>
@@ -427,7 +427,7 @@ sure to check out the Section &#8220;Installing software dependencies for
 libSkylark&#8221; to learn about the required dependencies.</p>
 <p><strong>Quick guide</strong>: In many situation the default configuration and settings
 should work out of the box. To that end execute</p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>cd $BUILD_DIR
+<div class="highlight-rst"><div class="highlight"><pre>cd $BUILD_DIR
 CC=mpicc CXX=mpicxx cmake $SRC_DIR
 make
 make install
@@ -449,14 +449,14 @@ machine continue reading the next sections.</p>
 <h3>Python only user-level installation<a class="headerlink" href="#python-only-user-level-installation" title="Permalink to this headline">¶</a></h3>
 <p>In case you do not have root access, and are satisfied with an Python only
 installation, you can install the Python package only at user-level.</p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>cd $BUILD_DIR
+<div class="highlight-rst"><div class="highlight"><pre>cd $BUILD_DIR
 CC=mpicc CXX=mpicxx cmake $SRC_DIR
 make
 cd python-skylark
 python ./setup.py install --user
 </pre></div>
 </div>
-<p>The Python package will be installed under <code class="file docutils literal"><span class="pre">~/.local</span></code>. The directory <code class="file docutils literal"><span class="pre">~/.local/lib</span></code> should
+<p>The Python package will be installed under <tt class="file docutils literal"><span class="pre">~/.local</span></tt>. The directory <tt class="file docutils literal"><span class="pre">~/.local/lib</span></tt> should
 be in the library load path for the installation to function properly.</p>
 </div>
 <div class="section" id="directory-setup">
@@ -464,16 +464,16 @@ be in the library load path for the installation to function properly.</p>
 <p>For the rest of this section let&#8217;s keep the following conventions:</p>
 <blockquote>
 <div><ul>
-<li><p class="first">the source code is checked out and <span class="target" id="index-3"></span><code class="xref std std-envvar docutils literal"><span class="pre">$SRC_DIR</span></code> points to the base directory in the libSkylark repository, e.g.</p>
+<li><p class="first">the source code is checked out and <span class="target" id="index-3"></span><tt class="xref std std-envvar docutils literal"><span class="pre">$SRC_DIR</span></tt> points to the base directory in the libSkylark repository, e.g.</p>
 <blockquote>
-<div><div class="highlight-rst"><div class="highlight"><pre><span></span>export SRC_DIR=/home/user/workspace/libskylark
+<div><div class="highlight-rst"><div class="highlight"><pre>export SRC_DIR=/home/user/workspace/libskylark
 </pre></div>
 </div>
 </div></blockquote>
 </li>
-<li><p class="first">you created a <strong>separate</strong> (do not build in the $SRC_DIR$) build directory <span class="target" id="index-4"></span><code class="xref std std-envvar docutils literal"><span class="pre">$BUILD_DIR</span></code> that is used to generate object files, libraries and executables, e.g.</p>
+<li><p class="first">you created a <strong>separate</strong> (do not build in the $SRC_DIR$) build directory <span class="target" id="index-4"></span><tt class="xref std std-envvar docutils literal"><span class="pre">$BUILD_DIR</span></tt> that is used to generate object files, libraries and executables, e.g.</p>
 <blockquote>
-<div><div class="highlight-rst"><div class="highlight"><pre><span></span>export BUILD_DIR=/home/user/build/libskylark
+<div><div class="highlight-rst"><div class="highlight"><pre>export BUILD_DIR=/home/user/build/libskylark
 </pre></div>
 </div>
 </div></blockquote>
@@ -528,8 +528,8 @@ following table summarizes all currently available build options:</p>
 </tr>
 </tbody>
 </table>
-<p>You can specify the desired build type with <code class="docutils literal"><span class="pre">-DCMAKE_BUILD_TYPE=STRING</span></code>,
-where <code class="docutils literal"><span class="pre">STRING</span></code> is any of</p>
+<p>You can specify the desired build type with <tt class="docutils literal"><span class="pre">-DCMAKE_BUILD_TYPE=STRING</span></tt>,
+where <tt class="docutils literal"><span class="pre">STRING</span></tt> is any of</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="70%" />
@@ -559,8 +559,8 @@ where <code class="docutils literal"><span class="pre">STRING</span></code> is a
 <p>The installation of libSkylark can be influenced with two variables:</p>
 <blockquote>
 <div><ul class="simple">
-<li>the CMake parameter <code class="docutils literal"><span class="pre">CMAKE_INSTALL_PREFIX</span></code> (i.e. pass <code class="docutils literal"><span class="pre">-DCMAKE_INSTALL_PREFIX=/home/user/software</span></code> when calling <strong class="command">cmake</strong>), and</li>
-<li>the environment variable <span class="target" id="index-5"></span><code class="xref std std-envvar docutils literal"><span class="pre">$PYTHON_SITE_PACKAGES</span></code> to determine the installation location for python packages. Don&#8217;t forget to adapt the <span class="target" id="index-6"></span><code class="xref std std-envvar docutils literal"><span class="pre">$PYTHONPATH</span></code> environment variable as well. Example: If <span class="target" id="index-7"></span><code class="xref std std-envvar docutils literal"><span class="pre">$PYTHON_SITE_PACKAGES</span></code> is set to <code class="file docutils literal"><span class="pre">/home/user/local</span></code>, CMake will install the Python bindings under <code class="file docutils literal"><span class="pre">/home/user/local/lib/python2.7/site-packages/skylark</span></code>. At this point, you will have to append <span class="target" id="index-8"></span><code class="xref std std-envvar docutils literal"><span class="pre">$PYTHONPATH</span></code> with <code class="file docutils literal"><span class="pre">/home/user/local/lib/python2.7/site-packages</span></code>!</li>
+<li>the CMake parameter <tt class="docutils literal"><span class="pre">CMAKE_INSTALL_PREFIX</span></tt> (i.e. pass <tt class="docutils literal"><span class="pre">-DCMAKE_INSTALL_PREFIX=/home/user/software</span></tt> when calling <strong class="command">cmake</strong>), and</li>
+<li>the environment variable <span class="target" id="index-5"></span><tt class="xref std std-envvar docutils literal"><span class="pre">$PYTHON_SITE_PACKAGES</span></tt> to determine the installation location for python packages. Don&#8217;t forget to adapt the <span class="target" id="index-6"></span><tt class="xref std std-envvar docutils literal"><span class="pre">$PYTHONPATH</span></tt> environment variable as well. Example: If <span class="target" id="index-7"></span><tt class="xref std std-envvar docutils literal"><span class="pre">$PYTHON_SITE_PACKAGES</span></tt> is set to <tt class="file docutils literal"><span class="pre">/home/user/local</span></tt>, CMake will install the Python bindings under <tt class="file docutils literal"><span class="pre">/home/user/local/lib/python2.7/site-packages/skylark</span></tt>. At this point, you will have to append <span class="target" id="index-8"></span><tt class="xref std std-envvar docutils literal"><span class="pre">$PYTHONPATH</span></tt> with <tt class="file docutils literal"><span class="pre">/home/user/local/lib/python2.7/site-packages</span></tt>!</li>
 </ul>
 </div></blockquote>
 <p>To help CMake to locate installed dependencies (system-wide installed dependencies should be found automatically), you should set the following environment variables:</p>
@@ -576,22 +576,22 @@ where <code class="docutils literal"><span class="pre">STRING</span></code> is a
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>ELEMENTAL_ROOT</td>
-<td>Looks for headers in <span class="target" id="index-9"></span><code class="xref std std-envvar docutils literal"><span class="pre">$ELEMENTAL_ROOT</span></code>/include and libs in <span class="target" id="index-10"></span><code class="xref std std-envvar docutils literal"><span class="pre">$ELEMENTAL_ROOT</span></code>/lib</td>
+<td>Looks for headers in <span class="target" id="index-9"></span><tt class="xref std std-envvar docutils literal"><span class="pre">$ELEMENTAL_ROOT</span></tt>/include and libs in <span class="target" id="index-10"></span><tt class="xref std std-envvar docutils literal"><span class="pre">$ELEMENTAL_ROOT</span></tt>/lib</td>
 </tr>
 <tr class="row-odd"><td>COMBBLAS_ROOT</td>
-<td>Looks for headers in <span class="target" id="index-11"></span><code class="xref std std-envvar docutils literal"><span class="pre">$COMBBLAS_ROOT</span></code>/ and libs in <span class="target" id="index-12"></span><code class="xref std std-envvar docutils literal"><span class="pre">$COMBBLAS_ROOT</span></code>/lib</td>
+<td>Looks for headers in <span class="target" id="index-11"></span><tt class="xref std std-envvar docutils literal"><span class="pre">$COMBBLAS_ROOT</span></tt>/ and libs in <span class="target" id="index-12"></span><tt class="xref std std-envvar docutils literal"><span class="pre">$COMBBLAS_ROOT</span></tt>/lib</td>
 </tr>
 <tr class="row-even"><td>FTW_ROOT</td>
-<td>Looks for headers in <span class="target" id="index-13"></span><code class="xref std std-envvar docutils literal"><span class="pre">$FFTW_ROOT</span></code>/include and libs in <span class="target" id="index-14"></span><code class="xref std std-envvar docutils literal"><span class="pre">$FFTW_ROOT</span></code>/lib</td>
+<td>Looks for headers in <span class="target" id="index-13"></span><tt class="xref std std-envvar docutils literal"><span class="pre">$FFTW_ROOT</span></tt>/include and libs in <span class="target" id="index-14"></span><tt class="xref std std-envvar docutils literal"><span class="pre">$FFTW_ROOT</span></tt>/lib</td>
 </tr>
 <tr class="row-odd"><td>BOOST_ROOT</td>
 <td>For non system-wide boost installations</td>
 </tr>
 <tr class="row-even"><td>RANDOM123_ROOT</td>
-<td>Looks for headers in <span class="target" id="index-15"></span><code class="xref std std-envvar docutils literal"><span class="pre">$RANDOM_123_ROOT</span></code>/include</td>
+<td>Looks for headers in <span class="target" id="index-15"></span><tt class="xref std std-envvar docutils literal"><span class="pre">$RANDOM_123_ROOT</span></tt>/include</td>
 </tr>
 <tr class="row-odd"><td>HDF5_ROOT</td>
-<td>Looks for headers in <span class="target" id="index-16"></span><code class="xref std std-envvar docutils literal"><span class="pre">$HDF5_ROOT</span></code>/include and libs in <span class="target" id="index-17"></span><code class="xref std std-envvar docutils literal"><span class="pre">$HDF5_ROOT</span></code>/lib</td>
+<td>Looks for headers in <span class="target" id="index-16"></span><tt class="xref std std-envvar docutils literal"><span class="pre">$HDF5_ROOT</span></tt>/include and libs in <span class="target" id="index-17"></span><tt class="xref std std-envvar docutils literal"><span class="pre">$HDF5_ROOT</span></tt>/lib</td>
 </tr>
 </tbody>
 </table>
@@ -600,7 +600,7 @@ where <code class="docutils literal"><span class="pre">STRING</span></code> is a
 <h3>Configuring, compiling and installing libSkylark<a class="headerlink" href="#configuring-compiling-and-installing-libskylark" title="Permalink to this headline">¶</a></h3>
 <p>Finally we are ready to configure, compile and install libSkylark. The default configuration (compiling Elemental and Python
 support, installed system-wide) can be compiled and installed with:</p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>cd $BUILD_DIR
+<div class="highlight-rst"><div class="highlight"><pre>cd $BUILD_DIR
 CC=mpicc CXX=mpicxx cmake $SRC_DIR
 make
 make install
@@ -614,56 +614,56 @@ make install
 This may overwrite the compiler specified in the CXX flag.</p>
 </div>
 <p>The Python packages will most likely be installed under
-<code class="file docutils literal"><span class="pre">/usr/lib/pythonX.Y/dist-packages</span></code> (OS and version dependent). Check the
+<tt class="file docutils literal"><span class="pre">/usr/lib/pythonX.Y/dist-packages</span></tt> (OS and version dependent). Check the
 configure output for more details about default installation paths on your machine.</p>
 <p>For the sake of illustration let&#8217;s assume you want to enable CombBLAS support
-and install everything in <code class="file docutils literal"><span class="pre">~/local</span></code>:</p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>cd $BUILD_DIR
+and install everything in <tt class="file docutils literal"><span class="pre">~/local</span></tt>:</p>
+<div class="highlight-rst"><div class="highlight"><pre>cd $BUILD_DIR
 export PYTHON_SITE_PACKAGES=~/local/
 CC=mpicc CXX=mpicxx cmake -DCMAKE_INSTALL_PREFIX=~/local -DWITH_COMBBLAS=ON $SRC_DIR
 make
 make install
 </pre></div>
 </div>
-<p>Notice that we set the <span class="target" id="index-18"></span><code class="xref std std-envvar docutils literal"><span class="pre">PYTHON_SITE_PACKAGES</span></code> and passed a
-<code class="docutils literal"><span class="pre">CMAKE_INSTALL_PREFIX</span></code> to the <strong class="command">cmake</strong> command above. Additionally we
+<p>Notice that we set the <span class="target" id="index-18"></span><tt class="xref std std-envvar docutils literal"><span class="pre">PYTHON_SITE_PACKAGES</span></tt> and passed a
+<tt class="docutils literal"><span class="pre">CMAKE_INSTALL_PREFIX</span></tt> to the <strong class="command">cmake</strong> command above. Additionally we
 enabled CombBLAS support. Note that you have to make sure that the required
 libraries are compiled and the environment variables correctly point to the
-installation locations (i.e. <code class="docutils literal"><span class="pre">export</span> <span class="pre">COMBBLAS_ROOT=~/software/combblas/</span></code>).</p>
+installation locations (i.e. <tt class="docutils literal"><span class="pre">export</span> <span class="pre">COMBBLAS_ROOT=~/software/combblas/</span></tt>).</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">If a specific linking type wants to be enforced, check out the CMake
-variable <code class="docutils literal"><span class="pre">CMAKE_FIND_LIBRARY_SUFFIXES</span></code> (e.g. use
-<code class="docutils literal"><span class="pre">SET(CMAKE_FIND_LIBRARY_SUFFIXES</span> <span class="pre">&quot;.so&quot;</span></code>).</p>
+variable <tt class="docutils literal"><span class="pre">CMAKE_FIND_LIBRARY_SUFFIXES</span></tt> (e.g. use
+<tt class="docutils literal"><span class="pre">SET(CMAKE_FIND_LIBRARY_SUFFIXES</span> <span class="pre">&quot;.so&quot;</span></tt>).</p>
 </div>
 </div>
 <div class="section" id="code-documentation-doxygen">
 <h3>Code documentation Doxygen<a class="headerlink" href="#code-documentation-doxygen" title="Permalink to this headline">¶</a></h3>
 <p>To generate the documentation (see dependency section for Doxygen installation), run</p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>cd $BUILD_DIR
+<div class="highlight-rst"><div class="highlight"><pre>cd $BUILD_DIR
 make doc
 </pre></div>
 </div>
-<p>This will generate the Doxygen documentation under <code class="file docutils literal"><span class="pre">$BUILD_DIR/Documentation</span></code>.
-To read the documentation open <code class="file docutils literal"><span class="pre">$BUILD_DIR/Documentation/html/index.html</span></code> in a browser.</p>
+<p>This will generate the Doxygen documentation under <tt class="file docutils literal"><span class="pre">$BUILD_DIR/Documentation</span></tt>.
+To read the documentation open <tt class="file docutils literal"><span class="pre">$BUILD_DIR/Documentation/html/index.html</span></tt> in a browser.</p>
 </div>
 <div class="section" id="sphinx">
 <h3>Sphinx<a class="headerlink" href="#sphinx" title="Permalink to this headline">¶</a></h3>
 <p>Make sure to install the Sphinx dependencies before you run make sphinx-doc:</p>
-<div class="highlight-sh"><div class="highlight"><pre><span></span>apt-get install python-sphinx
+<div class="highlight-sh"><div class="highlight"><pre>apt-get install python-sphinx
 <span class="nb">cd</span> /tmp
 svn co https://svn.code.sf.net/p/matplotlib/code/trunk/sampledoc_tut
 mkdir <span class="nv">$HOME</span>/.sphinx_ext
 cp sampledoc_tut/sphinxext/*.py <span class="nv">$HOME</span>/.sphinx_ext
 rm -rf /tmp/sampledoc_tut
 
-<span class="nb">export</span> <span class="nv">SPHINXEXT</span><span class="o">=</span><span class="nv">$HOME</span>/.sphinx_ext
+<span class="nb">export </span><span class="nv">SPHINXEXT</span><span class="o">=</span><span class="nv">$HOME</span>/.sphinx_ext
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p>Sphinx requires some dependencies, e.g. plots and latex equations.</p>
-<div class="last highlight-sh"><div class="highlight"><pre><span></span>apt-get python-dateutil
+<div class="last highlight-sh"><div class="highlight"><pre>apt-get python-dateutil
 apt-get libfreetype6-dev libpng-dev
 easy-install matplotlib
 apt-get install texlive-latex-base
@@ -672,16 +672,16 @@ apt-get install texlive-latex-extra
 </div>
 </div>
 <p>Then run</p>
-<div class="highlight-sh"><div class="highlight"><pre><span></span><span class="nb">cd</span> <span class="nv">$BUILD_DIR</span>
+<div class="highlight-sh"><div class="highlight"><pre><span class="nb">cd</span> <span class="nv">$BUILD_DIR</span>
 make sphinx-doc
 </pre></div>
 </div>
-<p>and point your browser to <code class="file docutils literal"><span class="pre">$BUILD_DIR/Documentation/sphinx/index.html</span></code>.</p>
+<p>and point your browser to <tt class="file docutils literal"><span class="pre">$BUILD_DIR/Documentation/sphinx/index.html</span></tt>.</p>
 </div>
 <div class="section" id="testing">
 <h3>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h3>
 <p>In order to run unit tests, execute</p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>cd $BUILD_DIR
+<div class="highlight-rst"><div class="highlight"><pre>cd $BUILD_DIR
 make test
 </pre></div>
 </div>
@@ -690,10 +690,10 @@ make test
 <h3>Running examples<a class="headerlink" href="#running-examples" title="Permalink to this headline">¶</a></h3>
 <p>There are two examples in the example folder (for more see python-skylark).
 The elemental.cpp shows how C++ code can utilize libSkylark. Run</p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>examples/elemental -help
+<div class="highlight-rst"><div class="highlight"><pre>examples/elemental -help
 </pre></div>
 </div>
-<p>in the <span class="target" id="index-19"></span><code class="xref std std-envvar docutils literal"><span class="pre">$BUILD_DIR</span></code> to get a list of available command line options.</p>
+<p>in the <span class="target" id="index-19"></span><tt class="xref std std-envvar docutils literal"><span class="pre">$BUILD_DIR</span></tt> to get a list of available command line options.</p>
 </div>
 </div>
 <div class="section" id="using-libskylark-in-your-project">
@@ -702,10 +702,10 @@ The elemental.cpp shows how C++ code can utilize libSkylark. Run</p>
 are necessary to build and link your application:</p>
 <blockquote>
 <div><ul>
-<li><p class="first">add the include path of all libSkylark headers: <code class="file docutils literal"><span class="pre">$</span><em><span class="pre">SKYLARK_INSTALL_DIR</span></em><span class="pre">/include</span></code> (if configured with <code class="docutils literal"><span class="pre">-DCMAKE_INSTALL_PREFIX=${SKYLARK_INSTALL_DIR}</span></code>,</p>
+<li><p class="first">add the include path of all libSkylark headers: <tt class="file docutils literal"><span class="pre">$</span><em><span class="pre">SKYLARK_INSTALL_DIR</span></em><span class="pre">/include</span></tt> (if configured with <tt class="docutils literal"><span class="pre">-DCMAKE_INSTALL_PREFIX=${SKYLARK_INSTALL_DIR}</span></tt>,</p>
 </li>
 <li><dl class="first docutils">
-<dt>link against all external libraries used when building libSkylark (take a look and maybe reuse the find modules in <code class="file docutils literal"><span class="pre">$</span><em><span class="pre">SRC_DIR</span></em><span class="pre">/CMakeModules</span></code>:</dt>
+<dt>link against all external libraries used when building libSkylark (take a look and maybe reuse the find modules in <tt class="file docutils literal"><span class="pre">$</span><em><span class="pre">SRC_DIR</span></em><span class="pre">/CMakeModules</span></tt>:</dt>
 <dd><ul class="first last simple">
 <li>FFTW: fftw3.h</li>
 <li>Elemental: header files, libEl, libpmrrr</li>
@@ -723,12 +723,12 @@ are necessary to build and link your application:</p>
 <h3>Using Cmake<a class="headerlink" href="#using-cmake" title="Permalink to this headline">¶</a></h3>
 <p>If you are using Cmake to build your application you can use the CMake
 configuration file
-<code class="file docutils literal"><span class="pre">$</span><em><span class="pre">SKYLARK_INSTALL_DIR</span></em><span class="pre">/lib/cmake/SKYLARK/SKYLARKConfig.cmake</span></code> in your
-<code class="docutils literal"><span class="pre">CMakeLists.txt</span></code> to find <code class="docutils literal"><span class="pre">SKYLARK</span></code>. After that you can simply
-include <code class="docutils literal"><span class="pre">${SKYLARK_INCLUDE_DIRS}</span></code> and <code class="docutils literal"><span class="pre">${SKYLARK_LIBRARIES}</span></code> when you
+<tt class="file docutils literal"><span class="pre">$</span><em><span class="pre">SKYLARK_INSTALL_DIR</span></em><span class="pre">/lib/cmake/SKYLARK/SKYLARKConfig.cmake</span></tt> in your
+<tt class="docutils literal"><span class="pre">CMakeLists.txt</span></tt> to find <tt class="docutils literal"><span class="pre">SKYLARK</span></tt>. After that you can simply
+include <tt class="docutils literal"><span class="pre">${SKYLARK_INCLUDE_DIRS}</span></tt> and <tt class="docutils literal"><span class="pre">${SKYLARK_LIBRARIES}</span></tt> when you
 build and link your application. A very basic CMake file for your project could
 look like:</p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>cmake_minimum_required (VERSION 2.8.2)
+<div class="highlight-rst"><div class="highlight"><pre>cmake_minimum_required (VERSION 2.8.2)
 project (SAMPLE)
 
 find_package (MPI REQUIRED)
@@ -750,7 +750,7 @@ your application painless by following the above recipe.</p>
 </div>
 <div class="section" id="using-xyz-build-system">
 <h3>Using XYZ Build System<a class="headerlink" href="#using-xyz-build-system" title="Permalink to this headline">¶</a></h3>
-<p>Take a look at the file in <code class="file docutils literal"><span class="pre">$</span><em><span class="pre">SKYLARK_INSTALL_DIR</span></em><span class="pre">/lib/SKYLARK/SKYLARKConfig.cmake</span></code>
+<p>Take a look at the file in <tt class="file docutils literal"><span class="pre">$</span><em><span class="pre">SKYLARK_INSTALL_DIR</span></em><span class="pre">/lib/SKYLARK/SKYLARKConfig.cmake</span></tt>
 to see which include directories libraries you have to include when using libSkylark.</p>
 </div>
 </div>
@@ -763,7 +763,7 @@ to see which include directories libraries you have to include when using libSky
 <div><ul class="simple">
 <li>Download KDT, build and install the python package (generated with SWIG), then</li>
 <li>Download CombBLAS, build and install libs and include files, and finally</li>
-<li>When configuring libSkylark, use <code class="docutils literal"><span class="pre">-DWITH_COMBBLAS=ON</span></code> in the CMake configure call</li>
+<li>When configuring libSkylark, use <tt class="docutils literal"><span class="pre">-DWITH_COMBBLAS=ON</span></tt> in the CMake configure call</li>
 </ul>
 </div></blockquote>
 <p><strong>Issues with CombBLAS &gt;= 1.4.0</strong></p>
@@ -771,21 +771,21 @@ to see which include directories libraries you have to include when using libSky
 the subsections below if you have problem compiling or linking CombBLAS.</p>
 <p><strong>UINT32_MAX not declared</strong></p>
 <p>Additionally a CombBLAS header causes the compiler to produce an error
-(<code class="docutils literal"><span class="pre">UINT32_MAX</span> <span class="pre">not</span> <span class="pre">declared</span></code>). There are two possible ways to fix that:</p>
+(<tt class="docutils literal"><span class="pre">UINT32_MAX</span> <span class="pre">not</span> <span class="pre">declared</span></tt>). There are two possible ways to fix that:</p>
 <blockquote>
 <div><ul class="simple">
-<li>Edit the header (RefGen21.h) and replace <code class="docutils literal"><span class="pre">UINT32_MAX</span></code> with <code class="docutils literal"><span class="pre">std::numeric_limits&lt;unit32_t&gt;::max()</span></code>, or</li>
-<li>add the <code class="docutils literal"><span class="pre">-D__STDC_LIMIT_MACROS</span></code> compile flag in the CMake file when CombBLAS is enabled.</li>
+<li>Edit the header (RefGen21.h) and replace <tt class="docutils literal"><span class="pre">UINT32_MAX</span></tt> with <tt class="docutils literal"><span class="pre">std::numeric_limits&lt;unit32_t&gt;::max()</span></tt>, or</li>
+<li>add the <tt class="docutils literal"><span class="pre">-D__STDC_LIMIT_MACROS</span></tt> compile flag in the CMake file when CombBLAS is enabled.</li>
 </ul>
 </div></blockquote>
 <p><strong>Compiler Warning: *enumeral* and *non-enumeral* type in conditional expression</strong></p>
-<p>To fix the following warning (appearing when compiling with <code class="docutils literal"><span class="pre">-Werror</span></code>):</p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>CombBLAS_beta_13_0/psort-1.0/driver/MersenneTwister.h: In member function ‘void MTRand::seed(MTRand::uint32*, MTRand::uint32)’:
+<p>To fix the following warning (appearing when compiling with <tt class="docutils literal"><span class="pre">-Werror</span></tt>):</p>
+<div class="highlight-rst"><div class="highlight"><pre>CombBLAS_beta_13_0/psort-1.0/driver/MersenneTwister.h: In member function ‘void MTRand::seed(MTRand::uint32*, MTRand::uint32)’:
 CombBLAS_beta_13_0/psort-1.0/driver/MersenneTwister.h:234:42: error: enumeral and non-enumeral type in conditional expression [-Werror]
 </pre></div>
 </div>
 <p>apply the following patch:</p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>diff --git a/psort-1.0/driver/MersenneTwister.h b/psort-1.0/driver/MersenneTwister.h
+<div class="highlight-rst"><div class="highlight"><pre>diff --git a/psort-1.0/driver/MersenneTwister.h b/psort-1.0/driver/MersenneTwister.h
 index 16e6458..1363423 100644
 --- a/psort-1.0/driver/MersenneTwister.h
 +++ b/psort-1.0/driver/MersenneTwister.h
@@ -807,7 +807,7 @@ index 16e6458..1363423 100644
 <p><strong>Compiling Skylark/CombBLAS with CLANG</strong></p>
 <p>To be able to compile and link using the CLANG compiler (&gt;=3.0.x), the
 following patch has to be applied to CombBLAS (&lt;= 1.3.0):</p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>diff --git a/DistEdgeList.cpp b/DistEdgeList.cpp
+<div class="highlight-rst"><div class="highlight"><pre>diff --git a/DistEdgeList.cpp b/DistEdgeList.cpp
 index 5ae9301..61cf16f 100644
 --- a/DistEdgeList.cpp
 +++ b/DistEdgeList.cpp
@@ -852,7 +852,7 @@ commented) in the 1.4.0 CombBLAS release (January 2014).</p>
 <p><strong>Warning: variable ‘XYZ’ set but not used</strong></p>
 <p>CombBLAS (&lt;=1.4.0) has set but not used variables. To remove the warning apply
 the following patch.</p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>diff --git a/SpMat.cpp b/SpMat.cpp
+<div class="highlight-rst"><div class="highlight"><pre>diff --git a/SpMat.cpp b/SpMat.cpp
 index d00f37c..6ae6050 100644
 --- a/SpMat.cpp
 +++ b/SpMat.cpp
@@ -894,7 +894,7 @@ index d00f37c..6ae6050 100644
 </div>
 <p><strong>Disable KDT Log</strong></p>
 <p>To disable the KDT log use the following patch:</p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>diff --git a/kdt/Graph.py b/kdt/Graph.py
+<div class="highlight-rst"><div class="highlight"><pre>diff --git a/kdt/Graph.py b/kdt/Graph.py
 index 51c55b2..e61e9cf 100644
 --- a/kdt/Graph.py
 +++ b/kdt/Graph.py
@@ -952,7 +952,7 @@ py_modules.extend([&#39;kdt.specializer.__init__&#39;, &#39;kdt.specializer.pars
 <p><strong>std:: namespace clash (CombBLAS &lt;= 1.3.0)</strong></p>
 <p>Depending on your compiler version (and if you installed CombBLAS &lt;= 1.3.0)
 you might need to apply the following patch:</p>
-<div class="highlight-rst"><div class="highlight"><pre><span></span>diff --git a/psort-1.0/src/psort_merge.h b/psort-1.0/src/psort_merge.h
+<div class="highlight-rst"><div class="highlight"><pre>diff --git a/psort-1.0/src/psort_merge.h b/psort-1.0/src/psort_merge.h
 index 858580b..256c3db 100644
 --- a/psort-1.0/src/psort_merge.h
 +++ b/psort-1.0/src/psort_merge.h
@@ -1004,81 +1004,81 @@ installation scripts <a class="reference external" href="https://github.com/sloe
 <h3>Elemental<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <p>Download elemental 0.83 (<a class="reference external" href="http://libelemental.org/pub/releases/elemental-0.83.tgz">http://libelemental.org/pub/releases/elemental-0.83.tgz</a>).
 Then use the following toolchain file (e.g. save to <cite>BGQ-toolchain.cmake</cite>)</p>
-<div class="highlight-cmake"><div class="highlight"><pre><span></span><span class="nb">set</span><span class="p">(</span><span class="s">GCC_ROOT</span>  <span class="s2">&quot;/bgsys/drivers/ppcfloor/gnu-linux&quot;</span><span class="p">)</span>
-<span class="nb">set</span><span class="p">(</span><span class="s">GCC_NAME</span>  <span class="s2">&quot;powerpc64-bgq-linux&quot;</span><span class="p">)</span>
-<span class="nb">set</span><span class="p">(</span><span class="s">CLANG_ROOT</span> <span class="s2">&quot;$ENV{HOME}/bgclang/bin&quot;</span><span class="p">)</span>
-<span class="nb">set</span><span class="p">(</span><span class="s">CLANG_MPI_ROOT</span> <span class="s2">&quot;$ENV{HOME}/bgclang/mpi/bgclang&quot;</span><span class="p">)</span>
-<span class="nb">set</span><span class="p">(</span><span class="s">IBMCMP_ROOT</span> <span class="s2">&quot;$ENV{IBM_MAIN_DIR}&quot;</span><span class="p">)</span>
+<div class="highlight-cmake"><div class="highlight"><pre>set(GCC_ROOT  &quot;/bgsys/drivers/ppcfloor/gnu-linux&quot;)
+set(GCC_NAME  &quot;powerpc64-bgq-linux&quot;)
+set(CLANG_ROOT &quot;$ENV{HOME}/bgclang/bin&quot;)
+set(CLANG_MPI_ROOT &quot;$ENV{HOME}/bgclang/mpi/bgclang&quot;)
+set(IBMCMP_ROOT &quot;$ENV{IBM_MAIN_DIR}&quot;)
 
-<span class="nb">set</span><span class="p">(</span><span class="s">BLAS_LIB</span> <span class="s2">&quot;$ENV{HOME}/src/lapack-3.5.0/&quot;</span><span class="p">)</span>
-<span class="nb">set</span><span class="p">(</span><span class="s">LAPACK_LIB</span> <span class="s2">&quot;$ENV{HOME}/src/lapack-3.5.0/&quot;</span><span class="p">)</span>
-<span class="nb">set</span><span class="p">(</span><span class="s">ESSL_LIB</span> <span class="s2">&quot;/opt/ibmmath/lib64&quot;</span><span class="p">)</span>
+set(BLAS_LIB &quot;$ENV{HOME}/src/lapack-3.5.0/&quot;)
+set(LAPACK_LIB &quot;$ENV{HOME}/src/lapack-3.5.0/&quot;)
+set(ESSL_LIB &quot;/opt/ibmmath/lib64&quot;)
 
-<span class="nb">set</span><span class="p">(</span><span class="s">MPI_ROOT</span>   <span class="s2">&quot;/bgsys/drivers/ppcfloor/comm/gcc&quot;</span><span class="p">)</span>
-<span class="nb">set</span><span class="p">(</span><span class="s">PAMI_ROOT</span>  <span class="s2">&quot;/bgsys/drivers/ppcfloor/comm/sys&quot;</span><span class="p">)</span>
-<span class="nb">set</span><span class="p">(</span><span class="s">SPI_ROOT</span>   <span class="s2">&quot;/bgsys/drivers/ppcfloor/spi&quot;</span><span class="p">)</span>
+set(MPI_ROOT   &quot;/bgsys/drivers/ppcfloor/comm/gcc&quot;)
+set(PAMI_ROOT  &quot;/bgsys/drivers/ppcfloor/comm/sys&quot;)
+set(SPI_ROOT   &quot;/bgsys/drivers/ppcfloor/spi&quot;)
 
-<span class="c"># The serial compilers</span>
-<span class="nb">set</span><span class="p">(</span><span class="s">CMAKE_C_COMPILER</span>   <span class="s2">&quot;${CLANG_MPI_ROOT}/bin/mpiclang&quot;</span><span class="p">)</span>
-<span class="nb">set</span><span class="p">(</span><span class="s">CMAKE_CXX_COMPILER</span> <span class="s2">&quot;${CLANG_MPI_ROOT}/bin/mpiclang++11&quot;</span><span class="p">)</span>
-<span class="nb">set</span><span class="p">(</span><span class="s">CMAKE_Fortran_COMPILER</span> <span class="s2">&quot;${GCC_ROOT}/bin/${GCC_NAME}-gfortran&quot;</span><span class="p">)</span>
+# The serial compilers
+set(CMAKE_C_COMPILER   &quot;${CLANG_MPI_ROOT}/bin/mpiclang&quot;)
+set(CMAKE_CXX_COMPILER &quot;${CLANG_MPI_ROOT}/bin/mpiclang++11&quot;)
+set(CMAKE_Fortran_COMPILER &quot;${GCC_ROOT}/bin/${GCC_NAME}-gfortran&quot;)
 
-<span class="c"># The MPI wrappers for the C and C++ compilers</span>
-<span class="nb">set</span><span class="p">(</span><span class="s">MPI_C_COMPILER</span>   <span class="s2">&quot;${CLANG_MPI_ROOT}/bin/mpiclang&quot;</span><span class="p">)</span>
-<span class="nb">set</span><span class="p">(</span><span class="s">MPI_CXX_COMPILER</span> <span class="s2">&quot;${CLANG_MPI_ROOT}/bin/mpiclang++11&quot;</span><span class="p">)</span>
+# The MPI wrappers for the C and C++ compilers
+set(MPI_C_COMPILER   &quot;${CLANG_MPI_ROOT}/bin/mpiclang&quot;)
+set(MPI_CXX_COMPILER &quot;${CLANG_MPI_ROOT}/bin/mpiclang++11&quot;)
 
-<span class="nb">set</span><span class="p">(</span><span class="s">MPI_C_COMPILE_FLAGS</span>    <span class="s2">&quot;&quot;</span><span class="p">)</span>
-<span class="nb">set</span><span class="p">(</span><span class="s">MPI_CXX_COMPILE_FLAGS</span>  <span class="s2">&quot;&quot;</span><span class="p">)</span>
-<span class="nb">set</span><span class="p">(</span><span class="s">MPI_C_INCLUDE_PATH</span>     <span class="s2">&quot;${MPI_ROOT}/include&quot;</span><span class="p">)</span>
-<span class="nb">set</span><span class="p">(</span><span class="s">MPI_CXX_INCLUDE_PATH</span>   <span class="s2">&quot;${MPI_ROOT}/include&quot;</span><span class="p">)</span>
-<span class="nb">set</span><span class="p">(</span><span class="s">MPI_C_LINK_FLAGS</span>       <span class="s2">&quot;-L${MPI_ROOT}/lib -L${PAMI_ROOT}/lib -L${SPI_ROOT}/lib&quot;</span><span class="p">)</span>
-<span class="nb">set</span><span class="p">(</span><span class="s">MPI_CXX_LINK_FLAGS</span>     <span class="s2">&quot;${MPI_C_LINK_FLAGS}&quot;</span><span class="p">)</span>
-<span class="nb">set</span><span class="p">(</span><span class="s">MPI_C_LIBRARIES</span>       <span class="s2">&quot;${MPI_C_LINK_FLAGS}   -lSPI -lSPI_cnk -lrt -lpthread -lstdc++ -lpthread&quot;</span><span class="p">)</span>
-<span class="nb">set</span><span class="p">(</span><span class="s">MPI_CXX_LIBRARIES</span>     <span class="s2">&quot;${MPI_CXX_LINK_FLAGS} ${MPI_C_LIBRARIES}&quot;</span><span class="p">)</span>
+set(MPI_C_COMPILE_FLAGS    &quot;&quot;)
+set(MPI_CXX_COMPILE_FLAGS  &quot;&quot;)
+set(MPI_C_INCLUDE_PATH     &quot;${MPI_ROOT}/include&quot;)
+set(MPI_CXX_INCLUDE_PATH   &quot;${MPI_ROOT}/include&quot;)
+set(MPI_C_LINK_FLAGS       &quot;-L${MPI_ROOT}/lib -L${PAMI_ROOT}/lib -L${SPI_ROOT}/lib&quot;)
+set(MPI_CXX_LINK_FLAGS     &quot;${MPI_C_LINK_FLAGS}&quot;)
+set(MPI_C_LIBRARIES       &quot;${MPI_C_LINK_FLAGS}   -lSPI -lSPI_cnk -lrt -lpthread -lstdc++ -lpthread&quot;)
+set(MPI_CXX_LIBRARIES     &quot;${MPI_CXX_LINK_FLAGS} ${MPI_C_LIBRARIES}&quot;)
 
-<span class="nb">if</span><span class="p">(</span><span class="s">CMAKE_BUILD_TYPE</span> <span class="s">MATCHES</span> <span class="s">PureDebug</span> <span class="s">OR</span>
-<span class="s">CMAKE_BUILD_TYPE</span> <span class="s">MATCHES</span> <span class="s">HybridDebug</span><span class="p">)</span>
-<span class="nb">set</span><span class="p">(</span><span class="s">CXX_FLAGS</span> <span class="s2">&quot;-g&quot;</span><span class="p">)</span>
-<span class="nb">else</span><span class="p">()</span>
-<span class="nb">set</span><span class="p">(</span><span class="s">CXX_FLAGS</span> <span class="s2">&quot;-O3&quot;</span><span class="p">)</span>
-<span class="nb">endif</span><span class="p">()</span>
+if(CMAKE_BUILD_TYPE MATCHES PureDebug OR
+CMAKE_BUILD_TYPE MATCHES HybridDebug)
+set(CXX_FLAGS &quot;-g&quot;)
+else()
+set(CXX_FLAGS &quot;-O3&quot;)
+endif()
 
-<span class="nb">set</span><span class="p">(</span><span class="s">CMAKE_THREAD_LIBS_INIT</span> <span class="s2">&quot;-fopenmp&quot;</span><span class="p">)</span>
-<span class="nb">set</span><span class="p">(</span><span class="s">OpenMP_CXX_FLAGS</span> <span class="s2">&quot;-fopenmp&quot;</span><span class="p">)</span>
+set(CMAKE_THREAD_LIBS_INIT &quot;-fopenmp&quot;)
+set(OpenMP_CXX_FLAGS &quot;-fopenmp&quot;)
 
-<span class="c">##############################################################</span>
+##############################################################
 
-<span class="c"># set the search path for the environment coming with the compiler</span>
-<span class="c"># and a directory where you can install your own compiled software</span>
-<span class="nb">set</span><span class="p">(</span><span class="s">CMAKE_FIND_ROOT_PATH</span>
-    <span class="s">/bgsys/drivers/ppcfloor</span>
-    <span class="s">/bgsys/drivers/ppcfloor/spi</span>
-    <span class="o">$ENV{</span><span class="nv">HOME</span><span class="o">}</span><span class="s">/bgclang/mpi/bgclang</span>
-<span class="p">)</span>
+# set the search path for the environment coming with the compiler
+# and a directory where you can install your own compiled software
+set(CMAKE_FIND_ROOT_PATH
+    /bgsys/drivers/ppcfloor
+    /bgsys/drivers/ppcfloor/spi
+    $ENV{HOME}/bgclang/mpi/bgclang
+)
 
-<span class="c"># adjust the default behaviour of the FIND_XXX() commands:</span>
-<span class="c"># search headers and libraries in the target environment, search</span>
-<span class="c"># programs in the host environment</span>
-<span class="nb">set</span><span class="p">(</span><span class="s">CMAKE_FIND_ROOT_PATH_MODE_PROGRAM</span> <span class="s">NEVER</span><span class="p">)</span>
-<span class="nb">set</span><span class="p">(</span><span class="s">CMAKE_FIND_ROOT_PATH_MODE_LIBRARY</span> <span class="s">ONLY</span><span class="p">)</span>
-<span class="nb">set</span><span class="p">(</span><span class="s">CMAKE_FIND_ROOT_PATH_MODE_INCLUDE</span> <span class="s">ONLY</span><span class="p">)</span>
+# adjust the default behaviour of the FIND_XXX() commands:
+# search headers and libraries in the target environment, search
+# programs in the host environment
+set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 
-<span class="c">##############################################################</span>
+##############################################################
 
-<span class="nb">set</span><span class="p">(</span><span class="s">XLF_LIB</span> <span class="s2">&quot;/opt/ibmcmp/xlf/bg/14.1/bglib64&quot;</span><span class="p">)</span>
-<span class="nb">set</span><span class="p">(</span><span class="s">XLSMP_LIB</span> <span class="s2">&quot;/opt/ibmcmp/xlsmp/bg/3.1/bglib64&quot;</span><span class="p">)</span>
-<span class="nb">if</span><span class="p">(</span><span class="s">CMAKE_BUILD_TYPE</span> <span class="s">MATCHES</span> <span class="s">PureDebug</span> <span class="s">OR</span>
-<span class="s">CMAKE_BUILD_TYPE</span> <span class="s">MATCHES</span> <span class="s">PureRelease</span><span class="p">)</span>
-<span class="nb">set</span><span class="p">(</span><span class="s">MATH_LIBS</span> <span class="s2">&quot;-L${ESSL_LIB} -lesslbg -L${LAPACK_LIB} -llapack -L${ESSL_LIB} -lesslbg -L${XLF_LIB} -lxlf90_r -L${XLSMP_LIB} -lxlomp_ser -lxlopt -lxlfmath -lxl -lpthread -ldl -Wl,--allow-multiple-definition&quot;</span><span class="p">)</span>
-<span class="nb">else</span><span class="p">()</span>
-<span class="nb">set</span><span class="p">(</span><span class="s">MATH_LIBS</span> <span class="s2">&quot;-L${ESSL_LIB} -lesslsmpbg -L${LAPACK_LIB} -llapack -L${ESSL_LIB} -lesslsmpbg -L${XLF_LIB} -lxlf90_r -L${XLSMP_LIB} -lxlsmp -lxlopt -lxlfmath -lxl -lpthread -ldl -Wl,--allow-multiple-definition&quot;</span><span class="p">)</span>
-<span class="nb">endif</span><span class="p">()</span>
+set(XLF_LIB &quot;/opt/ibmcmp/xlf/bg/14.1/bglib64&quot;)
+set(XLSMP_LIB &quot;/opt/ibmcmp/xlsmp/bg/3.1/bglib64&quot;)
+if(CMAKE_BUILD_TYPE MATCHES PureDebug OR
+CMAKE_BUILD_TYPE MATCHES PureRelease)
+set(MATH_LIBS &quot;-L${ESSL_LIB} -lesslbg -L${LAPACK_LIB} -llapack -L${ESSL_LIB} -lesslbg -L${XLF_LIB} -lxlf90_r -L${XLSMP_LIB} -lxlomp_ser -lxlopt -lxlfmath -lxl -lpthread -ldl -Wl,--allow-multiple-definition&quot;)
+else()
+set(MATH_LIBS &quot;-L${ESSL_LIB} -lesslsmpbg -L${LAPACK_LIB} -llapack -L${ESSL_LIB} -lesslsmpbg -L${XLF_LIB} -lxlf90_r -L${XLSMP_LIB} -lxlsmp -lxlopt -lxlfmath -lxl -lpthread -ldl -Wl,--allow-multiple-definition&quot;)
+endif()
 </pre></div>
 </div>
 <p>This toolchain file is based on the (Elemental) provided
 <cite>BGQ-Mira-clang-essl.cmake</cite> file.
 Finally, run the following to compile (and install) Elemental.</p>
-<div class="highlight-sh"><div class="highlight"><pre><span></span>rm -rf CMake*<span class="p">;</span> <span class="se">\</span>
+<div class="highlight-sh"><div class="highlight"><pre>rm -rf CMake*; <span class="se">\</span>
 cmake -DCMAKE_TOOLCHAIN_FILE<span class="o">=</span>BGQ-toolchain.cmake <span class="se">\</span>
     -DCMAKE_INSTALL_PREFIX<span class="o">=</span><span class="nv">$HOME</span>/local <span class="se">\</span>
     -DCMAKE_BUILD_TYPE<span class="o">=</span>HybridRelease -DEL_EXAMPLES<span class="o">=</span>OFF <span class="se">\</span>
@@ -1100,12 +1100,12 @@ file in the build directory.</p>
 untar and change to the CombBLAS directory.</p>
 <p>First we need to fix the CombBLAS <cite>CMakeLists.txt</cite> by commenting out the
 following two lines:</p>
-<div class="highlight-cmake"><div class="highlight"><pre><span></span><span class="c">#SET(CMAKE_CXX_COMPILER mpicxx)</span>
+<div class="highlight-cmake"><div class="highlight"><pre><span class="c">#SET(CMAKE_CXX_COMPILER mpicxx)</span>
 <span class="c">#SET(CMAKE_C_COMPILER mpicc)</span>
 </pre></div>
 </div>
 <p>and then run to build the required libraries</p>
-<div class="highlight-sh"><div class="highlight"><pre><span></span><span class="nv">CC</span><span class="o">=</span><span class="nv">$HOME</span>/bgclang/mpi/bgclang/bin/mpiclang <span class="se">\</span>
+<div class="highlight-sh"><div class="highlight"><pre><span class="nv">CC</span><span class="o">=</span><span class="nv">$HOME</span>/bgclang/mpi/bgclang/bin/mpiclang <span class="se">\</span>
 <span class="nv">CXX</span><span class="o">=</span><span class="nv">$HOME</span>/bgclang/mpi/bgclang/bin/mpiclang++11 <span class="se">\</span>
 cmake .
 </pre></div>
@@ -1118,7 +1118,7 @@ cmake .
 <div class="section" id="fftw">
 <h3>FFTW<a class="headerlink" href="#fftw" title="Permalink to this headline">¶</a></h3>
 <p>Download <a class="reference external" href="http://www.fftw.org/fftw-3.3.3.tar.gz">http://www.fftw.org/fftw-3.3.3.tar.gz</a>.</p>
-<div class="highlight-sh"><div class="highlight"><pre><span></span><span class="nv">CC</span><span class="o">=</span><span class="nv">$HOME</span>/bgclang/mpi/bgclang/bin/mpiclang <span class="se">\</span>
+<div class="highlight-sh"><div class="highlight"><pre><span class="nv">CC</span><span class="o">=</span><span class="nv">$HOME</span>/bgclang/mpi/bgclang/bin/mpiclang <span class="se">\</span>
 <span class="nv">CXX</span><span class="o">=</span><span class="nv">$HOME</span>/bgclang/mpi/bgclang/bin/mpiclang++11 <span class="se">\</span>
 ./configure
 make
@@ -1128,20 +1128,20 @@ make
 <div class="section" id="boost">
 <h3>Boost<a class="headerlink" href="#boost" title="Permalink to this headline">¶</a></h3>
 <p>Download Boost 1.55.0, untar, change directory and then execute:</p>
-<div class="highlight-sh"><div class="highlight"><pre><span></span>./bootstrap.sh --with-libraries<span class="o">=</span>mpi,serialization,program_options
-<span class="nb">echo</span> <span class="s2">&quot;using mpi : </span><span class="nv">$HOME</span><span class="s2">/bgclang/mpi/bgclang/bin/mpiclang++11 ;&quot;</span> &gt;&gt; project-config.jam
+<div class="highlight-sh"><div class="highlight"><pre>./bootstrap.sh --with-libraries<span class="o">=</span>mpi,serialization,program_options
+<span class="nb">echo</span> <span class="s2">&quot;using mpi : $HOME/bgclang/mpi/bgclang/bin/mpiclang++11 ;&quot;</span> &gt;&gt; project-config.jam
 ./b2 <span class="nv">toolset</span><span class="o">=</span>clang
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">for this to work make sure that <code class="docutils literal"><span class="pre">clang++</span></code> is in your PATH.</p>
+<p class="last">for this to work make sure that <tt class="docutils literal"><span class="pre">clang++</span></tt> is in your PATH.</p>
 </div>
 </div>
 <div class="section" id="id2">
 <h3>HDF5<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <p>Make sure you have a compiled libz around then run:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="nv">CC</span><span class="o">=</span><span class="nv">$HOME</span>/bgclang/mpi/bgclang/bin/mpiclang <span class="se">\</span>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">CC</span><span class="o">=</span><span class="nv">$HOME</span>/bgclang/mpi/bgclang/bin/mpiclang <span class="se">\</span>
 <span class="nv">CXX</span><span class="o">=</span><span class="nv">$HOME</span>/bgclang/mpi/bgclang/bin/mpiclang++11 <span class="se">\</span>
 ./configure --enable-cxx --prefix<span class="o">=</span><span class="nv">$HOME</span>/local/ <span class="se">\</span>
     --with-pic --disable-shared --with-zlib<span class="o">=</span><span class="nv">$HOME</span>/local/
@@ -1159,7 +1159,7 @@ make install
 <h3>libSkylark<a class="headerlink" href="#libskylark" title="Permalink to this headline">¶</a></h3>
 <p>Finally we can turn to building libSkylark. First change the CMake file by
 applying the following patch:</p>
-<div class="highlight-diff"><div class="highlight"><pre><span></span><span class="gh">diff --git a/CMakeLists.txt b/CMakeLists.txt</span>
+<div class="highlight-diff"><div class="highlight"><pre><span class="gh">diff --git a/CMakeLists.txt b/CMakeLists.txt</span>
 <span class="gh">index ef18fa7..825dbaa 100644</span>
 <span class="gd">--- a/CMakeLists.txt</span>
 <span class="gi">+++ b/CMakeLists.txt</span>
@@ -1187,23 +1187,23 @@ set (CMAKE_CXX_COMPILER ${MPI_COMPILER})
 </div>
 <p>Make sure that the following environment variables (adapt if necessary) are
 exported</p>
-<div class="highlight-sh"><div class="highlight"><pre><span></span><span class="c1"># LAPACK library</span>
-<span class="nb">export</span> <span class="nv">LAPACK_LIB</span><span class="o">=</span><span class="nv">$HOME</span>/src/lapack-3.5.0/
+<div class="highlight-sh"><div class="highlight"><pre><span class="c"># LAPACK library</span>
+<span class="nb">export </span><span class="nv">LAPACK_LIB</span><span class="o">=</span><span class="nv">$HOME</span>/src/lapack-3.5.0/
 
-<span class="c1"># root installation dir of CLANG compiler</span>
-<span class="nb">export</span> <span class="nv">CLANG_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/bgclang/
+<span class="c"># root installation dir of CLANG compiler</span>
+<span class="nb">export </span><span class="nv">CLANG_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/bgclang/
 
-<span class="c1"># dependencies</span>
-<span class="nb">export</span> <span class="nv">FFTW_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/local/fftw-3.3.3/
-<span class="nb">export</span> <span class="nv">HDF5_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/local
-<span class="nb">export</span> <span class="nv">ELEMENTAL_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/local
-<span class="nb">export</span> <span class="nv">COMBBLAS_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/src/CombBLAS
-<span class="nb">export</span> <span class="nv">RANDOM123_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/local/Random123-1.08
-<span class="nb">export</span> <span class="nv">BOOST_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/local/boost_1_55_0
+<span class="c"># dependencies</span>
+<span class="nb">export </span><span class="nv">FFTW_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/local/fftw-3.3.3/
+<span class="nb">export </span><span class="nv">HDF5_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/local
+<span class="nb">export </span><span class="nv">ELEMENTAL_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/local
+<span class="nb">export </span><span class="nv">COMBBLAS_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/src/CombBLAS
+<span class="nb">export </span><span class="nv">RANDOM123_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/local/Random123-1.08
+<span class="nb">export </span><span class="nv">BOOST_ROOT</span><span class="o">=</span><span class="nv">$HOME</span>/local/boost_1_55_0
 </pre></div>
 </div>
 <p>and compile with:</p>
-<div class="highlight-sh"><div class="highlight"><pre><span></span>mkdir build<span class="p">;</span> <span class="nb">cd</span> build
+<div class="highlight-sh"><div class="highlight"><pre>mkdir build; <span class="nb">cd </span>build
 rm CMakeCache.txt
 rm -rf CMakeFiles
 
@@ -1214,14 +1214,14 @@ cmake -DCMAKE_TOOLCHAIN_FILE<span class="o">=</span>../CMake/toolchains/BGQ-clan
 </div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">If you get a <code class="docutils literal"><span class="pre">undefined</span> <span class="pre">reference</span> <span class="pre">to</span> <span class="pre">vtable</span> <span class="pre">for</span> <span class="pre">std::nested_exception</span></code>
+<p class="last">If you get a <tt class="docutils literal"><span class="pre">undefined</span> <span class="pre">reference</span> <span class="pre">to</span> <span class="pre">vtable</span> <span class="pre">for</span> <span class="pre">std::nested_exception</span></tt>
 error this hints that you most likely are missing the gcc 4.7.2 toolchain
 (libc++). The missing files and instructions to patch the wrapper
 scripts are provided on the ANL trac page (see top).</p>
 </div>
-<p>For compiling the <code class="docutils literal"><span class="pre">async</span></code> example driver you need the following patch (the
+<p>For compiling the <tt class="docutils literal"><span class="pre">async</span></tt> example driver you need the following patch (the
 OpenMP statement seems to crash the CLANG compiler):</p>
-<div class="highlight-diff"><div class="highlight"><pre><span></span><span class="gh">diff --git a/algorithms/asynch/AsyRGS.hpp b/algorithms/asynch/AsyRGS.hpp</span>
+<div class="highlight-diff"><div class="highlight"><pre><span class="gh">diff --git a/algorithms/asynch/AsyRGS.hpp b/algorithms/asynch/AsyRGS.hpp</span>
 <span class="gh">index 92158f1..5eadf94 100644</span>
 <span class="gd">--- a/algorithms/asynch/AsyRGS.hpp</span>
 <span class="gi">+++ b/algorithms/asynch/AsyRGS.hpp</span>
@@ -1239,14 +1239,14 @@ OpenMP statement seems to crash the CLANG compiler):</p>
 <div class="section" id="slurm">
 <h3>SLURM<a class="headerlink" href="#slurm" title="Permalink to this headline">¶</a></h3>
 <p>On Watson Q the following SLURM script can be used to run examples:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+<div class="highlight-bash"><div class="highlight"><pre><span class="c">#!/bin/bash</span>
 <span class="nv">RUN_DIR</span><span class="o">=</span><span class="nv">$HOME</span>/work/libskylark/build
 <span class="nv">RUN_EXE</span><span class="o">=</span>examples/elemental
 
-<span class="k">if</span> <span class="o">[</span> -z <span class="s2">&quot;</span><span class="nv">$SLURM_JOBID</span><span class="s2">&quot;</span> <span class="o">]</span><span class="p">;</span> <span class="k">then</span>
-    sbatch --gid<span class="o">=</span><span class="sb">`</span>hostname -s<span class="sb">`</span> --time<span class="o">=</span>10:00 --nodes<span class="o">=</span><span class="m">8</span> --ntasks-per-node<span class="o">=</span><span class="m">2</span>  -O --qos<span class="o">=</span>umax-8 <span class="nv">$0</span>
+<span class="k">if</span> <span class="o">[</span> -z <span class="s2">&quot;$SLURM_JOBID&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+<span class="k">    </span>sbatch --gid<span class="o">=</span><span class="sb">`</span>hostname -s<span class="sb">`</span> --time<span class="o">=</span>10:00 --nodes<span class="o">=</span>8 --ntasks-per-node<span class="o">=</span>2  -O --qos<span class="o">=</span>umax-8 <span class="nv">$0</span>
 <span class="k">else</span>
-    srun  --chdir<span class="o">=</span><span class="nv">$RUN_DIR</span> <span class="se">\</span>
+<span class="k">    </span>srun  --chdir<span class="o">=</span><span class="nv">$RUN_DIR</span> <span class="se">\</span>
         --output<span class="o">=</span>elemental.out <span class="se">\</span>
         --error<span class="o">=</span>error.out <span class="se">\</span>
         <span class="nv">$RUN_EXE</span>
@@ -1254,9 +1254,9 @@ OpenMP statement seems to crash the CLANG compiler):</p>
 </pre></div>
 </div>
 <p>which outputs</p>
-<div class="highlight-sh"><div class="highlight"><pre><span></span><span class="c1"># cat error.out</span>
+<div class="highlight-sh"><div class="highlight"><pre><span class="c"># cat error.out</span>
 
-<span class="c1"># cat elemental.out</span>
+<span class="c"># cat elemental.out</span>
 Default
 0.558572 -0.316131 -0.0357262 0.572592 0.142264
 -0.149105 0.0597079 0.228256 -0.53152 -0.0828558
@@ -1271,7 +1271,7 @@ Default
 
 
       </div>
-      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      <div class="bottomnav">
       
         <p>
         «&#160;&#160;<a href="quick_start.html">Quick Start Guide</a>
@@ -1283,9 +1283,9 @@ Default
 
       </div>
 
-    <div class="footer" role="contentinfo">
+    <div class="footer">
         &copy; Copyright IBM Corporation 2012-2014.  All Rights Reserved.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

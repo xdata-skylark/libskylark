@@ -27,12 +27,12 @@
     <link rel="next" title="Sketching Layer" href="sketching.html" />
     <link rel="prev" title="Building from Source" href="installation.html" /> 
   </head>
-  <body role="document">
-      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
+  <body>
+      <div class="header"><h1 class="heading"><a href="index.html">
           <span>libSkylark  documentation</span></a></h1>
         <h2 class="heading"><span>Base Layer</span></h2>
       </div>
-      <div class="topnav" role="navigation" aria-label="top navigation">
+      <div class="topnav">
       
         <p>
         «&#160;&#160;<a href="installation.html">Building from Source</a>
@@ -56,30 +56,30 @@
 The access to the random streams is wrapped in two classes, which abstracts random
 number arrays.</p>
 <dl class="type">
-<dt>
-<code class="descname">struct skylark::utility::random_samples_array_t&lt;Distribution&gt;</code></dt>
+<dt id="struct-skylark::utility::random_samples_array_t:Distribution:">
+<em class="property">type </em><tt class="descname">struct skylark::utility::random_samples_array_t&lt;Distribution&gt;</tt><a class="headerlink" href="#struct-skylark::utility::random_samples_array_t:Distribution:" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="function">
-<dt id="_CPPv222random_samples_array_t6size_t6size_tiR12Distribution">
-<span id="random_samples_array_t__s.s.i.DistributionR"></span><code class="descclassname"></code><code class="descname">random_samples_array_t</code><span class="sig-paren">(</span>size_t <em>base</em>, size_t <em>size</em>, int <em>seed</em>, Distribution &amp;<em>distribution</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv222random_samples_array_t6size_t6size_tiR12Distribution" title="Permalink to this definition">¶</a></dt>
+<dt id="struct-skylark::utility::random_samples_array_t:Distribution:::random_samples_array_t__s.s.i.DistributionR">
+ <tt class="descname">random_samples_array_t</tt><big>(</big>size_t <em>base</em>, size_t <em>size</em>, int <em>seed</em>, Distribution&amp; <em>distribution</em><big>)</big><a class="headerlink" href="#struct-skylark::utility::random_samples_array_t:Distribution:::random_samples_array_t__s.s.i.DistributionR" title="Permalink to this definition">¶</a></dt>
 <dd><p>Random-access array of samples drawn from a distribution starting from
 <cite>base</cite> up to a total of <cite>size</cite> samples. The <cite>distribution</cite> determines
 how samples are drawn.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv222random_samples_array_tRK22random_samples_array_t">
-<span id="random_samples_array_t__random_samples_array_tCR"></span><code class="descclassname"></code><code class="descname">random_samples_array_t</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv222random_samples_array_t6size_t6size_tiR12Distribution" title="random_samples_array_t">random_samples_array_t</a> &amp;<em>other</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv222random_samples_array_tRK22random_samples_array_t" title="Permalink to this definition">¶</a></dt>
+<dt id="struct-skylark::utility::random_samples_array_t:Distribution:::random_samples_array_t__random_samples_array_tCR">
+ <tt class="descname">random_samples_array_t</tt><big>(</big>const random_samples_array_t&amp; <em>other</em><big>)</big><a class="headerlink" href="#struct-skylark::utility::random_samples_array_t:Distribution:::random_samples_array_t__random_samples_array_tCR" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="_CPPv2aSRK22random_samples_array_t">
-<span id="assign-operator__random_samples_array_tCR"></span><a class="reference internal" href="#_CPPv222random_samples_array_t6size_t6size_tiR12Distribution" title="random_samples_array_t">random_samples_array_t</a> &amp;<code class="descclassname"></code><code class="descname">operator=</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="#_CPPv222random_samples_array_t6size_t6size_tiR12Distribution" title="random_samples_array_t">random_samples_array_t</a> &amp;<em>other</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2aSRK22random_samples_array_t" title="Permalink to this definition">¶</a></dt>
+<dt id="struct-skylark::utility::random_samples_array_t:Distribution:::assign-operator__random_samples_array_tCR">
+random_samples_array_t&amp; <tt class="descname">operator=</tt><big>(</big>const random_samples_array_t&amp; <em>other</em><big>)</big><a class="headerlink" href="#struct-skylark::utility::random_samples_array_t:Distribution:::assign-operator__random_samples_array_tCR" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <p><strong>Accessors</strong></p>
 <dl class="function">
-<dt id="_CPPv2NKixE6size_t">
-<span id="subscript-operator__sC"></span>value_type <code class="descclassname"></code><code class="descname">operator[]</code><span class="sig-paren">(</span>size_t <em>index</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NKixE6size_t" title="Permalink to this definition">¶</a></dt>
+<dt id="struct-skylark::utility::random_samples_array_t:Distribution:::subscript-operator__sC">
+value_type <tt class="descname">operator[]</tt><big>(</big>size_t <em>index</em><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#struct-skylark::utility::random_samples_array_t:Distribution:::subscript-operator__sC" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the random value (following the specified distribution) at
 position <cite>index</cite> in the random stream.</p>
 </dd></dl>
@@ -93,61 +93,61 @@ position <cite>index</cite> in the random stream.</p>
 class. Any use of functionality that generates random numbers will need to provide a context
 object.</p>
 <dl class="type">
-<dt>
-<code class="descname">struct skylark::base::context_t</code></dt>
+<dt id="struct-skylark::base::context_t">
+<em class="property">type </em><tt class="descname">struct skylark::base::context_t</tt><a class="headerlink" href="#struct-skylark::base::context_t" title="Permalink to this definition">¶</a></dt>
 <dd><p><strong>Constructor</strong></p>
 <dl class="function">
-<dt id="_CPPv29context_tii">
-<span id="context_t__i.i"></span><code class="descclassname"></code><code class="descname">context_t</code><span class="sig-paren">(</span>int <em>seed</em>, int <em>counter</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv29context_tii" title="Permalink to this definition">¶</a></dt>
+<dt id="struct-skylark::base::context_t::context_t__i.i">
+ <tt class="descname">context_t</tt><big>(</big>int <em>seed</em>, int <em>counter</em><em>=0</em><big>)</big><a class="headerlink" href="#struct-skylark::base::context_t::context_t__i.i" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize a context with a seed that is used for all computations.</p>
 </dd></dl>
 
 <p><strong>Serialization</strong></p>
 <dl class="function">
-<dt id="_CPPv29context_tRKN5boost13property_tree5ptreeE">
-<span id="context_t__boost::property_tree::ptreeCR"></span><code class="descclassname"></code><code class="descname">context_t</code><span class="sig-paren">(</span><em class="property">const</em> boost::property_tree::ptree &amp;<em>json</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv29context_tRKN5boost13property_tree5ptreeE" title="Permalink to this definition">¶</a></dt>
+<dt id="struct-skylark::base::context_t::context_t__boost::property_tree::ptreeCR">
+ <tt class="descname">context_t</tt><big>(</big>const boost::property_tree::ptree&amp; <em>json</em><big>)</big><a class="headerlink" href="#struct-skylark::base::context_t::context_t__boost::property_tree::ptreeCR" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load a context from a serialized <cite>ptree</cite> structure.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv2NK8to_ptreeEv">
-<span id="to_ptreeC"></span>boost::property_tree::ptree <code class="descclassname"></code><code class="descname">to_ptree</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK8to_ptreeEv" title="Permalink to this definition">¶</a></dt>
+<dt id="struct-skylark::base::context_t::to_ptreeC">
+boost::property_tree::ptree <tt class="descname">to_ptree</tt><big>(</big><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#struct-skylark::base::context_t::to_ptreeC" title="Permalink to this definition">¶</a></dt>
 <dd><p>Serialize the context to a Boost <cite>ptree</cite>.</p>
 </dd></dl>
 
 <p><strong>Query</strong></p>
 <dl class="function">
-<dt id="_CPPv211get_counterv">
-<span id="get_counter"></span>size_t <code class="descclassname"></code><code class="descname">get_counter</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv211get_counterv" title="Permalink to this definition">¶</a></dt>
+<dt id="struct-skylark::base::context_t::get_counter">
+size_t <tt class="descname">get_counter</tt><big>(</big><big>)</big><a class="headerlink" href="#struct-skylark::base::context_t::get_counter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the current position in the random stream.</p>
 </dd></dl>
 
 <p><strong>Accessors</strong></p>
 <dl class="function">
-<dt id="_CPPv229allocate_random_samples_array6size_tR12Distribution">
-<span id="allocate_random_samples_array__s.DistributionR"></span>skylark::utility::random_samples_array_t&lt;Distribution&gt; <code class="descclassname"></code><code class="descname">allocate_random_samples_array</code><span class="sig-paren">(</span>size_t <em>size</em>, Distribution &amp;<em>distribution</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv229allocate_random_samples_array6size_tR12Distribution" title="Permalink to this definition">¶</a></dt>
+<dt id="struct-skylark::base::context_t::allocate_random_samples_array__s.DistributionR">
+skylark::utility::random_samples_array_t&lt;Distribution&gt; <tt class="descname">allocate_random_samples_array</tt><big>(</big>size_t <em>size</em>, Distribution&amp; <em>distribution</em><big>)</big><a class="headerlink" href="#struct-skylark::base::context_t::allocate_random_samples_array__s.DistributionR" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a container of samples drawn from a distribution to be accessed
 as an array. The container contains <cite>size</cite> samples drawn from the
 specified <cite>distribution</cite>.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv229generate_random_samples_array6size_tR12Distribution">
-<span id="generate_random_samples_array__s.DistributionR"></span>std::vector&lt;<em class="property">typename</em> Distribution::result_type&gt; <code class="descclassname"></code><code class="descname">generate_random_samples_array</code><span class="sig-paren">(</span>size_t <em>size</em>, Distribution &amp;<em>distribution</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv229generate_random_samples_array6size_tR12Distribution" title="Permalink to this definition">¶</a></dt>
+<dt id="struct-skylark::base::context_t::generate_random_samples_array__s.DistributionR">
+std::vector&lt;typename Distribution::result_type&gt; <tt class="descname">generate_random_samples_array</tt><big>(</big>size_t <em>size</em>, Distribution&amp; <em>distribution</em><big>)</big><a class="headerlink" href="#struct-skylark::base::context_t::generate_random_samples_array__s.DistributionR" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a vector of samples drawn from a distribution. The vector
 contains <cite>size</cite> samples drawn from the specified <cite>distribution</cite>.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv221allocate_random_array6size_t">
-<span id="allocate_random_array__s"></span>skylark::utility::random_array_t <code class="descclassname"></code><code class="descname">allocate_random_array</code><span class="sig-paren">(</span>size_t <em>size</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv221allocate_random_array6size_t" title="Permalink to this definition">¶</a></dt>
+<dt id="struct-skylark::base::context_t::allocate_random_array__s">
+skylark::utility::random_array_t <tt class="descname">allocate_random_array</tt><big>(</big>size_t <em>size</em><big>)</big><a class="headerlink" href="#struct-skylark::base::context_t::allocate_random_array__s" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a container of random numbers to be accessed as an array. The
 container lazily provides <cite>size</cite> samples.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv210random_intv">
-<span id="random_int"></span>int <code class="descclassname"></code><code class="descname">random_int</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv210random_intv" title="Permalink to this definition">¶</a></dt>
+<dt id="struct-skylark::base::context_t::random_int">
+int <tt class="descname">random_int</tt><big>(</big><big>)</big><a class="headerlink" href="#struct-skylark::base::context_t::random_int" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns an integer random number.</p>
 </dd></dl>
 
@@ -164,95 +164,93 @@ hold local sparse matrices.</p>
 <li>Values of non-zeros can be modified.</li>
 </ul>
 <dl class="type">
-<dt>
-<code class="descname">struct skylark::base::sparse_matrix_t&lt;T&gt;</code></dt>
+<dt id="struct-skylark::base::sparse_matrix_t:T:">
+<em class="property">type </em><tt class="descname">struct skylark::base::sparse_matrix_t&lt;T&gt;</tt><a class="headerlink" href="#struct-skylark::base::sparse_matrix_t:T:" title="Permalink to this definition">¶</a></dt>
 <dd><p><strong>Constructor</strong></p>
 <dl class="function">
-<dt id="_CPPv215sparse_matrix_tv">
-<span id="sparse_matrix_t"></span><code class="descclassname"></code><code class="descname">sparse_matrix_t</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv215sparse_matrix_tv" title="Permalink to this definition">¶</a></dt>
+<dt id="struct-skylark::base::sparse_matrix_t:T:::sparse_matrix_t">
+ <tt class="descname">sparse_matrix_t</tt><big>(</big><big>)</big><a class="headerlink" href="#struct-skylark::base::sparse_matrix_t:T:::sparse_matrix_t" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a new sparse matrix.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv215sparse_matrix_tRR15sparse_matrix_tI9ValueTypeE">
-<span id="sparse_matrix_t__sparse_matrix_t:ValueType:RR"></span><a class="reference internal" href="#_CPPv215sparse_matrix_tv" title="sparse_matrix_t">sparse_matrix_t</a> <code class="descclassname"></code><code class="descname">sparse_matrix_t</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv215sparse_matrix_tv" title="sparse_matrix_t">sparse_matrix_t</a>&lt;ValueType&gt; &amp;&amp;<em>A</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv215sparse_matrix_tRR15sparse_matrix_tI9ValueTypeE" title="Permalink to this definition">¶</a></dt>
+<dt id="struct-skylark::base::sparse_matrix_t:T:::sparse_matrix_t__sparse_matrix_t:ValueType:RR">
+sparse_matrix_t <tt class="descname">sparse_matrix_t</tt><big>(</big>sparse_matrix_t&lt;ValueType&gt;&amp;&amp; <em>A</em><big>)</big><a class="headerlink" href="#struct-skylark::base::sparse_matrix_t:T:::sparse_matrix_t__sparse_matrix_t:ValueType:RR" title="Permalink to this definition">¶</a></dt>
 <dd><p>Move constructor.</p>
 </dd></dl>
 
 <p><strong>Query</strong></p>
 <dl class="function">
-<dt id="_CPPv2NK6heightEv">
-<span id="heightC"></span>int <code class="descclassname"></code><code class="descname">height</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK6heightEv" title="Permalink to this definition">¶</a></dt>
+<dt id="struct-skylark::base::sparse_matrix_t:T:::heightC">
+int <tt class="descname">height</tt><big>(</big><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#struct-skylark::base::sparse_matrix_t:T:::heightC" title="Permalink to this definition">¶</a></dt>
 <dd><p>Height of the matrix (number of rows).</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv2NK5widthEv">
-<span id="widthC"></span>int <code class="descclassname"></code><code class="descname">width</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK5widthEv" title="Permalink to this definition">¶</a></dt>
+<dt id="struct-skylark::base::sparse_matrix_t:T:::widthC">
+int <tt class="descname">width</tt><big>(</big><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#struct-skylark::base::sparse_matrix_t:T:::widthC" title="Permalink to this definition">¶</a></dt>
 <dd><p>Width of the matrix (number of cols).</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv2NK8nonzerosEv">
-<span id="nonzerosC"></span>int <code class="descclassname"></code><code class="descname">nonzeros</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK8nonzerosEv" title="Permalink to this definition">¶</a></dt>
+<dt id="struct-skylark::base::sparse_matrix_t:T:::nonzerosC">
+int <tt class="descname">nonzeros</tt><big>(</big><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#struct-skylark::base::sparse_matrix_t:T:::nonzerosC" title="Permalink to this definition">¶</a></dt>
 <dd><p>Number of non-zeros.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv2NK14struct_updatedEv">
-<span id="struct_updatedC"></span>bool <code class="descclassname"></code><code class="descname">struct_updated</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK14struct_updatedEv" title="Permalink to this definition">¶</a></dt>
+<dt id="struct-skylark::base::sparse_matrix_t:T:::struct_updatedC">
+bool <tt class="descname">struct_updated</tt><big>(</big><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#struct-skylark::base::sparse_matrix_t:T:::struct_updatedC" title="Permalink to this definition">¶</a></dt>
 <dd><p>Flag that encodes if CSC structure has been modified.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv217reset_update_flagv">
-<span id="reset_update_flag"></span>void <code class="descclassname"></code><code class="descname">reset_update_flag</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv217reset_update_flagv" title="Permalink to this definition">¶</a></dt>
+<dt id="struct-skylark::base::sparse_matrix_t:T:::reset_update_flag">
+void <tt class="descname">reset_update_flag</tt><big>(</big><big>)</big><a class="headerlink" href="#struct-skylark::base::sparse_matrix_t:T:::reset_update_flag" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reset the modified flag (to false).</p>
 </dd></dl>
 
 <p><strong>Accessors</strong></p>
 <dl class="function">
-<dt id="_CPPv2NK6indptrEv">
-<span id="indptrC"></span><em class="property">const</em> int *<code class="descclassname"></code><code class="descname">indptr</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK6indptrEv" title="Permalink to this definition">¶</a></dt>
+<dt id="struct-skylark::base::sparse_matrix_t:T:::indptrC">
+const int* <tt class="descname">indptr</tt><big>(</big><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#struct-skylark::base::sparse_matrix_t:T:::indptrC" title="Permalink to this definition">¶</a></dt>
 <dd><p>Access to indices pointer array.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv2NK7indicesEv">
-<span id="indicesC"></span><em class="property">const</em> int *<code class="descclassname"></code><code class="descname">indices</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK7indicesEv" title="Permalink to this definition">¶</a></dt>
+<dt id="struct-skylark::base::sparse_matrix_t:T:::indicesC">
+const int* <tt class="descname">indices</tt><big>(</big><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#struct-skylark::base::sparse_matrix_t:T:::indicesC" title="Permalink to this definition">¶</a></dt>
 <dd><p>Access to non-zero column indices array.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv26valuesv">
-<span id="values"></span>T *<code class="descclassname"></code><code class="descname">values</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv26valuesv" title="Permalink to this definition">¶</a></dt>
+<dt id="struct-skylark::base::sparse_matrix_t:T:::values">
+T* <tt class="descname">values</tt><big>(</big><big>)</big><a class="headerlink" href="#struct-skylark::base::sparse_matrix_t:T:::values" title="Permalink to this definition">¶</a></dt>
 <dd><p>Access to non-zero value array.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv2NK13locked_valuesEv">
-<span id="locked_valuesC"></span><em class="property">const</em> T *<code class="descclassname"></code><code class="descname">locked_values</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK13locked_valuesEv" title="Permalink to this definition">¶</a></dt>
+<dt id="struct-skylark::base::sparse_matrix_t:T:::locked_valuesC">
+const T* <tt class="descname">locked_values</tt><big>(</big><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#struct-skylark::base::sparse_matrix_t:T:::locked_valuesC" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read only view on non-zero values.</p>
 </dd></dl>
 
 <p><strong>Modifiers</strong></p>
 <dl class="function">
-<dt>
-template&lt;&gt;</dt>
-<dt id="_CPPv2IENK6detachI7IdxType7ValTypeEEP7IdxTypeP7IdxTypeP7ValType">
-void <code class="descclassname"></code><code class="descname">detach</code>&lt;IdxType, ValType&gt;<span class="sig-paren">(</span>IdxType *<em>indptr</em>, IdxType *<em>indices</em>, ValType *<em>values</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2IENK6detachI7IdxType7ValTypeEEP7IdxTypeP7IdxTypeP7ValType" title="Permalink to this definition">¶</a></dt>
+<dt id="struct-skylark::base::sparse_matrix_t:T:::detach:IdxType.ValType:__IdxTypeP.IdxTypeP.ValTypePC">
+void <tt class="descname">detach&lt;IdxType, ValType&gt;</tt><big>(</big>IdxType* <em>indptr</em>, IdxType* <em>indices</em>, ValType* <em>values</em><big>)</big><tt class="descclassname"> const</tt><a class="headerlink" href="#struct-skylark::base::sparse_matrix_t:T:::detach:IdxType.ValType:__IdxTypeP.IdxTypeP.ValTypePC" title="Permalink to this definition">¶</a></dt>
 <dd><p>Copy CSC data to external buffer.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv26attachPKiPKiPdiiib">
-<span id="attach__iCP.iCP.doubleP.i.i.i.b"></span>void <code class="descclassname"></code><code class="descname">attach</code><span class="sig-paren">(</span><em class="property">const</em> int *<em>indptr</em>, <em class="property">const</em> int *<em>indices</em>, double *<em>values</em>, int <em>nnz</em>, int <em>n_rows</em>, int <em>n_cols</em>, bool <em>_own</em> = false<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv26attachPKiPKiPdiiib" title="Permalink to this definition">¶</a></dt>
+<dt id="struct-skylark::base::sparse_matrix_t:T:::attach__iCP.iCP.doubleP.i.i.i.b">
+void <tt class="descname">attach</tt><big>(</big>const int* <em>indptr</em>, const int* <em>indices</em>, double* <em>values</em>, int <em>nnz</em>, int <em>n_rows</em>, int <em>n_cols</em>, bool <em>_own</em><em>=false</em><big>)</big><a class="headerlink" href="#struct-skylark::base::sparse_matrix_t:T:::attach__iCP.iCP.doubleP.i.i.i.b" title="Permalink to this definition">¶</a></dt>
 <dd><p>Attach CSC matrix data.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv26attachPKiPKiPdiiibbb">
-<span id="attach__iCP.iCP.doubleP.i.i.i.b.b.b"></span>void <code class="descclassname"></code><code class="descname">attach</code><span class="sig-paren">(</span><em class="property">const</em> int *<em>indptr</em>, <em class="property">const</em> int *<em>indices</em>, double *<em>values</em>, int <em>nnz</em>, int <em>n_rows</em>, int <em>n_cols</em>, bool <em>ownindptr</em>, bool <em>ownindices</em>, bool <em>ownvalues</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv26attachPKiPKiPdiiibbb" title="Permalink to this definition">¶</a></dt>
+<dt id="struct-skylark::base::sparse_matrix_t:T:::attach__iCP.iCP.doubleP.i.i.i.b.b.b">
+void <tt class="descname">attach</tt><big>(</big>const int* <em>indptr</em>, const int* <em>indices</em>, double* <em>values</em>, int <em>nnz</em>, int <em>n_rows</em>, int <em>n_cols</em>, bool <em>ownindptr</em>, bool <em>ownindices</em>, bool <em>ownvalues</em><big>)</big><a class="headerlink" href="#struct-skylark::base::sparse_matrix_t:T:::attach__iCP.iCP.doubleP.i.i.i.b.b.b" title="Permalink to this definition">¶</a></dt>
 <dd><p>Attach CSC matrix data where the caller can decide who retains the
 ownership.</p>
 </dd></dl>
@@ -265,25 +263,25 @@ ownership.</p>
 <p>The library provides functions for filling Elemental dense matrices (local or distributed) using the library&#8217;s random number generator.</p>
 <blockquote>
 <div><dl class="function">
-<dt id="_CPPv212RandomMatrixRN2El6MatrixI1TEEN2El3IntEN2El3IntER16DistributionTypeI1TER9context_t">
-<span id="RandomMatrix__El::Matrix:T:R.El::Int.El::Int.DistributionType:T:R.context_tR"></span>void <code class="descclassname"></code><code class="descname">RandomMatrix</code><span class="sig-paren">(</span>El::Matrix&lt;T&gt; &amp;<em>A</em>, El::Int <em>m</em>, El::Int <em>n</em>, DistributionType&lt;T&gt; &amp;<em>dist</em>, <a class="reference internal" href="#_CPPv29context_tii" title="context_t">context_t</a> &amp;<em>context</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv212RandomMatrixRN2El6MatrixI1TEEN2El3IntEN2El3IntER16DistributionTypeI1TER9context_t" title="Permalink to this definition">¶</a></dt>
+<dt id="RandomMatrix__El::Matrix:T:R.El::Int.El::Int.DistributionType:T:R.context_tR">
+void <tt class="descname">RandomMatrix</tt><big>(</big>El::Matrix&lt;T&gt;&amp; <em>A</em>, El::Int <em>m</em>, El::Int <em>n</em>, DistributionType&lt;T&gt;&amp; <em>dist</em>, context_t&amp; <em>context</em><big>)</big><a class="headerlink" href="#RandomMatrix__El::Matrix:T:R.El::Int.El::Int.DistributionType:T:R.context_tR" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="_CPPv212RandomMatrixRN2El10DistMatrixI1T2CD2RDEEN2El3IntEN2El3IntER16DistributionTypeI1TER9context_t">
-<span id="RandomMatrix__El::DistMatrix:T.CD.RD:R.El::Int.El::Int.DistributionType:T:R.context_tR"></span>void <code class="descclassname"></code><code class="descname">RandomMatrix</code><span class="sig-paren">(</span>El::DistMatrix&lt;T, CD, RD&gt; &amp;<em>A</em>, El::Int <em>m</em>, El::Int <em>n</em>, DistributionType&lt;T&gt; &amp;<em>dist</em>, <a class="reference internal" href="#_CPPv29context_tii" title="context_t">context_t</a> &amp;<em>context</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv212RandomMatrixRN2El10DistMatrixI1T2CD2RDEEN2El3IntEN2El3IntER16DistributionTypeI1TER9context_t" title="Permalink to this definition">¶</a></dt>
+<dt id="RandomMatrix__El::DistMatrix:T.CD.RD:R.El::Int.El::Int.DistributionType:T:R.context_tR">
+void <tt class="descname">RandomMatrix</tt><big>(</big>El::DistMatrix&lt;T, CD, RD&gt;&amp; <em>A</em>, El::Int <em>m</em>, El::Int <em>n</em>, DistributionType&lt;T&gt;&amp; <em>dist</em>, context_t&amp; <em>context</em><big>)</big><a class="headerlink" href="#RandomMatrix__El::DistMatrix:T.CD.RD:R.El::Int.El::Int.DistributionType:T:R.context_tR" title="Permalink to this definition">¶</a></dt>
 <dd><p>Resize matrix to m-by-n and fill with entries which are i.i.d samples of the distribution.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv214GaussianMatrixR10MatrixTypeN2El3IntEN2El3IntER9context_t">
-<span id="GaussianMatrix__MatrixTypeR.El::Int.El::Int.context_tR"></span>void <code class="descclassname"></code><code class="descname">GaussianMatrix</code><span class="sig-paren">(</span>MatrixType &amp;<em>A</em>, El::Int <em>m</em>, El::Int <em>n</em>, <a class="reference internal" href="#_CPPv29context_tii" title="context_t">context_t</a> &amp;<em>context</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv214GaussianMatrixR10MatrixTypeN2El3IntEN2El3IntER9context_t" title="Permalink to this definition">¶</a></dt>
+<dt id="GaussianMatrix__MatrixTypeR.El::Int.El::Int.context_tR">
+void <tt class="descname">GaussianMatrix</tt><big>(</big>MatrixType&amp; <em>A</em>, El::Int <em>m</em>, El::Int <em>n</em>, context_t&amp; <em>context</em><big>)</big><a class="headerlink" href="#GaussianMatrix__MatrixTypeR.El::Int.El::Int.context_tR" title="Permalink to this definition">¶</a></dt>
 <dd><p>Resize matrix to m-by-n and fill with entries which are i.i.d samples from standard normal distribution.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_CPPv213UniformMatrixR10MatrixTypeN2El3IntEN2El3IntER9context_t">
-<span id="UniformMatrix__MatrixTypeR.El::Int.El::Int.context_tR"></span>void <code class="descclassname"></code><code class="descname">UniformMatrix</code><span class="sig-paren">(</span>MatrixType &amp;<em>A</em>, El::Int <em>m</em>, El::Int <em>n</em>, <a class="reference internal" href="#_CPPv29context_tii" title="context_t">context_t</a> &amp;<em>context</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv213UniformMatrixR10MatrixTypeN2El3IntEN2El3IntER9context_t" title="Permalink to this definition">¶</a></dt>
+<dt id="UniformMatrix__MatrixTypeR.El::Int.El::Int.context_tR">
+void <tt class="descname">UniformMatrix</tt><big>(</big>MatrixType&amp; <em>A</em>, El::Int <em>m</em>, El::Int <em>n</em>, context_t&amp; <em>context</em><big>)</big><a class="headerlink" href="#UniformMatrix__MatrixTypeR.El::Int.El::Int.context_tR" title="Permalink to this definition">¶</a></dt>
 <dd><p>Resize matrix to m-by-n and fill with entries which are i.i.d samples from a uniform distrbution on [0,1).</p>
 </dd></dl>
 
@@ -297,7 +295,7 @@ ownership.</p>
 
 
       </div>
-      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      <div class="bottomnav">
       
         <p>
         «&#160;&#160;<a href="installation.html">Building from Source</a>
@@ -309,9 +307,9 @@ ownership.</p>
 
       </div>
 
-    <div class="footer" role="contentinfo">
+    <div class="footer">
         &copy; Copyright IBM Corporation 2012-2014.  All Rights Reserved.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

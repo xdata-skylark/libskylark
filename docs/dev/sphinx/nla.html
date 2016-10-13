@@ -27,12 +27,12 @@
     <link rel="next" title="Machine Learning" href="ml.html" />
     <link rel="prev" title="Sketching Layer" href="sketching.html" /> 
   </head>
-  <body role="document">
-      <div class="header" role="banner"><h1 class="heading"><a href="index.html">
+  <body>
+      <div class="header"><h1 class="heading"><a href="index.html">
           <span>libSkylark  documentation</span></a></h1>
         <h2 class="heading"><span>Numerical Linear Algebra Primitives</span></h2>
       </div>
-      <div class="topnav" role="navigation" aria-label="top navigation">
+      <div class="topnav">
       
         <p>
         «&#160;&#160;<a href="sketching.html">Sketching Layer</a>
@@ -91,27 +91,27 @@ There is also a default value, but it is much lower than the one suggested by th
 (<span class="math">n</span> is the number of columns in <span class="math">A</span>).</p>
 <hr class="docutils" />
 <dl class="function">
-<dt id="_CPPv223ApproximateLeastSquaresN2El11OrientationERKN2El6MatrixI1TEERKN2El6MatrixI1TEERN2El6MatrixI1TEERN4base9context_tEi">
-<span id="ApproximateLeastSquares__El::Orientation.El::Matrix:T:CR.El::Matrix:T:CR.El::Matrix:T:R.base::context_tR.i"></span>void <code class="descclassname"></code><code class="descname">ApproximateLeastSquares</code><span class="sig-paren">(</span>El::Orientation <em>orientation</em>, <em class="property">const</em> El::Matrix&lt;T&gt; &amp;<em>A</em>, <em class="property">const</em> El::Matrix&lt;T&gt; &amp;<em>B</em>, El::Matrix&lt;T&gt; &amp;<em>X</em>, base::context_t &amp;<em>context</em>, int <em>sketch_size</em> = -1<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv223ApproximateLeastSquaresN2El11OrientationERKN2El6MatrixI1TEERKN2El6MatrixI1TEERN2El6MatrixI1TEERN4base9context_tEi" title="Permalink to this definition">¶</a></dt>
+<dt id="ApproximateLeastSquares__El::Orientation.El::Matrix:T:CR.El::Matrix:T:CR.El::Matrix:T:R.base::context_tR.i">
+void <tt class="descname">ApproximateLeastSquares</tt><big>(</big>El::Orientation <em>orientation</em>, const El::Matrix&lt;T&gt;&amp; <em>A</em>, const El::Matrix&lt;T&gt;&amp; <em>B</em>, El::Matrix&lt;T&gt;&amp; <em>X</em>, base::context_t&amp; <em>context</em>, int <em>sketch_size</em><em>=-1</em><big>)</big><a class="headerlink" href="#ApproximateLeastSquares__El::Orientation.El::Matrix:T:CR.El::Matrix:T:CR.El::Matrix:T:R.base::context_tR.i" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="_CPPv223ApproximateLeastSquaresN2El11OrientationERKN2El10DistMatrixI1TN2El2VCEN2El4STAREEERKN2El10DistMatrixI1TN2El2VCEN2El4STAREEERN2El10DistMatrixI1TN2El4STAREN2El4STAREEERN4base9context_tEi">
-<span id="ApproximateLeastSquares__El::Orientation.El::DistMatrix:T.El::VC.El::STAR:CR.El::DistMatrix:T.El::VC.El::STAR:CR.El::DistMatrix:T.El::STAR.El::STAR:R.base::context_tR.i"></span>void <code class="descclassname"></code><code class="descname">ApproximateLeastSquares</code><span class="sig-paren">(</span>El::Orientation <em>orientation</em>, <em class="property">const</em> El::DistMatrix&lt;T, El::VC, El::STAR&gt; &amp;<em>A</em>, <em class="property">const</em> El::DistMatrix&lt;T, El::VC, El::STAR&gt; &amp;<em>B</em>, El::DistMatrix&lt;T, El::STAR, El::STAR&gt; &amp;<em>X</em>, base::context_t &amp;<em>context</em>, int <em>sketch_size</em> = -1<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv223ApproximateLeastSquaresN2El11OrientationERKN2El10DistMatrixI1TN2El2VCEN2El4STAREEERKN2El10DistMatrixI1TN2El2VCEN2El4STAREEERN2El10DistMatrixI1TN2El4STAREN2El4STAREEERN4base9context_tEi" title="Permalink to this definition">¶</a></dt>
+<dt id="ApproximateLeastSquares__El::Orientation.El::DistMatrix:T.El::VC.El::STAR:CR.El::DistMatrix:T.El::VC.El::STAR:CR.El::DistMatrix:T.El::STAR.El::STAR:R.base::context_tR.i">
+void <tt class="descname">ApproximateLeastSquares</tt><big>(</big>El::Orientation <em>orientation</em>, const El::DistMatrix&lt;T, El::VC, El::STAR&gt;&amp; <em>A</em>, const El::DistMatrix&lt;T, El::VC, El::STAR&gt;&amp; <em>B</em>, El::DistMatrix&lt;T, El::STAR, El::STAR&gt;&amp; <em>X</em>, base::context_t&amp; <em>context</em>, int <em>sketch_size</em><em>=-1</em><big>)</big><a class="headerlink" href="#ApproximateLeastSquares__El::Orientation.El::DistMatrix:T.El::VC.El::STAR:CR.El::DistMatrix:T.El::VC.El::STAR:CR.El::DistMatrix:T.El::STAR.El::STAR:R.base::context_tR.i" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<p>If <cite>orientation</cite> is set to <code class="docutils literal"><span class="pre">NORMAL</span></code>, then approximate <span class="math">\arg\min_X \|A * X - B\|_F</span>, otherwise
-<cite>orientation</cite> must be equal to <code class="docutils literal"><span class="pre">ADJOINT</span></code> and <span class="math">\arg\min_X \|A^H * X - B\|_F</span> is approximated.</p>
+<p>If <cite>orientation</cite> is set to <tt class="docutils literal"><span class="pre">NORMAL</span></tt>, then approximate <span class="math">\arg\min_X \|A * X - B\|_F</span>, otherwise
+<cite>orientation</cite> must be equal to <tt class="docutils literal"><span class="pre">ADJOINT</span></tt> and <span class="math">\arg\min_X \|A^H * X - B\|_F</span> is approximated.</p>
 <p>sketch_size controls the number of rows in <span class="math">S</span>.</p>
 <hr class="docutils" />
 <p>A flavor of usage is given in the code snippet below.</p>
-<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;elemental.hpp&gt;</span><span class="cp"></span>
-<span class="cp">#include</span> <span class="cpf">&lt;skylark.hpp&gt;</span><span class="cp"></span>
+<div class="highlight-cpp"><div class="highlight"><pre><span class="cp">#include &lt;elemental.hpp&gt;</span>
+<span class="cp">#include &lt;skylark.hpp&gt;</span>
 <span class="p">...</span>
 <span class="c1">// Setup regression problem with coefficient matrix A and target matrix B</span>
 <span class="p">...</span>
 
-<span class="n">skybase</span><span class="o">::</span><span class="n">context_t</span> <span class="n">context</span><span class="p">(</span><span class="mi">23234</span><span class="p">);</span>
+<span class="n">skybase</span><span class="o">::</span><span class="kt">context_t</span> <span class="n">context</span><span class="p">(</span><span class="mi">23234</span><span class="p">);</span>
 
 <span class="c1">// Solve the Least Squres problem of minimizing || AX - B||_2 over X</span>
 <span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="n">ApproximateLeastSquares</span><span class="p">(</span><span class="n">El</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
@@ -141,21 +141,21 @@ so the solution&#8217;s accuracy is close to the full accuracy possible on a mac
 (<span class="math">n</span> is the number of columns in <span class="math">A</span>).</p>
 <hr class="docutils" />
 <dl class="function">
-<dt id="_CPPv218FasterLeastSquaresN2El11OrientationERKN2El10DistMatrixI1TN2El2VCEN2El4STAREEERKN2El10DistMatrixI1TN2El2VCEN2El4STAREEERN2El10DistMatrixI1TN2El4STAREN2El4STAREEERN4base9context_tE">
-<span id="FasterLeastSquares__El::Orientation.El::DistMatrix:T.El::VC.El::STAR:CR.El::DistMatrix:T.El::VC.El::STAR:CR.El::DistMatrix:T.El::STAR.El::STAR:R.base::context_tR"></span>void <code class="descclassname"></code><code class="descname">FasterLeastSquares</code><span class="sig-paren">(</span>El::Orientation <em>orientation</em>, <em class="property">const</em> El::DistMatrix&lt;T, El::VC, El::STAR&gt; &amp;<em>A</em>, <em class="property">const</em> El::DistMatrix&lt;T, El::VC, El::STAR&gt; &amp;<em>B</em>, El::DistMatrix&lt;T, El::STAR, El::STAR&gt; &amp;<em>X</em>, base::context_t &amp;<em>context</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv218FasterLeastSquaresN2El11OrientationERKN2El10DistMatrixI1TN2El2VCEN2El4STAREEERKN2El10DistMatrixI1TN2El2VCEN2El4STAREEERN2El10DistMatrixI1TN2El4STAREN2El4STAREEERN4base9context_tE" title="Permalink to this definition">¶</a></dt>
+<dt id="FasterLeastSquares__El::Orientation.El::DistMatrix:T.El::VC.El::STAR:CR.El::DistMatrix:T.El::VC.El::STAR:CR.El::DistMatrix:T.El::STAR.El::STAR:R.base::context_tR">
+void <tt class="descname">FasterLeastSquares</tt><big>(</big>El::Orientation <em>orientation</em>, const El::DistMatrix&lt;T, El::VC, El::STAR&gt;&amp; <em>A</em>, const El::DistMatrix&lt;T, El::VC, El::STAR&gt;&amp; <em>B</em>, El::DistMatrix&lt;T, El::STAR, El::STAR&gt;&amp; <em>X</em>, base::context_t&amp; <em>context</em><big>)</big><a class="headerlink" href="#FasterLeastSquares__El::Orientation.El::DistMatrix:T.El::VC.El::STAR:CR.El::DistMatrix:T.El::VC.El::STAR:CR.El::DistMatrix:T.El::STAR.El::STAR:R.base::context_tR" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<p>If <cite>orientation</cite> is set to <code class="docutils literal"><span class="pre">NORMAL</span></code>, then approximate <span class="math">\arg\min_X \|A * X - B\|_F</span>, otherwise
-<cite>orientation</cite> must be equal to <code class="docutils literal"><span class="pre">ADJOINT</span></code> and <span class="math">\arg\min_X \|A^H * X - B\|_F</span> is approximated.</p>
+<p>If <cite>orientation</cite> is set to <tt class="docutils literal"><span class="pre">NORMAL</span></tt>, then approximate <span class="math">\arg\min_X \|A * X - B\|_F</span>, otherwise
+<cite>orientation</cite> must be equal to <tt class="docutils literal"><span class="pre">ADJOINT</span></tt> and <span class="math">\arg\min_X \|A^H * X - B\|_F</span> is approximated.</p>
 <hr class="docutils" />
 <p>A flavor of usage is given in the code snippet below.</p>
-<div class="highlight-cpp"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;elemental.hpp&gt;</span><span class="cp"></span>
-<span class="cp">#include</span> <span class="cpf">&lt;skylark.hpp&gt;</span><span class="cp"></span>
+<div class="highlight-cpp"><div class="highlight"><pre><span class="cp">#include &lt;elemental.hpp&gt;</span>
+<span class="cp">#include &lt;skylark.hpp&gt;</span>
 <span class="p">...</span>
 <span class="c1">// Setup regression problem with coefficient matrix A and target matrix B</span>
 <span class="p">...</span>
 
-<span class="n">skybase</span><span class="o">::</span><span class="n">context_t</span> <span class="n">context</span><span class="p">(</span><span class="mi">23234</span><span class="p">);</span>
+<span class="n">skybase</span><span class="o">::</span><span class="kt">context_t</span> <span class="n">context</span><span class="p">(</span><span class="mi">23234</span><span class="p">);</span>
 
 <span class="c1">// Solve the Least Squres problem of minimizing || AX - B||_2 over X</span>
 <span class="n">skylark</span><span class="o">::</span><span class="n">nla</span><span class="o">::</span><span class="n">FasterLeastSquares</span><span class="p">(</span><span class="n">El</span><span class="o">::</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">context</span><span class="p">);</span>
@@ -192,8 +192,8 @@ so the solution&#8217;s accuracy is close to the full accuracy possible on a mac
 <p>Compute an approximate SVD in the sense that <span class="math">A \approx U S V^T</span>. The inner
 dimension <span class="math">k</span> is specified by the user as parameter.</p>
 <dl class="function">
-<dt id="_CPPv214ApproximateSVDR9InputTypeR5UTypeR5STypeR5VTypeiRN4base9context_tE24approximate_svd_params_t">
-<span id="ApproximateSVD__InputTypeR.UTypeR.STypeR.VTypeR.i.base::context_tR.approximate_svd_params_t"></span>void <code class="descclassname"></code><code class="descname">ApproximateSVD</code><span class="sig-paren">(</span>InputType &amp;<em>A</em>, UType &amp;<em>U</em>, SType &amp;<em>S</em>, VType &amp;<em>V</em>, int <em>rank</em>, base::context_t &amp;<em>context</em>, approximate_svd_params_t <em>params</em> = approximate_svd_params_t()<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv214ApproximateSVDR9InputTypeR5UTypeR5STypeR5VTypeiRN4base9context_tE24approximate_svd_params_t" title="Permalink to this definition">¶</a></dt>
+<dt id="ApproximateSVD__InputTypeR.UTypeR.STypeR.VTypeR.i.base::context_tR.approximate_svd_params_t">
+void <tt class="descname">ApproximateSVD</tt><big>(</big>InputType&amp; <em>A</em>, UType&amp; <em>U</em>, SType&amp; <em>S</em>, VType&amp; <em>V</em>, int <em>rank</em>, base::context_t&amp; <em>context</em>, approximate_svd_params_t <em>params</em><em>=approximate_svd_params_t()</em><big>)</big><a class="headerlink" href="#ApproximateSVD__InputTypeR.UTypeR.STypeR.VTypeR.i.base::context_tR.approximate_svd_params_t" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <p>For a running example, please see <em>libskylark/examples/svd.cpp</em>. This example provides a
@@ -218,8 +218,8 @@ large and unstructured matrices.</p>
 </dd>
 </dl>
 <dl class="function">
-<dt id="_CPPv27CondEstRK10MatrixTypeRdRdR9RightTypeR8LeftTypeRdRdR9RightTypeR8LeftTypeRN4base9context_tE16condest_params_t">
-<span id="CondEst__MatrixTypeCR.doubleR.doubleR.RightTypeR.LeftTypeR.doubleR.doubleR.RightTypeR.LeftTypeR.base::context_tR.condest_params_t"></span>int <code class="descclassname"></code><code class="descname">CondEst</code><span class="sig-paren">(</span><em class="property">const</em> MatrixType &amp;<em>A</em>, double &amp;<em>cond</em>, double &amp;<em>sigma_max</em>, RightType &amp;<em>v_max</em>, LeftType &amp;<em>u_max</em>, double &amp;<em>sigma_min</em>, double &amp;<em>sigma_min_c</em>, RightType &amp;<em>v_min</em>, LeftType &amp;<em>u_min</em>, base::context_t &amp;<em>context</em>, condest_params_t <em>params</em> = condest_params_t()<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv27CondEstRK10MatrixTypeRdRdR9RightTypeR8LeftTypeRdRdR9RightTypeR8LeftTypeRN4base9context_tE16condest_params_t" title="Permalink to this definition">¶</a></dt>
+<dt id="CondEst__MatrixTypeCR.doubleR.doubleR.RightTypeR.LeftTypeR.doubleR.doubleR.RightTypeR.LeftTypeR.base::context_tR.condest_params_t">
+int <tt class="descname">CondEst</tt><big>(</big>const MatrixType&amp; <em>A</em>, double&amp; <em>cond</em>, double&amp; <em>sigma_max</em>, RightType&amp; <em>v_max</em>, LeftType&amp; <em>u_max</em>, double&amp; <em>sigma_min</em>, double&amp; <em>sigma_min_c</em>, RightType&amp; <em>v_min</em>, LeftType&amp; <em>u_min</em>, base::context_t&amp; <em>context</em>, condest_params_t <em>params</em><em>=condest_params_t()</em><big>)</big><a class="headerlink" href="#CondEst__MatrixTypeCR.doubleR.doubleR.RightTypeR.LeftTypeR.doubleR.doubleR.RightTypeR.LeftTypeR.base::context_tR.condest_params_t" title="Permalink to this definition">¶</a></dt>
 <dd><p>Estimate the condition number of <span class="math">A</span>: estimate the largest and smallest
 singular value. The estimate of the largest is highly accurate, and the
 estimate of the lowest is typically a  not-too-bad upper bound. Returns also
@@ -234,7 +234,7 @@ never be bigger than the estimate with certificate).</p>
 
 
       </div>
-      <div class="bottomnav" role="navigation" aria-label="bottom navigation">
+      <div class="bottomnav">
       
         <p>
         «&#160;&#160;<a href="sketching.html">Sketching Layer</a>
@@ -246,9 +246,9 @@ never be bigger than the estimate with certificate).</p>
 
       </div>
 
-    <div class="footer" role="contentinfo">
+    <div class="footer">
         &copy; Copyright IBM Corporation 2012-2014.  All Rights Reserved.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

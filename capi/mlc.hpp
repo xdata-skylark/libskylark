@@ -6,5 +6,7 @@
 
 #include "basec.hpp"
 #include "kernelc.hpp"
+#include "krrc.hpp"
+
 
 #endif // SKYLARK_MLC_HPP

@@ -1172,6 +1172,8 @@ struct kernel_container_t : public kernel_t {
 
     kernel_container_t(const boost::property_tree::ptree &pt) {
         std::string type = pt.get<std::string>("kernel_type");
+        
+        _type = type;
 
         if (type == "linear")
             _k.reset(new linear_t(pt));
@@ -1196,6 +1198,10 @@ struct kernel_container_t : public kernel_t {
     }
 
     virtual El::Int get_dim() const { return _k->get_dim(); }
+
+    virtual std::string get_type() const {
+        return _type;
+    }
 
     virtual void gram(base::direction_t dirX, base::direction_t dirY,
         const El::Matrix<double> &X, const El::Matrix<double> &Y,
@@ -1282,6 +1288,7 @@ struct kernel_container_t : public kernel_t {
 
 private:
     std::shared_ptr<kernel_t> _k;
+    std::string _type;
 };
 
 } } 

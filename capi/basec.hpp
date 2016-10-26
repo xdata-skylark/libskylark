@@ -9,11 +9,11 @@
 
 struct sl_context_t;
 
+#define SL_ROWWISE    0
 #define SL_COLUMNWISE 1
-#define SL_ROWWISE    2
 
+#define SL_ROWS    0
 #define SL_COLUMNS 1
-#define SL_ROWS    2
 
 extern "C" {
 

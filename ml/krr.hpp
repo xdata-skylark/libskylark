@@ -47,8 +47,8 @@ struct krr_params_t : public base::params_t {
 
 template<typename T, typename KernelType>
 void KernelRidge(base::direction_t direction, const KernelType &k,
-    const El::ElementalMatrix<T> &X, const El::ElementalMatrix<T> &Y, T lambda,
-    El::ElementalMatrix<T> &A, krr_params_t params = krr_params_t()) {
+    const El::DistMatrix<T> &X, const El::DistMatrix<T> &Y, T lambda,
+    El::DistMatrix<T> &A, krr_params_t params = krr_params_t()) {
 
     bool log_lev1 = params.am_i_printing && params.log_level >= 1;
     bool log_lev2 = params.am_i_printing && params.log_level >= 2;
@@ -146,8 +146,8 @@ void KERNELRIDGE(base::direction_t direction, const kernel_t &k,
 
 #if !(defined SKYLARK_NO_ANY)
 
-    SKYLARK_KERNELRIDGE_ANY_APPLY_DISPATCH(mdtypes::el_matrix_t,
-        mdtypes::el_matrix_t, mdtypes::el_matrix_t);
+    SKYLARK_KERNELRIDGE_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
+        mdtypes::dist_matrix_t, mdtypes::dist_matrix_t);
 
 #endif
 

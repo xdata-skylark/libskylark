@@ -3,16 +3,12 @@ __all__ = ['readlibsvm']
 from skylark import base
 from skylark import errors
 from skylark import lib
+import skylark.utils as utils
+
 
 def readlibsvm(fname, X, Y, direction="rows", min_d=0, max_n=-1):
 
-    cdirection = None
-    if direction == 0 or direction == "columns":
-      cdirection = 1
-    if direction == 1 or direction == "rows":
-      cdirection = 2
-    if cdirection is None:
-      raise ValueError("Direction must be either columns/rows or 0/1")
+    cdirection = utils.get_direction(direction)
   
     X = lib.adapt(X)
     Y = lib.adapt(Y)

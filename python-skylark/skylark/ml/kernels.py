@@ -7,6 +7,7 @@ import scipy.special
 import scipy
 import sys, math
 import skylark.lib as lib
+import skylark.utils as utils
 
 # Kernel factory
 def kernel(kerneltype, *args):
@@ -42,20 +43,6 @@ class Kernel(object):
   TODO: Base kernel
   """
 
-  def __get_direction(self, dir):
-    """
-    Returns the direction of dir (1 or 2)
-
-    :param dir: 0/1 or "rows"/"cols"
-    """
-    if dir == 0 or dir == "columns":
-      return 1
-    elif dir == 1 or dir == "rows":
-      return 2
-    else:
-      raise ValueError("Direction must be either columns/rows or 0/1")
-
-
   def gram(self, X, K, dirX="rows", dirY="rows", Y=None):
     """
     Returns the dense Gram matrix evaluated over the datapoints.
@@ -69,12 +56,12 @@ class Kernel(object):
       Y = X
       dirY = dirX
 
-    cdirX = self.__get_direction(dirX)
-    cdirY = self.__get_direction(dirY)
+    cdirX = utils.get_direction(dirX)
+    cdirY = utils.get_direction(dirY)
 
-    X = lib.adapt(X)
-    Y = lib.adapt(Y)
-    K = lib.adapt(K)
+    X = utils.adapt_and_check(X)
+    Y = utils.adapt_and_check(Y)
+    K = utils.adapt_and_check(K)
 
     lib.callsl("sl_kernel_gram", cdirX, cdirY, self._kernel_obj, \
                 X.ctype(), X.ptr(), \

@@ -5,11 +5,18 @@
 #error "Include top-level sketch.hpp instead of including individuals headers"
 #endif
 
-#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_FFTWF
 
+#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_FFTWF
 #include <fftw3.h>
+#endif
+
+#if SKYLARK_HAVE_KISSFFT
+#include <kissfft.hh>
+#endif
 
 namespace skylark { namespace sketch {
+
+#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_FFTWF
 
 template < typename ValueType,
            typename PlanType, typename KindType,
@@ -121,17 +128,22 @@ private:
 private:
     const int _N;
     PlanType _plan, _plan_inverse;
-
-
 };
+
+#elif SKYLARK_HAVE_KISSFFT
+
+
+#endif
 
 template<typename ValueType>
 struct fft_futs {
 
 };
 
-#if SKYLARK_HAVE_FFTW
 
+// fft_futs<double>
+
+#if SKYLARK_HAVE_FFTW
 template<>
 struct fft_futs<double> {
     typedef fftw_r2r_fut_t <
@@ -142,9 +154,34 @@ struct fft_futs<double> {
             double, fftw_plan, fftw_r2r_kind, FFTW_DHT, FFTW_DHT,
             fftw_plan_r2r_1d, fftw_execute_r2r, fftw_destroy_plan, 1 > DHT_t;
 };
+#elif SKYLARK_HAVE_KISSFFT
+template<>
+struct fft_futs<double> {
+  // TODO: Implment things
+  struct empty_t {
+
+    empty_t(int N) { 
+      SKYLARK_THROW_EXCEPTION (
+	base::sketch_exception()
+              << base::error_msg(
+                 "Double precision fftw has not been compiled."));
+    }
+
+    template <typename Dimension>
+    void apply(El::Matrix<double>& A, Dimension dimension) const { }
+
+    template <typename Dimension>
+    void apply_inverse(El::Matrix<double>& A, Dimension dimension) const { }
+
+    double scale() const { return 0.0; }
+
+  };
+
+  typedef empty_t DCT_t;
+  typedef empty_t DHT_t;
+};
 
 #else
-
 template<>
 struct fft_futs<double> {
 
@@ -170,9 +207,11 @@ struct fft_futs<double> {
   typedef empty_t DCT_t;
   typedef empty_t DHT_t;
 };
-
 #endif
 
+
+
+// fft_futs<float>
 #if SKYLARK_HAVE_FFTWF
 
 template<>
@@ -184,6 +223,35 @@ struct fft_futs<float> {
     typedef fftw_r2r_fut_t <
             float, fftwf_plan, fftwf_r2r_kind, FFTW_DHT, FFTW_DHT,
             fftwf_plan_r2r_1d, fftwf_execute_r2r, fftwf_destroy_plan, 1 > DHT_t;
+};
+
+#elif SKYLARK_HAVE_KISSFFT
+
+template<>
+struct fft_futs<float> {
+
+  struct empty_t {
+
+    empty_t(int N) { 
+
+      SKYLARK_THROW_EXCEPTION (
+	base::sketch_exception()
+              << base::error_msg(
+                 "Single precision fftw has not been compiled."));
+    }
+
+    template <typename Dimension>
+    void apply(El::Matrix<float>& A, Dimension dimension) const { }
+
+    template <typename Dimension>
+    void apply_inverse(El::Matrix<float>& A, Dimension dimension) const { }
+
+    double scale() const { return 0.0; }
+
+  };
+
+  typedef empty_t DCT_t;
+  typedef empty_t DHT_t;
 };
 
 #else
@@ -219,7 +287,6 @@ struct fft_futs<float> {
 
 } } /** namespace skylark::sketch */
 
-#endif // SKYLARK_HAVE_FFTW
 
 #if SKYLARK_HAVE_SPIRALWHT
 

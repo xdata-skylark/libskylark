@@ -4,7 +4,6 @@ if (USE_KISSFFT)
   find_package(KISSFFT)
   if (KISSFFT_FOUND)
     include_directories(${KISSFFT_INCLUDE_DIR})
-    link_directories (${KISSFFT_LIBRARY_DIR})
     set (SKYLARK_HAVE_KISSFFT
          1
          CACHE

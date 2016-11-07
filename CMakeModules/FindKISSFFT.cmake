@@ -8,8 +8,9 @@
 # KISSFFT_LIBRARY     - qualified libraries to link against. Maybe it's not necesary
 # KISSFFT_FOUND       - do not attempt to use if "no" or undefined.
 
-FIND_PATH(KISSFFT_INCLUDE_DIR kissfft.hh
-  $ENV{KISSFFT_ROOT}/
+FIND_PATH(KISSFFT_INCLUDE_DIR kiss_fft.h kiss_fftr.h kiss_fft.c kiss_fftr.c
+  $ENV{KISSFFT_ROOT}
+  $ENV{KISSFFT_ROOT}/tools
   $ENV{HOME}/.local/include
   $ENV{HOME}/local/include
   $ENV{HOME}/Software/include
@@ -30,28 +31,3 @@ IF (KISSFFT_FOUND)
 ELSE (KISSFFT_FOUND)
   MESSAGE(STATUS "Warning: KissFFTW not found.")
 ENDIF (KISSFFT_FOUND)
-
-
-
-# FIND_LIBRARY(FFTWF_LIBRARY fftw3f
-#   $ENV{FFTW_ROOT}/lib
-#   $ENV{HOME}/.local/lib
-#   $ENV{HOME}/local/lib
-#   $ENV{HOME}/Software/lib
-#   /usr/local/lib
-#   /usr/lib
-#   NO_DEFAULT_PATH
-# )
-
-# IF(KISSFFT_INCLUDE_DIR AND FFTWF_LIBRARY)
-#  SET( KISSFFT_FOUND "YES")
-# ENDIF(KISSFFT_INCLUDE_DIR AND FFTWF_LIBRARY)
-
-# IF (FFTWF_FOUND)
-#  IF (NOT FFTW_FIND_QUIETLY)
-#    MESSAGE(STATUS
-#            "Found FFTW single precision:${FFTWF_LIBRARY}")
-#  ENDIF (NOT FFTW_FIND_QUIETLY)
-# ELSE (FFTWF_FOUND)
-#  MESSAGE(STATUS "Warning: FFTW single precision not found.")
-# ENDIF (FFTWF_FOUND)

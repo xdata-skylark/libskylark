@@ -18,6 +18,7 @@ include_directories (
 
 set(SKYLARK_CAPI_SRCS
     capi.cpp
+    ${KISSFFT_SOURCE_FILES}
 )
 
 add_library(cskylark

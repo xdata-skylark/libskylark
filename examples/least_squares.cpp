@@ -74,7 +74,7 @@ void experiment() {
     // The following computes the optimal residual (r^\star in the logs)
     skylark::base::Gemv(El::NORMAL, -1.0, A, x, 1.0, r);
 
-#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_FFTWF
+#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_FFTWF || SKYLARK_HAVE_KISSFFT
     // Solve using Sylark
     timer.restart();
     skylark::nla::FasterLeastSquares(El::NORMAL, A, b, x, context);

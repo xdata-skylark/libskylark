@@ -63,7 +63,7 @@ SKYLARK_EXTERN_API int sl_approximate_kernel_ridge(
 
     auto S = static_cast<sketch::sketch_transform_container_t<
         El::DistMatrix<double>, El::DistMatrix<double> > *> (S_);
-
+/* TODO: Make this binding work
     SKYLARK_BEGIN_TRY()
         skylark::ml::APPROXIMATEKERNELRIDGE(direction,
             k->kernel_obj, 
@@ -77,8 +77,8 @@ SKYLARK_EXTERN_API int sl_approximate_kernel_ridge(
             params);
     SKYLARK_END_TRY()
         SKYLARK_CATCH_COPY_AND_RETURN_ERROR_CODE(lastexception);
-
-    return -0;
+*/
+    return 0;
 }
 
 } // extern "C"

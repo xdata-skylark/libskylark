@@ -273,6 +273,8 @@ void APPROXIMATEKERNELRIDGE(base::direction_t direction, const kernel_t &k,
     boost::any &W, El::Int s, base::context_t &context,
     krr_params_t params = krr_params_t()) {                       
 
+/* TODO: Make this binding work
+
 #define SKYLARK_APPROXIMATEKERNELRIDGE_ANY_APPLY_DISPATCH(XT, YT, WT)   \
     if (W.type() == typeid(WT*)) {                                      \
         if (X.type() == typeid(XT*)) {                                  \
@@ -347,7 +349,7 @@ void APPROXIMATEKERNELRIDGE(base::direction_t direction, const kernel_t &k,
             "ApproximateKernelRidge has not yet been implemented for this combination"
             "of matrices"));
 #undef SKYLARK_APPROXIMATEKERNELRIDGE_ANY_APPLY_DISPATCH
-  
+  */
 }
 
 template<typename T, typename KernelType>

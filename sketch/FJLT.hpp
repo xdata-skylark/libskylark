@@ -78,7 +78,7 @@ struct FJLT_t :
 } } /** namespace skylark::sketch */
 
 /**** Now the implementations */
-#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_FFTWF
+#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_FFTWF || SKYLARK_HAVE_KISSFFT
 # include "FJLT_Elemental.hpp"
 #endif
 

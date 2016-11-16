@@ -5,7 +5,7 @@
 #if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_FFTWF
     #include "fftw_futs.h"
 #elif SKYLARK_HAVE_KISSFFT
-    #include "kissfftw_futs.h"
+    #include "kissfft_futs.h"
 #else
     #include "default_futs.h"
 #endif // fft_futs

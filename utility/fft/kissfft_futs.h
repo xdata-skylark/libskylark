@@ -6,18 +6,21 @@ template < typename ValueType,
 struct kissfft_r2r_fut_t {
 
     kissfft_r2r_fut_t< ValueType, ScaleVal > (int N) : _N(N) {
-
         bool is_inverse_fft = true;
-        fft = new kissfft<ValueType>  (N, !is_inverse_fft);
-        //ifft = new  kissfft<std::complex<ValueType> >  (N, is_inverse_fft);
+        fft = new kissfft<ValueType>  (_N*4, true);
+        ifft = new kissfft<ValueType> (_N*4, false);
 
-        //fft_in.resize();  // = new std::complex<ValueType> [N*4];
-        //fft_out.resize(N*4); // = new std::complex<ValueType> [N*4];
+        fft_in = new std::complex<ValueType> [_N*4];
+        fft_out = new std::complex<ValueType> [_N*4];
+    
     }
     
     virtual ~kissfft_r2r_fut_t < ValueType, ScaleVal > () {
-        //free(fft);
-        //free(ifft);
+        free(fft);
+        free(ifft);
+
+        free(fft_in);
+        free(fft_out);
     }
 
     template <typename Dimension>
@@ -36,22 +39,25 @@ struct kissfft_r2r_fut_t {
 
 private:
 
-    void fillInVector(ValueType* values, 
-        std::vector<std::complex<ValueType> > &fft_in) const {
-        // values => [a, b, c, d]
-        // fft_in [0, a, 0, b, 0,  c,  0,  d,  0,  d,  0,  c, 0, b, 0, a]
-        for (int i = 0; i < 4*_N; ++i) {
-            ValueType realPart = 0;
-            if (i & 1) {
-                if (i < _N) {
-                    realPart = (ValueType) values[i/2];
-                } else {
-                    realPart = (ValueType) values[_N - (i/2-_N)];
-                }
-            }
-            fft_in[i] = std::complex<ValueType> (realPart, 0.0);
+    void expand4(ValueType* values) const {
+        
+        for (int i = 0; i < _N*4; ++i) {
+            fft_in[i] = std::complex<ValueType>(0,0);
         }
 
+        for (int i = 0; i < _N; ++i) {
+            int pos = 2*i+1;
+            std::complex<ValueType> cplx(values[i],0);
+            fft_in[pos] = cplx;
+            fft_in[_N*4-pos] = cplx;
+        }
+    }
+
+    void reduce4(ValueType* values) const {
+        
+        for(int i = 0; i <_N; ++i)
+            values[i] = fft_out[i].real();
+            
     }
 
     // DCT Implementation
@@ -59,22 +65,14 @@ private:
     void apply_impl(El::Matrix<ValueType>& A,
                     skylark::sketch::columnwise_tag) const {
         
-        std::vector<std::complex<ValueType> > fft_in (_N*4);
         ValueType* AA = A.Buffer();
-        int j;
 
-#       ifdef SKYLARK_HAVE_OPENMP
-#       pragma omp parallel for private(j)
-#       endif
-        for (j = 0; j < A.Width(); j++) {
-            fillInVector((AA + j * A.LDim()), fft_in);
-            // [A, B, C, D, 0, -D, -C, -B, -A, -B, -C, -D, 0, D, C, B]
-            fft->transform(&fft_in[0], &fft_in[0]);
+        for(int i = 0; i < A.Width(); ++i) {
+            expand4((AA + i * A.LDim()));
+            
+            fft->transform(fft_in, fft_out);
 
-            // real part fo [A, B, C, D]
-            for (int i = 0; i < _N; ++i) 
-                *(AA + j * A.LDim() + i) = fft_in[i].real();
-
+            reduce4((AA + i * A.LDim()));
         }
     }
     
@@ -82,79 +80,39 @@ private:
     void apply_inverse_impl(El::Matrix<ValueType>& A,
                             skylark::sketch::columnwise_tag) const {
 
-        std::vector<std::complex<ValueType> > fft_in (_N*4);
-                ValueType* AA = A.Buffer();
-                int j;
-
-        #       ifdef SKYLARK_HAVE_OPENMP
-        #       pragma omp parallel for private(j)
-        #       endif
-                for (j = 0; j < A.Width(); j++) {
-                    fillInVector((AA + j * A.LDim()), fft_in);
-                    // [A, B, C, D, 0, -D, -C, -B, -A, -B, -C, -D, 0, D, C, B]
-                    ifft->transform(&fft_in[0], &fft_in[0]);
-
-                    // real part fo [A, B, C, D]
-                    for (int i = 0; i < _N; ++i) 
-                        *(AA + j * A.LDim() + i) = fft_in[i].real();
-        }
     }
 
     void apply_impl(El::Matrix<ValueType>& A,
                     skylark::sketch::rowwise_tag) const {
 
-       std::vector<std::complex<ValueType> > fft_in (_N*4);
         El::Matrix<ValueType> matrix;
-        El::Transpose(A, matrix);
-        ValueType* matrix_buffer = matrix.Buffer();
-        int j;
+        El::Transpose(A, matrix);  
+        
+        ValueType* matrixBuffer = matrix.Buffer();
 
-#       ifdef SKYLARK_HAVE_OPENMP
-#       pragma omp parallel for private(j)
-#       endif
-        for (j = 0; j < matrix.Width(); j++) {
-            fillInVector((matrix_buffer + j * matrix.LDim()), fft_in);
-            // [A, B, C, D, 0, -D, -C, -B, -A, -B, -C, -D, 0, D, C, B]
-            fft->transform(&fft_in[0], &fft_in[0]);
-
-            // real part fo [A, B, C, D]
-            for (int i = 0; i < _N; ++i) 
-                *(matrix_buffer + j * matrix.LDim() + i) = fft_in[i].real();
+        for(int i = 0; i < matrix.Width(); ++i) {
+            expand4((matrixBuffer + i * matrix.LDim()));
+            fft->transform(fft_in, fft_out);
+            reduce4((matrixBuffer + i * matrix.LDim()));
         }
         El::Transpose(matrix, A);
+
     }
 
     void apply_inverse_impl(El::Matrix<ValueType>& A,
                             skylark::sketch::rowwise_tag) const {
-        
-        std::vector<std::complex<ValueType> > fft_in (_N*4);
-        El::Matrix<ValueType> matrix;
-        El::Transpose(A, matrix);
-        ValueType* matrix_buffer = matrix.Buffer();
-        int j;
-
-#       ifdef SKYLARK_HAVE_OPENMP
-#       pragma omp parallel for private(j)
-#       endif
-        for (j = 0; j < matrix.Width(); j++) {
-            fillInVector((matrix_buffer + j * matrix.LDim()), fft_in);
-            // [A, B, C, D, 0, -D, -C, -B, -A, -B, -C, -D, 0, D, C, B]
-            ifft->transform(&fft_in[0], &fft_in[0]);
-
-            // real part fo [A, B, C, D]
-            for (int i = 0; i < _N; ++i) 
-                *(matrix_buffer + j * matrix.LDim() + i) = fft_in[i].real();
-        }
-        El::Transpose(matrix, A);
    
     }
 
     const int _N;
+    
     kissfft<ValueType> *fft;
     kissfft<ValueType> *ifft;
 
-};
+    std::complex<ValueType>* fft_in;
+    std::complex<ValueType>* fft_out;
 
+};
 
 template<>
 struct fft_futs<double> {

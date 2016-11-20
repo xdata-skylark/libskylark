@@ -556,7 +556,7 @@ skylark::ml::hilbert_model_t* BlockADMMSolver<InputType>::train(data_matrix_t& X
             else {
                 std::cout << "iteration " << iter
                           << " objective " << obj
-                          << " accuracy " << accuracy
+                          << " accuracy " << boost::format("%.2f") % accuracy
                           << " time " << timer.elapsed()
                           << " seconds" << std::endl;
             }

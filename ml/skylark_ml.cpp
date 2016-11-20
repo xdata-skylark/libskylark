@@ -84,7 +84,6 @@ int main(int argc, char* argv[]) {
                 options.numthreads);
         }
 
-        double accuracy = 0.0;
         if (model.is_regression()) {
 
             // TODO can be done better if Y and VC,STAR as well...
@@ -98,11 +97,13 @@ int main(int argc, char* argv[]) {
             boost::mpi::reduce(comm, localnrm, nrm,
                 std::plus<double>(), 0);
 
-            if (comm.rank() == 0)
-                    accuracy = std::sqrt(err / nrm);
-
             if (!options.outputfile.empty())
                 El::Write(DecisionValues, options.outputfile, El::ASCII);
+
+	    if (comm.rank() == 0)
+	      std::cout << "Error rate: "
+                        << boost::format("%.4e") % std::sqrt(err / nrm)
+                        << std::endl;
 
         } else {
             El::Int correct = skylark::ml::classification_accuracy(Y,
@@ -111,19 +112,20 @@ int main(int argc, char* argv[]) {
             boost::mpi::reduce(comm, correct, totalcorrect,
                 std::plus<El::Int>(), 0);
 
-            if (comm.rank() == 0)
-                accuracy =  totalcorrect*100.0/n;
-
             if (!options.outputfile.empty()) {
                 if (options.decisionvals)
                     El::Write(DecisionValues, options.outputfile, El::ASCII);
                 else
                     El::Write(PredictedLabels, options.outputfile, El::ASCII);
             }
+
+	    if(comm.rank() == 0)
+	      std::cout << "Error rate: "
+			<< boost::format("%.2f") % ((n - totalcorrect) * 100.0 / n)
+			<< "%" << std::endl;
+
         }
 
-        if(comm.rank() == 0)
-            std::cout << "Test Accuracy = " <<  accuracy << " %" << std::endl;
 
         // TODO list?
         // fix logistic case

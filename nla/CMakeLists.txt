@@ -1,4 +1,4 @@
-add_executable(skylark_svd skylark_svd.cpp ${KISSFFT_SOURCE_FILES})
+add_executable(skylark_svd skylark_svd.cpp)
 
 target_link_libraries(skylark_svd
   ${Elemental_LIBRARY}
@@ -10,7 +10,7 @@ target_link_libraries(skylark_svd
 
 install_targets(/bin skylark_svd)
 
-add_executable(skylark_linear skylark_linear.cpp  ${KISSFFT_SOURCE_FILES})
+add_executable(skylark_linear skylark_linear.cpp)
 
 target_link_libraries(skylark_linear
   ${Elemental_LIBRARY}

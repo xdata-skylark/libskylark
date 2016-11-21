@@ -79,7 +79,7 @@ private:
 
     void apply_inverse_impl(El::Matrix<ValueType>& A,
                             skylark::sketch::columnwise_tag) const {
-
+        // TODO(Jordi): Implement DCT III
     }
 
     void apply_impl(El::Matrix<ValueType>& A,
@@ -101,7 +101,7 @@ private:
 
     void apply_inverse_impl(El::Matrix<ValueType>& A,
                             skylark::sketch::rowwise_tag) const {
-   
+        // TODO(Jordi): Implement DCT III
     }
 
     const int _N;

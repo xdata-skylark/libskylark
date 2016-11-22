@@ -6,7 +6,7 @@
 #include <cstdlib>
 #include <string>
 #include <boost/program_options.hpp>
-#include "hilbert.hpp"
+#include "../../ml/hilbert.hpp"
 
 #if SKYLARK_HAVE_OPENMP
 #include <omp.h>

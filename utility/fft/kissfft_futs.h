@@ -60,6 +60,38 @@ private:
             
     }
 
+    void iexpand4(ValueType* values) const {
+        // from [A, B, C, D] 
+        // to [A, B, C, D, 0, -D, -C, -B, -A, -B, -C, -D, 0, D, C, B]
+
+        int pos = 0;
+        for (int i = 0; i < _N; ++i) {
+            fft_in[pos] = std::complex<ValueType>(values[i],0);
+            ++pos;
+        }
+
+        fft_in[pos] = std::complex<ValueType>(0,0);
+        ++pos;
+
+        for(int i = _N-1; i >= 0; --i) {
+            fft_in[pos] = std::complex<ValueType>(-values[i],0);
+            ++pos;
+        }
+
+        for(int i = 1; i < _N; ++i) {
+            fft_in[pos] = std::complex<ValueType>(-values[i],0);
+            ++pos;
+        }
+
+        fft_in[pos] = std::complex<ValueType>(0,0);
+        ++pos;
+
+        for(int i = _N-1; i >= 0; --i) {
+            fft_in[pos] = std::complex<ValueType>(values[i],0);
+            ++pos;
+        }
+    }
+
     // DCT Implementation
     // http://dsp.stackexchange.com/questions/2807/fast-cosine-transform-via-fft
     void apply_impl(El::Matrix<ValueType>& A,

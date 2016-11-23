@@ -111,7 +111,16 @@ private:
 
     void apply_inverse_impl(El::Matrix<ValueType>& A,
                             skylark::sketch::columnwise_tag) const {
-        // TODO(Jordi): Implement DCT III
+        
+        ValueType* AA = A.Buffer();
+
+        for(int i = 0; i < A.Width(); ++i) {
+            iexpand4((AA + i * A.LDim()));
+            
+            ifft->transform(fft_in, fft_out);
+
+            reduce4((AA + i * A.LDim()));
+        }
     }
 
     void apply_impl(El::Matrix<ValueType>& A,
@@ -133,7 +142,18 @@ private:
 
     void apply_inverse_impl(El::Matrix<ValueType>& A,
                             skylark::sketch::rowwise_tag) const {
-        // TODO(Jordi): Implement DCT III
+        
+        El::Matrix<ValueType> matrix;
+        El::Transpose(A, matrix);  
+        
+        ValueType* matrixBuffer = matrix.Buffer();
+
+        for(int i = 0; i < matrix.Width(); ++i) {
+            iexpand4((matrixBuffer + i * matrix.LDim()));
+            ifft->transform(fft_in, fft_out);
+            reduce4((matrixBuffer + i * matrix.LDim()));
+        }
+        El::Transpose(matrix, A);
     }
 
     const int _N;

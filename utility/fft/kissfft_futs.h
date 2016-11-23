@@ -7,8 +7,8 @@ struct kissfft_r2r_fut_t {
 
     kissfft_r2r_fut_t< ValueType, ScaleVal > (int N) : _N(N) {
         bool is_inverse_fft = true;
-        fft = new kissfft<ValueType>  (_N*4, true);
-        ifft = new kissfft<ValueType> (_N*4, false);
+        fft = new kissfft<ValueType>  (_N*4, !is_inverse_fft);
+        ifft = new kissfft<ValueType> (_N*4, is_inverse_fft);
 
         fft_in = new std::complex<ValueType> [_N*4];
         fft_out = new std::complex<ValueType> [_N*4];

@@ -193,7 +193,7 @@ such as ODEPACK, QUADPACK, and MINPACK).
 
 	sudo apt-get install python-numpy python-scipy
 
-.. note:: Elemental-0.87.3 requires a NumPy version >= 1.7. On Ubuntu Precise the deb sources only contain version 1.6.x. To upgrade use either:
+.. note:: Elemental-0.87.4 requires a NumPy version >= 1.7. On Ubuntu Precise the deb sources only contain version 1.6.x. To upgrade use either:
 
     ::
 
@@ -309,8 +309,8 @@ submatrix tracking (FLAME, van de Geijn et al.), and first-class matrix
 distributions (PLAPACK, van de Geijn et al.).
 
 Elemental's API is a moving target, so newer versions might not work as-is.
-Currently we only support version v0.87.3 (see
-https://github.com/elemental/Elemental/releases/tag/v0.87.3).
+Currently we only support version v0.87.4 (see
+https://github.com/elemental/Elemental/releases/tag/v0.87.4).
 
 *Installation: (make sure to use a compiler with c++11 support)*
 
@@ -318,7 +318,7 @@ https://github.com/elemental/Elemental/releases/tag/v0.87.3).
 
         git clone https://github.com/elemental/Elemental.git
         cd Elemental
-        git checkout tags/v0.87.3
+        git checkout tags/v0.87.4
         mkdir build
         cd build
         cmake -DEL_USE_64BIT_INTS=ON -DEL_HAVE_QUADMATH=OFF -DCMAKE_BUILD_TYPE=Release -DEL_HYBRID=ON -DBUILD_SHARED_LIBS=ON -DMATH_LIBS="-L/usr/lib -llapack -lopenblas -lm" -DINSTALL_PYTHON_PACKAGE=ON ../

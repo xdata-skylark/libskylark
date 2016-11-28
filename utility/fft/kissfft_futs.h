@@ -30,7 +30,7 @@ struct kissfft_r2r_fut_t {
 
     template <typename Dimension>
     void apply_inverse(El::Matrix<ValueType>& A, Dimension dimension) const {
-        return apply_inverse_impl (A, dimension);
+        // TODO(Jordi): Should we throw an exception?
     }
 
     double scale() const {
@@ -111,16 +111,7 @@ private:
 
     void apply_inverse_impl(El::Matrix<ValueType>& A,
                             skylark::sketch::columnwise_tag) const {
-        
-        ValueType* AA = A.Buffer();
-
-        for(int i = 0; i < A.Width(); ++i) {
-            iexpand4((AA + i * A.LDim()));
-            
-            ifft->transform(fft_in, fft_out);
-
-            reduce4((AA + i * A.LDim()));
-        }
+        // TODO(Jordi): Implement inverse DCT
     }
 
     void apply_impl(El::Matrix<ValueType>& A,
@@ -142,18 +133,7 @@ private:
 
     void apply_inverse_impl(El::Matrix<ValueType>& A,
                             skylark::sketch::rowwise_tag) const {
-        
-        El::Matrix<ValueType> matrix;
-        El::Transpose(A, matrix);  
-        
-        ValueType* matrixBuffer = matrix.Buffer();
-
-        for(int i = 0; i < matrix.Width(); ++i) {
-            iexpand4((matrixBuffer + i * matrix.LDim()));
-            ifft->transform(fft_in, fft_out);
-            reduce4((matrixBuffer + i * matrix.LDim()));
-        }
-        El::Transpose(matrix, A);
+        // TODO(Jordi): Implement inverse DCT
     }
 
     const int _N;

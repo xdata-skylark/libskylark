@@ -55,6 +55,8 @@ class Kernel(object):
     else:
       raise ValueError("Direction must be either columns/rows or 0/1")
 
+  def get_kernel_obj(self):
+    return self._kernel_obj
 
   def gram(self, X, K, dirX="rows", dirY="rows", Y=None):
     """

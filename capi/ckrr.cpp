@@ -61,23 +61,24 @@ SKYLARK_EXTERN_API int sl_approximate_kernel_ridge(
     boost::property_tree::read_json(data, json_tree);
     skylark::ml::krr_params_t params;
 
-    auto S = static_cast<sketch::sketch_transform_container_t<
-        El::DistMatrix<double>, El::DistMatrix<double> > *> (S_);
-/* TODO: Make this binding work
+    auto *S = new sketch::sketch_transform_container_t<
+        El::DistMatrix<double>, El::DistMatrix<double> >();
+
+
     SKYLARK_BEGIN_TRY()
         skylark::ml::APPROXIMATEKERNELRIDGE(direction,
             k->kernel_obj, 
             skylark_void2any(X_type, X_),
             skylark_void2any(Y_type, Y_),
             lambda,
-            S, 
+            *S, 
             skylark_void2any(W_type, W_),
             El::Int(s),
             dref_context(ctxt),
             params);
     SKYLARK_END_TRY()
         SKYLARK_CATCH_COPY_AND_RETURN_ERROR_CODE(lastexception);
-*/
+
     return 0;
 }
 

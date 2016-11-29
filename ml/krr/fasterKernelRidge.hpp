@@ -106,6 +106,83 @@ void FasterKernelRidge(base::direction_t direction, const KernelType &k,
 
 }
 
+void FASTERKERNELRIDGE(base::direction_t direction, const kernel_t &k, 
+    const boost::any &X, const boost::any &Y, double lambda,
+    const boost::any &A, El::Int s, base::context_t &context,
+    krr_params_t params = krr_params_t()) {                       
+
+#define SKYLARK_FASTERKERNELRIDGE_ANY_APPLY_DISPATCH(XT, YT, AT)	\
+    if (A.type() == typeid(AT*)) {                                      \
+        if (X.type() == typeid(XT*)) {                                  \
+            if (Y.type() == typeid(YT*)) {                              \
+	      FasterKernelRidge(					\
+                    direction,                                          \
+                    k,                                                  \
+                    *boost::any_cast<XT*>(X),                           \
+                    *boost::any_cast<YT*>(Y),                           \
+                    lambda,                                             \
+                    *boost::any_cast<AT*>(A),				\
+		    s,							\
+		    context);						\
+                return;                                                 \
+            }                                                           \
+            if (Y.type() == typeid(const YT*)) {                        \
+	      FasterKernelRidge(					\
+                    direction,                                          \
+                    k,                                                  \
+                    *boost::any_cast<XT*>(X),                           \
+                    *boost::any_cast<YT*>(Y),                           \
+                    lambda,                                             \
+                    *boost::any_cast<AT*>(A),				\
+		    s,							\
+		    context);						\
+                return;                                                 \
+            }                                                           \
+        }                                                               \
+        if (X.type() == typeid(const XT*)) {                            \
+            if (Y.type() == typeid(YT*)) {                              \
+	      FasterKernelRidge(					\
+                    direction,                                          \
+                    k,                                                  \
+                    *boost::any_cast<XT*>(X),                           \
+                    *boost::any_cast<YT*>(Y),                           \
+                    lambda,                                             \
+                    *boost::any_cast<AT*>(A),				\
+		    s,							\
+		    context);						\
+                return;                                                 \
+            }                                                           \
+                                                                        \
+            if (Y.type() == typeid(const YT*)) {                        \
+	      FasterKernelRidge(					\
+                    direction,                                          \
+                    k,                                                  \
+                    *boost::any_cast<XT*>(X),                           \
+                    *boost::any_cast<YT*>(Y),                           \
+                    lambda,                                             \
+                    *boost::any_cast<AT*>(A),				\
+		    s,							\
+		    context);						\
+                return;                                                 \
+            }                                                           \
+        }                                                               \
+    }
+
+#if !(defined SKYLARK_NO_ANY)
+
+    SKYLARK_FASTERKERNELRIDGE_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
+        mdtypes::dist_matrix_t, mdtypes::dist_matrix_t);
+
+#endif
+
+    SKYLARK_THROW_EXCEPTION (
+            base::ml_exception()
+            << base::error_msg(
+            "FasterKernelRidge has not yet been implemented for this combination of matrices"));
+#undef SKYLARK_FASTERKERNELRIDGE_ANY_APPLY_DISPATCH
+  
+}
+
 } }  // skylark::ml
 
 #endif

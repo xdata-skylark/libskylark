@@ -11,3 +11,4 @@
 skylark::base::context_t &dref_context(sl_context_t *ctxt);
 
 #include "ckernel.cpp"
+#include "ckrr.cpp"

@@ -16,6 +16,16 @@ SKYLARK_EXTERN_API int sl_faster_kernel_ridge(
     sl_context_t *ctxt,
     char *params_json);
 
+SKYLARK_EXTERN_API int sl_approximate_kernel_ridge(
+    int direction_,  sl_kernel_t *k,
+    char *X_type, void *X_, char *Y_type, void *Y_,
+    double lambda,
+    void *S_,
+    char *W_type, void *W_,
+    int s,
+    sl_context_t *ctxt,
+    char *params_json);
+
 }
 
 #endif // SKYLARK_KRRC_HPP

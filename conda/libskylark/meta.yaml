@@ -4,7 +4,11 @@ package:
 
 source:
   git_url: https://github.com/xdata-skylark/libskylark.git
-  
+
+build:
+  features:
+    - xdata
+
 requirements:
   build:
     - gcc	
@@ -43,7 +47,6 @@ requirements:
     - scikit-learn
     - pandas
     - sympy
-
 
 about:
   home: http://xdata-skylark.github.io/libskylark

@@ -8,6 +8,12 @@ typedef sketch::sketch_transform_container_t<El::DistMatrix<double>,
 
 extern "C" {
 
+SKYLARK_EXTERN_API int sl_kernel_ridge(
+    int direction_,  sl_kernel_t *k,
+    char *X_type, void *X_, char *Y_type, void *Y_,
+    double lambda,  char *A_type, void *A_,
+    char *params_json);
+
 SKYLARK_EXTERN_API int sl_faster_kernel_ridge(
     int direction_,  sl_kernel_t *k,
     char *X_type, void *X_, char *Y_type, void *Y_,

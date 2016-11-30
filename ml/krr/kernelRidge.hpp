@@ -56,6 +56,67 @@ void KernelRidge(base::direction_t direction, const KernelType &k,
                           << " sec\n";
 }
 
+void KERNELRIDGE(base::direction_t direction, const kernel_t &k, 
+    const boost::any &X, const boost::any &Y, double lambda,
+    const boost::any &A, krr_params_t params = krr_params_t()) {     
+
+#define SKYLARK_KERNELRIDGE_ANY_APPLY_DISPATCH(XT, YT, AT)              \
+    if (A.type() == typeid(AT*)) {                                      \
+        if (X.type() == typeid(XT*)) {                                  \
+            if (Y.type() == typeid(YT*)) {                              \
+                KernelRidge(                                            \
+                    direction,                                          \
+                    k,                                                  \
+                    *boost::any_cast<XT*>(X),                           \
+                    *boost::any_cast<YT*>(Y),                           \
+                    lambda,                                             \
+                    *boost::any_cast<AT*>(A));                          \
+                return;                                                 \
+            }                                                           \
+            if (Y.type() == typeid(const YT*)) {                        \
+                KernelRidge(                                            \
+                    direction,                                          \
+                    k,                                                  \
+                    *boost::any_cast<XT*>(X),                           \
+                    *boost::any_cast<YT*>(Y),                           \
+                    lambda,                                             \
+                    *boost::any_cast<AT*>(A));                          \
+                return;                                                 \
+            }                                                           \
+        }                                                               \
+        if (X.type() == typeid(const XT*)) {                            \
+            if (Y.type() == typeid(YT*)) {                              \
+                KernelRidge(                                            \
+                    direction,                                          \
+                    k,                                                  \
+                    *boost::any_cast<XT*>(X),                           \
+                    *boost::any_cast<YT*>(Y),                           \
+                    lambda,                                             \
+                    *boost::any_cast<AT*>(A));                          \
+                return;                                                 \
+            }                                                           \
+                                                                        \
+            if (Y.type() == typeid(const YT*)) {                        \
+                KernelRidge(                                            \
+                    direction,                                          \
+                    k,                                                  \
+                    *boost::any_cast<XT*>(X),                           \
+                    *boost::any_cast<YT*>(Y),                           \
+                    lambda,                                             \
+                    *boost::any_cast<AT*>(A));                          \
+                return;                                                 \
+            }                                                           \
+        }                                                               \
+    }
+
+#if !(defined SKYLARK_NO_ANY)
+
+    SKYLARK_KERNELRIDGE_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
+        mdtypes::dist_matrix_t, mdtypes::dist_matrix_t);
+
+#endif
+}
+
 } }  // skylark::ml
 
 #endif

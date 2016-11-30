@@ -1,7 +1,7 @@
 from distutils.core import setup
 
 setup(name='skylark',
-      version='0.11',
+      version='0.14',
       description='libSkylark: Sketching-based Matrix Computations for Machine Learning',
       author='IBM Corporation, Research Division',
       author_email='klclarks@us.ibm.com',

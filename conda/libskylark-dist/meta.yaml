@@ -1,5 +1,5 @@
 package:
-  name: libskylark
+  name: libskylark-dist
   version: "0.14"
 
 source:
@@ -15,9 +15,8 @@ requirements:
     - openblas
     - mpich2
     - random123
-    - libelemental 0.87.4    
+    - libelemental 0.87.4   
     - metis
-    - fftw
     - kdt
     - combblas
 
@@ -30,10 +29,10 @@ requirements:
     - random123
     - libelemental 0.87.4
     - metis
-    - fftw
     - kdt
     - combblas
-    - ipython    
+    - ipython
+    - jupyter    
     - numpy
     - scipy
     - mpi4py

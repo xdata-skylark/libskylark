@@ -13,7 +13,6 @@
 #include <string>
 #include <vector>
 #include "kernels/kernels.hpp"
-#include "options.hpp"
 
 #ifdef SKYLARK_HAVE_OPENMP
 #include <omp.h>

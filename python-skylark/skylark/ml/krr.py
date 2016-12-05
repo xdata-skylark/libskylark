@@ -4,7 +4,7 @@ import skylark.lib as lib
 
 from ctypes import byref, c_void_p, c_double, c_int
 
-class KrrParams(base.Params):
+class KRRParams(base.Params):
     """
     Parameter object for Krr.
     """
@@ -21,7 +21,7 @@ class KrrParams(base.Params):
         self.max_split = 0
 
 
-def KernelRidge(X, Y, A, k, lambda_, dir="columns", params=None):
+def kernel_ridge(X, Y, A, k, lambda_, dir="columns", params=None):
     """
     TODO: Description
     """
@@ -65,7 +65,7 @@ def KernelRidge(X, Y, A, k, lambda_, dir="columns", params=None):
 
     return (A.getobj())
 
-def ApproximateKernelRidge(X, Y, A, k, lambda_, s, dir="columns", params=None):
+def approximate_kernel_ridge(X, Y, A, k, lambda_, s, dir="columns", params=None):
     """
     TODO: Description
     """
@@ -115,7 +115,7 @@ def ApproximateKernelRidge(X, Y, A, k, lambda_, s, dir="columns", params=None):
     return (A.getobj())
 
 
-def FasterKernelRidge(X, Y, A, k, lambda_, s, dir="columns", params=None):
+def faster_kernel_ridge(X, Y, A, k, lambda_, s, dir="columns", params=None):
     """
     TODO: Description
     """

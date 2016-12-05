@@ -11,7 +11,7 @@
 
 namespace skylark { namespace ml {
 
-// TODO(Jordi): Should we mix the logic with logging?
+// TODO(Jordi): Should we mix the logic with logging? Haim: I think it is fine.
 template<typename T, typename KernelType>
 void FasterKernelRidge(base::direction_t direction, const KernelType &k,
     const El::DistMatrix<T> &X, const El::DistMatrix<T> &Y, T lambda,
@@ -106,63 +106,47 @@ void FasterKernelRidge(base::direction_t direction, const KernelType &k,
 
 }
 
-void FASTERKERNELRIDGE(base::direction_t direction, const kernel_t &k, 
+void FasterKernelRidge(base::direction_t direction, const kernel_t &k,
     const boost::any &X, const boost::any &Y, double lambda,
     const boost::any &A, El::Int s, base::context_t &context,
-    krr_params_t params = krr_params_t()) {                       
+    krr_params_t params = krr_params_t()) {
 
-#define SKYLARK_FASTERKERNELRIDGE_ANY_APPLY_DISPATCH(XT, YT, AT)	\
+#define SKYLARK_FASTERKERNELRIDGE_ANY_APPLY_DISPATCH(XT, YT, AT)        \
     if (A.type() == typeid(AT*)) {                                      \
         if (X.type() == typeid(XT*)) {                                  \
             if (Y.type() == typeid(YT*)) {                              \
-	      FasterKernelRidge(					\
-                    direction,                                          \
-                    k,                                                  \
-                    *boost::any_cast<XT*>(X),                           \
-                    *boost::any_cast<YT*>(Y),                           \
-                    lambda,                                             \
-                    *boost::any_cast<AT*>(A),				\
-		    s,							\
-		    context);						\
+                FasterKernelRidge(direction,                            \
+                    k, *boost::any_cast<XT*>(X),                        \
+                    *boost::any_cast<YT*>(Y), lambda,                   \
+                    *boost::any_cast<AT*>(A), s,                        \
+                    context, params);                                   \
                 return;                                                 \
             }                                                           \
             if (Y.type() == typeid(const YT*)) {                        \
-	      FasterKernelRidge(					\
-                    direction,                                          \
-                    k,                                                  \
-                    *boost::any_cast<XT*>(X),                           \
-                    *boost::any_cast<YT*>(Y),                           \
-                    lambda,                                             \
-                    *boost::any_cast<AT*>(A),				\
-		    s,							\
-		    context);						\
+                FasterKernelRidge(direction,                            \
+                    k, *boost::any_cast<XT*>(X),                        \
+                    *boost::any_cast<YT*>(Y), lambda,                   \
+                    *boost::any_cast<AT*>(A), s,                        \
+                    context, params);                                   \
                 return;                                                 \
             }                                                           \
         }                                                               \
         if (X.type() == typeid(const XT*)) {                            \
             if (Y.type() == typeid(YT*)) {                              \
-	      FasterKernelRidge(					\
-                    direction,                                          \
-                    k,                                                  \
-                    *boost::any_cast<XT*>(X),                           \
-                    *boost::any_cast<YT*>(Y),                           \
-                    lambda,                                             \
-                    *boost::any_cast<AT*>(A),				\
-		    s,							\
-		    context);						\
+                FasterKernelRidge(direction,                            \
+                    k, *boost::any_cast<XT*>(X),                        \
+                    *boost::any_cast<YT*>(Y), lambda,                   \
+                    *boost::any_cast<AT*>(A), s,                        \
+                    context, params);                                   \
                 return;                                                 \
             }                                                           \
                                                                         \
             if (Y.type() == typeid(const YT*)) {                        \
-	      FasterKernelRidge(					\
-                    direction,                                          \
-                    k,                                                  \
-                    *boost::any_cast<XT*>(X),                           \
-                    *boost::any_cast<YT*>(Y),                           \
-                    lambda,                                             \
-                    *boost::any_cast<AT*>(A),				\
-		    s,							\
-		    context);						\
+                FasterKernelRidge(direction,                            \
+                    k, *boost::any_cast<XT*>(X),                        \
+                    *boost::any_cast<YT*>(Y),lambda,                    \
+                    *boost::any_cast<AT*>(A), s,                        \
+                    context, params);                                   \
                 return;                                                 \
             }                                                           \
         }                                                               \
@@ -173,6 +157,9 @@ void FASTERKERNELRIDGE(base::direction_t direction, const kernel_t &k,
     SKYLARK_FASTERKERNELRIDGE_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
         mdtypes::dist_matrix_t, mdtypes::dist_matrix_t);
 
+    SKYLARK_FASTERKERNELRIDGE_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t,
+        mftypes::dist_matrix_t, mftypes::dist_matrix_t);
+
 #endif
 
     SKYLARK_THROW_EXCEPTION (
@@ -180,7 +167,6 @@ void FASTERKERNELRIDGE(base::direction_t direction, const kernel_t &k,
             << base::error_msg(
             "FasterKernelRidge has not yet been implemented for this combination of matrices"));
 #undef SKYLARK_FASTERKERNELRIDGE_ANY_APPLY_DISPATCH
-  
 }
 
 } }  // skylark::ml

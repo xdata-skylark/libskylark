@@ -116,70 +116,46 @@ void ApproximateKernelRidge(base::direction_t direction, const KernelType &k,
                           << " sec\n";
 }
 
-void APPROXIMATEKERNELRIDGE(base::direction_t direction, const kernel_t &k,
+void ApproximateKernelRidge(base::direction_t direction, const kernel_t &k,
     const  boost::any &X, const  boost::any &Y, double lambda,
-    sketch::sketch_transform_container_t<El::DistMatrix<double>, 
-        El::DistMatrix<double> > &S, 
+    sketch::sketch_transform_container_t<El::DistMatrix<double>,
+        El::DistMatrix<double> > &S,
     const boost::any &W, El::Int s, base::context_t &context,
-    krr_params_t params = krr_params_t()) {                       
+    krr_params_t params = krr_params_t()) {
 
 
 #define SKYLARK_APPROXIMATEKERNELRIDGE_ANY_APPLY_DISPATCH(XT, YT, WT)   \
     if (W.type() == typeid(WT*)) {                                      \
         if (X.type() == typeid(XT*)) {                                  \
             if (Y.type() == typeid(YT*)) {                              \
-                ApproximateKernelRidge(                                 \
-                    direction,                                          \
-                    k,                                                  \
-                    *boost::any_cast<XT*>(X),                           \
-                    *boost::any_cast<YT*>(Y),                           \
-                    lambda,                                             \
-                    S,                                                  \
-                    *boost::any_cast<WT*>(W),                           \
-                    s,                                                  \
-                    context);                                           \
+                ApproximateKernelRidge(direction, k,                    \
+                    *boost::any_cast<XT*>(X),*boost::any_cast<YT*>(Y),  \
+                    lambda, S, *boost::any_cast<WT*>(W), s,             \
+                    context, params);                                   \
                 return;                                                 \
             }                                                           \
             if (Y.type() == typeid(const YT*)) {                        \
-                ApproximateKernelRidge(                                 \
-                    direction,                                          \
-                    k,                                                  \
-                    *boost::any_cast<XT*>(X),                           \
-                    *boost::any_cast<YT*>(Y),                           \
-                    lambda,                                             \
-                    S,                                                  \
-                    *boost::any_cast<WT*>(W),                           \
-                    s,                                                  \
-                    context);                                           \
+                ApproximateKernelRidge(direction, k,                    \
+                    *boost::any_cast<XT*>(X), *boost::any_cast<YT*>(Y), \
+                    lambda, S,  *boost::any_cast<WT*>(W), s,            \
+                    context, params);                                   \
                 return;                                                 \
             }                                                           \
         }                                                               \
         if (X.type() == typeid(const XT*)) {                            \
             if (Y.type() == typeid(YT*)) {                              \
-                ApproximateKernelRidge(                                 \
-                    direction,                                          \
-                    k,                                                  \
-                    *boost::any_cast<XT*>(X),                           \
-                    *boost::any_cast<YT*>(Y),                           \
-                    lambda,                                             \
-                    S,                                                  \
-                    *boost::any_cast<WT*>(W),                           \
-                    s,                                                  \
-                    context);                                           \
+                ApproximateKernelRidge(direction, k,                    \
+                    *boost::any_cast<XT*>(X), *boost::any_cast<YT*>(Y), \
+                    lambda, S, *boost::any_cast<WT*>(W), s,             \
+                    context, params);                                          \
                 return;                                                 \
             }                                                           \
                                                                         \
             if (Y.type() == typeid(const YT*)) {                        \
-                ApproximateKernelRidge(                                 \
-                    direction,                                          \
-                    k,                                                  \
-                    *boost::any_cast<XT*>(X),                           \
-                    *boost::any_cast<YT*>(Y),                           \
-                    lambda,                                             \
-                    S,                                                  \
-                    *boost::any_cast<WT*>(W),                           \
-                    s,                                                  \
-                    context);                                           \
+                ApproximateKernelRidge(direction, k,                    \
+                    *boost::any_cast<XT*>(X), *boost::any_cast<YT*>(Y), \
+                    lambda, S, *boost::any_cast<WT*>(W), s,             \
+                    context, params);                                          \
                 return;                                                 \
             }                                                           \
         }                                                               \
@@ -190,6 +166,8 @@ void APPROXIMATEKERNELRIDGE(base::direction_t direction, const kernel_t &k,
     SKYLARK_APPROXIMATEKERNELRIDGE_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
         mdtypes::dist_matrix_t, mdtypes::dist_matrix_t);
 
+    SKYLARK_APPROXIMATEKERNELRIDGE_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t,
+        mftypes::dist_matrix_t, mftypes::dist_matrix_t);
 #endif
 
     SKYLARK_THROW_EXCEPTION (

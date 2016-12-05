@@ -30,7 +30,8 @@ struct krr_params_t : public base::params_t {
         std::ostream &log_stream = std::cout,
         std::string prefix = "",
         int debug_level = 0) :
-        base::params_t(am_i_printing, log_level, log_stream, prefix, debug_level) {
+        base::params_t(am_i_printing, log_level,
+            log_stream, prefix, debug_level) {
 
         use_fast = false;
 
@@ -43,7 +44,19 @@ struct krr_params_t : public base::params_t {
         iter_lim = 1000;
 
         max_split = 0;
-  }
+    }
+
+    krr_params_t(const boost::property_tree::ptree& json)
+        : params_t(json) {
+        use_fast = json.get<bool>("use_fast", false);
+        sketched_rr = json.get<bool>("sketched_rr", false);
+        sketch_size = json.get<int>("sketch_size", -1);
+        fast_sketch = json.get<bool>("fast_sketch", false);
+        iter_lim = json.get<int>("iter_lim", 1000);
+        res_print = json.get<int>("res_print", 10);
+        tolerance = json.get<double>("tolerance", 1e-3);
+        max_split = json.get<int>("max_split", 0);
+    }
 
 };
 

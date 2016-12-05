@@ -10,7 +10,7 @@ class KRRParams(base.Params):
     """
 
     def __init__(self):
-        super(KrrParams, self).__init__()
+        super(KRRParams, self).__init__()
         self.use_fast = False
         self.sketched_rr = False
         self.sketch_size = -1
@@ -142,7 +142,7 @@ def faster_kernel_ridge(X, Y, A, k, lambda_, s, dir="columns", params=None):
 
     # use default params in case none are provided
     if params == None:
-        params = KrrParams()
+        params = KRRParams()
     params_json = params.str() + '\0'
 
     lib.callsl("sl_faster_kernel_ridge", \

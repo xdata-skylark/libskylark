@@ -17,6 +17,9 @@ class Params(object):
         return json.dumps(self, default=lambda obj: obj.__dict__,
                 sort_keys=True)
 
+def reseed(seed):
+    lib.initialize(seed)
+
 def gaussian_matrix(A, m, n):
     """
     TODO: Description

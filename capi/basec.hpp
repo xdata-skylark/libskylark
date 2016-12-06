@@ -86,6 +86,12 @@ SKYLARK_EXTERN_API void sl_get_exception_info(char **info);
 
 SKYLARK_EXTERN_API void sl_print_exception_trace();
 
+SKYLARK_EXTERN_API int sl_gaussian_matrix(char *A_type, void *A_, int m, int n,
+                                           sl_context_t *ctxt);
+
+SKYLARK_EXTERN_API int sl_uniform_matrix(char *A_type, void *A_, int m, int n,
+                                          sl_context_t *ctxt);
+
 } // extern "C"
 
 #endif // SKYLARK_BASEC_HPP

@@ -28,7 +28,7 @@ target_link_libraries(regression
   ${Boost_LIBRARIES})
 install_targets(/bin/skylark_examples regression)
 
-add_executable(random_features random_features.cpp ${KISSFFT_SOURCE_FILES})
+add_executable(random_features random_features.cpp)
 target_link_libraries(random_features
   ${Elemental_LIBRARY}
   ${OPTIONAL_LIBS}
@@ -38,7 +38,7 @@ target_link_libraries(random_features
   ${Boost_LIBRARIES})
 install_targets(/bin/skylark_examples random_features)
 
-add_executable(least_squares least_squares.cpp ${KISSFFT_SOURCE_FILES})
+add_executable(least_squares least_squares.cpp)
 target_link_libraries(least_squares
   ${Elemental_LIBRARY}
   ${OPTIONAL_LIBS}

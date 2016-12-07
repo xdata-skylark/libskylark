@@ -57,6 +57,65 @@ void KernelRLSC(base::direction_t direction, const KernelType &k,
 
 }
 
+
+void KernelRLSC(base::direction_t direction, const kernel_t &k, 
+    const boost::any &X, const boost::any &L, double lambda, 
+    const boost::any &A, std::vector<El::Int> &rcoding,
+    rlsc_params_t params = rlsc_params_t()) {
+
+
+#define SKYLARK_KERNELRLSC_ANY_APPLY_DISPATCH(XT, LT, AT)              \
+    if (A.type() == typeid(AT*)) {                                      \
+        if (X.type() == typeid(XT*)) {                                  \
+            if (L.type() == typeid(LT*)) {                              \
+                KernelRLSC(direction, k,                                \
+                    *boost::any_cast<XT*>(X), *boost::any_cast<LT*>(L), \
+                    lambda, *boost::any_cast<AT*>(A), rcoding, params); \
+                return;                                                 \
+            }                                                           \
+            if (L.type() == typeid(const LT*)) {                        \
+                KernelRLSC(direction, k,                                \
+                    *boost::any_cast<XT*>(X), *boost::any_cast<LT*>(L), \
+                    lambda, *boost::any_cast<AT*>(A), rcoding, params); \
+                return;                                                 \
+            }                                                           \
+        }                                                               \
+        if (X.type() == typeid(const XT*)) {                            \
+            if (L.type() == typeid(LT*)) {                              \
+                KernelRLSC(direction, k,                                \
+                    *boost::any_cast<XT*>(X), *boost::any_cast<LT*>(L), \
+                    lambda, *boost::any_cast<AT*>(A), rcoding, params); \
+                return;                                                 \
+            }                                                           \
+                                                                        \
+            if (L.type() == typeid(const LT*)) {                        \
+                KernelRLSC(direction, k,                                \
+                    *boost::any_cast<XT*>(X), *boost::any_cast<LT*>(L), \
+                    lambda, *boost::any_cast<AT*>(A), rcoding, params); \
+                return;                                                 \
+            }                                                           \
+        }                                                               \
+    }
+
+#if !(defined SKYLARK_NO_ANY)
+
+    SKYLARK_KERNELRLSC_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
+         mitypes::dist_matrix_t,  mdtypes::dist_matrix_t);
+
+    SKYLARK_KERNELRLSC_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t,
+         mitypes::dist_matrix_t, mdtypes::dist_matrix_t);
+
+#endif
+    
+    SKYLARK_THROW_EXCEPTION (
+            base::ml_exception()
+            << base::error_msg(
+            "KernelRLSC has not yet been implemented for this combination"
+            "of matrices"));
+
+#undef SKYLARK_APPROXIMATEKERNELRIDGE_ANY_APPLY_DISPATCH
+}
+
 } }  // skylark::ml
 
 #endif

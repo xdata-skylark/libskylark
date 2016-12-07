@@ -30,7 +30,8 @@ struct kissfft_r2r_fut_t {
 
     template <typename Dimension>
     void apply_inverse(El::Matrix<ValueType>& A, Dimension dimension) const {
-        // TODO(Jordi): Should we throw an exception?
+        SKYLARK_THROW_EXCEPTION(base::skylark_exception()
+            << base::error_msg("DCT III not implemented"));
     }
 
     double scale() const {

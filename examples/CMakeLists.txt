@@ -38,7 +38,7 @@ target_link_libraries(random_features
   ${Boost_LIBRARIES})
 install_targets(/bin/skylark_examples random_features)
 
-add_executable(least_squares least_squares)
+add_executable(least_squares least_squares.cpp)
 target_link_libraries(least_squares
   ${Elemental_LIBRARY}
   ${OPTIONAL_LIBS}

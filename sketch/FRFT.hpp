@@ -277,7 +277,7 @@ public:
 
 #if     !(defined SKYLARK_NO_ANY) || (defined SKYLARK_WITH_FAST_GAUSSIAN_RFT_ANY)
 
-#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT
+#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT || SKYLARK_HAVE_KISSFFT
 
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::matrix_t, mdtypes::matrix_t,
             FastGaussianRFT_t);
@@ -340,7 +340,7 @@ public:
 
 #if     !(defined SKYLARK_NO_ANY) || (defined SKYLARK_WITH_FAST_GAUSSIAN_RFT_ANY)
 
-#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT
+#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT || SKYLARK_HAVE_KISSFFT
 
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::matrix_t, mdtypes::matrix_t,
             FastGaussianRFT_t);
@@ -453,7 +453,7 @@ public:
 
 #if     !(defined SKYLARK_NO_ANY) || (defined SKYLARK_WITH_FAST_MATERN_RFT_ANY)
 
-#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT
+#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT || SKYLARK_HAVE_KISSFFT
 
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::matrix_t, mdtypes::matrix_t,
             FastMaternRFT_t);
@@ -512,7 +512,7 @@ public:
 
 #if     !(defined SKYLARK_NO_ANY) || (defined SKYLARK_WITH_FAST_MATERN_RFT_ANY)
 
-#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT
+#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT || SKYLARK_HAVE_KISSFFT
 
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::matrix_t, mdtypes::matrix_t,
             FastMaternRFT_t);

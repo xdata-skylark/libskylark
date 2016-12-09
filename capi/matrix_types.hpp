@@ -48,5 +48,6 @@ enum matrix_type_t {
 
 matrix_type_t str2matrix_type(const char *str);
 boost::any skylark_void2any(const char *type, void *obj);
+boost::any skylark_void2any_root(const char *type, void *obj);
 
 #endif // SKYLARK_MATRIX_TYPES_HPP

@@ -104,7 +104,6 @@ SKYLARK_EXTERN_API
     return 0;
 }
 
-
 SKYLARK_EXTERN_API int sl_kernel_gram(int dirX_, int dirY_,
     sl_kernel_t *k,  char *X_type, void *X_, char *Y_type, void *Y_,
     char *K_type, void *K_) {
@@ -118,6 +117,23 @@ SKYLARK_EXTERN_API int sl_kernel_gram(int dirX_, int dirY_,
         skylark::ml::Gram(dirX, dirY,
             k->kernel_obj, skylark_void2any_root(X_type, X_),
             skylark_void2any_root(Y_type, Y_),
+            skylark_void2any_root(K_type, K_));
+    SKYLARK_END_TRY()
+        SKYLARK_CATCH_COPY_AND_RETURN_ERROR_CODE(lastexception);
+
+    return 0;
+}
+
+SKYLARK_EXTERN_API int sl_kernel_symmetric_gram(int uplo_, int dir_, 
+    sl_kernel_t *k,  char *X_type, void *X_, char *K_type, void *K_) {
+
+    El::UpperOrLower uplo = uplo_ == SL_UPPER ? El::UPPER : El::LOWER;
+    skylark::base::direction_t dir =
+        dir_ == SL_COLUMNS ? skylark::base::COLUMNS : skylark::base::ROWS;
+
+    SKYLARK_BEGIN_TRY()
+        skylark::ml::SymmetricGram(uplo, dir,
+            k->kernel_obj, skylark_void2any_root(X_type, X_),
             skylark_void2any_root(K_type, K_));
     SKYLARK_END_TRY()
         SKYLARK_CATCH_COPY_AND_RETURN_ERROR_CODE(lastexception);

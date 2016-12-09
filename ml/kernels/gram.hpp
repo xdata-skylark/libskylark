@@ -78,11 +78,12 @@ void Gram(base::direction_t dirX, base::direction_t dirY,
     SKYLARK_GRAM_ANY_APPLY_DISPATCH(mftypes::el_matrix_t,
         mftypes::el_matrix_t, mftypes::el_matrix_t);
 #endif
-    
+
     SKYLARK_THROW_EXCEPTION (
         base::ml_exception()
           << base::error_msg(
            "This combination has not yet been implemented for Gram"));
+
 #undef SKYLARK_GRAM_ANY_APPLY_DISPATCH
 }
 
@@ -90,10 +91,37 @@ void Gram(base::direction_t dirX, base::direction_t dirY,
 void SymmetricGram(El::UpperOrLower uplo, base::direction_t dir,
     const kernel_t& k, const boost::any &X, const boost::any &K) {
 
+#define SKYLARK_SYMGRAM_ANY_APPLY_DISPATCH(XT, KT)                      \
+    if (K.type() == typeid(KT*)) {                                      \
+        if (X.type() == typeid(XT*)) {                                  \
+            SymmetricGram(uplo, dir, k, *boost::any_cast<XT*>(X),       \
+                *boost::any_cast<KT*>(K));                              \
+            return;                                                     \
+        }                                                               \
+        if (X.type() == typeid(const XT*)) {                            \
+            SymmetricGram(uplo, dir, k, *boost::any_cast<const XT*>(X), \
+                *boost::any_cast<KT*>(K));                              \
+            return;                                                     \
+        }                                                               \
+    }
+
+#if !(defined SKYLARK_NO_ANY)
+
+    SKYLARK_SYMGRAM_ANY_APPLY_DISPATCH(mdtypes::matrix_t, mdtypes::matrix_t);
+    SKYLARK_SYMGRAM_ANY_APPLY_DISPATCH(mdtypes::el_matrix_t, 
+        mdtypes::el_matrix_t);
+
+    SKYLARK_SYMGRAM_ANY_APPLY_DISPATCH(mftypes::matrix_t, mftypes::matrix_t);
+    SKYLARK_SYMGRAM_ANY_APPLY_DISPATCH(mftypes::el_matrix_t,
+        mftypes::el_matrix_t);
+#endif
+
     SKYLARK_THROW_EXCEPTION (
         base::ml_exception()
           << base::error_msg(
-           "SymmetricGram has not yet been implemented for boost::any params"));
+           "This combination has not yet been implemented for SymmetricGram"));
+
+#undef SKYLARK_SYMGRAM_ANY_APPLY_DISPATCH
 }
 
 } }  // skylark::ml

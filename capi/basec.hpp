@@ -15,6 +15,10 @@ struct sl_context_t;
 #define SL_COLUMNS 1
 #define SL_ROWS    2
 
+#define SL_UPPER   1
+#define SL_LOWER   2
+
+
 extern "C" {
 
 /** Returns a string describing the sketch transforms that are supported.

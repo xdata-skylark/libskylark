@@ -17,7 +17,7 @@ SKYLARK_EXTERN_API int sl_kernel_rlsc(
     int direction_,  sl_kernel_t *k,
     char *X_type, void *X_, char *L_type, void *L_,
     double lambda,  char *A_type, void *A_,
-    void *rcoding_, char *params_json) {
+    El::DistMatrix<El::Int> *rcoding_, char *params_json) {
 
     skylark::base::direction_t direction =
         direction_ == SL_COLUMNS ? skylark::base::COLUMNS : skylark::base::ROWS;
@@ -29,7 +29,6 @@ SKYLARK_EXTERN_API int sl_kernel_rlsc(
     skylark::ml::rlsc_params_t params;
 
     auto *rcoding = new std::vector<El::Int>();
-    rcoding_ = rcoding;
 
     SKYLARK_BEGIN_TRY()
         skylark::ml::KernelRLSC(direction,
@@ -43,6 +42,12 @@ SKYLARK_EXTERN_API int sl_kernel_rlsc(
     SKYLARK_END_TRY()
         SKYLARK_CATCH_COPY_AND_RETURN_ERROR_CODE(lastexception);
 
+    rcoding_->Resize(1, rcoding->size());
+    for (int i = 0; i < rcoding->size(); ++i) {
+        rcoding_->Set(0, i, rcoding->at(i));
+    }
+
+    delete rcoding;
     return 0;
 }
 

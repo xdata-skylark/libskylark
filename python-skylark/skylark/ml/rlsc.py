@@ -1,3 +1,4 @@
+import El
 import skylark
 from skylark import base
 import skylark.lib as lib
@@ -33,11 +34,14 @@ def kernel_rlsc(X, L, A, k, lambda_, dir="columns", params=None):
     else:
       raise ValueError("Direction must be either columns/rows or 0/1")
 
+    rcoding = El.DistMatrix(El.iTag)
+
 
     X = lib.adapt(X)
     L = lib.adapt(L)
     A = lib.adapt(A)
-    
+    rcoding = lib.adapt(rcoding)
+
 
     Xobj = X.ptr()
     Lobj = L.ptr()
@@ -46,8 +50,7 @@ def kernel_rlsc(X, L, A, k, lambda_, dir="columns", params=None):
     if (Xobj == -1 or Lobj == -1 or Aobj == -1):
         raise errors.InvalidObjectError("Invalid/unsupported object passed as X, L or A")
 
-    rcoding = c_void_p()
-
+    
     # use default params in case none are provided
     if params == None:
         params = RLSCParams()
@@ -59,11 +62,12 @@ def kernel_rlsc(X, L, A, k, lambda_, dir="columns", params=None):
             L.ctype(), Lobj, \
             c_double(lambda_), \
             A.ctype(), Aobj, \
-            rcoding, \
+            rcoding.ptr(), \
             params_json)
 
     X.ptrcleaner()
     L.ptrcleaner()
     A.ptrcleaner()
+    rcoding.ptrcleaner()
 
-    return (A.getobj())
+    return (A.getobj(), rcoding.getobj())

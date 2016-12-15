@@ -26,7 +26,7 @@ SKYLARK_EXTERN_API int sl_kernel_ridge(
     std::stringstream data;
     data << params_json;
     boost::property_tree::read_json(data, json_tree);
-    skylark::ml::krr_params_t params;
+    skylark::ml::krr_params_t params(json_tree);
 
     SKYLARK_BEGIN_TRY()
         skylark::ml::KernelRidge(direction,

@@ -6,7 +6,7 @@ set (CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 project (SKYLARK)
 
 set (SKYLARK_VERSION_MAJOR 0)
-set (SKYLARK_VERSION_MINOR 14)
+set (SKYLARK_VERSION_MINOR 20)
 
 # Unfortunately we need Fortran ;(
 enable_language( Fortran )
@@ -21,8 +21,8 @@ set (PACKAGE \"LIBSKYLARK\")
 set (PACKAGE_BUGREPORT \"klclarks@us.ibm.com\")
 set (PACKAGE_NAME \"LIBSKYLARK\")
 set (PACKAGE_STRING \"LIBSKYLARK\")
-set (PACKAGE_VERSION \"0.14\")
-set (VERSION \"0.14\")
+set (PACKAGE_VERSION \"0.20\")
+set (VERSION \"0.20\")
 
 
 #--------------------------------------------------------------------------

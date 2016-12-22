@@ -146,7 +146,7 @@ Sample Header:
     //
     // < Copyright and license notice, as indicated in the license page >
     //
-    //  See http://www.sklyark.org/ for latest version.
+    //  See http://www.skylark.org/ for latest version.
     //
 
     #ifndef SKYLARK_SKETCH_MATRIX_HPP

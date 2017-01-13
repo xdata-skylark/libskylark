@@ -56,6 +56,9 @@ SKYLARK_EXTERN_API int sl_apply_sketch_transform(
         char *output_type, void *SA, int dim);
 
 
+SKYLARK_EXTERN_API int sl_apply_sketch_transform_container(
+        void *S, void *A, void *SA);
+
 } // extern "C"
 
 #endif // SKYLARK_SKETCHC_HPP

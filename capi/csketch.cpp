@@ -1958,5 +1958,21 @@ SKYLARK_EXTERN_API int
 }
 
 
+SKYLARK_EXTERN_API int sl_apply_sketch_transform_container(
+        void *S_, void *A_, void *SA_) {
+    
+    auto S = static_cast<sketch::sketch_transform_container_t<
+        El::DistMatrix<double>, El::DistMatrix<double> >*> (S_);
+    auto A =  static_cast<El::DistMatrix<double>*> (A_);
+    auto SA = static_cast<El::DistMatrix<double>*> (SA_);
+    
+    
+    SA->Resize(S->get_S(), A->Width());
+    S->apply(*A, *SA, sketch::columnwise_tag());
+
+    return 0;
+
+}
+
 
 } // extern "C"

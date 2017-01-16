@@ -1,13 +1,10 @@
 package:
   name: libskylark-dist
-  version: "0.14"
+  version: "0.20"
 
 source:
   git_url: https://github.com/xdata-skylark/libskylark.git
 
-build:
-  features:
-    - xdata
   
 requirements:
   build:
@@ -19,7 +16,7 @@ requirements:
     - openblas
     - mpich2
     - random123
-    - libelemental ==0.87.4   
+    - libelemental ==0.87.4
     - metis
     - kdt
     - combblas
@@ -42,6 +39,7 @@ requirements:
     - mpi4py
     - h5py
     - matplotlib
+    - pyqt >=4,<5
     - networkx
     - scikit-learn
     - pandas

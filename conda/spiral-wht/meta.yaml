@@ -7,9 +7,6 @@ source:
   url: http://www.ece.cmu.edu/~spiral/software/spiral-wht-1.8.tgz
   md5: 28b4d854025b42df4af9616097809726
 
-build:
-  features:
-    - xdata
 
 requirements:
   build:

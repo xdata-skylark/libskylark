@@ -7,9 +7,6 @@ source:
   url: https://sourceforge.net/projects/boost/files/boost/1.60.0/boost_1_60_0.tar.gz
   md5: 28f58b9a33469388302110562bdf6188
 
-build:
-  features:
-    - xdata
 
 requirements:
   build:

@@ -2,7 +2,7 @@
 
 NPROC=`nproc`
 
-git checkout b9f9d6702bb3f176d0fc2c29268f24b1c01ac9e8
+git checkout 1f447fcdbd6d6fd7a7bcd011e90a2808869120bc
 
 export BLAS_LIBRARIES="-L${PREFIX} -lopenblas -lm"
 export LAPACK_LIBRARIES="-L${PREFIX} -lopenblas -lm"

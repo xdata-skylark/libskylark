@@ -21,7 +21,7 @@ def kernel(kerneltype, *args):
   if not isinstance(kerneltype, str):
     raise ValueError("kerneltype must be a string")
   elif kerneltype.lower() == "linear":
-    return Linear(d, *args)
+    return Linear(*args)
   elif kerneltype.lower() == "matern":
     return Matern(*args)
   elif kerneltype.lower() == "expsemigroup":

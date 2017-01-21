@@ -26,6 +26,9 @@ typedef El::DistMatrix<double, El::VC, El::STAR> DistMatrix_VC_STAR;
 typedef El::DistMatrix<double, El::STAR, El::VR> DistMatrix_STAR_VR;
 typedef El::DistMatrix<double, El::STAR, El::VC> DistMatrix_STAR_VC;
 typedef skylark::base::sparse_matrix_t<double> SparseMatrix;
+typedef El::DistMatrix<El::Int> DistMatrix_Int;
+typedef El::ElementalMatrix<El::Int> ElementalMatrix_Int;
+
 #ifdef SKYLARK_HAVE_COMBBLAS
 typedef SpDCCols< size_t, double > col_t;
 typedef SpParMat< size_t, double, col_t > DistSparseMatrix;
@@ -43,7 +46,8 @@ enum matrix_type_t {
     DIST_MATRIX_STAR_VC,
     DIST_MATRIX_STAR_VR,
     DIST_SPARSE_MATRIX,          /**< Sparse matrix (CombBLAS) */
-    SPARSE_MATRIX                /**< Sparse local matrix */
+    SPARSE_MATRIX,               /**< Sparse local matrix */
+    DIST_MATRIX_INT
 };
 
 matrix_type_t str2matrix_type(const char *str);

@@ -59,6 +59,71 @@ void ApproximateKernelRLSC(base::direction_t direction, const KernelType &k,
                           << " sec\n";
 }
 
+
+void ApproximateKernelRLSC(base::direction_t direction, const kernel_t &k, 
+    const boost::any &X, const boost::any &L, double lambda,
+    sketch::sketch_transform_container_t<El::DistMatrix<double>,
+        El::DistMatrix<double> > &S, 
+    const boost::any &W, std::vector<El::Int> &rcoding,
+    El::Int s, base::context_t &context,
+    rlsc_params_t params = rlsc_params_t()) {
+
+
+#define SKYLARK_APPROXIMATEKERNELRLSC_ANY_APPLY_DISPATCH(XT, LT, WT)    \
+    if (W.type() == typeid(WT*)) {                                      \
+        if (X.type() == typeid(XT*)) {                                  \
+            if (L.type() == typeid(LT*)) {                              \
+                ApproximateKernelRLSC(direction, k,                     \
+                    *boost::any_cast<XT*>(X), *boost::any_cast<LT*>(L), \
+                    lambda, S, *boost::any_cast<WT*>(W), rcoding, s,    \
+                    context, params);                                   \
+                return;                                                 \
+            }                                                           \
+            if (L.type() == typeid(const LT*)) {                        \
+                ApproximateKernelRLSC(direction, k,                     \
+                    *boost::any_cast<XT*>(X), *boost::any_cast<LT*>(L), \
+                    lambda, S, *boost::any_cast<WT*>(W), rcoding, s,    \
+                    context, params);                                   \
+                return;                                                 \
+            }                                                           \
+        }                                                               \
+        if (X.type() == typeid(const XT*)) {                            \
+            if (L.type() == typeid(LT*)) {                              \
+               ApproximateKernelRLSC(direction, k,                      \
+                    *boost::any_cast<XT*>(X), *boost::any_cast<LT*>(L), \
+                    lambda, S, *boost::any_cast<WT*>(W), rcoding, s,    \
+                    context, params);                                   \
+                return;                                                 \
+            }                                                           \
+            if (L.type() == typeid(const LT*)) {                        \
+                ApproximateKernelRLSC(direction, k,                     \
+                    *boost::any_cast<XT*>(X), *boost::any_cast<LT*>(L), \
+                    lambda, S, *boost::any_cast<WT*>(W), rcoding, s,    \
+                    context, params);                                   \
+                return;                                                 \
+            }                                                           \
+        }                                                               \
+    }
+
+#if !(defined SKYLARK_NO_ANY)
+
+    SKYLARK_APPROXIMATEKERNELRLSC_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t,
+         mitypes::dist_matrix_t,  mdtypes::dist_matrix_t);
+
+    SKYLARK_APPROXIMATEKERNELRLSC_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t,
+         mitypes::dist_matrix_t, mdtypes::dist_matrix_t);
+
+#endif
+
+    SKYLARK_THROW_EXCEPTION (
+            base::ml_exception()
+            << base::error_msg(
+            "ApproximateKernelRLSC has not yet been implemented for this"
+            "combination of matrices"));
+
+#undef SKYLARK_APPROXIMATEKERNELRLSC_ANY_APPLY_DISPATCH
+}
+
 } }  // skylark::ml
 
 #endif

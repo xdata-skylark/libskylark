@@ -2,13 +2,12 @@ package:
   name: kdt
   version: "0.3"
 
-
 source:
   fn: kdt-0.3.tar.gz
   url: http://sourceforge.net/projects/kdt/files/kdt-0.3.tar.gz
   md5: c15c58a6457397426bc95c0f1892a93d
 
-  
+
 requirements:
   build:
     - gcc
@@ -19,7 +18,6 @@ requirements:
     - libgcc
     - python
     - mpich2
-
 
 about:
   home: http://kdt.sourceforge.net/

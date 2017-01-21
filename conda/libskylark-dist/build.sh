@@ -9,14 +9,14 @@ export LAPACK_LIBRARIES="-L${PREFIX} -lopenblas -lm"
 export BOOST_ROOT="${PREFIX}"
 export RANDOM123_ROOT="${PREFIX}"
 export ELEMENTAL_ROOT="${PREFIX}"
-export FFTW_ROOT="${PREFIX}"
 export COMBBLAS_ROOT="${PREFIX}"
 
 
 CC="${PREFIX}/bin/mpicc -cc=${PREFIX}/bin/gcc" CXX="${PREFIX}/bin/mpicxx -cxx=${PREFIX}/bin/g++" \
 cmake \
 -DCMAKE_INSTALL_PREFIX="${PREFIX}" \
--DUSE_FFTW=ON \
+-DUSE_FFTW=OFF \
+-DUSE_KISSFFT=ON \
 -DUSE_COMBBLAS=ON \
 .
 

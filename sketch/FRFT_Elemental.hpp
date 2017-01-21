@@ -4,7 +4,7 @@
 namespace skylark {
 namespace sketch {
 
-#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT
+#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT || SKYLARK_HAVE_KISSFFT
 
 /**
  * Specialization local input (sparse of dense), local output.
@@ -245,7 +245,7 @@ private:
 
 private:
 
-#ifdef SKYLARK_HAVE_FFTW
+#if defined(SKYLARK_HAVE_FFTW) || defined(SKYLARK_HAVE_KISSFFT)
     typename fft_futs<ValueType>::DCT_t _fut;
 #elif SKYLARK_HAVE_SPIRALWHT
     WHT_t<value_type> _fut;

@@ -210,7 +210,7 @@ public:
         _R(_n, _n, problem.input_matrix.Grid()) {
         // TODO n < m ???
 
-#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_FFTWF
+#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_FFTWF  || SKYLARK_HAVE_KISSFFT
         int t = 4 * _n;    // TODO parameter.
         double scale = std::sqrt((double)_m / (double)t);
 
@@ -331,7 +331,7 @@ public:
         _R(_n, _n, problem.input_matrix.Grid()) {
         // TODO n < m ???
 
-#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_FFTWF
+#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_FFTWF  || SKYLARK_HAVE_KISSFFT
         int t = 4 * _n;    // TODO parameter.
         double scale = std::sqrt((double)_m / (double)t);
 
@@ -453,7 +453,7 @@ public:
         _R(_n, _n) {
         // TODO n < m ???
 
-#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_FFTWF
+#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_FFTWF  || SKYLARK_HAVE_KISSFFT
         int t = 4 * _n;    // TODO parameter.
         double scale = std::sqrt((double)_m / (double)t);
 

@@ -336,7 +336,7 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
         SKDEF(MMT, DistSparseMatrix, DistMatrix_VR_STAR)
 #endif
 
-#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT
+#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT || SKYLARK_HAVE_KISSFFT
         SKDEF(FJLT, DistMatrix_VR_STAR, RootMatrix)
         SKDEF(FJLT, DistMatrix_VC_STAR, RootMatrix)
         SKDEF(FJLT, DistMatrix_STAR_VR, RootMatrix)
@@ -1771,7 +1771,7 @@ SKYLARK_EXTERN_API int
         sketch::ExpSemigroupQRLT_t, DistMatrix_VC_STAR, DistMatrix,
         sketch::ExpSemigroupQRLT_data_t);
 
-#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT
+#if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT || SKYLARK_HAVE_KISSFFT
 
     AUTO_APPLY_DISPATCH(FJLT,
         DIST_MATRIX_VR_STAR, ROOT_MATRIX,

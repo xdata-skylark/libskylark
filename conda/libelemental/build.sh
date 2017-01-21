@@ -2,8 +2,7 @@
 
 NPROC=`nproc`
 
-# hash to use
-git checkout 71fce6e65c065e0b2f993435ca7524db7f54fa6f
+git checkout tags/v0.87.4
 
 mkdir build
 
@@ -24,6 +23,7 @@ cmake \
 -DEL_BUILD_METIS=ON \
 -DEL_DISABLE_VALGRIND=ON \
 -DEL_DISABLE_PARMETIS=ON \
+-DEL_HAVE_MPC=OFF \
 .. 
 
 

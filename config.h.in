@@ -46,6 +46,9 @@
 /* Do we have want to build with fftw */
 #cmakedefine SKYLARK_HAVE_FFTW 1
 
+/* Do we have want to build with kissfft */
+#cmakedefine SKYLARK_HAVE_KISSFFT 1
+
 /* Do we have want to build with single precision fftw */
 #cmakedefine SKYLARK_HAVE_FFTWF 1
 

@@ -2,7 +2,6 @@ package:
   name: spiral-wht
   version: "1.8.0"
 
-
 source:
   fn: spiral-wht-1.8.tgz
   url: http://www.ece.cmu.edu/~spiral/software/spiral-wht-1.8.tgz
@@ -15,7 +14,6 @@ requirements:
 
   run:
     - libgcc	
-
 
 about:
   home: http://www.spiral.net/software/wht.html

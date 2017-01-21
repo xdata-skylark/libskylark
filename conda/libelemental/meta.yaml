@@ -1,10 +1,14 @@
 package:
   name: libelemental
-  version: "0.86.0"
+  version: "0.87.4"
 
 source:
   git_url: https://github.com/elemental/Elemental.git
-  
+
+build:
+  rpaths:
+    - lib/
+    - lib64/
 
 requirements:
   build:
@@ -14,7 +18,7 @@ requirements:
     - mpich2
     - git
     - cmake
-
+  
   run:
     - libgcc	
     - python
@@ -22,6 +26,7 @@ requirements:
     - mpich2
     - numpy
     - matplotlib
+    - pyqt >=4,<5
     - networkx
 
 about:

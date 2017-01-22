@@ -30,7 +30,8 @@ public:
         SKYLARK_TIMER_DINIT(KRR_PRECOND_GEMM2_PROFILE);
         SKYLARK_TIMER_DINIT(KRR_PRECOND_COPY_PROFILE);
 
-        _lambda = lambda;
+        _lambda = params.precond_lambda == -1 ? lambda :
+            params.precond_lambda;;
         _s = s;
 
         bool log_lev2 = params.am_i_printing && params.log_level >= 2;
@@ -46,7 +47,7 @@ public:
 
         U.Resize(s, X.Width());
         sketch::sketch_transform_t<InputType, matrix_type> *S =
-            params.use_fast ? 
+            params.use_fast ?
             k.template create_rft<InputType, matrix_type>(s,
                 ml::fast_feature_transform_tag(),
                 context)

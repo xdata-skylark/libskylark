@@ -40,6 +40,7 @@ int s = 2000, partial = -1, sketch_size = -1, sample = -1, maxit = 0, maxsplit =
 std::string fname, testname, modelname = "model.dat", logfile = "",
     outputfile = "";
 double kp1 = 10.0, kp2 = 0.0, kp3 = 1.0, lambda = 0.01, tolerance=0;
+double precond_lambda = -1;
 bool use_single = false, use_fast = false, regression = false;
 bool predict = false, decisionvals = false;
 boost::property_tree::ptree pt;
@@ -95,6 +96,9 @@ int parse_program_options(int argc, char* argv[]) {
         ("lambda,l",
             bpo::value<double>(&lambda)->default_value(0.01),
             "Lambda regularization parameter.")
+        ("plambda",
+            bpo::value<double>(&precond_lambda)->default_value(-1),
+            "Lambda regularization parameter to use for preconditioner (-a 1 ).")
         ("tolerance,t",
             bpo::value<double>(&tolerance)->default_value(0),
             "Tolerance for the iterative method (when used). "
@@ -189,6 +193,9 @@ int parse_program_options(int argc, char* argv[]) {
 
         if (flag == "--lambda" || flag == "-l")
             lambda = boost::lexical_cast<double>(value);
+
+        if (flag == "--plambda" || flag == "-l")
+            precond_lambda = boost::lexical_cast<double>(value);
 
         if (flag == "--tolerance" || flag == "-t")
             tolerance = boost::lexical_cast<double>(value);
@@ -431,6 +438,7 @@ int execute_classification(skylark::base::context_t &context) {
     case FASTER_KRR:
         rlsc_params.iter_lim = (maxit == 0) ? 1000 : maxit;
         rlsc_params.tolerance = (tolerance == 0) ? 1e-3 : tolerance;
+        rlsc_params.precond_lambda = precond_lambda;
         skylark::ml::FasterKernelRLSC(skylark::base::COLUMNS, k, X, L,
             T(lambda), A, rcoding, s, context, rlsc_params);
         model =

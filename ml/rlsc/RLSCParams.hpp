@@ -21,6 +21,7 @@ struct rlsc_params_t : public base::params_t {
     int iter_lim;
     int res_print;
     double tolerance;
+    double precond_lambda;  // -1 (default) will just input lambda
 
     // For memory limited methods (SketchedApproximateRLSC, LargeScaleRLSC)
     El::Int max_split;
@@ -41,6 +42,7 @@ struct rlsc_params_t : public base::params_t {
         tolerance = 1e-3;
         res_print = 10;
         iter_lim = 1000;
+        precond_lambda = -1;
   }
 
 };

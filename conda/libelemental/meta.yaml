@@ -6,9 +6,6 @@ source:
   git_url: https://github.com/elemental/Elemental.git
 
 build:
-  features:
-    - xdata
-
   rpaths:
     - lib/
     - lib64/
@@ -29,6 +26,7 @@ requirements:
     - mpich2
     - numpy
     - matplotlib
+    - pyqt >=4,<5
     - networkx
 
 about:

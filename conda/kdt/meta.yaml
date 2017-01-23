@@ -7,9 +7,6 @@ source:
   url: http://sourceforge.net/projects/kdt/files/kdt-0.3.tar.gz
   md5: c15c58a6457397426bc95c0f1892a93d
 
-build:
-  features:
-    - xdata
 
 requirements:
   build:

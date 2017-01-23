@@ -3,7 +3,7 @@ from skylark import base
 from skylark import errors
 from skylark import lib
 import El
-    
+
 class SVDParams(base.Params):
     """
     Parameter object for SVD.
@@ -23,7 +23,22 @@ class FasterLeastSquaresParams(base.Params):
 
     def __init__(self):
         super(FasterLeastSquaresParams, self).__init__()
-        
+
+
+def get_params(params_type, params):
+    if params == None:
+        if params_type == "SVDParams":
+            params = SVDParams()
+        elif params_type == "FasterLeastSquaresParams":
+            params = FasterLeastSquaresParams()
+
+    return params.str() + '\0'
+
+def is_valid(matrices):
+    for m in matrices:
+        if m.ptr() == -1:
+            raise errors.InvalidObjectError("Invalid/unsupported object passed to the adaptor")
+
 def approximate_svd(A, U, S, V, k=10, params=None):
     """
     Compute the SVD of **A** such that **SVD(A) = U S V^T**.
@@ -37,36 +52,20 @@ def approximate_svd(A, U, S, V, k=10, params=None):
     :returns: (U, S, V)
     """
 
-    
-    A = lib.adapt(A)
-    U = lib.adapt(U)
-    S = lib.adapt(S)
-    V = lib.adapt(V)
+    A, U, S, V = lib.adapt([A, U, S, V])
 
-    Aobj = A.ptr()
-    Uobj = U.ptr()
-    Sobj = S.ptr()
-    Vobj = V.ptr()
+    validate([A, U, S, V])
 
-    if (Aobj == -1 or Uobj == -1 or Sobj == -1 or Vobj == -1):
-        raise errors.InvalidObjectError("Invalid/unsupported object passed as A, U, S or V ")
-
-    # use default params in case none are provided
-    if params == None:
-        params = SVDParams()
-    params_json = params.str() + '\0'
+    params_json = get_params("SVDParams", params)
 
     lib.callsl("sl_approximate_svd", \
-            A.ctype(), Aobj, \
-            U.ctype(), Uobj, \
-            S.ctype(), Sobj, \
-            V.ctype(), Vobj, \
+            A.ctype(), A.ptr(), \
+            U.ctype(), U.ptr(), \
+            S.ctype(), S.ptr(), \
+            V.ctype(), V.ptr(), \
             k, params_json, lib.ctxt_obj)
 
-    A.ptrcleaner()
-    U.ptrcleaner()
-    S.ptrcleaner()
-    V.ptrcleaner()
+    lib.clean_pointer([A, U, S, V])
 
     return (U.getobj(), S.getobj(), V.getobj())
 
@@ -82,32 +81,20 @@ def approximate_symmetric_svd(A, S, V, k=10, params=None):
     :returns: (S, V)
     """
 
-    
-    A = lib.adapt(A)
-    S = lib.adapt(S)
-    V = lib.adapt(V)
+    A, S, V = lib.adapt([A, S, V])
 
-    Aobj = A.ptr()
-    Sobj = S.ptr()
-    Vobj = V.ptr()
-
-    if (Aobj == -1 or Sobj == -1 or Vobj == -1):
-        raise errors.InvalidObjectError("Invalid/unsupported object passed as A, S or V ")
+    validate([A, S, V])
 
     # use default params in case none are provided
-    if params == None:
-        params = SVDParams()
-    params_json = params.str() + '\0'
+    params_json = get_params("SVDParams", params)
 
     lib.callsl("sl_approximate_symmetric_svd", \
-            A.ctype(), Aobj, \
-            S.ctype(), Sobj, \
-            V.ctype(), Vobj, \
+            A.ctype(), A.ptr(), \
+            S.ctype(), S.ptr(), \
+            V.ctype(), V.ptr(), \
             k, params_json, lib.ctxt_obj)
 
-    A.ptrcleaner()
-    S.ptrcleaner()
-    V.ptrcleaner()
+    lib.clean_pointer([A, S, V])
 
     return (S.getobj(), V.getobj())
 
@@ -127,31 +114,20 @@ def faster_least_squares(A, B, X, orientation=El.NORMAL, params=None):
     :returns: X
     """
     
-    A = lib.adapt(A)
-    B = lib.adapt(B)
-    X = lib.adapt(X)
+    A, B, X = lib.adapt([A, B, X])
 
-    Aobj = A.ptr()
-    Bobj = B.ptr()
-    Xobj = X.ptr()
-
-    if (Aobj == -1 or Bobj == -1 or Xobj == -1):
-        raise errors.InvalidObjectError("Invalid/unsupported object passed as A, B, X ")
+    validate([A, B, X])
 
     # use default params in case none are provided
-    if params == None:
-        params = FasterLeastSquaresParams()
-    params_json = params.str() + '\0'
+    params_json = get_params("FasterLeastSquaresParams", params)
 
     lib.callsl("sl_faster_least_squares", \
                orientation, \
-               A.ctype(), Aobj, \
-               B.ctype(), Bobj, \
-               X.ctype(), Xobj, \
+               A.ctype(), A.ptr(), \
+               B.ctype(), B.ptr(), \
+               X.ctype(), X.ptr(), \
                params_json, lib.ctxt_obj)
 
-    A.ptrcleaner()
-    B.ptrcleaner()
-    X.ptrcleaner()
+    lib.clean_pointer([A, B, X])
   
     return X.getobj()

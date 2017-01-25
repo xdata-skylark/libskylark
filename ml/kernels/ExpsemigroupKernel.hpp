@@ -88,8 +88,8 @@ struct expsemigroup_t : public kernel_t {
         K.Resize(m, n);
         base::ExpsemigroupDistanceMatrix(dirX, dirY, value_type(1.0), X, Y,
             value_type(0.0), K);
-        El::EntrywiseMap(K, std::function<value_type(value_type)> (
-            [this] (value_type x) {
+        El::EntrywiseMap(K, std::function<value_type(const value_type &)> (
+            [this] (const value_type &x) {
                 return std::exp(-_beta * x);
             }));
     }

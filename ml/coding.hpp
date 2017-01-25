@@ -30,14 +30,14 @@ void DummyCoding(El::Orientation orientation,
     if (orientation == El::NORMAL) {
         Y.Resize(L.Height() * L.Width(), num);
         El::EntrywiseMap(Y,
-            std::function<T(T)>([nval] (T x) { return nval; }));
+            std::function<T(const T &)>([nval] (const T &x) { return nval; }));
         for(El::Int i = 0; i < L.Height() * L.Width(); i++)
             Y.Set(i, coding[l[i]], pval);
 
     } else {
         Y.Resize(num, L.Height() * L.Width());
         El::EntrywiseMap(Y,
-            std::function<T(T)>([nval] (T x) { return nval; }));
+            std::function<T(const T &)>([nval] (const T &x) { return nval; }));
         for(El::Int i = 0; i < L.Height() * L.Width(); i++)
             Y.Set(coding[l[i]], i, pval);
 
@@ -72,7 +72,7 @@ void DummyCoding(El::Orientation orientation,
     if (orientation == El::NORMAL) {
         El::DistMatrix<T, El::VC, El::STAR> Yc(L.Height() * L.Width(), num);
         El::EntrywiseMap(Yc,
-            std::function<T(T)>([nval] (T x) { return nval; }));
+            std::function<T(const T &)>([nval] (const T &x) { return nval; }));
         El::Matrix<T> &Yl = Yc.Matrix();
         for(El::Int i = 0; i < Yl.Height(); i++)
             Yl.Set(i, coding[l[Yc.GlobalRow(i)]], pval);
@@ -82,7 +82,7 @@ void DummyCoding(El::Orientation orientation,
     } else {
         El::DistMatrix<T, El::STAR, El::VC> Yc(num, L.Height() * L.Width());
         El::EntrywiseMap(Yc,
-            std::function<T(T)>([nval] (T x) { return nval; }));
+            std::function<T(const T &)>([nval] (const T &x) { return nval; }));
         El::Matrix<T> &Yl = Yc.Matrix();
         for(El::Int i = 0; i < Yl.Width(); i++)
             Yl.Set(coding[l[Yc.GlobalCol(i)]], i, pval);

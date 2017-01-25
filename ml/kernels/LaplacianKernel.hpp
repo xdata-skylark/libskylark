@@ -93,8 +93,8 @@ struct laplacian_t : public kernel_t {
         K.Resize(m, n);
         base::L1DistanceMatrix(dirX, dirY, value_type(1.0), X, Y,
             value_type(0.0), K);
-        El::EntrywiseMap(K, std::function<value_type(value_type)> (
-            [this] (value_type x) {
+        El::EntrywiseMap(K, std::function<value_type(const value_type &)> (
+            [this] (const value_type &x) {
                 return std::exp(-x / _sigma);
             }));
     }
@@ -110,8 +110,8 @@ struct laplacian_t : public kernel_t {
         K.Resize(n, n);
         base::SymmetricL1DistanceMatrix(uplo, dir, value_type(1.0), X,
             value_type(0.0), K);
-        base::SymmetricEntrywiseMap(uplo, K, std::function<value_type(value_type)> (
-              [this] (value_type x) {
+        base::SymmetricEntrywiseMap(uplo, K, std::function<value_type(const value_type &)> (
+              [this] (const value_type &x) {
                   return std::exp(-x / _sigma);
               }));
     }

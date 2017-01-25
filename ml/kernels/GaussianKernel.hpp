@@ -95,7 +95,7 @@ struct gaussian_t : public kernel_t {
         K.Resize(m, n);
         base::EuclideanDistanceMatrix(dirX, dirY, value_type(1.0), X, Y,
             value_type(0.0), K);
-        El::EntrywiseMap(K, std::function<value_type(value_type)> (
+        El::EntrywiseMap(K, std::function<value_type(const value_type&)> (
             [this] (value_type x) {
                 return std::exp(-x / (2 * _sigma * _sigma));
             }));
@@ -112,7 +112,7 @@ struct gaussian_t : public kernel_t {
         K.Resize(n, n);
         base::SymmetricEuclideanDistanceMatrix(uplo, dir, value_type(1.0), X,
             value_type(0.0), K);
-        base::SymmetricEntrywiseMap(uplo, K, std::function<value_type(value_type)> (
+        base::SymmetricEntrywiseMap(uplo, K, std::function<value_type(const value_type&)> (
               [this] (value_type x) {
                   return std::exp(-x / (2 * _sigma * _sigma));
               }));

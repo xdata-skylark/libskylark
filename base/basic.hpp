@@ -15,7 +15,7 @@ inline void Axpy(T alpha, const El::Matrix<T>& X, El::Matrix<T>& Y) {
 
 template<typename T>
 void SymmetricEntrywiseMap(El::UpperOrLower uplo, El::Matrix<T>& A,
-    std::function<T(T)> func) {
+    std::function<T(const T &)> func) {
     const El::Int m = A.Height();
     const El::Int n = A.Width();
     for(El::Int j = 0; j < n; j++)
@@ -26,7 +26,7 @@ void SymmetricEntrywiseMap(El::UpperOrLower uplo, El::Matrix<T>& A,
 
 template<typename T>
 void SymmetricEntrywiseMap(El::UpperOrLower uplo, El::AbstractDistMatrix<T>& A,
-    std::function<T(T)> func) {
+    std::function<T(const T &)> func) {
     //SymmetricEntrywiseMap(uplo, A.Matrix(), func );
     EntrywiseMap(A.Matrix(), func);
 }

@@ -103,7 +103,7 @@ class Classifier(object):
     return errors/n
 
   def accuracy(self):      
-    return 1-error_rate
+    return 1 - self.error_rate()
 
   def dummyDecode(self):
     predictions = El.DistMatrix()

@@ -71,8 +71,11 @@ public:
 
         matrix_type C;
         El::Identity(C, s, s);
-        El::Herk(El::LOWER, El::NORMAL, value_type(1.0)/_lambda, U,
-            value_type(1.0), C);
+	// Latest Elemental seem to have a problem with Herk, so use Gemm here.
+	El::Gemm(El::NORMAL, El::TRANSPOSE, value_type(1.0)/_lambda, U, U,
+		 value_type(1.0), C);
+        //El::Herk(El::LOWER, El::NORMAL, value_type(1.0)/_lambda, U,
+        //    value_type(1.0), C);
 
         if (log_lev2)
             params.log_stream << "took " << boost::format("%.2e") % timer.elapsed()

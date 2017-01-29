@@ -737,7 +737,8 @@ int execute_regression(skylark::base::context_t &context) {
     case FASTER_KRR:
         krr_params.iter_lim = (maxit == 0) ? 1000 : maxit;
         krr_params.tolerance = (tolerance == 0) ? 1e-3 : tolerance;
-        skylark::ml::FasterKernelRidge(skylark::base::COLUMNS, k, X, Ytransp,
+        krr_params.precond_lambda = precond_lambda;
+	skylark::ml::FasterKernelRidge(skylark::base::COLUMNS, k, X, Ytransp,
             T(lambda), A, s, context, krr_params);
         model =
             new skylark::ml::kernel_model_t<skylark::ml::kernel_container_t,

@@ -3,26 +3,120 @@
 Quick Start Guide
 ******************
 
-.. _installer-label:
+There are two options for quickly installing libskylark in Linux-x86_64 systems (i.e. Linux distribution independent):
 
-Installer
-==========
+- From *conda channels* (full installation, including FFTW-based sketching)
 
-1. Download the installer:
+- From *a single-file installer* (not including FFTW-based sketching)
 
-.. code-block:: ssh
+.. _conda-channel-install:
 
-        wget http://www.math.tau.ac.il/~haimav/libskylark-dist-0.11-Linux-x86_64.sh
+Installing libskylark from conda channels
+=========================================
 
-2. Execute it in your terminal, and follow the instructions:
+Open a terminal and type (copy-paste):
 
-.. code-block:: ssh
+.. code-block:: sh
+	
+	# Get miniconda for python 2.7
+	curl -L -O https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh
+	bash Miniconda2-latest-Linux-x86_64.sh -b -p ${HOME}/miniconda2
+	
+	# Get the libskylark channel
+	curl -L -O https://github.com/xdata-skylark/libskylark/releases/download/v0.20/channel.tar.gz
+	cd ${HOME}; tar -xvzf channel.tar.gz
 
-        bash ./libskylark-dist-0.11-Linux-x86_64.sh
+	# Install fftw and libskylark conda packages
+	export PATH=${HOME}/miniconda2/bin:${PATH}
+	conda install fftw --yes --channel conda-forge
+	conda install libskylark --yes --channel file://${HOME}/channel
+
+Trying the installation
+-----------------------
+
+Start an ipython shell:
+
+.. code-block:: sh
+
+	ipython
+
+and then input the following python snippet:
+
+.. code-block:: python
+	
+	import El
+	from skylark import sketch
+	A = El.DistMatrix()
+	El.Uniform(A, 10, 10)
+	S = sketch.FJLT(10, 4) 
+	SA = S * A
+	print [[SA.Get(i, j) for j in range(10)] for i in range(4)]
+
+Congratulations! You have just sketched a 10x10 distributed matrix of uniform distribution random entries into a 4x10 sketched matrix by making use of the Fast Johnson-Lindenstrauss Transform (FJLT).
+
+Now consider hard-wiring the installation path by appending this line
+
+.. code-block:: sh
+	
+	export PATH=${HOME}/miniconda2/bin:${PATH}
+
+to your ``~/.bashrc``.
+
+.. note::
+	
+	Consider expanding ``LD_LIBRARY_PATH`` if intending to use example libskylark executables: 
+	``export LD_LIBRARY_PATH=${HOME}/miniconda2/lib64:${HOME}/miniconda2/lib:${LD_LIBRARY_PATH}"``
 
 
-.. note:: This should work with all fairly recent `x86_64` Linux systems; please look for the string `x86_64` in the output of the `uname -a` command.
+.. _single-file-installer:
 
+Installing libskylark from a single-file installer
+==================================================
+
+Open a terminal and type (copy-paste):
+
+.. code-block:: sh
+
+	# Download the installer and install libskylark
+	curl -L -O https://github.com/xdata-skylark/libskylark/releases/download/v0.20/install.sh
+	bash install.sh -b -p ${HOME}/libskylark
+	export PATH=${HOME}/libskylark/bin:${PATH}
+
+Trying the installation
+-----------------------
+
+Start an ipython shell:
+
+.. code-block:: sh
+	
+	ipython
+
+and then input the following python snippet:
+
+.. code-block:: python
+	
+	import El
+	from skylark import sketch
+	A = El.Matrix()
+	El.Uniform(A, 10, 10)
+	S = sketch.JLT(10, 4) 
+	SA = S * A
+	print SA.ToNumPy()
+
+Congratulations! You have just sketched a 10x10 matrix of uniform distribution random entries into a 4x10 sketched matrix by making use of the Johnson-Lindenstrauss Transform (JLT).
+
+Now consider hard-wiring the installation path by appending this line
+
+.. code-block:: sh
+
+	export PATH=${HOME}/libskylark/bin:${PATH}
+
+to your ``~/.bashrc``.
+
+.. note::
+	
+	Consider expanding ``LD_LIBRARY_PATH`` if intending to use example libskylark executables: 
+	``export LD_LIBRARY_PATH=${HOME}/miniconda2/lib64:${HOME}/miniconda2/lib:${LD_LIBRARY_PATH}"``
 
 
 .. _vagrant-label:

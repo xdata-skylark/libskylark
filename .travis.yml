@@ -63,7 +63,7 @@ before_install:
   - sudo apt-get install -qq -y python-dev python-setuptools libopenblas-base libopenblas-dev
   - sudo apt-get install -qq -y python-numpy python-scipy python-matplotlib
   - sudo apt-get install -qq -y libhdf5-serial-dev libfftw3-dev libfftw3-mpi-dev
-  - sudo apt-get install -qq -y doxygen graphviz python-sphinx dvipng openjdk-7-jdk unzip
+  - sudo apt-get install -qq -y doxygen graphviz python-sphinx dvipng openjdk-7-jdk unzip rsync
   - sudo pip install Cython
   - sudo easy_install mpi4py h5py numpydoc
 
@@ -78,5 +78,4 @@ script:
   - ./script/build
 
 after_success:
-  - if [ $TRAVIS_BRANCH == 'development' ]; then ./script/deploy-development; fi
-  - if [ $TRAVIS_BRANCH == 'master' ]; then ./script/deploy-stable; fi
+  - ./script/deploy

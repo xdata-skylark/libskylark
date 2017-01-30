@@ -56,7 +56,7 @@ accelerated using sketching.</p>
 provides sketching based linear least-squares regression routines. That is,
 solve equations of the form:</p>
 <div class="math">
-<p><img src="_images/math/78fe473d4736c4b97480403b9527bf5a86a599d8.png" alt="\arg\min_X \|A * X - B\|_F"/></p>
+<p><span class="math">\arg\min_X \|A * X - B\|_F</span></p>
 </div><p>Note that the various algorithms can be executed directly using the regression API.
 This layer just provides an easy-to-use functional interface that mirror Elemental&#8217;s
 <a class="reference external" href="http://libelemental.org/documentation/0.83/lapack-like/solve.html">LeastSquares</a>
@@ -65,13 +65,13 @@ function, but uses sketching to accelerate the computation.</p>
 <div class="section" id="approximate-least-squares">
 <h3>Approximate Least-squares<a class="headerlink" href="#approximate-least-squares" title="Permalink to this headline">¶</a></h3>
 <p>Solve the problem approximately using a sktech-and-solve strategy.
-Specifically, solve <img class="math" src="_images/math/478069cbaa494262b8583ab6a5d440d5e2fd27f7.png" alt="\arg\min_X \|S A X -  S B\|_F"/> where <img class="math" src="_images/math/e5f95fc1cde614179b82c3ec15f0bab4fd380591.png" alt="S \in R^{s\times n}"/>
+Specifically, solve <span class="math">\arg\min_X \|S A X -  S B\|_F</span> where <span class="math">S \in R^{s\times n}</span>
 is a Fast Johnson-Lindenstrauss Transform matrix
 (<a class="reference external" href="http://www.cs.princeton.edu/~chazelle/pubs/FJLT-sicomp09.pdf">Ailon and Chazelle, 2009</a>).
-It can be shown that if <img class="math" src="_images/math/6859317dd1b439cef34131bcd4bafee8393444e0.png" alt="s"/> is large enough (as a function of <img class="math" src="_images/math/19bc0073dde1bcd1a8e6a32b251e80cced668f04.png" alt="\epsilon"/>), then</p>
+It can be shown that if <span class="math">s</span> is large enough (as a function of <span class="math">\epsilon</span>), then</p>
 <div class="math">
-<p><img src="_images/math/d35e5a4d7744e84d385ef3d8aa39fbfdb8616d7a.png" alt="\|A * X_{approx} - B\|_F \leq (1+\epsilon) \|A * X - B\|_F"/></p>
-</div><p>where <img class="math" src="_images/math/904d5655ba09c07a2d1b26f026d239f8b45f4339.png" alt="X=\arg\min_X \|A * X - B\|_F"/> and <img class="math" src="_images/math/f9fdf75162dc7b0e9eeb2d02d88aa60e98ce39e4.png" alt="X_{approx}"/> is the approximate solution.
+<p><span class="math">\|A * X_{approx} - B\|_F \leq (1+\epsilon) \|A * X - B\|_F</span></p>
+</div><p>where <span class="math">X=\arg\min_X \|A * X - B\|_F</span> and <span class="math">X_{approx}</span> is the approximate solution.
 For the best known bounds see <a class="reference external" href="http://arxiv.org/abs/1204.0062">Boutsidis and Gittens (2013)</a>.</p>
 <dl class="docutils">
 <dt>The algorithm used is the one described in:</dt>
@@ -85,10 +85,10 @@ For the best known bounds see <a class="reference external" href="http://arxiv.o
 </ul>
 </dd>
 </dl>
-<p>Unlike the algorithm described in the paper we allow the user to set the size of <img class="math" src="_images/math/6859317dd1b439cef34131bcd4bafee8393444e0.png" alt="s"/>.
+<p>Unlike the algorithm described in the paper we allow the user to set the size of <span class="math">s</span>.
 There is also a default value, but it is much lower than the one suggested by that paper.</p>
-<p>Note: it is assume that a <img class="math" src="_images/math/f09fbd65d15c149cd6c1f7ab74f697350039101b.png" alt="s \times n"/> matrix can fit in the memory of a single node
-(<img class="math" src="_images/math/413f8a8e40062a9090d9d50b88bc7b551b314c26.png" alt="n"/> is the number of columns in <img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/>).</p>
+<p>Note: it is assume that a <span class="math">s \times n</span> matrix can fit in the memory of a single node
+(<span class="math">n</span> is the number of columns in <span class="math">A</span>).</p>
 <hr class="docutils" />
 <dl class="function">
 <dt id="ApproximateLeastSquares__El::Orientation.El::Matrix:T:CR.El::Matrix:T:CR.El::Matrix:T:R.base::context_tR.i">
@@ -100,9 +100,9 @@ void <tt class="descname">ApproximateLeastSquares</tt><big>(</big>El::Orientatio
 void <tt class="descname">ApproximateLeastSquares</tt><big>(</big>El::Orientation <em>orientation</em>, const El::DistMatrix&lt;T, El::VC, El::STAR&gt;&amp; <em>A</em>, const El::DistMatrix&lt;T, El::VC, El::STAR&gt;&amp; <em>B</em>, El::DistMatrix&lt;T, El::STAR, El::STAR&gt;&amp; <em>X</em>, base::context_t&amp; <em>context</em>, int <em>sketch_size</em><em>=-1</em><big>)</big><a class="headerlink" href="#ApproximateLeastSquares__El::Orientation.El::DistMatrix:T.El::VC.El::STAR:CR.El::DistMatrix:T.El::VC.El::STAR:CR.El::DistMatrix:T.El::STAR.El::STAR:R.base::context_tR.i" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<p>If <cite>orientation</cite> is set to <tt class="docutils literal"><span class="pre">NORMAL</span></tt>, then approximate <img class="math" src="_images/math/485e12a6c8da2e147f54242e795622ddb82bed52.png" alt="\arg\min_X \|A * X - B\|_F"/>, otherwise
-<cite>orientation</cite> must be equal to <tt class="docutils literal"><span class="pre">ADJOINT</span></tt> and <img class="math" src="_images/math/8447326c551223e636d142d55db5e22ee5cf6496.png" alt="\arg\min_X \|A^H * X - B\|_F"/> is approximated.</p>
-<p>sketch_size controls the number of rows in <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/>.</p>
+<p>If <cite>orientation</cite> is set to <tt class="docutils literal"><span class="pre">NORMAL</span></tt>, then approximate <span class="math">\arg\min_X \|A * X - B\|_F</span>, otherwise
+<cite>orientation</cite> must be equal to <tt class="docutils literal"><span class="pre">ADJOINT</span></tt> and <span class="math">\arg\min_X \|A^H * X - B\|_F</span> is approximated.</p>
+<p>sketch_size controls the number of rows in <span class="math">S</span>.</p>
 <hr class="docutils" />
 <p>A flavor of usage is given in the code snippet below.</p>
 <div class="highlight-cpp"><div class="highlight"><pre><span class="cp">#include &lt;elemental.hpp&gt;</span>
@@ -137,16 +137,16 @@ so the solution&#8217;s accuracy is close to the full accuracy possible on a mac
 </ul>
 </dd>
 </dl>
-<p>Note: it is assume that a <img class="math" src="_images/math/148b0dbe36192f1c7d3392d5d890527074ab49c2.png" alt="4 n^2"/> matrix can fit in the memory of a single node
-(<img class="math" src="_images/math/413f8a8e40062a9090d9d50b88bc7b551b314c26.png" alt="n"/> is the number of columns in <img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/>).</p>
+<p>Note: it is assume that a <span class="math">4 n^2</span> matrix can fit in the memory of a single node
+(<span class="math">n</span> is the number of columns in <span class="math">A</span>).</p>
 <hr class="docutils" />
 <dl class="function">
-<dt id="FastLeastSquares__El::Orientation.El::DistMatrix:T.El::VC.El::STAR:CR.El::DistMatrix:T.El::VC.El::STAR:CR.El::DistMatrix:T.El::STAR.El::STAR:R.base::context_tR">
-void <tt class="descname">FastLeastSquares</tt><big>(</big>El::Orientation <em>orientation</em>, const El::DistMatrix&lt;T, El::VC, El::STAR&gt;&amp; <em>A</em>, const El::DistMatrix&lt;T, El::VC, El::STAR&gt;&amp; <em>B</em>, El::DistMatrix&lt;T, El::STAR, El::STAR&gt;&amp; <em>X</em>, base::context_t&amp; <em>context</em><big>)</big><a class="headerlink" href="#FastLeastSquares__El::Orientation.El::DistMatrix:T.El::VC.El::STAR:CR.El::DistMatrix:T.El::VC.El::STAR:CR.El::DistMatrix:T.El::STAR.El::STAR:R.base::context_tR" title="Permalink to this definition">¶</a></dt>
+<dt id="FasterLeastSquares__El::Orientation.El::DistMatrix:T.El::VC.El::STAR:CR.El::DistMatrix:T.El::VC.El::STAR:CR.El::DistMatrix:T.El::STAR.El::STAR:R.base::context_tR">
+void <tt class="descname">FasterLeastSquares</tt><big>(</big>El::Orientation <em>orientation</em>, const El::DistMatrix&lt;T, El::VC, El::STAR&gt;&amp; <em>A</em>, const El::DistMatrix&lt;T, El::VC, El::STAR&gt;&amp; <em>B</em>, El::DistMatrix&lt;T, El::STAR, El::STAR&gt;&amp; <em>X</em>, base::context_t&amp; <em>context</em><big>)</big><a class="headerlink" href="#FasterLeastSquares__El::Orientation.El::DistMatrix:T.El::VC.El::STAR:CR.El::DistMatrix:T.El::VC.El::STAR:CR.El::DistMatrix:T.El::STAR.El::STAR:R.base::context_tR" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<p>If <cite>orientation</cite> is set to <tt class="docutils literal"><span class="pre">NORMAL</span></tt>, then approximate <img class="math" src="_images/math/485e12a6c8da2e147f54242e795622ddb82bed52.png" alt="\arg\min_X \|A * X - B\|_F"/>, otherwise
-<cite>orientation</cite> must be equal to <tt class="docutils literal"><span class="pre">ADJOINT</span></tt> and <img class="math" src="_images/math/8447326c551223e636d142d55db5e22ee5cf6496.png" alt="\arg\min_X \|A^H * X - B\|_F"/> is approximated.</p>
+<p>If <cite>orientation</cite> is set to <tt class="docutils literal"><span class="pre">NORMAL</span></tt>, then approximate <span class="math">\arg\min_X \|A * X - B\|_F</span>, otherwise
+<cite>orientation</cite> must be equal to <tt class="docutils literal"><span class="pre">ADJOINT</span></tt> and <span class="math">\arg\min_X \|A^H * X - B\|_F</span> is approximated.</p>
 <hr class="docutils" />
 <p>A flavor of usage is given in the code snippet below.</p>
 <div class="highlight-cpp"><div class="highlight"><pre><span class="cp">#include &lt;elemental.hpp&gt;</span>
@@ -178,10 +178,10 @@ void <tt class="descname">FastLeastSquares</tt><big>(</big>El::Orientation <em>o
 </ul>
 </div></blockquote>
 <dl class="docutils">
-<dt>The prototypical algorithm involves the following steps, given a matrix <img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/></dt>
+<dt>The prototypical algorithm involves the following steps, given a matrix <span class="math">A</span></dt>
 <dd><ul class="first last simple">
-<li>Compute an approximate orthonormal basis for the range of <img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/>, as specified by the columns of an orthonormal matrix <img class="math" src="_images/math/7b1816c51f7d31275cd3ad400208fb7b3ce136a0.png" alt="Q"/>.</li>
-<li>Use <img class="math" src="_images/math/7b1816c51f7d31275cd3ad400208fb7b3ce136a0.png" alt="Q"/> to compute a standard factorization of <img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/>.</li>
+<li>Compute an approximate orthonormal basis for the range of <span class="math">A</span>, as specified by the columns of an orthonormal matrix <span class="math">Q</span>.</li>
+<li>Use <span class="math">Q</span> to compute a standard factorization of <span class="math">A</span>.</li>
 </ul>
 </dd>
 </dl>
@@ -189,8 +189,8 @@ void <tt class="descname">FastLeastSquares</tt><big>(</big>El::Orientation <em>o
 <p>The first step is accelerated using sketching.</p>
 <div class="section" id="approximate-svd">
 <h3>Approximate SVD<a class="headerlink" href="#approximate-svd" title="Permalink to this headline">¶</a></h3>
-<p>Compute an approximate SVD in the sense that <img class="math" src="_images/math/893632b6baf3aac6618bbe86b297f72fd866b218.png" alt="A \approx U S V^T"/>. The inner
-dimension <img class="math" src="_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> is specified by the user as parameter.</p>
+<p>Compute an approximate SVD in the sense that <span class="math">A \approx U S V^T</span>. The inner
+dimension <span class="math">k</span> is specified by the user as parameter.</p>
 <dl class="function">
 <dt id="ApproximateSVD__InputTypeR.UTypeR.STypeR.VTypeR.i.base::context_tR.approximate_svd_params_t">
 void <tt class="descname">ApproximateSVD</tt><big>(</big>InputType&amp; <em>A</em>, UType&amp; <em>U</em>, SType&amp; <em>S</em>, VType&amp; <em>V</em>, int <em>rank</em>, base::context_t&amp; <em>context</em>, approximate_svd_params_t <em>params</em><em>=approximate_svd_params_t()</em><big>)</big><a class="headerlink" href="#ApproximateSVD__InputTypeR.UTypeR.STypeR.VTypeR.i.base::context_tR.approximate_svd_params_t" title="Permalink to this definition">¶</a></dt>
@@ -220,7 +220,7 @@ large and unstructured matrices.</p>
 <dl class="function">
 <dt id="CondEst__MatrixTypeCR.doubleR.doubleR.RightTypeR.LeftTypeR.doubleR.doubleR.RightTypeR.LeftTypeR.base::context_tR.condest_params_t">
 int <tt class="descname">CondEst</tt><big>(</big>const MatrixType&amp; <em>A</em>, double&amp; <em>cond</em>, double&amp; <em>sigma_max</em>, RightType&amp; <em>v_max</em>, LeftType&amp; <em>u_max</em>, double&amp; <em>sigma_min</em>, double&amp; <em>sigma_min_c</em>, RightType&amp; <em>v_min</em>, LeftType&amp; <em>u_min</em>, base::context_t&amp; <em>context</em>, condest_params_t <em>params</em><em>=condest_params_t()</em><big>)</big><a class="headerlink" href="#CondEst__MatrixTypeCR.doubleR.doubleR.RightTypeR.LeftTypeR.doubleR.doubleR.RightTypeR.LeftTypeR.base::context_tR.condest_params_t" title="Permalink to this definition">¶</a></dt>
-<dd><p>Estimate the condition number of <img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/>: estimate the largest and smallest
+<dd><p>Estimate the condition number of <span class="math">A</span>: estimate the largest and smallest
 singular value. The estimate of the largest is highly accurate, and the
 estimate of the lowest is typically a  not-too-bad upper bound. Returns also
 certificate left and right vectors. For the

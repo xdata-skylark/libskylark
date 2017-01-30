@@ -48,15 +48,15 @@
 <p>Located under <em>algorithms/regression</em> aims at providing a general framework for handling regression problems
 of the following form:</p>
 <div class="math">
-<p><img src="_images/math/1e222a022a85777be43a87afb889016208aeba92.png" alt="f^\star = \arg \min_{f \in {\cal H}} \frac{1}{n}\sum^n_{i=1} V(y_i, f(x_i)) + r(f)"/></p>
-</div><p>where <img class="math" src="_images/math/1ba561efe3f4402079a2104a10df5a00e15caf49.png" alt="\{ (x_i, y_i) \}^n_{i=1} \subset {\mathbb R}^d \times {\mathbb R}^t"/> is a training set of inputs
-and their associated outputs, <img class="math" src="_images/math/857e8f32cdd1aa699223d72ab9b74554d78d7ee0.png" alt="{\cal H}"/> is an hypothesis space of functions, <img class="math" src="_images/math/74c2c6f3b066277aa129503edab176c13ec0c3ee.png" alt="V(\cdot, \cdot)"/>
-is a loss function, <img class="math" src="_images/math/93b4bbe22eb93fa9c3192144a042900200f53f14.png" alt="r(\cdot)"/> is a regularizer.</p>
+<p><span class="math">f^\star = \arg \min_{f \in {\cal H}} \frac{1}{n}\sum^n_{i=1} V(y_i, f(x_i)) + r(f)</span></p>
+</div><p>where <span class="math">\{ (x_i, y_i) \}^n_{i=1} \subset {\mathbb R}^d \times {\mathbb R}^t</span> is a training set of inputs
+and their associated outputs, <span class="math">{\cal H}</span> is an hypothesis space of functions, <span class="math">V(\cdot, \cdot)</span>
+is a loss function, <span class="math">r(\cdot)</span> is a regularizer.</p>
 <p><strong>At this point, the c
 ode only supports a linear hypothesis space and a least-square loss function without regularization.</strong>
 That is, solving problems of the form</p>
 <div class="math">
-<p><img src="_images/math/78fe473d4736c4b97480403b9527bf5a86a599d8.png" alt="\arg\min_X \|A * X - B\|_F"/></p>
+<p><span class="math">\arg\min_X \|A * X - B\|_F</span></p>
 </div><p>However, the framework defines the API for defining problems of the form above, and the API for solvers for those
 problems. Implementation of additional solver is slated for future development.</p>
 <p>The framework is general, but complex: it relies on generic programming to supply a unified powerful interface.

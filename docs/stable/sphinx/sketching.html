@@ -54,14 +54,14 @@
 able to deliver faster NLA kernels and ML algorithms.</p>
 <p>Dimensionality reduction in NLA and ML is often based on building an oblivious
 subspace embedding (OSE). An OSE can be thought of as a data-independent random
-“sketching” matrix <img class="math" src="_images/math/e5f95fc1cde614179b82c3ec15f0bab4fd380591.png" alt="S \in R^{s\times n}"/> whose approximate isometry
-properties (with respect to a norm <img class="math" src="_images/math/4fc4bd8b4a49eaf5eeefc07d0a682e8f8e842b7c.png" alt="\|\cdot\|_p"/>) over a subspace (e.g.,
+“sketching” matrix <span class="math">S \in R^{s\times n}</span> whose approximate isometry
+properties (with respect to a norm <span class="math">\|\cdot\|_p</span>) over a subspace (e.g.,
 over the column space of a data input matrix A, and regression target vector b)
 imply that,</p>
 <div class="math">
-<p><img src="_images/math/94097032b40423ca34ac7142e9a7ae8857c32f38.png" alt="\|S(A x - b)\|\approx\|A x-b\|"/></p>
-</div><p>which in turn allows the regression coefficients, <img class="math" src="_images/math/188c175aac0a8a9c22499336711b5d7256407254.png" alt="x"/>, to be optimized
-over a “sketched” dataset - namely <img class="math" src="_images/math/01ce80763ec37a5a2e1d7099273408913740773f.png" alt="S*A"/> and <img class="math" src="_images/math/6e2fee3f37086d1205c14ad6d038d3b8c71437e2.png" alt="S*b"/> - of much smaller
+<p><span class="math">\|S(A x - b)\|\approx\|A x-b\|</span></p>
+</div><p>which in turn allows the regression coefficients, <span class="math">x</span>, to be optimized
+over a “sketched” dataset - namely <span class="math">S*A</span> and <span class="math">S*b</span> - of much smaller
 size without losing solution quality significantly.
 Sketching matrices include Gaussian random matrices, structured random matrices
 which admit fast matrix multiplication via FFT-like operations, hashing-based
@@ -70,20 +70,20 @@ transforms, among others.</p>
 <div class="section" id="overview-of-high-performance-distributed-sketching-implementation">
 <h2>Overview of High-performance Distributed Sketching Implementation<a class="headerlink" href="#overview-of-high-performance-distributed-sketching-implementation" title="Permalink to this headline">¶</a></h2>
 <p>Sketching a matrix A typically amounts to multiplying it by a random matrix
-<img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/>, i.e., <img class="math" src="_images/math/0d7318978493f219bebbae2cfe4f63bf8c56dadf.png" alt="A * S"/> for compressing the size of its rows
-(row-wise sketching) or <img class="math" src="_images/math/c67c5155fdbd0009e97486374043c815f140f276.png" alt="S * A"/> for compressing the size of its
+<span class="math">S</span>, i.e., <span class="math">A * S</span> for compressing the size of its rows
+(row-wise sketching) or <span class="math">S * A</span> for compressing the size of its
 columns (column-wise sketching).</p>
 <p>In a distributed setting, this matrix-matrix multiplication primitive
 (sketching GEMM operation) is special in the sense that any part of matrix
-<img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> can be constructed without communication.
-In addition, depending on the relative sizes of <img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/>, <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> and the
+<span class="math">S</span> can be constructed without communication.
+In addition, depending on the relative sizes of <span class="math">A</span>, <span class="math">S</span> and the
 sketched matrix (output), we can organize the distributed GEMM so that no part
 of the largest-size matrix is communicated (SUMMA approach), thus resulting in
 communication savings.
-Further optimizing, we can perform local computations over blocks of <img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/>,
-<img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/>, and also assume transposed views of the operands for memory and
+Further optimizing, we can perform local computations over blocks of <span class="math">A</span>,
+<span class="math">S</span>, and also assume transposed views of the operands for memory and
 cache use efficiency.</p>
-<p>In particular when both <img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/> and <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> are distributed dense matrices
+<p>In particular when both <span class="math">A</span> and <span class="math">S</span> are distributed dense matrices
 we represent them as Elemental matrices and support sketching over a rich set
 of combinations of vector and matrix-oriented data distributions: in vector
 distributions different processes own complete rows of columns of the matrix
@@ -94,11 +94,11 @@ columns being equal to the dimensions of the process grid.</p>
 independently by indexing into a global stream of random values provided by a
 counter-based Parallel random number generator (supplied by
 <a class="reference external" href="http://www.deshawresearch.com/resources_random123.html">Random123 library</a>).
-No entries of <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> are communicated since they can be locally generated
+No entries of <span class="math">S</span> are communicated since they can be locally generated
 instead.
-<img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/> can be squarish (aka &#8220;matrix&#8221;) or tall-and-thin or short-and-fat
+<span class="math">A</span> can be squarish (aka &#8220;matrix&#8221;) or tall-and-thin or short-and-fat
 (aka &#8220;panel&#8221;).
-In multiplying with <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/>, matrix-panel, panel-matrix, inner-panel-panel
+In multiplying with <span class="math">S</span>, matrix-panel, panel-matrix, inner-panel-panel
 or outer-panel-panel products may arise.
 We provide separate implementations for these cases organized around the
 principle of communication-avoidance for the largest of the matrix terms
@@ -106,25 +106,25 @@ involved in the GEMM, for each of the input/output matrix-data distribution
 combinations.
 The user can optionally set the relative sizes that differentiate between these
 cases.
-Local <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> entries can be incrementally realized in a distribution format that
+Local <span class="math">S</span> entries can be incrementally realized in a distribution format that
 best matches the matrix indices of the local GEMM operation that follows
 it.
-Resulting <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> blocks typically traverse the smallest of matrix sizes in
+Resulting <span class="math">S</span> blocks typically traverse the smallest of matrix sizes in
 increments that can optionally be specified by the user.
 This has the extra benefit of minimizing the communication volume of a
 collective operation that generally follows this local GEMM - essentially to
 compensate for the stride-indexed matrix entries in the factors.</p>
 <p>As an example we provide a <em>pseudocode</em> snippet (in Python syntax) that describes
-the rowwise sketching of a squarish input matrix <img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/>, initially distributed
+the rowwise sketching of a squarish input matrix <span class="math">A</span>, initially distributed
 across the process grid in <cite>[MC, MR]</cite> format (please refer
 <a class="reference external" href="http://libelemental.org/documentation/0.83/core/dist_matrix/DM.html">here</a> for a
 comprehensive documentation of distribution formats, here appearing in brackets):
-<img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> is first realized (its random entries are actually computed in the desired
+<span class="math">S</span> is first realized (its random entries are actually computed in the desired
 distribution format - in embarrassingly parallel mode) and then the local parts of
-<img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/> and <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> are multiplied together. Finally collective communications within
+<span class="math">A</span> and <span class="math">S</span> are multiplied together. Finally collective communications within
 subsets of the process grid take place to produce the resulting sketched matrix
 (<cite>C[MC, MR]</cite>). The corresponding C++ code (allowing also for incremental realization of
-<img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/>) can be found in
+<span class="math">S</span>) can be found in
 <tt class="file docutils literal"><span class="pre">libskylark/sketch/dense_transform_Elemental_mc_mr.hpp</span></tt>.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">matrix_panel</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="n">MC</span><span class="p">,</span> <span class="n">MR</span><span class="p">],</span> <span class="n">S</span><span class="p">):</span>
     <span class="n">S</span><span class="p">[</span><span class="n">MR</span><span class="p">,</span> <span class="n">STAR</span><span class="p">]</span>       <span class="o">=</span> <span class="n">realize</span><span class="p">(</span><span class="n">S</span><span class="p">)</span>
@@ -143,11 +143,11 @@ distribution formats - same scenario as before, rowwise sketching of a squarish 
     <span class="k">return</span> <span class="n">C</span><span class="p">[</span><span class="n">VC</span><span class="o">/</span><span class="n">VR</span><span class="p">,</span> <span class="n">STAR</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>Sparse matrices <img class="math" src="_images/math/0acafa529182e79b4f56165ec677554fba7fcf98.png" alt="A"/> are currently represented as
+<p>Sparse matrices <span class="math">A</span> are currently represented as
 <abbr title="Combinatorial BLAS">CombBLAS</abbr> matrices.
 As for dense sketch matrices, any part of the sparse sketch matrix can be
 realized without communication. Since the sketch matrix is sparse, we only
-require a &#8220;sparse&#8221; realization of the sketch matrix <img class="math" src="_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/> and the sketching
+require a &#8220;sparse&#8221; realization of the sketch matrix <span class="math">S</span> and the sketching
 GEMM can be computed on the random stream directly.
 Similar to the SUMMA approach for dense matrices we select what will be
 communicated depending on input and output dimensions.</p>
@@ -166,7 +166,7 @@ accessible in Python through <tt class="xref py py-mod docutils literal"><span c
 <h3>Sketching Transforms<a class="headerlink" href="#sketching-transforms" title="Permalink to this headline">¶</a></h3>
 <p>The following table lists the sketching transforms currently provided by LibSkylark.
 These transforms are appropriate for specific downstream tasks, e.g.
-<img class="math" src="_images/math/a01b625bb6f1905a7f6f698c854f2b4ae161eeb4.png" alt="l2"/>-regression, <img class="math" src="_images/math/c3a1ea1c5ef9f9923d99db023a65c73d4b6dbc94.png" alt="l1"/>-regression, or kernel methods.</p>
+<span class="math">l2</span>-regression, <span class="math">l1</span>-regression, or kernel methods.</p>
 <p>The implementations are provided under <em>libskylark/sketch</em>.</p>
 <table border="1" class="docutils">
 <colgroup>

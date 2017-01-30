@@ -72,8 +72,8 @@ multinomial logistic regression, robust regression and support vector machines),
 dimensionality reduction techniques. The implementations are guided by error and sensitivity
 analyses, to give users a high confidence assurance for the accuracy of the output of the software
 stack. Sketching techniques, when used in a straight-forward fashion and on their own, can deliver
-relatively crude, i.e. low accuracy results, since the work to achieve an error of <img class="math" src="_images/math/19bc0073dde1bcd1a8e6a32b251e80cced668f04.png" alt="\epsilon"/>
-can be proportional to <img class="math" src="_images/math/86fca833758fb401c4dec67a2c4d01f50624fb79.png" alt="1/\epsilon^2"/>. Such crude results can be relevant in themselves: in
+relatively crude, i.e. low accuracy results, since the work to achieve an error of <span class="math">\epsilon</span>
+can be proportional to <span class="math">1/\epsilon^2</span>. Such crude results can be relevant in themselves: in
 ranking applications where only an ordinal rank is required rather than the exact value (PageRank,
 recommender systems); in situations where data noise dominates algorithmic error; or where the
 tradeoff between speed and accuracy favors “quick and dirty” results that can be readily refined.
@@ -116,7 +116,7 @@ their sketching counterparts.</p>
 with a Message Passing Interface (MPI) backend for distributed computations. Organizationally, it comprises of
 three layers. The core is a library of sketching transforms whose main functionality is to enable a variety of
 input matrix types to be sketched, using transforms specialized for various NLA kernels such as least squares
-(<img class="math" src="_images/math/3e28c5b67dbe9dd67e444b3da60e04ec3a6528dd.png" alt="l_2"/>) regression, robust regression (<img class="math" src="_images/math/74c713b8e1ffbdb2755232d14c28023c4ee8159d.png" alt="l_1"/>) and low-rank matrix approximations. These kernels
+(<span class="math">l_2</span>) regression, robust regression (<span class="math">l_1</span>) and low-rank matrix approximations. These kernels
 are being implemented in the Numerical Linear Algebra (NLA) layer.</p>
 <p>The accelerated NLA kernels are then used to accelerate higher level machine learning algorithms,
 e.g., kernel-based nonlinear regression, matrix completion and statistical dimensionality reduction

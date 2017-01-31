@@ -133,7 +133,7 @@ int parse_program_options(int argc, char* argv[]) {
             "Sketch size (for regression problem; if relevant (i.e., -a 3). "
             "-1 - will be determined by software. ")
         ("fileformat",
-            bpo::value<char>((char *)&fileformat)->
+            bpo::value<int>((int *)&fileformat)->
             default_value(skylark::utility::io::FORMAT_LIBSVM),
             "Fileformat (default: 0 (libsvm), 1 (hdf5)");
 

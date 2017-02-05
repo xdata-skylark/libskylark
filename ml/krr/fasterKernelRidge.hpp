@@ -90,7 +90,22 @@ void FasterKernelRidge(base::direction_t direction, const KernelType &k,
             params.log_stream, params.prefix + "\t");
 
         El::Zeros(A, X.Width(), Y.Width());
-        algorithms::CG(El::LOWER, K, Y, A, cg_params, *P);
+        switch (params.krylov_method) {
+        case algorithms::CG_TAG:
+          algorithms::CG(El::LOWER, K, Y, A, cg_params, *P);
+          break;
+
+        case algorithms::FCG_TAG:
+          algorithms::FlexibleCG(El::LOWER, K, Y, A, cg_params, *P);
+          break;
+
+        default:
+          SKYLARK_THROW_EXCEPTION (
+            base::ml_exception()
+            << base::error_msg("Unsupported Krylov method specified."));
+          break;
+        }
+
     } else {
         // Hack for experiments!
         El::Zeros(A, X.Width(), Y.Width());

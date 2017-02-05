@@ -49,6 +49,7 @@ void FasterKernelRLSC(base::direction_t direction, const KernelType &k,
     krr_params.res_print = params.res_print;
     krr_params.tolerance = params.tolerance;
     krr_params.precond_lambda = params.precond_lambda;
+    krr_params.krylov_method = params.krylov_method;
 
     FasterKernelRidge(direction, k, X, Y,
         T(lambda), A, s, context, krr_params);

@@ -22,6 +22,7 @@ struct rlsc_params_t : public base::params_t {
     int res_print;
     double tolerance;
     double precond_lambda;  // -1 (default) will just input lambda
+    algorithms::krylov_method_t krylov_method;
 
     // For memory limited methods (SketchedApproximateRLSC, LargeScaleRLSC)
     El::Int max_split;
@@ -43,7 +44,29 @@ struct rlsc_params_t : public base::params_t {
         res_print = 10;
         iter_lim = 1000;
         precond_lambda = -1;
-  }
+        krylov_method = algorithms::CG_TAG;
+
+        max_split = 0;
+    }
+
+    rlsc_params_t(const boost::property_tree::ptree& json)
+        : params_t(json) {
+        use_fast = json.get<bool>("use_fast", false);
+        sketched_rls = json.get<bool>("sketched_rr", false);
+        sketch_size = json.get<int>("sketch_size", -1);
+        fast_sketch = json.get<bool>("fast_sketch", false);
+        iter_lim = json.get<int>("iter_lim", 1000);
+        res_print = json.get<int>("res_print", 10);
+        tolerance = json.get<double>("tolerance", 1e-3);
+        max_split = json.get<int>("max_split", 0);
+        precond_lambda = json.get<double>("precond_lambda", -1);
+        krylov_method = algorithms::CG_TAG;
+        std::string krylov_method_s = json.get<std::string>("krylov_method", "cg");
+        if (krylov_method_s == "cg")
+            krylov_method = algorithms::CG_TAG;
+        if (krylov_method_s == "fcg")
+            krylov_method = algorithms::FCG_TAG;
+    }
 
 };
 

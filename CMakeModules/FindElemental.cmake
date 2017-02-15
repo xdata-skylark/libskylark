@@ -23,6 +23,7 @@ FIND_LIBRARY(Elemental_LIBRARY El
    $ENV{HOME}/.local/lib
    $ENV{HOME}/local/lib
    $ENV{HOME}/Software/lib
+   /usr/local/lib/x86_64-linux-gnu
    /usr/local/lib
    /usr/lib
    NO_DEFAULT_PATH
@@ -32,7 +33,8 @@ FIND_LIBRARY(Pmrrr_LIBRARY pmrrr
    $ENV{ELEMENTAL_ROOT}/lib
    $ENV{HOME}/.local/lib
    $ENV{HOME}/local/lib
-   $ENV{HOME}/Software/lib
+   $ENV{HOME}/Software/libi
+   /usr/local/lib/x86_64-linux-gnu
    /usr/local/lib
    /usr/lib
    NO_DEFAULT_PATH

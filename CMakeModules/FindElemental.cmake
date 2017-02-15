@@ -33,7 +33,7 @@ FIND_LIBRARY(Pmrrr_LIBRARY pmrrr
    $ENV{ELEMENTAL_ROOT}/lib
    $ENV{HOME}/.local/lib
    $ENV{HOME}/local/lib
-   $ENV{HOME}/Software/libi
+   $ENV{HOME}/Software/lib
    /usr/local/lib/x86_64-linux-gnu
    /usr/local/lib
    /usr/lib

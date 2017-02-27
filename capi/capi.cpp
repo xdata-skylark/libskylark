@@ -3,6 +3,7 @@
 
 #include "matrix_types.cpp"
 #include "cbase.cpp"
+#include "sparse_matrix.cpp"
 #include "cio.cpp"
 #include "csketch.cpp"
 #include "cnla.cpp"

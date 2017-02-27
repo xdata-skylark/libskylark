@@ -10,6 +10,7 @@
 #endif
 
 #include "../base/sparse_matrix.hpp"
+#include "../base/sparse_dist_matrix.hpp"
 
 # define STRCMP_TYPE(STR, TYPE) \
     if (std::strcmp(str, #STR) == 0) \
@@ -26,10 +27,7 @@ typedef El::DistMatrix<double, El::VC, El::STAR> DistMatrix_VC_STAR;
 typedef El::DistMatrix<double, El::STAR, El::VR> DistMatrix_STAR_VR;
 typedef El::DistMatrix<double, El::STAR, El::VC> DistMatrix_STAR_VC;
 typedef skylark::base::sparse_matrix_t<double> SparseMatrix;
-#ifdef SKYLARK_HAVE_COMBBLAS
-typedef SpDCCols< size_t, double > col_t;
-typedef SpParMat< size_t, double, col_t > DistSparseMatrix;
-#endif
+typedef skylark::base::sparse_dist_matrix_t<double> SparseDistMatrix;
 
 
 enum matrix_type_t {
@@ -42,7 +40,7 @@ enum matrix_type_t {
     DIST_MATRIX_VR_STAR,
     DIST_MATRIX_STAR_VC,
     DIST_MATRIX_STAR_VR,
-    DIST_SPARSE_MATRIX,          /**< Sparse matrix (CombBLAS) */
+    SPARSE_DIST_MATRIX,          /**< Sparse matrix */
     SPARSE_MATRIX                /**< Sparse local matrix */
 };
 

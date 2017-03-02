@@ -9,16 +9,16 @@ struct sparse_matrix_wrapper;
 extern "C" {
 
 SKYLARK_EXTERN_API int sl_create_sparse_matrix(char *type_, int N, 
-    sparse_matrix_wrapper **sparse_matrix);
+    void **X);
 
-SKYLARK_EXTERN_API int sl_sparse_matrix_height(int *height,
-    sparse_matrix_wrapper *sparse_matrix);
+SKYLARK_EXTERN_API int sl_sparse_matrix_height(char *type_, int *height,
+    void *X);
 
-SKYLARK_EXTERN_API int sl_sparse_matrix_width(int *width,
-    sparse_matrix_wrapper *sparse_matrix);
+SKYLARK_EXTERN_API int sl_sparse_matrix_width(char *type_, int *width,
+    void *X);
 
-SKYLARK_EXTERN_API int sl_sparse_matrix_nonzeros(int *nonzeros,
-    sparse_matrix_wrapper *sparse_matrix);
+SKYLARK_EXTERN_API int sl_sparse_matrix_nonzeros(char *type_, int *nonzeros,
+    void *X);
 
 }
 

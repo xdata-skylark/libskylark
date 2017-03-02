@@ -7,6 +7,7 @@ import numpy, scipy.sparse
 import atexit
 import time
 import sys
+import sparse_matrix as sm
 
 _libc = cdll.LoadLibrary(ctypes.util.find_library('c'))
 _libc.free.argtypes = (ctypes.c_void_p,)
@@ -398,6 +399,36 @@ if KDT_INSTALLED:
       nullVec = kdt.Vec(0, sparse=False)
       return kdt.Mat(nullVec, nullVec, nullVec, n, m)
 
+class SparseMatrixAdapter:
+  def __init__(self, A):
+    self._A = A
+
+  def ctype(self):
+    return "SparseMatrix"
+
+  def ptr(self):
+    return self._A._obj
+
+  def ptrcleaner(self):
+    pass
+
+  def getdim(self, dim):
+    pass
+
+  def getobj(self):
+    return self._A
+
+  def iscompatible(self, B):
+      return None, False
+
+  def getctor(self):
+    return SparseMatrixAdapter.ctor
+
+  @staticmethod
+  def ctor(m, n, B):
+    A = sm.SparseMatrix()
+    return A
+
 #
 # The following functions adapts an object to a uniform interface, so
 # that we can have a uniform way of accessing it.
@@ -426,6 +457,9 @@ def adapt(obj):
 
     elif isinstance(obj, scipy.sparse.csr_matrix) or isinstance(obj, scipy.sparse.csc_matrix):
         return ScipyAdapter(obj)
+    
+    elif isinstance(obj, sm.SparseMatrix):
+        return SparseMatrixAdapter(obj)
 
     elif haselem and isinstance(obj, El.Matrix):
         return ElMatrixAdapter(obj)

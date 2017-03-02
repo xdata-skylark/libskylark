@@ -1639,6 +1639,11 @@ void ReadLIBSVM(hdfsFS &fs, const std::string& fname,
     base::sparse_matrix_t<T>& X, El::Matrix<R>& Y,
     base::direction_t direction, int min_d = 0) {
 
+    SKYLARK_THROW_EXCEPTION (
+        base::io_exception()
+          << base::error_msg(
+           "Empiezo a ejecutar ReadLIBSVM"));
+
     std::string line;
     std::string token;
     R label;
@@ -1795,6 +1800,11 @@ void ReadLIBSVM(hdfsFS &fs, const std::string& fname,
         in->close();
         in = itr.next();
     }
+
+    SKYLARK_THROW_EXCEPTION (
+        base::io_exception()
+          << base::error_msg(
+           "Leo bien hasta antes del attach"));
 
     if (direction == base::COLUMNS) {
         col_ptr[n] = nnz; // last entry (total number of nnz)

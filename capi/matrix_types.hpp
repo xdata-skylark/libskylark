@@ -11,6 +11,8 @@
 
 #include "../base/sparse_matrix.hpp"
 #include "../base/sparse_dist_matrix.hpp"
+#include "../base/sparse_vc_star_matrix.hpp"
+
 
 # define STRCMP_TYPE(STR, TYPE) \
     if (std::strcmp(str, #STR) == 0) \

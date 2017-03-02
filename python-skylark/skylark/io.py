@@ -27,7 +27,7 @@ def readlibsvm(fname, X, Y, direction="rows", min_d=0, max_n=-1):
                X.ctype(), Xobj, \
                Y.ctype(), Yobj, \
                cdirection, min_d, max_n)
-
+    
     X.ptrcleaner()
     Y.ptrcleaner()
  

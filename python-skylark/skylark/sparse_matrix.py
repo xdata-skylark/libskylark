@@ -17,16 +17,16 @@ class SparseMatrix(object):
   
   def height(self):
     height = c_int()
-    lib.callsl("sl_sparse_matrix_height", byref(height), self._obj)
+    lib.callsl("sl_sparse_matrix_height", "SparseMatrix", byref(height), self._obj)
     return height.value
 
   def width(self):
     width = c_int()
-    lib.callsl("sl_sparse_matrix_width", byref(width), self._obj)
+    lib.callsl("sl_sparse_matrix_width", "SparseMatrix", byref(width), self._obj)
     return width.value
 
   def nonzeros(self):
     nonzeros = c_int()
-    lib.callsl("sl_sparse_matrix_nonzeros", byref(nonzeros), self._obj)
+    lib.callsl("sl_sparse_matrix_nonzeros", "SparseMatrix",byref(nonzeros), self._obj)
     return nonzeros.value
 

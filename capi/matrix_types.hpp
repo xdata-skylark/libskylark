@@ -29,7 +29,7 @@ typedef El::DistMatrix<double, El::VC, El::STAR> DistMatrix_VC_STAR;
 typedef El::DistMatrix<double, El::STAR, El::VR> DistMatrix_STAR_VR;
 typedef El::DistMatrix<double, El::STAR, El::VC> DistMatrix_STAR_VC;
 typedef skylark::base::sparse_matrix_t<double> SparseMatrix;
-typedef skylark::base::sparse_dist_matrix_t<double> SparseDistMatrix;
+typedef skylark::base::sparse_vc_star_matrix_t<double> SparseDistMatrix;
 
 
 enum matrix_type_t {

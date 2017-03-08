@@ -3,10 +3,12 @@
 
 #include "matrix_types.hpp"
 #include "../base/sparse_dist_matrix.hpp"
+#include "../base/sparse_vc_star_matrix.hpp"
 
-struct sparse_matrix_wrapper;
 
 extern "C" {
+
+// Sparse Matrices
 
 SKYLARK_EXTERN_API int sl_create_sparse_matrix(char *type_, int N, 
     void **X);

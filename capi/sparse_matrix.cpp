@@ -24,6 +24,8 @@ SKYLARK_EXTERN_API int sl_create_sparse_matrix(char *type_, int N,
         return 111;
     else if (type == SPARSE_MATRIX_T)
         *X = new SparseMatrix;
+    else if (type == SPARSE_DIST_MATRIX_T)
+        *X = new SparseDistMatrix;
 
     return 0;
 }

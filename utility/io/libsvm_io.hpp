@@ -728,6 +728,9 @@ void ReadLIBSVM(const std::string& fname,
     SKYLARK_READLIBSVM_APPLY_DISPATCH(mftypes::sparse_matrix_t,
         mftypes::matrix_t);
 
+    SKYLARK_READLIBSVM_APPLY_DISPATCH(mdtypes::sparse_dist_matrix_t,
+       mdtypes::dist_matrix_vc_star_t);
+
     SKYLARK_READLIBSVM_APPLY_DISPATCH(mdtypes::dist_matrix_t,
         mdtypes::dist_matrix_t);
     SKYLARK_READLIBSVM_APPLY_DISPATCH(mdtypes::dist_matrix_t,

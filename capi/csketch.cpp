@@ -337,6 +337,7 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
 #endif
 
 #if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT || SKYLARK_HAVE_KISSFFT
+        SKDEF(FJLT, Matrix, Matrix)
         SKDEF(FJLT, DistMatrix_VR_STAR, RootMatrix)
         SKDEF(FJLT, DistMatrix_VC_STAR, RootMatrix)
         SKDEF(FJLT, DistMatrix_STAR_VR, RootMatrix)
@@ -1816,6 +1817,11 @@ SKYLARK_EXTERN_API int
     AUTO_APPLY_DISPATCH(FJLT,
         DIST_MATRIX, DIST_MATRIX,
         sketch::FJLT_t, DistMatrix, DistMatrix,
+        sketch::FJLT_data_t);
+    
+    AUTO_APPLY_DISPATCH(FJLT,
+        MATRIX, MATRIX,
+        sketch::FJLT_t, Matrix, Matrix,
         sketch::FJLT_data_t);
 
     AUTO_APPLY_DISPATCH(FastGaussianRFT,

@@ -974,7 +974,7 @@ def _hashmap(t, n, distribution, dimension=0):
 # Additional names for various transforms.
 #
 SparseJLT = SJLT
-FastJLT = JLT
+FastJLT = FJLT
 CountSketch = CWT
 RRT = GaussianRFT
 Fastfood=FastGaussianRFT

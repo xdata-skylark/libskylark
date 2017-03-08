@@ -429,6 +429,36 @@ class SparseMatrixAdapter:
     A = sm.SparseMatrix()
     return A
 
+class SparseDistMatrixAdapter:
+  def __init__(self, A):
+    self._A = A
+
+  def ctype(self):
+    return "SparseDistMatrix"
+
+  def ptr(self):
+    return self._A._obj
+
+  def ptrcleaner(self):
+    pass
+
+  def getdim(self, dim):
+    pass
+
+  def getobj(self):
+    return self._A
+
+  def iscompatible(self, B):
+      return None, False
+
+  def getctor(self):
+    return SparseDistMatrixAdapter.ctor
+
+  @staticmethod
+  def ctor(m, n, B):
+    A = sm.SparseDistMatrix()
+    return A
+
 #
 # The following functions adapts an object to a uniform interface, so
 # that we can have a uniform way of accessing it.
@@ -460,6 +490,9 @@ def adapt(obj):
     
     elif isinstance(obj, sm.SparseMatrix):
         return SparseMatrixAdapter(obj)
+    
+    elif isinstance(obj, sm.SparseDistMatrix):
+        return SparseDistMatrixAdapter(obj)
 
     elif haselem and isinstance(obj, El.Matrix):
         return ElMatrixAdapter(obj)

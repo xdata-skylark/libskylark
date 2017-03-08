@@ -30,3 +30,13 @@ class SparseMatrix(object):
     lib.callsl("sl_sparse_matrix_nonzeros", "SparseMatrix",byref(nonzeros), self._obj)
     return nonzeros.value
 
+
+class SparseDistMatrix(object):
+  """ This implements a very crude sparse VC / STAR matrix using a CSC sparse
+      matrix container to hold the local sparse matrix.
+  """
+
+  def __init__(self, size=0):
+    self._obj = c_void_p()
+    lib.callsl("sl_create_sparse_matrix", "SparseDistMatrix", size, byref(self._obj))    
+ 

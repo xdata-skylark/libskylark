@@ -81,9 +81,7 @@ class Kernel(object):
     cdirX = self.__get_direction(dirX)
     cdirY = self.__get_direction(dirY)
 
-    X = lib.adapt(X)
-    Y = lib.adapt(Y)
-    K = lib.adapt(K)
+    [X, Y, K] = lib.adapt([X,Y,K])
 
     if not sym or uplo is None:
       lib.callsl("sl_kernel_gram", cdirX, cdirY, self._kernel_obj, \
@@ -102,12 +100,9 @@ class Kernel(object):
       raise ValueError("uplo should be None, upper or lower for symmetric Gram.")
 
 
-    X.ptrcleaner()
-    Y.ptrcleaner()
-    K.ptrcleaner()
+    lib.clean_pointer([X, Y, K])
 
     return K.getobj()
-
 
 
 # Kernel bindings

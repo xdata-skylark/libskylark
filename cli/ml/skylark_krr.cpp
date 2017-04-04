@@ -40,9 +40,11 @@ int s = 2000, partial = -1, sketch_size = -1, sample = -1, maxit = 0, maxsplit =
 std::string fname, testname, modelname = "model.dat", logfile = "",
     outputfile = "";
 double kp1 = 10.0, kp2 = 0.0, kp3 = 1.0, lambda = 0.01, tolerance=0;
+double precond_lambda = -1;
 bool use_single = false, use_fast = false, regression = false;
 bool predict = false, decisionvals = false;
 boost::property_tree::ptree pt;
+skylark::algorithms::krylov_method_t krylov_method = skylark::algorithms::CG_TAG;
 
 #ifndef SKYLARK_AVOID_BOOST_PO
 
@@ -50,6 +52,7 @@ boost::property_tree::ptree pt;
 namespace bpo = boost::program_options;
 
 int parse_program_options(int argc, char* argv[]) {
+    int krylov_method_i;
 
     bpo::options_description desc("Options");
     desc.add_options()
@@ -95,6 +98,9 @@ int parse_program_options(int argc, char* argv[]) {
         ("lambda,l",
             bpo::value<double>(&lambda)->default_value(0.01),
             "Lambda regularization parameter.")
+        ("plambda",
+            bpo::value<double>(&precond_lambda)->default_value(-1),
+            "Lambda regularization parameter to use for preconditioner (-a 1 ).")
         ("tolerance,t",
             bpo::value<double>(&tolerance)->default_value(0),
             "Tolerance for the iterative method (when used). "
@@ -114,6 +120,10 @@ int parse_program_options(int argc, char* argv[]) {
         ("sample,z",
             bpo::value<int>(&sample)->default_value(-1),
             "Sample the input data. Will use all if -1. ")
+        ("krylov",
+            bpo::value<int>(&krylov_method_i)->default_value(0),
+            "Kyrlov method to use, if using a Krylov method."
+            " (0 for CG, 1 for FCG)")
         ("decisionvals",
             "In predict mode, for classification, output the "
             "decision values instead of class.")
@@ -129,7 +139,7 @@ int parse_program_options(int argc, char* argv[]) {
             "Sketch size (for regression problem; if relevant (i.e., -a 3). "
             "-1 - will be determined by software. ")
         ("fileformat",
-            po::value<char>((char *)&fileformat)->
+            bpo::value<int>((int *)&fileformat)->
             default_value(skylark::utility::io::FORMAT_LIBSVM),
             "Fileformat (default: 0 (libsvm), 1 (hdf5)");
 
@@ -157,6 +167,10 @@ int parse_program_options(int argc, char* argv[]) {
         regression = vm.count("regression");
         predict = vm.count("predict");
         decisionvals = vm.count("decisionvals");
+        if (krylov_method_i == 0)
+            krylov_method = skylark::algorithms::CG_TAG;
+        if (krylov_method_i == 1)
+            krylov_method = skylark::algorithms::FCG_TAG;
 
         if (!vm.count("trainfile")) {
             std::cout << "Input trainfile file is required! "
@@ -190,6 +204,9 @@ int parse_program_options(int argc, char* argv[]) {
         if (flag == "--lambda" || flag == "-l")
             lambda = boost::lexical_cast<double>(value);
 
+        if (flag == "--plambda" || flag == "-l")
+            precond_lambda = boost::lexical_cast<double>(value);
+
         if (flag == "--tolerance" || flag == "-t")
             tolerance = boost::lexical_cast<double>(value);
 
@@ -219,6 +236,14 @@ int parse_program_options(int argc, char* argv[]) {
 
         if (flag == "--algorithm" || flag == "-a")
             algorithm = boost::lexical_cast<int>(value);
+
+        if (flag == "--krylov") {
+            int krylov_method_i = boost::lexical_cast<int>(value);
+            if (krylov_method_i == 0)
+                krylov_method = skylark::algorithms::CG_TAG;
+            if (krylov_method_i == 1)
+                krylov_method = skylark::algorithms::FCG_TAG;
+        }
 
         if (flag == "--fileformat")
             fileformat = boost::lexical_cast<int>(value);
@@ -431,6 +456,8 @@ int execute_classification(skylark::base::context_t &context) {
     case FASTER_KRR:
         rlsc_params.iter_lim = (maxit == 0) ? 1000 : maxit;
         rlsc_params.tolerance = (tolerance == 0) ? 1e-3 : tolerance;
+        rlsc_params.precond_lambda = precond_lambda;
+        rlsc_params.krylov_method = krylov_method;
         skylark::ml::FasterKernelRLSC(skylark::base::COLUMNS, k, X, L,
             T(lambda), A, rcoding, s, context, rlsc_params);
         model =
@@ -729,6 +756,8 @@ int execute_regression(skylark::base::context_t &context) {
     case FASTER_KRR:
         krr_params.iter_lim = (maxit == 0) ? 1000 : maxit;
         krr_params.tolerance = (tolerance == 0) ? 1e-3 : tolerance;
+        krr_params.precond_lambda = precond_lambda;
+        krr_params.krylov_method = krylov_method;
         skylark::ml::FasterKernelRidge(skylark::base::COLUMNS, k, X, Ytransp,
             T(lambda), A, s, context, krr_params);
         model =

@@ -15,6 +15,10 @@ struct sl_context_t;
 #define SL_COLUMNS 1
 #define SL_ROWS    2
 
+#define SL_UPPER   1
+#define SL_LOWER   2
+
+
 extern "C" {
 
 /** Returns a string describing the sketch transforms that are supported.
@@ -85,6 +89,12 @@ SKYLARK_EXTERN_API int sl_raw_sp_matrix_data(void *A_, int32_t *indptr,
 SKYLARK_EXTERN_API void sl_get_exception_info(char **info);
 
 SKYLARK_EXTERN_API void sl_print_exception_trace();
+
+SKYLARK_EXTERN_API int sl_gaussian_matrix(char *A_type, void *A_, int m, int n,
+                                           sl_context_t *ctxt);
+
+SKYLARK_EXTERN_API int sl_uniform_matrix(char *A_type, void *A_, int m, int n,
+                                          sl_context_t *ctxt);
 
 } // extern "C"
 

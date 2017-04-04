@@ -28,8 +28,11 @@ typedef El::DistMatrix<double, El::VR, El::STAR> DistMatrix_VR_STAR;
 typedef El::DistMatrix<double, El::VC, El::STAR> DistMatrix_VC_STAR;
 typedef El::DistMatrix<double, El::STAR, El::VR> DistMatrix_STAR_VR;
 typedef El::DistMatrix<double, El::STAR, El::VC> DistMatrix_STAR_VC;
+typedef El::DistMatrix<El::Int> DistMatrix_Int;
+typedef El::ElementalMatrix<El::Int> ElementalMatrix_Int;
 typedef skylark::base::sparse_matrix_t<double> SparseMatrix;
 typedef skylark::base::sparse_vc_star_matrix_t<double> SparseDistMatrix;
+
 
 
 enum matrix_type_t {
@@ -42,11 +45,13 @@ enum matrix_type_t {
     DIST_MATRIX_VR_STAR,
     DIST_MATRIX_STAR_VC,
     DIST_MATRIX_STAR_VR,
+    DIST_MATRIX_INT
     SPARSE_DIST_MATRIX,          /**< Sparse matrix */
     SPARSE_MATRIX                /**< Sparse local matrix */
 };
 
 matrix_type_t str2matrix_type(const char *str);
 boost::any skylark_void2any(const char *type, void *obj);
+boost::any skylark_void2any_root(const char *type, void *obj);
 
 #endif // SKYLARK_MATRIX_TYPES_HPP

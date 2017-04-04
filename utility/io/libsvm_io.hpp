@@ -776,6 +776,9 @@ void ReadLIBSVM(const std::string& fname,
     SKYLARK_READLIBSVM_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
         mftypes::dist_matrix_star_vr_t);
 
+    SKYLARK_READLIBSVM_APPLY_DISPATCH(mdtypes::dist_matrix_t,
+        mitypes::dist_matrix_t);
+
 #endif
 
     SKYLARK_THROW_EXCEPTION (

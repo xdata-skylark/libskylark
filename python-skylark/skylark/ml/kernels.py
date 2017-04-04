@@ -55,19 +55,28 @@ class Kernel(object):
     else:
       raise ValueError("Direction must be either columns/rows or 0/1")
 
+  def get_obj(self):
+    return self._kernel_obj
+  
 
-  def gram(self, X, K, dirX="rows", dirY="rows", Y=None):
+  def gram(self, X, K, dirX="rows", dirY="rows", Y=None, uplo=None):
     """
     Returns the dense Gram matrix evaluated over the datapoints.
   
     :param X: n-by-d data matrix
     :param Y: another data matrix. If Y is None, then X is used.
     :param K: placeholder for output Gram matrix.
+    :param uplo: If X=Y and uplo == "upper" will only generate upper
+                 part. If uplo == "lower" will generate lower part.
+                 If None, will generate both.
     """
 
     if Y is None:
       Y = X
       dirY = dirX
+      sym = True
+    else:
+      sym = False
 
     cdirX = self.__get_direction(dirX)
     cdirY = self.__get_direction(dirY)
@@ -76,10 +85,22 @@ class Kernel(object):
     Y = lib.adapt(Y)
     K = lib.adapt(K)
 
-    lib.callsl("sl_kernel_gram", cdirX, cdirY, self._kernel_obj, \
-                X.ctype(), X.ptr(), \
-                Y.ctype(), Y.ptr(), \
-                K.ctype(), K.ptr())
+    if not sym or uplo is None:
+      lib.callsl("sl_kernel_gram", cdirX, cdirY, self._kernel_obj, \
+                   X.ctype(), X.ptr(), \
+                   Y.ctype(), Y.ptr(), \
+                   K.ctype(), K.ptr())
+    elif uplo is "upper":
+      lib.callsl("sl_kernel_symmetric_gram", 1, cdirX, self._kernel_obj, \
+                   X.ctype(), X.ptr(), \
+                   K.ctype(), K.ptr())
+    elif uplo is "lower":
+      lib.callsl("sl_kernel_symmetric_gram", 2, cdirX, self._kernel_obj, \
+                   X.ctype(), X.ptr(), \
+                   K.ctype(), K.ptr())
+    else:
+      raise ValueError("uplo should be None, upper or lower for symmetric Gram.")
+
 
     X.ptrcleaner()
     Y.ptrcleaner()

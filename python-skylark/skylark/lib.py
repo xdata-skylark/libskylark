@@ -59,7 +59,7 @@ def initialize(seed=-1):
             
     ctxt_obj = c_void_p()
     lib.sl_create_default_context(seed, byref(ctxt_obj))
-            
+
 
 def finalize():
     """
@@ -269,23 +269,32 @@ class ScipyAdapter:
 if ELEM_INSTALLED:
   class DistMatrixAdapter:
     def __init__(self, A):
-      if El.TagToType(A.tag) != ctypes.c_double:
-        raise errors.UnsupportedError("Only double precision matrices are supported.")
-
       self._A = A
       self._dist_data = A.GetDistData()
-      if self._dist_data.colDist == El.MC and self._dist_data.rowDist == El.MR:
-        self._ctype = "DistMatrix"
-        self._typeid = ""
-      else:
-        if self._dist_data.colDist == El.CIRC and self._dist_data.rowDist == El.CIRC:
-          self._ctype = "SharedMatrix"
-        elif self._dist_data.colDist == El.STAR and self._dist_data.rowDist == El.STAR:
-          self._ctype = "RootMatrix"
+
+      if El.TagToType(A.tag) == ctypes.c_double:
+        if self._dist_data.colDist == El.MC and self._dist_data.rowDist == El.MR:
+          self._ctype = "DistMatrix"
+          self._typeid = ""
         else:
-          tagmap = {El.VC : "VC", El.VR : "VR", El.MC : "MC", El.MR : "MR", El.STAR : "STAR", El.CIRC : "CIRC"}
-          self._typeid = tagmap[self._dist_data.colDist] + "_" + tagmap[self._dist_data.rowDist]
-          self._ctype = "DistMatrix_" + self._typeid
+          if self._dist_data.colDist == El.CIRC and self._dist_data.rowDist == El.CIRC:
+            self._ctype = "SharedMatrix"
+          elif self._dist_data.colDist == El.STAR and self._dist_data.rowDist == El.STAR:
+            self._ctype = "RootMatrix"
+          else:
+            tagmap = {El.VC : "VC", El.VR : "VR", El.MC : "MC", El.MR : "MR", El.STAR : "STAR", El.CIRC : "CIRC"}
+            self._typeid = tagmap[self._dist_data.colDist] + "_" + tagmap[self._dist_data.rowDist]
+            self._ctype = "DistMatrix_" + self._typeid
+
+      elif El.TagToType(A.tag) == ctypes.c_long:
+        if self._dist_data.colDist == El.MC and self._dist_data.rowDist == El.MR:
+          self._ctype = "DistMatrix_Int"
+          self._typeid = ""
+        else: 
+          raise errors.UnsupportedError("Only MC x MR matrices of Int are supported.")
+
+      else:
+        raise errors.UnsupportedError("Only double precision and Int matrices are supported.")
 
     def ctype(self):
       return self._ctype

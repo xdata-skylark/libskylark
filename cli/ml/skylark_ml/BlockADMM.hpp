@@ -10,8 +10,6 @@
 #include <omp.h>
 #endif
 
-#include "../utility/timer.hpp"
-
 template <class InputType>
 struct BlockADMMSolver {
 

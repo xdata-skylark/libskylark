@@ -9,9 +9,10 @@ matrix_type_t str2matrix_type(const char *str) {
     STRCMP_TYPE(DistMatrix_VR_STAR, DIST_MATRIX_VR_STAR);
     STRCMP_TYPE(DistMatrix_STAR_VC, DIST_MATRIX_VC_STAR);
     STRCMP_TYPE(DistMatrix_STAR_VR, DIST_MATRIX_VR_STAR);
+    STRCMP_TYPE(DistMatrix_Int,   DIST_MATRIX_INT);
     STRCMP_TYPE(SparseMatrix,       SPARSE_MATRIX);
     STRCMP_TYPE(SparseDistMatrix,   SPARSE_DIST_MATRIX);
-
+    
     return MATRIX_TYPE_ERROR;
 }
 
@@ -31,6 +32,7 @@ boost::any skylark_void2any(const char *type, void *obj) {
     STRCMP_CONVERT(DistMatrix_VR_STAR);
     STRCMP_CONVERT(DistMatrix_STAR_VC);
     STRCMP_CONVERT(DistMatrix_STAR_VR);
+    STRCMP_CONVERT(DistMatrix_Int);
     STRCMP_CONVERT(SparseMatrix);
     STRCMP_CONVERT(SparseDistMatrix);
 
@@ -55,9 +57,10 @@ boost::any skylark_void2any_root(const char *type, void *obj) {
     STRCMP_CONVERT(DistMatrix_VR_STAR, ElementalMatrix);
     STRCMP_CONVERT(DistMatrix_STAR_VC, ElementalMatrix);
     STRCMP_CONVERT(DistMatrix_STAR_VR, ElementalMatrix);
+    STRCMP_CONVERT(DistMatrix_Int, ElementalMatrix_Int);
     STRCMP_CONVERT(SparseMatrix, SparseMatrix);
     STRCMP_CONVERT(SparseDistMatrix, SparseDistMatrix);
-
+    
     #undef STRCMP_CONVERT
 
     return anyobj;

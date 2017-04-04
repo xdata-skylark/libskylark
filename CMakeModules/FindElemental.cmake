@@ -18,12 +18,16 @@ FIND_PATH(Elemental_INCLUDE_DIR El/core.hpp
   NO_DEFAULT_PATH
 )
 
-FIND_LIBRARY(Elemental_LIBRARY El
+FIND_LIBRARY(Elemental_LIBRARY libEl.so
    $ENV{ELEMENTAL_ROOT}/lib
    $ENV{HOME}/.local/lib
    $ENV{HOME}/local/lib
    $ENV{HOME}/Software/lib
+<<<<<<< HEAD
    /usr/local/lib/x86_64-linux-gnu
+=======
+   /usr/local/lib/x86_64-linux-gnu/
+>>>>>>> 7a5b29f0c404aca25863d14e4f747d8b2de67cc7
    /usr/local/lib
    /usr/lib
    NO_DEFAULT_PATH
@@ -34,7 +38,11 @@ FIND_LIBRARY(Pmrrr_LIBRARY pmrrr
    $ENV{HOME}/.local/lib
    $ENV{HOME}/local/lib
    $ENV{HOME}/Software/lib
+<<<<<<< HEAD
    /usr/local/lib/x86_64-linux-gnu
+=======
+   /usr/local/lib/x86_64-linux-gnu/
+>>>>>>> 7a5b29f0c404aca25863d14e4f747d8b2de67cc7
    /usr/local/lib
    /usr/lib
    NO_DEFAULT_PATH

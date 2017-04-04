@@ -5,6 +5,7 @@
 #include <boost/random/uniform_01.hpp>
 
 #include "../utility/typer.hpp"
+#include "../utility/types.hpp"
 
 namespace skylark { namespace base {
 
@@ -29,9 +30,9 @@ void RandomMatrix(El::Matrix<T> &A, El::Int m, El::Int n,
     A.Resize(m, n);
     T *data = A.Buffer();
 
-#ifdef SKYLARK_HAVE_OPENMP
-#pragma omp parallel for collapse(2)
-#endif
+#   ifdef SKYLARK_HAVE_OPENMP
+#   pragma omp parallel for collapse(2)
+#   endif
     for(size_t j = 0; j < n; j++)
         for(size_t i = 0; i < m; i++)
             data[j * m + i] = entries[j * m + i];
@@ -47,9 +48,9 @@ void RandomMatrix(El::Matrix<T> &A, El::Int m, El::Int n,
     A.Resize(m, n);
     T *data = A.Buffer();
 
-#ifdef SKYLARK_HAVE_OPENMP
-#pragma omp parallel for collapse(2)
-#endif
+#   ifdef SKYLARK_HAVE_OPENMP
+#   pragma omp parallel for collapse(2)
+#   endif
     for(size_t j = 0; j < n; j++)
         for(size_t i = 0; i < m; i++)
             data[j * m + i] = entries[j * m + i];
@@ -80,9 +81,9 @@ void RandomMatrix(El::DistMatrix<T, CD, RD> &A, El::Int m, El::Int n,
     size_t n0 = A.LocalWidth();
     T *data = A.Buffer();
 
-#ifdef SKYLARK_HAVE_OPENMP
-#pragma omp parallel for collapse(2)
-#endif
+#   ifdef SKYLARK_HAVE_OPENMP
+#   pragma omp parallel for collapse(2)
+#   endif
     for(size_t j = 0; j < n0; j++)
         for(size_t i = 0; i < m0; i++)
             data[j * m0 + i] = entries[A.GlobalCol(j) * m + A.GlobalRow(i)];
@@ -113,9 +114,9 @@ void RandomMatrix(El::DistMatrix<T, CD, RD> &A, El::Int m, El::Int n,
     size_t n0 = A.LocalWidth();
     T *data = A.Buffer();
 
-#ifdef SKYLARK_HAVE_OPENMP
-#pragma omp parallel for collapse(2)
-#endif
+#   ifdef SKYLARK_HAVE_OPENMP
+#   pragma omp parallel for collapse(2)
+#   endif
     for(size_t j = 0; j < n0; j++)
         for(size_t i = 0; i < m0; i++)
             data[j * m0 + i] = entries[A.GlobalCol(j) * m + A.GlobalRow(i)];
@@ -135,6 +136,46 @@ void GaussianMatrix(MatrixType &A, El::Int m, El::Int n,
 
     boost::random::normal_distribution<value_type> dist;
     RandomMatrix(A, m, n, dist, context);
+}
+
+void GaussianMatrix(const boost::any &A, El::Int m, El::Int n,
+    context_t &context) {
+#define SKYLARK_GAUSSIANMATRIX_ANY_APPLY_DISPATCH(AT)   \
+    if (A.type() == typeid(AT*)) {                      \
+        GaussianMatrix(*boost::any_cast<AT*>(A), m, n,  \
+            context);                                   \
+        return;                                         \
+    }
+
+#if !(defined SKYLARK_NO_ANY)
+
+    SKYLARK_GAUSSIANMATRIX_ANY_APPLY_DISPATCH(mdtypes::matrix_t);
+    //SKYLARK_GAUSSIANMATRIX_ANY_APPLY_DISPATCH(mdtypes::el_matrix_t);
+    SKYLARK_GAUSSIANMATRIX_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t);
+    SKYLARK_GAUSSIANMATRIX_ANY_APPLY_DISPATCH(mdtypes::shared_matrix_t);
+    SKYLARK_GAUSSIANMATRIX_ANY_APPLY_DISPATCH(mdtypes::root_matrix_t);
+    SKYLARK_GAUSSIANMATRIX_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t);
+    SKYLARK_GAUSSIANMATRIX_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t);
+    SKYLARK_GAUSSIANMATRIX_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vc_t);
+    SKYLARK_GAUSSIANMATRIX_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t);
+
+    SKYLARK_GAUSSIANMATRIX_ANY_APPLY_DISPATCH(mftypes::matrix_t);
+    //SKYLARK_GAUSSIANMATRIX_ANY_APPLY_DISPATCH(mftypes::el_matrix_t);
+    SKYLARK_GAUSSIANMATRIX_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t);
+    SKYLARK_GAUSSIANMATRIX_ANY_APPLY_DISPATCH(mftypes::shared_matrix_t);
+    SKYLARK_GAUSSIANMATRIX_ANY_APPLY_DISPATCH(mftypes::root_matrix_t);
+    SKYLARK_GAUSSIANMATRIX_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t);
+    SKYLARK_GAUSSIANMATRIX_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t);
+    SKYLARK_GAUSSIANMATRIX_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vc_t);
+    SKYLARK_GAUSSIANMATRIX_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t);
+#endif
+
+    SKYLARK_THROW_EXCEPTION (
+            base::unsupported_base_operation()
+            << base::error_msg(
+            "GaussianMatrix for this combination of matrices is not supported in any interface"));
+
+#undef SKYLARK_GAUSSIANMATRIX_ANY_APPLY_DISPATCH
 }
 
 /**
@@ -171,7 +212,46 @@ void UniformMatrix(sparse_vc_star_matrix_t<T> &A, El::Int m, El::Int n,
            "and does not make sense."));
 }
 
+void UniformMatrix(const boost::any &A, El::Int m, El::Int n,
+    context_t &context) {
+#define SKYLARK_UNIFORMMATRIX_ANY_APPLY_DISPATCH(AT)   \
+    if (A.type() == typeid(AT*)) {                      \
+        UniformMatrix(*boost::any_cast<AT*>(A), m, n,  \
+            context);                                   \
+        return;                                         \
+    }
 
+#if !(defined SKYLARK_NO_ANY)
+
+    SKYLARK_UNIFORMMATRIX_ANY_APPLY_DISPATCH(mdtypes::matrix_t);
+    //SKYLARK_UNIFORMMATRIX_ANY_APPLY_DISPATCH(mdtypes::el_matrix_t);
+    SKYLARK_UNIFORMMATRIX_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_t);
+    SKYLARK_UNIFORMMATRIX_ANY_APPLY_DISPATCH(mdtypes::shared_matrix_t);
+    SKYLARK_UNIFORMMATRIX_ANY_APPLY_DISPATCH(mdtypes::root_matrix_t);
+    SKYLARK_UNIFORMMATRIX_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vc_star_t);
+    SKYLARK_UNIFORMMATRIX_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_vr_star_t);
+    SKYLARK_UNIFORMMATRIX_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vc_t);
+    SKYLARK_UNIFORMMATRIX_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t);
+
+    SKYLARK_UNIFORMMATRIX_ANY_APPLY_DISPATCH(mftypes::matrix_t);
+    //SKYLARK_UNIFORMMATRIX_ANY_APPLY_DISPATCH(mftypes::el_matrix_t);
+    SKYLARK_UNIFORMMATRIX_ANY_APPLY_DISPATCH(mftypes::dist_matrix_t);
+    SKYLARK_UNIFORMMATRIX_ANY_APPLY_DISPATCH(mftypes::shared_matrix_t);
+    SKYLARK_UNIFORMMATRIX_ANY_APPLY_DISPATCH(mftypes::root_matrix_t);
+    SKYLARK_UNIFORMMATRIX_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vc_star_t);
+    SKYLARK_UNIFORMMATRIX_ANY_APPLY_DISPATCH(mftypes::dist_matrix_vr_star_t);
+    SKYLARK_UNIFORMMATRIX_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vc_t);
+    SKYLARK_UNIFORMMATRIX_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t);
+#endif
+
+    SKYLARK_THROW_EXCEPTION (
+            base::unsupported_base_operation()
+            << base::error_msg(
+            "UniformMatrix for this combination of matrices is not supported in any interface"));
+
+#undef SKYLARK_UNIFORMMATRIX_ANY_APPLY_DISPATCH
+
+}
 } } // namespace skylark::base
 
 #endif // SKYLARK_RANDOM_MATRICES_HPP

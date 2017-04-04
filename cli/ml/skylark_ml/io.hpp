@@ -7,7 +7,6 @@
 #include <string>
 #include <El.hpp>
 #include <El/core/types.h>
-#include "../base/sparse_matrix.hpp"
 #include "options.hpp"
 
 namespace bmpi =  boost::mpi;

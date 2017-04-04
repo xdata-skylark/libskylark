@@ -19,12 +19,12 @@ _haslib = lib.lib is not None
 
 if _haslib:
   csketches = map(eval, lib.lib.sl_supported_sketch_transforms().split())
-  pysketches = ["SJLT", "PPT", "URST", "NURST"]
+  pysketches = ["SJLT", "PPT", "UST", "NUST"]
   SUPPORTED_SKETCH_TRANSFORMS = \
                                 csketches + [ (T, "Matrix", "Matrix") for T in pysketches]
 else:      
   sketches = ["JLT", "CT", "SJLT", "FJLT", "CWT", "MMT", "WZT", "GaussianRFT",
-              "FastGaussianRFT", "PPT", "URST", "NURST"]
+              "FastGaussianRFT", "PPT", "UST", "NUST"]
   SUPPORTED_SKETCH_TRANSFORMS = [ (T, "Matrix", "Matrix") for T in sketches]
 
   # TODO seed for pure-Python implementation?
@@ -393,7 +393,7 @@ class FJLT(_SketchTransform):
     if self._ppy:
       d = scipy.stats.rv_discrete(values=([-1,1], [0.5,0.5]), name = 'uniform').rvs(size=n)
       self._D = scipy.sparse.spdiags(d, 0, n, n)
-      self._S = URST(n, s, outtype, forceppy=forceppy)
+      self._S = UST(n, s, outtype, forceppy=forceppy)
 
   def _ppyapply(self, A, SA, dim):
     if dim == 0:
@@ -880,7 +880,7 @@ class PPT(_SketchTransform):
       P = numpy.multiply(P, numpy.fft.fft(SA, axis=dim))
     numpy.copyto(SA, numpy.fft.ifft(P, axis=dim).real)
 
-class URST(_SketchTransform):
+class UST(_SketchTransform):
   """
   Uniform Random Sampling Transform
   For now, only Pure Python implementation, and only sampling with replacement.
@@ -889,13 +889,27 @@ class URST(_SketchTransform):
 
   :param n: Number of dimensions in input vectors.
   :param s: Number of dimensions in output vectors.
+  :param replace: sampling with replacement or not.
   :param defouttype: Default output type when using the * and / operators.
   :param forceppy: whether to force a pure python implementation
   """
-  def __init__(self, n, s, defouttype=None, forceppy=False):
-    super(URST, self)._baseinit("URST", n, s, defouttype, forceppy);
-    self._ppy = True
-    self._idxs = numpy.random.permutation(n)[0:s]
+  def __init__(self, n, s, replace=True, defouttype=None, forceppy=False, sketch_transform=None):
+    super(UST, self)._baseinit("UST", n, s, defouttype, forceppy);
+    
+    if self._ppy:
+      if not replace:
+        self._idxs = numpy.random.permutation(n)[0:s]
+      else:
+        raise ValueError('In python only UST: only non replacement is supported')
+    else:
+      if sketch_transform is None:
+        sketch_transform = c_void_p()
+        lib.callsl("sl_create_sketch_transform", lib.ctxt_obj, "UST", n, s, \
+                  byref(sketch_transform), ctypes.c_int(replace))
+        self._obj = sketch_transform
+      else:
+        self._obj = sketch_transform
+
 
   def _ppyapply(self, A, SA, dim):
     if dim == 0:
@@ -903,7 +917,7 @@ class URST(_SketchTransform):
     if dim == 1:
       SA[:, :] = A[:, self._idxs]
 
-class NURST(_SketchTransform):
+class NUST(_SketchTransform):
   """
   Non-Uniform Random Sampling Transform
   For now, only Pure Python implementation, and only sampling with replacement.
@@ -917,7 +931,7 @@ class NURST(_SketchTransform):
   :param forceppy: whether to force a pure python implementation
   """
   def __init__(self, n, s, p, defouttype=None, forceppy=False):
-    super(NURST, self)._baseinit("NURST", n, s, defouttype, forceppy);
+    super(NUST, self)._baseinit("NUST", n, s, defouttype, forceppy);
     if p.shape[0] != n:
       raise errors.InvalidParamterError("size of probability array should be exactly n")
     self._ppy = True
@@ -960,19 +974,21 @@ def _hashmap(t, n, distribution, dimension=0):
 # Additional names for various transforms.
 #
 SparseJLT = SJLT
-FastJLT = JLT
+FastJLT = FJLT
 CountSketch = CWT
 RRT = GaussianRFT
 Fastfood=FastGaussianRFT
 MaternFastfood=FastMaternRFT
 TensorSketch = PPT
-UniformSampler = URST
-NonUniformSampler = NURST
+UniformSampler = UST
+NonUniformSampler = NUST
 
 #
 # Mapping between serialize type string and Python calss
 #
 _map_csketch_type_to_cfun = { }
+_map_csketch_type_to_cfun["UST"] = \
+    lambda sd, obj : UST(int(sd['N']), int(sd['S']), bool(sd['replace']), None, False, obj)
 _map_csketch_type_to_cfun["JLT"] = lambda sd, obj : JLT(int(sd['N']), int(sd['S']), None, False, obj)
 _map_csketch_type_to_cfun["CT"] = \
     lambda sd, obj : CT(int(sd['N']), int(sd['S']), float(sd['C']), None, False, obj)

@@ -18,6 +18,7 @@ namespace sketch = skylark::sketch;
 
 enum transform_type_t {
     TRANSFORM_TYPE_ERROR,
+    UST,
     JLT,
     CT,
     FJLT,
@@ -46,6 +47,7 @@ struct sl_sketch_transform_t {
 };
 
 static transform_type_t str2transform_type(const char *str) {
+    STRCMP_TYPE(UST, UST);
     STRCMP_TYPE(JLT, JLT);
     STRCMP_TYPE(CT, CT);
     STRCMP_TYPE(FJLT, FJLT);
@@ -95,6 +97,15 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
         SKDEF(JLT, DistMatrix_STAR_VC, DistMatrix_STAR_VC)
         SKDEF(JLT, DistMatrix_VR_STAR, DistMatrix)
         SKDEF(JLT, DistMatrix_VC_STAR, DistMatrix)
+
+        SKDEF(UST, Matrix, Matrix)
+        SKDEF(UST, DistMatrix, RootMatrix)
+        SKDEF(UST, DistMatrix, SharedMatrix)
+        SKDEF(UST, DistMatrix, DistMatrix)
+        SKDEF(UST, DistMatrix_VR_STAR, DistMatrix_VR_STAR)
+        SKDEF(UST, DistMatrix_VC_STAR, DistMatrix_VC_STAR)
+        SKDEF(UST, DistMatrix_STAR_VR, DistMatrix_STAR_VR)
+        SKDEF(UST, DistMatrix_STAR_VC, DistMatrix_STAR_VC)
 
         SKDEF(CT, Matrix, Matrix)
         SKDEF(CT, SparseMatrix, Matrix)
@@ -326,6 +337,7 @@ SKYLARK_EXTERN_API char *sl_supported_sketch_transforms() {
 #endif
 
 #if SKYLARK_HAVE_FFTW || SKYLARK_HAVE_SPIRALWHT || SKYLARK_HAVE_KISSFFT
+        SKDEF(FJLT, Matrix, Matrix)
         SKDEF(FJLT, DistMatrix_VR_STAR, RootMatrix)
         SKDEF(FJLT, DistMatrix_VC_STAR, RootMatrix)
         SKDEF(FJLT, DistMatrix_STAR_VR, RootMatrix)
@@ -416,6 +428,21 @@ SKYLARK_EXTERN_API int sl_create_sketch_transform(sl_context_t *ctxt,
     AUTO_NEW_DISPATCH_1P(WZT, sketch::WZT_data_t)
     AUTO_NEW_DISPATCH_1P(GaussianRFT, sketch::GaussianRFT_data_t);
     AUTO_NEW_DISPATCH_1P(LaplacianRFT, sketch::LaplacianRFT_data_t);
+
+    SKYLARK_BEGIN_TRY()
+        if (type == UST)  {
+            va_list argp;
+            va_start(argp, sketch);
+            bool replace = (bool)va_arg(argp, int);
+            sl_sketch_transform_t *r =
+                new sl_sketch_transform_t(UST,
+                    new sketch::
+                    UST_data_t(n, s, replace, dref_context(ctxt)));
+            va_end(argp);
+            *sketch = r;
+        }
+    SKYLARK_END_TRY()
+    SKYLARK_CATCH_COPY_AND_RETURN_ERROR_CODE(lastexception);
 
     SKYLARK_BEGIN_TRY()
         if (type == MaternRFT)  {
@@ -584,6 +611,7 @@ SKYLARK_EXTERN_API
     SKYLARK_END_TRY()                                           \
     SKYLARK_CATCH_COPY_AND_RETURN_ERROR_CODE(lastexception);
 
+    AUTO_DELETE_DISPATCH(UST, sketch::UST_data_t);
     AUTO_DELETE_DISPATCH(JLT, sketch::JLT_data_t);
     AUTO_DELETE_DISPATCH(FJLT, sketch::FJLT_data_t);
     AUTO_DELETE_DISPATCH(CT, sketch::CT_data_t);
@@ -634,6 +662,38 @@ SKYLARK_EXTERN_API int
         SKYLARK_END_TRY()                                                \
         SKYLARK_CATCH_COPY_AND_RETURN_ERROR_CODE(lastexception);         \
     }
+
+    AUTO_APPLY_DISPATCH(UST,
+        MATRIX, MATRIX,
+        sketch::UST_t, Matrix, Matrix, sketch::UST_data_t);
+
+   AUTO_APPLY_DISPATCH(UST,
+        DIST_MATRIX, ROOT_MATRIX,
+        sketch::UST_t, DistMatrix, RootMatrix, sketch::UST_data_t);
+
+    AUTO_APPLY_DISPATCH(UST,
+        DIST_MATRIX, SHARED_MATRIX,
+        sketch::UST_t, DistMatrix, SharedMatrix, sketch::UST_data_t);
+
+    AUTO_APPLY_DISPATCH(UST,
+        DIST_MATRIX, DIST_MATRIX,
+        sketch::UST_t, DistMatrix, DistMatrix, sketch::UST_data_t);
+
+    AUTO_APPLY_DISPATCH(UST,
+        DIST_MATRIX_VR_STAR, DIST_MATRIX_VR_STAR,
+        sketch::UST_t, DistMatrix_VR_STAR, DistMatrix_VR_STAR, sketch::UST_data_t);
+
+    AUTO_APPLY_DISPATCH(UST,
+        DIST_MATRIX_VC_STAR, DIST_MATRIX_VC_STAR,
+        sketch::UST_t, DistMatrix_VC_STAR, DistMatrix_VC_STAR, sketch::UST_data_t);
+
+    AUTO_APPLY_DISPATCH(UST,
+        DIST_MATRIX_STAR_VR, DIST_MATRIX_STAR_VR,
+        sketch::UST_t, DistMatrix_STAR_VR, DistMatrix_STAR_VR, sketch::UST_data_t);
+
+    AUTO_APPLY_DISPATCH(UST,
+        DIST_MATRIX_STAR_VC, DIST_MATRIX_STAR_VC,
+        sketch::UST_t, DistMatrix_STAR_VC, DistMatrix_STAR_VC, sketch::UST_data_t);
 
     AUTO_APPLY_DISPATCH(JLT,
         MATRIX, MATRIX,
@@ -1758,6 +1818,11 @@ SKYLARK_EXTERN_API int
         DIST_MATRIX, DIST_MATRIX,
         sketch::FJLT_t, DistMatrix, DistMatrix,
         sketch::FJLT_data_t);
+    
+    AUTO_APPLY_DISPATCH(FJLT,
+        MATRIX, MATRIX,
+        sketch::FJLT_t, Matrix, Matrix,
+        sketch::FJLT_data_t);
 
     AUTO_APPLY_DISPATCH(FastGaussianRFT,
         MATRIX, MATRIX,
@@ -1957,6 +2022,22 @@ SKYLARK_EXTERN_API int
     return 0;
 }
 
+
+SKYLARK_EXTERN_API int sl_apply_sketch_transform_container(
+        void *S_, void *A_, void *SA_) {
+    
+    auto S = static_cast<sketch::sketch_transform_container_t<
+        El::DistMatrix<double>, El::DistMatrix<double> >*> (S_);
+    auto A =  static_cast<El::DistMatrix<double>*> (A_);
+    auto SA = static_cast<El::DistMatrix<double>*> (SA_);
+    
+    
+    SA->Resize(S->get_S(), A->Width());
+    S->apply(*A, *SA, sketch::columnwise_tag());
+
+    return 0;
+
+}
 
 
 } // extern "C"

@@ -45,7 +45,7 @@ enum matrix_type_t {
     DIST_MATRIX_VR_STAR,
     DIST_MATRIX_STAR_VC,
     DIST_MATRIX_STAR_VR,
-    DIST_MATRIX_INT
+    DIST_MATRIX_INT,
     SPARSE_DIST_MATRIX,          /**< Sparse matrix */
     SPARSE_MATRIX                /**< Sparse local matrix */
 };

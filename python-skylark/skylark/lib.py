@@ -410,6 +410,7 @@ if KDT_INSTALLED:
 #
 # The following functions adapts an object to a uniform interface, so
 # that we can have a uniform way of accessing it.
+# For convenience it can receive a list and apply the function to each element.
 #
 def adapt(obj):
     """
@@ -430,7 +431,10 @@ def adapt(obj):
     else:
         haskdt = False
 
-    if isinstance(obj, numpy.ndarray):
+    if isinstance(obj, list):
+      return map(adapt, obj)
+
+    elif isinstance(obj, numpy.ndarray):
         return NumpyAdapter(obj)
 
     elif isinstance(obj, scipy.sparse.csr_matrix) or isinstance(obj, scipy.sparse.csc_matrix):
@@ -447,6 +451,15 @@ def adapt(obj):
 
     else:
         raise errors.InvalidObjectError("Invalid/unsupported object passed as parameter")
+
+#
+# The following functions call ptrcleaner for each object in the list objects
+# Many times after adapt some matrices we have to call the ptrcleaner() function
+# This function is used to make our code shorter and more readable
+#
+def clean_pointer(objects):
+    for obj in objects:
+        obj.ptrcleaner()
 
 #
 # Create mapping between type string and and constructor for that type

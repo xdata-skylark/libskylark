@@ -116,7 +116,7 @@ to your ``~/.bashrc``.
 .. note::
 	
 	Consider expanding ``LD_LIBRARY_PATH`` if intending to use example libskylark executables: 
-	``export LD_LIBRARY_PATH=${HOME}/miniconda2/lib64:${HOME}/miniconda2/lib:${LD_LIBRARY_PATH}"``
+	``export LD_LIBRARY_PATH=${HOME}/libskylark/lib64:${HOME}/libskylark/lib:${LD_LIBRARY_PATH}"``
 
 
 .. _vagrant-label:

@@ -116,27 +116,15 @@
         <h3 style="margin-top: 40px;"><a name="libskylark" class="anchor" href="#libskylark">
             <span class="octicon octicon-link"></span></a>Quick Install Guide</h3>
 
-        <p>Vagrant and VirtualBox provide an easy way to get started
-        with libSkylark. Follow the steps below to get a libSkylark
-        environment running on a virtual machine. The following assumes
-        Vagrant and VirtualBox are installed.</p>
 
         <pre><code>
-        git clone https://github.com/xdata-skylark/libskylark.git
-        cd libskylark/vagrant/precise64
-        vagrant up
-        vagrant ssh
+	curl -L -O https://github.com/xdata-skylark/libskylark/releases/download/v0.20/install.sh
+	bash install.sh -b -p ${HOME}/libskylark
+	export PATH=${HOME}/libskylark/bin:${PATH}
+	export LD_LIBRARY_PATH=${HOME}/libskylark/lib64:${HOME}/libskylark/lib:${LD_LIBRARY_PATH}
         </code></pre>
 
-        <p>Note that if you want to test the current development version use
-        the recipe below.</p>
-
-        <pre><code>
-        git clone -b development https://github.com/xdata-skylark/libskylark.git
-        cd libskylark/vagrant/trusty64
-        vagrant up
-        vagrant ssh
-        </code></pre>
+        <p>Consider adding the last two lines above to your .bashrc file.</p>
 
         More details are provided in the
         <a href="docs/stable/sphinx/quick_start.html">quick start section</a>.

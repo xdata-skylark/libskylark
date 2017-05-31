@@ -397,8 +397,8 @@ struct gaussian_t : public kernel_t {
         K.Resize(m, n);
         base::EuclideanDistanceMatrix(dirX, dirY, value_type(1.0), X, Y,
             value_type(0.0), K);
-        El::EntrywiseMap(K, std::function<value_type(value_type)> (
-            [this] (value_type x) {
+        El::EntrywiseMap(K, std::function<value_type(const value_type&)> (
+            [this] (const value_type x) {
                 return std::exp(-x / (2 * _sigma * _sigma));
             }));
     }
@@ -414,8 +414,8 @@ struct gaussian_t : public kernel_t {
         K.Resize(n, n);
         base::SymmetricEuclideanDistanceMatrix(uplo, dir, value_type(1.0), X,
             value_type(0.0), K);
-        base::SymmetricEntrywiseMap(uplo, K, std::function<value_type(value_type)> (
-              [this] (value_type x) {
+        base::SymmetricEntrywiseMap(uplo, K, std::function<value_type(const value_type &)> (
+              [this] (const value_type &x) {
                   return std::exp(-x / (2 * _sigma * _sigma));
               }));
     }
@@ -565,8 +565,8 @@ struct polynomial_t : public kernel_t {
         K.Resize(m, n);
         // TODO should be base::Gemm, not El::Gemm
         El::Gemm(xo, yo, value_type(1.0), X, Y, value_type(0.0), K);
-        El::EntrywiseMap(K, std::function<value_type(value_type)> (
-            [this] (value_type x) {
+        El::EntrywiseMap(K, std::function<value_type(const value_type&)> (
+            [this] (const value_type &x) {
                 return std::pow(_gamma * x + _c, _q);
             }));
     }
@@ -584,8 +584,8 @@ struct polynomial_t : public kernel_t {
         // TODO should be base::Herk, not El::Herk
         El::Herk(uplo, o, value_type(1.0), X, K);
         // TODO maybe need to use Gemm version.
-        base::SymmetricEntrywiseMap(uplo, K, std::function<value_type(value_type)> (
-              [this] (value_type x) {
+        base::SymmetricEntrywiseMap(uplo, K, std::function<value_type(const value_type &)> (
+              [this] (const value_type &x) {
                   return std::pow(_gamma * x + _c, _q);
               }));
     }
@@ -745,8 +745,8 @@ struct laplacian_t : public kernel_t {
         K.Resize(m, n);
         base::L1DistanceMatrix(dirX, dirY, value_type(1.0), X, Y,
             value_type(0.0), K);
-        El::EntrywiseMap(K, std::function<value_type(value_type)> (
-            [this] (value_type x) {
+        El::EntrywiseMap(K, std::function<value_type(const value_type&)> (
+            [this] (const value_type &x) {
                 return std::exp(-x / _sigma);
             }));
     }
@@ -762,8 +762,8 @@ struct laplacian_t : public kernel_t {
         K.Resize(n, n);
         base::SymmetricL1DistanceMatrix(uplo, dir, value_type(1.0), X,
             value_type(0.0), K);
-        base::SymmetricEntrywiseMap(uplo, K, std::function<value_type(value_type)> (
-              [this] (value_type x) {
+        base::SymmetricEntrywiseMap(uplo, K, std::function<value_type(const value_type&)> (
+              [this] (const value_type &x) {
                   return std::exp(-x / _sigma);
               }));
     }
@@ -917,8 +917,8 @@ struct expsemigroup_t : public kernel_t {
         K.Resize(m, n);
         base::ExpsemigroupDistanceMatrix(dirX, dirY, value_type(1.0), X, Y,
             value_type(0.0), K);
-        El::EntrywiseMap(K, std::function<value_type(value_type)> (
-            [this] (value_type x) {
+        El::EntrywiseMap(K, std::function<value_type(const value_type &)> (
+            [this] (const value_type &x) {
                 return std::exp(-_beta * x);
             }));
     }

@@ -63,7 +63,9 @@ struct sparse_dist_matrix_t {
     {}
 
     ~sparse_dist_matrix_t()
-    {}
+    {
+        delete _local_buffer;
+    }
 
     /**
      * @return communicator
@@ -351,7 +353,7 @@ struct sparse_dist_matrix_t {
 
 private:
 
-    std::unique_ptr< sparse_matrix_t<value_type> > _local_buffer;
+    sparse_matrix_t<value_type>* _local_buffer;
     std::map< std::pair<int, int>, value_type, detail::compare_t > _temp_buffer;
 
     const boost::mpi::communicator _comm;

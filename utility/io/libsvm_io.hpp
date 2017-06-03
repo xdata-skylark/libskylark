@@ -728,6 +728,9 @@ void ReadLIBSVM(const std::string& fname,
     SKYLARK_READLIBSVM_APPLY_DISPATCH(mftypes::sparse_matrix_t,
         mftypes::matrix_t);
 
+    SKYLARK_READLIBSVM_APPLY_DISPATCH(mdtypes::sparse_dist_matrix_t,
+       mdtypes::dist_matrix_vc_star_t);
+
     SKYLARK_READLIBSVM_APPLY_DISPATCH(mdtypes::dist_matrix_t,
         mdtypes::dist_matrix_t);
     SKYLARK_READLIBSVM_APPLY_DISPATCH(mdtypes::dist_matrix_t,
@@ -772,6 +775,9 @@ void ReadLIBSVM(const std::string& fname,
         mdtypes::dist_matrix_star_vr_t);
     SKYLARK_READLIBSVM_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
         mftypes::dist_matrix_star_vr_t);
+
+    SKYLARK_READLIBSVM_APPLY_DISPATCH(mdtypes::dist_matrix_t,
+        mitypes::dist_matrix_t);
 
 #endif
 
@@ -1639,6 +1645,11 @@ void ReadLIBSVM(hdfsFS &fs, const std::string& fname,
     base::sparse_matrix_t<T>& X, El::Matrix<R>& Y,
     base::direction_t direction, int min_d = 0) {
 
+    SKYLARK_THROW_EXCEPTION (
+        base::io_exception()
+          << base::error_msg(
+           "Empiezo a ejecutar ReadLIBSVM"));
+
     std::string line;
     std::string token;
     R label;
@@ -1795,6 +1806,11 @@ void ReadLIBSVM(hdfsFS &fs, const std::string& fname,
         in->close();
         in = itr.next();
     }
+
+    SKYLARK_THROW_EXCEPTION (
+        base::io_exception()
+          << base::error_msg(
+           "Leo bien hasta antes del attach"));
 
     if (direction == base::COLUMNS) {
         col_ptr[n] = nnz; // last entry (total number of nnz)

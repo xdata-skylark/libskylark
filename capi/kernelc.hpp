@@ -11,6 +11,10 @@ SKYLARK_EXTERN_API int sl_create_kernel(
 SKYLARK_EXTERN_API int sl_kernel_gram(int dirX_, int dirY_,
     sl_kernel_t *k,  char *X_type, void *X_, char *Y_type, void *Y_,
     char *K_type, void *K_);
+
+SKYLARK_EXTERN_API int sl_kernel_symmetric_gram(int uplo, int dir,
+    sl_kernel_t *k,  char *X_type, void *X_, char *K_type, void *K_);
+
 }
 
 #endif // SKYLARK_KERNELC_HPP

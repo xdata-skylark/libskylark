@@ -18,7 +18,7 @@ FIND_PATH(Elemental_INCLUDE_DIR El/core.hpp
   NO_DEFAULT_PATH
 )
 
-FIND_LIBRARY(Elemental_LIBRARY El
+FIND_LIBRARY(Elemental_LIBRARY libEl.so
    $ENV{ELEMENTAL_ROOT}/lib
    $ENV{HOME}/.local/lib
    $ENV{HOME}/local/lib

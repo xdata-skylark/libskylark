@@ -2,7 +2,6 @@
 #define SKYLARK_HILBERT_HPP
 
 #include "utils.hpp"
-#include "model.hpp"
 #include "io.hpp"
 #include "BlockADMM.hpp"
 #include "options.hpp"

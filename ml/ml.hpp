@@ -8,9 +8,9 @@
 
 #include "coding.hpp"
 #include "graph/graph.hpp"
-#include "kernels.hpp"
-#include "krr.hpp"
-#include "rlsc.hpp"
+#include "kernels/kernels.hpp"
+#include "krr/krr.hpp"
+#include "rlsc/rlsc.hpp"
 #include "model.hpp"
 
 // TODO add includes to hilbert

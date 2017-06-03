@@ -159,6 +159,8 @@ public:
             mdtypes::root_matrix_t, FJLT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::dist_matrix_star_vr_t,
             mdtypes::shared_matrix_t, FJLT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mdtypes::matrix_t,
+            mdtypes::matrix_t, FJLT_t);
 
 #endif
 
@@ -186,6 +188,8 @@ public:
             mftypes::root_matrix_t, FJLT_t);
         SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::dist_matrix_star_vr_t,
             mftypes::shared_matrix_t, FJLT_t);
+        SKYLARK_SKETCH_ANY_APPLY_DISPATCH(mftypes::matrix_t,
+            mftypes::matrix_t, FJLT_t);
 
 #endif
 

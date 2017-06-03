@@ -27,6 +27,7 @@ void SymmetricEntrywiseMap(El::UpperOrLower uplo, El::Matrix<T>& A,
 template<typename T>
 void SymmetricEntrywiseMap(El::UpperOrLower uplo, El::AbstractDistMatrix<T>& A,
     std::function<T(const T&)> func) {
+
     //SymmetricEntrywiseMap(uplo, A.Matrix(), func );
     EntrywiseMap(A.Matrix(), func);
 }

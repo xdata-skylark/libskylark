@@ -1,7 +1,6 @@
 #include "matrix_types.hpp"
 #include "basec.hpp"
-#include "../base/context.hpp"
-#include "../base/exception.hpp"
+#include "../base/base.hpp"
 
 static boost::exception_ptr lastexception;
 
@@ -132,6 +131,33 @@ SKYLARK_EXTERN_API void sl_print_exception_trace() {
     } catch (const skylark::base::skylark_exception &ex) {
         SKYLARK_PRINT_EXCEPTION_TRACE(ex);
     }
+}
+
+
+SKYLARK_EXTERN_API int sl_gaussian_matrix(char *A_type, void *A_,
+    int m, int n, sl_context_t *ctxt) {
+
+    SKYLARK_BEGIN_TRY()
+        skylark::base::GaussianMatrix(skylark_void2any(A_type, A_), m, n,
+            dref_context(ctxt));
+    SKYLARK_END_TRY()
+        SKYLARK_CATCH_COPY_AND_RETURN_ERROR_CODE(lastexception);
+
+
+    return 0;
+}
+
+SKYLARK_EXTERN_API int sl_uniform_matrix(char *A_type, void *A_,
+    int m, int n, sl_context_t *ctxt) {
+
+    SKYLARK_BEGIN_TRY()
+        skylark::base::UniformMatrix(skylark_void2any(A_type, A_), m, n,
+            dref_context(ctxt));
+    SKYLARK_END_TRY()
+        SKYLARK_CATCH_COPY_AND_RETURN_ERROR_CODE(lastexception);
+
+
+    return 0;
 }
 
 } // extern "C"

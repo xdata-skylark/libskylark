@@ -12,8 +12,7 @@
 #include <cstdlib>
 #include <string>
 #include <vector>
-#include "kernels.hpp"
-#include "options.hpp"
+#include "kernels/kernels.hpp"
 
 #ifdef SKYLARK_HAVE_OPENMP
 #include <omp.h>

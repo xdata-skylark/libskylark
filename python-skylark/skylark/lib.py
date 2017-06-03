@@ -7,6 +7,7 @@ import numpy, scipy.sparse
 import atexit
 import time
 import sys
+import sparse_matrix as sm
 
 _libc = cdll.LoadLibrary(ctypes.util.find_library('c'))
 _libc.free.argtypes = (ctypes.c_void_p,)
@@ -58,7 +59,7 @@ def initialize(seed=-1):
             
     ctxt_obj = c_void_p()
     lib.sl_create_default_context(seed, byref(ctxt_obj))
-            
+
 
 def finalize():
     """
@@ -268,23 +269,32 @@ class ScipyAdapter:
 if ELEM_INSTALLED:
   class DistMatrixAdapter:
     def __init__(self, A):
-      if El.TagToType(A.tag) != ctypes.c_double:
-        raise errors.UnsupportedError("Only double precision matrices are supported.")
-
       self._A = A
       self._dist_data = A.GetDistData()
-      if self._dist_data.colDist == El.MC and self._dist_data.rowDist == El.MR:
-        self._ctype = "DistMatrix"
-        self._typeid = ""
-      else:
-        if self._dist_data.colDist == El.CIRC and self._dist_data.rowDist == El.CIRC:
-          self._ctype = "SharedMatrix"
-        elif self._dist_data.colDist == El.STAR and self._dist_data.rowDist == El.STAR:
-          self._ctype = "RootMatrix"
+
+      if El.TagToType(A.tag) == ctypes.c_double:
+        if self._dist_data.colDist == El.MC and self._dist_data.rowDist == El.MR:
+          self._ctype = "DistMatrix"
+          self._typeid = ""
         else:
-          tagmap = {El.VC : "VC", El.VR : "VR", El.MC : "MC", El.MR : "MR", El.STAR : "STAR", El.CIRC : "CIRC"}
-          self._typeid = tagmap[self._dist_data.colDist] + "_" + tagmap[self._dist_data.rowDist]
-          self._ctype = "DistMatrix_" + self._typeid
+          if self._dist_data.colDist == El.CIRC and self._dist_data.rowDist == El.CIRC:
+            self._ctype = "SharedMatrix"
+          elif self._dist_data.colDist == El.STAR and self._dist_data.rowDist == El.STAR:
+            self._ctype = "RootMatrix"
+          else:
+            tagmap = {El.VC : "VC", El.VR : "VR", El.MC : "MC", El.MR : "MR", El.STAR : "STAR", El.CIRC : "CIRC"}
+            self._typeid = tagmap[self._dist_data.colDist] + "_" + tagmap[self._dist_data.rowDist]
+            self._ctype = "DistMatrix_" + self._typeid
+
+      elif El.TagToType(A.tag) == ctypes.c_long:
+        if self._dist_data.colDist == El.MC and self._dist_data.rowDist == El.MR:
+          self._ctype = "DistMatrix_Int"
+          self._typeid = ""
+        else: 
+          raise errors.UnsupportedError("Only MC x MR matrices of Int are supported.")
+
+      else:
+        raise errors.UnsupportedError("Only double precision and Int matrices are supported.")
 
     def ctype(self):
       return self._ctype
@@ -398,9 +408,70 @@ if KDT_INSTALLED:
       nullVec = kdt.Vec(0, sparse=False)
       return kdt.Mat(nullVec, nullVec, nullVec, n, m)
 
+class SparseMatrixAdapter:
+  def __init__(self, A):
+    self._A = A
+
+  def ctype(self):
+    return "SparseMatrix"
+
+  def ptr(self):
+    return self._A._obj
+
+  def ptrcleaner(self):
+    pass
+
+  def getdim(self, dim):
+    pass
+
+  def getobj(self):
+    return self._A
+
+  def iscompatible(self, B):
+      return None, False
+
+  def getctor(self):
+    return SparseMatrixAdapter.ctor
+
+  @staticmethod
+  def ctor(m, n, B):
+    A = sm.SparseMatrix()
+    return A
+
+class SparseDistMatrixAdapter:
+  def __init__(self, A):
+    self._A = A
+
+  def ctype(self):
+    return "SparseDistMatrix"
+
+  def ptr(self):
+    return self._A._obj
+
+  def ptrcleaner(self):
+    pass
+
+  def getdim(self, dim):
+    pass
+
+  def getobj(self):
+    return self._A
+
+  def iscompatible(self, B):
+      return None, False
+
+  def getctor(self):
+    return SparseDistMatrixAdapter.ctor
+
+  @staticmethod
+  def ctor(m, n, B):
+    A = sm.SparseDistMatrix()
+    return A
+
 #
 # The following functions adapts an object to a uniform interface, so
 # that we can have a uniform way of accessing it.
+# For convenience it can receive a list and apply the function to each element.
 #
 def adapt(obj):
     """
@@ -421,11 +492,20 @@ def adapt(obj):
     else:
         haskdt = False
 
-    if isinstance(obj, numpy.ndarray):
+    if isinstance(obj, list):
+      return map(adapt, obj)
+
+    elif isinstance(obj, numpy.ndarray):
         return NumpyAdapter(obj)
 
     elif isinstance(obj, scipy.sparse.csr_matrix) or isinstance(obj, scipy.sparse.csc_matrix):
         return ScipyAdapter(obj)
+    
+    elif isinstance(obj, sm.SparseMatrix):
+        return SparseMatrixAdapter(obj)
+    
+    elif isinstance(obj, sm.SparseDistMatrix):
+        return SparseDistMatrixAdapter(obj)
 
     elif haselem and isinstance(obj, El.Matrix):
         return ElMatrixAdapter(obj)
@@ -438,6 +518,15 @@ def adapt(obj):
 
     else:
         raise errors.InvalidObjectError("Invalid/unsupported object passed as parameter")
+
+#
+# The following functions call ptrcleaner for each object in the list objects
+# Many times after adapt some matrices we have to call the ptrcleaner() function
+# This function is used to make our code shorter and more readable
+#
+def clean_pointer(objects):
+    for obj in objects:
+        obj.ptrcleaner()
 
 #
 # Create mapping between type string and and constructor for that type

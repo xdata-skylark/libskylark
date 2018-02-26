@@ -26,16 +26,16 @@ SKYLARK_EXTERN_API int sl_kernel_rlsc(
     std::stringstream data;
     data << params_json;
     boost::property_tree::read_json(data, json_tree);
-    skylark::ml::rlsc_params_t params(data);
+    skylark::ml::rlsc_params_t params(json_tree);
 
     auto *rcoding = new std::vector<El::Int>();
 
     SKYLARK_BEGIN_TRY()
         skylark::ml::KernelRLSC(direction,
-            k->kernel_obj, 
+            k->kernel_obj,
             skylark_void2any(X_type, X_),
             skylark_void2any(L_type, L_),
-            lambda, 
+            lambda,
             skylark_void2any(A_type, A_),
             *rcoding,
             params);
@@ -68,17 +68,16 @@ SKYLARK_EXTERN_API int sl_approximate_kernel_rlsc(
     std::stringstream data;
     data << params_json;
     boost::property_tree::read_json(data, json_tree);
-    skylark::ml::rlsc_params_t params(data);
-    
+    skylark::ml::rlsc_params_t params(json_tree);
 
     auto *rcoding = new std::vector<El::Int>();
-    
+
     *S_ = new sketch::sketch_transform_container_t<
             El::DistMatrix<double>, El::DistMatrix<double> >();
 
     SKYLARK_BEGIN_TRY()
         skylark::ml::ApproximateKernelRLSC(direction,
-            k->kernel_obj, 
+            k->kernel_obj,
             skylark_void2any(X_type, X_),
             skylark_void2any(L_type, L_),
             lambda,
